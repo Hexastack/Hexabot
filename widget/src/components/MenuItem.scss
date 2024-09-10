@@ -1,0 +1,21 @@
+.sc-menu-element {
+  border-top: 1px solid #b9b9b9;
+  position: relative;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.sc-menu-item {
+  display: inline-block;
+  padding: 1rem;
+  text-decoration: none;
+  width: 100%;
+}
+.sc-menu-item-button {
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  padding: 1rem;
+}

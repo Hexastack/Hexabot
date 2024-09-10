@@ -1,0 +1,65 @@
+.sc-message--carousel {
+  border-radius: 10px;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+
+  .sc-message--carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease;
+    width: 100%;
+
+    .sc-message--carousel-element-wrapper {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+
+      .sc-message--carousel-element {
+        padding: 1rem;
+        width: 100%;
+
+        .sc-message--carousel-element-image {
+          background-position: center;
+          background-repeat: no-repeat;
+          background-size: cover;
+          position: relative;
+          width: 100%;
+          height: 150px;
+        }
+
+        .sc-message--carousel-title {
+          font-size: 1rem;
+          font-weight: 600;
+          padding: 0.5rem 0;
+          margin-top: 8px;
+        }
+        
+        .sc-message--carousel-element-description {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .sc-message--carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    z-index: 2;
+
+    &.prev {
+      left: 10px;
+    }
+
+    &.next {
+      right: 10px;
+    }
+  }
+}

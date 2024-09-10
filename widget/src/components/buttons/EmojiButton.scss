@@ -1,0 +1,29 @@
+
+.sc-user-input--emoji-icon-wrapper {
+    background: none;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    outline: none;
+  }
+  
+  .sc-user-input--emoji-icon-wrapper:focus {
+    outline: none;
+  }
+  
+  .sc-user-input--emoji-icon {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    align-self: center;
+    vertical-align: middle;
+  }
+  
+  .sc-user-input--emoji-icon-wrapper:focus .sc-user-input--emoji-icon path,
+  .sc-user-input--emoji-icon-wrapper:focus .sc-user-input--emoji-icon circle,
+  .sc-user-input--emoji-icon.active path,
+  .sc-user-input--emoji-icon.active circle,
+  .sc-user-input--emoji-icon:hover path,
+  .sc-user-input--emoji-icon:hover circle {
+    filter: contrast(15%);
+  }

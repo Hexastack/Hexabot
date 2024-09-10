@@ -1,0 +1,9 @@
+tensorflow==2.13.0rc1
+tensorflow_macos==2.13.0rc1
+transformers==4.30.2
+keras==2.13.1rc0
+numpy==1.25.0
+scikit_learn==1.2.2
+fastapi==0.100.0
+uvicorn[standard]==0.23.1
+autopep8==2.0.2

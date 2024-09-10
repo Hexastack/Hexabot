@@ -1,0 +1,8 @@
+.sc--status {
+  display: flex;
+  flex-direction: row;
+
+  .sc--status-read {
+    margin-right: -6px;
+  }
+}

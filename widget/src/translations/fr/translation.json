@@ -1,0 +1,22 @@
+{
+  "user_subscription": {
+    "get_started": "Commencer",
+    "first_name": "Prénom",
+    "last_name": "Nom"
+  },
+  "settings": {
+    "greeting": "Bienvenue !",
+    "placeholder": "Écrivez quelque chose...",
+    "connection_lost": "Connexion perdue",
+    "back": "Retour"
+  },
+  "messages": {
+    "file_message": {
+      "browser_audio_unsupport": "Le navigateur ne prend pas en charge l'élément audio.",
+      "browser_video_unsupport": "Le navigateur ne prend pas en charge l'élément vidéo.",
+      "download": "Télécharger",
+      "unsupported_file_type": "Ce type de fichier n'est pas pris en charge.",
+      "unsupported_file_size": "Cette taille de fichier n'est pas prise en charge."
+    }
+  }
+}

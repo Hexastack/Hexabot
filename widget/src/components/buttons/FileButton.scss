@@ -1,0 +1,24 @@
+.sc-user-input--file-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+.sc-user-input--file-icon-wrapper {
+  background: none;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sc-user-input--file-icon {
+  width: 16px;
+  height: 16px;
+  align-self: center;
+  outline: none;
+  vertical-align: middle;
+}
+
+.sc-user-input--file-icon:hover path {
+  filter: contrast(15%);
+}

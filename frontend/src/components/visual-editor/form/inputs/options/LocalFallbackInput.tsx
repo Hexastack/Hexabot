@@ -1,0 +1,112 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import { FC, useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import { Input } from "@/app-components/inputs/Input";
+import MultipleInput from "@/app-components/inputs/MultipleInput";
+import { BlockFallbackOptions, IBlockAttributes } from "@/types/block.types";
+
+type LocalFallbackProps = {
+  value?: BlockFallbackOptions;
+  onChange: (options: BlockFallbackOptions) => void;
+};
+
+const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
+  const [fallback, setFallback] = useState<BlockFallbackOptions>(
+    value || {
+      active: false,
+      max_attempts: 0,
+      message: [""],
+    },
+  );
+  const { t } = useTranslation();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<IBlockAttributes>();
+
+  useEffect(() => {
+    onChange(fallback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fallback]);
+
+  return (
+    <Accordion defaultExpanded={fallback?.max_attempts > 0}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <CheckCircleIcon
+          color={fallback?.max_attempts > 0 ? "success" : "disabled"}
+          sx={{ marginRight: ".5rem" }}
+        />
+        {t("label.enable_fallback")}
+      </AccordionSummary>
+      <AccordionDetails sx={{ display: "flex", flexDirection: "column" }}>
+        <ContentContainer>
+          <ContentItem>
+            <Input
+              fullWidth={false}
+              defaultValue={fallback?.max_attempts || 0}
+              label={t("label.max_fallback_attempts")}
+              type="number"
+              inputProps={{
+                min: 0,
+                maxLength: 13,
+                step: "1",
+              }}
+              {...register("options.fallback.max_attempts", {
+                validate: {
+                  min: (value) =>
+                    value >= 0 ||
+                    t("message.invalid_max_fallback_attempt_limit"),
+                },
+              })}
+              helperText={
+                errors.options?.fallback?.max_attempts
+                  ? errors.options?.fallback?.max_attempts.message
+                  : null
+              }
+              error={!!errors.options?.fallback?.max_attempts}
+              onChange={(e) => {
+                setFallback({
+                  ...fallback,
+                  max_attempts: parseInt(e.target.value) || 0,
+                  active: fallback.max_attempts > 0,
+                });
+              }}
+            />
+          </ContentItem>
+          <ContentItem>
+            <MultipleInput
+              label={t("label.message")}
+              disabled={fallback.max_attempts === 0}
+              value={fallback.message}
+              multiline={true}
+              minInput={1}
+              minRows={3}
+              onChange={(message) => {
+                setFallback({
+                  ...fallback,
+                  message,
+                });
+              }}
+            />
+          </ContentItem>
+        </ContentContainer>
+      </AccordionDetails>
+    </Accordion>
+  );
+};
+
+export default LocalFallbackInput;

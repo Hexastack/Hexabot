@@ -1,0 +1,96 @@
+version: "3.9"
+
+services:
+  database-init:
+    container_name: database-init
+    build:
+      context: ../api
+    command: sh -c "npm run cache:init && npm run migrate prune && npm run migrate up"
+    env_file: .env
+    networks:
+      - db-network
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  api:
+    container_name: api
+    build:
+      context: ../api
+    env_file: .env
+    ports:
+      - ${API_PORT}:3000
+    networks:
+      - db-network
+      - app-network
+    volumes:
+      - api-data:/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+      database-init:
+        condition: service_completed_successfully
+
+    healthcheck:
+      test: "wget --spider http://localhost:3000"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  hexabot-frontend:
+    container_name: frontend
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN}
+        - NEXT_PUBLIC_SSO_ENABLED=${NEXT_PUBLIC_SSO_ENABLED}
+    env_file: .env
+    ports:
+      - ${APP_FRONTEND_PORT}:8080
+    networks:
+      - app-network
+    depends_on:
+      api:
+        condition: service_healthy
+
+  mongo:
+    container_name: mongo
+    image: mongo:7.0
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - db-network
+    healthcheck:
+      test: echo 'db.stats().ok' | mongosh localhost:27017 --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - mongo-data:/data/db
+
+  widget:
+    container_name: widget
+    build:
+      context: ../widget
+      args:
+        REACT_APP_WIDGET_API_URL: ${REACT_APP_WIDGET_API_URL}
+        REACT_APP_WIDGET_CHANNEL: ${REACT_APP_WIDGET_CHANNEL}
+        REACT_APP_WIDGET_TOKEN: ${REACT_APP_WIDGET_TOKEN}
+    networks:
+      - app-network
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
+  api-data:
+
+networks:
+  db-network:
+  app-network:

@@ -1,0 +1,18 @@
+{
+  "welcome": "Welcome",
+  "hi": "Hi",
+  "invitation_to_join": "Invitation to join",
+  "invitation_for_account_creation": "You have been invited to create a",
+  "account": "account",
+  "create_account:": "Click on the button below to create your account:",
+  "registration_failed": "Registration failed! Either email address or invitation token is invalid.",
+  "create_account_button": "Click on the button below to create your account",
+  "join": "Join",
+  "account_successfully_created_confirm_password": "You have successfully created an account but you will need to confirm your email address.",
+  "confirm_account:": "Click on the button below in order to confirm your account:",
+  "password_reset_request": "A request to reset the password for your account has been made.",
+  "reset": "Reset",
+  "click_to_reset_password:": "Click on the button below in order to set a new password:",
+  "confirm": "Confirm",
+  "best_regards": "Best Regards,"
+}

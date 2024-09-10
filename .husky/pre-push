@@ -1,0 +1,8 @@
+BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+RESTRICTED_BRANCHES="^(main)$"
+
+if echo "$BRANCH_NAME" | grep -Eq "$RESTRICTED_BRANCHES"; then
+	echo "Cannot push directly to branch: '${BRANCH_NAME}'"
+	exit 1
+fi

@@ -1,0 +1,53 @@
+.sc-message--list {
+  border-radius: 10px;
+  width: 256px;
+
+  .sc-message--list-element {
+    position: relative;
+    border-bottom: 1px solid;
+    padding: 1rem;
+
+    .sc-message--list-element-content {
+      width: 100%;
+      display: block;
+
+      &.large {
+        width: 100%;
+        display: block;
+        margin: 0;
+
+        .sc-message--list-element-image {
+          background-size: cover;
+          height: auto;
+          border-radius: 10px 10px 0 0;
+        }
+
+        .sc-message--list-element-description {
+          color: #fff;
+          border-radius: 10px 10px 0 0;
+          background: rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      &.compact {
+        padding: 0.5rem 0;
+      }
+
+      .sc-message--list-element-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0;
+        white-space: pre-line;
+      }
+      
+      .sc-message--list-element-image {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: relative;
+        width: 100%;
+        height: 117px;
+      }
+    }
+  }
+}

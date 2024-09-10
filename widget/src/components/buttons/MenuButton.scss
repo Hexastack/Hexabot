@@ -1,0 +1,46 @@
+.sc-user-input--menu {
+  align-self: center;
+}
+.sc-user-input--menu-button {
+  border: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
+.sc-user-input--menu-img {
+  max-width: 24px;
+}
+.sc-menu-content {
+  display: block;
+  position: absolute;
+  box-shadow: 0px -10px 20px 5px rgba(150, 165, 190, 0.2);
+  width: 60%;
+  bottom: 55px;
+  z-index: 3;
+
+  &:active,
+  &:focus {
+    outline: none;
+  }
+
+  .sc-header-submenu-content {
+    position: relative;
+    text-align: center;
+
+    .sc-title-submenu-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+  }
+
+  .sc-return-submenu-content {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5rem;
+    padding: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+}

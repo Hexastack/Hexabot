@@ -1,0 +1,23 @@
+# This repository
+data/*
+!data/nothing.txt
+experiments/*
+!experiments/nothing.txt
+/repos/*
+
+# Python
+*.py[cod]
+__pycache__/
+
+# Virtualenv
+env/
+venv/
+virtualenv/
+
+# macOS
+Icon?
+.DS_Store
+
+# IDEs
+*.swp
+.env

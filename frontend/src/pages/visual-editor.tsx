@@ -1,0 +1,63 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import ChatIcon from "@mui/icons-material/Chat";
+import { Avatar, Box, Typography } from "@mui/material";
+import UiChatWidget from "hexabot-widget/src/UiChatWidget";
+import getConfig from "next/config";
+import { ReactElement } from "react";
+import { useTranslation } from "react-i18next";
+
+import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { VisualEditor } from "@/components/visual-editor";
+import i18n from "@/i18n/config";
+import { Layout } from "@/layout";
+import { EntityType } from "@/services/types";
+
+const { publicRuntimeConfig } = getConfig();
+const CustomWidgetHeader = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Box display="flex" alignItems="center" ml={2}>
+      <ChatIcon />
+      <Typography component="h2" fontSize="1.5rem" ml={2}>
+        {t("title.live_chat_tester")}
+      </Typography>
+    </Box>
+  );
+};
+const VisualEditorPage = () => {
+  return (
+    <>
+      <VisualEditor />
+      <UiChatWidget
+        config={{
+          apiUrl: publicRuntimeConfig.apiUrl,
+          channel: "live-chat-tester",
+          token: "test",
+          language: i18n.language,
+        }}
+        CustomHeader={CustomWidgetHeader as any}
+        CustomAvatar={() => (
+          <Avatar
+            sx={{ width: "32px", height: "32px", fontSize: ".75rem" }}
+            src={getAvatarSrc(EntityType.USER, "bot")}
+          />
+        )}
+      />
+    </>
+  );
+};
+
+VisualEditorPage.getLayout = function getLayout(page: ReactElement) {
+  return <Layout hasNoPadding>{page}</Layout>;
+};
+
+export default VisualEditorPage;

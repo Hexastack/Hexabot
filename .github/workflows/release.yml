@@ -1,0 +1,86 @@
+on:
+  push:
+    branches:
+      - "release"
+
+jobs:
+  Frontend-Tests:
+    name: Frontend Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: 🔎 Check out repository code ...
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setting Up Node ...
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: ⏳ setting environment ...
+        run: npm i
+
+      - name: 🖥 typecheck Widget ...
+        run: cd widget && npm run typecheck
+
+      - name: 🖥 typecheck Frontend ...
+        run: cd frontend && npm run typecheck
+
+      - name: 🖋️ ESLint checks for widget ...
+        run: cd widget && npm run lint
+
+      - name: 🖋️ ESLint checks for Frontend ...
+        run: cd frontend && npm run lint
+
+      - name: 🛠️ build Widget ...
+        run: cd widget && npm run build
+
+      - name: 🛠️ build Frontend ...
+        run: cd frontend && npm run build
+
+  API-Tests:
+    name: API Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: 🔎 Check out repository code ...
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setting Up Node ...
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: ⏳ setting environment for API ...
+        run: cd api && npm i
+
+      - name: 🖥 typecheck API ...
+        run: cd api && npm run typecheck
+
+      - name: 🖋️ ESLint checks for API ...
+        run: cd api && npm run lint
+
+      - name: 🔬 running unit tests for API ...
+        run: cd api && npm run test
+
+  build:
+    name: Build (Release Branch)
+    runs-on: ubuntu-latest
+    needs: [Frontend-Tests, API-Tests] # Ensure build runs only if tests pass
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: executing remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.SSH_USER }}
+          script: |
+            cd /home/***/hexabot
+            git checkout release
+            git pull origin release
+            make stop NLU=1 
+            make start NLU=1

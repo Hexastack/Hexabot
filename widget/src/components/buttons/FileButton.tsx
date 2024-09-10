@@ -1,0 +1,43 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import React, { ChangeEvent } from 'react';
+
+import { useChat } from '../../providers/ChatProvider';
+import FileInputIcon from '../icons/FileInputIcon';
+
+import './FileButton.scss';
+
+const FileButton: React.FC = () => {
+  const { setFile } = useChat();
+  const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    (e.target as HTMLInputElement).value = '';
+  };
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile && setFile(e.target.files[0]);
+    }
+  };
+
+  return (
+    <div className="sc-user-input--file-wrapper">
+      <button className="sc-user-input--file-icon-wrapper" type="button">
+        <FileInputIcon />
+        <input
+          type="file"
+          id="file-input"
+          onChange={handleChange}
+          onClick={handleClick}
+        />
+      </button>
+    </div>
+  );
+};
+
+export default FileButton;

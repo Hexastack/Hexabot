@@ -1,0 +1,103 @@
+:root {
+  --cs-main-color: #43a29b;
+  --cs-main-color-light: #d7f0eb6e;
+  --cs-main-color-dark: #f5f6fa;
+  --cs-message-incoming-color: #f5f6fa;
+  --cs-message-outgoing-color: #43a29b;
+  --cs-message-outgoing-text-color: #ffffff;
+  --cs-message-incming-text-color: hsl(174, 59%, 7%);
+  --cs-message-input-color: #43a29c3e;
+  --cs-message-search-bg: #fdfefe;
+  --cs-message-input-bg: #f5f6fa;
+  --cs-message-input-bg-disabled: #e6e6e6;
+}
+
+.cs-conversation-header {
+  background-color: #f5f6fa !important;
+}
+
+div .cs-message--outgoing .cs-message__content {
+  background-color: var(--cs-message-outgoing-color) !important;
+}
+
+div .cs-message--outgoing .cs-message__text-content {
+  color: var(--cs-message-outgoing-text-color) !important;
+}
+
+div .cs-message--incoming .cs-message__content {
+  background-color: var(--cs-main-color-dark) !important;
+}
+
+div .cs-message-input__content-editor-wrapper {
+  background-color: var(--cs-message-input-bg);
+  outline: 1px solid rgba(0, 0, 0, 0.142);
+}
+
+div .cs-message-input--disabled .cs-message-input__content-editor-wrapper {
+  background-color: var(--cs-message-input-bg-disabled);
+}
+div .cs-message-input__content-editor-container,
+.cs-message-input__content-editor {
+  background-color: rgba(255, 255, 255, 0) !important;
+}
+
+.cs-button--send {
+  color: var(--cs-main-color) !important;
+}
+
+.cs-conversation {
+  background-color: #f7f7f700 !important;
+  color: #071b19 !important;
+  font-weight: 500 !important;
+}
+
+.cs-conversation--active {
+  background-color: var(--cs-message-input-bg) !important;
+}
+
+.cs-conversation__info {
+  color: #0e2525 !important;
+  font-weight: 200;
+}
+
+.cs-search {
+  background-color: var(--cs-message-search-bg) !important;
+  outline: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 99px !important;
+}
+
+/* Now target .cs-search when the child input is active */
+.cs-search:has(input:focus) {
+  outline: 2px solid var(--cs-main-color) !important;
+}
+
+.cs-search input {
+  background-color: #ffffff00 !important;
+}
+
+.cs-search__search-icon,
+.cs-search__clear-icon {
+  color: var(--cs-main-color) !important;
+}
+
+.ps__rail-y {
+  background-color: var(--cs-main-color-light) !important;
+}
+
+.ps__thumb-y {
+  background-color: var(--cs-main-color) !important;
+}
+
+.cs-main-container > .cs-sidebar.cs-sidebar--left {
+  flex-basis: 50%;
+  max-width: 420px !important;
+}
+
+.cs-avatar:hover > img {
+  filter: none !important;
+}
+
+.cs-message-input {
+  padding: 15px 5px !important;
+  box-shadow: 0px 4px 10px 10px rgba(0, 0, 0, 0.066);
+}

@@ -1,0 +1,40 @@
+.loading-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+.sc-chat--disconnected-icon-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.sc-chat--disconnected-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  text-align: center;
+}
+.sc-chat--disconnected-text {
+  width: 100%;
+}
+.sc-chat--disconnected-button {
+  border: 1px solid;
+  border-radius: 20px;
+  padding: 5px 10px;
+  width: 80%;
+  margin: 2px;
+  cursor: pointer;
+  outline: 0;
+}
+.sc-chat--disconnected-button:active {
+  content: '';
+  opacity: 0;
+  transition: all 0.5s;
+}
+
+.sc-chat--disconnected-button:active:after {
+  opacity: 1;
+  transition: 0s;
+}

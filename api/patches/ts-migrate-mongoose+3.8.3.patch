@@ -1,0 +1,72 @@
+diff --git a/node_modules/ts-migrate-mongoose/dist/cjs/migrator.js b/node_modules/ts-migrate-mongoose/dist/cjs/migrator.js
+index e319b94..342aa69 100644
+--- a/node_modules/ts-migrate-mongoose/dist/cjs/migrator.js
++++ b/node_modules/ts-migrate-mongoose/dist/cjs/migrator.js
+@@ -115,7 +115,8 @@ class Migrator {
+                 .filter((file) => !file.existsInDatabase)
+                 .map((file) => file.filename);
+             this.log('Synchronizing database with file system migrations...');
+-            migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database');
++            // This line is commented out because it is not necessary to ask the user to import the migrations into the database
++            // migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database');
+             return this.syncMigrations(migrationsToImport);
+         }
+         catch (error) {
+@@ -133,7 +134,8 @@ class Migrator {
+             let migrationsToDelete = migrationsInDb
+                 .filter((migration) => !migrationsInFs.find((file) => file.filename === migration.filename))
+                 .map((migration) => migration.name);
+-            migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database');
++            // This line is commented out because it is not necessary to ask the user to delete the migrations from the database
++            // migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database');
+             if (migrationsToDelete.length) {
+                 migrationsDeleted = await this.migrationModel.find({ name: { $in: migrationsToDelete } }).exec();
+                 this.log(`Removing migration(s) from database: \n${chalk_1.default.cyan(migrationsToDelete.join('\n'))} `);
+diff --git a/node_modules/ts-migrate-mongoose/dist/esm/migrator.js b/node_modules/ts-migrate-mongoose/dist/esm/migrator.js
+index 7ad7150..11e951c 100644
+--- a/node_modules/ts-migrate-mongoose/dist/esm/migrator.js
++++ b/node_modules/ts-migrate-mongoose/dist/esm/migrator.js
+@@ -111,7 +111,8 @@ class Migrator {
+                 .filter((file) => !file.existsInDatabase)
+                 .map((file) => file.filename);
+             this.log('Synchronizing database with file system migrations...');
+-            migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database');
++            // This line is commented out because it is not necessary to ask the user to import the migrations into the database
++            // migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database');
+             return this.syncMigrations(migrationsToImport);
+         }
+         catch (error) {
+@@ -129,7 +130,8 @@ class Migrator {
+             let migrationsToDelete = migrationsInDb
+                 .filter((migration) => !migrationsInFs.find((file) => file.filename === migration.filename))
+                 .map((migration) => migration.name);
+-            migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database');
++            // This line is commented out because it is not necessary to ask the user to delete the migrations from the database
++            // migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database');
+             if (migrationsToDelete.length) {
+                 migrationsDeleted = await this.migrationModel.find({ name: { $in: migrationsToDelete } }).exec();
+                 this.log(`Removing migration(s) from database: \n${chalk.cyan(migrationsToDelete.join('\n'))} `);
+diff --git a/node_modules/ts-migrate-mongoose/src/migrator.ts b/node_modules/ts-migrate-mongoose/src/migrator.ts
+index db54f87..7256796 100644
+--- a/node_modules/ts-migrate-mongoose/src/migrator.ts
++++ b/node_modules/ts-migrate-mongoose/src/migrator.ts
+@@ -202,7 +202,8 @@ class Migrator {
+         .map((file) => file.filename)
+ 
+       this.log('Synchronizing database with file system migrations...')
+-      migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database')
++      // This line is commented out because it is not necessary to ask the user to import the migrations into the database
++      // migrationsToImport = await this.choseMigrations(migrationsToImport, 'The following migrations exist in the migrations folder but not in the database.\nSelect the ones you want to import into the database')
+ 
+       return this.syncMigrations(migrationsToImport)
+     } catch (error) {
+@@ -232,7 +233,8 @@ class Migrator {
+         .filter((migration) => !migrationsInFs.find((file) => file.filename === migration.filename))
+         .map((migration) => migration.name)
+ 
+-      migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database')
++      // This line is commented out because it is not necessary to ask the user to delete the migrations from the database
++      // migrationsToDelete = await this.choseMigrations(migrationsToDelete, 'The following migrations exist in the database but not in the migrations folder.\nSelect the ones you want to remove from the database')
+ 
+       if (migrationsToDelete.length) {
+         migrationsDeleted = await this.migrationModel.find({ name: { $in: migrationsToDelete } }).exec()

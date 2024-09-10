@@ -1,0 +1,66 @@
+.sc-message--file {
+  background-color: transparent !important;
+  border-radius: 6px;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  audio,
+  video {
+    max-width: 100%;
+  }
+}
+
+.sc-message--content.sent .sc-message--file {
+  word-wrap: break-word;
+}
+
+.sc-message--file-icon {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  // margin-top: 15px;
+  margin-bottom: 0px;
+}
+
+.sc-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.sc-message--file-download {
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: white;
+  text-align: center;
+
+  a {
+    text-decoration: none;
+    color: #ece7e7;
+
+    img {
+      vertical-align: middle;
+      width: 24px;
+      height: auto;
+    }
+  }
+}
+
+.sc-message--content.received .sc-message--file {
+  color: #263238;
+  background-color: #f4f7f9;
+  margin-right: 40px;
+}
+
+.sc-message--content.received .sc-message--file-download {
+  color: #000;
+}
+
+.sc-message--content.received .sc-message--file a {
+  color: rgba(43, 40, 40, 0.7);
+}
+
+.sc-message--content.received .sc-message--file a:hover {
+  color: #0c0c0c;
+}

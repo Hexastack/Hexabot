@@ -1,0 +1,39 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-image width="100px" src="/assets/logo.png"></mj-image>
+        <mj-divider border-color="#048BA8"></mj-divider>
+        <mj-text font-size="16px" color="#000" font-family="helvetica">
+          <%= t('welcome') %>,
+        </mj-text>
+
+        <mj-text font-size="16px" color="#000" font-family="helvetica"
+          ><%= `${t('invitation_for_account_creation')} ${this.appName}
+          ${t('account')}.` %></mj-text
+        >
+
+        <mj-text font-size="16px" color="#000" font-family="helvetica"
+          ><%= t('create_account') %></mj-text
+        >
+        <mj-button
+          href="<%= this.appUrl %>/register/<%= token %>"
+          font-size="16px"
+          background-color="#F45E43"
+          ><%= t('join') %></mj-button
+        >
+      </mj-column>
+    </mj-section>
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="14px" color="#000" font-family="helvetica"
+          ><%= t('best_regards') %></mj-text
+        >
+
+        <mj-text font-size="14px" color="#000" font-family="helvetica"
+          ><%= this.appName %></mj-text
+        >
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

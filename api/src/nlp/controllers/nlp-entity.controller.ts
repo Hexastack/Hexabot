@@ -1,0 +1,208 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  HttpCode,
+  NotFoundException,
+  UseInterceptors,
+  MethodNotAllowedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { TFilterQuery } from 'mongoose';
+
+import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseController } from '@/utils/generics/base-controller';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { PopulatePipe } from '@/utils/pipes/populate.pipe';
+import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+
+import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
+import { NlpEntity, NlpEntityStub } from '../schemas/nlp-entity.schema';
+import { NlpEntityService } from '../services/nlp-entity.service';
+
+@UseInterceptors(CsrfInterceptor)
+@Controller('nlpentity')
+export class NlpEntityController extends BaseController<
+  NlpEntity,
+  NlpEntityStub
+> {
+  constructor(
+    private readonly nlpEntityService: NlpEntityService,
+    private readonly logger: LoggerService,
+  ) {
+    super(nlpEntityService);
+  }
+
+  /**
+   * Creates a new NLP entity.
+   *
+   * This endpoint receives the NLP entity data in the request body, validates it, and creates a new entry in the database.
+   *
+   * @param createNlpEntityDto - Data transfer object containing the details of the NLP entity to create.
+   *
+   * @returns The newly created NLP entity.
+   */
+  @CsrfCheck(true)
+  @Post()
+  async create(
+    @Body() createNlpEntityDto: NlpEntityCreateDto,
+  ): Promise<NlpEntity> {
+    return await this.nlpEntityService.create(createNlpEntityDto);
+  }
+
+  /**
+   * Counts the number of NLP entities based on provided filters.
+   *
+   * This endpoint allows users to apply filters to count the number of entities in the system that match specific criteria.
+   *
+   * @param filters - Optional filters to apply when counting entities.
+   *
+   * @returns The count of NLP entities matching the filters.
+   */
+  @Get('count')
+  async filterCount(
+    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
+    filters?: TFilterQuery<NlpEntity>,
+  ) {
+    return await this.count(filters);
+  }
+
+  /**
+   * Finds a single NLP entity by ID.
+   *
+   * This endpoint returns an NLP entity if found by its ID, optionally allowing population of specified fields.
+   *
+   * @param id - The ID of the NLP entity to find.
+   * @param populate - Fields to populate, such as 'values'.
+   *
+   * @returns The NLP entity found by the ID.
+   */
+  @Get(':id')
+  async findOne(
+    @Param('id') id: string,
+    @Query(PopulatePipe) populate: string[],
+  ) {
+    const doc = this.canPopulate(populate, ['values'])
+      ? await this.nlpEntityService.findOneAndPopulate(id)
+      : await this.nlpEntityService.findOne(id);
+    if (!doc) {
+      this.logger.warn(`Unable to find NLP Entity by id ${id}`);
+      throw new NotFoundException(`NLP Entity with ID ${id} not found`);
+    }
+    return doc;
+  }
+
+  /**
+   * Retrieves a paginated list of NLP entities with optional filters.
+   *
+   * This endpoint supports pagination and allows users to retrieve a filtered list of NLP entities.
+   *
+   * @param pageQuery - The pagination details such as page number and size.
+   * @param populate - Fields to populate in the retrieved entities.
+   * @param filters - Filters to apply when retrieving entities.
+   *
+   * @returns A paginated list of NLP entities.
+   */
+  @Get()
+  async findPage(
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpEntity>,
+    @Query(PopulatePipe) populate: string[],
+    @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
+    filters: TFilterQuery<NlpEntity>,
+  ) {
+    return this.canPopulate(populate, ['values'])
+      ? await this.nlpEntityService.findPageAndPopulate(filters, pageQuery)
+      : await this.nlpEntityService.findPage(filters, pageQuery);
+  }
+
+  /**
+   * Updates an NLP entity by ID.
+   *
+   * This endpoint allows updating an existing NLP entity. The entity must not be a built-in entity.
+   *
+   * @param id - The ID of the NLP entity to update.
+   * @param updateNlpEntityDto - The new data for the NLP entity.
+   *
+   * @returns The updated NLP entity.
+   */
+  @CsrfCheck(true)
+  @Patch(':id')
+  async updateOne(
+    @Param('id') id: string,
+    @Body() updateNlpEntityDto: NlpEntityCreateDto,
+  ): Promise<NlpEntity> {
+    const nlpEntity = await this.nlpEntityService.findOne(id);
+    if (!nlpEntity) {
+      this.logger.warn(`Unable to update NLP Entity by id ${id}`);
+      throw new NotFoundException(`NLP Entity with ID ${id} not found`);
+    }
+    if (nlpEntity.builtin) {
+      throw new MethodNotAllowedException(
+        `Cannot update builtin NLP Entity ${nlpEntity.name}`,
+      );
+    }
+
+    const result = await this.nlpEntityService.updateOne(
+      id,
+      updateNlpEntityDto,
+    );
+    if (!result) {
+      this.logger.warn(`Failed to update NLP Entity by id ${id}`);
+      throw new InternalServerErrorException(
+        `Failed to update NLP Entity with ID ${id}`,
+      );
+    }
+    return result;
+  }
+
+  /**
+   * Deletes an NLP entity by ID.
+   *
+   * This endpoint deletes an NLP entity from the system, provided it is not a built-in entity.
+   *
+   * @param id - The ID of the NLP entity to delete.
+   *
+   * @returns The result of the deletion operation.
+   */
+  @CsrfCheck(true)
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteOne(@Param('id') id: string) {
+    const nlpEntity = await this.nlpEntityService.findOne(id);
+    if (!nlpEntity) {
+      this.logger.warn(`Unable to delete NLP Entity by id ${id}`);
+      throw new NotFoundException(`NLP Entity with ID ${id} not found`);
+    }
+    if (nlpEntity.builtin) {
+      throw new MethodNotAllowedException(
+        `Cannot delete builtin NLP Entity ${nlpEntity.name}`,
+      );
+    }
+
+    const result = await this.nlpEntityService.deleteCascadeOne(id);
+    if (result.deletedCount === 0) {
+      this.logger.warn(`Failed to delete NLP Entity by id ${id}`);
+      throw new InternalServerErrorException(
+        `Failed to delete NLP Entity with ID ${id}`,
+      );
+    }
+    return result;
+  }
+}

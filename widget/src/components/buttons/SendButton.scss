@@ -1,0 +1,23 @@
+.sc-user-input--button-icon-wrapper {
+  background: none;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  outline: none;
+  cursor: pointer;
+}
+.sc-user-input--button-icon-wrapper:focus {
+  outline: none;
+}
+.sc-user-input--button-icon-wrapper svg {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  align-self: center;
+  outline: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+.sc-user-input--button-icon-wrapper svg:hover path {
+  filter: contrast(15%);
+}

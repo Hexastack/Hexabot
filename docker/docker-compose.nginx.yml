@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: unless-stopped
+    networks:
+      - app-network
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/unsecure/:/etc/nginx:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - api
+      - hexabot-frontend
+      - widget

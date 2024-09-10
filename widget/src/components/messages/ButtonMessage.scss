@@ -1,0 +1,58 @@
+.sc-message--buttons {
+  color: rgb(34, 34, 34);
+  max-width: -webkit-fill-available;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 300;
+  font-size: 1.25rem;
+  line-height: 1.4;
+  position: relative;
+  -webkit-font-smoothing: subpixel-antialiased;
+  text-align: center;
+
+  .sc-message--buttons-content {
+    border: 1px solid;
+    border-radius: 20px;
+    padding: 0.25rem;
+    width: 80%;
+    margin: 2px;
+    cursor: pointer;
+    outline: 0;
+    font-size: 1rem;
+  }
+}
+
+.sc-message--list-element-bottom {
+  .sc-message--buttons-content {
+    width: 100%;
+    font-weight: 600;
+    border-radius: 0 0 6px 6px;
+    padding: 0.5rem;
+    margin: 0;
+  }
+  .sc-message--buttons {
+    padding: 0;
+  }
+}
+
+.sc-message--list-element {
+  .sc-message--buttons-content {
+    padding: 0.5rem;
+    margin: 0;
+  }
+  .sc-message--buttons {
+    padding: 0;
+    margin: 1rem;
+    text-align: center;
+  }
+}
+
+.sc-message--carousel-element {
+  .sc-message--buttons-content {
+    padding: 0.5rem;
+  }
+  .sc-message--buttons {
+    margin: 0;
+    text-align: center;
+  }
+}

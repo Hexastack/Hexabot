@@ -1,0 +1,86 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import { Controller, useFormContext } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+
+import { ContentItem } from "@/app-components/dialogs";
+import { Input } from "@/app-components/inputs/Input";
+import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
+import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+import { IBlockAttributes } from "@/types/block.types";
+
+import { useBlock } from "./BlockFormProvider";
+import { FormSectionTitle } from "./FormSectionTitle";
+import ButtonsInput from "./inputs/message/ButtonsInput";
+
+const ButtonsMessageForm = () => {
+  const block = useBlock();
+  const { t } = useTranslation();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext<IBlockAttributes>();
+
+  if (!(block?.message && "buttons" in block.message)) {
+    return null;
+  }
+
+  return (
+    <>
+      <FormSectionTitle title={t("label.message")} Icon={SimpleTextIcon} />
+      {block?.message && "text" in block?.message ? (
+        <ContentItem>
+          <Controller
+            name="message.text"
+            control={control}
+            defaultValue={block?.message.text || ""}
+            rules={{ required: t("message.message_is_required") }}
+            render={({ field }) => {
+              return (
+                <Input
+                  label={t("label.message")}
+                  required
+                  helperText={errors?.message?.["text"]?.message}
+                  error={!!errors?.message?.["text"]}
+                  {...field}
+                  multiline={true}
+                  minRows={3}
+                />
+              );
+            }}
+          />
+        </ContentItem>
+      ) : null}
+      <FormSectionTitle title={t("label.buttons")} Icon={ButtonsIcon} />
+      <ContentItem>
+        <Controller
+          name="message.buttons"
+          control={control}
+          defaultValue={block?.message.buttons || []}
+          render={({ field }) => {
+            const { value, onChange } = field;
+
+            return (
+              <ButtonsInput
+                fieldPath="message.buttons"
+                value={value}
+                onChange={onChange}
+              />
+            );
+          }}
+        />
+      </ContentItem>
+    </>
+  );
+};
+
+ButtonsMessageForm.displayName = "TextMessageForm";
+
+export default ButtonsMessageForm;

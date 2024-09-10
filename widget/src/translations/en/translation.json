@@ -1,0 +1,22 @@
+{
+  "user_subscription": {
+    "get_started": "Get Started",
+    "first_name": "First Name",
+    "last_name": "Last Name"
+  },
+  "settings": {
+    "greeting": "Welcome !",
+    "placeholder": "Write something...",
+    "connection_lost": "Connection Lost",
+    "back": "Back"
+  },
+  "messages": {
+    "file_message": {
+      "browser_audio_unsupport": "Browser does not support the audio element.",
+      "browser_video_unsupport": "Browser does not support the video element.",
+      "download": "Download",
+      "unsupported_file_type": "This file type is not supported.",
+      "unsupported_file_size": "This file size is not supported."
+    }
+  }
+}

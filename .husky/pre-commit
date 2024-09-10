@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+
+run_checks() {
+    local path=$1
+    local changes=$(git diff --cached --name-only | grep "^${path}/" || true)
+    if [ -n "$changes" ]; then
+        echo "${BLUE}Running ${path} checks and tests...${NC}"
+        cd ./${path} 
+        npm run typecheck
+        npm run lint
+        if [ "$path" = "api" ]; then
+            npm run test:half # Run API specific tests
+        fi
+        cd - > /dev/null
+    else
+        echo "${YELLOW}No changes detected in ${path}, skipping checks and tests.${NC}"
+    fi
+}
+
+echo "${BLUE}Running pre-commit checks...${NC}"
+echo ""
+run_checks "widget"
+run_checks "frontend"
+run_checks "api" 
+echo "\n${GREEN}Pre-commit checks completed successfully.${NC}\n"

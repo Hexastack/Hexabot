@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  api:
+    networks:
+      - nlp-network
+    depends_on:
+      nlu-api:
+        condition: service_healthy
+
+  nlu-api:
+    container_name: nlu-api
+    build:
+      context: ../nlu
+      dockerfile: Dockerfile
+    env_file: .env
+    networks:
+      - nlp-network
+    healthcheck:
+      test: curl --fail http://localhost:5000/health || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+networks:
+  nlp-network:

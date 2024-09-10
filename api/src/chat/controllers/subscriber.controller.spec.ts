@@ -1,0 +1,191 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
+ */
+
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Test } from '@nestjs/testing';
+
+import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
+import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LoggerService } from '@/logger/logger.service';
+import { RoleRepository } from '@/user/repositories/role.repository';
+import { UserRepository } from '@/user/repositories/user.repository';
+import { PermissionModel } from '@/user/schemas/permission.schema';
+import { RoleModel } from '@/user/schemas/role.schema';
+import { UserModel, User } from '@/user/schemas/user.schema';
+import { RoleService } from '@/user/services/role.service';
+import {
+  installSubscriberFixtures,
+  subscriberFixtures,
+} from '@/utils/test/fixtures/subscriber';
+import { getPageQuery } from '@/utils/test/pagination';
+import { sortRowsBy } from '@/utils/test/sort';
+import {
+  closeInMongodConnection,
+  rootMongooseTestModule,
+} from '@/utils/test/test';
+import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
+
+import { UserService } from './../../user/services/user.service';
+import { LabelService } from './../services/label.service';
+import { SubscriberController } from './subscriber.controller';
+import { LabelRepository } from '../repositories/label.repository';
+import { SubscriberRepository } from '../repositories/subscriber.repository';
+import { LabelModel, Label } from '../schemas/label.schema';
+import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
+import { SubscriberService } from '../services/subscriber.service';
+
+describe('SubscriberController', () => {
+  let subscriberController: SubscriberController;
+  let subscriberService: SubscriberService;
+  let labelService: LabelService;
+  let userService: UserService;
+  let subscriber: Subscriber;
+  let allLabels: Label[];
+  let allSubscribers: Subscriber[];
+  let allUsers: User[];
+
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      controllers: [SubscriberController],
+      imports: [
+        rootMongooseTestModule(installSubscriberFixtures),
+        MongooseModule.forFeature([
+          SubscriberModel,
+          LabelModel,
+          UserModel,
+          RoleModel,
+          PermissionModel,
+          AttachmentModel,
+        ]),
+      ],
+      providers: [
+        LoggerService,
+        SubscriberRepository,
+        SubscriberService,
+        LabelService,
+        LabelRepository,
+        UserService,
+        WebsocketGateway,
+        SocketEventDispatcherService,
+        UserRepository,
+        RoleService,
+        RoleRepository,
+        EventEmitter2,
+        AttachmentService,
+        AttachmentRepository,
+      ],
+    }).compile();
+    subscriberService = module.get<SubscriberService>(SubscriberService);
+    labelService = module.get<LabelService>(LabelService);
+    userService = module.get<UserService>(UserService);
+
+    subscriberController =
+      module.get<SubscriberController>(SubscriberController);
+    subscriber = await subscriberService.findOne({
+      first_name: 'Jhon',
+    });
+    allLabels = await labelService.findAll();
+    allSubscribers = await subscriberService.findAll();
+    allUsers = await userService.findAll();
+  });
+
+  afterEach(jest.clearAllMocks);
+  afterAll(closeInMongodConnection);
+
+  describe('count', () => {
+    it('should count subscribers', async () => {
+      jest.spyOn(subscriberService, 'count');
+      const result = await subscriberController.filterCount();
+
+      expect(subscriberService.count).toHaveBeenCalled();
+      expect(result).toEqual({ count: subscriberFixtures.length });
+    });
+  });
+
+  describe('findOne', () => {
+    it('should find one subscriber by id', async () => {
+      jest.spyOn(subscriberService, 'findOne');
+      const result = await subscriberService.findOne(subscriber.id);
+      const labelIDs = allLabels
+        .filter((label) => subscriber.labels.includes(label.id))
+        .map(({ id }) => id);
+
+      expect(subscriberService.findOne).toHaveBeenCalledWith(subscriber.id);
+      expect(result).toEqualPayload({
+        ...subscriberFixtures.find(
+          ({ first_name }) => first_name === subscriber.first_name,
+        ),
+        labels: labelIDs,
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id).id,
+      });
+    });
+
+    it('should find one subscriber by id, and populate its corresponding labels', async () => {
+      jest.spyOn(subscriberService, 'findOneAndPopulate');
+      const result = await subscriberController.findOne(subscriber.id, [
+        'labels',
+      ]);
+
+      expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
+        subscriber.id,
+      );
+      expect(result).toEqualPayload({
+        ...subscriberFixtures.find(
+          ({ first_name }) => first_name === subscriber.first_name,
+        ),
+        labels: allLabels.filter((label) =>
+          subscriber.labels.includes(label.id),
+        ),
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+      });
+    });
+  });
+
+  describe('findPage', () => {
+    const pageQuery = getPageQuery<Subscriber>();
+    it('should find subscribers', async () => {
+      jest.spyOn(subscriberService, 'findPage');
+      const result = await subscriberController.findPage(pageQuery, [], {});
+      const subscribersWithIds = allSubscribers.map(({ labels, ...rest }) => ({
+        ...rest,
+        labels: allLabels
+          .filter((label) => labels.includes(label.id))
+          .map(({ id }) => id),
+      }));
+
+      expect(subscriberService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(result).toEqualPayload(subscribersWithIds.sort(sortRowsBy));
+    });
+
+    it('should find subscribers, and foreach subscriber populate the corresponding labels', async () => {
+      jest.spyOn(subscriberService, 'findPageAndPopulate');
+      const result = await subscriberController.findPage(
+        pageQuery,
+        ['labels'],
+        {},
+      );
+      const subscribersWithLabels = allSubscribers.map(
+        ({ labels, ...rest }) => ({
+          ...rest,
+          labels: allLabels.filter((label) => labels.includes(label.id)),
+          assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        }),
+      );
+
+      expect(subscriberService.findPageAndPopulate).toHaveBeenCalledWith(
+        {},
+        pageQuery,
+      );
+      expect(result).toEqualPayload(subscribersWithLabels.sort(sortRowsBy));
+    });
+  });
+});

@@ -1,0 +1,17 @@
+{
+  "welcome": "Bienvenue",
+  "hi": "Bonjour",
+  "invitation_to_join": "Invitation",
+  "invitation_for_account_creation": "Vous avez été invités pour créer un ",
+  "account": "compte",
+  "create_account": "Cliquez sur le bouton ci-dessous pour créer votre compte :",
+  "registration_failed": "Échec de l'inscription! L'adresse e-mail ou le jeton d'invitation n'est pas valide.",
+  "join": "Inscription",
+  "account_successfully_created_confirm_password": "Vous avez créé avec succès un compte mais vous devrez confirmez votre adresse email.",
+  "confirm_account": "Cliquez sur le bouton ci-dessous pour confirmer votre compte:",
+  "password_reset_request": "Une demande de réinitialisation du mot de passe de votre compte a été effectuée.",
+  "reset": "Réinitialiser",
+  "click_to_reset_password": "Cliquez sur le bouton ci-dessous pour définir un nouveau mot de passe:",
+  "confirm": "Confirmez",
+  "best_regards": "Cordialement"
+}

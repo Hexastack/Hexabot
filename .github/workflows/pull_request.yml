@@ -1,0 +1,63 @@
+name: running unit tests on pull request
+run-name: workflow ${{github.run_number}} of branch ${{github.head_ref}}
+
+on: [pull_request]
+
+jobs:
+  Frontend-Tests:
+    name: Frontend Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: 🔎 Check out repository code ...
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setting Up Node ...
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: ⏳ setting environment ...
+        run: npm i
+
+      - name: 🖥 typecheck Widget ...
+        run: cd widget && npm run typecheck
+
+      - name: 🖥 typecheck Frontend ...
+        run: cd frontend && npm run typecheck
+
+      - name: 🖋️ ESLint checks for widget ...
+        run: cd widget && npm run lint
+
+      - name: 🖋️ ESLint checks for Frontend ...
+        run: cd frontend && npm run lint
+
+      - name: 🛠️ build Widget ...
+        run: cd widget && npm run build
+
+      - name: 🛠️ build Frontend ...
+        run: cd frontend && npm run build
+
+  API-Tests:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: 🔎 Check out repository code ...
+        uses: actions/checkout@v4
+
+      - name: ⏳ Setting Up Node ...
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: ⏳ setting environment for API ...
+        run: cd api && npm i
+
+      - name: 🖥 typecheck API ...
+        run: cd api && npm run typecheck
+
+      - name: 🖋️ ESLint checks for API ...
+        run: cd api && npm run lint
+
+      - name: 🔬 running unit tests for API ...
+        run: cd api && npm run test

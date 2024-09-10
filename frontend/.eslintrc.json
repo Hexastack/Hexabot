@@ -1,0 +1,51 @@
+{
+  "plugins": ["@typescript-eslint/eslint-plugin", "import"],
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "import/newline-after-import": "error",
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin", // Built-in imports (come from NodeJS native) go first
+          "external", // <- External imports
+          "unknown", // <- unknown
+          "index", // <- index imports
+          "internal", // <- Absolute imports
+          ["sibling", "parent"] // <- Relative imports, the sibling and parent types they can be mingled together
+        ],
+        "newlines-between": "always",
+        "alphabetize": {
+          /* sort in ascending order. Options: ["ignore", "asc", "desc"] */
+          "order": "asc",
+          /* ignore case. Options: [true, false] */
+          "caseInsensitive": true
+        }
+      }
+    ],
+    "newline-after-var": "error",
+    "newline-before-return": "error",
+    "no-console": "error",
+    "no-duplicate-imports": "error",
+    "object-shorthand": "error",
+    "padding-line-between-statements": [
+      "error",
+      { "blankLine": "never", "prev": ["const"], "next": "const" }
+    ],
+    "react/jsx-curly-brace-presence": "warn",
+    "react/self-closing-comp": "error"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}

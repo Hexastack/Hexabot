@@ -1,0 +1,13 @@
+dist
+node_modules
+.dockerignore
+.env
+.eslintrc.js
+.git
+.gitignore
+.husky
+.prettierrc
+coverage*
+Makefile
+README.md
+test
