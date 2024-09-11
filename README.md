@@ -88,6 +88,10 @@ You can also find specific documentation for different components of the project
 ## Contributing 
 We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
 
+Please refer to our contribution policy first : [How to contribute to Hexabot](./CONTRIBUTING.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
+
+
 Feel free to join us on [Discord](https://discord.gg/xnpWDYQMAq)
 
 ## License
