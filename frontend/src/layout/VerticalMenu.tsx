@@ -17,7 +17,6 @@ import {
   faGraduationCap,
   faLanguage,
   faTags,
-  faUpload,
   faUserCircle,
   faUsers,
   IconDefinition,
@@ -183,14 +182,6 @@ const MENU_ITEMS: MenuItem[] = [
         Icon: faLanguage,
         requires: {
           [EntityType.TRANSLATION]: [PermissionAction.READ],
-        },
-      },
-      {
-        text: "menu.import",
-        href: "/content/import",
-        Icon: faUpload,
-        requires: {
-          [EntityType.CONTENT]: [PermissionAction.CREATE],
         },
       },
       {
