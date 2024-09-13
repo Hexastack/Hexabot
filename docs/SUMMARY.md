@@ -33,7 +33,7 @@
   * [Manage roles](user-guide/manage-user-and-roles/manage-roles.md)
 * [Manage Settings](user-guide/manage-settings/README.md)
   * [Email](user-guide/manage-settings/email.md)
-  * [Chatbot Fallback](user-guide/manage-settings/chatbot-fallback.md)
+  * [Chatbot Global Fallback](user-guide/manage-settings/chatbot-global-fallback.md)
   * [NLP Provider](user-guide/manage-settings/nlp-provider.md)
   * [Web Channel](user-guide/manage-settings/web-channel.md)
   * [Live chat widget](user-guide/manage-settings/live-chat-widget.md)
