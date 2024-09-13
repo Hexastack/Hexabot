@@ -25,7 +25,7 @@ export const HexabotLogo = () => {
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
         height="32"
-        width="auto"
+        width="118.34"
         viewBox="0 0 163.07948 44.092343"
       >
         <defs>
