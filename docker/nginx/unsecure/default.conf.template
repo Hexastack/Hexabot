@@ -1,26 +1,8 @@
 server {
     listen 80;
-    server_name demo.hexabot.io;
-
-    location / {
-        return 301 https://$host$request_uri;
-    }
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-}
-
-server {
-    listen 443 ssl;
-    server_name demo.hexabot.io;
+    server_name ${APP_DOMAIN};
     server_tokens off;
     client_max_body_size 20M;
-
-    ssl_certificate /etc/letsencrypt/live/demo.hexabot.io/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/demo.hexabot.io/privkey.pem;
-    include /etc/letsencrypt/options-ssl-nginx.conf;
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     location / {
         proxy_set_header X-Forwarded-Proto https;
@@ -47,6 +29,7 @@ server {
         proxy_pass_request_headers on;
     }
 
+
     location /widget/ {
         rewrite ^/widget/?(.*)$ /$1 break;
         proxy_pass http://widget:5173;
@@ -56,6 +39,7 @@ server {
         proxy_set_header Host $http_host;
         proxy_redirect off;
     }
+
 
     location ~* \.io {
         rewrite ^/api/?(.*)$ /$1 break;

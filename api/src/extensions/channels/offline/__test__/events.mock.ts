@@ -16,7 +16,7 @@ import {
 import { Offline } from '../types';
 
 const img_url =
-  'http://demo.hexabot.io/attachment/download/5c334078e2c41d11206bd152/myimage.png';
+  'http://demo.hexabot.ai/attachment/download/5c334078e2c41d11206bd152/myimage.png';
 
 // Offline events
 const offlineEventPayload: Offline.Event = {

@@ -10,11 +10,11 @@ if ! [ -x "$(command -v docker compose)" ]; then
     exit 1
 fi
 
-domains=(demo.hexabot.io)
+domains=(${APP_DOMAIN:-example.hexabot.ai})
 rsa_key_size=4096
 data_path="./nginx/certbot"
-email="contact@hexastack.com" # Adding a valid address is strongly recommended
-staging=0                                # Set to 1 if you're testing your setup to avoid hitting request limits
+email="${SSL_EMAIL:-hello@hexabot.ai}" # Adding a valid address is strongly recommended
+staging=0 # Set to 1 if you're testing your setup to avoid hitting request limits
 
 if [ -d "$data_path" ]; then
     read -p "Existing data found for $domains. Continue and replace existing certificate? (y/N) " decision

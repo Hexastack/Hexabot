@@ -4,11 +4,11 @@ services:
   nginx:
     container_name: nginx
     volumes:
-      - ./nginx/secure/:/etc/nginx:ro
+      - ./nginx/secure/:/etc/nginx/templates/
       - /etc/localtime:/etc/localtime:ro
       - ./nginx/certbot/conf:/etc/letsencrypt
       - ./nginx/certbot/www:/var/www/certbot
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+      - ./nginx/99-autoreload.sh:/docker-entrypoint.d/99-autoreload.sh  
 
   certbot:
     image: certbot/certbot
