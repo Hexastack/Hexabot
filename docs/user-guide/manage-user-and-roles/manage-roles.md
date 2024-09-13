@@ -17,15 +17,17 @@ Step 3 - **Assign Permission**
 
 Newly created roles will initially have no permissions assigned. Click the "Permissions" button to grant access to your new role or update the permissions for an existing role.
 
-* **Assign Permissions:** The role management interface will typically provide a list of available permissions. Select the specific permissions you want to grant to users with this role:
-  * **Message:** Access to build and edit conversation flows.
-  * **Subscriber:** Access to train and manage the chatbot's language understanding.
-  * **Content:** Access to manage chatbot content.
-  * **BotStats:** Access to view and analyze chatbot performance metrics.
-  * **User Management:** Access to manage users (e.g., add, edit, deactivate).
-  * **Role Management:** Access to manage roles (e.g., create, edit, delete).
-  * **Other Permissions:** The specific permissions available may vary depending on the version of Hexabot.
-* **Save Role:** After selecting the appropriate permissions, save the new role.
+*   **Assign Permissions:** The role management interface will typically provide a list of available permissions. Select the specific permissions you want to grant to users with this role (e.g., read, create, update, delete):
+
+    * **Message:** Access to build and edit conversation flows.
+    * **NlpSample, NlpSampleEntity, NlpEntity, NlpValue:** Access to train and manage the chatbot's language understanding.
+    * **Content:** Access to manage chatbot content.
+    * **BotStats:** Access to view and analyze chatbot performance metrics.
+    * **User :** Access to manage users&#x20;
+    * **Role :** Access to manage roles&#x20;
+    * ...&#x20;
+
+    **And other Permissions:** The specific permissions available may vary depending on the version of Hexabot.
 
 **4. Deleting Roles:**
 
