@@ -13,7 +13,6 @@ import { IBaseSchema, IFormat } from "./base.types";
 
 export enum ContentFieldType {
   TEXT = "text",
-  STRING = "string",
   URL = "url",
   TEXTAREA = "textarea",
   CHECKBOX = "checkbox",

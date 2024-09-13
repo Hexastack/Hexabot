@@ -65,7 +65,6 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
 
   switch (contentField.type) {
     case ContentFieldType.TEXT:
-    case ContentFieldType.STRING:
     case ContentFieldType.TEXTAREA:
     case ContentFieldType.URL:
       return (
