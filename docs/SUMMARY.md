@@ -7,11 +7,10 @@
 * [Overview](introduction/overview.md)
 * [Features](introduction/features.md)
 
-***
+## Quickstart
 
-* [Quick start](quickstart/README.md)
-  * [Installation](quickstart/installation.md)
-  * [Create your first flow](quickstart/create-your-first-flow.md)
+* [Installation](quickstart/installation.md)
+* [Create your first flow](quickstart/create-your-first-flow.md)
 
 ## USER GUIDE
 
