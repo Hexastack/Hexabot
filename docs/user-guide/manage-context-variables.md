@@ -20,7 +20,7 @@ Think of context variables as temporary storage containers that hold data specif
   * location
 * **Save Changes:** Click the "Submit" button to create your new context variable.
 
-**5. Managing Existing Context Variables:**
+**3. Managing Existing Context Variables:**
 
 * **View Existing Variables:** In the "Context Vars" section, you can view a list of the context variables you've created.
 * **Edit Variable label:** You can edit a variable's label. However, you cannot change it name once it's created.
