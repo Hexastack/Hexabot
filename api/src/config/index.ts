@@ -134,7 +134,7 @@ export const config: Config = {
   },
   chatbot: {
     lang: {
-      default: 'fr',
+      default: 'en',
       available: ['en', 'fr', 'ar', 'tn'],
     },
     messages: {
