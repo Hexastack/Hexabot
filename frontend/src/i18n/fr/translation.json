@@ -654,7 +654,7 @@
     "greeting_text": "Le texte de bienvenue de votre chatbot vous permet de spécifier le message d'accueil que les utilisateurs verront sur l'écran d'accueil de votre chatbot. L'écran de bienvenue s'affiche pour les personnes qui interagissent avec votre chatbot pour la première fois.",
     "global_fallback": "Le message de secours global vous permet d'envoyer des messages personnalisés lorsque le message de l'utilisateur ne déclenche aucun bloc de message.",
     "fallback_message": "Si aucun bloc de secours n'est spécifié, alors de ces messages sera envoyé.",
-    "endpoint": "URL vers laquelle les requêtes de TALN HTTP sont envoyées et qui dépend du fournisseur (par exemple. `https://api.wit.ai/` pour Wit.ai)",
+    "endpoint": "URL vers laquelle les requêtes de TALN HTTP sont envoyées et qui dépend du fournisseur.",
     "token": "Chaque requête vers l'API doit contenir un jeton d'authentification.",
     "threshold": "Seuil en dessus duquel le chatbot va utiliser sa prediction (min=0 & max=1)",
     "app_id": "Obligatoire seulement si vous comptez utiliser Facebook Analytics",
