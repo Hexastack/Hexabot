@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name $APP_DOMAIN;
+    server_name ${APP_DOMAIN};
 
     location / {
         return 301 https://$host$request_uri;
@@ -13,12 +13,12 @@ server {
 
 server {
     listen 443 ssl;
-    server_name $APP_DOMAIN;
+    server_name ${APP_DOMAIN};
     server_tokens off;
     client_max_body_size 20M;
 
-    ssl_certificate /etc/letsencrypt/live/$APP_DOMAIN/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$APP_DOMAIN/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
