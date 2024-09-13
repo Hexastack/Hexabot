@@ -186,10 +186,8 @@ const ListMessageForm = () => {
 
               return (
                 <AutoCompleteSelect<ContentField, "label", false>
-                  options={(contentType?.fields || []).filter(({ type }) =>
-                    [ContentFieldType.STRING, ContentFieldType.TEXT].includes(
-                      type,
-                    ),
+                  options={(contentType?.fields || []).filter(
+                    ({ type }) => ContentFieldType.TEXT === type,
                   )}
                   idKey="name"
                   labelKey="label"
@@ -216,10 +214,8 @@ const ListMessageForm = () => {
 
               return (
                 <AutoCompleteSelect<ContentField, "label", false>
-                  options={(contentType?.fields || []).filter(({ type }) =>
-                    [ContentFieldType.STRING, ContentFieldType.TEXT].includes(
-                      type,
-                    ),
+                  options={(contentType?.fields || []).filter(
+                    ({ type }) => ContentFieldType.TEXT === type,
                   )}
                   idKey="name"
                   labelKey="label"
