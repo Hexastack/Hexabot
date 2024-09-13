@@ -40,7 +40,7 @@ The Web Channel settings in Hexabot allow you to configure how your chatbot inte
 **6. Manage Persistent Menu and Input:**
 
 * **Display Persistent Menu:** Enable or disable the display of the chatbot's persistent menu on your website. The persistent menu is a set of buttons that are always visible to the user for quick navigation within the chatbot.
-* **Disable Input:** Enable this option if you want to prevent users from typing into the chat input area and encourag the user to use the persistent menu or the predefined replies.
+* **Disable Input:** Enable this option if you want to prevent users from typing into the chat input area and encourage the user to use the persistent menu or the predefined replies.
 
 **7. Configure Allowed Domains:**
 
