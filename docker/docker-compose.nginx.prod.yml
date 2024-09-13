@@ -4,7 +4,7 @@ services:
   nginx:
     container_name: nginx
     volumes:
-      - ./nginx/secure/:/etc/nginx:ro
+      - ./nginx/secure/:/etc/nginx/templates/
       - /etc/localtime:/etc/localtime:ro
       - ./nginx/certbot/conf:/etc/letsencrypt
       - ./nginx/certbot/www:/var/www/certbot

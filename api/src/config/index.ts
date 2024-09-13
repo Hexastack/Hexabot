@@ -121,7 +121,7 @@ export const config: Config = {
     email: {
       main: 'postmaster@sandbox9471202ff10448c7ac917618fe94d8e1.mailgun.org',
     },
-    appName: 'Hexabot.io',
+    appName: 'Hexabot.ai',
     apiUrl: 'http://localhost:4000',
     appUrl: 'http://localhost:8081',
     geocoder: {

@@ -4,5 +4,5 @@ services:
     nginx:
       container_name: nginx
       volumes:
-        - ./nginx/unsecure/:/etc/nginx:ro
+        - ./nginx/unsecure/:/etc/nginx/templates/
         - /etc/localtime:/etc/localtime:ro
