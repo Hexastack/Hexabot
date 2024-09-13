@@ -4,7 +4,7 @@ Regular blocks are the most common building blocks that a user might need when c
 
 {% tabs %}
 {% tab title="Simple Text" %}
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Chatbots receive and react to a significant volume of textual data. Text messages are the primary form of communication between a chatbot and its users. For this purpose, Hexabot provides the **Simple Text block**, prominently featured in the block palette, to facilitate the addition and configuration of straightforward textual conversational paths.
 
