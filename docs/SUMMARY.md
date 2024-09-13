@@ -42,6 +42,7 @@
 * [Chat Inbox](user-guide/chat-inbox.md)
 * [Manage Subscribers](user-guide/manage-subscribers.md)
 * [Manage Categories](user-guide/manage-categories.md)
+* [Analytics Dashboard](user-guide/analytics-dashboard.md)
 
 ## Developer Guide
 
