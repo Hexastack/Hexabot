@@ -27,6 +27,3 @@ export interface ITranslationStub extends IBaseSchema {
 
 export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
 
-export interface ITranslationFull
-  extends ITranslationStub,
-    IFormat<Format.FULL> {}

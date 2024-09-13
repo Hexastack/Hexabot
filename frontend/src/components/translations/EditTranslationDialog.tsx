@@ -8,7 +8,7 @@
  */
 
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { useEffect, FC } from "react";
+import { useEffect, FC, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -22,14 +22,14 @@ import { useSetting } from "@/hooks/useSetting";
 import { useToast } from "@/hooks/useToast";
 import { EntityType } from "@/services/types";
 import {
-  ITranslationFull,
   ITranslationAttributes,
   ITranslations,
+  ITranslation,
 } from "@/types/translation.types";
 
 import TranslationInput from "./TranslationInput";
 
-export type EditTranslationDialogProps = DialogControlProps<ITranslationFull>;
+export type EditTranslationDialogProps = DialogControlProps<ITranslation>;
 export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
   open,
   data,
@@ -39,6 +39,7 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const availableLanguages = useSetting("nlp_settings", "languages");
+  const defaultLanguage = useSetting("nlp_settings", "default_lang");
   const { mutateAsync: updateTranslation } = useUpdate(EntityType.TRANSLATION, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -48,16 +49,29 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
       toast.success(t("message.success_save"));
     },
   });
+  const defaultValues: ITranslation | undefined = useMemo(
+    () =>
+      data
+        ? {
+            ...data,
+            translations: {
+              ...data?.translations,
+              [defaultLanguage]: data?.str,
+            },
+          }
+        : undefined,
+    [defaultLanguage, data],
+  );
   const { reset, control, handleSubmit } = useForm<ITranslationAttributes>({
-    defaultValues: data,
+    defaultValues,
   });
   const onSubmitForm = async (params: ITranslationAttributes) => {
     if (data?.id) updateTranslation({ id: data.id, params });
   };
 
   useEffect(() => {
-    if (open) reset(data);
-  }, [open, reset, data]);
+    if (open) reset(defaultValues);
+  }, [open, reset, defaultValues]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>

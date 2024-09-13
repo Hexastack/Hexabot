@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/useToast";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
-import { ITranslation, ITranslationFull } from "@/types/translation.types";
+import { ITranslation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { EditTranslationDialog } from "./EditTranslationDialog";
@@ -39,7 +39,7 @@ export const Translations = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const availableLanguages = useSetting("nlp_settings", "languages");
-  const editDialogCtl = useDialog<ITranslationFull>(false);
+  const editDialogCtl = useDialog<ITranslation>(false);
   const deleteDialogCtl = useDialog<string>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
     $iLike: ["str"],
@@ -69,7 +69,7 @@ export const Translations = () => {
         toast.success(t("message.success_translation_refresh"));
       },
     });
-  const actionColumns = useActionColumns<ITranslationFull>(
+  const actionColumns = useActionColumns<ITranslation>(
     EntityType.TRANSLATION,
     [
       {
@@ -85,9 +85,8 @@ export const Translations = () => {
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<ITranslationFull>[] = [
+  const columns: GridColDef<ITranslation>[] = [
     { flex: 1, field: "str", headerName: t("label.str") },
-
     {
       maxWidth: 300,
       field: "translations",
