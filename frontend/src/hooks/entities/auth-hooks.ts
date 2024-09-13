@@ -10,12 +10,12 @@
 import { useEffect } from "react";
 import { useMutation, useQuery } from "react-query";
 
-import { Format, TMutationOptions } from "@/services/types";
+import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
-import { ISetting } from "@/types/setting.types";
 import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
 
+import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { useAuth } from "../useAuth";
 import { useLocalStorageState } from "../useLocalStorageState";
@@ -128,26 +128,31 @@ export const useConfirmAccount = (
   });
 };
 
-export const SETTINGS_STORAGE_KEY = "settings";
 export const useLoadSettings = () => {
-  const { apiClient } = useApiClient();
   const { isAuthenticated } = useAuth();
-  const { persist, value } = useLocalStorageState(SETTINGS_STORAGE_KEY);
-  const storedSettings = value
-    ? (JSON.parse(value || JSON.stringify({})) as { [key: string]: ISetting[] })
-    : undefined;
+  const { data: settings, ...rest } = useFind(
+    { entity: EntityType.SETTING },
+    {
+      hasCount: false,
+      initialSortState: [{ field: "weight", sort: "desc" }],
+    },
+    {
+      enabled: isAuthenticated,
+    },
+  );
 
-  return useQuery({
-    enabled: isAuthenticated,
-    queryKey: [SETTINGS_STORAGE_KEY, Format.BASIC],
-    async queryFn() {
-      return await apiClient.getSettings();
-    },
-    onSuccess(data) {
-      persist(JSON.stringify(data));
-    },
-    initialData: storedSettings || ({} as { [key: string]: ISetting[] }),
-  });
+  return {
+    ...rest,
+    data:
+      settings?.reduce((acc, curr) => {
+        const group = acc[curr.group] || [];
+
+        group.push(curr);
+        acc[curr.group] = group;
+
+        return acc;
+      }, {}) || {},
+  };
 };
 
 export const useUpdateProfile = (

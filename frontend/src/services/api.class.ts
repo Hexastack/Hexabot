@@ -16,7 +16,6 @@ import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
 import { INlpDatasetSampleAttributes } from "@/types/nlp-sample.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
-import { ISetting } from "@/types/setting.types";
 import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
@@ -34,7 +33,6 @@ export const ROUTES = {
   CSRF: "/csrftoken",
   BOTSTATS: "/botstats",
   REFRESH_TRANSLATIONS: "/translation/refresh",
-  LOAD_SETTINGS: "/setting/load",
   RESET: "/user/reset",
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
@@ -187,14 +185,6 @@ export class ApiClient {
       acknowledged: boolean;
       deletedCount: number;
     }>(ROUTES.REFRESH_TRANSLATIONS, { _csrf });
-
-    return data;
-  }
-
-  async getSettings() {
-    const { data } = await this.request.get<{
-      [key: string]: ISetting[];
-    }>(ROUTES.LOAD_SETTINGS);
 
     return data;
   }

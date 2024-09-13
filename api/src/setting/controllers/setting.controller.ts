@@ -59,16 +59,6 @@ export class SettingController {
   }
 
   /**
-   * Loads all settings available in the system.
-   *
-   * @returns A list of all settings.
-   */
-  @Get('load')
-  async load() {
-    return await this.settingService.load();
-  }
-
-  /**
    * Updates a setting by its ID. If the setting does not exist, throws a `NotFoundException`.
    *
    * @param id - The ID of the setting to update.
