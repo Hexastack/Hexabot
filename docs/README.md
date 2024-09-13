@@ -1,11 +1,6 @@
 ---
 icon: house-window
-cover: .gitbook/assets/WorkWithPassionBg.7161134c.png
-coverY: 0
 layout:
-  cover:
-    visible: true
-    size: full
   title:
     visible: true
   description:
