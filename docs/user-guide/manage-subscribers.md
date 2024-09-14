@@ -1,6 +1,6 @@
 # Manage Subscribers
 
-Hexabot's Subscriber Management features allow you to effectively track, organize, and interact with the users who engage with your chatbot. This guide will walk you through the process of managing your subscriber base, segmenting them using labels, and leveraging subscriber data for improved communication and targeted interactions.
+In Hexabot, we define a subscriber as then end-user who will ultimately interact with the chatbot. The Subscriber Management features allow you to effectively track, organize, and interact with the users who engage with your chatbot. This guide will walk you through the process of managing your subscriber base, segmenting them using labels, and leveraging subscriber data for improved communication and targeted interactions.
 
 **1. Access Subscriber Management:**
 
@@ -10,7 +10,7 @@ Hexabot's Subscriber Management features allow you to effectively track, organiz
 
 * **Subscriber List:** The subscriber list displays information about each user who has interacted with your chatbot. This includes:
   * **First Name and Last Name:** The name assigned to each user.
-  * **Channel:** The platform where the user interacted with your chatbot (e.g., "Facebook Messenger," "Website," "Live Chat Tester").
+  * **Channel:** The platform where the user interacted with your chatbot (e.g., "Facebook Messenger," "Website," "Live Chat Tester", ...).
   * **Gender:** The user's gender, if provided.
   * **Locale:** The user's language preference or location (e.g., "en-US" for English, United States).
   * **Labels:** Any labels that have been assigned to the subscriber.
@@ -19,9 +19,10 @@ Hexabot's Subscriber Management features allow you to effectively track, organiz
 
 **3. Managing Individual Subscribers:**
 
-* **Manage Subscriber Labels:** Click on the "MANAGE LABELS" button next to the subscriber to manage their labels. You'll be presented with a dialog where you can:
-  * **Select a Label:** Choose the label(s) you want to assign to the subscriber.
-  * **Submit:** Click on the "SUBMIT" button to confirm the label assignment.
+Click on the "MANAGE LABELS" button next to the subscriber to manage their labels. You'll be presented with a dialog where you can:
+
+* **Select a Label:** Choose the label(s) you want to assign to the subscriber.
+* **Submit:** Click on the "SUBMIT" button to confirm the label assignment.
 
 **4. Using Subscriber Labels:**
 
@@ -38,6 +39,8 @@ Hexabot's Subscriber Management features allow you to effectively track, organiz
 * **Conversation Flows:** Create different conversation flows for subscribers who belong to specific labels.
 * **Promotional Messages:** Send targeted promotional messages based on subscriber labels.
 * **Personalized Responses:** Use labels to provide more personalized responses to users based on their interests or behaviors.
+
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>Target subscribers with a given label</p></figcaption></figure>
 
 **Best Practices for Subscriber Management:**
 
