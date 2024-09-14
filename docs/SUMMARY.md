@@ -38,7 +38,7 @@
   * [Web Channel](user-guide/manage-settings/web-channel.md)
   * [Live chat widget](user-guide/manage-settings/live-chat-widget.md)
   * [Facebook Messenger](user-guide/manage-settings/facebook-messenger.md)
-* [Manage Context Variables](user-guide/manage-context-variables.md)
+* [Context Variables](user-guide/context-variables.md)
 * [Chat Inbox](user-guide/chat-inbox.md)
 * [Manage Subscribers](user-guide/manage-subscribers.md)
 * [Manage Categories](user-guide/manage-categories.md)

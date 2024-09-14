@@ -1,4 +1,4 @@
-# Manage Context Variables
+# Context Variables
 
 <figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -25,6 +25,18 @@ Think of context variables as temporary storage containers that hold data specif
 * **View Existing Variables:** In the "Context Vars" section, you can view a list of the context variables you've created.
 * **Edit Variable label:** You can edit a variable's label. However, you cannot change it name once it's created.
 * **Delete a Variable:** If a context variable is no longer needed, you can delete it from the list. Be careful because deleting a variable will remove all data stored within it.
+
+**3. Using Context Variables:**
+
+Once a context variable is defined, you can edit a given block's options and add that context variable to capture the user input message. In the following example, we will collect the phone number entered by the user.
+
+<figure><img src="../.gitbook/assets/image (18).png" alt=""><figcaption><p>Capture Context Variables</p></figcaption></figure>
+
+Once the block gets triggered, the value will be stored within the context variable and you would be able to access it through the context. For example, you can use it in a text message by injecting `{phone_number}` and it will be replace automatically by the value that has been captured:&#x20;
+
+<figure><img src="../.gitbook/assets/image (19).png" alt=""><figcaption><p>Using Context Variables</p></figcaption></figure>
+
+
 
 {% hint style="info" %}
 **Additional Notes**
