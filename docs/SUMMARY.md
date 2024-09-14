@@ -40,7 +40,7 @@
   * [Facebook Messenger](user-guide/manage-settings/facebook-messenger.md)
 * [Context Variables](user-guide/context-variables.md)
 * [Chat Inbox](user-guide/chat-inbox.md)
-* [Manage Subscribers](user-guide/manage-subscribers.md)
+* [Subscribers](user-guide/subscribers.md)
 * [Manage Categories](user-guide/manage-categories.md)
 * [Analytics Dashboard](user-guide/analytics-dashboard.md)
 
