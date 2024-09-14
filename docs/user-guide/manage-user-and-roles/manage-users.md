@@ -13,7 +13,7 @@ Hexabot's user management system allows you to control access to your chatbot pr
 * **Provide User Details:** Fill in the required fields, which typically include:
   * **Email Address:** The user's primary email address.
   * **Role :** Assign a role during user creation, choose the most appropriate role based on the user's responsibilities. By default, Hexabot present you with 3 key roles that you can choose from : manager, public and admin.
-* **Send Invitation :** Click on "SEND" to invite the new user to join. If your Hexabot is configured to send emails, after send the new user an invitation, they will receive an email with a link to register and activate their account. If you're unable to send the invitation, please contact your system administrator to verify the email settings.
+* **Send Invitation :** Click on "SEND" to invite the new user to join. If your Hexabot is configured properly to send emails, he will receive an email with a link to register and activate their account. If you're unable to send the invitation, please contact your system administrator to verify the email settings.
 
 ### **3. Editing Role:**
 
@@ -22,18 +22,18 @@ Hexabot's user management system allows you to control access to your chatbot pr
 
 ### 4. Managing User Account Status
 
-In Hexabot's User Management section, you can control the status of each user account. This allows you to activate or deactivate a user's access to the platform as needed. While you cannot permanently delete user accounts, you can effectively disable them to prevent access.
+In Hexabot's User Management section, you can control the status of each user account. This allows you to activate or deactivate a given user's access to the platform. While you cannot permanently delete user accounts, you can effectively disable them to prevent them from accessing the system.
 
-* **Enabled:** A user with an "Enabled" status has full access to Hexabot, based on their assigned role and permissions.
-* **Disabled:** A user with a "Disabled" status cannot access Hexabot. They will not be able to log in or perform any actions.
+* **Enabled:** A user with an "**Enabled**" status has full access to Hexabot, based on their assigned role and permissions.
+* **Disabled:** A user with a "**Disabled**" status cannot access Hexabot. They will not be able to log in or perform any actions.
 
 **Managing Account Status:**
 
 * **Locate the User:** Find the user whose account status you want to modify in the list of users within the User Management section.
-* **Change Status:** Look for an option to "Enable" or "Disable" the user's account.
-  * **Disabling an Account:** To prevent a user from accessing Hexabot, set their account status to "Disabled."
-  * **Reactivating an Account:** To restore access to a user, set their account status to "Enabled."
+* **Change Status:** Look for an option to "**Enable**" or "**Disable**" the user's account.
+  * **Disabling an Account:** To prevent a user from accessing Hexabot, set their account status to "**Disabled**."
+  * **Reactivating an Account:** To restore access to a user, set their account status to "**Enabled**."
 
 {% hint style="warning" %}
-**Important Note:** Disabling an account does not permanently delete the account data. The user profile and all associated information are still stored in the Hexabot system. If you need to remove a user's data completely, you'll need to contact your Hexabot administrator or support team for assistance.
+**Important Note:** Disabling an account does not permanently delete the account data. The user profile and all associated information are still stored in the Hexabot system. If you need to remove a user's data completely, you'll need to contact your Hexabot administrator or our support team for assistance.
 {% endhint %}
