@@ -1,6 +1,6 @@
 # Context Variables
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Context variables are powerful tools in Hexabot that allow you to store and manage information gathered during a conversation with a user. This information can then be used to personalize the chatbot's responses, make decisions within the conversation flow, or trigger specific actions.
 

@@ -4,7 +4,7 @@ Regular blocks are the most common building blocks that a user might need when c
 
 {% tabs %}
 {% tab title="Simple Text" %}
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Chatbots receive and react to a significant volume of textual data. Text messages are the primary form of communication between a chatbot and its users. For this purpose, Hexabot provides the **Simple Text block**, prominently featured in the block palette, to facilitate the addition and configuration of straightforward textual conversational paths.
 
@@ -24,7 +24,7 @@ For this reason, Hexabot offers a variety of interaction possibilities and provi
 {% endtab %}
 
 {% tab title="Quick Replies" %}
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Quick Replies block in Hexabot allows you to present users with a predefined set of responses in the form of clickable buttons, eliminating the need for them to manually type their answers. Quick Reply blocks can be configured with conditional triggers, ensuring they are displayed only when certain conditions within the conversation are met. This adds more dynamic control over how Quick Replies are used in your chatbot.
 
@@ -36,7 +36,7 @@ The Quick Replies block in Hexabot allows you to present users with a predefined
 * **Gathering Basic Information:** Use Quick Replies to collect simple user information like language preferences, contact methods, or preferences.
 * **Guiding the Conversation:** Subtly steer the direction of the dialog by suggesting actions or providing prompts as Quick Reply options.
 
-<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td></td><td>Using Quick Replies Block Guide</td><td></td><td><a href="../../../.gitbook/assets/image (2).png">image (2).png</a></td><td><a href="using-quick-replies-block.md">using-quick-replies-block.md</a></td></tr></tbody></table>
+<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td></td><td>Using Quick Replies Block Guide</td><td></td><td><a href="../../../.gitbook/assets/image (2) (1).png">image (2) (1).png</a></td><td><a href="using-quick-replies-block.md">using-quick-replies-block.md</a></td></tr></tbody></table>
 {% endtab %}
 
 {% tab title="Buttons" %}

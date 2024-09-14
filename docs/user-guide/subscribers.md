@@ -1,4 +1,4 @@
-# Manage Subscribers
+# Subscribers
 
 In Hexabot, we define a subscriber as then end-user who will ultimately interact with the chatbot. The Subscriber Management features allow you to effectively track, organize, and interact with the users who engage with your chatbot. This guide will walk you through the process of managing your subscriber base, segmenting them using labels, and leveraging subscriber data for improved communication and targeted interactions.
 
@@ -40,7 +40,7 @@ Click on the "MANAGE LABELS" button next to the subscriber to manage their label
 * **Promotional Messages:** Send targeted promotional messages based on subscriber labels.
 * **Personalized Responses:** Use labels to provide more personalized responses to users based on their interests or behaviors.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>Target subscribers with a given label</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption><p>Target subscribers with a given label</p></figcaption></figure>
 
 **Best Practices for Subscriber Management:**
 

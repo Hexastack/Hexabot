@@ -41,7 +41,7 @@
 * [Context Variables](user-guide/context-variables.md)
 * [Chat Inbox](user-guide/chat-inbox.md)
 * [Subscribers](user-guide/subscribers.md)
-* [Manage Categories](user-guide/manage-categories.md)
+* [Categories](user-guide/categories.md)
 * [Analytics Dashboard](user-guide/analytics-dashboard.md)
 
 ## Developer Guide
