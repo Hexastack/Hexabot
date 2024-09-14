@@ -2,26 +2,6 @@
 
 <figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Chatbots receive and react to a significant volume of textual data. Text messages are the primary form of communication between a chatbot and its users. For this purpose, Hexabot provides the **Simple Text block**, prominently featured in the block palette, to facilitate the addition and configuration of straightforward textual conversational paths.
-
-To configure what response the chatbot should deliver upon receiving a predefined message, simply select the block and click on the "**Edit**" button.&#x20;
-
-{% hint style="warning" %}
-&#x20;**Caution:** If there are multiple text blocks on the visual editor interface, make sure to select the specific text block you want to edit to avoid disrupting the conversational flows.&#x20;
-{% endhint %}
-
-Blocks can be moved around in the canvas; simply click on the block and hold the click to drag and drop them, ensuring better visibility of the conversational tree structure.
-
-To define how the chatbot should react to user messages, select the block you want to configure, access the edit form using the "**Edit**" button, switch to the "**Triggers**" tab and enter a typical message that a user might send to the chatbot. Then, switch to the "**Message**" tab, specify the standard response that the chatbot should provide each time it receives a similar request, and click "**Submit**".
-
-Text messages provide response clarity, allow for chatbot control, and maintain a fluid and active communication with users. However, relying solely on textual conversational paths is insufficient for transmitting non-textual data and can sometimes lead to rigid and less than optimal pathways for effectively guiding users.
-
-For this reason, Hexabot offers a variety of interaction possibilities and provides several other blocks to diversify conversational paths.
-
-***
-
-<figure><img src="../../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
-
 
 
 **1. Add the Simple Text Block:**
