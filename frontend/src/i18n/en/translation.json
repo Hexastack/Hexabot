@@ -657,7 +657,7 @@
     "greeting_text": "The greeting property of your bot's Messenger profile allows you to specify the greeting message people will see on the welcome screen of your bot. The welcome screen is displayed for people interacting with your bot for the first time.",
     "global_fallback": "Global fallback allows you to send custom messages when user entry does not match any of the block messages.",
     "fallback_message": "If no fallback block is selected, then one of these messages will be sent.",
-    "endpoint": "URL to which HTTP NLP requests are posted and that depends on the type of provider (eg. `https://api.wit.ai/` for Wit.ai endpoint)",
+    "endpoint": "URL to which HTTP NLP requests are posted and that depends on the type of provider.",
     "token": "Every API request must contain an Authorize HTTP header with a token.",
     "threshold": "Threshold above which the chatbot will use its prediction (min=0 & max=1)",
     "app_id": "Mandatory only if you intend to use Facebook Analytics",
