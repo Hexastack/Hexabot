@@ -1,6 +1,6 @@
 # Manage roles
 
-Roles in Hexabot define specific sets of permissions that determine what actions users can take within your chatbot project. By creating and assigning roles, you can control who has access to different parts of the platform and what they can do.
+Roles in Hexabot define specific sets of permissions that determine what actions users can perform. By creating and assigning roles, you can control who has access to different parts of the system and what they are able to perform.
 
 **1. Access Role Management:**
 
@@ -13,11 +13,11 @@ Roles in Hexabot define specific sets of permissions that determine what actions
 * **Click  "+ Add "** This will open a form where you can define the new role.
 * **Enter Role Name:** Provide a clear and descriptive name for the role, like "Developer," "Content Manager," "Project Manager," etc.
 
-Step 3 - **Assign Permission**
+Step 3 - **Grant Permissions**
 
-Newly created roles will initially have no permissions assigned. Click the "Permissions" button to grant access to your new role or update the permissions for an existing role.
+Newly created roles will initially have no granted permissions. Click the "Permissions" button to grant access to your new role or update the permissions for an existing role.
 
-*   **Assign Permissions:** The role management interface will typically provide a list of available permissions. Select the specific permissions you want to grant to users with this role (e.g., read, create, update, delete):
+*   **Grant Permissions:** The role management interface will typically provide a list of available permissions. Select the specific permissions you want to grant to users with this role (e.g., read, create, update, delete):
 
     * **Message:** Access to build and edit conversation flows.
     * **NlpSample, NlpSampleEntity, NlpEntity, NlpValue:** Access to train and manage the chatbot's language understanding.
