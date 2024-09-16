@@ -42,4 +42,4 @@ We ask that you allow us sufficient time to investigate and patch the vulnerabil
 
 Thank you for contributing to the security of Hexabot.
 
-If you have any questions about this policy, feel free to reach out to us in our [Discord Server](https://discord.gg/xnpWDYQMAq).
+If you have any questions about this policy, feel free to reach out to us in our [Discord Server](https://discord.gg/rNb9t2MFkG).
