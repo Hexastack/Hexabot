@@ -323,6 +323,7 @@
     "nlp_entity_value": "Valeur TALN",
     "value": "Valeur",
     "lookups": "Stratégies",
+    "lookup_type": "Type",
     "lookup_strategies": "Stratégie de recherche",
     "nlp_lookup_keywords": "Mot-clés/Texte",
     "nlp_lookup_trait": "Trait",
@@ -543,7 +544,7 @@
     "total": "Totale",
     "general": "Général",
     "other": "Autre",
-    "no_data":" Pas de données"
+    "no_data": " Pas de données"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

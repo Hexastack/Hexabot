@@ -324,7 +324,8 @@
     "value": "Value",
     "synonyms": "Synonyms",
     "lookups": "Lookups",
-    "lookup_strategies": "Type",
+    "lookup_type": "Type",
+    "lookup_strategies": "Lookup Strategy",
     "nlp_lookup_keywords": "Keywords/Free-Text",
     "nlp_lookup_trait": "Trait",
     "doc": "Documentation",
@@ -544,7 +545,7 @@
     "total": "Total",
     "general": "General",
     "other": "Other",
-    "no_data":" No data"
+    "no_data": " No data"
   },
   "placeholder": {
     "your_username": "Your username",
