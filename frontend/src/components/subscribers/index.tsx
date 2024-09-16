@@ -172,15 +172,23 @@ export const Subscribers = () => {
       <EditSubscriberDialog {...getDisplayDialogs(editDialogCtl)} />
       <PageHeader icon={FolderIcon} title={t("title.subscribers")}>
         <Grid
+          container
           justifyContent="flex-end"
           gap={1}
-          container
           alignItems="center"
-          flexShrink={0}
+          flexDirection="row"
           flexWrap="nowrap"
-          width="max-content"
+          width="50%"
         >
-          <FilterTextfield onChange={onSearch} fullWidth={true} />
+          <FilterTextfield
+            onChange={onSearch}
+            fullWidth={true}
+            sx={{
+              flexGrow: 1, // Allows the input to expand based on available space
+              flexShrink: 1, // Shrinks the input when space is limited (responsive)
+              flexBasis: "auto", // Ensures flexible behavior for the input size
+            }}
+          />
           <Input
             select
             label={t("label.labels")}
