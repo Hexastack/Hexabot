@@ -26,13 +26,13 @@ Theses are just some examples of the hidden costs that are not so apparent from 
 
 #### **Do you intend to add a new feature or change an existing one?**
 
-* Suggest your change in our [Discord Channel](https://discord.gg/xnpWDYQMAq) and start writing code.
+* Suggest your change in our [Discord Channel](https://discord.gg/rNb9t2MFkG) and start writing code.
 
 * Do not open an issue on GitHub until you have collected positive feedback about the change. GitHub issues are primarily intended for bug reports and fixes.
 
 #### **Do you have questions about the source code?**
 
-* Ask any question about how to use Hexabot in our [Discord Channel](https://discord.gg/xnpWDYQMAq).
+* Ask any question about how to use Hexabot in our [Discord Channel](https://discord.gg/rNb9t2MFkG).
 
 
 Hexabot's Community Edition is a volunteer effort. We encourage you to pitch in and join us!

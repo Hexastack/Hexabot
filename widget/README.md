@@ -80,7 +80,7 @@ You can customize the look and feel of the chat widget by modifying the widgetâ€
 ## Contributing 
 We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
 
-Feel free to join us on [Discord](https://discord.gg/xnpWDYQMAq)
+Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 ## License
 This software is licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:

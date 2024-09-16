@@ -1,4 +1,5 @@
 # Hexabot
+![App Screenshot](https://www.hexabot.ai/assets/images/screencast.gif)
 
 ## Description
 
@@ -92,7 +93,7 @@ Please refer to our contribution policy first : [How to contribute to Hexabot](.
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
 
 
-Feel free to join us on [Discord](https://discord.gg/xnpWDYQMAq)
+Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 ## License
 This software is licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
