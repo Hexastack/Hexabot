@@ -47,17 +47,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
     const updatedQuickReplies = [...quickReplies];
 
     updatedQuickReplies.splice(index, 1);
-    setQuickReplies(
-      updatedQuickReplies.length
-        ? updatedQuickReplies
-        : [
-            createValueWithId({
-              content_type: QuickReplyType.text,
-              title: "",
-              payload: "",
-            }),
-          ],
-    );
+    setQuickReplies(updatedQuickReplies.length ? updatedQuickReplies : []);
   };
   const updateInput = (index: number) => (p: StdQuickReply) => {
     quickReplies[index].value = p;
