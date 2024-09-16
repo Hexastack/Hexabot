@@ -324,6 +324,7 @@
     "value": "Value",
     "synonyms": "Synonyms",
     "lookups": "Lookups",
+    "type": "Type",
     "lookup_strategies": "Lookup Strategy",
     "nlp_lookup_keywords": "Keywords/Free-Text",
     "nlp_lookup_trait": "Trait",
@@ -346,7 +347,7 @@
     "precision": "Precision",
     "recall": "Recall",
     "f1score": "F1 Score",
-    "train": "Training",
+    "train": "Train",
     "test": "Test",
     "inbox": "Inbox",
     "none": "None",
@@ -544,7 +545,7 @@
     "total": "Total",
     "general": "General",
     "other": "Other",
-    "no_data":" No data"
+    "no_data": "No data"
   },
   "placeholder": {
     "your_username": "Your username",
