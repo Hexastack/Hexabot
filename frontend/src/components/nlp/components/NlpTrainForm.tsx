@@ -198,7 +198,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               {t("title.nlp_train")}
             </Typography>
             <FormControl>
-              <FormLabel>{t("label.lookup_type")}</FormLabel>
+              <FormLabel>{t("label.type")}</FormLabel>
               <RadioGroup
                 row
                 defaultValue={
