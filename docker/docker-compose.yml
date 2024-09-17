@@ -30,7 +30,6 @@ services:
         condition: service_healthy
       database-init:
         condition: service_completed_successfully
-
     healthcheck:
       test: "wget --spider http://localhost:3000"
       interval: 10s
@@ -40,12 +39,7 @@ services:
 
   hexabot-frontend:
     container_name: frontend
-    build:
-      context: ../
-      dockerfile: ./frontend/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN}
-        - NEXT_PUBLIC_SSO_ENABLED=${NEXT_PUBLIC_SSO_ENABLED}
+    image: hexabot-ui:latest
     env_file: .env
     ports:
       - ${APP_FRONTEND_PORT}:8080

@@ -4,6 +4,14 @@ import withTM from "next-transpile-modules";
 const apiUrl = process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:4000/";
 const url = new URL(apiUrl);
 const nextConfig = withTM(["hexabot-widget"])({
+  async rewrites() {
+    return [
+      {
+        source: "/config",
+        destination: "/api/config",
+      },
+    ];
+  },
   webpack(config, _options) {
     return config;
   },
