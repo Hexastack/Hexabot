@@ -285,7 +285,7 @@ export default function NlpSample() {
             ) ? (
               <Button
                 variant="contained"
-                href={`${publicRuntimeConfig.apiUrl}/nlpsample/export${
+                href={`${publicRuntimeConfig.apiUrl}nlpsample/export${
                   dataset ? `?type=${dataset}` : ""
                 }`}
                 startIcon={<DownloadIcon />}
