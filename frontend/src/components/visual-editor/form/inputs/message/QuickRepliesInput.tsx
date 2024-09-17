@@ -28,7 +28,7 @@ type QuickRepliesInput = {
 const QuickRepliesInput: FC<QuickRepliesInput> = ({
   value,
   onChange,
-  minInput = 1,
+  minInput = 0,
 }) => {
   const { t } = useTranslation();
   const [quickReplies, setQuickReplies] = useState<
@@ -48,16 +48,11 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
     const updatedQuickReplies = [...quickReplies];
 
     updatedQuickReplies.splice(index, 1);
+    // Set updated state only if it's greater than minInput
     setQuickReplies(
-      updatedQuickReplies.length
+      updatedQuickReplies.length > minInput
         ? updatedQuickReplies
-        : [
-            createValueWithId({
-              content_type: QuickReplyType.text,
-              title: "",
-              payload: "",
-            }),
-          ],
+        : updatedQuickReplies.length ? updatedQuickReplies : []
     );
   };
   const updateInput = (index: number) => (p: StdQuickReply) => {
@@ -67,16 +62,17 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
 
   useEffect(() => {
     if (
-      quickReplies.length === 1 &&
+      quickReplies.length === 0 ||
+      (quickReplies.length === 1 &&
       quickReplies[0]?.value?.title?.trim() === "" &&
-      quickReplies[0]?.value?.payload?.trim() === ""
+      quickReplies[0]?.value?.payload?.trim() === "")
     ) {
       onChange([]);
     } else {
       onChange(quickReplies.map(({ value }) => value));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quickReplies]);
+  }, [quickReplies,onChange]);
 
   return (
     <Box>
