@@ -51,6 +51,7 @@ import {
 import { INlpSampleEntity } from "@/types/nlp-sample_entity.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
+import { buildURL } from "@/utils/URL";
 
 import { NlpImportDialog } from "../NlpImportDialog";
 import { NlpSampleDialog } from "../NlpSampleDialog";
@@ -285,9 +286,10 @@ export default function NlpSample() {
             ) ? (
               <Button
                 variant="contained"
-                href={`${publicRuntimeConfig.apiUrl}nlpsample/export${
-                  dataset ? `?type=${dataset}` : ""
-                }`}
+                href={buildURL(
+                  publicRuntimeConfig.apiUrl,
+                  `nlpsample/export${dataset ? `?type=${dataset}` : ""}`,
+                )}
                 startIcon={<DownloadIcon />}
               >
                 {t("button.export")}
