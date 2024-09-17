@@ -29,11 +29,11 @@ export const getFromQuery = ({
 
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
-    new URL(baseUrl);
+ 
+    const url = new URL(relativePath, baseUrl);
+
+    return url.toString();
   } catch {
     throw new Error(`Invalid base URL: ${baseUrl}`);
   }
-  const url = new URL(relativePath, baseUrl);
-
-  return url.toString();
 };
