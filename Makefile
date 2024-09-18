@@ -9,7 +9,10 @@ define add_service
       COMPOSE_FILES += -f ./docker/docker-compose.$(1).prod.yml
     endif
   else
-    COMPOSE_FILES += -f ./docker/docker-compose.$(1).yml -f ./docker/docker-compose.$(1).dev.yml
+    COMPOSE_FILES += -f ./docker/docker-compose.$(1).yml
+	ifneq ($(wildcard ./docker/docker-compose.$(1).dev.yml),)
+      COMPOSE_FILES += -f ./docker/docker-compose.$(1).dev.yml
+    endif
   endif
 endef
 
@@ -21,6 +24,10 @@ endif
 
 ifneq ($(NLU),)
   $(eval $(call add_service,nlu))
+endif
+
+ifneq ($(SMTP4DEV),)
+  $(eval $(call add_service,smtp4dev))
 endif
 
 # Ensure .env file exists and matches .env.example

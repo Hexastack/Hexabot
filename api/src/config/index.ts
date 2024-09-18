@@ -13,7 +13,7 @@ import { Config } from './types';
 
 export const config: Config = {
   i18n: {
-    translationFilename: process.env.I18N_TRANSLATION_FILENAME || '',
+    translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
   apiPath: process.env.API_ORIGIN,
@@ -77,7 +77,7 @@ export const config: Config = {
       : [undefined], // ['http://example.com', 'https://example.com'],
   },
   session: {
-    secret: process.env.SESSION_SECRET || '4fac3596aeb0d048e7b6b38235c29248',
+    secret: process.env.SESSION_SECRET || 'changeme',
     name: process.env.SESSION_NAME || 'hex.sid',
     adapter: 'connect-mongo',
     url: 'mongodb://localhost:27017/hexabot',
@@ -90,23 +90,18 @@ export const config: Config = {
     },
   },
   emails: {
+    isEnabled: process.env.EMAIL_SMTP_ENABLED === 'true' || false,
     smtp: {
       port: parseInt(process.env.EMAIL_SMTP_PORT) || 25,
-      host: process.env.EMAIL_SMTP_HOST || 'smtp.mailgun.org',
+      host: process.env.EMAIL_SMTP_HOST || 'localhost',
+      ignoreTLS: false,
       secure: process.env.EMAIL_SMTP_SECURE === 'true' || false,
       auth: {
-        user:
-          process.env.EMAIL_SMTP_USER ||
-          'postmaster@sandbox9471202ff10448c7ac917618fe94d8e1.mailgun.org',
-        pass: process.env.EMAIL_SMTP_PASS || 'e58526b30ad640394b5c77a211a19c5b',
+        user: process.env.EMAIL_SMTP_USER || '',
+        pass: process.env.EMAIL_SMTP_PASS || '',
       },
     },
-  },
-  datastores: {
-    default: {
-      adapter: 'sails-mongo',
-      url: 'mongodb://localhost:27017/hexabot',
-    },
+    from: process.env.EMAIL_SMTP_FROM || 'noreply@example.com',
   },
   parameters: {
     uploadDir:
@@ -117,17 +112,9 @@ export const config: Config = {
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
       : 2000000,
-    transport: 'smtp',
-    email: {
-      main: 'postmaster@sandbox9471202ff10448c7ac917618fe94d8e1.mailgun.org',
-    },
     appName: 'Hexabot.ai',
     apiUrl: 'http://localhost:4000',
     appUrl: 'http://localhost:8081',
-    geocoder: {
-      provider: 'opencage',
-      apiKey: 'c2a490d593b14612aefa6ec2e6b77c47',
-    },
   },
   pagination: {
     limit: 10,
@@ -135,7 +122,7 @@ export const config: Config = {
   chatbot: {
     lang: {
       default: 'en',
-      available: ['en', 'fr', 'ar', 'tn'],
+      available: ['en', 'fr'],
     },
     messages: {
       track_delivery: false,

@@ -7,6 +7,7 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import SMTPConnection from 'nodemailer/lib/smtp-connection';
 import type { ServerOptions, Socket } from 'socket.io';
 
 type TJwtOptions = {
@@ -69,38 +70,18 @@ export type Config = {
     };
   };
   emails: {
-    smtp: {
-      port: number;
-      host: string;
-      secure: boolean;
-      auth: {
-        user: string;
-        pass: string;
-      };
-    };
-  };
-  datastores: {
-    default: {
-      adapter: string;
-      url: string;
-    };
+    isEnabled: boolean;
+    smtp: Partial<SMTPConnection.Options>;
+    from: string;
   };
   parameters: {
     uploadDir: string;
     avatarDir: string;
     storageMode: 'disk' | 'memory';
     maxUploadSize: number;
-    transport: string;
-    email: {
-      main: string;
-    };
     appName: string;
     apiUrl: string;
     appUrl: string;
-    geocoder: {
-      provider: string;
-      apiKey: string;
-    };
   };
   pagination: {
     limit: number;
