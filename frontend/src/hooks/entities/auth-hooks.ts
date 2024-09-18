@@ -8,17 +8,15 @@
  */
 
 import { useEffect } from "react";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
-import { IUserPermissions } from "@/types/auth/permission.types";
 import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
 
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { useAuth } from "../useAuth";
-import { useLocalStorageState } from "../useLocalStorageState";
 
 export const useLogin = (
   options?: Omit<
@@ -63,27 +61,25 @@ export const PERMISSIONS_STORAGE_KEY = "current-permissions";
 export const useUserPermissions = () => {
   const { apiClient } = useApiClient();
   const { user, isAuthenticated } = useAuth();
-  const { persist, value } = useLocalStorageState(PERMISSIONS_STORAGE_KEY);
-  const storedPermissions = value
-    ? (JSON.parse(value || JSON.stringify({})) as IUserPermissions)
-    : undefined;
+  const queryClient = useQueryClient();
   const query = useQuery({
     enabled: isAuthenticated,
     queryKey: [PERMISSIONS_STORAGE_KEY],
     async queryFn() {
       return await apiClient.getUserPermissions(user?.id as string);
     },
-    onSuccess(data) {
-      persist(JSON.stringify(data));
-    },
-    initialData: storedPermissions || {
+    initialData: {
       roles: [],
       permissions: [],
     },
   });
 
   useEffect(() => {
-    query.refetch();
+    if (isAuthenticated) {
+      query.refetch();
+    } else {
+      queryClient.removeQueries([PERMISSIONS_STORAGE_KEY]);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 

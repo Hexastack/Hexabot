@@ -122,7 +122,7 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
     },
     effects: [],
   },
-  message: { elements: [] } as unknown as StdOutgoingListMessage,
+  message: { elements: true } as unknown as StdOutgoingListMessage,
   starts_conversation: false,
 };
 

@@ -73,10 +73,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const { mutateAsync: logoutSession } = useLogout();
   const logout = async () => {
-    logoutRedirection();
     queryClient.removeQueries([CURRENT_USER_KEY]);
     updateLanguage(publicRuntimeConfig.lang.default);
     await logoutSession();
+    logoutRedirection();
     toast.success(t("message.logout_success"));
   };
   const authRedirection = async (isAuthenticated: boolean) => {

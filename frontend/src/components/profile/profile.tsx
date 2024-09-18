@@ -25,6 +25,7 @@ import { Adornment } from "@/app-components/inputs/Adornment";
 import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
+import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { IUser, IUserAttributes } from "@/types/user.types";
@@ -43,7 +44,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess: (data) => {
-      queryClient.setQueryData("current-user", data);
+      queryClient.setQueryData([CURRENT_USER_KEY], data);
       toast.success(t("message.account_update_success"));
     },
   });
