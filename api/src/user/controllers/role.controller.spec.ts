@@ -8,10 +8,11 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Session as ExpressSession } from 'express-session';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -42,7 +43,6 @@ describe('RoleController', () => {
   let roleService: RoleService;
   let permissionService: PermissionService;
   let userService: UserService;
-  let notFoundId: string;
   let roleAdmin: Role;
   let rolePublic: Role;
 
@@ -190,16 +190,47 @@ describe('RoleController', () => {
   });
 
   describe('deleteOne', () => {
-    it('should delete role by id', async () => {
-      const result = await roleController.deleteOne(roleAdmin.id);
-      notFoundId = roleAdmin.id;
-      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+    it("should throw ForbiddenException if the role is part of the user's roles", async () => {
+      const session = { passport: { user: { id: 'user1' } } } as ExpressSession;
+      const roleId = 'role1';
+
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue({
+        roles: [{ id: roleId }],
+      });
+
+      await expect(roleController.deleteOne(roleId, session)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
-    it('should throw a NotFoundException when attempting to delete a role by id', async () => {
-      await expect(roleController.deleteOne(notFoundId)).rejects.toThrow(
+    it('should throw NotFoundException if the role is not found', async () => {
+      const session = { passport: { user: { id: 'user1' } } } as ExpressSession;
+      const roleId = 'role2';
+
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue({
+        roles: [{ id: 'role1' }],
+      });
+
+      roleService.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
+
+      await expect(roleController.deleteOne(roleId, session)).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should return the result if the role is successfully deleted', async () => {
+      const session = { passport: { user: { id: 'user1' } } } as ExpressSession;
+      const roleId = 'role2';
+
+      userService.findOneAndPopulate = jest.fn().mockResolvedValue({
+        roles: [{ id: 'role1' }],
+      });
+
+      const deleteResult = { deletedCount: 1 };
+      roleService.deleteOne = jest.fn().mockResolvedValue(deleteResult);
+
+      const result = await roleController.deleteOne(roleId, session);
+      expect(result).toEqual(deleteResult);
     });
   });
 
@@ -225,6 +256,13 @@ describe('RoleController', () => {
     });
 
     it('should throw a NotFoundException when attempting to modify a role', async () => {
+      const notFoundId = 'nonexistentRoleId';
+      const roleUpdateDto = { name: 'newRoleName' };
+
+      roleService.updateOne = jest
+        .fn()
+        .mockRejectedValue(new NotFoundException());
+
       await expect(
         roleController.updateOne(notFoundId, roleUpdateDto),
       ).rejects.toThrow(NotFoundException);

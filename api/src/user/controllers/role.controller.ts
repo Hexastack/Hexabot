@@ -19,8 +19,11 @@ import {
   Patch,
   Query,
   UseInterceptors,
+  Session,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Session as ExpressSession } from 'express-session';
 import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -34,6 +37,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { Role, RoleStub } from '../schemas/role.schema';
 import { RoleService } from '../services/role.service';
+import { UserService } from '../services/user.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('role')
@@ -41,6 +45,7 @@ export class RoleController extends BaseController<Role, RoleStub> {
   constructor(
     private readonly roleService: RoleService,
     private readonly logger: LoggerService,
+    private readonly userService: UserService,
   ) {
     super(roleService);
   }
@@ -142,12 +147,24 @@ export class RoleController extends BaseController<Role, RoleStub> {
   @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
-    const result = await this.roleService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
+  async deleteOne(@Param('id') id: string, @Session() session: ExpressSession) {
+    const roles = (
+      await this.userService.findOneAndPopulate(session.passport?.user?.id, [
+        'roles',
+      ])
+    ).roles.map((role) => role.id);
+    if (roles.includes(id)) {
+      throw new ForbiddenException("Your account's role can't be deleted");
+    } else {
+      try {
+        const result = await this.roleService.deleteOne(id);
+        if (result.deletedCount === 0) {
+          throw new NotFoundException(`Role with ID ${id} not found`);
+        }
+        return result;
+      } catch (error) {
+        throw new NotFoundException(`Role with ID ${id} not found`);
+      }
     }
-    return result;
   }
 }
