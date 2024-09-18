@@ -15,7 +15,7 @@ For local development with `smtp4dev`, configure the following environment varia
 
 ```makefile
 APP_SMTP_4_DEV_PORT=9002
-EMAIL_SMTP_ENABLED=false
+EMAIL_SMTP_ENABLED=true
 EMAIL_SMTP_HOST=smtp4dev
 EMAIL_SMTP_PORT=25
 EMAIL_SMTP_SECURE=false
@@ -26,7 +26,7 @@ EMAIL_SMTP_FROM=noreply@example.com
 
 ## **Production Environment**
 
-In production, use a third-party SMTP service by configuring the environment variables before running `make start`:
+In production, use a third-party SMTP service by configuring the environment variables before running `make start`, here is an example:
 
 ```makefile
 EMAIL_SMTP_ENABLED=true
