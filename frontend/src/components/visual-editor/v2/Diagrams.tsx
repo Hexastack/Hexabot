@@ -48,7 +48,6 @@ import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
-
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
@@ -141,6 +140,7 @@ const Diagrams = () => {
 
       if (id) {
         setSelectedCategoryId?.(id);
+        setSelectedBlockId(undefined); // Reset selected block when switching categories, resetting edit & remove buttons
       }
     }
   };
