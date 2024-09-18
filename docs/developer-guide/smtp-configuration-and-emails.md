@@ -1,5 +1,9 @@
 # SMTP Configuration and Emails
 
+{% hint style="info" %}
+Make sure you have a **.env** file created under the \`docker/\` folder. You can either copy .env.example or run \`make init\` to create that file. The **.env** file contains environment variables that we use for configuring the Hexabot instance.
+{% endhint %}
+
 ## **Development Environment**
 
 You have two options for handling email functionality during development:
