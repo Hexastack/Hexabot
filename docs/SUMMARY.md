@@ -54,6 +54,7 @@
 * [Plugins](developer-guide/integrations/README.md)
   * [Build Your First plugin](developer-guide/integrations/build-your-first-plugin.md)
   * [RAG Plugin](developer-guide/integrations/openapi.md)
+* [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
 
 ## Key Concepts
 
