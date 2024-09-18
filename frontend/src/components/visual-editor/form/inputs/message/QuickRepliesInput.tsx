@@ -28,7 +28,7 @@ type QuickRepliesInput = {
 const QuickRepliesInput: FC<QuickRepliesInput> = ({
   value,
   onChange,
-  minInput = 0,
+  minInput = 1,
 }) => {
   const { t } = useTranslation();
   const [quickReplies, setQuickReplies] = useState<
@@ -50,7 +50,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
     updatedQuickReplies.splice(index, 1);
     // Set updated state only if it's greater than minInput
     setQuickReplies(
-      updatedQuickReplies.length > minInput
+      updatedQuickReplies.length >= minInput
         ? updatedQuickReplies
         : updatedQuickReplies.length ? updatedQuickReplies : []
     );
