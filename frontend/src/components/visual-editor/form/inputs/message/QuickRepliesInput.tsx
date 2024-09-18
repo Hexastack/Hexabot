@@ -50,9 +50,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
     updatedQuickReplies.splice(index, 1);
     // Set updated state only if it's greater than minInput
     setQuickReplies(
-      updatedQuickReplies.length >= minInput
-        ? updatedQuickReplies
-        : updatedQuickReplies.length ? updatedQuickReplies : []
+      updatedQuickReplies
     );
   };
   const updateInput = (index: number) => (p: StdQuickReply) => {
@@ -61,18 +59,10 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   };
 
   useEffect(() => {
-    if (
-      quickReplies.length === 0 ||
-      (quickReplies.length === 1 &&
-      quickReplies[0]?.value?.title?.trim() === "" &&
-      quickReplies[0]?.value?.payload?.trim() === "")
-    ) {
-      onChange([]);
-    } else {
+   
       onChange(quickReplies.map(({ value }) => value));
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quickReplies,onChange]);
+  }, [quickReplies]);
 
   return (
     <Box>
