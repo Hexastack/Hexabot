@@ -38,7 +38,7 @@ BERT_MODEL_BY_LANGUAGE = {
 @tfbp.default_export
 class SlotFiller(tfbp.Model):
     default_hparams = {
-        "language": None,
+        "language": "",
         "num_epochs": 2,
         "dropout_prob": 0.1,
         "slot_num_labels": 40

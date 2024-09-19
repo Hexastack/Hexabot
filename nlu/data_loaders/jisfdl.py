@@ -102,10 +102,10 @@ class JISFDL(tfbp.DataLoader):
         lang = self.hparams.language
         all_examples = data["common_examples"]
 
-        if not lang:
+        if not bool(lang):
             examples = all_examples
         else:
-            examples = filter(lambda exp: any(not lang or (e['entity'] == 'language' and e['value'] == lang) for e in exp['entities']), all_examples)
+            examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
 
         # Parse raw data
         for exp in examples:
