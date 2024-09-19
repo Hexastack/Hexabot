@@ -4,8 +4,8 @@ import json
 import numpy as np
 from transformers import PreTrainedTokenizerFast, PreTrainedTokenizer
 
+
 import boilerplate as tfbp
-from utils.jisf_data_mapper import JisfDataMapper
 from utils.json_helper import JsonHelper
 
 
@@ -101,8 +101,11 @@ class JISFDL(tfbp.DataLoader):
         # Filter examples by language
         lang = self.hparams.language
         all_examples = data["common_examples"]
-        examples = filter(lambda exp: any(
-            e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
+
+        if not lang:
+            examples = all_examples
+        else:
+            examples = filter(lambda exp: any(not lang or (e['entity'] == 'language' and e['value'] == lang) for e in exp['entities']), all_examples)
 
         # Parse raw data
         for exp in examples:
@@ -145,7 +148,6 @@ class JISFDL(tfbp.DataLoader):
         # the classifier.
         texts = [d.text for d in dataset]
         encoded_texts = self.encode_texts(texts, tokenizer)
-
         # Map intents, load from the model (evaluate), recompute from dataset otherwise (train)
         intents = [d.intent for d in dataset]
         if not model_params:
@@ -161,19 +163,35 @@ class JISFDL(tfbp.DataLoader):
             # To handle those we need to add <PAD> to slots_names. It can be some other symbol as well.
             slot_names.insert(0, "<PAD>")
         else:
-            intent_names = model_params.intent_names
-            slot_names = model_params.slot_names
+            if "intent_names" in model_params:
+                intent_names = model_params["intent_names"]
+            else:
+                intent_names = None
+            
+            if "slot_names" in model_params:
+                slot_names = model_params["slot_names"]
+            else:
+                slot_names = None
 
-        intent_map = dict()  # Dict : intent -> index
-        for idx, ui in enumerate(intent_names):
-            intent_map[ui] = idx
+        if intent_names:
+            intent_map = dict()  # Dict : intent -> index
+            for idx, ui in enumerate(intent_names):
+                intent_map[ui] = idx
+        else:
+            intent_map = None
 
         # Encode intents
-        encoded_intents = self.encode_intents(intents, intent_map)
+        if intent_map:
+            encoded_intents = self.encode_intents(intents, intent_map)
+        else:
+            encoded_intents = None
 
-        slot_map: Dict[str, int] = dict()  # slot -> index
-        for idx, us in enumerate(slot_names):
-            slot_map[us] = idx
+        if slot_names:
+            slot_map: Dict[str, int] = dict()  # slot -> index
+            for idx, us in enumerate(slot_names):
+                slot_map[us] = idx
+        else:
+            slot_map = None
 
         # Encode slots
         # Text : Add a tune to my elrow Guest List
@@ -183,8 +201,12 @@ class JISFDL(tfbp.DataLoader):
         max_len = len(encoded_texts["input_ids"][0])  # type: ignore
         all_slots = [td.slots for td in dataset]
         all_texts = [td.text for td in dataset]
-        encoded_slots = self.encode_slots(tokenizer,
+        
+        if slot_map:
+            encoded_slots = self.encode_slots(tokenizer,
                                           all_slots, all_texts, slot_map, max_len)
+        else:
+            encoded_slots = None
 
         return encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names
 

@@ -29,7 +29,7 @@ class TFLCDL(tfbp.DataLoader):
 
         self.json_helper = JsonHelper("tflc")
         self._save_dir = save_dir
-        print(hparams)
+
         # We will opt for a TF-IDF representation of the data as the frequency of word
         # roots should give us a good idea about which language we're dealing with.
         if method == "fit":
