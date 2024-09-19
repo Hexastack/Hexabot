@@ -273,7 +273,13 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
-  }, [JSON.stringify(blocks)]);
+  }, [
+    JSON.stringify(
+      blocks.map((b) => {
+        return { ...b, position: undefined, updatedAt: undefined };
+      }),
+    ),
+  ]);
 
   const handleDeleteButton = () => {
     const selectedEntities = engine?.getModel().getSelectedEntities();
