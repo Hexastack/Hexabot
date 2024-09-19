@@ -111,10 +111,4 @@ export type Settings = {
     fallback_message: string[];
     fallback_block: string;
   };
-  email_settings: {
-    mailer: string;
-    auth_user: string;
-    auth_pass: string;
-    from: string;
-  };
 } & Record<string, any>;

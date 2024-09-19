@@ -58,9 +58,11 @@ export class ExtendedI18nService<
   initDynamicTranslations(translations: Translation[]) {
     this.dynamicTranslations = translations.reduce((acc, curr) => {
       const { str, translations } = curr;
-      Object.entries(translations).forEach(([lang, t]) => {
-        acc[lang][str] = t;
-      });
+      Object.entries(translations)
+        .filter(([lang]) => lang in acc)
+        .forEach(([lang, t]) => {
+          acc[lang][str] = t;
+        });
 
       return acc;
     }, this.dynamicTranslations);

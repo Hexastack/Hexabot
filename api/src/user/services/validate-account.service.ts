@@ -11,6 +11,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -33,7 +34,7 @@ export class ValidateAccountService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     private readonly userService: UserService,
-    private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService: MailerService | undefined,
     private readonly i18n: ExtendedI18nService,
   ) {}
 
@@ -71,16 +72,19 @@ export class ValidateAccountService {
   ) {
     const confirmationToken = await this.sign({ email: dto.email });
 
-    await this.mailerService.sendMail({
-      to: dto.email,
-      template: 'account_confirmation.mjml',
-      context: {
-        token: confirmationToken,
-        first_name: dto.first_name,
-        t: (key: string) => this.i18n.t(key),
-      },
-      subject: 'Account confirmation Email',
-    });
+    if (this.mailerService) {
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'account_confirmation.mjml',
+        context: {
+          token: confirmationToken,
+          first_name: dto.first_name,
+          t: (key: string) =>
+            this.i18n.t(key, { lang: config.chatbot.lang.default }),
+        },
+        subject: this.i18n.t('account_confirmation_subject'),
+      });
+    }
   }
 
   /**
