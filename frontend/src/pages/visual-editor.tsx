@@ -10,17 +10,16 @@
 import ChatIcon from "@mui/icons-material/Chat";
 import { Avatar, Box, Typography } from "@mui/material";
 import UiChatWidget from "hexabot-widget/src/UiChatWidget";
-import getConfig from "next/config";
 import { ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { VisualEditor } from "@/components/visual-editor";
+import { useConfig } from "@/hooks/useConfig";
 import i18n from "@/i18n/config";
 import { Layout } from "@/layout";
 import { EntityType } from "@/services/types";
 
-const { publicRuntimeConfig } = getConfig();
 const CustomWidgetHeader = () => {
   const { t } = useTranslation();
 
@@ -34,12 +33,14 @@ const CustomWidgetHeader = () => {
   );
 };
 const VisualEditorPage = () => {
+  const { apiUrl } = useConfig();
+
   return (
     <>
       <VisualEditor />
       <UiChatWidget
         config={{
-          apiUrl: publicRuntimeConfig.apiUrl,
+          apiUrl,
           channel: "live-chat-tester",
           token: "test",
           language: i18n.language,
@@ -48,7 +49,7 @@ const VisualEditorPage = () => {
         CustomAvatar={() => (
           <Avatar
             sx={{ width: "32px", height: "32px", fontSize: ".75rem" }}
-            src={getAvatarSrc(EntityType.USER, "bot")}
+            src={getAvatarSrc(apiUrl, EntityType.USER, "bot")}
           />
         )}
       />

@@ -31,7 +31,6 @@ import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccess
 import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
-import getConfig from "next/config";
 import { useRouter } from "next/router";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,12 +38,12 @@ import { useTranslation } from "react-i18next";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { Sidebar } from "@/app-components/menus/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfig } from "@/hooks/useConfig";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { getLayout } from "@/utils/laylout";
 
-const { publicRuntimeConfig } = getConfig();
 const drawerWidth = 280;
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -107,7 +106,7 @@ export type MenuItem = {
   submenuItems?: MenuItem[];
 };
 
-const MENU_ITEMS: MenuItem[] = [
+const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
     text: "menu.dashboard",
     href: "/",
@@ -236,7 +235,7 @@ const MENU_ITEMS: MenuItem[] = [
           [EntityType.USER]: [PermissionAction.READ],
         },
       },
-      ...(!publicRuntimeConfig.ssoEnabled
+      ...(!ssoEnabled
         ? [
             {
               text: "menu.roles",
@@ -271,13 +270,15 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
   onToggleIn,
   onToggleOut,
 }) => {
+  const { ssoEnabled } = useConfig();
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const hasPermission = useHasPermission();
+  const menuItems = getMenuItems(ssoEnabled);
   // Filter menu item to which user is allowed access
   const availableMenuItems = useMemo(() => {
-    return MENU_ITEMS.filter(({ requires: requiredPermissions }) => {
+    return menuItems.filter(({ requires: requiredPermissions }) => {
       return (
         !requiredPermissions ||
         Object.entries(requiredPermissions).every((permission) => {

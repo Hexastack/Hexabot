@@ -7,12 +7,9 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import getConfig from "next/config";
 import { io, Socket, ManagerOptions, SocketOptions } from "socket.io-client";
 
 import { IOIncomingMessage, IOOutgoingMessage } from "./types/io-message";
-
-const { publicRuntimeConfig } = getConfig();
 
 type SocketIoClientConfig = Partial<ManagerOptions & SocketOptions>;
 
@@ -52,13 +49,13 @@ export class SocketIoClient {
 
   private initialized: boolean = false;
 
-  constructor(socketConfig?: SocketIoClientConfig) {
+  constructor(apiUrl: string, socketConfig?: SocketIoClientConfig) {
     this.config = {
       ...SocketIoClient.defaultConfig,
       ...socketConfig,
       autoConnect: false,
     };
-    const url = new URL(publicRuntimeConfig.apiUrl);
+    const url = new URL(apiUrl);
 
     this.socket = io(url.origin, this.config);
   }
@@ -160,5 +157,3 @@ export class SocketIoClient {
     });
   }
 }
-
-export const socketIoClient = new SocketIoClient();

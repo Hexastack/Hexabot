@@ -18,12 +18,14 @@ import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
 
 export const ChatActions = () => {
+  const { apiUrl } = useConfig();
   const { t } = useTranslation();
   const { subscriber: activeChat } = useChat();
   const [takeoverBy, setTakeoverBy] = useState<string>(
@@ -57,7 +59,7 @@ export const ChatActions = () => {
                     <Avatar
                       size="sm"
                       name={user.first_name}
-                      src={getAvatarSrc(EntityType.USER, user.id)}
+                      src={getAvatarSrc(apiUrl, EntityType.USER, user.id)}
                     />
                   </Grid>
                   <Grid>

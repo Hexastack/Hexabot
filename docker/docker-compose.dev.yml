@@ -16,6 +16,11 @@ services:
       - ../api/migrations:/app/migrations
       #- ../api/node_modules:/app/node_modules
     command: ["npm", "run", "start:debug"]
+  
+  hexabot-frontend:
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
 
   mongo-express:
     container_name: mongoUi
