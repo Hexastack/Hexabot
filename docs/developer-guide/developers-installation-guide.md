@@ -1,4 +1,4 @@
-# Install Hexabot
+# Developers Installation Guide
 
 ## Prerequisites
 
@@ -24,19 +24,13 @@ $ make init
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
-3. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
-
-```
-$ make start
-```
-
-or for development mode:
+3. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use either of the following commands:
 
 ```
 $ make dev
 ```
 
-**Note:** The first time you run the app, Docker will take some time to download all the required images.
+**Note:** The first time you run the app, Docker will take some time to build all the required Docker images cache the layers.
 
 ### Usage
 
@@ -52,8 +46,8 @@ Live Chat Widget is accessible via [http://localhost:5173](http://localhost:5173
 ### Useful Commands
 
 * `make init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-* `make dev` : Starts all configured Docker services in development mode. It first checks the .env file for completeness against .env.example.
-* `make start` : Similar to dev, but explicitly builds the Docker images before starting the services. This target also checks the .env file for required variables.
+* `make dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
+* `make start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
 * `make stop` : Stops all running Docker services defined in the compose files.
 * `make destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
 * `make check-env` : Checks if the ./docker/.env file exists and contains all the necessary environment variables as defined in ./docker/.env.example. If the file does not exist, it is created from the example. It also lists missing variables if any.
