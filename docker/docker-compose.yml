@@ -3,8 +3,7 @@ version: "3.9"
 services:
   database-init:
     container_name: database-init
-    build:
-      context: ../api
+    image: hexabot-api:latest
     command: sh -c "npm run cache:init && npm run migrate prune && npm run migrate up"
     env_file: .env
     networks:
@@ -15,8 +14,7 @@ services:
 
   api:
     container_name: api
-    build:
-      context: ../api
+    image: hexabot-api:latest
     env_file: .env
     ports:
       - ${API_PORT}:3000
@@ -69,12 +67,7 @@ services:
 
   widget:
     container_name: widget
-    build:
-      context: ../widget
-      args:
-        REACT_APP_WIDGET_API_URL: ${REACT_APP_WIDGET_API_URL}
-        REACT_APP_WIDGET_CHANNEL: ${REACT_APP_WIDGET_CHANNEL}
-        REACT_APP_WIDGET_TOKEN: ${REACT_APP_WIDGET_TOKEN}
+    image: hexabot-widget:latest
     networks:
       - app-network
     depends_on:

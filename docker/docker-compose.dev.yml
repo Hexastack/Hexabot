@@ -2,12 +2,16 @@ version: "3.8"
 
 services:
   database-init:
+    build:
+      context: ../api
     volumes:
       - ../api/src:/app/src
       - ../api/migrations:/app/migrations
       # - ../api/node_modules:/app/node_modules
 
   api:
+    build:
+      context: ../api
     ports:
       - ${API_PORT}:3000
       - 9229:9229 # vscode debug port
@@ -35,8 +39,15 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
       ME_CONFIG_MONGODB_URL: ${MONGO_URI}
 
+  hexabot-frontend:
+    container_name: frontend
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
+
   widget:
     build:
+      context: ../widget
       target: development
     volumes:
       - ../widget/src:/app/src
