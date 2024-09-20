@@ -3,7 +3,7 @@ version: "3.9"
 services:
   database-init:
     container_name: database-init
-    image: hexabot-api:latest
+    image: hexastack/hexabot-api:latest
     command: sh -c "npm run cache:init && npm run migrate prune && npm run migrate up"
     env_file: .env
     networks:
@@ -14,7 +14,7 @@ services:
 
   api:
     container_name: api
-    image: hexabot-api:latest
+    image: hexastack/hexabot-api:latest
     env_file: .env
     ports:
       - ${API_PORT}:3000
@@ -37,7 +37,7 @@ services:
 
   hexabot-frontend:
     container_name: frontend
-    image: hexabot-ui:latest
+    image: hexastack/hexabot-ui:latest
     env_file: .env
     ports:
       - ${APP_FRONTEND_PORT}:8080
@@ -67,7 +67,7 @@ services:
 
   widget:
     container_name: widget
-    image: hexabot-widget:latest
+    image: hexastack/hexabot-widget:latest
     networks:
       - app-network
     depends_on:
