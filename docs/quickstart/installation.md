@@ -96,8 +96,8 @@ Live Chat Widget demo is accessible via [http://localhost:5173](http://localhost
 ### Useful Commands
 
 * `make init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-* `make dev` : Starts all configured Docker services in development mode. It first checks the .env file for completeness against .env.example.
-* `make start` : Similar to dev, but explicitly builds the Docker images before starting the services. This target also checks the .env file for required variables.
+* `make dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
+* `make start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
 * `make stop` : Stops all running Docker services defined in the compose files.
 * `make destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
 * `make check-env` : Checks if the ./docker/.env file exists and contains all the necessary environment variables as defined in ./docker/.env.example. If the file does not exist, it is created from the example. It also lists missing variables if any.
