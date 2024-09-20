@@ -1,5 +1,4 @@
-# Default path setup
-COMPOSE_FILES := -f ./docker/docker-compose.yml -f ./docker/docker-compose.dev.yml
+COMPOSE_FILES := -f ./docker/docker-compose.yml
 
 # Function to add service files
 define add_service
@@ -8,7 +7,7 @@ define add_service
     ifneq ($(wildcard ./docker/docker-compose.$(1).prod.yml),)
       COMPOSE_FILES += -f ./docker/docker-compose.$(1).prod.yml
     endif
-  else
+  else ifeq ($(DEV_MODE), true)
     COMPOSE_FILES += -f ./docker/docker-compose.$(1).yml
 	ifneq ($(wildcard ./docker/docker-compose.$(1).dev.yml),)
       COMPOSE_FILES += -f ./docker/docker-compose.$(1).dev.yml
@@ -17,18 +16,20 @@ define add_service
 endef
 
 
-# Check if services are specified and add corresponding compose files
-ifneq ($(NGINX),)
-  $(eval $(call add_service,nginx))
-endif
-
-ifneq ($(NLU),)
-  $(eval $(call add_service,nlu))
-endif
-
-ifneq ($(SMTP4DEV),)
-  $(eval $(call add_service,smtp4dev))
-endif
+# Function to set up COMPOSE_FILES
+define compose_files
+	ifeq ($(1), true)
+		ifneq ($(wildcard ./docker/docker-compose.dev.yml),)
+			COMPOSE_FILES += -f ./docker/docker-compose.dev.yml
+		endif
+	endif
+	ifneq ($(NGINX),)
+		$(eval $(call add_service,nginx))
+	endif
+	ifneq ($(NLU),)
+		$(eval $(call add_service,nlu))
+	endif
+endef
 
 # Ensure .env file exists and matches .env.example
 check-env:
@@ -43,16 +44,21 @@ init:
 	cp ./docker/.env.example ./docker/.env
 
 dev: check-env
+	$(eval $(call compose_files,true))
 	docker compose $(COMPOSE_FILES) up -d
 
 start: check-env
-	docker compose $(COMPOSE_FILES) up -d --build
+	$(eval $(call compose_files,false))
+	docker compose $(COMPOSE_FILES) up -d
 
 stop: check-env
+	$(eval $(call compose_files,true))
 	docker compose $(COMPOSE_FILES) down
 
 destroy: check-env
+	$(eval $(call compose_files,true))
 	docker compose $(COMPOSE_FILES) down -v
 
 migrate-up:
+	$(eval $(call compose_files,false))
 	docker-compose $(COMPOSE_FILES) up --no-deps -d database-init
