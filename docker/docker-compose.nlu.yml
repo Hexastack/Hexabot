@@ -10,7 +10,7 @@ services:
 
   nlu-api:
     container_name: nlu-api
-    image: hexabot-nlu:latest
+    image: hexastack/hexabot-nlu:latest
     env_file: .env
     networks:
       - nlp-network
