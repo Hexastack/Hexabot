@@ -12,22 +12,24 @@ import {
   PropsWithChildren,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { QueryOptions, useQuery } from "react-query";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useConfig } from "@/hooks/useConfig";
 import { useToast } from "@/hooks/useToast";
 
-import { SocketIoClient, socketIoClient } from "./SocketIoClient";
+import { SocketIoClient } from "./SocketIoClient";
 
 interface socketContext {
-  socket: SocketIoClient;
+  socket: SocketIoClient | null;
   connected: boolean;
 }
 
 const socketContext = createContext<socketContext>({
-  socket: socketIoClient,
+  socket: null,
   connected: false,
 });
 
@@ -36,13 +38,14 @@ export const useSocket = () => {
 };
 
 export const SocketProvider = (props: PropsWithChildren) => {
-  const { socket } = useSocket();
+  const { apiUrl } = useConfig();
   const [connected, setConnected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const socket = useMemo(() => new SocketIoClient(apiUrl), [apiUrl]);
 
   useEffect(() => {
-    if (user)
+    if (user && apiUrl)
       socket.init({
         onConnect: () => {
           setConnected(true);
@@ -54,7 +57,7 @@ export const SocketProvider = (props: PropsWithChildren) => {
           setConnected(false);
         },
       });
-  }, [socket, toast, user]);
+  }, [socket, toast, user, apiUrl]);
 
   return (
     <socketContext.Provider value={{ socket, connected }}>
@@ -73,9 +76,9 @@ export const useSubscribe = <T,>(event: string, callback: (arg: T) => void) => {
   const { socket } = useSocket();
 
   useEffect(() => {
-    socket.on<T>(event, callback);
+    socket?.on<T>(event, callback);
 
-    return () => socket.off(event, callback);
+    return () => socket?.off(event, callback);
   }, [event, callback, socket]);
 };
 
@@ -83,14 +86,17 @@ export const useSocketGetQuery = <T,>(
   url: string,
   options?: Omit<QueryOptions<T, Error, T, string[]>, "queryFn">,
 ) => {
+  const { socket } = useSocket();
   const query = useQuery({
     ...options,
     queryKey: ["socket", "get", url],
     queryFn: async () => {
-      const response = await socketIoClient.get<T>(url);
+      if (!socket) throw new Error("Socket not initialized");
+      const response = await socket.get<T>(url);
 
       return response.body;
     },
+    enabled: !!socket,
   });
 
   return query;

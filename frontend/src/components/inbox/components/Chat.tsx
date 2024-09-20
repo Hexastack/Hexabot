@@ -21,8 +21,8 @@ import { useTranslation } from "react-i18next";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
-
 
 import { ChatActions } from "./ChatActions";
 import { ChatHeader } from "./ChatHeader";
@@ -35,6 +35,7 @@ import { useChat } from "../hooks/ChatContext";
 import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
 
 export function Chat() {
+  const { apiUrl } = useConfig();
   const { t, i18n } = useTranslation();
   const { subscriber } = useChat();
   const { user } = useAuth();
@@ -69,7 +70,11 @@ export function Chat() {
       <ConversationHeader>
         <Avatar
           name={subscriber?.first_name}
-          src={getAvatarSrc(EntityType.SUBSCRIBER, subscriber.foreign_id)}
+          src={getAvatarSrc(
+            apiUrl,
+            EntityType.SUBSCRIBER,
+            subscriber.foreign_id,
+          )}
         />
         <ConversationHeader.Content>
           <ChatHeader />
@@ -118,6 +123,7 @@ export function Chat() {
                             i18n.language,
                           )}`}
                           src={getAvatarSrc(
+                            apiUrl,
                             message.sender
                               ? EntityType.SUBSCRIBER
                               : EntityType.USER,

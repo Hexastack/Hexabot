@@ -1,13 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-const ConfigContext = createContext(null);
+const ConfigContext = createContext<IConfig | null>(null);
 
 export interface IConfig {
-  NEXT_PUBLIC_API_ORIGIN: string;
-  NEXT_PUBLIC_SSO_ENABLED: boolean;
-  REACT_APP_WIDGET_API_URL: string;
-  REACT_APP_WIDGET_CHANNEL: string;
-  REACT_APP_WIDGET_TOKEN: string;
+  apiUrl: string;
+  ssoEnabled: boolean;
 }
 
 export const ConfigProvider = ({ children }) => {

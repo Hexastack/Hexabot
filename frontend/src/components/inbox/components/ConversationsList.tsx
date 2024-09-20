@@ -16,6 +16,7 @@ import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
+import { useConfig } from "@/hooks/useConfig";
 import { Title } from "@/layout/content/Title";
 import { EntityType } from "@/services/types";
 
@@ -29,6 +30,7 @@ export const SubscribersList = (props: {
   searchPayload: any;
   assignedTo: AssignedTo;
 }) => {
+  const { apiUrl } = useConfig();
   const { t, i18n } = useTranslation();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
@@ -58,6 +60,7 @@ export const SubscribersList = (props: {
             >
               <Avatar
                 src={getAvatarSrc(
+                  apiUrl,
                   EntityType.SUBSCRIBER,
                   conversation.foreign_id,
                 )}

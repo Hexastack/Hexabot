@@ -8,7 +8,6 @@
  */
 
 import axios from "axios";
-import getConfig from "next/config";
 import { stringify } from "qs";
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,17 +17,17 @@ import { EntityType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
 
 import { useLogoutRedirection } from "./useAuth";
+import { useConfig } from "./useConfig";
 import { useToast } from "./useToast";
 
-const { publicRuntimeConfig } = getConfig();
-
 export const useAxiosInstance = () => {
+  const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslation();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
-      baseURL: publicRuntimeConfig.apiUrl,
+      baseURL: apiUrl,
       withCredentials: true,
     });
     // Added the same Query String (de)Serializer as NestJS,

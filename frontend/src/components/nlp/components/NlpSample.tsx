@@ -21,7 +21,6 @@ import {
   MenuItem,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import getConfig from "next/config";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -38,6 +37,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useConfig } from "@/hooks/useConfig";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
@@ -56,7 +56,6 @@ import { buildURL } from "@/utils/URL";
 import { NlpImportDialog } from "../NlpImportDialog";
 import { NlpSampleDialog } from "../NlpSampleDialog";
 
-const { publicRuntimeConfig } = getConfig();
 const NLP_SAMPLE_TYPE_COLORS = {
   test: "#e6a23c",
   train: "#67c23a",
@@ -64,6 +63,7 @@ const NLP_SAMPLE_TYPE_COLORS = {
 };
 
 export default function NlpSample() {
+  const { apiUrl } = useConfig();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [dataset, setDataSet] = useState("");
@@ -287,7 +287,7 @@ export default function NlpSample() {
               <Button
                 variant="contained"
                 href={buildURL(
-                  publicRuntimeConfig.apiUrl,
+                  apiUrl,
                   `nlpsample/export${dataset ? `?type=${dataset}` : ""}`,
                 )}
                 startIcon={<DownloadIcon />}
