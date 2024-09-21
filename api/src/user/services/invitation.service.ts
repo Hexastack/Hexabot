@@ -15,20 +15,26 @@ import {
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
-import { TFilterQuery } from 'mongoose';
 
 import { config } from '@/config';
 import { ExtendedI18nService } from '@/extended-i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
-import { Invitation } from '../schemas/invitation.schema';
+import {
+  Invitation,
+  InvitationFull,
+  InvitationPopulate,
+} from '../schemas/invitation.schema';
 
 @Injectable()
-export class InvitationService extends BaseService<Invitation> {
+export class InvitationService extends BaseService<
+  Invitation,
+  InvitationPopulate,
+  InvitationFull
+> {
   constructor(
     @Inject(InvitationRepository)
     readonly repository: InvitationRepository,
@@ -111,31 +117,5 @@ export class InvitationService extends BaseService<Invitation> {
    */
   async updateOne(..._: any): Promise<Invitation> {
     throw new Error('Illegal Update');
-  }
-
-  /**
-   * Finds a single invitation by ID and populates related data.
-   *
-   * @param id - The ID of the invitation to find.
-   *
-   * @returns The invitation with populated fields.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Finds and paginates invitations based on the provided filters and pagination query, with populated related data.
-   *
-   * @param filters - The filters to apply when finding invitations.
-   * @param pageQuery - The pagination query to apply.
-   *
-   * @returns A list of paginated invitations with populated fields.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Invitation>,
-    pageQuery: PageQueryDto<Invitation>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
   }
 }

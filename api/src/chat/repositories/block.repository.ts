@@ -10,11 +10,11 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  TFilterQuery,
-  Model,
   Document,
-  Types,
+  Model,
   Query,
+  TFilterQuery,
+  Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
@@ -23,27 +23,24 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
-import { Block, BlockFull } from '../schemas/block.schema';
+import {
+  Block,
+  BLOCK_POPULATE,
+  BlockFull,
+  BlockPopulate,
+} from '../schemas/block.schema';
 
 @Injectable()
 export class BlockRepository extends BaseRepository<
   Block,
-  | 'trigger_labels'
-  | 'assign_labels'
-  | 'nextBlocks'
-  | 'attachedBlock'
-  | 'category'
-  | 'previousBlocks'
-  | 'attachedToBlock'
+  BlockPopulate,
+  BlockFull
 > {
-  private readonly logger: LoggerService;
-
   constructor(
     @InjectModel(Block.name) readonly model: Model<Block>,
-    @Optional() logger?: LoggerService,
+    @Optional() private readonly logger?: LoggerService,
   ) {
-    super(model, Block);
-    this.logger = logger;
+    super(model, Block, BLOCK_POPULATE, BlockFull);
   }
 
   /**
@@ -159,45 +156,5 @@ export class BlockRepository extends BaseRepository<
         },
       );
     }
-  }
-
-  /**
-   * Finds blocks and populates related fields (e.g., labels, attached blocks).
-   *
-   * @param filters - The filter criteria for finding blocks.
-   *
-   * @returns The populated block results.
-   */
-  async findAndPopulate(filters: TFilterQuery<Block>) {
-    const query = this.findQuery(filters).populate([
-      'trigger_labels',
-      'assign_labels',
-      'nextBlocks',
-      'attachedBlock',
-      'category',
-      'previousBlocks',
-      'attachedToBlock',
-    ]);
-    return await this.execute(query, BlockFull);
-  }
-
-  /**
-   * Finds a single block by ID and populates related fields (e.g., labels, attached blocks).
-   *
-   * @param id - The ID of the block to find.
-   *
-   * @returns The populated block result or null if not found.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate([
-      'trigger_labels',
-      'assign_labels',
-      'nextBlocks',
-      'attachedBlock',
-      'category',
-      'previousBlocks',
-      'attachedToBlock',
-    ]);
-    return await this.executeOne(query, BlockFull);
   }
 }

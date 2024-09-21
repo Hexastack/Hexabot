@@ -16,12 +16,18 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { Permission } from '../schemas/permission.schema';
-import { Role, RoleFull } from '../schemas/role.schema';
+import {
+  Role,
+  ROLE_POPULATE,
+  RoleFull,
+  RolePopulate,
+} from '../schemas/role.schema';
 
 @Injectable()
 export class RoleRepository extends BaseRepository<
   Role,
-  'permissions' | 'users'
+  RolePopulate,
+  RoleFull
 > {
   constructor(
     @InjectModel(Role.name) readonly model: Model<Role>,
@@ -29,7 +35,7 @@ export class RoleRepository extends BaseRepository<
     private readonly permissionModel: Model<Permission>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Role);
+    super(model, Role, ROLE_POPULATE, RoleFull);
   }
 
   /**

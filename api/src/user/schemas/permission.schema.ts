@@ -13,6 +13,7 @@ import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Model } from './model.schema';
 import { Role } from './role.schema';
@@ -69,3 +70,10 @@ export const PermissionModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default PermissionModel.schema;
+
+export type PermissionPopulate = keyof TFilterPopulateFields<
+  Permission,
+  PermissionStub
+>;
+
+export const PERMISSION_POPULATE: PermissionPopulate[] = ['model', 'role'];

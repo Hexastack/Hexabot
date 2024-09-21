@@ -12,6 +12,7 @@ import { Transform, Type } from 'class-transformer';
 import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { NlpEntity } from './nlp-entity.schema';
 import { NlpSample } from './nlp-sample.schema';
@@ -106,3 +107,14 @@ export const NlpSampleEntityModel: ModelDefinition = {
 };
 
 export default NlpSampleEntityModel.schema;
+
+export type NlpSampleEntityPopulate = keyof TFilterPopulateFields<
+  NlpSampleEntity,
+  NlpSampleEntityStub
+>;
+
+export const NLP_SAMPLE_ENTITY_POPULATE: NlpSampleEntityPopulate[] = [
+  'entity',
+  'value',
+  'sample',
+];

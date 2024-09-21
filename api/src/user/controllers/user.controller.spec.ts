@@ -148,9 +148,7 @@ describe('UserController', () => {
     it('should find one user and populate its roles', async () => {
       jest.spyOn(userService, 'findOneAndPopulate');
       const result = await userController.findOne(user.id, ['roles']);
-      expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user.id, [
-        'roles',
-      ]);
+      expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user.id);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
@@ -166,9 +164,7 @@ describe('UserController', () => {
 
     it('should find users, and for each user populate the corresponding roles', async () => {
       jest.spyOn(userService, 'findPageAndPopulate');
-      const result = await userService.findPageAndPopulate({}, pageQuery, [
-        'roles',
-      ]);
+      const result = await userService.findPageAndPopulate({}, pageQuery);
 
       const usersWithRoles = userFixtures.reduce((acc, currUser) => {
         acc.push({
@@ -181,7 +177,6 @@ describe('UserController', () => {
       expect(userService.findPageAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
-        ['roles'],
       );
       expect(result).toEqualPayload(usersWithRoles, [
         ...IGNORED_FIELDS,

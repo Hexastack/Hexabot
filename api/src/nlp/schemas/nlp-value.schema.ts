@@ -13,6 +13,7 @@ import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { NlpEntity, NlpEntityFull } from './nlp-entity.schema';
 import { NlpValueMap } from './types';
@@ -105,3 +106,10 @@ export const NlpValueModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default NlpValueModel.schema;
+
+export type NlpValuePopulate = keyof TFilterPopulateFields<
+  NlpValue,
+  NlpValueStub
+>;
+
+export const NLP_VALUE_POPULATE: NlpValuePopulate[] = ['entity'];

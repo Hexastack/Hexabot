@@ -12,6 +12,7 @@ import { Transform, Type } from 'class-transformer';
 import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Block } from './block.schema';
 import { Subscriber } from './subscriber.schema';
@@ -103,3 +104,14 @@ export const ConversationModel: ModelDefinition = {
 };
 
 export default ConversationModel.schema;
+
+export type ConversationPopulate = keyof TFilterPopulateFields<
+  Conversation,
+  ConversationStub
+>;
+
+export const CONVERSATION_POPULATE: ConversationPopulate[] = [
+  'sender',
+  'current',
+  'next',
+];

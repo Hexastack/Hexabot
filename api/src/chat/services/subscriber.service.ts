@@ -35,10 +35,18 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Subscriber } from '../schemas/subscriber.schema';
+import {
+  Subscriber,
+  SubscriberFull,
+  SubscriberPopulate,
+} from '../schemas/subscriber.schema';
 
 @Injectable()
-export class SubscriberService extends BaseService<Subscriber> {
+export class SubscriberService extends BaseService<
+  Subscriber,
+  SubscriberPopulate,
+  SubscriberFull
+> {
   private readonly gateway: WebsocketGateway;
 
   constructor(

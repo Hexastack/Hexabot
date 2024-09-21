@@ -13,6 +13,7 @@ import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 import { isEmail } from '@/utils/validation-rules/is-email';
 
 import { Role } from './role.schema';
@@ -70,3 +71,10 @@ export const InvitationModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default InvitationModel.schema;
+
+export type InvitationPopulate = keyof TFilterPopulateFields<
+  Invitation,
+  InvitationStub
+>;
+
+export const INVITATION_POPULATE: InvitationPopulate[] = ['roles'];

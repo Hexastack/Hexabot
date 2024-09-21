@@ -29,7 +29,12 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { PermissionCreateDto } from '../dto/permission.dto';
-import { Permission, PermissionStub } from '../schemas/permission.schema';
+import {
+  Permission,
+  PermissionFull,
+  PermissionPopulate,
+  PermissionStub,
+} from '../schemas/permission.schema';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -38,7 +43,9 @@ import { RoleService } from '../services/role.service';
 @Controller('permission')
 export class PermissionController extends BaseController<
   Permission,
-  PermissionStub
+  PermissionStub,
+  PermissionPopulate,
+  PermissionFull
 > {
   constructor(
     private readonly permissionService: PermissionService,
@@ -68,7 +75,7 @@ export class PermissionController extends BaseController<
     )
     filters: TFilterQuery<Permission>,
   ) {
-    return this.canPopulate(populate, ['model', 'role'])
+    return this.canPopulate(populate)
       ? await this.permissionService.findAndPopulate(filters)
       : await this.permissionService.find(filters);
   }

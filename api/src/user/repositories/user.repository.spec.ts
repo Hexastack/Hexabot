@@ -13,6 +13,7 @@ import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
+import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
@@ -53,7 +54,12 @@ describe('UserRepository', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([UserModel, PermissionModel, RoleModel]),
+        MongooseModule.forFeature([
+          UserModel,
+          PermissionModel,
+          RoleModel,
+          AttachmentModel,
+        ]),
       ],
       providers: [
         LoggerService,
@@ -85,9 +91,7 @@ describe('UserRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should find one user and populate its role', async () => {
       jest.spyOn(userModel, 'findById');
-      const result = await userRepository.findOneAndPopulate(user.id, [
-        'roles',
-      ]);
+      const result = await userRepository.findOneAndPopulate(user.id);
       expect(userModel.findById).toHaveBeenCalledWith(user.id);
       expect(result).toEqualPayload(
         {
@@ -106,9 +110,7 @@ describe('UserRepository', () => {
       jest.spyOn(userRepository, 'findPageAndPopulate');
       const allUsers = await userRepository.findAll();
       const allRoles = await roleRepository.findAll();
-      const result = await userRepository.findPageAndPopulate({}, pageQuery, [
-        'roles',
-      ]);
+      const result = await userRepository.findPageAndPopulate({}, pageQuery);
       const usersWithRoles = allUsers.reduce((acc, currUser) => {
         acc.push({
           ...currUser,

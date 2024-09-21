@@ -16,7 +16,7 @@ import { BaseRepository } from '@/utils/generics/base-repository';
 import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
 
 @Injectable()
-export class BotStatsRepository extends BaseRepository<BotStats, never> {
+export class BotStatsRepository extends BaseRepository<BotStats> {
   constructor(@InjectModel(BotStats.name) readonly model: Model<BotStats>) {
     super(model, BotStats);
   }

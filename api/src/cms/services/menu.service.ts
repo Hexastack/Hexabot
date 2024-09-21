@@ -17,24 +17,22 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
-import { LoggerService } from '@/logger/logger.service';
 import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { MenuCreateDto } from '../dto/menu.dto';
 import { MenuRepository } from '../repositories/menu.repository';
-import { Menu } from '../schemas/menu.schema';
+import { Menu, MenuFull, MenuPopulate } from '../schemas/menu.schema';
 import { AnyMenu, MenuTree, MenuType } from '../schemas/types/menu';
 
 @Injectable()
-export class MenuService extends BaseService<Menu> {
+export class MenuService extends BaseService<Menu, MenuPopulate, MenuFull> {
   private RootSymbol: symbol = Symbol('RootMenu');
 
   constructor(
     readonly repository: MenuRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
