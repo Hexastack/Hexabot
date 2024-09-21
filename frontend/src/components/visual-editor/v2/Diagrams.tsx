@@ -51,6 +51,7 @@ import { BlockPorts } from "@/types/visual-editor.types";
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
+import { RequestQueue } from "@/utils/requestQueue";
 
 const Diagrams = () => {
   const { t } = useTranslation();
@@ -108,25 +109,23 @@ const Diagrams = () => {
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
+
+  const requestQueue = useRef(new RequestQueue<ICategory>());
+  const enqueueUpdate = (id: string, params: any) => {
+    requestQueue.current.enqueue(() => updateCategory({ id, params }));
+  };
+
   const debouncedZoomEvent = debounce((event) => {
     if (selectedCategoryId) {
       engine?.repaintCanvas();
-      updateCategory({
-        id: selectedCategoryId,
-        params: {
-          zoom: event.zoom,
-        },
-      });
+      enqueueUpdate(selectedCategoryId, { zoom: event.zoom });
     }
     event.stopPropagation();
   }, 200);
   const debouncedOffsetEvent = debounce((event) => {
     if (selectedCategoryId) {
-      updateCategory({
-        id: selectedCategoryId,
-        params: {
-          offset: [event.offsetX, event.offsetY],
-        },
+      enqueueUpdate(selectedCategoryId, {
+        offset: [event.offsetX, event.offsetY],
       });
     }
     event.stopPropagation();
