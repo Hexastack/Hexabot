@@ -24,6 +24,7 @@ import { BaseRepository } from '@/utils/generics/base-repository';
 import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
+  SUBSCRIBER_POPULATE,
   SubscriberDocument,
   SubscriberFull,
   SubscriberPopulate,
@@ -39,7 +40,7 @@ export class SubscriberRepository extends BaseRepository<
     @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Subscriber);
+    super(model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
   }
 
   /**

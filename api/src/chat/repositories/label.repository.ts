@@ -16,6 +16,7 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import {
   Label,
+  LABEL_POPULATE,
   LabelDocument,
   LabelFull,
   LabelPopulate,
@@ -31,7 +32,7 @@ export class LabelRepository extends BaseRepository<
     @InjectModel(Label.name) readonly model: Model<Label>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Label);
+    super(model, Label, LABEL_POPULATE, LabelFull);
   }
 
   /**

@@ -11,7 +11,6 @@ import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { Category } from '../schemas/category.schema';
@@ -19,17 +18,13 @@ import { BlockService } from '../services/block.service';
 
 @Injectable()
 export class CategoryRepository extends BaseRepository<Category> {
-  private readonly logger: LoggerService;
-
   private readonly blockService: BlockService;
 
   constructor(
     @InjectModel(Category.name) readonly model: Model<Category>,
     @Optional() blockService?: BlockService,
-    @Optional() logger?: LoggerService,
   ) {
     super(model, Category);
-    this.logger = logger;
     this.blockService = blockService;
   }
 

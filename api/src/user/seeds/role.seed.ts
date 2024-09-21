@@ -12,10 +12,10 @@ import { Injectable } from '@nestjs/common';
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
 import { RoleRepository } from '../repositories/role.repository';
-import { Role } from '../schemas/role.schema';
+import { Role, RoleFull, RolePopulate } from '../schemas/role.schema';
 
 @Injectable()
-export class RoleSeeder extends BaseSeeder<Role> {
+export class RoleSeeder extends BaseSeeder<Role, RolePopulate, RoleFull> {
   constructor(private readonly roleRepository: RoleRepository) {
     super(roleRepository);
   }

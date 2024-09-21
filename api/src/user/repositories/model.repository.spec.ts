@@ -23,7 +23,7 @@ import { Model as ModelType } from './../schemas/model.schema';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { ModelModel } from '../schemas/model.schema';
-import { PermissionModel, Permission } from '../schemas/permission.schema';
+import { Permission, PermissionModel } from '../schemas/permission.schema';
 
 describe('ModelRepository', () => {
   let modelRepository: ModelRepository;
@@ -69,7 +69,7 @@ describe('ModelRepository', () => {
       jest.spyOn(modelModel, 'find');
       const allModels = await modelRepository.findAll();
       const allPermissions = await permissionRepository.findAll();
-      const result = await modelRepository.findAndPopulate({}, ['permissions']);
+      const result = await modelRepository.findAndPopulate({});
       const modelsWithPermissions = allModels.reduce((acc, currModel) => {
         acc.push({
           ...currModel,

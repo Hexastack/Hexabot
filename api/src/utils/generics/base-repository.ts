@@ -161,9 +161,7 @@ export abstract class BaseRepository<
   }
 
   async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
-    if (!this.populate || !this.clsPopulate) {
-      throw new Error('Cannot populate query');
-    }
+    this.ensureCanPopulate();
     const query = this.findOneQuery(criteria).populate(this.populate);
     return await this.executeOne(query, this.clsPopulate);
   }

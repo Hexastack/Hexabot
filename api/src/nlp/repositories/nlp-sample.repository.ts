@@ -31,7 +31,7 @@ export class NlpSampleRepository extends BaseRepository<
     @InjectModel(NlpSample.name) readonly model: Model<NlpSample>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
-    super(model, NlpSample, NLP_SAMPLE_POPULATE);
+    super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
   }
 
   /**

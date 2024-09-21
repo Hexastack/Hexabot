@@ -19,6 +19,7 @@ import { BaseRepository } from '@/utils/generics/base-repository';
 
 import {
   Message,
+  MESSAGE_POPULATE,
   MessageFull,
   MessagePopulate,
 } from '../schemas/message.schema';
@@ -40,7 +41,12 @@ export class MessageRepository extends BaseRepository<
     @Optional() nlpSampleService?: NlpSampleService,
     @Optional() logger?: LoggerService,
   ) {
-    super(model, Message as new () => AnyMessage);
+    super(
+      model,
+      Message as new () => AnyMessage,
+      MESSAGE_POPULATE,
+      MessageFull,
+    );
     this.logger = logger;
     this.nlpSampleService = nlpSampleService;
   }

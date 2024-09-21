@@ -177,7 +177,10 @@ describe('BlockService', () => {
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
       }));
 
-      expect(blockRepository.findAndPopulate).toHaveBeenCalledWith({});
+      expect(blockRepository.findAndPopulate).toHaveBeenCalledWith(
+        {},
+        undefined,
+      );
       expect(result).toEqualPayload(blocksWithCategory);
     });
   });
