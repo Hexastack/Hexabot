@@ -19,8 +19,8 @@ import {
   Patch,
   Query,
   UseInterceptors,
-  Session,
   ForbiddenException,
+  Session,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Session as ExpressSession } from 'express-session';
@@ -148,11 +148,16 @@ export class RoleController extends BaseController<Role, RoleStub> {
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string, @Session() session: ExpressSession) {
-    const roles = (
-      await this.userService.findOneAndPopulate(session.passport?.user?.id, [
-        'roles',
-      ])
-    ).roles.map((role) => role.id);
+    const currentUser = await this.userService.findOneAndPopulate(
+      session.passport.user.id,
+      ['roles'],
+    );
+    if (!currentUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const roles = currentUser.roles.map((role) => role.id);
+
     if (roles.includes(id)) {
       throw new ForbiddenException("Your account's role can't be deleted");
     } else {
