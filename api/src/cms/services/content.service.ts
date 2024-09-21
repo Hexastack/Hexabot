@@ -17,46 +17,26 @@ import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { ContentRepository } from '../repositories/content.repository';
-import { Content } from '../schemas/content.schema';
+import {
+  Content,
+  ContentFull,
+  ContentPopulate,
+} from '../schemas/content.schema';
 
 @Injectable()
-export class ContentService extends BaseService<Content> {
+export class ContentService extends BaseService<
+  Content,
+  ContentPopulate,
+  ContentFull
+> {
   constructor(
     readonly repository: ContentRepository,
     private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
   ) {
     super(repository);
-  }
-
-  /**
-   * Finds a content item by its ID and populates its related fields.
-   *
-   * @param id - The ID of the content to retrieve.
-   *
-   * @return The populated content entity.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Finds a page of content items based on filters and pagination options,
-   * and populates their related fields.
-   *
-   * @param filters - The query filters to apply.
-   * @param pageQuery - The pagination and sorting options.
-   *
-   * @return A list of populated content entities.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Content>,
-    pageQuery: PageQueryDto<Content>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
   }
 
   /**

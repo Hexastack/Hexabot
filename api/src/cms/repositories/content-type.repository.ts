@@ -12,7 +12,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BlockService } from '@/chat/services/block.service';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { ContentType } from '../schemas/content-type.schema';
@@ -24,11 +23,8 @@ export class ContentTypeRepository extends BaseRepository<ContentType> {
     @InjectModel(ContentType.name) readonly model: Model<ContentType>,
     @InjectModel(Content.name) private readonly contentModel: Model<Content>,
     @Optional() private readonly blockService?: BlockService,
-    @Optional() private readonly logger?: LoggerService,
   ) {
     super(model, ContentType);
-    this.logger = logger;
-    this.blockService = blockService;
   }
 
   /**

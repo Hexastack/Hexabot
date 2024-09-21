@@ -31,12 +31,17 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { MenuCreateDto, MenuQueryDto } from '../dto/menu.dto';
-import { Menu, MenuStub } from '../schemas/menu.schema';
+import { Menu, MenuFull, MenuPopulate, MenuStub } from '../schemas/menu.schema';
 import { MenuService } from '../services/menu.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('menu')
-export class MenuController extends BaseController<Menu, MenuStub> {
+export class MenuController extends BaseController<
+  Menu,
+  MenuStub,
+  MenuPopulate,
+  MenuFull
+> {
   constructor(
     private readonly menuService: MenuService,
     private readonly logger: LoggerService,

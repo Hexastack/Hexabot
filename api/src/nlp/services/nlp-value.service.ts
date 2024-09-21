@@ -8,20 +8,26 @@
  */
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValuePopulate,
+} from '../schemas/nlp-value.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
 @Injectable()
-export class NlpValueService extends BaseService<NlpValue> {
+export class NlpValueService extends BaseService<
+  NlpValue,
+  NlpValuePopulate,
+  NlpValueFull
+> {
   constructor(
     readonly repository: NlpValueRepository,
     @Inject(forwardRef(() => NlpEntityService))
@@ -39,32 +45,6 @@ export class NlpValueService extends BaseService<NlpValue> {
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
-  }
-
-  /**
-   * Finds an NLP value by its ID and populates related entities.
-   *
-   * @param id The ID of the NLP value to find.
-   *
-   * @returns A promise that resolves with the populated NLP value.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Finds a page of NLP values based on filters, and populates related entities.
-   *
-   * @param filters The filters to apply when searching for NLP values.
-   * @param pageQuery Pagination information such as page number and size.
-   *
-   * @returns A promise that resolves with a page of populated NLP values.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<NlpValue>,
-    pageQuery: PageQueryDto<NlpValue>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
   }
 
   /**

@@ -10,53 +10,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  TFilterQuery,
-  Model,
   Document,
+  HydratedDocument,
+  Model,
   Query,
+  TFilterQuery,
   UpdateQuery,
   UpdateWithAggregationPipeline,
-  HydratedDocument,
 } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
-import { Content, ContentFull } from '../schemas/content.schema';
+import {
+  Content,
+  CONTENT_POPULATE,
+  ContentFull,
+  ContentPopulate,
+} from '../schemas/content.schema';
 
 @Injectable()
-export class ContentRepository extends BaseRepository<Content, 'entity'> {
+export class ContentRepository extends BaseRepository<
+  Content,
+  ContentPopulate,
+  ContentFull
+> {
   constructor(@InjectModel(Content.name) readonly model: Model<Content>) {
-    super(model, Content);
-  }
-
-  /**
-   * Retrieves a paginated list of content documents based on the provided filter
-   * and pagination query, and populates the `entity` field.
-   *
-   * @param filter - A filter query for the content documents.
-   * @param pageQuery - Pagination and sorting options for the query.
-   *
-   * @returns A promise that resolves to an array of fully populated `ContentFull` documents.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<Content>,
-    pageQuery: PageQueryDto<Content>,
-  ): Promise<ContentFull[]> {
-    const query = this.findPageQuery(filter, pageQuery).populate('entity');
-    return await this.execute(query, ContentFull);
-  }
-
-  /**
-   * Finds a single content document by its ID and populates the `entity` field.
-   *
-   * @param id - The ID of the content document to retrieve.
-   *
-   * @returns A promise that resolves to the populated `ContentFull` document.
-   */
-  async findOneAndPopulate(id: string): Promise<ContentFull> {
-    const query = this.findOneQuery(id).populate('entity');
-    return await this.executeOne(query, ContentFull);
+    super(model, Content, CONTENT_POPULATE, ContentFull);
   }
 
   /**

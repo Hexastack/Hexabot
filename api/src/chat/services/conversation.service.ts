@@ -17,12 +17,20 @@ import { BaseService } from '@/utils/generics/base-service';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
-import { Conversation, ConversationFull } from '../schemas/conversation.schema';
+import {
+  Conversation,
+  ConversationFull,
+  ConversationPopulate,
+} from '../schemas/conversation.schema';
 import { OutgoingMessageFormat } from '../schemas/types/message';
 import { Payload } from '../schemas/types/quick-reply';
 
 @Injectable()
-export class ConversationService extends BaseService<Conversation> {
+export class ConversationService extends BaseService<
+  Conversation,
+  ConversationPopulate,
+  ConversationFull
+> {
   constructor(
     readonly repository: ConversationRepository,
     private readonly logger: LoggerService,

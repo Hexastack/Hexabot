@@ -9,21 +9,30 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { TFilterQuery, Model as MongooseModel } from 'mongoose';
+import { Model as MongooseModel } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
-import { ModelFull, Model } from '../schemas/model.schema';
+import {
+  Model,
+  MODEL_POPULATE,
+  ModelFull,
+  ModelPopulate,
+} from '../schemas/model.schema';
 import { Permission } from '../schemas/permission.schema';
 
 @Injectable()
-export class ModelRepository extends BaseRepository<Model, 'permissions'> {
+export class ModelRepository extends BaseRepository<
+  Model,
+  ModelPopulate,
+  ModelFull
+> {
   constructor(
     @InjectModel(Model.name) readonly model: MongooseModel<Model>,
     @InjectModel(Permission.name)
     private readonly permissionModel: MongooseModel<Permission>,
   ) {
-    super(model, Model);
+    super(model, Model, MODEL_POPULATE, ModelFull);
   }
 
   /**
@@ -39,33 +48,5 @@ export class ModelRepository extends BaseRepository<Model, 'permissions'> {
       await this.permissionModel.deleteMany({ model: id });
     }
     return result;
-  }
-
-  /**
-   * Finds `Model` documents that match the provided filter and populates specified fields.
-   *
-   * @param filter - The filter query to apply.
-   * @param populate - The fields to populate.
-   *
-   * @returns The populated `Model` documents.
-   */
-  async findAndPopulate(
-    filter: TFilterQuery<Model>,
-    populate: string[],
-  ): Promise<ModelFull[]> {
-    const query = this.findQuery(filter).populate(populate);
-    return await this.execute(query, ModelFull);
-  }
-
-  /**
-   * Finds a single `Model` document by its ID and populates its `permissions` field.
-   *
-   * @param id - The ID of the `Model` document to find.
-   *
-   * @returns The populated `Model` document.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate('permissions');
-    return await this.executeOne(query, ModelFull);
   }
 }

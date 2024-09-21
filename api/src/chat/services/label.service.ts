@@ -14,10 +14,10 @@ import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { LabelRepository } from '../repositories/label.repository';
-import { Label } from '../schemas/label.schema';
+import { Label, LabelFull, LabelPopulate } from '../schemas/label.schema';
 
 @Injectable()
-export class LabelService extends BaseService<Label> {
+export class LabelService extends BaseService<Label, LabelPopulate, LabelFull> {
   constructor(readonly repository: LabelRepository) {
     super(repository);
   }

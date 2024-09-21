@@ -32,12 +32,22 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
-import { Label, LabelStub } from '../schemas/label.schema';
+import {
+  Label,
+  LabelFull,
+  LabelPopulate,
+  LabelStub,
+} from '../schemas/label.schema';
 import { LabelService } from '../services/label.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('label')
-export class LabelController extends BaseController<Label, LabelStub> {
+export class LabelController extends BaseController<
+  Label,
+  LabelStub,
+  LabelPopulate,
+  LabelFull
+> {
   constructor(
     private readonly labelService: LabelService,
     private readonly logger: LoggerService,
@@ -53,7 +63,7 @@ export class LabelController extends BaseController<Label, LabelStub> {
     @Query(new SearchFilterPipe<Label>({ allowedFields: ['name', 'title'] }))
     filters: TFilterQuery<Label>,
   ) {
-    return this.canPopulate(populate, ['users'])
+    return this.canPopulate(populate)
       ? await this.labelService.findPageAndPopulate(filters, pageQuery)
       : await this.labelService.findPage(filters, pageQuery);
   }
@@ -80,7 +90,7 @@ export class LabelController extends BaseController<Label, LabelStub> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['users'])
+    const doc = this.canPopulate(populate)
       ? await this.labelService.findOneAndPopulate(id)
       : await this.labelService.findOne(id);
     if (!doc) {

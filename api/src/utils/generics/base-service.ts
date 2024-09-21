@@ -16,8 +16,16 @@ import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 
-export abstract class BaseService<T extends BaseSchema> {
-  constructor(readonly repository: BaseRepository<T, never>) {}
+export abstract class BaseService<
+  T extends BaseSchema,
+  P extends string = never,
+  TFull extends Omit<T, P> = never,
+> {
+  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
+
+  getRepository() {
+    return this.repository;
+  }
 
   async findOne(
     criteria: string | TFilterQuery<T>,
@@ -26,12 +34,24 @@ export abstract class BaseService<T extends BaseSchema> {
     return await this.repository.findOne(criteria, options);
   }
 
+  async findOneAndPopulate(id: string) {
+    return await this.repository.findOneAndPopulate(id);
+  }
+
   async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>): Promise<T[]> {
     return await this.repository.find(filter, sort);
   }
 
+  async findAndPopulate(filters: TFilterQuery<T>, sort?: QuerySortDto<T>) {
+    return await this.repository.findAndPopulate(filters, sort);
+  }
+
   async findAll(sort?: QuerySortDto<T>): Promise<T[]> {
     return await this.repository.findAll(sort);
+  }
+
+  async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
+    return await this.repository.findAllAndPopulate(sort);
   }
 
   async findPage(
@@ -39,6 +59,13 @@ export abstract class BaseService<T extends BaseSchema> {
     pageQueryDto: PageQueryDto<T>,
   ): Promise<T[]> {
     return await this.repository.findPage(filters, pageQueryDto);
+  }
+
+  async findPageAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQueryDto: PageQueryDto<T>,
+  ): Promise<TFull[]> {
+    return await this.repository.findPageAndPopulate(filters, pageQueryDto);
   }
 
   async countAll(): Promise<number> {

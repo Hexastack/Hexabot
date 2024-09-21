@@ -13,6 +13,7 @@ import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Permission } from './permission.schema';
 import { User } from './user.schema';
@@ -70,3 +71,7 @@ RoleModel.schema.virtual('users', {
 });
 
 export default RoleModel.schema;
+
+export type RolePopulate = keyof TFilterPopulateFields<Role, RoleStub>;
+
+export const ROLE_POPULATE: RolePopulate[] = ['permissions', 'users'];

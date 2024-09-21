@@ -20,19 +20,20 @@ import {
 } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
   SubscriberDocument,
   SubscriberFull,
+  SubscriberPopulate,
 } from '../schemas/subscriber.schema';
 
 @Injectable()
 export class SubscriberRepository extends BaseRepository<
   Subscriber,
-  'labels' | 'assignedTo' | 'avatar'
+  SubscriberPopulate,
+  SubscriberFull
 > {
   constructor(
     @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
@@ -159,11 +160,8 @@ export class SubscriberRepository extends BaseRepository<
    * @returns The found subscriber entity with populated fields.
    */
   async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
-    const query = this.findByForeignIdQuery(id).populate([
-      'labels',
-      'assignedTo',
-    ]);
-    const [result] = await this.execute(query, SubscriberFull);
+    const query = this.findByForeignIdQuery(id).populate(this.populate);
+    const [result] = await this.execute(query, this.clsPopulate);
     return result;
   }
 
@@ -222,57 +220,5 @@ export class SubscriberRepository extends BaseRepository<
         assignedTo: userId,
       },
     );
-  }
-
-  /**
-   * Finds all subscribers and populates related fields such as `labels`, `assignedTo`, and `avatar`.
-   *
-   * @returns A list of all subscribers with populated fields.
-   */
-  async findAllAndPopulate(): Promise<SubscriberFull[]> {
-    const query = this.findAllQuery().populate([
-      'labels',
-      'assignedTo',
-      'avatar',
-    ]);
-    return await this.execute(query, SubscriberFull);
-  }
-
-  /**
-   * Finds subscribers using pagination and populates related fields such as `labels`, `assignedTo`, and `avatar`.
-   *
-   * @param filters - The filter criteria to apply when finding subscribers.
-   * @param pageQuery - The pagination query.
-   *
-   * @returns A paginated list of subscribers with populated fields.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Subscriber>,
-    pageQuery: PageQueryDto<Subscriber>,
-  ): Promise<SubscriberFull[]> {
-    const query = this.findPageQuery(filters, pageQuery).populate([
-      'labels',
-      'assignedTo',
-      'avatar',
-    ]);
-    return await this.execute(query, SubscriberFull);
-  }
-
-  /**
-   * Finds a single subscriber by criteria and populates related fields such as `labels`, `assignedTo`, and `avatar`.
-   *
-   * @param criteria - The filter criteria to apply when finding a subscriber.
-   *
-   * @returns The found subscriber entity with populated fields.
-   */
-  async findOneAndPopulate(
-    criteria: string | TFilterQuery<Subscriber>,
-  ): Promise<SubscriberFull> {
-    const query = this.findOneQuery(criteria).populate([
-      'labels',
-      'assignedTo',
-      'avatar',
-    ]);
-    return await this.executeOne(query, SubscriberFull);
   }
 }

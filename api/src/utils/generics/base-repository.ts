@@ -32,6 +32,7 @@ export type DeleteResult = {
 export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
   P extends string = never,
+  TFull extends Omit<T, P> = never,
   U = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
@@ -42,8 +43,14 @@ export abstract class BaseRepository<
   constructor(
     readonly model: Model<T>,
     private readonly cls: new () => T,
+    protected readonly populate: P[] = [],
+    protected readonly clsPopulate: new () => TFull = undefined,
   ) {
     this.registerLifeCycleHooks();
+  }
+
+  getPopulate() {
+    return this.populate;
   }
 
   private registerLifeCycleHooks() {
@@ -153,6 +160,14 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.cls, options);
   }
 
+  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
+    if (!this.populate || !this.clsPopulate) {
+      throw new Error('Cannot populate query');
+    }
+    const query = this.findOneQuery(criteria).populate(this.populate);
+    return await this.executeOne(query, this.clsPopulate);
+  }
+
   protected findQuery(filter: TFilterQuery<T>, sort?: QuerySortDto<T>) {
     const query = this.model.find<T>(filter);
     if (sort) {
@@ -166,12 +181,30 @@ export abstract class BaseRepository<
     return await this.execute(query, this.cls);
   }
 
-  protected findAllQuery() {
-    return this.findQuery({});
+  private ensureCanPopulate() {
+    if (!this.populate || !this.clsPopulate) {
+      throw new Error('Cannot populate query');
+    }
+  }
+
+  async findAndPopulate(filters: TFilterQuery<T>, sort?: QuerySortDto<T>) {
+    this.ensureCanPopulate();
+    const query = this.findQuery(filters, sort).populate(this.populate);
+    return await this.execute(query, this.clsPopulate);
+  }
+
+  protected findAllQuery(sort?: QuerySortDto<T>) {
+    return this.findQuery({}, sort);
   }
 
   async findAll(sort?: QuerySortDto<T>) {
     return await this.find({}, sort);
+  }
+
+  async findAllAndPopulate(sort?: QuerySortDto<T>) {
+    this.ensureCanPopulate();
+    const query = this.findAllQuery(sort).populate(this.populate);
+    return await this.execute(query, this.clsPopulate);
   }
 
   protected findPageQuery(
@@ -190,6 +223,17 @@ export abstract class BaseRepository<
   ): Promise<T[]> {
     const query = this.findPageQuery(filters, pageQuery);
     return await this.execute(query, this.cls);
+  }
+
+  async findPageAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery: PageQueryDto<T>,
+  ) {
+    this.ensureCanPopulate();
+    const query = this.findPageQuery(filters, pageQuery).populate(
+      this.populate,
+    );
+    return await this.execute(query, this.clsPopulate);
   }
 
   async countAll(): Promise<number> {

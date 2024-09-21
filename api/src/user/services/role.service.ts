@@ -8,43 +8,15 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { RoleRepository } from '../repositories/role.repository';
-import { Role } from '../schemas/role.schema';
+import { Role, RoleFull, RolePopulate } from '../schemas/role.schema';
 
 @Injectable()
-export class RoleService extends BaseService<Role> {
+export class RoleService extends BaseService<Role, RolePopulate, RoleFull> {
   constructor(readonly repository: RoleRepository) {
     super(repository);
-  }
-
-  /**
-   * Retrieves a paginated list of roles with related fields populated, based on the provided filters and pagination options.
-   *
-   * @param filters - Criteria used to filter the roles.
-   * @param pageQuery - Pagination options, including page size and number.
-   *
-   * @returns A paginated result set of roles with related fields populated.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Role>,
-    pageQuery: PageQueryDto<Role>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
-  }
-
-  /**
-   * Retrieves a single role by its ID and populates its related fields.
-   *
-   * @param id - The unique identifier of the role to retrieve.
-   *
-   * @returns The role with related fields populated, or null if no role is found.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
   }
 }

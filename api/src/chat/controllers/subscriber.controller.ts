@@ -32,14 +32,21 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { SubscriberUpdateDto } from '../dto/subscriber.dto';
-import { Subscriber, SubscriberStub } from '../schemas/subscriber.schema';
+import {
+  Subscriber,
+  SubscriberFull,
+  SubscriberPopulate,
+  SubscriberStub,
+} from '../schemas/subscriber.schema';
 import { SubscriberService } from '../services/subscriber.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('subscriber')
 export class SubscriberController extends BaseController<
   Subscriber,
-  SubscriberStub
+  SubscriberStub,
+  SubscriberPopulate,
+  SubscriberFull
 > {
   constructor(
     private readonly subscriberService: SubscriberService,
@@ -67,7 +74,7 @@ export class SubscriberController extends BaseController<
     )
     filters: TFilterQuery<Subscriber>,
   ) {
-    return this.canPopulate(populate, ['labels', 'assignedTo', 'avatar'])
+    return this.canPopulate(populate)
       ? await this.subscriberService.findPageAndPopulate(filters, pageQuery)
       : await this.subscriberService.findPage(filters, pageQuery);
   }
@@ -100,7 +107,7 @@ export class SubscriberController extends BaseController<
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['labels', 'assignedTo', 'avatar'])
+    const doc = this.canPopulate(populate)
       ? await this.subscriberService.findOneAndPopulate(id)
       : await this.subscriberService.findOne(id);
     if (!doc) {

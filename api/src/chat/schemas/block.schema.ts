@@ -13,6 +13,7 @@ import { Schema as MongooseSchema, THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Category } from './category.schema';
 import { Label } from './label.schema';
@@ -194,3 +195,15 @@ BlockModel.schema.virtual('attachedToBlock', {
 });
 
 export default BlockModel.schema;
+
+export type BlockPopulate = keyof TFilterPopulateFields<Block, BlockStub>;
+
+export const BLOCK_POPULATE: BlockPopulate[] = [
+  'trigger_labels',
+  'assign_labels',
+  'nextBlocks',
+  'attachedBlock',
+  'category',
+  'previousBlocks',
+  'attachedToBlock',
+];

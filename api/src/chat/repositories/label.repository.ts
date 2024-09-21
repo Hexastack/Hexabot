@@ -10,20 +10,26 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { TFilterQuery, Model, Document, Query } from 'mongoose';
+import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
-import { Label, LabelDocument, LabelFull } from '../schemas/label.schema';
+import {
+  Label,
+  LabelDocument,
+  LabelFull,
+  LabelPopulate,
+} from '../schemas/label.schema';
 
 @Injectable()
-export class LabelRepository extends BaseRepository<Label, 'users'> {
+export class LabelRepository extends BaseRepository<
+  Label,
+  LabelPopulate,
+  LabelFull
+> {
   constructor(
     @InjectModel(Label.name) readonly model: Model<Label>,
     private readonly eventEmitter: EventEmitter2,
-    private readonly logger: LoggerService,
   ) {
     super(model, Label);
   }
@@ -77,43 +83,5 @@ export class LabelRepository extends BaseRepository<Label, 'users'> {
       typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
     );
     this.eventEmitter.emit('hook:chatbot:label:delete', labels);
-  }
-
-  /**
-   * Fetches all label documents and populates the `users` field which references the subscribers.
-   *
-   * @returns A promise that resolves with an array of fully populated `LabelFull` documents.
-   */
-  async findAllAndPopulate() {
-    const query = this.findAllQuery().populate(['users']);
-    return await this.execute(query, LabelFull);
-  }
-
-  /**
-   * Fetches a paginated list of label documents based on filters and populates the `users` (subscribers) field.
-   *
-   * @param filters - The filter criteria for querying the labels.
-   * @param pageQuery - The pagination query options.
-   *
-   * @returns A promise that resolves with a paginated array of fully populated `LabelFull` documents.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Label>,
-    pageQuery: PageQueryDto<Label>,
-  ) {
-    const query = this.findPageQuery(filters, pageQuery).populate(['users']);
-    return await this.execute(query, LabelFull);
-  }
-
-  /**
-   * Fetches a single label document by its ID and populates the `users` (subscribers) field.
-   *
-   * @param id - The ID of the label to be fetched.
-   *
-   * @returns A promise that resolves with a fully populated label.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate(['users']);
-    return await this.executeOne(query, LabelFull);
   }
 }

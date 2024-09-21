@@ -33,7 +33,6 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
 import { Category } from '../schemas/category.schema';
-import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 
 @UseInterceptors(CsrfInterceptor)
@@ -41,7 +40,6 @@ import { CategoryService } from '../services/category.service';
 export class CategoryController extends BaseController<Category> {
   constructor(
     private readonly categoryService: CategoryService,
-    private readonly blockService: BlockService,
     private readonly logger: LoggerService,
   ) {
     super(categoryService);

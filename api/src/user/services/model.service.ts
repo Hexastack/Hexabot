@@ -8,15 +8,14 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseService } from '@/utils/generics/base-service';
 
 import { ModelRepository } from '../repositories/model.repository';
-import { Model } from '../schemas/model.schema';
+import { Model, ModelFull, ModelPopulate } from '../schemas/model.schema';
 
 @Injectable()
-export class ModelService extends BaseService<Model> {
+export class ModelService extends BaseService<Model, ModelPopulate, ModelFull> {
   constructor(readonly repository: ModelRepository) {
     super(repository);
   }
@@ -30,27 +29,5 @@ export class ModelService extends BaseService<Model> {
    */
   async deleteOne(id: string) {
     return await this.repository.deleteOne(id);
-  }
-
-  /**
-   * Finds multiple Model entities based on provided filters and populates related entities.
-   *
-   * @param filters - The filters used to query the Model entities.
-   * @param populate - Optional array of related entity fields to populate in the result.
-   *
-   * @returns A promise that resolves to the list of found Model entities with populated fields.
-   */
-  async findAndPopulate(filters: TFilterQuery<Model>, populate?: string[]) {
-    return await this.repository.findAndPopulate(filters, populate);
-  }
-
-  /**
-   * Finds a single Model entity by its unique identifier and populates related entities.
-   *
-   * @param id - The unique identifier of the Model entity to find.
-   * @returns A promise that resolves to the found Model entity with populated fields.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
   }
 }
