@@ -3,8 +3,7 @@ version: "3.9"
 services:
   database-init:
     container_name: database-init
-    build:
-      context: ../api
+    image: hexastack/hexabot-api:latest
     command: sh -c "npm run cache:init && npm run migrate prune && npm run migrate up"
     env_file: .env
     networks:
@@ -15,8 +14,7 @@ services:
 
   api:
     container_name: api
-    build:
-      context: ../api
+    image: hexastack/hexabot-api:latest
     env_file: .env
     ports:
       - ${API_PORT}:3000
@@ -30,7 +28,6 @@ services:
         condition: service_healthy
       database-init:
         condition: service_completed_successfully
-
     healthcheck:
       test: "wget --spider http://localhost:3000"
       interval: 10s
@@ -40,12 +37,7 @@ services:
 
   hexabot-frontend:
     container_name: frontend
-    build:
-      context: ../
-      dockerfile: ./frontend/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN}
-        - NEXT_PUBLIC_SSO_ENABLED=${NEXT_PUBLIC_SSO_ENABLED}
+    image: hexastack/hexabot-ui:latest
     env_file: .env
     ports:
       - ${APP_FRONTEND_PORT}:8080
@@ -75,12 +67,7 @@ services:
 
   widget:
     container_name: widget
-    build:
-      context: ../widget
-      args:
-        REACT_APP_WIDGET_API_URL: ${REACT_APP_WIDGET_API_URL}
-        REACT_APP_WIDGET_CHANNEL: ${REACT_APP_WIDGET_CHANNEL}
-        REACT_APP_WIDGET_TOKEN: ${REACT_APP_WIDGET_TOKEN}
+    image: hexastack/hexabot-widget:latest
     networks:
       - app-network
     depends_on:

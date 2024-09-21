@@ -21,14 +21,6 @@ RUN \
 
 # Rebuild the source code only when needed
 FROM base AS builder
-ARG NEXT_PUBLIC_API_ORIGIN
-ENV NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN}
-ARG NEXT_PUBLIC_SSO_ENABLED
-ENV NEXT_PUBLIC_SSO_ENABLED=${NEXT_PUBLIC_SSO_ENABLED}
-
-ENV REACT_APP_WIDGET_API_URL=${NEXT_PUBLIC_API_ORIGIN}
-ENV REACT_APP_WIDGET_CHANNEL=test
-ENV REACT_APP_WIDGET_TOKEN=test
 
 WORKDIR /app
 
@@ -56,10 +48,6 @@ WORKDIR /app/frontend
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED 1
-
-# Set the environment variable API_ORIGIN
-ENV NEXT_PUBLIC_API_ORIGIN ${NEXT_PUBLIC_API_ORIGIN:-"http://localhost:3000"}
-ENV NEXT_PUBLIC_SSO_ENABLED ${NEXT_PUBLIC_SSO_ENABLED:-"false"}
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

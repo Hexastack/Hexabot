@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      - ${APP_SMTP_4_DEV_PORT}:80
+      - "25:25"
+      - "143:143"
+    volumes:
+      - smtp4dev-data:/smtp4dev
+    environment:
+      - ServerOptions__HostName=smtp4dev
+      - ServerOptions__LockSettings=true
+    networks:
+      - app-network
+
+volumes:
+  smtp4dev-data:

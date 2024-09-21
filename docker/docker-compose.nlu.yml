@@ -10,9 +10,7 @@ services:
 
   nlu-api:
     container_name: nlu-api
-    build:
-      context: ../nlu
-      dockerfile: Dockerfile
+    image: hexastack/hexabot-nlu:latest
     env_file: .env
     networks:
       - nlp-network

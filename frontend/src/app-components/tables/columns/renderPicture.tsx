@@ -11,12 +11,15 @@ import { Grid } from "@mui/material";
 import { GridRenderCellParams } from "@mui/x-data-grid";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
 
 export const buildRenderPicture = (
   entityType: EntityType.USER | EntityType.SUBSCRIBER,
 ) =>
   function RenderPicture(params: GridRenderCellParams) {
+    const { apiUrl } = useConfig();
+
     return (
       <Grid
         container
@@ -28,6 +31,7 @@ export const buildRenderPicture = (
       >
         <img
           src={getAvatarSrc(
+            apiUrl,
             entityType,
             entityType === EntityType.USER
               ? params.row.id

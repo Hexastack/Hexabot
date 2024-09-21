@@ -11,6 +11,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -32,7 +33,7 @@ export class InvitationService extends BaseService<Invitation> {
     @Inject(InvitationRepository)
     readonly repository: InvitationRepository,
     @Inject(JwtService) private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     protected readonly i18n: ExtendedI18nService,
   ) {
@@ -54,24 +55,28 @@ export class InvitationService extends BaseService<Invitation> {
    */
   async create(dto: InvitationCreateDto): Promise<Invitation> {
     const jwt = await this.sign(dto);
-    try {
-      await this.mailerService.sendMail({
-        to: dto.email,
-        template: 'invitation.mjml',
-        context: {
-          token: jwt,
-          // TODO: Which language should we use?
-          t: (key: string) => this.i18n.t(key),
-        },
-      });
-    } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
-        'InvitationService',
-      );
-      throw new InternalServerErrorException('Could not send email');
+    if (this.mailerService) {
+      try {
+        await this.mailerService.sendMail({
+          to: dto.email,
+          template: 'invitation.mjml',
+          context: {
+            token: jwt,
+            // TODO: Which language should we use?
+            t: (key: string) =>
+              this.i18n.t(key, { lang: config.chatbot.lang.default }),
+          },
+          subject: this.i18n.t('invitation_subject'),
+        });
+      } catch (e) {
+        this.logger.error(
+          'Could not send email',
+          e.message,
+          e.stack,
+          'InvitationService',
+        );
+        throw new InternalServerErrorException('Could not send email');
+      }
     }
     const newInvitation = await super.create({ ...dto, token: jwt });
     return { ...newInvitation, token: jwt };

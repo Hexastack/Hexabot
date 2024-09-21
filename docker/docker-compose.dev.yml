@@ -2,12 +2,18 @@ version: "3.8"
 
 services:
   database-init:
+    build:
+      context: ../api
+    pull_policy: build
     volumes:
       - ../api/src:/app/src
       - ../api/migrations:/app/migrations
       # - ../api/node_modules:/app/node_modules
 
   api:
+    build:
+      context: ../api
+    pull_policy: build
     ports:
       - ${API_PORT}:3000
       - 9229:9229 # vscode debug port
@@ -16,21 +22,6 @@ services:
       - ../api/migrations:/app/migrations
       #- ../api/node_modules:/app/node_modules
     command: ["npm", "run", "start:debug"]
-
-  smtp4dev:
-    image: rnwood/smtp4dev:v3
-    restart: always
-    ports:
-      - ${APP_SMTP_4_DEV_PORT}:80
-      - "25:25"
-      - "143:143"
-    volumes:
-      - smtp4dev-data:/smtp4dev
-    environment:
-      - ServerOptions__HostName=smtp4dev
-      - ServerOptions__LockSettings=true
-    networks:
-      - db-network
 
   mongo-express:
     container_name: mongoUi
@@ -45,13 +36,19 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
       ME_CONFIG_MONGODB_URL: ${MONGO_URI}
 
+  hexabot-frontend:
+    container_name: frontend
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
+    pull_policy: build
+
   widget:
     build:
+      context: ../widget
       target: development
+    pull_policy: build
     volumes:
       - ../widget/src:/app/src
     ports:
       - ${APP_WIDGET_PORT}:5173
-
-volumes:
-  smtp4dev-data:

@@ -18,7 +18,6 @@ import {
   styled,
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import getConfig from "next/config";
 import { FC, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -26,11 +25,10 @@ import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
 
 import { borderLine, theme } from "./themes/theme";
-
-const { publicRuntimeConfig } = getConfig();
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -75,6 +73,7 @@ export type HeaderProps = {
   onToggleSidebar: () => void;
 };
 export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
+  const { apiUrl, ssoEnabled } = useConfig();
   const { t } = useTranslation();
   const anchorRef = useRef(null);
   const [isMenuPopoverOpen, setIsMenuPopoverOpen] = useState(false);
@@ -160,7 +159,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 </Typography>
               </Box>
               <Avatar
-                src={getAvatarSrc(EntityType.USER, user?.id).concat(
+                src={getAvatarSrc(apiUrl, EntityType.USER, user?.id).concat(
                   `?${randomSeed}`,
                 )}
                 color={theme.palette.text.secondary}
@@ -176,7 +175,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   last_name: user.last_name,
                 }}
                 links={
-                  !publicRuntimeConfig.ssoEnabled
+                  !ssoEnabled
                     ? [
                         { text: t("menu.home"), href: "/" },
                         { text: t("menu.edit_account"), href: "/profile" },

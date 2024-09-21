@@ -11,7 +11,6 @@ import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import getConfig from "next/config";
 import { useTranslation } from "react-i18next";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
@@ -25,6 +24,7 @@ import { buildRenderPicture } from "@/app-components/tables/columns/renderPictur
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useConfig } from "@/hooks/useConfig";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
@@ -39,9 +39,8 @@ import { getDateTimeFormatter } from "@/utils/date";
 import { EditUserDialog } from "./EditUserDialog";
 import { InvitationDialog } from "./InvitationDialog";
 
-const { publicRuntimeConfig } = getConfig();
-
 export const Users = () => {
+  const { ssoEnabled } = useConfig();
   const { t } = useTranslation();
   const { toast } = useToast();
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {
@@ -157,7 +156,7 @@ export const Users = () => {
                 },
               });
             }}
-            disabled={publicRuntimeConfig.ssoEnabled}
+            disabled={ssoEnabled}
           >
             {t(params.row.state ? "label.enabled" : "label.disabled")}
           </Button>
@@ -188,7 +187,7 @@ export const Users = () => {
       valueGetter: (params) =>
         t("datetime.updated_at", getDateTimeFormatter(params)),
     },
-    ...(!publicRuntimeConfig.ssoEnabled ? [actionColumns] : []),
+    ...(!ssoEnabled ? [actionColumns] : []),
   ];
 
   return (
@@ -207,7 +206,7 @@ export const Users = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} />
           </Grid>
-          {!publicRuntimeConfig.ssoEnabled &&
+          {!ssoEnabled &&
           hasPermission(EntityType.USER, PermissionAction.CREATE) ? (
             <Grid item>
               <Button

@@ -40,7 +40,7 @@
     "edit_account_email": "Une adresse e-mail valide Tous les e-mails du système seront envoyés à cette adresse. L'adresse e-mail n'est pas rendue publique et ne sera utilisée que si vous souhaitez recevoir un nouveau mot de passe ou si vous souhaitez recevoir certaines nouvelles ou notifications par e-mail.",
     "new_password": "Pour changer le mot de passe actuel, entrez le nouveau mot de passe dans les deux champs.",
     "account_update_success": "Le compte a été mis à jour avec succès",
-    "account_disabled": "Votre compte a été désactivé!",
+    "account_disabled": "Votre compte a été désactivé ou est en attente de confirmation.",
     "success_invitation_sent": "L'invitation a été envoyée avec succès.",
     "item_delete_confirm": "Êtes-vous sûr de bien vouloir supprimer cet élément?",
     "item_delete_success": "L'élément a été supprimé avec succès",
