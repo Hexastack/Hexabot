@@ -41,7 +41,7 @@
     "new_password": "To change the current password, enter the new password in both fields.",
     "account_update_success": "Account has been updated successfully",
     "account_disabled": "Your account has been either disabled or is pending confirmation.",
-    "success_invitation_sent": "Signup was successful. You will receive an email confirmation shortly.",
+    "success_invitation_sent": "Invitation to join has been successfully sent.",
     "item_delete_confirm": "Are you sure you want to delete this item?",
     "item_delete_success": "Item has been deleted successfully",
     "success_save": "Changes has been saved!",
