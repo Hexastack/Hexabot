@@ -4,6 +4,7 @@ services:
   database-init:
     build:
       context: ../api
+    pull_policy: build
     volumes:
       - ../api/src:/app/src
       - ../api/migrations:/app/migrations
@@ -12,6 +13,7 @@ services:
   api:
     build:
       context: ../api
+    pull_policy: build
     ports:
       - ${API_PORT}:3000
       - 9229:9229 # vscode debug port
@@ -39,11 +41,13 @@ services:
     build:
       context: ../
       dockerfile: ./frontend/Dockerfile
+    pull_policy: build
 
   widget:
     build:
       context: ../widget
       target: development
+    pull_policy: build
     volumes:
       - ../widget/src:/app/src
     ports:
