@@ -8,7 +8,7 @@
  */
 
 import AddIcon from "@mui/icons-material/Add";
-import FolderIcon from "@mui/icons-material/Folder";
+import LabelIcon from "@mui/icons-material/Label";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React from "react";
@@ -158,7 +158,7 @@ export const Labels = () => {
           if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
         }}
       />
-      <PageHeader icon={FolderIcon} title={t("title.labels")}>
+      <PageHeader icon={LabelIcon} title={t("title.labels")}>
         <Grid
           justifyContent="flex-end"
           gap={1}
