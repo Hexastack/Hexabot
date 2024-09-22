@@ -22,7 +22,6 @@ import {
   Tab,
   Tabs,
   Tooltip,
-  debounce,
   tabsClasses,
 } from "@mui/material";
 import {
@@ -47,17 +46,17 @@ import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
+import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
-import { ICategory, ICategoryAttributes } from "@/types/category.types";
+import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
-import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 
 const Diagrams = () => {
   const { t } = useTranslation();
@@ -115,7 +114,6 @@ const Diagrams = () => {
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
-
   const debouncedUpdateCategory = useDebouncedUpdate(updateCategory, 300);
   const debouncedZoomEvent = useCallback(
     (event: any) => {
@@ -130,7 +128,7 @@ const Diagrams = () => {
       }
       event.stopPropagation();
     },
-    [selectedCategoryId, debouncedUpdateCategory],
+    [selectedCategoryId, engine, debouncedUpdateCategory],
   );
   const debouncedOffsetEvent = useCallback(
     (event: any) => {
@@ -146,7 +144,6 @@ const Diagrams = () => {
     },
     [selectedCategoryId, debouncedUpdateCategory],
   );
-
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);

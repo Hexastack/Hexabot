@@ -11,7 +11,6 @@ function useDebouncedUpdate(
   delay: number = 300,
 ) {
   const accumulatedUpdates = useRef<DebouncedUpdateParams | null>(null);
-
   const processUpdates = useRef(
     debounce(() => {
       if (accumulatedUpdates.current) {
@@ -20,7 +19,6 @@ function useDebouncedUpdate(
       }
     }, delay),
   ).current;
-
   const handleUpdate = useCallback(
     (params: DebouncedUpdateParams) => {
       accumulatedUpdates.current = {
