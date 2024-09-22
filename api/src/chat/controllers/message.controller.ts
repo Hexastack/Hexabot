@@ -36,7 +36,12 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { MessageCreateDto } from '../dto/message.dto';
-import { Message, MessageStub } from '../schemas/message.schema';
+import {
+  Message,
+  MessageFull,
+  MessagePopulate,
+  MessageStub,
+} from '../schemas/message.schema';
 import {
   OutgoingMessage,
   OutgoingMessageFormat,
@@ -49,7 +54,12 @@ import { SubscriberService } from '../services/subscriber.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('message')
-export class MessageController extends BaseController<Message, MessageStub> {
+export class MessageController extends BaseController<
+  Message,
+  MessageStub,
+  MessagePopulate,
+  MessageFull
+> {
   constructor(
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
@@ -70,7 +80,7 @@ export class MessageController extends BaseController<Message, MessageStub> {
     )
     filters: TFilterQuery<Message>,
   ) {
-    return this.canPopulate(populate, ['recipient', 'sender', 'sentBy'])
+    return this.canPopulate(populate)
       ? await this.messageService.findPageAndPopulate(filters, pageQuery)
       : await this.messageService.findPage(filters, pageQuery);
   }
@@ -97,7 +107,7 @@ export class MessageController extends BaseController<Message, MessageStub> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['recipient', 'sender', 'sentBy'])
+    const doc = this.canPopulate(populate)
       ? await this.messageService.findOneAndPopulate(id)
       : await this.messageService.findOne(id);
     if (!doc) {

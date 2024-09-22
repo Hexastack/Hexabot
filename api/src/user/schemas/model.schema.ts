@@ -13,6 +13,7 @@ import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Permission } from './permission.schema';
 import { TRelation } from '../types/index.type';
@@ -72,3 +73,7 @@ ModelModel.schema.virtual('permissions', {
 });
 
 export default ModelModel.schema;
+
+export type ModelPopulate = keyof TFilterPopulateFields<Model, ModelStub>;
+
+export const MODEL_POPULATE: ModelPopulate[] = ['permissions'];

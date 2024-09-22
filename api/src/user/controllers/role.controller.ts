@@ -32,12 +32,17 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
-import { Role, RoleStub } from '../schemas/role.schema';
+import { Role, RoleFull, RolePopulate, RoleStub } from '../schemas/role.schema';
 import { RoleService } from '../services/role.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('role')
-export class RoleController extends BaseController<Role, RoleStub> {
+export class RoleController extends BaseController<
+  Role,
+  RoleStub,
+  RolePopulate,
+  RoleFull
+> {
   constructor(
     private readonly roleService: RoleService,
     private readonly logger: LoggerService,
@@ -58,7 +63,7 @@ export class RoleController extends BaseController<Role, RoleStub> {
     @Query(new SearchFilterPipe<Role>({ allowedFields: ['name'] }))
     filters: TFilterQuery<Role>,
   ) {
-    return this.canPopulate(populate, ['permissions', 'users'])
+    return this.canPopulate(populate)
       ? await this.roleService.findPageAndPopulate(filters, pageQuery)
       : await this.roleService.findPage(filters, pageQuery);
   }
@@ -89,7 +94,7 @@ export class RoleController extends BaseController<Role, RoleStub> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['permissions', 'users'])
+    const doc = this.canPopulate(populate)
       ? await this.roleService.findOneAndPopulate(id)
       : await this.roleService.findOne(id);
 

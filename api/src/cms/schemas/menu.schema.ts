@@ -13,6 +13,7 @@ import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { MenuType } from './types/menu';
 
@@ -78,3 +79,7 @@ export const MenuModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default MenuModel.schema;
+
+export type MenuPopulate = keyof TFilterPopulateFields<Menu, MenuStub>;
+
+export const MENU_POPULATE: MenuPopulate[] = ['parent'];

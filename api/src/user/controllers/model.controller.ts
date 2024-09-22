@@ -13,11 +13,21 @@ import { TFilterQuery } from 'mongoose';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 
-import { Model, ModelStub } from '../schemas/model.schema';
+import {
+  Model,
+  ModelFull,
+  ModelPopulate,
+  ModelStub,
+} from '../schemas/model.schema';
 import { ModelService } from '../services/model.service';
 
 @Controller('model')
-export class ModelController extends BaseController<Model, ModelStub> {
+export class ModelController extends BaseController<
+  Model,
+  ModelStub,
+  ModelPopulate,
+  ModelFull
+> {
   constructor(private readonly modelService: ModelService) {
     super(modelService);
   }
@@ -39,9 +49,8 @@ export class ModelController extends BaseController<Model, ModelStub> {
     populate: string[],
     filters: TFilterQuery<Model>,
   ) {
-    return await this.modelService.findAndPopulate(
-      filters,
-      this.canPopulate(populate, ['permissions']) ? populate : ['permissions'],
-    );
+    return this.canPopulate(populate)
+      ? await this.modelService.findAndPopulate(filters)
+      : await this.modelService.find(filters);
   }
 }

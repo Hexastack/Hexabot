@@ -7,13 +7,14 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
-import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { Schema as MongooseSchema, THydratedDocument } from 'mongoose';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Role } from './role.schema';
 import { UserProvider } from '../types/user-provider.type';
@@ -129,3 +130,7 @@ export const UserModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default UserModel.schema;
+
+export type UserPopulate = keyof TFilterPopulateFields<User, UserStub>;
+
+export const USER_POPULATE: UserPopulate[] = ['roles', 'avatar'];

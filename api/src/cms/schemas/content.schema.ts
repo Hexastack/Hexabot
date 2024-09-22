@@ -14,6 +14,7 @@ import mongoose, { Document } from 'mongoose';
 import { config } from '@/config';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { ContentType } from './content-type.schema';
 
@@ -104,3 +105,7 @@ export const ContentModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default ContentModel.schema;
+
+export type ContentPopulate = keyof TFilterPopulateFields<Content, ContentStub>;
+
+export const CONTENT_POPULATE: ContentPopulate[] = ['entity'];

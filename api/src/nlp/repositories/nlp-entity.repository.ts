@@ -13,21 +13,29 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery, Types } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpValueRepository } from './nlp-value.repository';
-import { NlpEntity, NlpEntityFull } from '../schemas/nlp-entity.schema';
+import {
+  NLP_ENTITY_POPULATE,
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityPopulate,
+} from '../schemas/nlp-entity.schema';
 
 @Injectable()
-export class NlpEntityRepository extends BaseRepository<NlpEntity, 'values'> {
+export class NlpEntityRepository extends BaseRepository<
+  NlpEntity,
+  NlpEntityPopulate,
+  NlpEntityFull
+> {
   constructor(
     @InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>,
     private readonly nlpValueRepository: NlpValueRepository,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, NlpEntity);
+    super(model, NlpEntity, NLP_ENTITY_POPULATE, NlpEntityFull);
   }
 
   /**
@@ -105,44 +113,5 @@ export class NlpEntityRepository extends BaseRepository<NlpEntity, 'values'> {
     } else {
       throw new Error('Attempted to delete NLP entity using unknown criteria');
     }
-  }
-
-  /**
-   * Retrieves all NLP entities and populates related `values`.
-   *
-   * @returns Promise containing an array of fully populated NLP entities.
-   */
-  async findAllAndPopulate() {
-    const query = this.findAllQuery().populate(['values']);
-    return await this.execute(query, NlpEntityFull);
-  }
-
-  /**
-   * Retrieves a paginated list of NLP entities based on filter criteria,
-   * and populates related `values`.
-   *
-   * @param filter Filter criteria for NLP entities.
-   * @param pageQuery Pagination query.
-   *
-   * @returns Promise containing the paginated result of fully populated NLP entities.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<NlpEntity>,
-    pageQuery: PageQueryDto<NlpEntity>,
-  ) {
-    const query = this.findPageQuery(filter, pageQuery).populate(['values']);
-    return await this.execute(query, NlpEntityFull);
-  }
-
-  /**
-   * Retrieves a single NLP entity by its ID and populates related `values`.
-   *
-   * @param id The ID of the NLP entity.
-   *
-   * @returns Promise containing the fully populated NLP entity.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate(['values']);
-    return await this.executeOne(query, NlpEntityFull);
   }
 }

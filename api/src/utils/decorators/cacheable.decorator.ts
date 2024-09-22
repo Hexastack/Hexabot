@@ -7,7 +7,6 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { LoggerService } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 export function Cacheable(cacheKey: string) {
@@ -20,7 +19,6 @@ export function Cacheable(cacheKey: string) {
 
     descriptor.value = async function (...args: any[]) {
       const cache: Cache = this.cacheManager;
-      const logger: LoggerService = this.logger; // Access the logger from the instance
 
       if (!cache) {
         throw new Error(
@@ -28,19 +26,15 @@ export function Cacheable(cacheKey: string) {
         );
       }
 
-      if (!logger) {
-        throw new Error('Cacheable() requires the the logger service.');
-      }
-
       // Try to get cached data
       try {
         const cachedResult = await cache.get(cacheKey);
         if (cachedResult) {
-          logger.debug(`Cache hit for key: ${cacheKey}`);
           return cachedResult;
         }
       } catch (error) {
-        logger.error(`Cache get error for key: ${cacheKey}:`, error);
+        // eslint-disable-next-line no-console
+        console.error(`Cache get error for key: ${cacheKey}:`, error);
       }
 
       // Call the original method if cache miss
@@ -49,9 +43,9 @@ export function Cacheable(cacheKey: string) {
       // Set the new result in cache
       try {
         await cache.set(cacheKey, result);
-        logger.debug(`Cache set for key: ${cacheKey}`);
       } catch (error) {
-        logger.error(`Cache set error for key: ${cacheKey}:`, error);
+        // eslint-disable-next-line no-console
+        console.error(`Cache set error for key: ${cacheKey}:`, error);
       }
 
       return result;

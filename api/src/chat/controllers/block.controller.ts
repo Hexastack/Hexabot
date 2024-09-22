@@ -36,14 +36,24 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
-import { Block, BlockFull, BlockStub } from '../schemas/block.schema';
+import {
+  Block,
+  BlockFull,
+  BlockPopulate,
+  BlockStub,
+} from '../schemas/block.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('Block')
-export class BlockController extends BaseController<Block, BlockStub> {
+export class BlockController extends BaseController<
+  Block,
+  BlockStub,
+  BlockPopulate,
+  BlockFull
+> {
   constructor(
     private readonly blockService: BlockService,
     private readonly logger: LoggerService,
@@ -68,15 +78,7 @@ export class BlockController extends BaseController<Block, BlockStub> {
     @Query(new SearchFilterPipe<Block>({ allowedFields: ['category'] }))
     filters: TFilterQuery<Block>,
   ): Promise<Block[] | BlockFull[]> {
-    return this.canPopulate(populate, [
-      'trigger_labels',
-      'assign_labels',
-      'nextBlocks',
-      'attachedBlock',
-      'category',
-      'previousBlocks',
-      'attachedToBlock',
-    ])
+    return this.canPopulate(populate)
       ? await this.blockService.findAndPopulate(filters)
       : await this.blockService.find(filters);
   }
@@ -189,15 +191,7 @@ export class BlockController extends BaseController<Block, BlockStub> {
     @Query(PopulatePipe)
     populate: string[],
   ): Promise<Block | BlockFull> {
-    const doc = this.canPopulate(populate, [
-      'trigger_labels',
-      'assign_labels',
-      'nextBlocks',
-      'attachedBlock',
-      'category',
-      'previousBlocks',
-      'attachedToBlock',
-    ])
+    const doc = this.canPopulate(populate)
       ? await this.blockService.findOneAndPopulate(id)
       : await this.blockService.findOne(id);
     if (!doc) {

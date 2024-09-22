@@ -12,10 +12,18 @@ import { Injectable } from '@nestjs/common';
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
 import { PermissionRepository } from '../repositories/permission.repository';
-import { Permission } from '../schemas/permission.schema';
+import {
+  Permission,
+  PermissionFull,
+  PermissionPopulate,
+} from '../schemas/permission.schema';
 
 @Injectable()
-export class PermissionSeeder extends BaseSeeder<Permission> {
+export class PermissionSeeder extends BaseSeeder<
+  Permission,
+  PermissionPopulate,
+  PermissionFull
+> {
   constructor(private readonly permissionRepository: PermissionRepository) {
     super(permissionRepository);
   }

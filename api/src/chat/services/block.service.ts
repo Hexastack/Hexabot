@@ -8,7 +8,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -24,7 +23,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { BlockRepository } from '../repositories/block.repository';
-import { Block, BlockFull } from '../schemas/block.schema';
+import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
 import { WithUrl } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import {
@@ -36,7 +35,7 @@ import { NlpPattern, Pattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 
 @Injectable()
-export class BlockService extends BaseService<Block> {
+export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   constructor(
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
@@ -47,28 +46,6 @@ export class BlockService extends BaseService<Block> {
     protected readonly i18n: ExtendedI18nService,
   ) {
     super(repository);
-  }
-
-  /**
-   * Finds and populates blocks based on the specified filters.
-   *
-   * @param filters - Query filters used to specify search criteria for finding blocks.
-   *
-   * @returns A promise that resolves to the populated blocks matching the filters.
-   */
-  async findAndPopulate(filters: TFilterQuery<Block>) {
-    return await this.repository.findAndPopulate(filters);
-  }
-
-  /**
-   * Finds and populates a block by ID.
-   *
-   * @param id - The block ID.
-   *
-   * @returns A promise that resolves to the populated block.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
   }
 
   /**

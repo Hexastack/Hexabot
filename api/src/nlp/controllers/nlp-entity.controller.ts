@@ -8,19 +8,19 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
+  Controller,
   Delete,
-  Param,
-  Query,
+  Get,
   HttpCode,
-  NotFoundException,
-  UseInterceptors,
-  MethodNotAllowedException,
   InternalServerErrorException,
+  MethodNotAllowedException,
+  NotFoundException,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { TFilterQuery } from 'mongoose';
@@ -34,14 +34,21 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
-import { NlpEntity, NlpEntityStub } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityPopulate,
+  NlpEntityStub,
+} from '../schemas/nlp-entity.schema';
 import { NlpEntityService } from '../services/nlp-entity.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('nlpentity')
 export class NlpEntityController extends BaseController<
   NlpEntity,
-  NlpEntityStub
+  NlpEntityStub,
+  NlpEntityPopulate,
+  NlpEntityFull
 > {
   constructor(
     private readonly nlpEntityService: NlpEntityService,
@@ -99,7 +106,7 @@ export class NlpEntityController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['values'])
+    const doc = this.canPopulate(populate)
       ? await this.nlpEntityService.findOneAndPopulate(id)
       : await this.nlpEntityService.findOne(id);
     if (!doc) {
@@ -127,7 +134,7 @@ export class NlpEntityController extends BaseController<
     @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
     filters: TFilterQuery<NlpEntity>,
   ) {
-    return this.canPopulate(populate, ['values'])
+    return this.canPopulate(populate)
       ? await this.nlpEntityService.findPageAndPopulate(filters, pageQuery)
       : await this.nlpEntityService.findPage(filters, pageQuery);
   }
