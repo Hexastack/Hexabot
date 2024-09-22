@@ -17,8 +17,8 @@ import {
 } from 'nestjs-i18n';
 import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
-import { Translation } from '@/chat/schemas/translation.schema';
 import { config } from '@/config';
+import { Translation } from '@/i18n/schemas/translation.schema';
 
 @Injectable()
 export class I18nService<

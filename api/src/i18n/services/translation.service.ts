@@ -14,9 +14,9 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { BlockService } from './block.service';
+import { Block } from '../../chat/schemas/block.schema';
+import { BlockService } from '../../chat/services/block.service';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { Block } from '../schemas/block.schema';
 import { Translation } from '../schemas/translation.schema';
 
 @Injectable()

@@ -9,6 +9,7 @@
 
 import { DynamicModule, Global, Inject, Module } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
 import {
   I18N_OPTIONS,
   I18N_TRANSLATIONS,
@@ -18,7 +19,12 @@ import {
 } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
+import { TranslationController } from './controllers/translation.controller';
+import { TranslationRepository } from './repositories/translation.repository';
+import { TranslationModel } from './schemas/translation.schema';
+import { TranslationSeeder } from './seeds/translation.seed';
 import { I18nService } from './services/i18n.service';
+import { TranslationService } from './services/translation.service';
 
 @Global()
 @Module({})
@@ -34,10 +40,17 @@ export class I18nModule extends NativeI18nModule {
   }
 
   static forRoot(options: I18nOptions): DynamicModule {
-    const { providers, exports } = super.forRoot(options);
+    const { imports, providers, controllers, exports } = super.forRoot(options);
     return {
       module: I18nModule,
-      providers: providers.concat(I18nService),
+      imports: imports.concat([MongooseModule.forFeature([TranslationModel])]),
+      controllers: controllers.concat([TranslationController]),
+      providers: providers.concat([
+        I18nService,
+        TranslationRepository,
+        TranslationService,
+        TranslationSeeder,
+      ]),
       exports: exports.concat(I18nService),
     };
   }

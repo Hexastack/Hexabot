@@ -14,7 +14,7 @@ import { Document, Model, Query, Types } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
-import { Translation } from '../schemas/translation.schema';
+import { Translation } from '../../i18n/schemas/translation.schema';
 
 @Injectable()
 export class TranslationRepository extends BaseRepository<Translation> {

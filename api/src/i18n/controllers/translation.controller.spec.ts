@@ -17,6 +17,16 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
+import { MessageController } from '@/chat/controllers/message.controller';
+import { BlockRepository } from '@/chat/repositories/block.repository';
+import { MessageRepository } from '@/chat/repositories/message.repository';
+import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
+import { BlockModel } from '@/chat/schemas/block.schema';
+import { MessageModel } from '@/chat/schemas/message.schema';
+import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { BlockService } from '@/chat/services/block.service';
+import { MessageService } from '@/chat/services/message.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { ContentModel } from '@/cms/schemas/content.schema';
@@ -39,20 +49,10 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MessageController } from './message.controller';
 import { TranslationController } from './translation.controller';
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { BlockRepository } from '../repositories/block.repository';
-import { MessageRepository } from '../repositories/message.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { BlockModel } from '../schemas/block.schema';
-import { MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
 import { Translation, TranslationModel } from '../schemas/translation.schema';
-import { BlockService } from '../services/block.service';
-import { MessageService } from '../services/message.service';
-import { SubscriberService } from '../services/subscriber.service';
 import { TranslationService } from '../services/translation.service';
 
 describe('TranslationController', () => {
