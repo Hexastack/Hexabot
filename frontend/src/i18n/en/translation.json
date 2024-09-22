@@ -99,7 +99,8 @@
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
     "regex_is_invalid": "Regex is invalid",
     "attachment_not_found": "Attachment is not found",
-    "title_length_exceeded": "You have reached the maximum length"
+    "title_length_exceeded": "You have reached the maximum length",
+    "no_label_found": "No label found"
   },
   "menu": {
     "terms": "Terms of Use",

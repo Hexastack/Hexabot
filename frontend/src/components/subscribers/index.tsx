@@ -213,7 +213,7 @@ export const Subscribers = () => {
                 </MenuItem>
               ))
             ) : (
-              <MenuItem disabled>No label found</MenuItem>
+              <MenuItem disabled>{t("message.no_label_found")}</MenuItem>
             )}
           </Input>
         </Grid>

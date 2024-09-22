@@ -100,7 +100,8 @@
     "invalid_max_fallback_attempt_limit": "La limite des tentatives de secours doit être un nombre positif.",
     "regex_is_invalid": "Le regex est invalide",
     "attachment_not_found": "La pièce jointe est introuvable",
-    "title_length_exceeded": "Vous avez atteint la longueur maximale"
+    "title_length_exceeded": "Vous avez atteint la longueur maximale",
+    "no_label_found": "Aucun label trouvé"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
