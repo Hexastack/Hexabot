@@ -73,7 +73,7 @@ export class I18nModule extends NativeI18nModule {
         TranslationService,
         TranslationSeeder,
       ]),
-      exports: exports.concat(I18nService),
+      exports: exports.concat(I18nService, LanguageService),
     };
   }
 }

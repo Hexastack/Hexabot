@@ -34,6 +34,7 @@ import Papa from 'papaparse';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
+import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
@@ -70,6 +71,7 @@ export class NlpSampleController extends BaseController<
     private readonly nlpEntityService: NlpEntityService,
     private readonly logger: LoggerService,
     private readonly nlpService: NlpService,
+    private readonly languageService: LanguageService,
   ) {
     super(nlpSampleService);
   }
@@ -131,9 +133,14 @@ export class NlpSampleController extends BaseController<
       nlpEntities,
     );
 
+    const language = await this.languageService.findOne(
+      createNlpSampleDto.language,
+    );
+
     return {
       ...nlpSample,
       entities,
+      language,
     };
   }
 
@@ -265,10 +272,9 @@ export class NlpSampleController extends BaseController<
     @Param('id') id: string,
     @Body() updateNlpSampleDto: NlpSampleDto,
   ): Promise<NlpSampleFull> {
-    const { text, type, entities } = updateNlpSampleDto;
+    const { entities, ...sampleAttrs } = updateNlpSampleDto;
     const sample = await this.nlpSampleService.updateOne(id, {
-      text,
-      type,
+      ...sampleAttrs,
       trained: false,
     });
 
@@ -282,8 +288,11 @@ export class NlpSampleController extends BaseController<
     const updatedSampleEntities =
       await this.nlpSampleEntityService.storeSampleEntities(sample, entities);
 
+    const language = await this.languageService.findOne(sampleAttrs.language);
+
     return {
       ...sample,
+      language,
       entities: updatedSampleEntities,
     };
   }
@@ -366,6 +375,8 @@ export class NlpSampleController extends BaseController<
     }
     // Remove data with no intent
     const filteredData = result.data.filter((d) => d.intent !== 'none');
+    const languages = await this.languageService.getLanguages();
+    const defaultLanguage = await this.languageService.getDefaultLanguage();
     // Reduce function to ensure executing promises one by one
     for (const d of filteredData) {
       try {
@@ -375,15 +386,25 @@ export class NlpSampleController extends BaseController<
         });
 
         // Skip if sample already exists
-
         if (Array.isArray(existingSamples) && existingSamples.length > 0) {
           continue;
+        }
+
+        // Fallback to default language if 'language' is missing or invalid
+        if (!d.language || !(d.language in languages)) {
+          if (d.language) {
+            this.logger.warn(
+              `Language "${d.language}" does not exist, falling back to default.`,
+            );
+          }
+          d.language = defaultLanguage.code;
         }
 
         // Create a new sample dto
         const sample: NlpSampleCreateDto = {
           text: d.text,
           trained: false,
+          language: languages[d.language].id,
         };
 
         // Create a new sample entity dto

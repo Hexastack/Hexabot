@@ -11,6 +11,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -39,8 +41,10 @@ describe('NlpSampleService', () => {
   let nlpSampleService: NlpSampleService;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleRepository: NlpSampleRepository;
+  let languageRepository: LanguageRepository;
   let noNlpSample: NlpSample;
   let nlpSampleEntity: NlpSampleEntity;
+  let languages: Language[];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -51,6 +55,7 @@ describe('NlpSampleService', () => {
           NlpSampleEntityModel,
           NlpValueModel,
           NlpEntityModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -58,6 +63,7 @@ describe('NlpSampleService', () => {
         NlpSampleEntityRepository,
         NlpEntityRepository,
         NlpValueRepository,
+        LanguageRepository,
         NlpSampleService,
         NlpSampleEntityService,
         NlpEntityService,
@@ -73,10 +79,12 @@ describe('NlpSampleService', () => {
     nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
     );
+    languageRepository = module.get<LanguageRepository>(LanguageRepository);
     noNlpSample = await nlpSampleService.findOne({ text: 'No' });
     nlpSampleEntity = await nlpSampleEntityRepository.findOne({
       sample: noNlpSample.id,
     });
+    languages = await languageRepository.findAll();
   });
 
   afterAll(async () => {
@@ -91,6 +99,7 @@ describe('NlpSampleService', () => {
       const sampleWithEntities = {
         ...nlpSampleFixtures[1],
         entities: [nlpSampleEntity],
+        language: languages[nlpSampleFixtures[1].language],
       };
       expect(result).toEqualPayload(sampleWithEntities);
     });
@@ -110,6 +119,7 @@ describe('NlpSampleService', () => {
             entities: nlpSampleEntities.filter((currSampleEntity) => {
               return currSampleEntity.sample === currSample.id;
             }),
+            language: languages.find((lang) => lang.id === currSample.language),
           };
           acc.push(sampleWithEntities);
           return acc;

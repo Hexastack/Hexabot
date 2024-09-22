@@ -11,12 +11,6 @@ import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
 
 export const nlpEntityModels: NlpEntityCreateDto[] = [
   {
-    name: 'language',
-    lookups: ['trait'],
-    doc: `"language" refers to the language of the text sent by the end user`,
-    builtin: true,
-  },
-  {
     name: 'intent',
     lookups: ['trait'],
     doc: `"intent" refers to the underlying purpose or goal that a piece of text aims to convey. Identifying the intent involves determining what action or response the text is prompting. For instance, in customer service chatbots, recognizing the intent behind a user's message, such as "book a flight" or "check account balance," is crucial to provide accurate and relevant responses`,

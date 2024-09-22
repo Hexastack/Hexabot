@@ -7,16 +7,6 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { config } from '@/config';
-
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 
-export const nlpValueModels: NlpValueCreateDto[] = [
-  ...config.chatbot.lang.available.map((lang: string) => {
-    return {
-      entity: 'language',
-      value: lang,
-      builtin: true,
-    };
-  }),
-];
+export const nlpValueModels: NlpValueCreateDto[] = [];

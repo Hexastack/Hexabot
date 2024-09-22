@@ -16,27 +16,38 @@ import {
   IsString,
 } from 'class-validator';
 
+import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+
 import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
 
 export class NlpSampleCreateDto {
-  @ApiProperty({ description: 'nlp sample text', type: String })
+  @ApiProperty({ description: 'NLP sample text', type: String })
   @IsString()
   @IsNotEmpty()
   text: string;
 
-  @ApiPropertyOptional({ description: 'nlp sample is trained', type: Boolean })
+  @ApiPropertyOptional({
+    description: 'If NLP sample is trained',
+    type: Boolean,
+  })
   @IsBoolean()
   @IsOptional()
   trained?: boolean;
 
   @ApiPropertyOptional({
-    description: 'nlp sample type',
+    description: 'NLP sample type',
     enum: Object.values(NlpSampleState),
   })
   @IsString()
   @IsIn(Object.values(NlpSampleState))
   @IsOptional()
   type?: NlpSampleState;
+
+  @ApiProperty({ description: 'NLP sample language', type: String })
+  @IsString()
+  @IsNotEmpty()
+  @IsObjectId({ message: 'Language must be a valid ObjectId' })
+  language: string;
 }
 
 export class NlpSampleDto extends NlpSampleCreateDto {

@@ -11,6 +11,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import {
   installNlpSampleEntityFixtures,
@@ -42,7 +44,9 @@ describe('NlpSampleEntityService', () => {
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleEntities: NlpSampleEntity[];
   let nlpEntityRepository: NlpEntityRepository;
+  let languageRepository: LanguageRepository;
   let nlpEntities: NlpEntity[];
+  let languages: Language[];
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
 
@@ -55,12 +59,14 @@ describe('NlpSampleEntityService', () => {
           NlpEntityModel,
           NlpSampleModel,
           NlpValueModel,
+          LanguageModel,
         ]),
       ],
       providers: [
         NlpSampleEntityRepository,
         NlpEntityRepository,
         NlpValueRepository,
+        LanguageRepository,
         NlpSampleEntityService,
         NlpEntityService,
         NlpValueService,
@@ -74,6 +80,7 @@ describe('NlpSampleEntityService', () => {
       NlpSampleEntityRepository,
     );
     nlpEntityRepository = module.get<NlpEntityRepository>(NlpEntityRepository);
+    languageRepository = module.get<LanguageRepository>(LanguageRepository);
     nlpSampleEntityService = module.get<NlpSampleEntityService>(
       NlpSampleEntityService,
     );
@@ -81,6 +88,7 @@ describe('NlpSampleEntityService', () => {
     nlpValueService = module.get<NlpValueService>(NlpValueService);
     nlpSampleEntities = await nlpSampleEntityRepository.findAll();
     nlpEntities = await nlpEntityRepository.findAll();
+    languages = await languageRepository.findAll();
   });
 
   afterAll(async () => {
@@ -98,7 +106,10 @@ describe('NlpSampleEntityService', () => {
         ...nlpSampleEntityFixtures[0],
         entity: nlpEntities[0],
         value: { ...nlpValueFixtures[0], entity: nlpEntities[0].id },
-        sample: nlpSampleFixtures[0],
+        sample: {
+          ...nlpSampleFixtures[0],
+          language: languages[nlpSampleFixtures[0].language].id,
+        },
       };
       expect(result).toEqualPayload(sampleEntityWithPopulate);
     });
@@ -135,7 +146,10 @@ describe('NlpSampleEntityService', () => {
             ...curr,
             entity: nlpEntities[curr.entity],
             value: nlpValueFixturesWithEntities[curr.value],
-            sample: nlpSampleFixtures[curr.sample],
+            sample: {
+              ...nlpSampleFixtures[curr.sample],
+              language: languages[nlpSampleFixtures[curr.sample].language].id,
+            },
           };
           acc.push(sampleEntityWithPopulate);
           return acc;
