@@ -206,11 +206,15 @@ export const Subscribers = () => {
               ),
             }}
           >
-            {(labels || []).map((label) => (
-              <MenuItem key={label.id} value={label.id}>
-                {label.name}
-              </MenuItem>
-            ))}
+            {!!labels.length ? (
+              labels.map((label) => (
+                <MenuItem key={label.id} value={label.id}>
+                  {label.name}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>{t("message.no_label_found")}</MenuItem>
+            )}
           </Input>
         </Grid>
       </PageHeader>
