@@ -26,11 +26,11 @@
     </mj-section>
     <mj-section>
       <mj-column>
-        <mj-text font-size="14px" color="#000" font-family="helvetica"
+        <mj-text font-size="16px" color="#000" font-family="helvetica"
           ><%= t('best_regards') %></mj-text
         >
 
-        <mj-text font-size="14px" color="#000" font-family="helvetica"
+        <mj-text font-size="16px" color="#000" font-family="helvetica"
           ><%= this.appName %></mj-text
         >
       </mj-column>

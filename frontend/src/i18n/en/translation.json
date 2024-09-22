@@ -40,7 +40,7 @@
     "edit_account_email": "A valid e-mail address. All e-mails from the system will be sent to this address. The e-mail address is not made public and will only be used if you wish to receive a new password or wish to receive certain news or notifications by e-mail.",
     "new_password": "To change the current password, enter the new password in both fields.",
     "account_update_success": "Account has been updated successfully",
-    "account_disabled": "Your account has been disabled!",
+    "account_disabled": "Your account has been either disabled or is pending confirmation.",
     "success_invitation_sent": "Invitation to join has been successfully sent.",
     "item_delete_confirm": "Are you sure you want to delete this item?",
     "item_delete_success": "Item has been deleted successfully",
@@ -99,7 +99,8 @@
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
     "regex_is_invalid": "Regex is invalid",
     "attachment_not_found": "Attachment is not found",
-    "title_length_exceeded": "You have reached the maximum length"
+    "title_length_exceeded": "You have reached the maximum length",
+    "no_label_found": "No label found"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -213,7 +214,6 @@
     "offline": "Web Channel",
     "twitter": "Twitter",
     "dimelo": "Dimelo",
-    "email_settings": "Email",
     "contact": "Contact Infos",
     "chatbot_settings": "Chatbot",
     "nlp_settings": "NLP Provider",
@@ -324,7 +324,6 @@
     "value": "Value",
     "synonyms": "Synonyms",
     "lookups": "Lookups",
-    "type": "Type",
     "lookup_strategies": "Lookup Strategy",
     "nlp_lookup_keywords": "Keywords/Free-Text",
     "nlp_lookup_trait": "Trait",
@@ -580,7 +579,7 @@
     "filter_by_label": "Filter by labels",
     "start_date": "Start Date",
     "end_date": "End Date",
-    "nlp_value": "value",
+    "nlp_value": "Value",
     "type_message_here": "Type message here ...."
   },
   "button": {

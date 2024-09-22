@@ -13,6 +13,7 @@ import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Subscriber } from './subscriber.schema';
 
@@ -77,3 +78,7 @@ LabelModel.schema.virtual('users', {
 });
 
 export default LabelModel.schema;
+
+export type LabelPopulate = keyof TFilterPopulateFields<Label, LabelStub>;
+
+export const LABEL_POPULATE: LabelPopulate[] = ['users'];

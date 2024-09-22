@@ -2,5 +2,8 @@ version: "3.9"
 
 services:
   nlu-api:
+    build:
+      context: ../nlu
+      dockerfile: Dockerfile
     ports:
       - ${NLP_PORT}:5000

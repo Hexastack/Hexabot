@@ -29,11 +29,16 @@ import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageRepository } from '../repositories/message.repository';
+import { MessageFull, MessagePopulate } from '../schemas/message.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 @Injectable()
-export class MessageService extends BaseService<AnyMessage> {
+export class MessageService extends BaseService<
+  AnyMessage,
+  MessagePopulate,
+  MessageFull
+> {
   private readonly logger: LoggerService;
 
   private readonly gateway: WebsocketGateway;

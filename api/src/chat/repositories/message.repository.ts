@@ -9,23 +9,28 @@
 
 import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { TFilterQuery, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
 import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSampleState } from '@/nlp/schemas/types';
 import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
-import { Message, MessageFull } from '../schemas/message.schema';
+import {
+  Message,
+  MESSAGE_POPULATE,
+  MessageFull,
+  MessagePopulate,
+} from '../schemas/message.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 @Injectable()
 export class MessageRepository extends BaseRepository<
   AnyMessage,
-  'sender' | 'recipient'
+  MessagePopulate,
+  MessageFull
 > {
   private readonly nlpSampleService: NlpSampleService;
 
@@ -36,7 +41,12 @@ export class MessageRepository extends BaseRepository<
     @Optional() nlpSampleService?: NlpSampleService,
     @Optional() logger?: LoggerService,
   ) {
-    super(model, Message as new () => AnyMessage);
+    super(
+      model,
+      Message as new () => AnyMessage,
+      MESSAGE_POPULATE,
+      MessageFull,
+    );
     this.logger = logger;
     this.nlpSampleService = nlpSampleService;
   }
@@ -79,42 +89,6 @@ export class MessageRepository extends BaseRepository<
         }
       }
     }
-  }
-
-  /**
-   * Retrieves a paginated list of messages with sender and recipient populated.
-   * Uses filter criteria and pagination settings for the query.
-   *
-   * @param filters - Filter criteria for querying messages.
-   * @param pageQuery - Pagination settings, including skip, limit, and sort order.
-   *
-   * @returns A paginated list of messages with sender and recipient details populated.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<AnyMessage>,
-    pageQuery: PageQueryDto<AnyMessage>,
-  ) {
-    const query = this.findPageQuery(filters, pageQuery).populate([
-      'sender',
-      'recipient',
-    ]);
-
-    return await this.execute(
-      query as Query<AnyMessage[], AnyMessage, object, AnyMessage, 'find'>,
-      MessageFull,
-    );
-  }
-
-  /**
-   * Retrieves a single message by its ID, populating the sender and recipient fields.
-   *
-   * @param id - The ID of the message to retrieve.
-   *
-   * @returns The message with sender and recipient details populated.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate(['sender', 'recipient']);
-    return await this.executeOne(query, MessageFull);
   }
 
   /**

@@ -99,10 +99,8 @@ describe('UserService', () => {
   describe('findOneAndPopulate', () => {
     it('should find one user and populate its role', async () => {
       jest.spyOn(userRepository, 'findOneAndPopulate');
-      const result = await userService.findOneAndPopulate(user.id, ['roles']);
-      expect(userRepository.findOneAndPopulate).toHaveBeenCalledWith(user.id, [
-        'roles',
-      ]);
+      const result = await userService.findOneAndPopulate(user.id);
+      expect(userRepository.findOneAndPopulate).toHaveBeenCalledWith(user.id);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
@@ -118,9 +116,7 @@ describe('UserService', () => {
       const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
       jest.spyOn(userRepository, 'findPageAndPopulate');
       const allUsers = await userRepository.findAll();
-      const result = await userService.findPageAndPopulate({}, pageQuery, [
-        'roles',
-      ]);
+      const result = await userService.findPageAndPopulate({}, pageQuery);
       const usersWithRoles = allUsers.reduce((acc, currUser) => {
         acc.push({
           ...currUser,
@@ -132,7 +128,6 @@ describe('UserService', () => {
       expect(userRepository.findPageAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
-        ['roles'],
       );
       expect(result).toEqualPayload(usersWithRoles);
     });

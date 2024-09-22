@@ -8,7 +8,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import {
   CommonExample,
@@ -18,15 +17,22 @@ import {
   LookupTable,
 } from '@/extensions/helpers/nlp/default/types';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpEntity, NlpEntityFull } from '../schemas/nlp-entity.schema';
-import { NlpSample, NlpSampleFull } from '../schemas/nlp-sample.schema';
+import {
+  NlpSample,
+  NlpSampleFull,
+  NlpSamplePopulate,
+} from '../schemas/nlp-sample.schema';
 import { NlpValue } from '../schemas/nlp-value.schema';
 
 @Injectable()
-export class NlpSampleService extends BaseService<NlpSample> {
+export class NlpSampleService extends BaseService<
+  NlpSample,
+  NlpSamplePopulate,
+  NlpSampleFull
+> {
   constructor(readonly repository: NlpSampleRepository) {
     super(repository);
   }
@@ -40,52 +46,6 @@ export class NlpSampleService extends BaseService<NlpSample> {
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
-  }
-
-  /**
-   * Finds a single NLP sample by its ID and populates related data.
-   *
-   * @param id - The unique identifier of the NLP sample to find.
-   *
-   * @returns A promise resolving to the found sample with populated fields.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Finds a page of NLP samples based on filters and populates related data.
-   *
-   * @param filters - Query filters to apply when searching for samples.
-   * @param pageQuery - Pagination and sorting options for the query.
-   *
-   * @returns A promise resolving to the paginated results with populated fields.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<NlpSample>,
-    pageQuery: PageQueryDto<NlpSample>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
-  }
-
-  /**
-   * Finds multiple NLP samples based on filters and populates related data.
-   *
-   * @param filters - Query filters to apply when searching for samples.
-   *
-   * @returns A promise resolving to the found samples with populated fields.
-   */
-  async findAndPopulate(filters: TFilterQuery<NlpSample>) {
-    return await this.repository.findAndPopulate(filters);
-  }
-
-  /**
-   * Retrieves all NLP samples and populates related data.
-   *
-   * @returns A promise resolving to all samples with populated fields.
-   */
-  async findAllAndPopulate() {
-    return await this.repository.findAllAndPopulate();
   }
 
   /**

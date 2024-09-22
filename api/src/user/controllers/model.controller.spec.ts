@@ -92,10 +92,8 @@ describe('ModelController', () => {
   describe('find', () => {
     it('should find models', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
-      const result = await modelController.find([], {});
-      expect(modelService.findAndPopulate).toHaveBeenCalledWith({}, [
-        'permissions',
-      ]);
+      const result = await modelController.find(['permissions'], {});
+      expect(modelService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(
         modelFixtures.map((modelFixture) => ({
           ...modelFixture,
@@ -122,9 +120,7 @@ describe('ModelController', () => {
         return acc;
       }, []);
 
-      expect(modelService.findAndPopulate).toHaveBeenCalledWith({}, [
-        'permissions',
-      ]);
+      expect(modelService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(modelsWithPermissionsAndUsers);
     });
   });

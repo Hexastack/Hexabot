@@ -16,20 +16,23 @@ import { BaseRepository } from '@/utils/generics/base-repository';
 
 import {
   Conversation,
+  CONVERSATION_POPULATE,
   ConversationDocument,
   ConversationFull,
+  ConversationPopulate,
 } from '../schemas/conversation.schema';
 
 @Injectable()
 export class ConversationRepository extends BaseRepository<
   Conversation,
-  'sender' | 'current' | 'next'
+  ConversationPopulate,
+  ConversationFull
 > {
   constructor(
     @InjectModel(Conversation.name) readonly model: Model<Conversation>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Conversation);
+    super(model, Conversation, CONVERSATION_POPULATE, ConversationFull);
   }
 
   /**

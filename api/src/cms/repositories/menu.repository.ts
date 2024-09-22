@@ -14,16 +14,26 @@ import { Document, Model, Query } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
-import { Menu, MenuDocument, MenuFull } from '../schemas/menu.schema';
+import {
+  Menu,
+  MENU_POPULATE,
+  MenuDocument,
+  MenuFull,
+  MenuPopulate,
+} from '../schemas/menu.schema';
 import { MenuType } from '../schemas/types/menu';
 
 @Injectable()
-export class MenuRepository extends BaseRepository<Menu, 'parent'> {
+export class MenuRepository extends BaseRepository<
+  Menu,
+  MenuPopulate,
+  MenuFull
+> {
   constructor(
     @InjectModel(Menu.name) readonly model: Model<Menu>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Menu);
+    super(model, Menu, MENU_POPULATE, MenuFull);
   }
 
   /**
@@ -106,17 +116,5 @@ export class MenuRepository extends BaseRepository<Menu, 'parent'> {
     result: DeleteResult,
   ): Promise<void> {
     this.eventEmitter.emit('hook:menu:delete', result);
-  }
-
-  /**
-   * Finds a `Menu` document by its ID and populates the `parent` field.
-   *
-   * @param id - The ID of the `Menu` document to be found and populated.
-   *
-   * @returns A promise that resolves to the populated `MenuFull` document.
-   */
-  async findOneAndPopulate(id: string): Promise<MenuFull> {
-    const query = this.findOneQuery(id).populate('parent');
-    return await this.executeOne(query, MenuFull);
   }
 }

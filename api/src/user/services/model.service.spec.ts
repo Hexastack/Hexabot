@@ -70,7 +70,7 @@ describe('ModelService', () => {
       jest.spyOn(modelRepository, 'findAndPopulate');
       const models = await modelRepository.findAll();
       const permissions = await permissionRepository.findAll();
-      const result = await modelService.findAndPopulate({}, ['permissions']);
+      const result = await modelService.findAndPopulate({});
       const modelsWithPermissions = models.reduce((acc, currModel) => {
         acc.push({
           ...currModel,
@@ -80,9 +80,10 @@ describe('ModelService', () => {
         });
         return acc;
       }, []);
-      expect(modelRepository.findAndPopulate).toHaveBeenCalledWith({}, [
-        'permissions',
-      ]);
+      expect(modelRepository.findAndPopulate).toHaveBeenCalledWith(
+        {},
+        undefined,
+      );
       expect(result).toEqualPayload(modelsWithPermissions);
     });
   });

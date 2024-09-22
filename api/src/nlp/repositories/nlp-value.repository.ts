@@ -13,23 +13,28 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import {
+  NLP_VALUE_POPULATE,
   NlpValue,
   NlpValueDocument,
   NlpValueFull,
+  NlpValuePopulate,
 } from '../schemas/nlp-value.schema';
 
 @Injectable()
-export class NlpValueRepository extends BaseRepository<NlpValue, 'entity'> {
+export class NlpValueRepository extends BaseRepository<
+  NlpValue,
+  NlpValuePopulate,
+  NlpValueFull
+> {
   constructor(
     @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, NlpValue);
+    super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
 
   /**
@@ -99,34 +104,5 @@ export class NlpValueRepository extends BaseRepository<NlpValue, 'entity'> {
     } else {
       throw new Error('Attempted to delete a NLP value using unknown criteria');
     }
-  }
-
-  /**
-   * Finds and paginates NLP values based on the provided filter and page query,
-   * populating related entities.
-   *
-   * @param filter - The filter query used to search for NLP values.
-   * @param pageQuery - The pagination query details.
-   *
-   * @returns A list of populated NLP values for the requested page.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<NlpValue>,
-    pageQuery: PageQueryDto<NlpValue>,
-  ): Promise<NlpValueFull[]> {
-    const query = this.findPageQuery(filter, pageQuery).populate(['entity']);
-    return await this.execute(query, NlpValueFull);
-  }
-
-  /**
-   * Finds and populates a single NLP value by its ID.
-   *
-   * @param id - The ID of the NLP value to find.
-   *
-   * @returns The populated NLP value document.
-   */
-  async findOneAndPopulate(id: string): Promise<NlpValueFull> {
-    const query = this.findOneQuery(id).populate(['entity']);
-    return await this.executeOne(query, NlpValueFull);
   }
 }

@@ -46,6 +46,7 @@ import { NlpSampleCreateDto, NlpSampleDto } from '../dto/nlp-sample.dto';
 import {
   NlpSample,
   NlpSampleFull,
+  NlpSamplePopulate,
   NlpSampleStub,
 } from '../schemas/nlp-sample.schema';
 import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
@@ -58,7 +59,9 @@ import { NlpService } from '../services/nlp.service';
 @Controller('nlpsample')
 export class NlpSampleController extends BaseController<
   NlpSample,
-  NlpSampleStub
+  NlpSampleStub,
+  NlpSamplePopulate,
+  NlpSampleFull
 > {
   constructor(
     private readonly nlpSampleService: NlpSampleService,
@@ -217,7 +220,7 @@ export class NlpSampleController extends BaseController<
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['entities'])
+    const doc = this.canPopulate(populate)
       ? await this.nlpSampleService.findOneAndPopulate(id)
       : await this.nlpSampleService.findOne(id);
     if (!doc) {
@@ -243,7 +246,7 @@ export class NlpSampleController extends BaseController<
     @Query(new SearchFilterPipe<NlpSample>({ allowedFields: ['text', 'type'] }))
     filters: TFilterQuery<NlpSample>,
   ) {
-    return this.canPopulate(populate, ['entities'])
+    return this.canPopulate(populate)
       ? await this.nlpSampleService.findPageAndPopulate(filters, pageQuery)
       : await this.nlpSampleService.findPage(filters, pageQuery);
   }

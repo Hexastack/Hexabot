@@ -13,6 +13,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -30,7 +31,7 @@ import { UserRequestResetDto, UserResetPasswordDto } from '../dto/user.dto';
 export class PasswordResetService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     private readonly userService: UserService,
     public readonly i18n: ExtendedI18nService,
@@ -55,24 +56,29 @@ export class PasswordResetService {
       throw new NotFoundException('User not found');
     }
     const jwt = await this.sign(dto);
-    try {
-      await this.mailerService.sendMail({
-        to: dto.email,
-        template: 'password_reset.mjml',
-        context: {
-          token: jwt,
-          first_name: user.first_name,
-          t: (key: string) => this.i18n.t(key),
-        },
-      });
-    } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
-        'InvitationService',
-      );
-      throw new InternalServerErrorException('Could not send email');
+
+    if (this.mailerService) {
+      try {
+        await this.mailerService.sendMail({
+          to: dto.email,
+          template: 'password_reset.mjml',
+          context: {
+            token: jwt,
+            first_name: user.first_name,
+            t: (key: string) =>
+              this.i18n.t(key, { lang: config.chatbot.lang.default }),
+          },
+          subject: this.i18n.t('password_reset_subject'),
+        });
+      } catch (e) {
+        this.logger.error(
+          'Could not send email',
+          e.message,
+          e.stack,
+          'InvitationService',
+        );
+        throw new InternalServerErrorException('Could not send email');
+      }
     }
 
     // TODO: hash the token before saving it

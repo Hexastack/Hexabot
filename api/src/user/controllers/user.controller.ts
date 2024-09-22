@@ -48,7 +48,7 @@ import {
   UserResetPasswordDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { User, UserStub } from '../schemas/user.schema';
+import { User, UserFull, UserPopulate, UserStub } from '../schemas/user.schema';
 import { InvitationService } from '../services/invitation.service';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
@@ -58,7 +58,12 @@ import { ValidateAccountService } from '../services/validate-account.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('user')
-export class ReadOnlyUserController extends BaseController<User, UserStub> {
+export class ReadOnlyUserController extends BaseController<
+  User,
+  UserStub,
+  UserPopulate,
+  UserFull
+> {
   constructor(
     protected readonly userService: UserService,
     protected readonly roleService: RoleService,
@@ -122,7 +127,6 @@ export class ReadOnlyUserController extends BaseController<User, UserStub> {
 
     const currentUser = await this.userService.findOneAndPopulate(
       req.user.id as string,
-      ['roles'],
     );
     const currentPermissions = await this.permissionService.findAndPopulate({
       role: {
@@ -165,8 +169,8 @@ export class ReadOnlyUserController extends BaseController<User, UserStub> {
     )
     filters: TFilterQuery<User>,
   ) {
-    return this.canPopulate(populate, ['roles', 'avatar'])
-      ? await this.userService.findPageAndPopulate(filters, pageQuery, populate)
+    return this.canPopulate(populate)
+      ? await this.userService.findPageAndPopulate(filters, pageQuery)
       : await this.userService.find(filters);
   }
 
@@ -201,10 +205,9 @@ export class ReadOnlyUserController extends BaseController<User, UserStub> {
     @Query(PopulatePipe)
     populate: string[],
   ) {
-    const doc = await this.userService.findOneAndPopulate(
-      id,
-      this.canPopulate(populate, ['roles', 'avatar']) ? populate : ['roles'],
-    );
+    const doc = this.canPopulate(populate)
+      ? await this.userService.findOneAndPopulate(id)
+      : await this.userService.findOne(id);
 
     if (!doc) {
       this.logger.warn(`Unable to find User by id ${id}`);

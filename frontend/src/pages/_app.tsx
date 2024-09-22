@@ -20,6 +20,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
 import { ApiClientProvider } from "@/hooks/useApiClient";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ConfigProvider } from "@/hooks/useConfig";
 import { PermissionProvider } from "@/hooks/useHasPermission";
 import { SettingsProvider } from "@/hooks/useSetting";
 import { ToastProvider } from "@/hooks/useToast";
@@ -69,33 +70,35 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
         />
       </Head>
       <main className={roboto.className}>
-        <ThemeProvider theme={theme}>
-          <ToastProvider
-            maxSnack={3}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            action={(snackbarKey) => (
-              <SnackbarCloseButton snackbarKey={snackbarKey} />
-            )}
-          >
-            <StyledEngineProvider injectFirst>
-              <QueryClientProvider client={queryClient}>
-                <CssBaseline />
-                <ApiClientProvider>
-                  <AuthProvider>
-                    <PermissionProvider>
-                      <SettingsProvider>
-                        <SocketProvider>
-                          {getLayout(<Component {...pageProps} />)}
-                        </SocketProvider>
-                      </SettingsProvider>
-                    </PermissionProvider>
-                  </AuthProvider>
-                </ApiClientProvider>
-                <ReactQueryDevtools initialIsOpen={false} />
-              </QueryClientProvider>
-            </StyledEngineProvider>
-          </ToastProvider>
-        </ThemeProvider>
+        <ConfigProvider>
+          <ThemeProvider theme={theme}>
+            <ToastProvider
+              maxSnack={3}
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              action={(snackbarKey) => (
+                <SnackbarCloseButton snackbarKey={snackbarKey} />
+              )}
+            >
+              <StyledEngineProvider injectFirst>
+                <QueryClientProvider client={queryClient}>
+                  <CssBaseline />
+                  <ApiClientProvider>
+                    <AuthProvider>
+                      <PermissionProvider>
+                        <SettingsProvider>
+                          <SocketProvider>
+                            {getLayout(<Component {...pageProps} />)}
+                          </SocketProvider>
+                        </SettingsProvider>
+                      </PermissionProvider>
+                    </AuthProvider>
+                  </ApiClientProvider>
+                  <ReactQueryDevtools initialIsOpen={false} />
+                </QueryClientProvider>
+              </StyledEngineProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </ConfigProvider>
       </main>
     </>
   );

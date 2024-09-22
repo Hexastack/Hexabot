@@ -11,17 +11,15 @@ import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid } from "@mui/material";
-import getConfig from "next/config";
 import { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IMessage, IMessageFull } from "@/types/message.types";
+import { buildURL } from "@/utils/URL";
 
 import { AttachmentViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
-
-const { publicRuntimeConfig } = getConfig();
 
 function hasSameSender(
   m1: IMessage | IMessageFull,
@@ -133,13 +131,11 @@ export function getMessageContent(
  * @description Returns the avatar of the subscriber
  */
 export function getAvatarSrc(
+  apiUrl: string,
   entity: EntityType.USER | EntityType.SUBSCRIBER,
   id?: string,
 ) {
-  //remove trailing slash
-  return `${String(publicRuntimeConfig.apiUrl).replace(/\/$/, "")}${
-    ROUTES[entity]
-  }/${id || "bot"}/profile_pic`;
+  return buildURL(apiUrl, `${ROUTES[entity]}/${id || "bot"}/profile_pic`);
 }
 
 export function getMessagePosition(

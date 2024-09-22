@@ -8,19 +8,14 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { ExtendedI18nService } from './extended-i18n.service';
 
 @Injectable()
 export class AppService {
-  constructor(
-    private readonly i18n: ExtendedI18nService,
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  constructor(private readonly i18n: ExtendedI18nService) {}
 
   getHello(): string {
-    this.eventEmitter.emit('hook:i18n:refresh', []);
-    return this.i18n.t('Welcome');
+    return this.i18n.t('welcome', { lang: 'en' });
   }
 }

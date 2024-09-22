@@ -58,7 +58,7 @@ export const Register = () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess: () => {
-      toast.success(t("message.success_save"));
+      toast.success(t("message.success_invitation_sent"));
       router.push("/login");
     },
   });

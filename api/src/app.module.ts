@@ -57,24 +57,28 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
-    MailerModule.forRoot({
-      transport: new SMTPTransport({
-        ...config.emails.smtp,
-        logger: true,
-      }),
-      template: {
-        adapter: new MjmlAdapter('ejs', { inlineCssEnabled: false }),
-        dir: './src/templates',
-        options: {
-          context: {
-            appName: config.parameters.appName,
-            appUrl: config.parameters.appUrl,
-            // TODO: add i18n support
-          },
-        },
-      },
-      defaults: { from: config.parameters.email.main },
-    }),
+    ...(config.emails.isEnabled
+      ? [
+          MailerModule.forRoot({
+            transport: new SMTPTransport({
+              ...config.emails.smtp,
+              logger: true,
+              debug: false,
+            }),
+            template: {
+              adapter: new MjmlAdapter('ejs', { inlineCssEnabled: false }),
+              dir: './src/templates',
+              options: {
+                context: {
+                  appName: config.parameters.appName,
+                  appUrl: config.parameters.appUrl,
+                },
+              },
+            },
+            defaults: { from: config.emails.from },
+          }),
+        ]
+      : []),
     MongooseModule.forRoot(config.mongo.uri, {
       dbName: config.mongo.dbName,
       connectionFactory: (connection) => {

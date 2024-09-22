@@ -11,56 +11,30 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
-import { TFilterQuery } from 'mongoose';
 
-import { LoggerService } from '@/logger/logger.service';
 import { PERMISSION_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { PermissionRepository } from '../repositories/permission.repository';
-import { Permission, PermissionFull } from '../schemas/permission.schema';
+import {
+  Permission,
+  PermissionFull,
+  PermissionPopulate,
+} from '../schemas/permission.schema';
 import { PermissionsTree } from '../types/permission.type';
 
 @Injectable()
-export class PermissionService extends BaseService<Permission> {
+export class PermissionService extends BaseService<
+  Permission,
+  PermissionPopulate,
+  PermissionFull
+> {
   constructor(
     readonly repository: PermissionRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
-  }
-
-  /**
-   * Retrieves all permissions and populates related fields such as roles and models.
-   *
-   * @returns A promise that resolves with the populated permissions.
-   */
-  async findAllAndPopulate() {
-    return await this.repository.findAllAndPopulate();
-  }
-
-  /**
-   * Retrieves permissions based on the provided filter and populates related fields.
-   *
-   * @param filter - Filter criteria to apply when searching for permissions.
-   *
-   * @returns A promise that resolves with the filtered and populated permissions.
-   */
-  async findAndPopulate(filter: TFilterQuery<Permission>) {
-    return await this.repository.findAndPopulate(filter);
-  }
-
-  /**
-   * Retrieves a single permission by its identifier and populates related fields.
-   *
-   * @param id - Identifier of the permission to retrieve.
-   *
-   * @returns A promise that resolves with the populated permission.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
   }
 
   /**
