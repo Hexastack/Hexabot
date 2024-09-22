@@ -32,7 +32,13 @@ import {
   DiagramModel,
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs";
@@ -45,13 +51,13 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
-import { ICategory } from "@/types/category.types";
+import { ICategory, ICategoryAttributes } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
-import { RequestQueue } from "@/utils/requestQueue";
+import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 
 const Diagrams = () => {
   const { t } = useTranslation();
@@ -110,26 +116,37 @@ const Diagrams = () => {
     invalidate: false,
   });
 
-  const requestQueue = useRef(new RequestQueue<ICategory>());
-  const enqueueUpdate = (id: string, params: any) => {
-    requestQueue.current.enqueue(() => updateCategory({ id, params }));
-  };
+  const debouncedUpdateCategory = useDebouncedUpdate(updateCategory, 300);
+  const debouncedZoomEvent = useCallback(
+    (event: any) => {
+      if (selectedCategoryId) {
+        engine?.repaintCanvas();
+        debouncedUpdateCategory({
+          id: selectedCategoryId,
+          params: {
+            zoom: event.zoom,
+          },
+        });
+      }
+      event.stopPropagation();
+    },
+    [selectedCategoryId, debouncedUpdateCategory],
+  );
+  const debouncedOffsetEvent = useCallback(
+    (event: any) => {
+      if (selectedCategoryId) {
+        debouncedUpdateCategory({
+          id: selectedCategoryId,
+          params: {
+            offset: [event.offsetX, event.offsetY],
+          },
+        });
+      }
+      event.stopPropagation();
+    },
+    [selectedCategoryId, debouncedUpdateCategory],
+  );
 
-  const debouncedZoomEvent = debounce((event) => {
-    if (selectedCategoryId) {
-      engine?.repaintCanvas();
-      enqueueUpdate(selectedCategoryId, { zoom: event.zoom });
-    }
-    event.stopPropagation();
-  }, 200);
-  const debouncedOffsetEvent = debounce((event) => {
-    if (selectedCategoryId) {
-      enqueueUpdate(selectedCategoryId, {
-        offset: [event.offsetX, event.offsetY],
-      });
-    }
-    event.stopPropagation();
-  }, 200);
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
