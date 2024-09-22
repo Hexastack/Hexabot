@@ -141,10 +141,13 @@ export class LanguageController extends BaseController<Language> {
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
-    const result = await this.languageService.deleteOne(id);
+    const result = await this.languageService.deleteOne({
+      default: false, // Prevent deleting the default language
+      _id: id,
+    });
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Language by id ${id}`);
-      throw new NotFoundException(`Language with ID ${id} not found`);
+      throw new BadRequestException(`Unable to delete Language with ID ${id}`);
     }
     return result;
   }
