@@ -323,7 +323,6 @@
     "nlp_entity_value": "Valeur TALN",
     "value": "Valeur",
     "lookups": "Stratégies",
-    "type": "Type",
     "lookup_strategies": "Stratégie de recherche",
     "nlp_lookup_keywords": "Mot-clés/Texte",
     "nlp_lookup_trait": "Trait",
