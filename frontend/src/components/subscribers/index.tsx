@@ -7,8 +7,8 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DeleteIcon from "@mui/icons-material/Close";
-import FolderIcon from "@mui/icons-material/Folder";
 import { Grid, IconButton, MenuItem, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
@@ -170,7 +170,7 @@ export const Subscribers = () => {
   return (
     <Grid container gap={3} flexDirection="column">
       <EditSubscriberDialog {...getDisplayDialogs(editDialogCtl)} />
-      <PageHeader icon={FolderIcon} title={t("title.subscribers")}>
+      <PageHeader icon={AccountCircleIcon} title={t("title.subscribers")}>
         <Grid
           justifyContent="flex-end"
           gap={1}
