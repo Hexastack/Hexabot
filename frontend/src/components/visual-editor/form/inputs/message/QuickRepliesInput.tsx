@@ -48,7 +48,6 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
     const updatedQuickReplies = [...quickReplies];
 
     updatedQuickReplies.splice(index, 1);
-    // Set updated state only if it's greater than minInput
     setQuickReplies(
       updatedQuickReplies
     );
