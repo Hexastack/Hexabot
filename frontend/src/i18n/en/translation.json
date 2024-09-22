@@ -99,7 +99,8 @@
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
     "regex_is_invalid": "Regex is invalid",
     "attachment_not_found": "Attachment is not found",
-    "title_length_exceeded": "You have reached the maximum length"
+    "title_length_exceeded": "You have reached the maximum length",
+    "no_label_found": "No label found"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -323,7 +324,6 @@
     "value": "Value",
     "synonyms": "Synonyms",
     "lookups": "Lookups",
-    "type": "Type",
     "lookup_strategies": "Lookup Strategy",
     "nlp_lookup_keywords": "Keywords/Free-Text",
     "nlp_lookup_trait": "Trait",
@@ -579,7 +579,7 @@
     "filter_by_label": "Filter by labels",
     "start_date": "Start Date",
     "end_date": "End Date",
-    "nlp_value": "value",
+    "nlp_value": "Value",
     "type_message_here": "Type message here ...."
   },
   "button": {

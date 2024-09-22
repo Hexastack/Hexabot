@@ -7,12 +7,13 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Type } from 'class-transformer';
 import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { NlpSampleEntity } from './nlp-sample-entity.schema';
 import { NlpSampleState } from './types';
@@ -68,3 +69,10 @@ NlpSampleModel.schema.virtual('entities', {
 });
 
 export default NlpSampleModel.schema;
+
+export type NlpSamplePopulate = keyof TFilterPopulateFields<
+  NlpSample,
+  NlpSampleStub
+>;
+
+export const NLP_SAMPLE_POPULATE: NlpSamplePopulate[] = ['entities'];

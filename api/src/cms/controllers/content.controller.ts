@@ -13,15 +13,15 @@ import path from 'path';
 import {
   Body,
   Controller,
-  Param,
-  Post,
-  Get,
   Delete,
+  Get,
   HttpCode,
-  UseInterceptors,
-  Patch,
   NotFoundException,
+  Param,
+  Patch,
+  Post,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
@@ -43,12 +43,22 @@ import { ContentService } from './../services/content.service';
 import { ContentCreateDto } from '../dto/content.dto';
 import { ContentTransformInterceptor } from '../interceptors/content.interceptor';
 import { ContentType } from '../schemas/content-type.schema';
-import { Content, ContentStub } from '../schemas/content.schema';
+import {
+  Content,
+  ContentFull,
+  ContentPopulate,
+  ContentStub,
+} from '../schemas/content.schema';
 import { preprocessDynamicFields } from '../utilities';
 
 @UseInterceptors(ContentTransformInterceptor, CsrfInterceptor)
 @Controller('content')
-export class ContentController extends BaseController<Content, ContentStub> {
+export class ContentController extends BaseController<
+  Content,
+  ContentStub,
+  ContentPopulate,
+  ContentFull
+> {
   constructor(
     private readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
@@ -206,7 +216,7 @@ export class ContentController extends BaseController<Content, ContentStub> {
     )
     filters: TFilterQuery<Content>,
   ) {
-    return this.canPopulate(populate, ['entity'])
+    return this.canPopulate(populate)
       ? await this.contentService.findPageAndPopulate(filters, pageQuery)
       : await this.contentService.findPage(filters, pageQuery);
   }
@@ -241,7 +251,7 @@ export class ContentController extends BaseController<Content, ContentStub> {
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['entity'])
+    const doc = this.canPopulate(populate)
       ? await this.contentService.findOneAndPopulate(id)
       : await this.contentService.findOne(id);
 

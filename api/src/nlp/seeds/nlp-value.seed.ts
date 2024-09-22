@@ -14,10 +14,18 @@ import { BaseSeeder } from '@/utils/generics/base-seeder';
 
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpValue } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValuePopulate,
+} from '../schemas/nlp-value.schema';
 
 @Injectable()
-export class NlpValueSeeder extends BaseSeeder<NlpValue> {
+export class NlpValueSeeder extends BaseSeeder<
+  NlpValue,
+  NlpValuePopulate,
+  NlpValueFull
+> {
   constructor(
     nlpValueRepository: NlpValueRepository,
     private readonly nlpEntityRepository: NlpEntityRepository,

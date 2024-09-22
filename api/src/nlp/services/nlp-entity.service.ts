@@ -8,19 +8,25 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpValueService } from './nlp-value.service';
 import { Lookup } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityPopulate,
+} from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
 @Injectable()
-export class NlpEntityService extends BaseService<NlpEntity> {
+export class NlpEntityService extends BaseService<
+  NlpEntity,
+  NlpEntityPopulate,
+  NlpEntityFull
+> {
   constructor(
     readonly repository: NlpEntityRepository,
     private readonly nlpValueService: NlpValueService,
@@ -37,41 +43,6 @@ export class NlpEntityService extends BaseService<NlpEntity> {
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
-  }
-
-  /**
-   * Finds an entity by its ID and populates related data.
-   *
-   * @param id - The ID of the entity to find.
-   *
-   * @returns A promise that resolves with the populated entity.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Finds all entities and populates related data.
-   *
-   * @returns A promise that resolves with the populated list of entities.
-   */
-  async findAllAndPopulate() {
-    return await this.repository.findAllAndPopulate();
-  }
-
-  /**
-   * Finds entities based on the specified filters and pagination, and populates related data.
-   *
-   * @param filters - The filters to apply to the query.
-   * @param pageQuery - The pagination and sorting options for the query.
-   *
-   * @returns A promise that resolves with the populated page of entities.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<NlpEntity>,
-    pageQuery: PageQueryDto<NlpEntity>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
   }
 
   /**

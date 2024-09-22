@@ -7,8 +7,8 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
-import FolderIcon from "@mui/icons-material/Folder";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React from "react";
@@ -158,7 +158,7 @@ export const Labels = () => {
           if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
         }}
       />
-      <PageHeader icon={FolderIcon} title={t("title.labels")}>
+      <PageHeader icon={faTags} title={t("title.labels")}>
         <Grid
           justifyContent="flex-end"
           gap={1}

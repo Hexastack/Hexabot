@@ -100,7 +100,8 @@
     "invalid_max_fallback_attempt_limit": "La limite des tentatives de secours doit être un nombre positif.",
     "regex_is_invalid": "Le regex est invalide",
     "attachment_not_found": "La pièce jointe est introuvable",
-    "title_length_exceeded": "Vous avez atteint la longueur maximale"
+    "title_length_exceeded": "Vous avez atteint la longueur maximale",
+    "no_label_found": "Aucune étiquette trouvée"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
@@ -323,7 +324,6 @@
     "nlp_entity_value": "Valeur TALN",
     "value": "Valeur",
     "lookups": "Stratégies",
-    "type": "Type",
     "lookup_strategies": "Stratégie de recherche",
     "nlp_lookup_keywords": "Mot-clés/Texte",
     "nlp_lookup_trait": "Trait",
@@ -577,7 +577,7 @@
     "filter_by_label": "Filtrer par étiquettes",
     "start_date": "Date de début",
     "end_date": "Date de fin",
-    "nlp_value": "valeur",
+    "nlp_value": "Valeur",
     "type_message_here": "Ecrivez quelque chose ici ...."
   },
   "button": {

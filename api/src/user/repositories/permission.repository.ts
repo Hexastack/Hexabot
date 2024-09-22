@@ -14,18 +14,24 @@ import { Document, Model, Query, TFilterQuery, Types } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
-import { Permission, PermissionFull } from '../schemas/permission.schema';
+import {
+  Permission,
+  PERMISSION_POPULATE,
+  PermissionFull,
+  PermissionPopulate,
+} from '../schemas/permission.schema';
 
 @Injectable()
 export class PermissionRepository extends BaseRepository<
   Permission,
-  'model' | 'role'
+  PermissionPopulate,
+  PermissionFull
 > {
   constructor(
     @InjectModel(Permission.name) readonly model: Model<Permission>,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Permission);
+    super(model, Permission, PERMISSION_POPULATE, PermissionFull);
   }
 
   /**

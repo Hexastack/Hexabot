@@ -15,6 +15,7 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { User } from '@/user/schemas/user.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Label } from './label.schema';
 import { ChannelData } from './types/channel';
@@ -140,3 +141,14 @@ export const SubscriberModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 export default SubscriberModel.schema;
+
+export type SubscriberPopulate = keyof TFilterPopulateFields<
+  Subscriber,
+  SubscriberStub
+>;
+
+export const SUBSCRIBER_POPULATE: SubscriberPopulate[] = [
+  'labels',
+  'assignedTo',
+  'avatar',
+];

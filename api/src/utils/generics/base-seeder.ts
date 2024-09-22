@@ -10,8 +10,12 @@
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
 
-export abstract class BaseSeeder<T, P extends string = never> {
-  constructor(protected readonly repository: BaseRepository<T, P>) {}
+export abstract class BaseSeeder<
+  T,
+  P extends string = never,
+  TFull extends Omit<T, P> = never,
+> {
+  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
 
   async findAll(): Promise<T[]> {
     return await this.repository.findAll();

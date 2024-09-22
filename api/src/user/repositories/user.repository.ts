@@ -10,25 +10,34 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  TFilterQuery,
+  Document,
   Model,
   Query,
+  TFilterQuery,
   UpdateQuery,
   UpdateWithAggregationPipeline,
-  Document,
 } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { UserEditProfileDto } from '../dto/user.dto';
-import { User, UserDocument, UserFull } from '../schemas/user.schema';
+import {
+  User,
+  USER_POPULATE,
+  UserDocument,
+  UserFull,
+  UserPopulate,
+} from '../schemas/user.schema';
 import { hash } from '../utilities/bcryptjs';
 
 @Injectable()
-export class UserRepository extends BaseRepository<User, 'roles' | 'avatar'> {
+export class UserRepository extends BaseRepository<
+  User,
+  UserPopulate,
+  UserFull
+> {
   constructor(@InjectModel(User.name) readonly model: Model<User>) {
-    super(model, User);
+    super(model, User, USER_POPULATE, UserFull);
   }
 
   /**
@@ -86,36 +95,5 @@ export class UserRepository extends BaseRepository<User, 'roles' | 'avatar'> {
         },
       });
     }
-  }
-
-  /**
-   * Finds a page of user documents with population based on the given filter and page query.
-   *
-   * @param filter The filter criteria for finding users.
-   * @param pageQuery The pagination and sorting information.
-   * @param populate The fields to populate in the user documents.
-   *
-   * @returns A promise that resolves to an array of populated `UserFull` documents.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<User>,
-    pageQuery: PageQueryDto<User>,
-    populate: string[],
-  ): Promise<UserFull[]> {
-    const query = this.findPageQuery(filter, pageQuery).populate(populate);
-    return await this.execute(query, UserFull);
-  }
-
-  /**
-   * Finds a single user document by ID with population of related fields.
-   *
-   * @param id The ID of the user to find.
-   * @param populate The fields to populate in the user document.
-   *
-   * @returns A promise that resolves to a populated `UserFull` document.
-   */
-  async findOneAndPopulate(id: string, populate: string[]): Promise<UserFull> {
-    const query = this.findOneQuery(id).populate(populate);
-    return await this.executeOne(query, UserFull);
   }
 }

@@ -8,21 +8,26 @@
  */
 
 import { InjectModel } from '@nestjs/mongoose';
-import { TFilterQuery, Model } from 'mongoose';
+import { Model, TFilterQuery } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import {
   Invitation,
+  INVITATION_POPULATE,
   InvitationDocument,
   InvitationFull,
+  InvitationPopulate,
 } from '../schemas/invitation.schema';
 import { hash } from '../utilities/hash';
 
-export class InvitationRepository extends BaseRepository<Invitation, 'roles'> {
+export class InvitationRepository extends BaseRepository<
+  Invitation,
+  InvitationPopulate,
+  InvitationFull
+> {
   constructor(@InjectModel(Invitation.name) readonly model: Model<Invitation>) {
-    super(model, Invitation);
+    super(model, Invitation, INVITATION_POPULATE, InvitationFull);
   }
 
   /**
@@ -51,33 +56,5 @@ export class InvitationRepository extends BaseRepository<Invitation, 'roles'> {
       ? { ...filter, token: hash(filter.token.toString()) }
       : filter;
     return super.findQuery(filterWithHashedToken);
-  }
-
-  /**
-   * Finds a paginated list of invitations based on the filter and page query and populates the `roles` field.
-   *
-   * @param filter - The filter object for querying invitations.
-   * @param pageQuery - The pagination query parameters.
-   *
-   * @returns A promise that resolves to a list of populated `InvitationFull` objects.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<Invitation>,
-    pageQuery: PageQueryDto<Invitation>,
-  ): Promise<InvitationFull[]> {
-    const query = this.findPageQuery(filter, pageQuery).populate('roles');
-    return this.execute(query, InvitationFull);
-  }
-
-  /**
-   * Finds a single invitation by its ID and populates the `roles` field.
-   *
-   * @param {string} id - The ID of the invitation to be retrieved.
-   *
-   * @returns {Promise<InvitationFull>} - A promise that resolves to the populated `InvitationFull` object.
-   */
-  async findOneAndPopulate(id: string): Promise<InvitationFull> {
-    const query = this.findOneQuery(id).populate('roles');
-    return this.executeOne(query, InvitationFull);
   }
 }

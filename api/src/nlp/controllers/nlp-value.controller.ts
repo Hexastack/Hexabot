@@ -32,13 +32,23 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
-import { NlpValue, NlpValueStub } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValuePopulate,
+  NlpValueStub,
+} from '../schemas/nlp-value.schema';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('nlpvalue')
-export class NlpValueController extends BaseController<NlpValue, NlpValueStub> {
+export class NlpValueController extends BaseController<
+  NlpValue,
+  NlpValueStub,
+  NlpValuePopulate,
+  NlpValueFull
+> {
   constructor(
     private readonly nlpValueService: NlpValueService,
     private readonly nlpEntityService: NlpEntityService,
@@ -103,7 +113,7 @@ export class NlpValueController extends BaseController<NlpValue, NlpValueStub> {
     @Param('id') id: string,
     @Query(PopulatePipe) populate: string[],
   ) {
-    const doc = this.canPopulate(populate, ['entity'])
+    const doc = this.canPopulate(populate)
       ? await this.nlpValueService.findOneAndPopulate(id)
       : await this.nlpValueService.findOne(id);
     if (!doc) {
@@ -135,7 +145,7 @@ export class NlpValueController extends BaseController<NlpValue, NlpValueStub> {
     )
     filters: TFilterQuery<NlpValue>,
   ) {
-    return this.canPopulate(populate, ['entity'])
+    return this.canPopulate(populate)
       ? await this.nlpValueService.findPageAndPopulate(filters, pageQuery)
       : await this.nlpValueService.findPage(filters, pageQuery);
   }

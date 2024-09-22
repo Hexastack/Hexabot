@@ -9,55 +9,31 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { TFilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import {
+  NLP_SAMPLE_ENTITY_POPULATE,
   NlpSampleEntity,
   NlpSampleEntityFull,
+  NlpSampleEntityPopulate,
 } from '../schemas/nlp-sample-entity.schema';
 
 @Injectable()
 export class NlpSampleEntityRepository extends BaseRepository<
   NlpSampleEntity,
-  'entity' | 'value' | 'sample'
+  NlpSampleEntityPopulate,
+  NlpSampleEntityFull
 > {
   constructor(
     @InjectModel(NlpSampleEntity.name) readonly model: Model<NlpSampleEntity>,
   ) {
-    super(model, NlpSampleEntity);
-  }
-
-  /**
-   * Finds a paginated set of `NlpSampleEntity` documents based on the provided filter
-   * and page query. Also populates related fields such as `entity`, `value`, and `sample`.
-   *
-   * @param filter - The query filter for retrieving documents.
-   * @param pageQuery - The pagination options.
-   * @returns The paginated results with populated fields.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<NlpSampleEntity>,
-    pageQuery: PageQueryDto<NlpSampleEntity>,
-  ) {
-    const query = this.findPageQuery(filter, pageQuery).populate([
-      'entity',
-      'value',
-      'sample',
-    ]);
-    return await this.execute(query, NlpSampleEntityFull);
-  }
-
-  /**
-   * Finds a single `NlpSampleEntity` document by ID and populates the related fields `entity`, `value`, and `sample`.
-   *
-   * @param id - The ID of the document to retrieve.
-   * @returns The document with populated fields.
-   */
-  async findOneAndPopulate(id: string) {
-    const query = this.findOneQuery(id).populate(['entity', 'value', 'sample']);
-    return await this.executeOne(query, NlpSampleEntityFull);
+    super(
+      model,
+      NlpSampleEntity,
+      NLP_SAMPLE_ENTITY_POPULATE,
+      NlpSampleEntityFull,
+    );
   }
 }

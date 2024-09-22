@@ -12,10 +12,15 @@ import { TFilterQuery } from 'mongoose';
 
 import { BaseSchema } from './base-schema';
 import { BaseService } from './base-service';
-import { TValidateProps, TFilterPopulateFields } from '../types/filter.types';
+import { TValidateProps } from '../types/filter.types';
 
-export abstract class BaseController<T extends BaseSchema, TStub = never> {
-  constructor(private readonly service: BaseService<T>) {}
+export abstract class BaseController<
+  T extends BaseSchema,
+  TStub = never,
+  P extends string = never,
+  TFull extends Omit<T, P> = never,
+> {
+  constructor(protected readonly service: BaseService<T, P, TFull>) {}
 
   /**
    * Checks if the given populate fields are allowed based on the allowed fields list.
@@ -23,12 +28,12 @@ export abstract class BaseController<T extends BaseSchema, TStub = never> {
    * @param  allowedFields - The list of allowed populate fields.
    * @return - True if all populate fields are allowed, otherwise false.
    */
-  protected canPopulate(
-    populate: string[],
-    allowedFields: (keyof TFilterPopulateFields<T, TStub>)[],
-  ): boolean {
-    return (populate as typeof allowedFields).some((p) =>
-      allowedFields.includes(p),
+  protected canPopulate(populate: string[]): boolean {
+    return populate.some((p) =>
+      this.service
+        .getRepository()
+        .getPopulate()
+        .includes(p as P),
     );
   }
 

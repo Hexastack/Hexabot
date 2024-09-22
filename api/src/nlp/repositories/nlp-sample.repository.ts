@@ -12,18 +12,26 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-import { NlpSample, NlpSampleFull } from '../schemas/nlp-sample.schema';
+import {
+  NLP_SAMPLE_POPULATE,
+  NlpSample,
+  NlpSampleFull,
+  NlpSamplePopulate,
+} from '../schemas/nlp-sample.schema';
 
 @Injectable()
-export class NlpSampleRepository extends BaseRepository<NlpSample, 'entities'> {
+export class NlpSampleRepository extends BaseRepository<
+  NlpSample,
+  NlpSamplePopulate,
+  NlpSampleFull
+> {
   constructor(
     @InjectModel(NlpSample.name) readonly model: Model<NlpSample>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
-    super(model, NlpSample);
+    super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
   }
 
   /**
@@ -51,57 +59,5 @@ export class NlpSampleRepository extends BaseRepository<NlpSample, 'entities'> {
         'Attempted to delete a NLP sample using unknown criteria',
       );
     }
-  }
-
-  /**
-   * Retrieves a paginated list of NLP samples and populates the related entities.
-   *
-   * @param filter Query filter used to retrieve NLP samples.
-   * @param pageQuery Pagination details for the query.
-   *
-   * @returns A promise that resolves to a paginated list of `NlpSampleFull` objects.
-   */
-  async findPageAndPopulate(
-    filter: TFilterQuery<NlpSample>,
-    pageQuery: PageQueryDto<NlpSample>,
-  ): Promise<NlpSampleFull[]> {
-    const query = this.findPageQuery(filter, pageQuery).populate(['entities']);
-    return await this.execute(query, NlpSampleFull);
-  }
-
-  /**
-   * Finds all NLP samples that match the filter and populates related entities.
-   *
-   * @param filter Query filter used to retrieve NLP samples.
-   *
-   * @returns A promise that resolves to a list of `NlpSampleFull` objects.
-   */
-  async findAndPopulate(
-    filter: TFilterQuery<NlpSample>,
-  ): Promise<NlpSampleFull[]> {
-    const query = this.findQuery(filter).populate(['entities']);
-    return await this.execute(query, NlpSampleFull);
-  }
-
-  /**
-   * Finds an NLP sample by its ID and populates related entities.
-   *
-   * @param id The ID of the NLP sample to retrieve.
-   *
-   * @returns A promise that resolves to the `NlpSampleFull` object.
-   */
-  async findOneAndPopulate(id: string): Promise<NlpSampleFull> {
-    const query = this.findOneQuery(id).populate(['entities']);
-    return await this.executeOne(query, NlpSampleFull);
-  }
-
-  /**
-   * Retrieves all NLP samples and populates related entities.
-   *
-   * @returns A promise that resolves to a list of all `NlpSampleFull` objects.
-   */
-  async findAllAndPopulate() {
-    const query = this.findAllQuery().populate(['entities']);
-    return await this.execute(query, NlpSampleFull);
   }
 }

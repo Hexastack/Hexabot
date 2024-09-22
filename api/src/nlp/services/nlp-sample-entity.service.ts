@@ -8,54 +8,32 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueService } from './nlp-value.service';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
-import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
+import {
+  NlpSampleEntity,
+  NlpSampleEntityFull,
+  NlpSampleEntityPopulate,
+} from '../schemas/nlp-sample-entity.schema';
 import { NlpSample } from '../schemas/nlp-sample.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
 @Injectable()
-export class NlpSampleEntityService extends BaseService<NlpSampleEntity> {
+export class NlpSampleEntityService extends BaseService<
+  NlpSampleEntity,
+  NlpSampleEntityPopulate,
+  NlpSampleEntityFull
+> {
   constructor(
     readonly repository: NlpSampleEntityRepository,
     private readonly nlpEntityService: NlpEntityService,
     private readonly nlpValueService: NlpValueService,
   ) {
     super(repository);
-  }
-
-  /**
-   * Retrieves a single NLP sample entity by its ID and populates related
-   * entities for the retrieved sample.
-   *
-   * @param id The ID of the NLP sample entity to find and populate.
-   *
-   * @returns The populated NLP sample entity.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
-  }
-
-  /**
-   * Retrieves a paginated list of NLP sample entities based on filters, and
-   * populates related entities for each retrieved sample entity.
-   *
-   * @param filters Filters to apply when searching for the entities.
-   * @param pageQuery Query parameters for pagination.
-   *
-   * @returns A paginated list of populated NLP sample entities.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<NlpSampleEntity>,
-    pageQuery: PageQueryDto<NlpSampleEntity>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
   }
 
   /**
