@@ -7,7 +7,7 @@ To ensure Hexabot runs smoothly, you'll need the following:
 * **Docker:** We recommend using Docker to start the app since multiple services are required (MongoDB, Redis, Prometheus, etc.). All the necessary Docker Compose files are located in the docker folder.
 * **Node.js:** For development purposes, ensure you have Node.js >= v18.17.0 installed. We recommend using nvm (Node Version Manager) to easily manage and update your Node.js versions.
 
-### # Installation
+### Installation
 
 1. **Clone the Repository:**
 
