@@ -24,11 +24,11 @@ import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
 import OfflineHandler from '@/extensions/channels/offline/index.channel';
 import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
 import { Offline } from '@/extensions/channels/offline/types';
 import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { Settings } from '@/setting/schemas/types';
@@ -111,7 +111,7 @@ describe('BlockService', () => {
         },
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => {
               return t === 'Welcome' ? 'Bienvenue' : t;

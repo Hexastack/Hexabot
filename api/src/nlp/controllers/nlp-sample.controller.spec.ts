@@ -18,7 +18,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
@@ -94,7 +94,7 @@ describe('NlpSampleController', () => {
         SettingService,
         SettingSeeder,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

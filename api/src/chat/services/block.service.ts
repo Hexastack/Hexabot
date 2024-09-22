@@ -13,7 +13,7 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { Nlp } from '@/nlp/lib/types';
 import { PluginService } from '@/plugins/plugins.service';
@@ -43,7 +43,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly logger: LoggerService,
-    protected readonly i18n: ExtendedI18nService,
+    protected readonly i18n: I18nService,
   ) {
     super(repository);
   }

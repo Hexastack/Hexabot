@@ -25,10 +25,10 @@ import { MenuModel } from '@/cms/schemas/menu.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
 import { offlineEventText } from '@/extensions/channels/offline/__test__/events.mock';
 import OfflineHandler from '@/extensions/channels/offline/index.channel';
 import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
@@ -149,7 +149,7 @@ describe('BlockService', () => {
         },
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

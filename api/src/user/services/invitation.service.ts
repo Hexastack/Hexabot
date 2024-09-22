@@ -17,7 +17,7 @@ import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -41,7 +41,7 @@ export class InvitationService extends BaseService<
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
-    protected readonly i18n: ExtendedI18nService,
+    protected readonly i18n: I18nService,
   ) {
     super(repository);
   }

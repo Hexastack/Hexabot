@@ -18,7 +18,7 @@ import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
 
 import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 
 import { UserService } from './user.service';
 import { UserCreateDto } from '../dto/user.dto';
@@ -35,7 +35,7 @@ export class ValidateAccountService {
     @Inject(JwtService) private readonly jwtService: JwtService,
     private readonly userService: UserService,
     @Optional() private readonly mailerService: MailerService | undefined,
-    private readonly i18n: ExtendedI18nService,
+    private readonly i18n: I18nService,
   ) {}
 
   /**

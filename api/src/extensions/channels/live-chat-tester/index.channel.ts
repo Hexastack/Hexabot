@@ -15,7 +15,7 @@ import { ChannelService } from '@/channel/channel.service';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
@@ -38,7 +38,7 @@ export default class LiveChatTesterHandler extends OfflineHandler {
     nlpService: NlpService,
     logger: LoggerService,
     eventEmitter: EventEmitter2,
-    i18n: ExtendedI18nService,
+    i18n: I18nService,
     subscriberService: SubscriberService,
     attachmentService: AttachmentService,
     messageService: MessageService,

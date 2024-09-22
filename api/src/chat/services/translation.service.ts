@@ -10,7 +10,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -25,7 +25,7 @@ export class TranslationService extends BaseService<Translation> {
     readonly repository: TranslationRepository,
     private readonly blockService: BlockService,
     private readonly settingService: SettingService,
-    private readonly i18n: ExtendedI18nService,
+    private readonly i18n: I18nService,
   ) {
     super(repository);
     this.resetI18nTranslations();

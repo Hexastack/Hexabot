@@ -9,16 +9,21 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { I18nService, Path, PathValue, TranslateOptions } from 'nestjs-i18n';
+import {
+  I18nService as NativeI18nService,
+  Path,
+  PathValue,
+  TranslateOptions,
+} from 'nestjs-i18n';
 import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
-import { Translation } from './chat/schemas/translation.schema';
-import { config } from './config';
+import { Translation } from '@/chat/schemas/translation.schema';
+import { config } from '@/config';
 
 @Injectable()
-export class ExtendedI18nService<
+export class I18nService<
   K = Record<string, unknown>,
-> extends I18nService<K> {
+> extends NativeI18nService<K> {
   private dynamicTranslations: Record<string, Record<string, string>> =
     config.chatbot.lang.available.reduce(
       (acc, curr) => ({ ...acc, [curr]: {} }),

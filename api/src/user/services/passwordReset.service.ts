@@ -21,7 +21,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { compareSync } from 'bcryptjs';
 
 import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 
 import { UserService } from './user.service';
@@ -34,7 +34,7 @@ export class PasswordResetService {
     @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     private readonly userService: UserService,
-    public readonly i18n: ExtendedI18nService,
+    public readonly i18n: I18nService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {

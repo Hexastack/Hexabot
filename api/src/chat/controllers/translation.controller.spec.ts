@@ -23,7 +23,7 @@ import { ContentModel } from '@/cms/schemas/content.schema';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { ContentService } from '@/cms/services/content.service';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -114,7 +114,7 @@ describe('TranslationController', () => {
         EventEmitter2,
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
             initDynamicTranslations: jest.fn(),

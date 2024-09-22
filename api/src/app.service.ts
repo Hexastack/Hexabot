@@ -9,11 +9,11 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { ExtendedI18nService } from './extended-i18n.service';
+import { I18nService } from './i18n/services/i18n.service';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly i18n: ExtendedI18nService) {}
+  constructor(private readonly i18n: I18nService) {}
 
   getHello(): string {
     return this.i18n.t('welcome', { lang: 'en' });

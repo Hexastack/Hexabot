@@ -50,7 +50,7 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { Content } from '@/cms/schemas/content.schema';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
@@ -73,7 +73,7 @@ export default class OfflineHandler extends ChannelHandler {
     nlpService: NlpService,
     logger: LoggerService,
     protected readonly eventEmitter: EventEmitter2,
-    protected readonly i18n: ExtendedI18nService,
+    protected readonly i18n: I18nService,
     protected readonly subscriberService: SubscriberService,
     protected readonly attachmentService: AttachmentService,
     protected readonly messageService: MessageService,

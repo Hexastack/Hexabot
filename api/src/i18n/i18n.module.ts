@@ -12,19 +12,19 @@ import { HttpAdapterHost } from '@nestjs/core';
 import {
   I18N_OPTIONS,
   I18N_TRANSLATIONS,
-  I18nModule,
+  I18nModule as NativeI18nModule,
   I18nOptions,
   I18nTranslation,
 } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
-import { ExtendedI18nService } from './extended-i18n.service';
+import { I18nService } from './services/i18n.service';
 
 @Global()
 @Module({})
-export class ExtendedI18nModule extends I18nModule {
+export class I18nModule extends NativeI18nModule {
   constructor(
-    i18n: ExtendedI18nService,
+    i18n: I18nService,
     @Inject(I18N_TRANSLATIONS)
     translations: Observable<I18nTranslation>,
     @Inject(I18N_OPTIONS) i18nOptions: I18nOptions,
@@ -36,9 +36,9 @@ export class ExtendedI18nModule extends I18nModule {
   static forRoot(options: I18nOptions): DynamicModule {
     const { providers, exports } = super.forRoot(options);
     return {
-      module: ExtendedI18nModule,
-      providers: providers.concat(ExtendedI18nService),
-      exports: exports.concat(ExtendedI18nService),
+      module: I18nModule,
+      providers: providers.concat(I18nService),
+      exports: exports.concat(I18nService),
     };
   }
 }

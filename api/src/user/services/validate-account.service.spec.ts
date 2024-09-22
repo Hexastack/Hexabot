@@ -17,7 +17,7 @@ import { SentMessageInfo } from 'nodemailer';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
@@ -69,7 +69,7 @@ describe('ValidateAccountService', () => {
         EventEmitter2,
         ValidateAccountService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },
