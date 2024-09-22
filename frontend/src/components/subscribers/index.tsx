@@ -52,12 +52,10 @@ export const Subscribers = () => {
     $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
     $or: ["first_name", "last_name"],
   });
-
   const { dataGridProps } = useFind(
     { entity: EntityType.SUBSCRIBER, format: Format.FULL },
     { params: searchPayload },
   );
-
   const columns: GridColDef<ISubscriber>[] = [
     { field: "id", headerName: "ID" },
     {
