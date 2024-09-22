@@ -52,10 +52,12 @@ export const Subscribers = () => {
     $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
     $or: ["first_name", "last_name"],
   });
+
   const { dataGridProps } = useFind(
     { entity: EntityType.SUBSCRIBER, format: Format.FULL },
     { params: searchPayload },
   );
+
   const columns: GridColDef<ISubscriber>[] = [
     { field: "id", headerName: "ID" },
     {
@@ -206,11 +208,15 @@ export const Subscribers = () => {
               ),
             }}
           >
-            {(labels || []).map((label) => (
-              <MenuItem key={label.id} value={label.id}>
-                {label.name}
-              </MenuItem>
-            ))}
+            {!!labels.length ? (
+              labels.map((label) => (
+                <MenuItem key={label.id} value={label.id}>
+                  {label.name}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem disabled>No label found</MenuItem>
+            )}
           </Input>
         </Grid>
       </PageHeader>
