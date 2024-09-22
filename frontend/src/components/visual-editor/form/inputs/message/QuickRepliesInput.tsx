@@ -58,7 +58,6 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   };
 
   useEffect(() => {
-   
       onChange(quickReplies.map(({ value }) => value));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quickReplies]);
