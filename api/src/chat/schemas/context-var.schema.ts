@@ -28,6 +28,12 @@ export class ContextVar extends BaseSchema {
     match: /^[a-z_0-9]+$/,
   })
   name: string;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  permanent?: boolean;
 }
 
 export const ContextVarModel: ModelDefinition = {
