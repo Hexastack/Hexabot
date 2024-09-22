@@ -178,7 +178,7 @@ export const Subscribers = () => {
           alignItems="center"
           flexShrink={0}
           flexWrap="nowrap"
-          width="max-content"
+          width="50%"
         >
           <FilterTextfield onChange={onSearch} fullWidth={true} />
           <Input
