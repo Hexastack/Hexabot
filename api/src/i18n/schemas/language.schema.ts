@@ -7,20 +7,38 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { EntityType, Format } from "@/services/types";
+import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
+import { THydratedDocument } from 'mongoose';
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { BaseSchema } from '@/utils/generics/base-schema';
 
-export type ITranslations = Record<string, string>;
+@Schema({ timestamps: true })
+export class Language extends BaseSchema {
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+  })
+  title: string;
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+  })
+  code: string;
+
+  @Prop({
+    type: Boolean,
+  })
+  default: boolean;
 }
 
-export interface ITranslationStub
-  extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
+export const LanguageModel: ModelDefinition = {
+  name: Language.name,
+  schema: SchemaFactory.createForClass(Language),
+};
 
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
+export type LanguageDocument = THydratedDocument<Language>;
+
+export default LanguageModel.schema;

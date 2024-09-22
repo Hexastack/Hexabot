@@ -7,23 +7,36 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { DynamicModule, Global, Inject, Module } from '@nestjs/common';
+import {
+  DynamicModule,
+  forwardRef,
+  Global,
+  Inject,
+  Module,
+} from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   I18N_OPTIONS,
   I18N_TRANSLATIONS,
-  I18nModule as NativeI18nModule,
   I18nOptions,
   I18nTranslation,
+  I18nModule as NativeI18nModule,
 } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
+import { ChatModule } from '@/chat/chat.module';
+
+import { LanguageController } from './controllers/language.controller';
 import { TranslationController } from './controllers/translation.controller';
+import { LanguageRepository } from './repositories/language.repository';
 import { TranslationRepository } from './repositories/translation.repository';
+import { LanguageModel } from './schemas/language.schema';
 import { TranslationModel } from './schemas/translation.schema';
+import { LanguageSeeder } from './seeds/language.seed';
 import { TranslationSeeder } from './seeds/translation.seed';
 import { I18nService } from './services/i18n.service';
+import { LanguageService } from './services/language.service';
 import { TranslationService } from './services/translation.service';
 
 @Global()
@@ -43,10 +56,19 @@ export class I18nModule extends NativeI18nModule {
     const { imports, providers, controllers, exports } = super.forRoot(options);
     return {
       module: I18nModule,
-      imports: imports.concat([MongooseModule.forFeature([TranslationModel])]),
-      controllers: controllers.concat([TranslationController]),
+      imports: (imports || []).concat([
+        MongooseModule.forFeature([LanguageModel, TranslationModel]),
+        forwardRef(() => ChatModule),
+      ]),
+      controllers: (controllers || []).concat([
+        LanguageController,
+        TranslationController,
+      ]),
       providers: providers.concat([
         I18nService,
+        LanguageRepository,
+        LanguageService,
+        LanguageSeeder,
         TranslationRepository,
         TranslationService,
         TranslationSeeder,

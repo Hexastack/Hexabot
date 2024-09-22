@@ -122,6 +122,8 @@
     "cms": "CMS",
     "nodes": "Content",
     "entities": "Content types",
+    "languages": "Languages",
+    "manage_localization": "Manage Localization",
     "translations": "Translations",
     "import": "Bulk Import",
     "media_library": "Media Library",
@@ -183,6 +185,7 @@
     "edit_node": "Edit Content",
     "import": "Bulk Import",
     "media_library": "Media Library",
+    "languages": "Languages",
     "translations": "Translations",
     "update_translation": "Update Translation",
     "broadcast": "Broadcast",
@@ -544,7 +547,9 @@
     "total": "Total",
     "general": "General",
     "other": "Other",
-    "no_data": "No data"
+    "no_data": "No data",
+    "code": "Code",
+    "default": "Default"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -642,7 +647,8 @@
     "media_library": "Media Library",
     "manage_roles": "Manage Roles",
     "connect_with_sso": "Connect with SSO",
-    "add_pattern": "Add pattern"
+    "add_pattern": "Add pattern",
+    "mark_as_default": "Mark as Default"
   },
   "input": {
     "search": "Search"

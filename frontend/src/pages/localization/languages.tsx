@@ -7,20 +7,17 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { EntityType, Format } from "@/services/types";
+import { ReactElement } from "react";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { Languages } from "@/components/languages";
+import { Layout } from "@/layout";
 
-export type ITranslations = Record<string, string>;
+const LanguagesPage = () => {
+  return <Languages />;
+};
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
-}
+LanguagesPage.getLayout = function getLayout(page: ReactElement) {
+  return <Layout>{page}</Layout>;
+};
 
-export interface ITranslationStub
-  extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
-
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
+export default LanguagesPage;

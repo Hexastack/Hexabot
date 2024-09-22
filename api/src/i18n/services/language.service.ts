@@ -7,20 +7,16 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { EntityType, Format } from "@/services/types";
+import { Injectable } from '@nestjs/common';
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { BaseService } from '@/utils/generics/base-service';
 
-export type ITranslations = Record<string, string>;
+import { LanguageRepository } from '../repositories/language.repository';
+import { Language } from '../schemas/language.schema';
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
+@Injectable()
+export class LanguageService extends BaseService<Language> {
+  constructor(readonly repository: LanguageRepository) {
+    super(repository);
+  }
 }
-
-export interface ITranslationStub
-  extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
-
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}

@@ -7,20 +7,25 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { EntityType, Format } from "@/services/types";
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+export class LanguageCreateDto {
+  @ApiProperty({ description: 'Language Title', type: String })
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
-export type ITranslations = Record<string, string>;
+  @ApiProperty({ description: 'Language Code', type: String })
+  @IsNotEmpty()
+  @IsString()
+  code: string;
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
+  @ApiProperty({ description: 'Is Default Language ?', type: Boolean })
+  @IsNotEmpty()
+  @IsBoolean()
+  default: boolean;
 }
 
-export interface ITranslationStub
-  extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
-
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
+export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}

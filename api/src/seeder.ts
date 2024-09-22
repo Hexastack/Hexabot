@@ -13,6 +13,8 @@ import { CategorySeeder } from './chat/seeds/category.seed';
 import { categoryModels } from './chat/seeds/category.seed-model';
 import { ContextVarSeeder } from './chat/seeds/context-var.seed';
 import { contextVarModels } from './chat/seeds/context-var.seed-model';
+import { LanguageSeeder } from './i18n/seeds/language.seed';
+import { languageModels } from './i18n/seeds/language.seed-model';
 import { TranslationSeeder } from './i18n/seeds/translation.seed';
 import { translationModels } from './i18n/seeds/translation.seed-model';
 import { LoggerService } from './logger/logger.service';
@@ -40,6 +42,7 @@ export async function seedDatabase(app: INestApplicationContext) {
   const settingSeeder = app.get(SettingSeeder);
   const permissionSeeder = app.get(PermissionSeeder);
   const userSeeder = app.get(UserSeeder);
+  const languageSeeder = app.get(LanguageSeeder);
   const translationSeeder = app.get(TranslationSeeder);
   const nlpEntitySeeder = app.get(NlpEntitySeeder);
   const nlpValueSeeder = app.get(NlpValueSeeder);
@@ -124,6 +127,14 @@ export async function seedDatabase(app: INestApplicationContext) {
     await contextVarSeeder.seed(contextVarModels);
   } catch (e) {
     logger.error('Unable to seed the database with context vars!');
+    throw e;
+  }
+
+  // Seed languages
+  try {
+    await languageSeeder.seed(languageModels);
+  } catch (e) {
+    logger.error('Unable to seed the database with languages!');
     throw e;
   }
 

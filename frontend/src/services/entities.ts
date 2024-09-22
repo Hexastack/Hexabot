@@ -210,6 +210,15 @@ export const NlpSampleEntityEntity = new schema.Entity(
   },
 );
 
+export const LanguageEntity = new schema.Entity(
+  EntityType.LANGUAGE,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const TranslationEntity = new schema.Entity(
   EntityType.TRANSLATION,
   undefined,
@@ -280,6 +289,7 @@ export const ENTITY_MAP = {
   [EntityType.NLP_ENTITY]: NlpEntityEntity,
   [EntityType.NLP_SAMPLE_ENTITY]: NlpSampleEntityEntity,
   [EntityType.NLP_VALUE]: NlpValueEntity,
+  [EntityType.LANGUAGE]: LanguageEntity,
   [EntityType.TRANSLATION]: TranslationEntity,
   [EntityType.ATTACHMENT]: AttachmentEntity,
   [EntityType.BLOCK]: BlockEntity,

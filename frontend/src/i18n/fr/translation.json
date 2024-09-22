@@ -123,6 +123,8 @@
     "cms": "CMS",
     "nodes": "Contenu",
     "entities": "Types de contenu",
+    "manage_localization": "Internationalisation",
+    "languages": "Langues",
     "translations": "Traductions",
     "import": "Importation en masse",
     "media_library": "Bibliothéque Media",
@@ -184,6 +186,7 @@
     "edit_node": "Modifier le contenu",
     "import": "Importation en masse",
     "media_library": "Bibliothéque Media",
+    "languages": "Langues",
     "translations": "Traductions",
     "update_translation": "Mettre à jour la traduction",
     "broadcast": "Diffusion",
@@ -544,7 +547,9 @@
     "total": "Totale",
     "general": "Général",
     "other": "Autre",
-    "no_data": "Pas de données"
+    "no_data": "Pas de données",
+    "code": "Code",
+    "default": "Par Défaut"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
@@ -578,7 +583,8 @@
     "start_date": "Date de début",
     "end_date": "Date de fin",
     "nlp_value": "Valeur",
-    "type_message_here": "Ecrivez quelque chose ici ...."
+    "type_message_here": "Ecrivez quelque chose ici ....",
+    "mark_as_default": "Par Défaut"
   },
   "button": {
     "login": "Se connecter",

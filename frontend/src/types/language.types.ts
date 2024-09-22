@@ -11,16 +11,16 @@ import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
-export type ITranslations = Record<string, string>;
+export type ILanguages = Record<string, string>;
 
-export interface ITranslationAttributes {
-  str: string;
-  translations: ITranslations;
-  translated: number;
+export interface ILanguageAttributes {
+  title: string;
+  code: string;
+  default: boolean;
 }
 
-export interface ITranslationStub
+export interface ILanguageStub
   extends IBaseSchema,
-    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
+    OmitPopulate<ILanguageAttributes, EntityType.TRANSLATION> {}
 
-export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
+export interface ILanguage extends ILanguageStub, IFormat<Format.BASIC> {}
