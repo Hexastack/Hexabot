@@ -77,6 +77,7 @@ jobs:
           context: ./widget/
           file: ./widget/Dockerfile
           platforms: linux/amd64,linux/arm64
+          target: production
           push: true
           tags: hexastack/hexabot-widget:latest
 
