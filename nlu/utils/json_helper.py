@@ -4,7 +4,7 @@ import json
 class JsonHelper:
     data_folder: str
 
-    def __init__(self, model:str="jisf"):
+    def __init__(self, model:str = "intent_classifier"):
         self.data_folder=os.path.join("data",model)
         
     def read_dataset_json_file(self, filename):

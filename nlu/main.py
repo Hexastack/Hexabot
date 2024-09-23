@@ -15,8 +15,8 @@ AUTH_TOKEN = os.getenv("AUTH_TOKEN", "TOKEN_MUST_BE_DEFINED")
 
 AVAILABLE_LANGUAGES = os.getenv("AVAILABLE_LANGUAGES", "en,fr").split(',')
 TFLC_REPO_ID = os.getenv("TFLC_REPO_ID")
-JISF_REPO_ID = os.getenv("JISF_REPO_ID")
-
+INTENT_CLASSIFIER_REPO_ID = os.getenv("INTENT_CLASSIFIER_REPO_ID")
+SLOT_FILLER_REPO_ID = os.getenv("SLOT_FILLER_REPO_ID")
 
 def load_language_classifier():
     # Init language classifier model
@@ -27,21 +27,31 @@ def load_language_classifier():
     logging.info(f'Successfully loaded the language classifier model')
     return model
 
-
 def load_intent_classifiers():
-    Model = tfbp.get_model("jisf")
-    models = {}
+    Model = tfbp.get_model("intent_classifier")
+    intent_classifiers = {}
     for language in AVAILABLE_LANGUAGES:
         kwargs = {}
-        models[language] = Model(save_dir=language, method="predict", repo_id=JISF_REPO_ID, **kwargs)
-        models[language].load_model()
+        intent_classifiers[language] = Model(save_dir=language, method="predict", repo_id=INTENT_CLASSIFIER_REPO_ID, **kwargs)
+        intent_classifiers[language].load_model()
         logging.info(f'Successfully loaded the intent classifier {language} model')
-    return models
+    return intent_classifiers
+
+def load_slot_classifiers():
+    Model = tfbp.get_model("slot_classifier")
+    slot_fillers = {}
+    for language in AVAILABLE_LANGUAGES:
+        kwargs = {}
+        slot_fillers[language] = Model(save_dir=language, method="predict", repo_id=SLOT_FILLER_REPO_ID, **kwargs)
+        slot_fillers[language].load_model()
+        logging.info(f'Successfully loaded the slot filler {language} model')
+    return slot_fillers
 
 
 def load_models():
     app.language_classifier = load_language_classifier()  # type: ignore
     app.intent_classifiers = load_intent_classifiers()  # type: ignore
+    app.slot_fillers = load_intent_classifiers()  # type: ignore
 
 app = FastAPI()
 
@@ -74,13 +84,20 @@ async def check_health():
 
 @app.post("/parse")
 def parse(input: ParseInput, is_authenticated: Annotated[str, Depends(authenticate)]):
-    if not hasattr(app, 'language_classifier') or not hasattr(app, 'intent_classifiers'):
+    if not hasattr(app, 'language_classifier') or not hasattr(app, 'intent_classifiers') or not hasattr(app, 'slot_fillers'):
         headers = {"Retry-After": "120"}  # Suggest retrying after 2 minutes
-        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"message": "Models are loading, please retry later."}, headers=headers)
+        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"message": "Models are still loading, please retry later."}, headers=headers)
     
     language = app.language_classifier.get_prediction(input.q)  # type: ignore
     lang = language.get("value")
-    prediction = app.intent_classifiers[lang].get_prediction(
+    intent_prediction = app.intent_classifiers[lang].get_prediction(
         input.q)  # type: ignore
-    prediction.get("entities").append(language)
-    return prediction
+    slot_prediction = app.slot_fillers[lang].get_prediction(
+        input.q)  # type: ignore
+    slot_prediction.get("entities").append(language)
+
+    return {
+        "text": input.q,
+        "intent": intent_prediction.get("intent"),
+        "entities": slot_prediction.get("entities"),
+    }
