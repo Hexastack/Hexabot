@@ -91,6 +91,9 @@ export const subscriberDefaultValues: TFixturesDefaultValues<Subscriber> = {
   lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   avatar: null,
+  /*context: {
+    vars: {},
+  }*/ // TODO: add unit tests taking into account the context field
 };
 
 export const subscriberFixtures = getFixturesWithDefaultValues<Subscriber>({

@@ -18,10 +18,12 @@ const contextVars: ContextVarCreateDto[] = [
   {
     label: 'test context var 1',
     name: 'test1',
+    permanent: false,
   },
   {
     label: 'test context var 2',
     name: 'test2',
+    permanent: false,
   },
 ];
 

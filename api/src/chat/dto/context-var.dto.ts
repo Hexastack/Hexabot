@@ -20,6 +20,9 @@ export class ContextVarCreateDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+
+  @ApiProperty({ description: 'Is context var permanent', type: Boolean })
+  permanent?: boolean;
 }
 
 export class ContextVarUpdateDto extends PartialType(ContextVarCreateDto) {}
