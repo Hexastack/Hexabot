@@ -25,6 +25,7 @@ import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContai
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
+import { URL_REGEX } from "@/constants";
 import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
 
 export type MenuDialogProps = DialogProps & {
@@ -66,7 +67,8 @@ export const MenuDialog: FC<MenuDialogProps> = ({
     url: {
       required: t("message.url_is_invalid"),
       validate: (value: string = "") =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
+        (isAbsoluteUrl(value) && URL_REGEX.test(value)) ||
+        t("message.url_is_invalid"),
     },
     payload: {},
   };
