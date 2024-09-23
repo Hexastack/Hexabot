@@ -20,10 +20,10 @@ import {
   Query,
   UseInterceptors,
   ForbiddenException,
-  Session,
+  Req,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { Session as ExpressSession } from 'express-session';
+import { Request } from 'express';
 import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -36,6 +36,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { Role, RoleFull, RolePopulate, RoleStub } from '../schemas/role.schema';
+import { User } from '../schemas/user.schema';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
@@ -152,19 +153,16 @@ export class RoleController extends BaseController<
   @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string, @Session() session: ExpressSession) {
-    const currentUser = await this.userService.findOneAndPopulate(
-      session.passport.user.id,
-      ['roles'],
-    );
-    if (!currentUser) {
-      throw new NotFoundException('User not found');
-    }
+  async deleteOne(@Param('id') id: string, @Req() req: Request) {
+    const userRoles = (req.user as User).roles;
 
-    const roles = currentUser.roles.map((role) => role.id);
-
-    if (roles.includes(id)) {
+    const associatedUser = await this.userService.findOne({
+      roles: { $in: [id] },
+    });
+    if (userRoles.includes(id)) {
       throw new ForbiddenException("Your account's role can't be deleted");
+    } else if (associatedUser) {
+      throw new ForbiddenException('Role is associated with other users');
     } else {
       try {
         const result = await this.roleService.deleteOne(id);
