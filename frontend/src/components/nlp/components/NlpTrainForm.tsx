@@ -36,18 +36,19 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
 import { EntityType, Format } from "@/services/types";
+import { ILanguage } from "@/types/language.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import {
   INlpDatasetKeywordEntity,
+  INlpDatasetSample,
   INlpDatasetTraitEntity,
   INlpSampleFormAttributes,
-  INlpSampleFull,
   NlpSampleType,
 } from "@/types/nlp-sample.types";
 import { INlpValue } from "@/types/nlp-value.types";
 
 type NlpDatasetSampleProps = {
-  sample?: INlpSampleFull;
+  sample?: INlpDatasetSample;
   submitForm: (params: INlpSampleFormAttributes) => void;
 };
 
@@ -90,7 +91,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
       lookups.includes("trait"),
     );
     const sampleTraitEntities = sample.entities.filter(
-      (e) => typeof e.start === "undefined",
+      (e) => "start" in e && typeof e.start === "undefined",
     );
 
     if (sampleTraitEntities.length === traitEntities.length) {
@@ -112,9 +113,12 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
       defaultValues: {
         type: sample?.type || NlpSampleType.train,
         text: sample?.text || "",
+        language: sample?.language,
         traitEntities: defaultTraitEntities,
         keywordEntities:
-          sample?.entities.filter((e) => typeof e.start === "number") || [],
+          sample?.entities.filter(
+            (e) => "start" in e && typeof e.start === "number",
+          ) || [],
       },
     });
   const currentText = watch("text");
@@ -167,7 +171,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
 
   const findInsertIndex = (newItem: INlpDatasetKeywordEntity): number => {
     const index = keywordEntities.findIndex(
-      (entity) => entity.start > newItem.start,
+      (entity) => entity.start && newItem.start && entity.start > newItem.start,
     );
 
     return index === -1 ? keywordEntities.length : index;
@@ -177,11 +181,15 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     start: number;
     end: number;
   } | null>(null);
-  const onSubmitForm = (params: INlpSampleFormAttributes) => {
-    submitForm(params);
-    reset();
-    removeTraitEntity();
-    removeKeywordEntity();
+  const onSubmitForm = (form: INlpSampleFormAttributes) => {
+    submitForm(form);
+    reset({
+      type: form?.type || NlpSampleType.train,
+      text: "",
+      language: form?.language,
+      traitEntities: defaultTraitEntities,
+      keywordEntities: [],
+    });
     refetchEntities();
   };
 
@@ -247,6 +255,37 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             />
           </ContentItem>
           <Box display="flex" flexDirection="column">
+            <ContentItem
+              display="flex"
+              flexDirection="row"
+              maxWidth="50%"
+              gap={2}
+            >
+              <Controller
+                name="language"
+                control={control}
+                render={({ field }) => {
+                  const { onChange, ...rest } = field;
+
+                  return (
+                    <AutoCompleteEntitySelect<ILanguage, "title", false>
+                      fullWidth={true}
+                      autoFocus
+                      searchFields={["title", "code"]}
+                      entity={EntityType.LANGUAGE}
+                      format={Format.BASIC}
+                      labelKey="title"
+                      idKey="code"
+                      label={t("label.language")}
+                      multiple={false}
+                      {...field}
+                      onChange={(_e, selected) => onChange(selected?.code)}
+                      {...rest}
+                    />
+                  );
+                }}
+              />
+            </ContentItem>
             {traitEntities.map((traitEntity, index) => (
               <ContentItem
                 key={traitEntity.id}

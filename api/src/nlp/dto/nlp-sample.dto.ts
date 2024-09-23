@@ -43,7 +43,7 @@ export class NlpSampleCreateDto {
   @IsOptional()
   type?: NlpSampleState;
 
-  @ApiProperty({ description: 'NLP sample language', type: String })
+  @ApiProperty({ description: 'NLP sample language id', type: String })
   @IsString()
   @IsNotEmpty()
   @IsObjectId({ message: 'Language must be a valid ObjectId' })
@@ -56,6 +56,11 @@ export class NlpSampleDto extends NlpSampleCreateDto {
   })
   @IsOptional()
   entities?: NlpSampleEntityValue[];
+
+  @ApiProperty({ description: 'NLP sample language code', type: String })
+  @IsString()
+  @IsNotEmpty()
+  language: string;
 }
 
 export class NlpSampleUpdateDto extends PartialType(NlpSampleCreateDto) {}

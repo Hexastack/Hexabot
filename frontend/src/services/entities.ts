@@ -175,14 +175,24 @@ export const SettingEntity = new schema.Entity(EntityType.SETTING, {
   processStrategy: processCommonStrategy,
 });
 
-export const NlpSampleEntity = new schema.Entity(
-  EntityType.NLP_SAMPLE,
+export const LanguageEntity = new schema.Entity(
+  EntityType.LANGUAGE,
   undefined,
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,
   },
 );
+
+export const TranslationEntity = new schema.Entity(
+  EntityType.TRANSLATION,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const NlpValueEntity = new schema.Entity(
   EntityType.NLP_VALUE,
   undefined,
@@ -201,27 +211,28 @@ export const NlpEntityEntity = new schema.Entity(
   },
 );
 
+NlpValueEntity.define({
+  entity: NlpEntityEntity,
+});
+
 export const NlpSampleEntityEntity = new schema.Entity(
   EntityType.NLP_SAMPLE_ENTITY,
-  undefined,
+  {
+    entity: NlpEntityEntity,
+    value: NlpValueEntity,
+  },
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,
   },
 );
 
-export const LanguageEntity = new schema.Entity(
-  EntityType.LANGUAGE,
-  undefined,
+export const NlpSampleEntity = new schema.Entity(
+  EntityType.NLP_SAMPLE,
   {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
+    entities: [NlpSampleEntityEntity],
+    language: LanguageEntity,
   },
-);
-
-export const TranslationEntity = new schema.Entity(
-  EntityType.TRANSLATION,
-  undefined,
   {
     idAttribute: ({ id }) => id,
     processStrategy: processCommonStrategy,

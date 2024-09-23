@@ -199,7 +199,7 @@ describe('NlpSampleController', () => {
         trained: true,
         type: NlpSampleState.test,
         entities: [],
-        language: enLang.id,
+        language: 'en',
       };
       const result = await nlpSampleController.create(nlSample);
       expect(result).toEqualPayload({
@@ -279,7 +279,7 @@ describe('NlpSampleController', () => {
             value: 'update',
           },
         ],
-        language: frLang.id,
+        language: 'fr',
       });
       const updatedSample = {
         text: 'updated',
@@ -302,15 +302,12 @@ describe('NlpSampleController', () => {
     });
 
     it('should throw exception when nlp sample id not found', async () => {
-      const frLang = await languageService.findOne({
-        code: 'fr',
-      });
       await expect(
         nlpSampleController.updateOne(byeJhonSampleId, {
           text: 'updated',
           trained: true,
           type: NlpSampleState.test,
-          language: frLang.id,
+          language: 'fr',
         }),
       ).rejects.toThrow(NotFoundException);
     });

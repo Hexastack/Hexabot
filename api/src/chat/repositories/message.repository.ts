@@ -82,6 +82,7 @@ export class MessageRepository extends BaseRepository<
           text: _doc.message.text,
           type: NlpSampleState.inbox,
           trained: false,
+          // @TODO : We need to define the language in the message entity
           language: defaultLang.id,
         };
         try {

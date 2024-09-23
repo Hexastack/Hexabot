@@ -122,19 +122,22 @@ export class NlpSampleController extends BaseController<
   @CsrfCheck(true)
   @Post()
   async create(
-    @Body() { entities: nlpEntities, ...createNlpSampleDto }: NlpSampleDto,
+    @Body()
+    {
+      entities: nlpEntities,
+      language: languageCode,
+      ...createNlpSampleDto
+    }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
-    const nlpSample = await this.nlpSampleService.create(
-      createNlpSampleDto as NlpSampleCreateDto,
-    );
+    const language = await this.languageService.getLanguageByCode(languageCode);
+    const nlpSample = await this.nlpSampleService.create({
+      ...createNlpSampleDto,
+      language: language.id,
+    });
 
     const entities = await this.nlpSampleEntityService.storeSampleEntities(
       nlpSample,
       nlpEntities,
-    );
-
-    const language = await this.languageService.findOne(
-      createNlpSampleDto.language,
     );
 
     return {
@@ -250,7 +253,11 @@ export class NlpSampleController extends BaseController<
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpSample>,
     @Query(PopulatePipe) populate: string[],
-    @Query(new SearchFilterPipe<NlpSample>({ allowedFields: ['text', 'type'] }))
+    @Query(
+      new SearchFilterPipe<NlpSample>({
+        allowedFields: ['text', 'type', 'language'],
+      }),
+    )
     filters: TFilterQuery<NlpSample>,
   ) {
     return this.canPopulate(populate)
@@ -270,11 +277,12 @@ export class NlpSampleController extends BaseController<
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
-    @Body() updateNlpSampleDto: NlpSampleDto,
+    @Body() { entities, language: languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
-    const { entities, ...sampleAttrs } = updateNlpSampleDto;
+    const language = await this.languageService.getLanguageByCode(languageCode);
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
+      language: language.id,
       trained: false,
     });
 
@@ -287,8 +295,6 @@ export class NlpSampleController extends BaseController<
 
     const updatedSampleEntities =
       await this.nlpSampleEntityService.storeSampleEntities(sample, entities);
-
-    const language = await this.languageService.findOne(sampleAttrs.language);
 
     return {
       ...sample,
