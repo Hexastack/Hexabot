@@ -164,15 +164,11 @@ export class RoleController extends BaseController<
     } else if (associatedUser) {
       throw new ForbiddenException('Role is associated with other users');
     } else {
-      try {
-        const result = await this.roleService.deleteOne(id);
-        if (result.deletedCount === 0) {
-          throw new NotFoundException(`Role with ID ${id} not found`);
-        }
-        return result;
-      } catch (error) {
+      const result = await this.roleService.deleteOne(id);
+      if (result.deletedCount === 0) {
         throw new NotFoundException(`Role with ID ${id} not found`);
       }
+      return result;
     }
   }
 }
