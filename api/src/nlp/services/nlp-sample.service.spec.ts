@@ -7,12 +7,14 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
+import { LanguageService } from '@/i18n/services/language.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -68,7 +70,16 @@ describe('NlpSampleService', () => {
         NlpSampleEntityService,
         NlpEntityService,
         NlpValueService,
+        LanguageService,
         EventEmitter2,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     nlpSampleService = module.get<NlpSampleService>(NlpSampleService);

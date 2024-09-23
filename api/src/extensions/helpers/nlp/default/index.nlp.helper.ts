@@ -13,21 +13,13 @@ import { Injectable } from '@nestjs/common';
 import { LoggerService } from '@/logger/logger.service';
 import BaseNlpHelper from '@/nlp/lib/BaseNlpHelper';
 import { Nlp } from '@/nlp/lib/types';
-import { NlpEntity, NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
+import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
-import { NlpValue } from '@/nlp/schemas/nlp-value.schema';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 
-import {
-  CommonExample,
-  DatasetType,
-  EntitySynonym,
-  ExampleEntity,
-  LookupTable,
-  NlpParseResultType,
-} from './types';
+import { DatasetType, NlpParseResultType } from './types';
 
 @Injectable()
 export default class DefaultNlpHelper extends BaseNlpHelper {
@@ -61,69 +53,16 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
    * @param entities - All available entities
    * @returns {DatasetType} - The formatted RASA training set
    */
-  format(samples: NlpSampleFull[], entities: NlpEntityFull[]): DatasetType {
-    const entityMap = NlpEntity.getEntityMap(entities);
-    const valueMap = NlpValue.getValueMap(
-      NlpValue.getValuesFromEntities(entities),
+  async format(
+    samples: NlpSampleFull[],
+    entities: NlpEntityFull[],
+  ): Promise<DatasetType> {
+    const nluData = await this.nlpSampleService.formatRasaNlu(
+      samples,
+      entities,
     );
 
-    const common_examples: CommonExample[] = samples
-      .filter((s) => s.entities.length > 0)
-      .map((s) => {
-        const intent = s.entities.find(
-          (e) => entityMap[e.entity].name === 'intent',
-        );
-        if (!intent) {
-          throw new Error('Unable to find the `intent` nlp entity.');
-        }
-        const sampleEntities: ExampleEntity[] = s.entities
-          .filter((e) => entityMap[<string>e.entity].name !== 'intent')
-          .map((e) => {
-            const res: ExampleEntity = {
-              entity: entityMap[<string>e.entity].name,
-              value: valueMap[<string>e.value].value,
-            };
-            if ('start' in e && 'end' in e) {
-              Object.assign(res, {
-                start: e.start,
-                end: e.end,
-              });
-            }
-            return res;
-          });
-        return {
-          text: s.text,
-          intent: valueMap[intent.value].value,
-          entities: sampleEntities,
-        };
-      });
-    const lookup_tables: LookupTable[] = entities.map((e) => {
-      return {
-        name: e.name,
-        elements: e.values.map((v) => {
-          return v.value;
-        }),
-      };
-    });
-    const entity_synonyms = entities
-      .reduce((acc, e) => {
-        const synonyms = e.values.map((v) => {
-          return {
-            value: v.value,
-            synonyms: v.expressions,
-          };
-        });
-        return acc.concat(synonyms);
-      }, [] as EntitySynonym[])
-      .filter((s) => {
-        return s.synonyms.length > 0;
-      });
-    return {
-      common_examples,
-      regex_features: [],
-      lookup_tables,
-      entity_synonyms,
-    };
+    return nluData;
   }
 
   /**
@@ -138,7 +77,7 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
     entities: NlpEntityFull[],
   ): Promise<any> {
     const self = this;
-    const nluData: DatasetType = self.format(samples, entities);
+    const nluData: DatasetType = await self.format(samples, entities);
     // Train samples
     const result = await this.httpService.axiosRef.post(
       `${this.settings.endpoint}/train`,
@@ -169,7 +108,7 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
     entities: NlpEntityFull[],
   ): Promise<any> {
     const self = this;
-    const nluTestData: DatasetType = self.format(samples, entities);
+    const nluTestData: DatasetType = await self.format(samples, entities);
     // Evaluate model with test samples
     return await this.httpService.axiosRef.post(
       `${this.settings.endpoint}/evaluate`,

@@ -157,12 +157,16 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     },
     onSuccess: (result) => {
       const traitEntities: INlpDatasetTraitEntity[] = result.entities.filter(
-        (e) => !("start" in e && "end" in e),
+        (e) => !("start" in e && "end" in e) && e.entity !== "language",
       );
       const keywordEntities = result.entities.filter(
         (e) => "start" in e && "end" in e,
       ) as INlpDatasetKeywordEntity[];
+      const language = result.entities.find(
+        ({ entity }) => entity === "language",
+      );
 
+      setValue("language", language?.value || "");
       setValue("traitEntities", traitEntities);
       setValue("keywordEntities", keywordEntities);
     },

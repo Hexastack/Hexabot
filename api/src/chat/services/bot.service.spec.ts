@@ -28,7 +28,10 @@ import { MenuService } from '@/cms/services/menu.service';
 import { offlineEventText } from '@/extensions/channels/offline/__test__/events.mock';
 import OfflineHandler from '@/extensions/channels/offline/index.channel';
 import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
@@ -107,6 +110,7 @@ describe('BlockService', () => {
           NlpEntityModel,
           NlpSampleEntityModel,
           NlpSampleModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -126,6 +130,7 @@ describe('BlockService', () => {
         NlpEntityRepository,
         NlpSampleEntityRepository,
         NlpSampleRepository,
+        LanguageRepository,
         BlockService,
         CategoryService,
         ContentTypeService,
@@ -143,6 +148,7 @@ describe('BlockService', () => {
         NlpSampleEntityService,
         NlpSampleService,
         NlpService,
+        LanguageService,
         {
           provide: PluginService,
           useValue: {},

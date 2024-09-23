@@ -96,13 +96,23 @@ describe('LanguageController', () => {
   });
 
   describe('findPage', () => {
-    const pageQuery = getPageQuery<Language>();
+    const pageQuery = getPageQuery<Language>({ sort: ['code', 'asc'] });
     it('should find languages', async () => {
       jest.spyOn(languageService, 'findPage');
       const result = await languageController.findPage(pageQuery, {});
 
       expect(languageService.findPage).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqualPayload(languageFixtures);
+      expect(result).toEqualPayload(
+        languageFixtures.sort(({ code: codeA }, { code: codeB }) => {
+          if (codeA < codeB) {
+            return -1;
+          }
+          if (codeA > codeB) {
+            return 1;
+          }
+          return 0;
+        }),
+      );
     });
   });
 

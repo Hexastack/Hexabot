@@ -93,7 +93,7 @@ export class NlpSampleController extends BaseController<
       type ? { type } : {},
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
-    const result = this.nlpSampleService.formatRasaNlu(samples, entities);
+    const result = await this.nlpSampleService.formatRasaNlu(samples, entities);
 
     // Sending the JSON data as a file
     const buffer = Buffer.from(JSON.stringify(result));

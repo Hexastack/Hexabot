@@ -16,6 +16,7 @@ import {
   ExampleEntity,
   LookupTable,
 } from '@/extensions/helpers/nlp/default/types';
+import { LanguageService } from '@/i18n/services/language.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
@@ -33,7 +34,10 @@ export class NlpSampleService extends BaseService<
   NlpSamplePopulate,
   NlpSampleFull
 > {
-  constructor(readonly repository: NlpSampleRepository) {
+  constructor(
+    readonly repository: NlpSampleRepository,
+    private readonly languageService: LanguageService,
+  ) {
     super(repository);
   }
 
@@ -56,10 +60,10 @@ export class NlpSampleService extends BaseService<
    *
    * @returns The formatted Rasa NLU training dataset.
    */
-  formatRasaNlu(
+  async formatRasaNlu(
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
-  ): DatasetType {
+  ): Promise<DatasetType> {
     const entityMap = NlpEntity.getEntityMap(entities);
     const valueMap = NlpValue.getValueMap(
       NlpValue.getValuesFromEntities(entities),
@@ -88,21 +92,34 @@ export class NlpSampleService extends BaseService<
               });
             }
             return res;
+          })
+          // TODO : place language at the same level as the intent
+          .concat({
+            entity: 'language',
+            value: s.language.code,
           });
+
         return {
           text: s.text,
           intent: valueMap[intent.value].value,
           entities: sampleEntities,
         };
       });
-    const lookup_tables: LookupTable[] = entities.map((e) => {
-      return {
-        name: e.name,
-        elements: e.values.map((v) => {
-          return v.value;
-        }),
-      };
-    });
+
+    const languages = await this.languageService.getLanguages();
+    const lookup_tables: LookupTable[] = entities
+      .map((e) => {
+        return {
+          name: e.name,
+          elements: e.values.map((v) => {
+            return v.value;
+          }),
+        };
+      })
+      .concat({
+        name: 'language',
+        elements: Object.keys(languages),
+      });
     const entity_synonyms = entities
       .reduce((acc, e) => {
         const synonyms = e.values.map((v) => {

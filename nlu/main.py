@@ -88,13 +88,13 @@ def parse(input: ParseInput, is_authenticated: Annotated[str, Depends(authentica
         headers = {"Retry-After": "120"}  # Suggest retrying after 2 minutes
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"message": "Models are still loading, please retry later."}, headers=headers)
     
-    language = app.language_classifier.get_prediction(input.q)  # type: ignore
-    lang = language.get("value")
-    intent_prediction = app.intent_classifiers[lang].get_prediction(
+    language_prediction = app.language_classifier.get_prediction(input.q)  # type: ignore
+    language = language_prediction.get("value")
+    intent_prediction = app.intent_classifiers[language].get_prediction(
         input.q)  # type: ignore
-    slot_prediction = app.slot_fillers[lang].get_prediction(
+    slot_prediction = app.slot_fillers[language].get_prediction(
         input.q)  # type: ignore
-    slot_prediction.get("entities").append(language)
+    slot_prediction.get("entities").append(language_prediction)
 
     return {
         "text": input.q,

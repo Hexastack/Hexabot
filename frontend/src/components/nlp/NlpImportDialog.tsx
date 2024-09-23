@@ -44,6 +44,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
           QueryType.collection,
           EntityType.NLP_SAMPLE,
         ]);
+        queryClient.removeQueries([QueryType.count, EntityType.NLP_SAMPLE]);
 
         handleCloseDialog();
         toast.success(t("message.success_save"));
