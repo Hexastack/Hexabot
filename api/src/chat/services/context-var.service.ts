@@ -12,11 +12,25 @@ import { Injectable } from '@nestjs/common';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { ContextVarRepository } from '../repositories/context-var.repository';
+import { Block, BlockFull } from '../schemas/block.schema';
 import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
 export class ContextVarService extends BaseService<ContextVar> {
   constructor(readonly repository: ContextVarRepository) {
     super(repository);
+  }
+
+  async getContextVarsByBlock(
+    block: Block | BlockFull,
+  ): Promise<Record<string, ContextVar>> {
+    return (
+      await this.find({
+        name: { $in: block.capture_vars.map((cv) => cv.context_var) },
+      })
+    ).reduce((acc, cv) => {
+      acc[cv.name] = cv;
+      return acc;
+    }, {});
   }
 }

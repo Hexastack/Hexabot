@@ -19,7 +19,6 @@ import { SubscriberService } from './subscriber.service';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
-import { ContextVar } from '../schemas/context-var.schema';
 import {
   Conversation,
   ConversationFull,
@@ -92,17 +91,8 @@ export class ConversationService extends BaseService<
     convo.context.nlp = event.getNLP();
     convo.context.vars = convo.context.vars || {};
 
-    const contextVars = (
-      await this.contextVarService.find({
-        name: { $in: next.capture_vars.map((c) => c.context_var) },
-      })
-    ).reduce(
-      (acc, cv) => {
-        acc[cv.name] = cv;
-        return acc;
-      },
-      {} as Record<string, ContextVar>,
-    );
+    const contextVars =
+      await this.contextVarService.getContextVarsByBlock(next);
 
     // Capture user entry in context vars
     if (captureVars && next.capture_vars && next.capture_vars.length > 0) {
