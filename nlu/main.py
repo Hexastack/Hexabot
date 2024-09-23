@@ -94,10 +94,16 @@ def parse(input: ParseInput, is_authenticated: Annotated[str, Depends(authentica
         input.q)  # type: ignore
     slot_prediction = app.slot_fillers[language].get_prediction(
         input.q)  # type: ignore
-    slot_prediction.get("entities").append(language_prediction)
+
+    if slot_prediction.get("entities"):
+        entities = slot_prediction.get("entities")
+    else:
+        entities = []
+    
+    entities.append(language_prediction)
 
     return {
         "text": input.q,
         "intent": intent_prediction.get("intent"),
-        "entities": slot_prediction.get("entities"),
+        "entities": entities,
     }
