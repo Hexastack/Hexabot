@@ -40,7 +40,7 @@ pip install -r requirements.txt
 You should run `source env.sh` on each new shell session. This activates the virtualenv and creates a nice alias for `run.py`:
 ```bash
 $ cat env.sh
-source env/bin/activate
+source venv/bin/activate
 alias run='python run.py'
 ```
 
@@ -53,7 +53,7 @@ run fit myexperiment1 mlp mnist --batch_size=32 --learning_rate=0.1
 Examples :
 ```bash
 # Intent classification
-run fit intent-classifier-en-30072024 jisf  --intent_num_labels=88 --slot_num_labels=17 --language=en
+run fit intent-classifier-en-30072024 intent_classifier  --intent_num_labels=88 --slot_num_labels=17 --language=en
 run predict intent-classifier-fr-30072024  --intent_num_labels=7 --slot_num_labels=2 --language=fr
 
 # Language classification
