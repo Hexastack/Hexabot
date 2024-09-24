@@ -115,10 +115,10 @@ export class LanguageController extends BaseController<Language> {
     @Param('id') id: string,
     @Body() languageUpdate: LanguageUpdateDto,
   ): Promise<Language> {
-    if ('default' in languageUpdate) {
-      if (languageUpdate.default) {
+    if ('isDefault' in languageUpdate) {
+      if (languageUpdate.isDefault) {
         // A new default language is define, make sure that only one is marked as default
-        await this.languageService.updateMany({}, { default: false });
+        await this.languageService.updateMany({}, { isDefault: false });
       } else {
         throw new BadRequestException('Should not be able to disable default');
       }
@@ -142,7 +142,7 @@ export class LanguageController extends BaseController<Language> {
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
     const result = await this.languageService.deleteOne({
-      default: false, // Prevent deleting the default language
+      isDefault: false, // Prevent deleting the default language
       _id: id,
     });
     if (result.deletedCount === 0) {

@@ -13,11 +13,11 @@ export const languageModels: LanguageCreateDto[] = [
   {
     title: 'English',
     code: 'en',
-    default: true,
+    isDefault: true,
   },
   {
     title: 'Français',
     code: 'fr',
-    default: false,
+    isDefault: false,
   },
 ];

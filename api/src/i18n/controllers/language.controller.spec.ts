@@ -139,7 +139,7 @@ describe('LanguageController', () => {
 
     it('should mark a language as default', async () => {
       jest.spyOn(languageService, 'updateOne');
-      const translationUpdateDto = { default: true };
+      const translationUpdateDto = { isDefault: true };
       const frLang = await languageService.findOne({ code: 'fr' });
       const result = await languageController.updateOne(
         frLang.id,
@@ -156,7 +156,7 @@ describe('LanguageController', () => {
       });
 
       const enLang = await languageService.findOne({ code: 'en' });
-      expect(enLang.default).toBe(false);
+      expect(enLang.isDefault).toBe(false);
     });
 
     it('should throw a NotFoundException when attempting to update a translation by id', async () => {
@@ -169,7 +169,7 @@ describe('LanguageController', () => {
 
   describe('deleteOne', () => {
     it('should throw when attempting to delete the default language', async () => {
-      const defaultLang = await languageService.findOne({ default: true });
+      const defaultLang = await languageService.findOne({ isDefault: true });
 
       await expect(
         languageController.deleteOne(defaultLang.id),

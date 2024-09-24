@@ -31,7 +31,13 @@ export class Language extends BaseSchema {
   @Prop({
     type: Boolean,
   })
-  default: boolean;
+  isDefault: boolean;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isRTL?: boolean;
 }
 
 export const LanguageModel: ModelDefinition = {

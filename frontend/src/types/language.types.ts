@@ -16,7 +16,8 @@ export type ILanguages = Record<string, string>;
 export interface ILanguageAttributes {
   title: string;
   code: string;
-  default: boolean;
+  isDefault: boolean;
+  isRTL: boolean;
 }
 
 export interface ILanguageStub

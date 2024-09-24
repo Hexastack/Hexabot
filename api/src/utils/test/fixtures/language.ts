@@ -16,12 +16,14 @@ export const languageFixtures: LanguageUpdateDto[] = [
   {
     title: 'English',
     code: 'en',
-    default: true,
+    isDefault: true,
+    isRTL: false,
   },
   {
     title: 'Français',
     code: 'fr',
-    default: false,
+    isDefault: false,
+    isRTL: false,
   },
 ];
 

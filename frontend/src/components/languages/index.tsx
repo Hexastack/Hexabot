@@ -71,11 +71,11 @@ export const Languages = () => {
     },
   });
   const toggleDefault = (row: ILanguage) => {
-    if (!row.default) {
+    if (!row.isDefault) {
       updateLanguage({
         id: row.id,
         params: {
-          default: true,
+          isDefault: true,
         },
       });
     }
@@ -87,7 +87,7 @@ export const Languages = () => {
         label: ActionColumnLabel.Toggle,
         action: (row) => toggleDefault(row),
         requires: [PermissionAction.UPDATE],
-        getState: (row) => row.default,
+        getState: (row) => row.isDefault,
         helperText: t("button.mark_as_default"),
       },
       {
@@ -99,7 +99,7 @@ export const Languages = () => {
         label: ActionColumnLabel.Delete,
         action: (row) => deleteDialogCtl.openDialog(row.id),
         requires: [PermissionAction.DELETE],
-        isDisabled: (row) => row.default,
+        isDisabled: (row) => row.isDefault,
       },
     ],
     t("label.operations"),
@@ -124,8 +124,17 @@ export const Languages = () => {
     },
     {
       flex: 1,
-      field: "default",
-      headerName: t("label.default"),
+      field: "isDefault",
+      headerName: t("label.is_default"),
+      disableColumnMenu: true,
+      renderHeader,
+      headerAlign: "left",
+      valueGetter: (value) => (value ? t("label.yes") : t("label.no")),
+    },
+    {
+      flex: 1,
+      field: "isRTL",
+      headerName: t("label.is_rtl"),
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",

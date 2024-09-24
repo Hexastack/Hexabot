@@ -33,7 +33,7 @@ export const baseLanguage = {
   ...modelInstance,
   title: 'English',
   code: 'en',
-  default: true,
+  isDefault: true,
 };
 
 export const entitiesMock: NlpEntityFull[] = [

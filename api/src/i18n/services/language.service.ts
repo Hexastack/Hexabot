@@ -54,7 +54,7 @@ export class LanguageService extends BaseService<Language> {
    */
   @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getDefaultLanguage() {
-    return await this.findOne({ default: true });
+    return await this.findOne({ isDefault: true });
   }
 
   /**

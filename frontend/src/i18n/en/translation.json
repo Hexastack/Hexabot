@@ -549,7 +549,8 @@
     "other": "Other",
     "no_data": "No data",
     "code": "Code",
-    "default": "Default"
+    "is_default": "Default",
+    "is_rtl": "RTL"
   },
   "placeholder": {
     "your_username": "Your username",

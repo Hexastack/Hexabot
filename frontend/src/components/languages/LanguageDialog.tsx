@@ -7,9 +7,15 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+  Switch,
+} from "@mui/material";
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
@@ -56,10 +62,12 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
     register,
     formState: { errors },
     handleSubmit,
+    control,
   } = useForm<ILanguageAttributes>({
     defaultValues: {
       title: data?.title || "",
       code: data?.code || "",
+      isRTL: data?.isRTL || false,
     },
   });
   const validationRules = {
@@ -87,6 +95,7 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
       reset({
         title: data.title,
         code: data.code,
+        isRTL: data.isRTL,
       });
     } else {
       reset();
@@ -117,6 +126,18 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
                 {...register("code", validationRules.code)}
                 helperText={errors.code ? errors.code.message : null}
                 multiline={true}
+              />
+            </ContentItem>
+            <ContentItem>
+              <Controller
+                name="isRTL"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Switch {...field} checked={field.value} />}
+                    label={t("label.is_rtl")}
+                  />
+                )}
               />
             </ContentItem>
           </ContentContainer>
