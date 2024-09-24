@@ -29,11 +29,25 @@ export const getFromQuery = ({
 
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
- 
     const url = new URL(relativePath, baseUrl);
 
     return url.toString();
   } catch {
     throw new Error(`Invalid base URL: ${baseUrl}`);
+  }
+};
+
+export const isAbsoluteUrl = (value: string = ""): boolean => {
+  try {
+    const url = new URL(value);
+    const hostnameParts = url.hostname.split(".");
+
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      hostnameParts.length > 1 &&
+      hostnameParts[hostnameParts.length - 1].length > 1
+    );
+  } catch (error) {
+    return false;
   }
 };

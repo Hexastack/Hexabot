@@ -21,6 +21,3 @@ export const DATE_TIME_FORMAT = {
 
 export const USER_DEFAULT_PICTURE =
   "https://avatars.dicebear.com/v2/identicon/6659e07058af581e68e33d05.svg";
-
-export const URL_REGEX =
-  /^(https?:\/\/)?((([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})(:[0-9]{1,5})?(\/[^\s]*)?)$/i;
