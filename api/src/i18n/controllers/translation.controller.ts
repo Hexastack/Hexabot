@@ -8,9 +8,12 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
@@ -25,6 +28,7 @@ import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseController } from '@/utils/generics/base-controller';
+import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -137,5 +141,24 @@ export class TranslationController extends BaseController<Translation> {
     return this.translationService.deleteMany({
       str: { $nin: strings },
     });
+  }
+
+  /**
+   * Deletes a translation by its ID.
+   * @param id - The ID of the translation to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+  @CsrfCheck(true)
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+    const result = await this.translationService.deleteOne(id);
+    if (result.deletedCount === 0) {
+      this.logger.warn(`Unable to delete Translation by id ${id}`);
+      throw new BadRequestException(
+        `Unable to delete Translation with ID ${id}`,
+      );
+    }
+    return result;
   }
 }

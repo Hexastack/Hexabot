@@ -69,8 +69,8 @@ export const Translations = () => {
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
-      onSuccess: (data) => {
-        if (data.acknowledged && data.deletedCount > 0) refreshTranslations();
+      onSuccess: () => {
+        refreshTranslations();
         toast.success(t("message.success_translation_refresh"));
       },
     });
