@@ -11,7 +11,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { escapeRegularExpression } from '@/utils/helpers/string';
+import _ from 'lodash';
 
 // Get the argument passed (e.g., "all-users-fr")
 const arg: string | undefined = process.argv[2];
@@ -27,8 +27,7 @@ const templatePath: string = path.join(__dirname, '../config/template.ts');
 
 // Check if a migration with the same name (excluding timestamp) already exists
 const migrationExists: boolean = fs.readdirSync(migrationsDir).some((file) => {
-  const escapedRegExp = escapeRegularExpression(arg);
-  const regex = new RegExp(`^[0-9]+-${escapedRegExp}\.ts$`);
+  const regex = new RegExp(`^[0-9]+-${_.escapeRegExp(arg)}\.ts$`);
   return regex.test(file);
 });
 

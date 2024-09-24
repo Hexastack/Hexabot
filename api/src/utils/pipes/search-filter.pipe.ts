@@ -13,9 +13,9 @@ import {
   ArgumentMetadata,
   Logger,
 } from '@nestjs/common';
+import _ from 'lodash';
 import { TFilterQuery, Types } from 'mongoose';
 
-import { escapeRegularExpression } from '../helpers/string';
 import {
   TFilterNestedKeysOfType,
   TSearchFilterValue,
@@ -37,7 +37,7 @@ export class SearchFilterPipe<T>
   }
 
   private getRegexValue(val: string) {
-    const escapedRegExp = escapeRegularExpression(val);
+    const escapedRegExp = _.escapeRegExp(val);
     return new RegExp(escapedRegExp, 'i');
   }
 
