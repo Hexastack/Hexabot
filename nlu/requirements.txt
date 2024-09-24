@@ -6,3 +6,4 @@ scikit_learn==1.2.2
 fastapi==0.100.0
 uvicorn[standard]==0.23.1
 autopep8==2.0.2
+h5py --only-binary=h5py
