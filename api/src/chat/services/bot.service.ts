@@ -74,6 +74,7 @@ export class BotService {
       await this.blockService.processMessage(
         block,
         context,
+        event.getSender().context,
         fallback,
         conservationId,
       );

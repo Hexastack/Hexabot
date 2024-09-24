@@ -33,6 +33,7 @@ import {
 } from '../schemas/types/message';
 import { NlpPattern, Pattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 @Injectable()
 export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
@@ -301,22 +302,19 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   processTokenReplacements(
     text: string,
     context: Context,
+    subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
+    const vars = { ...subscriberContext.vars, ...context.vars };
     // Replace context tokens with their values
-    Object.keys(context.vars || {}).forEach((key) => {
-      if (
-        typeof context.vars[key] === 'string' &&
-        context.vars[key].indexOf(':') !== -1
-      ) {
-        const tmp = context.vars[key].split(':');
-        context.vars[key] = tmp[1];
+    Object.keys(vars).forEach((key) => {
+      if (typeof vars[key] === 'string' && vars[key].indexOf(':') !== -1) {
+        const tmp = vars[key].split(':');
+        vars[key] = tmp[1];
       }
       text = text.replace(
         '{context.vars.' + key + '}',
-        typeof context.vars[key] === 'string'
-          ? context.vars[key]
-          : JSON.stringify(context.vars[key]),
+        typeof vars[key] === 'string' ? vars[key] : JSON.stringify(vars[key]),
       );
     });
 
@@ -368,7 +366,12 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
    *
    * @returns The text message translated and tokens being replaces with values
    */
-  processText(text: string, context: Context, settings: Settings): string {
+  processText(
+    text: string,
+    context: Context,
+    subscriberContext: SubscriberContext,
+    settings: Settings,
+  ): string {
     const lang =
       context && context.user && context.user.language
         ? context.user.language
@@ -376,7 +379,12 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     // Translate
     text = this.i18n.t(text, { lang, defaultValue: text });
     // Replace context tokens
-    text = this.processTokenReplacements(text, context, settings);
+    text = this.processTokenReplacements(
+      text,
+      context,
+      subscriberContext,
+      settings,
+    );
     return text;
   }
 
@@ -423,6 +431,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   async processMessage(
     block: Block | BlockFull,
     context: Context,
+    subscriberContext: SubscriberContext,
     fallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
@@ -440,6 +449,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       const text = this.processText(
         this.getRandom(blockMessage),
         context,
+        subscriberContext,
         settings,
       );
       const envelope: StdOutgoingEnvelope = {
@@ -456,12 +466,22 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         const envelope: StdOutgoingEnvelope = {
           format: OutgoingMessageFormat.quickReplies,
           message: {
-            text: this.processText(blockMessage.text, context, settings),
+            text: this.processText(
+              blockMessage.text,
+              context,
+              subscriberContext,
+              settings,
+            ),
             quickReplies: blockMessage.quickReplies.map((qr: StdQuickReply) => {
               return qr.title
                 ? {
                     ...qr,
-                    title: this.processText(qr.title, context, settings),
+                    title: this.processText(
+                      qr.title,
+                      context,
+                      subscriberContext,
+                      settings,
+                    ),
                   }
                 : qr;
             }),
@@ -476,12 +496,22 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         const envelope: StdOutgoingEnvelope = {
           format: OutgoingMessageFormat.buttons,
           message: {
-            text: this.processText(blockMessage.text, context, settings),
+            text: this.processText(
+              blockMessage.text,
+              context,
+              subscriberContext,
+              settings,
+            ),
             buttons: blockMessage.buttons.map((btn) => {
               return btn.title
                 ? {
                     ...btn,
-                    title: this.processText(btn.title, context, settings),
+                    title: this.processText(
+                      btn.title,
+                      context,
+                      subscriberContext,
+                      settings,
+                    ),
                   }
                 : btn;
             }),

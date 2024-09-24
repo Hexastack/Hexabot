@@ -65,6 +65,7 @@ import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
@@ -421,6 +422,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 0 },
         },
+        { vars: {} }, //TODO: to correct
         false,
         'conv_id',
       );
@@ -454,6 +456,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 2 },
         },
+        { vars: {} }, //TODO: to correct
         false,
         'conv_id',
       );
@@ -498,9 +501,19 @@ describe('BlockService', () => {
       skip: { '1': 0 },
       attempt: 0,
     };
+    const subscriberContext: SubscriberContext = {
+      vars: {
+        phone: '123456789',
+      },
+    };
 
     it('should process empty text', () => {
-      const result = blockService.processText('', context, settings);
+      const result = blockService.processText(
+        '',
+        context,
+        subscriberContext,
+        settings,
+      );
       expect(result).toEqual('');
     });
 
@@ -509,6 +522,7 @@ describe('BlockService', () => {
       const result = blockService.processText(
         translation.en,
         context,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual(translation.fr);
@@ -518,6 +532,7 @@ describe('BlockService', () => {
       const result = blockService.processText(
         '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
         contextEmailVarInstance,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual('John Doe, email : email@example.com');
@@ -525,17 +540,19 @@ describe('BlockService', () => {
 
     it('should process text replacements with context vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
+        '{context.user.first_name} {context.user.last_name}, phone : {context.vars.phone}',
         contextEmailVarInstance,
+        subscriberContext,
         settings,
       );
-      expect(result).toEqual('John Doe, email : email@example.com');
+      expect(result).toEqual('John Doe, phone : 123456789');
     });
 
     it('should process text replacements with settings contact infos', () => {
       const result = blockService.processText(
         'Trying the settings : the name of company is <<{contact.company_name}>>',
         contextBlankInstance,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual(
