@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { TFilterQuery, Types } from 'mongoose';
 
+import { escapeRegularExpression } from '../helpers/string';
 import {
   TFilterNestedKeysOfType,
   TSearchFilterValue,
@@ -36,9 +37,8 @@ export class SearchFilterPipe<T>
   }
 
   private getRegexValue(val: string) {
-    const quote = (str: string) =>
-      str.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
-    return new RegExp(quote(val), 'i');
+    const escapedRegExp = escapeRegularExpression(val);
+    return new RegExp(escapedRegExp, 'i');
   }
 
   private isAllowedField(field: string) {
