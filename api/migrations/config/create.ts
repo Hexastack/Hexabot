@@ -27,7 +27,7 @@ const templatePath: string = path.join(__dirname, '../config/template.ts');
 
 // Check if a migration with the same name (excluding timestamp) already exists
 const migrationExists: boolean = fs.readdirSync(migrationsDir).some((file) => {
-  const regex = new RegExp(`^[0-9]+-${_.escapeRegExp(arg)}\.ts$`);
+  const regex = new RegExp(`^[0-9]+-${_.escapeRegExp(arg)}\\.ts$`);
   return regex.test(file);
 });
 
