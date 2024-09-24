@@ -17,6 +17,7 @@ import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useApiClient } from "@/hooks/useApiClient";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
@@ -40,12 +41,19 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
         attachmentId && (await apiClient.importNlpSamples(attachmentId));
       },
       onSuccess: () => {
-        queryClient.removeQueries([
-          QueryType.collection,
-          EntityType.NLP_SAMPLE,
-        ]);
-        queryClient.removeQueries([QueryType.count, EntityType.NLP_SAMPLE]);
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) => {
+            const [qType, qEntity] = queryKey;
 
+            return (
+              ((qType === QueryType.count || qType === QueryType.collection) &&
+                isSameEntity(qEntity, EntityType.NLP_SAMPLE)) ||
+              isSameEntity(qEntity, EntityType.NLP_SAMPLE_ENTITY) ||
+              isSameEntity(qEntity, EntityType.NLP_ENTITY) ||
+              isSameEntity(qEntity, EntityType.NLP_VALUE)
+            );
+          },
+        });
         handleCloseDialog();
         toast.success(t("message.success_save"));
       },

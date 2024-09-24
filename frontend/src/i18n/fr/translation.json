@@ -550,7 +550,8 @@
     "no_data": "Pas de données",
     "code": "Code",
     "is_default": "Par Défaut",
-    "is_rtl": "RTL"
+    "is_rtl": "RTL",
+    "original_text": "Texte par défaut"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

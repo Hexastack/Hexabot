@@ -20,7 +20,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
@@ -75,6 +78,7 @@ describe('UserController', () => {
           PermissionModel,
           InvitationModel,
           AttachmentModel,
+          LanguageModel,
         ]),
         JwtModule,
       ],
@@ -108,6 +112,8 @@ describe('UserController', () => {
         },
         AttachmentService,
         AttachmentRepository,
+        LanguageService,
+        LanguageRepository,
         ValidateAccountService,
         {
           provide: I18nService,

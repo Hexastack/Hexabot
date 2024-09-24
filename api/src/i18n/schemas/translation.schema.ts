@@ -11,6 +11,7 @@ import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
 import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 @Schema({ timestamps: true })
 export class Translation extends BaseSchema {
@@ -26,17 +27,12 @@ export class Translation extends BaseSchema {
     required: true,
   })
   translations: Record<string, string>;
-
-  @Prop({
-    type: Number,
-  })
-  translated: number;
 }
 
-export const TranslationModel: ModelDefinition = {
+export const TranslationModel: ModelDefinition = LifecycleHookManager.attach({
   name: Translation.name,
   schema: SchemaFactory.createForClass(Translation),
-};
+});
 
 export type TranslationDocument = THydratedDocument<Translation>;
 

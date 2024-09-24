@@ -21,7 +21,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
@@ -52,6 +55,7 @@ describe('PasswordResetService', () => {
           RoleModel,
           PermissionModel,
           AttachmentModel,
+          LanguageModel,
         ]),
         JwtModule,
       ],
@@ -62,6 +66,8 @@ describe('PasswordResetService', () => {
         AttachmentService,
         AttachmentRepository,
         RoleRepository,
+        LanguageService,
+        LanguageRepository,
         LoggerService,
         PasswordResetService,
         JwtService,

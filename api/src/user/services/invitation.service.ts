@@ -18,6 +18,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -42,6 +43,7 @@ export class InvitationService extends BaseService<
     @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     protected readonly i18n: I18nService,
+    public readonly languageService: LanguageService,
   ) {
     super(repository);
   }
@@ -63,6 +65,7 @@ export class InvitationService extends BaseService<
     const jwt = await this.sign(dto);
     if (this.mailerService) {
       try {
+        const defaultLanguage = await this.languageService.getDefaultLanguage();
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'invitation.mjml',
@@ -70,7 +73,7 @@ export class InvitationService extends BaseService<
             token: jwt,
             // TODO: Which language should we use?
             t: (key: string) =>
-              this.i18n.t(key, { lang: config.chatbot.lang.default }),
+              this.i18n.t(key, { lang: defaultLanguage.code }),
           },
           subject: this.i18n.t('invitation_subject'),
         });

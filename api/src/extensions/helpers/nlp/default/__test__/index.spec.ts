@@ -87,8 +87,6 @@ describe('NLP Default Helper', () => {
                 provider: 'default',
                 endpoint: 'path',
                 token: 'token',
-                languages: ['fr', 'ar', 'tn'],
-                default_lang: 'fr',
                 threshold: '0.5',
               },
             })),

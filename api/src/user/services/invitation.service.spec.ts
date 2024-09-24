@@ -16,7 +16,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
@@ -55,6 +58,7 @@ describe('InvitationService', () => {
           RoleModel,
           PermissionModel,
           InvitationModel,
+          LanguageModel,
         ]),
         JwtModule,
       ],
@@ -66,6 +70,8 @@ describe('InvitationService', () => {
         PermissionRepository,
         InvitationRepository,
         InvitationService,
+        LanguageRepository,
+        LanguageService,
         JwtService,
         Logger,
         {

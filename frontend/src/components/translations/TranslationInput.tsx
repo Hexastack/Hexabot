@@ -7,24 +7,16 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import { Grid } from "@mui/material";
 import React from "react";
 import { ControllerRenderProps } from "react-hook-form";
 
 import { Input } from "@/app-components/inputs/Input";
-import {
-  ITranslationAttributes,
-  ITranslations,
-} from "@/types/translation.types";
-
-const isRTL = (language: string) => {
-  return ["AR"].includes(language.toUpperCase());
-};
+import { ILanguage } from "@/types/language.types";
+import { ITranslationAttributes } from "@/types/translation.types";
 
 interface RenderTranslationInputProps {
-  language: keyof ITranslations;
+  language: ILanguage;
   field: ControllerRenderProps<ITranslationAttributes, any>;
 }
 
@@ -34,14 +26,14 @@ const TranslationInput: React.FC<RenderTranslationInputProps> = ({
 }) => (
   <Input
     inputRef={field.ref}
-    dir={isRTL(language) ? "rtl" : "ltr"}
+    dir={language.isRTL ? "rtl" : "ltr"}
     label={
       <Grid container dir="ltr">
-        <Grid>{language.toUpperCase()}</Grid>
-        <Grid>{field.value ? <CheckIcon /> : <CloseIcon />}</Grid>
+        <Grid>{language.title}</Grid>
       </Grid>
     }
     multiline={true}
+    minRows={3}
     {...field}
   />
 );

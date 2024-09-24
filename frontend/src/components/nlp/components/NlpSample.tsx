@@ -149,6 +149,7 @@ export default function NlpSample() {
       renderCell: ({ row }) =>
         row.entities
           .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
+          .filter((e) => !!e)
           .map((entity) => (
             <ChipEntity
               id={entity.entity}

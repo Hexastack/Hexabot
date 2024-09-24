@@ -44,7 +44,7 @@ import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
 
 const i18nOptions: I18nOptions = {
-  fallbackLanguage: config.chatbot.lang.default,
+  fallbackLanguage: 'en',
   loaderOptions: {
     path: path.join(__dirname, '/config/i18n/'),
     watch: true,

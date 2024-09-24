@@ -98,8 +98,6 @@ export type SettingDict = { [group: string]: Setting[] };
 
 export type Settings = {
   nlp_settings: {
-    default_lang: string;
-    languages: string[];
     threshold: string;
     provider: string;
     endpoint: string;

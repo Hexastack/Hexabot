@@ -7,6 +7,7 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -17,7 +18,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
@@ -46,6 +50,7 @@ describe('ValidateAccountService', () => {
           RoleModel,
           PermissionModel,
           AttachmentModel,
+          LanguageModel,
         ]),
         JwtModule,
       ],
@@ -56,6 +61,8 @@ describe('ValidateAccountService', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        LanguageService,
+        LanguageRepository,
         LoggerService,
         {
           provide: MailerService,
@@ -72,6 +79,14 @@ describe('ValidateAccountService', () => {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
+          },
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
           },
         },
       ],

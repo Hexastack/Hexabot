@@ -30,8 +30,9 @@ export class Language extends BaseSchema {
 
   @Prop({
     type: Boolean,
+    default: false,
   })
-  isDefault: boolean;
+  isDefault?: boolean;
 
   @Prop({
     type: Boolean,

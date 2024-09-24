@@ -477,7 +477,7 @@ export default class OfflineHandler extends ChannelHandler {
         ...channelData,
         name: this.getChannel(),
       },
-      language: config.chatbot.lang.default,
+      language: '',
       locale: '',
       timezone: 0,
       gender: 'male',

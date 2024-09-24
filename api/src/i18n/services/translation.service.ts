@@ -33,7 +33,7 @@ export class TranslationService extends BaseService<Translation> {
 
   public async resetI18nTranslations() {
     const translations = await this.findAll();
-    this.i18n.initDynamicTranslations(translations);
+    this.i18n.refreshDynamicTranslations(translations);
   }
 
   /**

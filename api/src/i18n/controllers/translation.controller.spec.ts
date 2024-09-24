@@ -51,8 +51,11 @@ import {
 
 import { TranslationController } from './translation.controller';
 import { TranslationUpdateDto } from '../dto/translation.dto';
+import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
+import { LanguageModel } from '../schemas/language.schema';
 import { Translation, TranslationModel } from '../schemas/translation.schema';
+import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 describe('TranslationController', () => {
@@ -73,6 +76,7 @@ describe('TranslationController', () => {
           MenuModel,
           BlockModel,
           ContentModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -117,7 +121,7 @@ describe('TranslationController', () => {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-            initDynamicTranslations: jest.fn(),
+            refreshDynamicTranslations: jest.fn(),
           },
         },
         {
@@ -129,6 +133,8 @@ describe('TranslationController', () => {
           },
         },
         LoggerService,
+        LanguageService,
+        LanguageRepository,
       ],
     }).compile();
     translationService = module.get<TranslationService>(TranslationService);

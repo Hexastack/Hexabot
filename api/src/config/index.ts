@@ -120,10 +120,6 @@ export const config: Config = {
     limit: 10,
   },
   chatbot: {
-    lang: {
-      default: 'en',
-      available: ['en', 'fr'],
-    },
     messages: {
       track_delivery: false,
       track_read: false,

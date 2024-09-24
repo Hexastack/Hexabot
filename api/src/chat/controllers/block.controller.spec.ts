@@ -19,7 +19,10 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentModel } from '@/cms/schemas/content.schema';
 import { ContentService } from '@/cms/services/content.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -86,6 +89,7 @@ describe('BlockController', () => {
           UserModel,
           RoleModel,
           PermissionModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -97,6 +101,7 @@ describe('BlockController', () => {
         UserRepository,
         RoleRepository,
         PermissionRepository,
+        LanguageRepository,
         BlockService,
         LabelService,
         CategoryService,
@@ -105,6 +110,7 @@ describe('BlockController', () => {
         UserService,
         RoleService,
         PermissionService,
+        LanguageService,
         PluginService,
         LoggerService,
         {

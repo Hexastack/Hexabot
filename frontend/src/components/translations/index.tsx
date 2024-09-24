@@ -9,7 +9,7 @@
 
 import { faLanguage } from "@fortawesome/free-solid-svg-icons";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { Button, Chip, Grid, Paper } from "@mui/material";
+import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 
@@ -25,10 +25,10 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
-import { useSetting } from "@/hooks/useSetting";
 import { useToast } from "@/hooks/useToast";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
+import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { ITranslation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -38,7 +38,12 @@ import { EditTranslationDialog } from "./EditTranslationDialog";
 export const Translations = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const availableLanguages = useSetting("nlp_settings", "languages");
+  const { data: languages } = useFind(
+    { entity: EntityType.LANGUAGE },
+    {
+      hasCount: false,
+    },
+  );
   const editDialogCtl = useDialog<ITranslation>(false);
   const deleteDialogCtl = useDialog<string>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
@@ -92,22 +97,23 @@ export const Translations = () => {
       field: "translations",
       headerName: t("label.translations"),
       sortable: false,
-      renderCell: (params) =>
-        availableLanguages.map((language: string) => (
-          <Chip
-            key={language}
-            variant={
-              params.row.translations[language] ? "available" : "unavailable"
-            }
-            label={language.toUpperCase()}
-          />
-        )),
-    },
-    {
-      maxWidth: 127,
-      field: "translated",
-      resizable: false,
-      headerName: t("label.translated"),
+      renderCell: (params) => (
+        <Stack direction="row" my={1} spacing={1}>
+          {languages
+            .filter(({ isDefault }) => !isDefault)
+            .map((language: ILanguage) => (
+              <Chip
+                key={language.code}
+                variant={
+                  params.row.translations[language.code]
+                    ? "available"
+                    : "unavailable"
+                }
+                label={language.title}
+              />
+            ))}
+        </Stack>
+      ),
     },
     {
       maxWidth: 140,
@@ -167,7 +173,6 @@ export const Translations = () => {
                   deleteTranslation(deleteDialogCtl.data);
               }}
             />
-
             <Grid item width="100%">
               <DataGrid {...dataGridProps} columns={columns} />
             </Grid>
