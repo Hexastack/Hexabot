@@ -289,6 +289,7 @@
     "assign_labels": "Affecter des étiquettes",
     "replacement_tokens": "Jetons de remplacement",
     "built_in": "Intégré",
+    "permanent": "Permanent",
     "assign_to": "Assigner à",
     "assigned_to": "Assigné(e) à",
     "user_first_name": "Prénom",

@@ -288,6 +288,7 @@
     "assign_labels": "Assign labels",
     "replacement_tokens": "Replacement Tokens",
     "built_in": "Built-in",
+    "permanent": "Permanent",
     "assign_to": "Takeover By",
     "assigned_to": "Assigned To",
     "user_first_name": "First Name",
