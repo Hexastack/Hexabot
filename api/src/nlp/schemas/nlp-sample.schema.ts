@@ -49,15 +49,15 @@ export class NlpSampleStub extends BaseSchema {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Language',
-    required: true,
+    required: false,
   })
-  language: unknown;
+  language: unknown | null;
 }
 
 @Schema({ timestamps: true })
 export class NlpSample extends NlpSampleStub {
   @Transform(({ obj }) => obj.language.toString())
-  language: string;
+  language: string | null;
 
   @Exclude()
   entities?: never;
@@ -66,7 +66,7 @@ export class NlpSample extends NlpSampleStub {
 @Schema({ timestamps: true })
 export class NlpSampleFull extends NlpSampleStub {
   @Type(() => Language)
-  language: Language;
+  language: Language | null;
 
   @Type(() => NlpSampleEntity)
   entities: NlpSampleEntity[];

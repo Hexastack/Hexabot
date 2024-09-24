@@ -9,6 +9,7 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
@@ -63,6 +64,7 @@ describe('LanguageController', () => {
           },
         },
         LoggerService,
+        EventEmitter2,
       ],
     }).compile();
     languageService = module.get<LanguageService>(LanguageService);

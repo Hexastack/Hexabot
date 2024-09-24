@@ -8,6 +8,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import {
   CommonExample,
@@ -16,6 +17,7 @@ import {
   ExampleEntity,
   LookupTable,
 } from '@/extensions/helpers/nlp/default/types';
+import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -139,5 +141,22 @@ export class NlpSampleService extends BaseService<
       lookup_tables,
       entity_synonyms,
     };
+  }
+
+  /**
+   * When a language gets deleted, we need to set related samples to null
+   *
+   * @param language The language that has been deleted.
+   */
+  @OnEvent('hook:language:delete')
+  async handleLanguageDelete(language: Language) {
+    await this.updateMany(
+      {
+        language: language.id,
+      },
+      {
+        language: null,
+      },
+    );
   }
 }

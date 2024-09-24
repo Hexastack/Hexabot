@@ -24,7 +24,7 @@ export interface INlpSampleAttributes {
   trained?: boolean;
   type?: NlpSampleType;
   entities: string[];
-  language: string;
+  language: string | null;
 }
 
 export interface INlpSampleStub
@@ -33,12 +33,12 @@ export interface INlpSampleStub
 
 export interface INlpSample extends INlpSampleStub, IFormat<Format.BASIC> {
   entities: string[];
-  language: string;
+  language: string | null;
 }
 
 export interface INlpSampleFull extends INlpSampleStub, IFormat<Format.FULL> {
   entities: INlpSampleEntity[];
-  language: ILanguage;
+  language: ILanguage | null;
 }
 
 // Dataset Trainer

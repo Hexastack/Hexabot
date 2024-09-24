@@ -12,6 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -21,6 +22,7 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -42,6 +44,7 @@ export const Languages = () => {
   const addDialogCtl = useDialog<ILanguage>(false);
   const editDialogCtl = useDialog<ILanguage>(false);
   const deleteDialogCtl = useDialog<string>(false);
+  const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILanguage>({
     $or: ["title", "code"],
@@ -66,6 +69,13 @@ export const Languages = () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
+      queryClient.removeQueries({
+        predicate: ({ queryKey }) => {
+          const [_qType, qEntity] = queryKey;
+
+          return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
+        },
+      });
       deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },

@@ -11,6 +11,7 @@ import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
 import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 @Schema({ timestamps: true })
 export class Language extends BaseSchema {
@@ -41,10 +42,10 @@ export class Language extends BaseSchema {
   isRTL?: boolean;
 }
 
-export const LanguageModel: ModelDefinition = {
+export const LanguageModel: ModelDefinition = LifecycleHookManager.attach({
   name: Language.name,
   schema: SchemaFactory.createForClass(Language),
-};
+});
 
 export type LanguageDocument = THydratedDocument<Language>;
 

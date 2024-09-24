@@ -104,7 +104,6 @@ export default function NlpSample() {
       {
         label: ActionColumnLabel.Edit,
         action: ({ entities, language, ...rest }) => {
-          const lang = getLanguageFromCache(language) as ILanguage;
           const data: INlpDatasetSample = {
             ...rest,
             entities: entities?.map((e) => {
@@ -119,7 +118,9 @@ export default function NlpSample() {
                 entity: getNlpEntityFromCache(entity)?.name || "",
               };
             }),
-            language: lang.code,
+            language: language
+              ? (getLanguageFromCache(language) as ILanguage).code
+              : null,
           };
 
           editDialogCtl.openDialog(data);
@@ -186,9 +187,7 @@ export default function NlpSample() {
       maxWidth: 90,
       field: "language",
       renderCell: ({ row }) => {
-        const language = getLanguageFromCache(row.language);
-
-        return language?.title;
+        return row.language ? getLanguageFromCache(row.language)?.title : "";
       },
       headerName: t("label.language"),
       sortable: true,
