@@ -62,7 +62,6 @@ export class LanguageService extends BaseService<Language> {
    *
    * @returns A promise that resolves to the `Language` object.
    */
-  @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getLanguageByCode(code: string) {
     return await this.findOne({ code });
   }

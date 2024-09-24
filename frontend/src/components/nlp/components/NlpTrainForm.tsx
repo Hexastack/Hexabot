@@ -283,7 +283,9 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                       label={t("label.language")}
                       multiple={false}
                       {...field}
-                      onChange={(_e, selected) => onChange(selected?.code)}
+                      onChange={(_e, selected) => {
+                        onChange(selected?.code);
+                      }}
                       {...rest}
                     />
                   );
