@@ -58,11 +58,12 @@ export const useDelete = <
       if (invalidate) {
         queryClient.removeQueries({
           predicate: ({ queryKey }) => {
-            const [qType, qEntity] = queryKey;
+            const [qType, qEntity, qId] = queryKey;
 
             return (
               (qType === QueryType.count || qType === QueryType.collection) &&
-              isSameEntity(qEntity, entity)
+              isSameEntity(qEntity, entity) &&
+              qId === id
             );
           },
         });
