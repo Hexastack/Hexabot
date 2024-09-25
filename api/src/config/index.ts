@@ -16,7 +16,7 @@ export const config: Config = {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
-  apiPath: process.env.API_ORIGIN,
+  apiPath: process.env.API_ORIGIN || 'http://localhost:4000',
   frontendPath: process.env.FRONTEND_ORIGIN
     ? process.env.FRONTEND_ORIGIN.split(',')[0]
     : 'http://localhost:8080',

@@ -18,6 +18,7 @@ import { NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
 import { NlpService } from '@/nlp/services/nlp.service';
+import { buildURL } from '@/utils/helpers/URL';
 
 import { DatasetType, NlpParseResultType } from './types';
 
@@ -80,7 +81,7 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
     const nluData: DatasetType = await self.format(samples, entities);
     // Train samples
     const result = await this.httpService.axiosRef.post(
-      `${this.settings.endpoint}/train`,
+      buildURL(this.settings.endpoint, `/train`),
       nluData,
       {
         params: {
@@ -111,7 +112,7 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
     const nluTestData: DatasetType = await self.format(samples, entities);
     // Evaluate model with test samples
     return await this.httpService.axiosRef.post(
-      `${this.settings.endpoint}/evaluate`,
+      buildURL(this.settings.endpoint, `/evaluate`),
       nluTestData,
       {
         params: {
@@ -190,7 +191,7 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
     try {
       const { data: nlp } =
         await this.httpService.axiosRef.post<NlpParseResultType>(
-          `${this.settings.endpoint}/parse`,
+          buildURL(this.settings.endpoint, '/parse'),
           {
             q: text,
             project,
