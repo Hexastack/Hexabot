@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 import {
   IBlockAttributes,
@@ -25,7 +26,8 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 import { IMenuItem } from "@/types/menu.types";
-import { INlpValueFull } from "@/types/nlp-value.types";
+import { INlpEntity } from "@/types/nlp-entity.types";
+import { INlpValue } from "@/types/nlp-value.types";
 
 import { ContentPostbackInput } from "./ContentPostbackInput";
 import { PostbackInput } from "./PostbackInput";
@@ -64,6 +66,7 @@ const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
+  const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const [pattern, setPattern] = useState<Pattern>(value);
   const [patternType, setPatternType] = useState<PatternType>(getType(value));
   const types = [
@@ -140,7 +143,7 @@ const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
       </Grid>
       <Grid item xs={9}>
         {patternType === "nlp" ? (
-          <AutoCompleteEntitySelect<INlpValueFull, "value">
+          <AutoCompleteEntitySelect<INlpValue, "value">
             value={(pattern as NlpPattern[]).map((v) =>
               "value" in v && v.value ? v.value : v.entity,
             )}
@@ -153,25 +156,31 @@ const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
             multiple={true}
             onChange={(_e, data) => {
               setPattern(
-                data.map((d) =>
-                  d.value === "any"
+                data.map((d) => {
+                  const entity = getNlpEntityFromCache(d.entity) as INlpEntity;
+
+                  return d.value === "any"
                     ? {
                         match: "entity",
-                        entity: d.entity.name,
+                        entity: entity.name,
                       }
                     : {
                         match: "value",
-                        entity: d.entity.name,
+                        entity: entity.name,
                         value: d.value,
-                      },
-                ),
+                      };
+                }),
               );
             }}
             getOptionLabel={(option) => {
-              return `${option.entity.name}=${option.value}`;
+              const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
+
+              return `${entity.name}=${option.value}`;
             }}
             groupBy={(option) => {
-              return option.entity.name;
+              const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
+
+              return entity.name;
             }}
             renderGroup={(params) => (
               <li key={params.key}>
@@ -188,23 +197,25 @@ const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
             )}
             preprocess={(options) => {
               return options.reduce((acc, curr) => {
-                if (curr.entity.lookups.includes("keywords")) {
+                const entity = getNlpEntityFromCache(curr.entity) as INlpEntity;
+
+                if (entity.lookups.includes("keywords")) {
                   const exists = acc.find(
-                    ({ value, id }) => value === "any" && id === curr.entity.id,
+                    ({ value, id }) => value === "any" && id === entity.id,
                   );
 
                   if (!exists) {
                     acc.push({
-                      entity: curr.entity,
-                      id: curr.entity.id,
+                      entity: entity.id,
+                      id: entity.id,
                       value: "any",
-                    } as INlpValueFull);
+                    } as INlpValue);
                   }
                 }
                 acc.push(curr);
 
                 return acc;
-              }, [] as INlpValueFull[]);
+              }, [] as INlpValue[]);
             }}
           />
         ) : null}

@@ -7,10 +7,14 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
+import { LanguageService } from '@/i18n/services/language.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -39,8 +43,10 @@ describe('NlpSampleService', () => {
   let nlpSampleService: NlpSampleService;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleRepository: NlpSampleRepository;
+  let languageRepository: LanguageRepository;
   let noNlpSample: NlpSample;
   let nlpSampleEntity: NlpSampleEntity;
+  let languages: Language[];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -51,6 +57,7 @@ describe('NlpSampleService', () => {
           NlpSampleEntityModel,
           NlpValueModel,
           NlpEntityModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -58,11 +65,21 @@ describe('NlpSampleService', () => {
         NlpSampleEntityRepository,
         NlpEntityRepository,
         NlpValueRepository,
+        LanguageRepository,
         NlpSampleService,
         NlpSampleEntityService,
         NlpEntityService,
         NlpValueService,
+        LanguageService,
         EventEmitter2,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
@@ -73,10 +90,12 @@ describe('NlpSampleService', () => {
     nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
     );
+    languageRepository = module.get<LanguageRepository>(LanguageRepository);
     noNlpSample = await nlpSampleService.findOne({ text: 'No' });
     nlpSampleEntity = await nlpSampleEntityRepository.findOne({
       sample: noNlpSample.id,
     });
+    languages = await languageRepository.findAll();
   });
 
   afterAll(async () => {
@@ -91,6 +110,7 @@ describe('NlpSampleService', () => {
       const sampleWithEntities = {
         ...nlpSampleFixtures[1],
         entities: [nlpSampleEntity],
+        language: languages[nlpSampleFixtures[1].language],
       };
       expect(result).toEqualPayload(sampleWithEntities);
     });
@@ -110,6 +130,7 @@ describe('NlpSampleService', () => {
             entities: nlpSampleEntities.filter((currSampleEntity) => {
               return currSampleEntity.sample === currSample.id;
             }),
+            language: languages.find((lang) => lang.id === currSample.language),
           };
           acc.push(sampleWithEntities);
           return acc;

@@ -59,6 +59,7 @@ export const ROUTES = {
   [EntityType.NLP_VALUE]: "/nlpvalue",
   [EntityType.NLP_SAMPLE_ENTITY]: "",
   [EntityType.MESSAGE]: "/message",
+  [EntityType.LANGUAGE]: "/language",
   [EntityType.TRANSLATION]: "/translation",
   [EntityType.ATTACHMENT]: "/attachment",
   [EntityType.CHANNEL]: "/channel",

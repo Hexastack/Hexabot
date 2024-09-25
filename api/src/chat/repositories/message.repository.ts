@@ -11,6 +11,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSampleState } from '@/nlp/schemas/types';
@@ -36,10 +37,13 @@ export class MessageRepository extends BaseRepository<
 
   private readonly logger: LoggerService;
 
+  private readonly languageService: LanguageService;
+
   constructor(
     @InjectModel(Message.name) readonly model: Model<AnyMessage>,
     @Optional() nlpSampleService?: NlpSampleService,
     @Optional() logger?: LoggerService,
+    @Optional() languageService?: LanguageService,
   ) {
     super(
       model,
@@ -49,6 +53,7 @@ export class MessageRepository extends BaseRepository<
     );
     this.logger = logger;
     this.nlpSampleService = nlpSampleService;
+    this.languageService = languageService;
   }
 
   /**
@@ -72,10 +77,13 @@ export class MessageRepository extends BaseRepository<
         'message' in _doc &&
         'text' in _doc.message
       ) {
+        const defaultLang = await this.languageService?.getDefaultLanguage();
         const record: NlpSampleCreateDto = {
           text: _doc.message.text,
           type: NlpSampleState.inbox,
           trained: false,
+          // @TODO : We need to define the language in the message entity
+          language: defaultLang.id,
         };
         try {
           await this.nlpSampleService.findOneOrCreate(record, record);

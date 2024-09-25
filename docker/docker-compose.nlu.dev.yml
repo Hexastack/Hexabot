@@ -5,5 +5,6 @@ services:
     build:
       context: ../nlu
       dockerfile: Dockerfile
+    pull_policy: build
     ports:
       - ${NLP_PORT}:5000

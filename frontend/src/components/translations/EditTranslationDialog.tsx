@@ -7,8 +7,14 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { useEffect, FC, useMemo } from "react";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  FormLabel,
+  Typography,
+} from "@mui/material";
+import { FC, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -16,15 +22,15 @@ import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
+import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
-import { useSetting } from "@/hooks/useSetting";
 import { useToast } from "@/hooks/useToast";
 import { EntityType } from "@/services/types";
 import {
+  ITranslation,
   ITranslationAttributes,
   ITranslations,
-  ITranslation,
 } from "@/types/translation.types";
 
 import TranslationInput from "./TranslationInput";
@@ -36,10 +42,14 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
+  const { data: languages } = useFind(
+    { entity: EntityType.LANGUAGE },
+    {
+      hasCount: false,
+    },
+  );
   const { t } = useTranslation();
   const { toast } = useToast();
-  const availableLanguages = useSetting("nlp_settings", "languages");
-  const defaultLanguage = useSetting("nlp_settings", "default_lang");
   const { mutateAsync: updateTranslation } = useUpdate(EntityType.TRANSLATION, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -49,29 +59,16 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const defaultValues: ITranslation | undefined = useMemo(
-    () =>
-      data
-        ? {
-            ...data,
-            translations: {
-              ...data?.translations,
-              [defaultLanguage]: data?.str,
-            },
-          }
-        : undefined,
-    [defaultLanguage, data],
-  );
   const { reset, control, handleSubmit } = useForm<ITranslationAttributes>({
-    defaultValues,
+    defaultValues: data,
   });
   const onSubmitForm = async (params: ITranslationAttributes) => {
     if (data?.id) updateTranslation({ id: data.id, params });
   };
 
   useEffect(() => {
-    if (open) reset(defaultValues);
-  }, [open, reset, defaultValues]);
+    if (open) reset(data);
+  }, [open, reset, data]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
@@ -80,21 +77,26 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
           {t("title.update_translation")}
         </DialogTitle>
         <DialogContent>
+          <ContentItem>
+            <FormLabel>{t("label.original_text")}</FormLabel>
+            <Typography component="p">{data?.str}</Typography>
+          </ContentItem>
           <ContentContainer>
-            {availableLanguages?.map((language: string) => (
-              <ContentItem key={language}>
-                <Controller
-                  name={`translations.${language as keyof ITranslations}`}
-                  control={control}
-                  render={({ field }) => (
-                    <TranslationInput
-                      field={field}
-                      language={language as keyof ITranslations}
-                    />
-                  )}
-                />
-              </ContentItem>
-            ))}
+            {languages
+              .filter(({ isDefault }) => !isDefault)
+              .map((language) => (
+                <ContentItem key={language.code}>
+                  <Controller
+                    name={`translations.${
+                      language.code as keyof ITranslations
+                    }`}
+                    control={control}
+                    render={({ field }) => (
+                      <TranslationInput field={field} language={language} />
+                    )}
+                  />
+                </ContentItem>
+              ))}
           </ContentContainer>
         </DialogContent>
         <DialogActions>

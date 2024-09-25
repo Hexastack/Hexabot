@@ -1,64 +1,60 @@
-COMPOSE_FILES := -f ./docker/docker-compose.yml
+# Makefile
+FOLDER := ./docker
 
-# Function to add service files
-define add_service
-  ifeq ($(PROD), true)
-	COMPOSE_FILES += -f ./docker/docker-compose.$(1).yml
-    ifneq ($(wildcard ./docker/docker-compose.$(1).prod.yml),)
-      COMPOSE_FILES += -f ./docker/docker-compose.$(1).prod.yml
-    endif
-  else ifeq ($(DEV_MODE), true)
-    COMPOSE_FILES += -f ./docker/docker-compose.$(1).yml
-	ifneq ($(wildcard ./docker/docker-compose.$(1).dev.yml),)
-      COMPOSE_FILES += -f ./docker/docker-compose.$(1).dev.yml
-    endif
-  endif
+# The services that can be toggled
+SERVICES := nginx nlu smtp4dev
+
+# Function to dynamically add Docker Compose files based on enabled services
+define compose_files
+  $(foreach service,$(SERVICES),$(if $($(shell echo $(service) | tr a-z A-Z)), -f $(FOLDER)/docker-compose.$(service).yml))
 endef
 
+# Function to dynamically add Docker Compose dev files based on enabled services and file existence
+define compose_dev_files
+  $(foreach service,$(SERVICES), \
+  $(if $($(shell echo $(service) | tr a-z A-Z)), \
+    $(if $(shell [ -f $(FOLDER)/docker-compose.$(service).dev.yml ] && echo yes), -f $(FOLDER)/docker-compose.$(service).dev.yml)))
+endef
 
-# Function to set up COMPOSE_FILES
-define compose_files
-	ifeq ($(1), true)
-		ifneq ($(wildcard ./docker/docker-compose.dev.yml),)
-			COMPOSE_FILES += -f ./docker/docker-compose.dev.yml
-		endif
-	endif
-	ifneq ($(NGINX),)
-		$(eval $(call add_service,nginx))
-	endif
-	ifneq ($(NLU),)
-		$(eval $(call add_service,nlu))
-	endif
+# Function to dynamically add Docker Compose dev files based on enabled services and file existence
+define compose_prod_files
+  $(foreach service,$(SERVICES), \
+  $(if $($(shell echo $(service) | tr a-z A-Z)), \
+    $(if $(shell [ -f $(FOLDER)/docker-compose.$(service).prod.yml ] && echo yes), -f $(FOLDER)/docker-compose.$(service).dev.yml)))
 endef
 
 # Ensure .env file exists and matches .env.example
 check-env:
-	@if [ ! -f "./docker/.env" ]; then \
+	@if [ ! -f "$(FOLDER)/.env" ]; then \
 		echo "Error: .env file does not exist. Creating one now from .env.example ..."; \
-		cp ./docker/.env.example ./docker/.env; \
+		cp $(FOLDER)/.env.example $(FOLDER)/.env; \
 	fi
 	@echo "Checking .env file for missing variables..."
-	@awk -F '=' 'NR==FNR {a[$$1]; next} !($$1 in a) {print "Missing env var: " $$1}' ./docker/.env ./docker/.env.example
+	@awk -F '=' 'NR==FNR {a[$$1]; next} !($$1 in a) {print "Missing env var: " $$1}' $(FOLDER)/.env $(FOLDER)/.env.example
 
 init:
-	cp ./docker/.env.example ./docker/.env
+	cp $(FOLDER)/.env.example $(FOLDER)/.env
 
-dev: check-env
-	$(eval $(call compose_files,true))
-	docker compose $(COMPOSE_FILES) up -d
-
+# Start command: runs docker-compose with the main file and any additional service files
 start: check-env
-	$(eval $(call compose_files,false))
-	docker compose $(COMPOSE_FILES) up -d
+	@docker compose -f $(FOLDER)/docker-compose.yml $(call compose_files) up -d
 
-stop: check-env
-	$(eval $(call compose_files,true))
-	docker compose $(COMPOSE_FILES) down
+# Dev command: runs docker-compose with the main file, dev file, and any additional service dev files (if they exist)
+dev: check-env
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) up -d
 
-destroy: check-env
-	$(eval $(call compose_files,true))
-	docker compose $(COMPOSE_FILES) down -v
+# Start command: runs docker-compose with the main file and any additional service files
+start-prod: check-env
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.prod.yml $(call compose_files) $(call compose_prod_files) up -d
 
+# Stop command: stops the running containers
+stop:
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) $(call compose_prod_files) down
+
+# Destroy command: stops the running containers and removes the volumes
+destroy:
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) $(call compose_prod_files) down -v
+
+# Migrate command:
 migrate-up:
-	$(eval $(call compose_files,false))
-	docker-compose $(COMPOSE_FILES) up --no-deps -d database-init
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) up --no-deps -d database-init

@@ -21,6 +21,7 @@ import {
   faUsers,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { Flag, Language } from "@mui/icons-material";
 import AppsIcon from "@mui/icons-material/Apps";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
@@ -176,14 +177,6 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
         },
       },
       {
-        text: "menu.translations",
-        href: "/translations",
-        Icon: faLanguage,
-        requires: {
-          [EntityType.TRANSLATION]: [PermissionAction.READ],
-        },
-      },
-      {
         text: "menu.media_library",
         href: "/content/media-library",
         Icon: DriveFolderUploadIcon,
@@ -247,6 +240,28 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
             },
           ]
         : []),
+    ],
+  },
+  {
+    text: "menu.manage_localization",
+    Icon: Language,
+    submenuItems: [
+      {
+        text: "menu.languages",
+        href: "/localization/languages",
+        Icon: Flag,
+        requires: {
+          [EntityType.LANGUAGE]: [PermissionAction.READ],
+        },
+      },
+      {
+        text: "menu.translations",
+        href: "/localization/translations",
+        Icon: faLanguage,
+        requires: {
+          [EntityType.TRANSLATION]: [PermissionAction.READ],
+        },
+      },
     ],
   },
   {

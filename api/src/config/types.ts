@@ -15,7 +15,6 @@ type TJwtOptions = {
   secret: string;
   expiresIn: string;
 };
-type TLanguage = 'en' | 'fr' | 'ar' | 'tn';
 type TMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'OPTIONS' | 'HEAD';
 type TLogLevel = 'log' | 'fatal' | 'error' | 'warn' | 'debug' | 'verbose';
 type TCacheConfig = {
@@ -87,10 +86,6 @@ export type Config = {
     limit: number;
   };
   chatbot: {
-    lang: {
-      default: TLanguage;
-      available: TLanguage[];
-    };
     messages: {
       track_delivery: boolean;
       track_read: boolean;

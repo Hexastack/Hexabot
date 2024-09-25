@@ -12,8 +12,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, Types } from 'mongoose';
 
-import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
@@ -23,7 +22,7 @@ export class SettingRepository extends BaseRepository<Setting> {
   constructor(
     @InjectModel(Setting.name) readonly model: Model<Setting>,
     private readonly eventEmitter: EventEmitter2,
-    private readonly i18n: ExtendedI18nService,
+    private readonly i18n: I18nService,
   ) {
     super(model, Setting);
   }
@@ -65,8 +64,7 @@ export class SettingRepository extends BaseRepository<Setting> {
    * Emits an event after a `Setting` has been updated.
    *
    * This method is used to synchronize global settings by emitting an event
-   * based on the `group` and `label` of the `Setting`. It also updates the i18n
-   * default language setting when the `default_lang` label is updated.
+   * based on the `group` and `label` of the `Setting`.
    *
    * @param _query The Mongoose query object used to find and update the document.
    * @param setting The updated `Setting` object.
@@ -86,33 +84,5 @@ export class SettingRepository extends BaseRepository<Setting> {
       'hook:settings:' + setting.group + ':' + setting.label,
       setting,
     );
-
-    if (setting.label === 'default_lang') {
-      // @todo : check if this actually updates the default lang
-      this.i18n.resolveLanguage(setting.value as string);
-    }
-  }
-
-  /**
-   * Sets default values before creating a `Setting` document.
-   *
-   * If the setting is part of the `nlp_settings` group, it sets specific values
-   * for `languages` and `default_lang` labels, using configuration values from the
-   * chatbot settings.
-   *
-   * @param setting The `Setting` document to be created.
-   */
-  async preCreate(
-    setting: Document<unknown, unknown, Setting> &
-      Setting & { _id: Types.ObjectId },
-  ) {
-    if (setting.group === 'nlp_settings') {
-      if (setting.label === 'languages') {
-        setting.value = config.chatbot.lang.available;
-      } else if (setting.label === 'default_lang') {
-        setting.value = config.chatbot.lang.default;
-        setting.options = config.chatbot.lang.available;
-      }
-    }
   }
 }

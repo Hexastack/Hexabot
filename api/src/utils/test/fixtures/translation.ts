@@ -9,8 +9,8 @@
 
 import mongoose from 'mongoose';
 
-import { TranslationUpdateDto } from '@/chat/dto/translation.dto';
-import { TranslationModel } from '@/chat/schemas/translation.schema';
+import { TranslationUpdateDto } from '@/i18n/dto/translation.dto';
+import { TranslationModel } from '@/i18n/schemas/translation.schema';
 
 export const translationFixtures: TranslationUpdateDto[] = [
   {

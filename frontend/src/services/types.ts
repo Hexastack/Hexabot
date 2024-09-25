@@ -32,6 +32,7 @@ export enum EntityType {
   NLP_VALUE = "NlpValue",
   MESSAGE = "Message",
   MENU = "Menu",
+  LANGUAGE = "Language",
   TRANSLATION = "Translation",
   ATTACHMENT = "Attachment",
   CHANNEL = "Channel",

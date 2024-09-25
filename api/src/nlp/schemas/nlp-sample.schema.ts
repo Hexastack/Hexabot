@@ -8,9 +8,10 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Type } from 'class-transformer';
-import { THydratedDocument } from 'mongoose';
+import { Exclude, Transform, Type } from 'class-transformer';
+import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
+import { Language } from '@/i18n/schemas/language.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
@@ -41,16 +42,32 @@ export class NlpSampleStub extends BaseSchema {
     default: NlpSampleState.train,
   })
   type?: keyof typeof NlpSampleState;
+
+  /**
+   * The language of the sample.
+   */
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Language',
+    required: false,
+  })
+  language: unknown | null;
 }
 
 @Schema({ timestamps: true })
 export class NlpSample extends NlpSampleStub {
+  @Transform(({ obj }) => obj.language.toString())
+  language: string | null;
+
   @Exclude()
   entities?: never;
 }
 
 @Schema({ timestamps: true })
 export class NlpSampleFull extends NlpSampleStub {
+  @Type(() => Language)
+  language: Language | null;
+
   @Type(() => NlpSampleEntity)
   entities: NlpSampleEntity[];
 }
@@ -75,4 +92,7 @@ export type NlpSamplePopulate = keyof TFilterPopulateFields<
   NlpSampleStub
 >;
 
-export const NLP_SAMPLE_POPULATE: NlpSamplePopulate[] = ['entities'];
+export const NLP_SAMPLE_POPULATE: NlpSamplePopulate[] = [
+  'language',
+  'entities',
+];
