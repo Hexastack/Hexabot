@@ -157,6 +157,10 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
     submitForm(form);
     refetchEntities();
+    reset({
+      ...defaultValues,
+      text: "",
+    });
   };
 
   useEffect(() => {
