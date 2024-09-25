@@ -23,7 +23,7 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -65,71 +65,40 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     {
       hasCount: false,
     },
-    {
-      onSuccess(entities) {
-        // By default append trait entities
-        if (!sample) {
-          removeTraitEntity();
-          (entities || [])
-            .filter(({ lookups }) => lookups.includes("trait"))
-            .forEach(({ name }) => {
-              appendTraitEntity({
-                entity: name,
-                value: "",
-              });
-            });
-        }
-      },
-    },
   );
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
-  // Default trait entities to append to the form
-  const defaultTraitEntities = useMemo(() => {
-    if (!sample || !entities) return [];
-
-    const traitEntities = entities.filter(({ lookups }) =>
-      lookups.includes("trait"),
-    );
-    const sampleTraitEntities = sample.entities.filter(
-      (e) => "start" in e && typeof e.start === "undefined",
-    );
-
-    if (sampleTraitEntities.length === traitEntities.length) {
-      return sampleTraitEntities;
-    }
-
-    const sampleEntityNames = new Set(sampleTraitEntities.map((e) => e.entity));
-    const missingEntities = traitEntities
-      .filter(({ name }) => !sampleEntityNames.has(name))
-      .map(({ name }) => ({
-        entity: name,
-        value: "",
-      }));
-
-    return [...sampleTraitEntities, ...missingEntities];
-  }, [entities, sample]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const defaultValues: INlpSampleFormAttributes = useMemo(
+    () => ({
+      type: sample?.type || NlpSampleType.train,
+      text: sample?.text || "",
+      language: sample?.language || null,
+      traitEntities: (entities || [])
+        .filter(({ lookups }) => {
+          return lookups.includes("trait");
+        })
+        .map((e) => {
+          return {
+            entity: e.name,
+            value: sample
+              ? sample.entities.find(({ entity }) => entity === e.name)?.value
+              : "",
+          } as INlpDatasetTraitEntity;
+        }),
+      keywordEntities: (sample?.entities || []).filter(
+        (e) => "start" in e && typeof e.start === "number",
+      ) as INlpDatasetKeywordEntity[],
+    }),
+    [sample, entities],
+  );
   const { handleSubmit, control, register, reset, setValue, watch } =
     useForm<INlpSampleFormAttributes>({
-      defaultValues: {
-        type: sample?.type || NlpSampleType.train,
-        text: sample?.text || "",
-        language: sample?.language,
-        traitEntities: defaultTraitEntities,
-        keywordEntities:
-          sample?.entities.filter(
-            (e) => "start" in e && typeof e.start === "number",
-          ) || [],
-      },
+      defaultValues,
     });
   const currentText = watch("text");
   const currentType = watch("type");
   const { apiClient } = useApiClient();
-  const {
-    fields: traitEntities,
-    append: appendTraitEntity,
-    update: updateTraitEntity,
-    remove: removeTraitEntity,
-  } = useFieldArray({
+  const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
     name: "traitEntities",
   });
@@ -187,15 +156,13 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   } | null>(null);
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
     submitForm(form);
-    reset({
-      type: form?.type || NlpSampleType.train,
-      text: "",
-      language: form?.language,
-      traitEntities: defaultTraitEntities,
-      keywordEntities: [],
-    });
     refetchEntities();
   };
+
+  useEffect(() => {
+    reset(defaultValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(defaultValues)]);
 
   return (
     <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
