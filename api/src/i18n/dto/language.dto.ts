@@ -25,11 +25,11 @@ export class LanguageCreateDto {
   @ApiProperty({ description: 'Whether Language is RTL', type: Boolean })
   @IsBoolean()
   isRTL: boolean;
-}
 
-export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {
   @ApiProperty({ description: 'Is Default Language ?', type: Boolean })
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
 }
+
+export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}

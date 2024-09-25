@@ -14,6 +14,7 @@ export const languageModels: LanguageCreateDto[] = [
     title: 'English',
     code: 'en',
     isRTL: false,
+    isDefault: true,
   },
   {
     title: 'Français',
