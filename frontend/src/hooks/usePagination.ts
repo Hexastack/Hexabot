@@ -34,7 +34,7 @@ export const usePagination = (
   rowCount: number = -1,
   initialPaginationState: GridPaginationModel = {
     page: 0,
-    pageSize: 5,
+    pageSize: 10,
   },
   initialSortState?: GridSortModel,
   hasCount: boolean = true,

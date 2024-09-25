@@ -13,6 +13,7 @@ import { THydratedDocument } from 'mongoose';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { buildURL } from '@/utils/helpers/URL';
 
 import { MIME_REGEX } from '../utilities';
 
@@ -89,7 +90,10 @@ export class Attachment extends BaseSchema {
     attachmentId: string,
     attachmentName: string = '',
   ): string {
-    return `${config.parameters.apiUrl}/attachment/download/${attachmentId}/${attachmentName}`;
+    return buildURL(
+      config.parameters.apiUrl,
+      `/attachment/download/${attachmentId}/${attachmentName}`,
+    );
   }
 
   /**
@@ -119,7 +123,10 @@ export const AttachmentModel: ModelDefinition = {
 
 AttachmentModel.schema.virtual('url').get(function () {
   if (this._id && this.name)
-    return `${config.apiPath}/attachment/download/${this._id}/${this.name}`;
+    return buildURL(
+      config.apiPath,
+      `/attachment/download/${this._id}/${this.name}`,
+    );
 
   return '';
 });

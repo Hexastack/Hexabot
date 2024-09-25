@@ -8,10 +8,14 @@
  */
 
 import { HttpModule } from '@nestjs/axios';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
@@ -56,26 +60,11 @@ describe('NLP Default Helper', () => {
           NlpValueModel,
           NlpSampleModel,
           NlpSampleEntityModel,
+          LanguageModel,
         ]),
         HttpModule,
       ],
       providers: [
-        LoggerService,
-        {
-          provide: SettingService,
-          useValue: {
-            getSettings: jest.fn(() => ({
-              nlp_settings: {
-                provider: 'default',
-                endpoint: 'path',
-                token: 'token',
-                languages: ['fr', 'ar', 'tn'],
-                default_lang: 'fr',
-                threshold: '0.5',
-              },
-            })),
-          },
-        },
         NlpService,
         NlpSampleService,
         NlpSampleRepository,
@@ -85,8 +74,32 @@ describe('NLP Default Helper', () => {
         NlpValueRepository,
         NlpSampleEntityService,
         NlpSampleEntityRepository,
+        LanguageService,
+        LanguageRepository,
         EventEmitter2,
         DefaultNlpHelper,
+        LoggerService,
+        {
+          provide: SettingService,
+          useValue: {
+            getSettings: jest.fn(() => ({
+              nlp_settings: {
+                provider: 'default',
+                endpoint: 'path',
+                token: 'token',
+                threshold: '0.5',
+              },
+            })),
+          },
+        },
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     settingService = module.get<SettingService>(SettingService);
@@ -103,15 +116,15 @@ describe('NLP Default Helper', () => {
     expect(nlp).toBeDefined();
   });
 
-  it('should format empty training set properly', () => {
+  it('should format empty training set properly', async () => {
     const nlp = nlpService.getNLP();
-    const results = nlp.format([], entitiesMock);
+    const results = await nlp.format([], entitiesMock);
     expect(results).toEqual(nlpEmptyFormated);
   });
 
-  it('should format training set properly', () => {
+  it('should format training set properly', async () => {
     const nlp = nlpService.getNLP();
-    const results = nlp.format(samplesMock, entitiesMock);
+    const results = await nlp.format(samplesMock, entitiesMock);
     expect(results).toEqual(nlpFormatted);
   });
 

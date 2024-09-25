@@ -19,6 +19,7 @@ import {
   Grid,
   IconButton,
   MenuItem,
+  Stack,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -26,6 +27,7 @@ import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
+import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
 import {
@@ -43,9 +45,10 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { EntityType, Format } from "@/services/types";
+import { ILanguage } from "@/types/language.types";
 import {
+  INlpDatasetSample,
   INlpSample,
-  INlpSampleFull,
   NlpSampleType,
 } from "@/types/nlp-sample.types";
 import { INlpSampleEntity } from "@/types/nlp-sample_entity.types";
@@ -66,12 +69,17 @@ export default function NlpSample() {
   const { apiUrl } = useConfig();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const [dataset, setDataSet] = useState("");
+  const [type, setType] = useState<NlpSampleType | undefined>(undefined);
+  const [language, setLanguage] = useState<string | undefined>(undefined);
   const hasPermission = useHasPermission();
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
+  const getSampleEntityFromCache = useGetFromCache(
+    EntityType.NLP_SAMPLE_ENTITY,
+  );
+  const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
   const { onSearch, searchPayload } = useSearch<INlpSample>({
-    $eq: dataset === "" ? [] : [{ type: dataset as NlpSampleType }],
+    $eq: [...(type ? [{ type }] : []), ...(language ? [{ language }] : [])],
     $iLike: ["text"],
   });
   const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
@@ -90,21 +98,30 @@ export default function NlpSample() {
     },
   );
   const deleteDialogCtl = useDialog<string>(false);
-  const editDialogCtl = useDialog<INlpSampleFull>(false);
+  const editDialogCtl = useDialog<INlpDatasetSample>(false);
   const importDialogCtl = useDialog<never>(false);
-  const actionColumns = getActionsColumn<INlpSampleFull>(
+  const actionColumns = getActionsColumn<INlpSample>(
     [
       {
         label: ActionColumnLabel.Edit,
-        action: ({ entities, ...rest }) => {
-          const data: INlpSampleFull = {
+        action: ({ entities, language, ...rest }) => {
+          const data: INlpDatasetSample = {
             ...rest,
-            entities: entities?.map(({ end, start, value, entity }) => ({
-              end,
-              start,
-              value: getNlpValueFromCache(value)?.value,
-              entity: getNlpEntityFromCache(entity)?.name,
-            })) as unknown as INlpSampleEntity[],
+            entities: entities?.map((e) => {
+              const sampleEntity = getSampleEntityFromCache(e);
+              const { end, start, value, entity } =
+                sampleEntity as INlpSampleEntity;
+
+              return {
+                end,
+                start,
+                value: getNlpValueFromCache(value)?.value || "",
+                entity: getNlpEntityFromCache(entity)?.name || "",
+              };
+            }),
+            language: language
+              ? (getLanguageFromCache(language) as ILanguage).code
+              : null,
           };
 
           editDialogCtl.openDialog(data);
@@ -119,7 +136,7 @@ export default function NlpSample() {
     ],
     t("label.operations"),
   );
-  const columns: GridColDef<INlpSampleFull>[] = [
+  const columns: GridColDef<INlpSample>[] = [
     {
       flex: 1,
       field: "text",
@@ -131,36 +148,53 @@ export default function NlpSample() {
     {
       flex: 1,
       field: "entities",
-      renderCell: ({ row }) =>
-        row.entities.map((entity) => (
-          <ChipEntity
-            id={entity.entity}
-            key={entity.id}
-            variant="title"
-            field="name"
-            render={(value) => (
-              <Chip
+      renderCell: ({ row }) => (
+        <Stack direction="row" my={1} spacing={1}>
+          {row.entities
+            .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
+            .filter((e) => !!e)
+            .map((entity) => (
+              <ChipEntity
+                key={entity.id}
+                id={entity.entity}
                 variant="title"
-                label={
-                  <>
-                    {value}
-                    {` `}={` `}
-                    <ChipEntity
-                      id={entity.value}
-                      key={entity.value}
-                      variant="text"
-                      field="value"
-                      entity={EntityType.NLP_VALUE}
-                    />
-                  </>
-                }
+                field="name"
+                render={(value) => (
+                  <Chip
+                    variant="title"
+                    label={
+                      <>
+                        {value}
+                        {` `}={` `}
+                        <ChipEntity
+                          id={entity.value}
+                          key={entity.value}
+                          variant="text"
+                          field="value"
+                          entity={EntityType.NLP_VALUE}
+                        />
+                      </>
+                    }
+                  />
+                )}
+                entity={EntityType.NLP_ENTITY}
               />
-            )}
-            entity={EntityType.NLP_ENTITY}
-          />
-        )),
+            ))}
+        </Stack>
+      ),
       headerName: t("label.entities"),
       sortable: false,
+      disableColumnMenu: true,
+      renderHeader,
+    },
+    {
+      maxWidth: 90,
+      field: "language",
+      renderCell: ({ row }) => {
+        return row.language ? getLanguageFromCache(row.language)?.title : "";
+      },
+      headerName: t("label.language"),
+      sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
@@ -232,18 +266,33 @@ export default function NlpSample() {
             fullWidth={false}
             sx={{ minWidth: "256px" }}
           />
+          <AutoCompleteEntitySelect<ILanguage, "title", false>
+            fullWidth={false}
+            sx={{
+              minWidth: "150px",
+            }}
+            autoFocus
+            searchFields={["title", "code"]}
+            entity={EntityType.LANGUAGE}
+            format={Format.BASIC}
+            labelKey="title"
+            label={t("label.language")}
+            multiple={false}
+            onChange={(_e, selected) => setLanguage(selected?.id)}
+          />
           <Input
             select
+            fullWidth={false}
             sx={{
-              width: "150px",
+              minWidth: "150px",
             }}
             label={t("label.dataset")}
-            value={dataset}
-            onChange={(e) => setDataSet(e.target.value)}
+            value={type}
+            onChange={(e) => setType(e.target.value as NlpSampleType)}
             SelectProps={{
-              ...(dataset !== "" && {
+              ...(type && {
                 IconComponent: () => (
-                  <IconButton size="small" onClick={() => setDataSet("")}>
+                  <IconButton size="small" onClick={() => setType(undefined)}>
                     <DeleteIcon />
                   </IconButton>
                 ),
@@ -288,7 +337,7 @@ export default function NlpSample() {
                 variant="contained"
                 href={buildURL(
                   apiUrl,
-                  `nlpsample/export${dataset ? `?type=${dataset}` : ""}`,
+                  `nlpsample/export${type ? `?type=${type}` : ""}`,
                 )}
                 startIcon={<DownloadIcon />}
               >

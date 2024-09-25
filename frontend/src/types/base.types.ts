@@ -24,6 +24,7 @@ import { IContentType, IContentTypeAttributes } from "./content-type.types";
 import { IContent, IContentAttributes, IContentFull } from "./content.types";
 import { IContextVar, IContextVarAttributes } from "./context-var.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
+import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
   IMenuNode,
   IMenuNodeAttributes,
@@ -99,13 +100,14 @@ export const POPULATE_BY_TYPE = {
     "trigger_labels",
     "assignTo",
   ],
-  [EntityType.NLP_SAMPLE]: ["entities"],
+  [EntityType.NLP_SAMPLE]: ["language", "entities"],
   [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
   [EntityType.NLP_ENTITY]: ["values"],
   [EntityType.NLP_VALUE]: ["entity"],
   [EntityType.MESSAGE]: ["sender", "recipient", "sentBy"],
   [EntityType.MENU]: ["parent"],
   [EntityType.MENUTREE]: [],
+  [EntityType.LANGUAGE]: [],
   [EntityType.TRANSLATION]: [],
   [EntityType.ATTACHMENT]: [],
   [EntityType.CUSTOM_BLOCK]: [],
@@ -189,6 +191,7 @@ export interface IEntityMapTypes {
     ISubscriber,
     ISubscriberFull
   >;
+  [EntityType.LANGUAGE]: IEntityTypes<ILanguageAttributes, ILanguage>;
   [EntityType.TRANSLATION]: IEntityTypes<ITranslationAttributes, ITranslation>;
   [EntityType.USER]: IEntityTypes<IUserAttributes, IUser, IUserFull>;
   [EntityType.ATTACHMENT]: IEntityTypes<IAttachmentAttributes, IAttachment>;

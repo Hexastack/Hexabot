@@ -17,14 +17,14 @@ import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { EntityType } from "@/services/types";
 import {
+  INlpDatasetSample,
   INlpDatasetSampleAttributes,
   INlpSampleFormAttributes,
-  INlpSampleFull,
 } from "@/types/nlp-sample.types";
 
 import NlpDatasetSample from "./components/NlpTrainForm";
 
-export type NlpSampleDialogProps = DialogControlProps<INlpSampleFull>;
+export type NlpSampleDialogProps = DialogControlProps<INlpDatasetSample>;
 export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
   open,
   data: sample,
@@ -44,15 +44,16 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const onSubmitForm = (params: INlpSampleFormAttributes) => {
+  const onSubmitForm = (form: INlpSampleFormAttributes) => {
     if (sample?.id) {
       updateSample(
         {
           id: sample.id,
           params: {
-            text: params.text,
-            type: params.type,
-            entities: [...params.keywordEntities, ...params.traitEntities],
+            text: form.text,
+            type: form.type,
+            entities: [...form.keywordEntities, ...form.traitEntities],
+            language: form.language,
           },
         },
         {

@@ -10,6 +10,7 @@
 import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { ILanguage } from "./language.types";
 import { INlpSampleEntity } from "./nlp-sample_entity.types";
 
 export enum NlpSampleType {
@@ -23,6 +24,7 @@ export interface INlpSampleAttributes {
   trained?: boolean;
   type?: NlpSampleType;
   entities: string[];
+  language: string | null;
 }
 
 export interface INlpSampleStub
@@ -31,14 +33,15 @@ export interface INlpSampleStub
 
 export interface INlpSample extends INlpSampleStub, IFormat<Format.BASIC> {
   entities: string[];
+  language: string | null;
 }
 
 export interface INlpSampleFull extends INlpSampleStub, IFormat<Format.FULL> {
   entities: INlpSampleEntity[];
+  language: ILanguage | null;
 }
 
 // Dataset Trainer
-
 export interface INlpDatasetTraitEntity {
   entity: string; // entity name
   value: string; // value name
@@ -60,3 +63,7 @@ export interface INlpDatasetSampleAttributes
   extends Omit<INlpSampleAttributes, "entities"> {
   entities: (INlpDatasetTraitEntity | INlpDatasetKeywordEntity)[];
 }
+
+export interface INlpDatasetSample
+  extends IBaseSchema,
+    INlpDatasetSampleAttributes {}

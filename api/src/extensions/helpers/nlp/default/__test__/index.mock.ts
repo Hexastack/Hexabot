@@ -23,6 +23,10 @@ export const nlpEmptyFormated: DatasetType = {
       name: 'product',
       elements: ['pizza', 'sandwich'],
     },
+    {
+      elements: ['en', 'fr'],
+      name: 'language',
+    },
   ],
   entity_synonyms: [
     {
@@ -34,17 +38,33 @@ export const nlpEmptyFormated: DatasetType = {
 
 export const nlpFormatted: DatasetType = {
   common_examples: [
-    { text: 'Hello', intent: 'greeting', entities: [] },
+    {
+      text: 'Hello',
+      intent: 'greeting',
+      entities: [
+        {
+          entity: 'language',
+          value: 'en',
+        },
+      ],
+    },
     {
       text: 'i want to order a pizza',
       intent: 'order',
-      entities: [{ entity: 'product', value: 'pizza', start: 19, end: 23 }],
+      entities: [
+        { entity: 'product', value: 'pizza', start: 19, end: 23 },
+        {
+          entity: 'language',
+          value: 'en',
+        },
+      ],
     },
   ],
   regex_features: [],
   lookup_tables: [
     { name: 'intent', elements: ['greeting', 'order'] },
     { name: 'product', elements: ['pizza', 'sandwich'] },
+    { name: 'language', elements: ['en', 'fr'] },
   ],
   entity_synonyms: [
     {

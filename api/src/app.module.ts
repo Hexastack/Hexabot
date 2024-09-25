@@ -32,7 +32,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
-import { ExtendedI18nModule } from './extended-18n.module';
+import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
 import { DtoUpdateMiddleware } from './middlewares/dto.update.middleware';
 import { NlpModule } from './nlp/nlp.module';
@@ -44,7 +44,7 @@ import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
 
 const i18nOptions: I18nOptions = {
-  fallbackLanguage: config.chatbot.lang.default,
+  fallbackLanguage: 'en',
   loaderOptions: {
     path: path.join(__dirname, '/config/i18n/'),
     watch: true,
@@ -120,7 +120,7 @@ const i18nOptions: I18nOptions = {
       ignoreErrors: false,
     }),
     CsrfModule,
-    ExtendedI18nModule.forRoot(i18nOptions),
+    I18nModule.forRoot(i18nOptions),
     CacheModule.register({
       isGlobal: true,
       ttl: config.cache.ttl,

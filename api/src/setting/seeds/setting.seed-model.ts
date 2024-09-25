@@ -7,8 +7,6 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { config } from '@/config';
-
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingType } from '../schemas/types';
 
@@ -69,26 +67,6 @@ export const settingModels: SettingCreateDto[] = [
   },
   {
     group: 'nlp_settings',
-    label: 'languages',
-    value: [],
-    options: [],
-    type: SettingType.select,
-    config: {
-      multiple: true,
-      allowCreate: true,
-    },
-    weight: 4,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'default_lang',
-    value: config.chatbot.lang.default,
-    options: [], // NOTE : will be set onBeforeCreate from config
-    type: SettingType.select,
-    weight: 5,
-  },
-  {
-    group: 'nlp_settings',
     label: 'threshold',
     value: 0.9,
     type: SettingType.number,
@@ -97,7 +75,7 @@ export const settingModels: SettingCreateDto[] = [
       max: 1,
       step: 0.01,
     },
-    weight: 6,
+    weight: 4,
   },
   {
     group: 'contact',

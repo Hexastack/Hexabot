@@ -26,12 +26,6 @@ export const nlpEntityFixtures: NlpEntityCreateDto[] = [
     builtin: false,
   },
   {
-    name: 'language',
-    lookups: ['trait'],
-    doc: '',
-    builtin: false,
-  },
-  {
     name: 'built_in',
     lookups: ['trait'],
     doc: '',
