@@ -19,6 +19,7 @@ import {
   Grid,
   IconButton,
   MenuItem,
+  Stack,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -147,37 +148,40 @@ export default function NlpSample() {
     {
       flex: 1,
       field: "entities",
-      renderCell: ({ row }) =>
-        row.entities
-          .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
-          .filter((e) => !!e)
-          .map((entity) => (
-            <ChipEntity
-              id={entity.entity}
-              key={entity.id}
-              variant="title"
-              field="name"
-              render={(value) => (
-                <Chip
-                  variant="title"
-                  label={
-                    <>
-                      {value}
-                      {` `}={` `}
-                      <ChipEntity
-                        id={entity.value}
-                        key={entity.value}
-                        variant="text"
-                        field="value"
-                        entity={EntityType.NLP_VALUE}
-                      />
-                    </>
-                  }
-                />
-              )}
-              entity={EntityType.NLP_ENTITY}
-            />
-          )),
+      renderCell: ({ row }) => (
+        <Stack direction="row" my={1} spacing={1}>
+          {row.entities
+            .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
+            .filter((e) => !!e)
+            .map((entity) => (
+              <ChipEntity
+                key={entity.id}
+                id={entity.entity}
+                variant="title"
+                field="name"
+                render={(value) => (
+                  <Chip
+                    variant="title"
+                    label={
+                      <>
+                        {value}
+                        {` `}={` `}
+                        <ChipEntity
+                          id={entity.value}
+                          key={entity.value}
+                          variant="text"
+                          field="value"
+                          entity={EntityType.NLP_VALUE}
+                        />
+                      </>
+                    }
+                  />
+                )}
+                entity={EntityType.NLP_ENTITY}
+              />
+            ))}
+        </Stack>
+      ),
       headerName: t("label.entities"),
       sortable: false,
       disableColumnMenu: true,
