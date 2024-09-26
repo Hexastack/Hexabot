@@ -35,6 +35,7 @@ describe('PermissionRepository', () => {
   let permissionRepository: PermissionRepository;
   let permissionModel: Model<Permission>;
   let permission: Permission;
+  let permissionToDelete: Permission;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,6 +59,9 @@ describe('PermissionRepository', () => {
     );
     permission = await permissionRepository.findOne({
       action: Action.CREATE,
+    });
+    permissionToDelete = await permissionRepository.findOne({
+      action: Action.UPDATE,
     });
   });
 
@@ -110,6 +114,38 @@ describe('PermissionRepository', () => {
       );
       expect(permissionModel.find).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(permissionsWithRolesAndModels);
+    });
+  });
+
+  describe('deleteOne', () => {
+    it('should delete a permission by id', async () => {
+      jest.spyOn(permissionModel, 'deleteOne');
+      const result = await permissionRepository.deleteOne(
+        permissionToDelete.id,
+      );
+
+      expect(permissionModel.deleteOne).toHaveBeenCalledWith({
+        _id: permissionToDelete.id,
+      });
+
+      expect(result).toEqual({
+        acknowledged: true,
+        deletedCount: 1,
+      });
+
+      const permissions = await permissionRepository.find({
+        role: permissionToDelete.id,
+      });
+      expect(permissions.length).toEqual(0);
+    });
+
+    it('should fail to delete a permission that does not exist', async () => {
+      expect(
+        await permissionRepository.deleteOne(permissionToDelete.id),
+      ).toEqual({
+        acknowledged: true,
+        deletedCount: 0,
+      });
     });
   });
 });
