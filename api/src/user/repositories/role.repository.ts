@@ -96,7 +96,7 @@ export class RoleRepository extends BaseRepository<
    *
    * @returns The result of the delete operation.
    */
-  async deleteOneQuery(id: string) {
+  async deleteOne(id: string) {
     const result = await this.model.deleteOne({ _id: id }).exec();
     if (result.deletedCount > 0) {
       await this.permissionModel.deleteMany({ role: id });

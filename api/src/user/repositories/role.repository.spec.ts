@@ -24,8 +24,8 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
-import { UserModel, User } from '../schemas/user.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
+import { User, UserModel } from '../schemas/user.schema';
 
 describe('RoleRepository', () => {
   let roleRepository: RoleRepository;
@@ -34,6 +34,7 @@ describe('RoleRepository', () => {
   let roleModel: Model<Role>;
   let role: Role;
   let users: User[];
+  let roleToDelete: Role;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +58,9 @@ describe('RoleRepository', () => {
     users = (await userRepository.findAll()).filter((user) =>
       user.roles.includes(role.id),
     );
+    roleToDelete = await roleRepository.findOne({
+      name: 'manager',
+    });
   });
 
   afterAll(async () => {
@@ -104,6 +108,33 @@ describe('RoleRepository', () => {
 
       expect(roleModel.find).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
+    });
+  });
+
+  describe('deleteOne', () => {
+    it('should delete a role by id', async () => {
+      jest.spyOn(roleModel, 'deleteOne');
+      const result = await roleRepository.deleteOne(roleToDelete.id);
+
+      expect(roleModel.deleteOne).toHaveBeenCalledWith({
+        _id: roleToDelete.id,
+      });
+      expect(result).toEqual({
+        acknowledged: true,
+        deletedCount: 1,
+      });
+
+      const permissions = await permissionRepository.find({
+        role: roleToDelete.id,
+      });
+      expect(permissions.length).toEqual(0);
+    });
+
+    it('should fail to delete a role that does not exist', async () => {
+      expect(await roleRepository.deleteOne(roleToDelete.id)).toEqual({
+        acknowledged: true,
+        deletedCount: 0,
+      });
     });
   });
 });
