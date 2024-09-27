@@ -23,10 +23,8 @@ import {
 } from "@/types/visual-editor.types";
 
 import { ZOOM_LEVEL } from "../constants";
-import {
-  AdvancedLinkFactory,
-  AdvancedLinkModel,
-} from "../v2/AdvancedLink/AdvancedLink";
+import { AdvancedLinkFactory } from "../v2/AdvancedLink/AdvancedLinkFactory";
+import { AdvancedLinkModel } from "../v2/AdvancedLink/AdvancedLinkModel";
 import { CustomCanvasWidget } from "../v2/CustomCanvasWidget";
 import { CustomDeleteItemsAction } from "../v2/CustomDiagramNodes/CustomDeleteAction";
 import { NodeFactory } from "../v2/CustomDiagramNodes/NodeFactory";

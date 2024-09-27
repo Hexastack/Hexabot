@@ -2,16 +2,17 @@ import { css, keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
   DefaultLinkFactory,
-  DefaultLinkModel,
-  DefaultLinkModelOptions,
   DefaultLinkWidget,
 } from "@projectstorm/react-diagrams";
 import React from "react";
+
+import { AdvancedLinkModel } from "./AdvancedLinkModel";
 
 interface Point {
   x: number;
   y: number;
 }
+
 const createCurvedPath = (start: Point, end: Point) => {
   const controlPoint1X = start.x + 220;
   const controlPoint1Y = start.y - 250;
@@ -41,15 +42,6 @@ namespace S {
     fill: none;
     pointer-events: auto;
   `;
-}
-
-export class AdvancedLinkModel extends DefaultLinkModel {
-  constructor(options?: DefaultLinkModelOptions) {
-    super({
-      ...options,
-      type: "advanced",
-    });
-  }
 }
 
 export class AdvancedLinkFactory extends DefaultLinkFactory {
