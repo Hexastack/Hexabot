@@ -25,7 +25,6 @@ import {
   tabsClasses,
 } from "@mui/material";
 import {
-  DefaultLinkModel,
   DefaultPortModel,
   DiagramEngine,
   DiagramModel,
@@ -54,6 +53,7 @@ import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
+import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLink";
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
@@ -195,7 +195,7 @@ const Diagrams = () => {
         entity,
         port,
       }: {
-        entity: DefaultLinkModel;
+        entity: AdvancedLinkModel;
         port: DefaultPortModel;
       }) => {
         const link = model.getLink(entity.getOptions().id as string);
@@ -205,7 +205,10 @@ const Diagrams = () => {
           [BlockPorts.nextBlocksOutPort, BlockPorts.attachmentOutPort].includes(
             // @ts-expect-error protected attr
             entity.targetPort.getOptions().label,
-          )
+          ) ||
+          (link.getSourcePort().getType() === "attached" &&
+            link.getSourcePort().getParent().getOptions().id ===
+              link.getTargetPort().getParent().getOptions().id)
         ) {
           model.removeLink(link);
 
