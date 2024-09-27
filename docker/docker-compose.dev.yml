@@ -43,10 +43,6 @@ services:
       dockerfile: ./frontend/Dockerfile
       target: development
     pull_policy: build
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
     volumes:
       - ../frontend/:/app/frontend/
 
