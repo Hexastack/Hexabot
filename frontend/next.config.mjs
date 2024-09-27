@@ -10,15 +10,16 @@ const nextConfig = withTM(["hexabot-widget"])({
       },
     ];
   },
-  webpack: (config => {
-    config.watchOptions = {
-      poll: 1000,
-      aggregateTimeout: 300,
-      // ignored: ['**/node_modules']
+  webpack(config) {
+    if(process.env.NODE_ENV=="development"){
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
     }
-    
-return config
-  }),
+
+    return config;
+  },
   publicRuntimeConfig: {
     lang: {
       default: "en",

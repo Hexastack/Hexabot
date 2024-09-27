@@ -49,8 +49,6 @@ services:
       - WATCHPACK_POLLING=true
     volumes:
       - ../frontend/:/app/frontend/
-    ports:
-      - 8081:8081
 
   widget:
     build:
