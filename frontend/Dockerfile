@@ -78,13 +78,11 @@ FROM base AS development
 
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./package.json
-COPY --from=deps /app/package-lock.json ./package-lock.json
-COPY ./widget ./widget
-COPY ./frontend ./frontend
-COPY --from=deps /app/widget/node_modules ./widget/node_modules
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+
+COPY . .
+
+RUN npm install
 
 ENV NODE_ENV=development
 ENV CHOKIDAR_USEPOLLING=true

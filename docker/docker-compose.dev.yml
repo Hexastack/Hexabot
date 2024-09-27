@@ -48,8 +48,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     volumes:
-      - ../frontend/src:/app/src
-      - ../frontend/src/components:/app/src/components
+      - ../frontend/:/app/frontend/
     ports:
       - 8081:8081
 
