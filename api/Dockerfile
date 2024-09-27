@@ -4,32 +4,46 @@ WORKDIR /app
 
 COPY . .  
 
-FROM node:18-alpine AS installer
-
-WORKDIR /app
-
-COPY --from=builder /app/package*.json ./
-
-COPY --from=builder /app/merge-extensions-deps.js ./
-
-COPY --from=builder /app/src/extensions ./src/extensions
-
-COPY --from=builder /app/patches ./patches
-
 RUN npm update -g npm
 
 RUN npm config set registry https://registry.npmjs.com/
 
+RUN npm run preinstall
+
 RUN npm i --verbose --maxsockets 6
 
-FROM node:18-alpine AS runner
+RUN npm run build
+
+
+FROM node:18-alpine AS production
 
 WORKDIR /app
 
-COPY --from=installer /app/ .
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/ .
+COPY --from=builder /app/node_modules ./node_modules
 
-COPY . .
+ENV NODE_ENV=production
+
+# Run npm prune to remove dev dependencies
+RUN npm prune --production
 
 EXPOSE 3000
 
-CMD [ "npm", "run" , "start:dev" ]
+CMD ["npm", "run", "start:prod"]
+
+
+FROM node:18-alpine AS development
+
+WORKDIR /app
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/ .
+
+ENV NODE_ENV=development
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:dev"]

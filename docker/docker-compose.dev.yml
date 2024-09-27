@@ -13,6 +13,7 @@ services:
   api:
     build:
       context: ../api
+      target: development
     pull_policy: build
     ports:
       - ${API_PORT}:3000
