@@ -73,3 +73,25 @@ ENV PORT 8080
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
 CMD HOSTNAME="0.0.0.0" node server.js
+
+FROM base AS development
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json ./package.json
+COPY --from=deps /app/package-lock.json ./package-lock.json
+COPY ./widget ./widget
+COPY ./frontend ./frontend
+COPY --from=deps /app/widget/node_modules ./widget/node_modules
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+EXPOSE 8081
+
+WORKDIR /app/frontend
+
+CMD ["npm", "run", "dev"]
