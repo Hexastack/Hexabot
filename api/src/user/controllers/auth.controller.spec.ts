@@ -23,7 +23,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
@@ -69,6 +72,7 @@ describe('AuthController', () => {
           PermissionModel,
           InvitationModel,
           AttachmentModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -86,6 +90,8 @@ describe('AuthController', () => {
         PermissionRepository,
         InvitationRepository,
         InvitationService,
+        LanguageRepository,
+        LanguageService,
         JwtService,
         {
           provide: MailerService,
@@ -106,7 +112,7 @@ describe('AuthController', () => {
         EventEmitter2,
         ValidateAccountService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

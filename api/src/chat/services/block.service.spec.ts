@@ -7,6 +7,7 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -24,11 +25,14 @@ import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
 import OfflineHandler from '@/extensions/channels/offline/index.channel';
 import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
 import { Offline } from '@/extensions/channels/offline/types';
 import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { Settings } from '@/setting/schemas/types';
@@ -94,6 +98,7 @@ describe('BlockService', () => {
           ContentModel,
           AttachmentModel,
           LabelModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -102,18 +107,20 @@ describe('BlockService', () => {
         ContentTypeRepository,
         ContentRepository,
         AttachmentRepository,
+        LanguageRepository,
         BlockService,
         CategoryService,
         ContentTypeService,
         ContentService,
         AttachmentService,
+        LanguageService,
         {
           provide: PluginService,
           useValue: {},
         },
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => {
               return t === 'Welcome' ? 'Bienvenue' : t;
@@ -132,6 +139,14 @@ describe('BlockService', () => {
           },
         },
         EventEmitter2,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     blockService = module.get<BlockService>(BlockService);

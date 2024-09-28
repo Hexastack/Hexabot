@@ -7,6 +7,7 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
+import { CheckCircle } from "@mui/icons-material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
@@ -39,12 +40,16 @@ export enum ActionColumnLabel {
   Content = "button.content",
   Fields = "button.fields",
   Manage_Labels = "title.manage_labels",
+  Toggle = "button.toggle",
 }
 
 export interface ActionColumn<T extends GridValidRowModel> {
   label: ActionColumnLabel;
   action?: (row: T) => void;
   requires?: PermissionAction[];
+  getState?: (row: T) => boolean;
+  helperText?: string;
+  isDisabled?: (row: T) => boolean;
 }
 
 const BUTTON_WIDTH = 60;
@@ -70,6 +75,8 @@ function getIcon(label: ActionColumnLabel) {
       return <TocOutlinedIcon />;
     case ActionColumnLabel.Manage_Labels:
       return <LocalOfferIcon />;
+    case ActionColumnLabel.Toggle:
+      return <CheckCircle />;
     default:
       return <></>;
   }
@@ -78,7 +85,7 @@ function getIcon(label: ActionColumnLabel) {
 function getColor(label: ActionColumnLabel) {
   switch (label) {
     case ActionColumnLabel.Edit:
-      return theme.palette.warning.main;
+      return theme.palette.grey[900];
     case ActionColumnLabel.Delete:
       return theme.palette.error.main;
     default:
@@ -97,29 +104,46 @@ function StackComponent<T extends GridValidRowModel>({
 
   return (
     <Stack height="100%" alignItems="center" direction="row" spacing={0.5}>
-      {actions.map(({ label, action, requires = [] }) => (
-        <GridActionsCellItem
-          key={label}
-          className="actionButton"
-          icon={<Tooltip title={t(label)}>{getIcon(label)}</Tooltip>}
-          label={t(label)}
-          showInMenu={false}
-          sx={{
-            color: "grey",
-            "&:hover": {
-              color: getColor(label),
-            },
-          }}
-          disabled={
-            params.row.builtin &&
-            (requires.includes(PermissionAction.UPDATE) ||
-              requires.includes(PermissionAction.DELETE))
-          }
-          onClick={() => {
-            action && action(params.row);
-          }}
-        />
-      ))}
+      {actions.map(
+        ({
+          label,
+          action,
+          requires = [],
+          getState,
+          helperText,
+          isDisabled,
+        }) => (
+          <GridActionsCellItem
+            key={label}
+            className="actionButton"
+            icon={
+              <Tooltip title={helperText || t(label)}>{getIcon(label)}</Tooltip>
+            }
+            label={helperText || t(label)}
+            showInMenu={false}
+            sx={{
+              color:
+                label === ActionColumnLabel.Toggle &&
+                getState &&
+                getState(params.row)
+                  ? getColor(label)
+                  : theme.palette.grey[600],
+              "&:hover": {
+                color: getColor(label),
+              },
+            }}
+            disabled={
+              (isDisabled && isDisabled(params.row)) ||
+              (params.row.builtin &&
+                (requires.includes(PermissionAction.UPDATE) ||
+                  requires.includes(PermissionAction.DELETE)))
+            }
+            onClick={() => {
+              action && action(params.row);
+            }}
+          />
+        ),
+      )}
     </Stack>
   );
 }

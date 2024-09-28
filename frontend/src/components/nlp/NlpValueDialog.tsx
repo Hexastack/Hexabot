@@ -20,10 +20,11 @@ import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { useCreate } from "@/hooks/crud/useCreate";
+import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
-import { EntityType } from "@/services/types";
+import { EntityType, Format } from "@/services/types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
 export type TNlpValueAttributesWithRequiredExpressions = INlpValueAttributes & {
@@ -44,11 +45,16 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
   const { t } = useTranslation();
   const { toast } = useToast();
   const { query } = useRouter();
+  const { refetch: refetchEntity } = useGet(data?.entity || String(query.id), {
+    entity: EntityType.NLP_ENTITY,
+    format: Format.FULL,
+  });
   const { mutateAsync: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess(data) {
+      refetchEntity();
       closeDialog();
       toast.success(t("message.success_save"));
       callback?.(data);

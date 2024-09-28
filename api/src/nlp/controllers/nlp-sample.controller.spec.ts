@@ -18,7 +18,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
@@ -57,7 +60,9 @@ describe('NlpSampleController', () => {
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
   let attachmentService: AttachmentService;
+  let languageService: LanguageService;
   let byeJhonSampleId: string;
+  let languages: Language[];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -74,6 +79,7 @@ describe('NlpSampleController', () => {
           NlpEntityModel,
           NlpValueModel,
           SettingModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -88,13 +94,15 @@ describe('NlpSampleController', () => {
         NlpValueRepository,
         NlpSampleService,
         NlpSampleEntityService,
+        LanguageRepository,
+        LanguageService,
         EventEmitter2,
         NlpService,
         SettingRepository,
         SettingService,
         SettingSeeder,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },
@@ -122,6 +130,8 @@ describe('NlpSampleController', () => {
       })
     ).id;
     attachmentService = module.get<AttachmentService>(AttachmentService);
+    languageService = module.get<LanguageService>(LanguageService);
+    languages = await languageService.findAll();
   });
   afterAll(async () => {
     await closeInMongodConnection();
@@ -134,7 +144,7 @@ describe('NlpSampleController', () => {
       const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
       const result = await nlpSampleController.findPage(
         pageQuery,
-        ['entities'],
+        ['language', 'entities'],
         {},
       );
       const nlpSamples = await nlpSampleService.findAll();
@@ -146,6 +156,7 @@ describe('NlpSampleController', () => {
             entities: nlpSampleEntities.filter((currSampleEntity) => {
               return currSampleEntity.sample === currSample.id;
             }),
+            language: languages.find((lang) => lang.id === currSample.language),
           };
           acc.push(sampleWithEntities);
           return acc;
@@ -163,7 +174,12 @@ describe('NlpSampleController', () => {
         ['invalidCriteria'],
         {},
       );
-      expect(result).toEqualPayload(nlpSampleFixtures);
+      expect(result).toEqualPayload(
+        nlpSampleFixtures.map((sample) => ({
+          ...sample,
+          language: languages[sample.language].id,
+        })),
+      );
     });
   });
 
@@ -177,14 +193,19 @@ describe('NlpSampleController', () => {
 
   describe('create', () => {
     it('should create nlp sample', async () => {
+      const enLang = await languageService.findOne({ code: 'en' });
       const nlSample: NlpSampleDto = {
         text: 'text1',
         trained: true,
         type: NlpSampleState.test,
         entities: [],
+        language: 'en',
       };
       const result = await nlpSampleController.create(nlSample);
-      expect(result).toEqualPayload(nlSample);
+      expect(result).toEqualPayload({
+        ...nlSample,
+        language: enLang,
+      });
     });
   });
 
@@ -209,7 +230,10 @@ describe('NlpSampleController', () => {
       const result = await nlpSampleController.findOne(yessSample.id, [
         'invalidCreteria',
       ]);
-      expect(result).toEqualPayload(nlpSampleFixtures[0]);
+      expect(result).toEqualPayload({
+        ...nlpSampleFixtures[0],
+        language: languages[nlpSampleFixtures[0].language].id,
+      });
     });
 
     it('should find a nlp sample and populate its entities', async () => {
@@ -225,6 +249,7 @@ describe('NlpSampleController', () => {
       const samplesWithEntities = {
         ...nlpSampleFixtures[0],
         entities: [yessSampleEntity],
+        language: languages[nlpSampleFixtures[0].language],
       };
       expect(result).toEqualPayload(samplesWithEntities);
     });
@@ -241,6 +266,9 @@ describe('NlpSampleController', () => {
       const yessSample = await nlpSampleService.findOne({
         text: 'yess',
       });
+      const frLang = await languageService.findOne({
+        code: 'fr',
+      });
       const result = await nlpSampleController.updateOne(yessSample.id, {
         text: 'updated',
         trained: true,
@@ -251,6 +279,7 @@ describe('NlpSampleController', () => {
             value: 'update',
           },
         ],
+        language: 'fr',
       });
       const updatedSample = {
         text: 'updated',
@@ -263,11 +292,13 @@ describe('NlpSampleController', () => {
             value: expect.stringMatching(/^[a-z0-9]+$/),
           },
         ],
+        language: frLang,
       };
       expect(result.text).toEqual(updatedSample.text);
       expect(result.type).toEqual(updatedSample.type);
       expect(result.trained).toEqual(updatedSample.trained);
       expect(result.entities).toMatchObject(updatedSample.entities);
+      expect(result.language).toEqualPayload(updatedSample.language);
     });
 
     it('should throw exception when nlp sample id not found', async () => {
@@ -276,6 +307,7 @@ describe('NlpSampleController', () => {
           text: 'updated',
           trained: true,
           type: NlpSampleState.test,
+          language: 'fr',
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -352,7 +384,7 @@ describe('NlpSampleController', () => {
       ).id;
       const mockCsvData: string = [
         `text,intent,language`,
-        `Was kostet dieser bmw,preis,de`,
+        `How much does a BMW cost?,price,en`,
       ].join('\n');
       jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
       jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvData);
@@ -361,17 +393,14 @@ describe('NlpSampleController', () => {
       const intentEntityResult = await nlpEntityService.findOne({
         name: 'intent',
       });
-      const languageEntityResult = await nlpEntityService.findOne({
-        name: 'language',
-      });
-      const preisValueResult = await nlpValueService.findOne({
-        value: 'preis',
-      });
-      const deValueResult = await nlpValueService.findOne({
-        value: 'de',
+      const priceValueResult = await nlpValueService.findOne({
+        value: 'price',
       });
       const textSampleResult = await nlpSampleService.findOne({
-        text: 'Was kostet dieser bmw',
+        text: 'How much does a BMW cost?',
+      });
+      const language = await languageService.findOne({
+        code: 'en',
       });
       const intentEntity = {
         name: 'intent',
@@ -379,40 +408,24 @@ describe('NlpSampleController', () => {
         doc: '',
         builtin: false,
       };
-      const languageEntity = {
-        name: 'language',
-        lookups: ['trait'],
-        builtin: false,
-        doc: '',
-      };
-      const preisVlueEntity = await nlpEntityService.findOne({
+      const priceValueEntity = await nlpEntityService.findOne({
         name: 'intent',
       });
-      const preisValue = {
-        value: 'preis',
+      const priceValue = {
+        value: 'price',
         expressions: [],
         builtin: false,
-        entity: preisVlueEntity.id,
-      };
-      const deValueEntity = await nlpEntityService.findOne({
-        name: 'language',
-      });
-      const deValue = {
-        value: 'de',
-        expressions: [],
-        builtin: false,
-        entity: deValueEntity.id,
+        entity: priceValueEntity.id,
       };
       const textSample = {
-        text: 'Was kostet dieser bmw',
+        text: 'How much does a BMW cost?',
         trained: false,
         type: 'train',
+        language: language.id,
       };
 
-      expect(languageEntityResult).toEqualPayload(languageEntity);
       expect(intentEntityResult).toEqualPayload(intentEntity);
-      expect(preisValueResult).toEqualPayload(preisValue);
-      expect(deValueResult).toEqualPayload(deValue);
+      expect(priceValueResult).toEqualPayload(priceValue);
       expect(textSampleResult).toEqualPayload(textSample);
       expect(result).toEqual({ success: true });
     });

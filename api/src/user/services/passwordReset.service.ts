@@ -21,7 +21,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { compareSync } from 'bcryptjs';
 
 import { config } from '@/config';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 
 import { UserService } from './user.service';
@@ -34,7 +35,8 @@ export class PasswordResetService {
     @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     private readonly userService: UserService,
-    public readonly i18n: ExtendedI18nService,
+    public readonly i18n: I18nService,
+    public readonly languageService: LanguageService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {
@@ -59,6 +61,7 @@ export class PasswordResetService {
 
     if (this.mailerService) {
       try {
+        const defaultLanguage = await this.languageService.getDefaultLanguage();
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'password_reset.mjml',
@@ -66,7 +69,7 @@ export class PasswordResetService {
             token: jwt,
             first_name: user.first_name,
             t: (key: string) =>
-              this.i18n.t(key, { lang: config.chatbot.lang.default }),
+              this.i18n.t(key, { lang: defaultLanguage.code }),
           },
           subject: this.i18n.t('password_reset_subject'),
         });

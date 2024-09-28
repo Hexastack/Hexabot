@@ -13,6 +13,7 @@ import {
   ArgumentMetadata,
   Logger,
 } from '@nestjs/common';
+import escapeRegExp from 'lodash/escapeRegExp';
 import { TFilterQuery, Types } from 'mongoose';
 
 import {
@@ -36,9 +37,8 @@ export class SearchFilterPipe<T>
   }
 
   private getRegexValue(val: string) {
-    const quote = (str: string) =>
-      str.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1');
-    return new RegExp(quote(val), 'i');
+    const escapedRegExp = escapeRegExp(val);
+    return new RegExp(escapedRegExp, 'i');
   }
 
   private isAllowedField(field: string) {

@@ -23,7 +23,6 @@ import { ContextVarController } from './controllers/context-var.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
-import { TranslationController } from './controllers/translation.controller';
 import { BlockRepository } from './repositories/block.repository';
 import { CategoryRepository } from './repositories/category.repository';
 import { ContextVarRepository } from './repositories/context-var.repository';
@@ -31,7 +30,6 @@ import { ConversationRepository } from './repositories/conversation.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
-import { TranslationRepository } from './repositories/translation.repository';
 import { BlockModel } from './schemas/block.schema';
 import { CategoryModel } from './schemas/category.schema';
 import { ContextVarModel } from './schemas/context-var.schema';
@@ -39,10 +37,8 @@ import { ConversationModel } from './schemas/conversation.schema';
 import { LabelModel } from './schemas/label.schema';
 import { MessageModel } from './schemas/message.schema';
 import { SubscriberModel } from './schemas/subscriber.schema';
-import { TranslationModel } from './schemas/translation.schema';
 import { CategorySeeder } from './seeds/category.seed';
 import { ContextVarSeeder } from './seeds/context-var.seed';
-import { TranslationSeeder } from './seeds/translation.seed';
 import { BlockService } from './services/block.service';
 import { BotService } from './services/bot.service';
 import { CategoryService } from './services/category.service';
@@ -52,7 +48,6 @@ import { ConversationService } from './services/conversation.service';
 import { LabelService } from './services/label.service';
 import { MessageService } from './services/message.service';
 import { SubscriberService } from './services/subscriber.service';
-import { TranslationService } from './services/translation.service';
 
 @Module({
   imports: [
@@ -63,7 +58,6 @@ import { TranslationService } from './services/translation.service';
       BlockModel,
       MessageModel,
       SubscriberModel,
-      TranslationModel,
       ConversationModel,
       SubscriberModel,
     ]),
@@ -81,7 +75,6 @@ import { TranslationService } from './services/translation.service';
     BlockController,
     MessageController,
     SubscriberController,
-    TranslationController,
   ],
   providers: [
     CategoryRepository,
@@ -90,7 +83,6 @@ import { TranslationService } from './services/translation.service';
     BlockRepository,
     MessageRepository,
     SubscriberRepository,
-    TranslationRepository,
     ConversationRepository,
     CategoryService,
     ContextVarService,
@@ -98,13 +90,11 @@ import { TranslationService } from './services/translation.service';
     BlockService,
     MessageService,
     SubscriberService,
-    TranslationService,
     CategorySeeder,
     ContextVarSeeder,
     ConversationService,
     ChatService,
     BotService,
-    TranslationSeeder,
   ],
   exports: [SubscriberService, MessageService, LabelService, BlockService],
 })

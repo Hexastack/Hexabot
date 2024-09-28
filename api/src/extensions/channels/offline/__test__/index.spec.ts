@@ -35,7 +35,7 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -113,7 +113,7 @@ describe('Offline Handler', () => {
         EventEmitter2,
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

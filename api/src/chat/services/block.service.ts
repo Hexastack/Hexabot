@@ -13,7 +13,8 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { Nlp } from '@/nlp/lib/types';
 import { PluginService } from '@/plugins/plugins.service';
@@ -44,7 +45,8 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly logger: LoggerService,
-    protected readonly i18n: ExtendedI18nService,
+    protected readonly i18n: I18nService,
+    protected readonly languageService: LanguageService,
   ) {
     super(repository);
   }
@@ -109,12 +111,9 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       // Check & catch user language through NLP
       const nlp = event.getNLP();
       if (nlp) {
-        const settings = await this.settingService.getSettings();
+        const languages = await this.languageService.getLanguages();
         const lang = nlp.entities.find((e) => e.entity === 'language');
-        if (
-          lang &&
-          settings.nlp_settings.languages.indexOf(lang.value) !== -1
-        ) {
+        if (lang && Object.keys(languages).indexOf(lang.value) !== -1) {
           const profile = event.getSender();
           profile.language = lang.value;
           event.setSender(profile);
@@ -372,12 +371,11 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    const lang =
-      context && context.user && context.user.language
-        ? context.user.language
-        : settings.nlp_settings.default_lang;
     // Translate
-    text = this.i18n.t(text, { lang, defaultValue: text });
+    text = this.i18n.t(text, {
+      lang: context.user.language,
+      defaultValue: text,
+    });
     // Replace context tokens
     text = this.processTokenReplacements(
       text,

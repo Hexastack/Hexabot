@@ -29,6 +29,13 @@ export const baseNlpEntity = {
   builtin: true,
 };
 
+export const baseLanguage = {
+  ...modelInstance,
+  title: 'English',
+  code: 'en',
+  isDefault: true,
+};
+
 export const entitiesMock: NlpEntityFull[] = [
   {
     ...baseNlpEntity,
@@ -89,6 +96,7 @@ export const samplesMock: NlpSampleFull[] = [
     ],
     trained: false,
     type: NlpSampleState.train,
+    language: baseLanguage,
   },
   {
     ...modelInstance,
@@ -112,5 +120,6 @@ export const samplesMock: NlpSampleFull[] = [
     ],
     trained: false,
     type: NlpSampleState.train,
+    language: baseLanguage,
   },
 ];

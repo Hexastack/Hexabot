@@ -19,7 +19,7 @@ import { ChannelService } from '@/channel/channel.service';
 import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -92,7 +92,7 @@ describe('MessageController', () => {
         MenuService,
         MenuRepository,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

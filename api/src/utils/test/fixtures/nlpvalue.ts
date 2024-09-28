@@ -45,12 +45,6 @@ export const nlpValueFixtures: NlpValueCreateDto[] = [
     expressions: ['bye', 'bye bye'],
     builtin: true,
   },
-  {
-    entity: '2',
-    value: 'en',
-    expressions: [],
-    builtin: true,
-  },
 ];
 
 export const installNlpValueFixtures = async () => {

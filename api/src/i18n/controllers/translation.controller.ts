@@ -8,15 +8,18 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
+  Post,
   Query,
   UseInterceptors,
-  Post,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { TFilterQuery } from 'mongoose';
@@ -25,18 +28,21 @@ import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseController } from '@/utils/generics/base-controller';
+import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { Translation } from '../schemas/translation.schema';
+import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('translation')
 export class TranslationController extends BaseController<Translation> {
   constructor(
+    private readonly languageService: LanguageService,
     private readonly translationService: TranslationService,
     private readonly settingService: SettingService,
     private readonly logger: LoggerService,
@@ -103,40 +109,56 @@ export class TranslationController extends BaseController<Translation> {
   @CsrfCheck(true)
   @Post('refresh')
   async refresh(): Promise<any> {
-    const settings = await this.settingService.getSettings();
-    const languages = settings.nlp_settings.languages;
-    const defaultTrans: Translation['translations'] = languages.reduce(
-      (acc, curr) => {
-        acc[curr] = '';
-        return acc;
-      },
-      {} as { [key: string]: string },
-    );
+    const defaultLanguage = await this.languageService.getDefaultLanguage();
+    const languages = await this.languageService.getLanguages();
+    const defaultTrans: Translation['translations'] = Object.keys(languages)
+      .filter((lang) => lang !== defaultLanguage.code)
+      .reduce(
+        (acc, curr) => {
+          acc[curr] = '';
+          return acc;
+        },
+        {} as { [key: string]: string },
+      );
     // Scan Blocks
-    return this.translationService
-      .getAllBlockStrings()
-      .then(async (strings: string[]) => {
-        const settingStrings =
-          await this.translationService.getSettingStrings();
-        // Scan global settings
-        strings = strings.concat(settingStrings);
-        // Filter unique and not empty messages
-        strings = strings.filter((str, pos) => {
-          return str && strings.indexOf(str) == pos;
-        });
-        // Perform refresh
-        const queue = strings.map((str) =>
-          this.translationService.findOneOrCreate(
-            { str },
-            { str, translations: defaultTrans as any, translated: 100 },
-          ),
-        );
-        return Promise.all(queue).then(() => {
-          // Purge non existing translations
-          return this.translationService.deleteMany({
-            str: { $nin: strings },
-          });
-        });
-      });
+    let strings = await this.translationService.getAllBlockStrings();
+    const settingStrings = await this.translationService.getSettingStrings();
+    // Scan global settings
+    strings = strings.concat(settingStrings);
+    // Filter unique and not empty messages
+    strings = strings.filter((str, pos) => {
+      return str && strings.indexOf(str) == pos;
+    });
+    // Perform refresh
+    const queue = strings.map((str) =>
+      this.translationService.findOneOrCreate(
+        { str },
+        { str, translations: defaultTrans },
+      ),
+    );
+    await Promise.all(queue);
+    // Purge non existing translations
+    return this.translationService.deleteMany({
+      str: { $nin: strings },
+    });
+  }
+
+  /**
+   * Deletes a translation by its ID.
+   * @param id - The ID of the translation to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+  @CsrfCheck(true)
+  @Delete(':id')
+  @HttpCode(204)
+  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
+    const result = await this.translationService.deleteOne(id);
+    if (result.deletedCount === 0) {
+      this.logger.warn(`Unable to delete Translation by id ${id}`);
+      throw new BadRequestException(
+        `Unable to delete Translation with ID ${id}`,
+      );
+    }
+    return result;
   }
 }
