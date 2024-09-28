@@ -29,6 +29,11 @@ export class ContextVar extends BaseSchema {
   })
   name: string;
 
+  /**
+   * The permanent attribute allows the chatbot to know where to store the context variable.
+   * If the context variable is not permanent, it will be stored in the converation context, which is temporary.
+   * If the context variable is permanent, it will be stored in the subscriber context, which is permanent.
+   */
   @Prop({
     type: Boolean,
     default: false,
