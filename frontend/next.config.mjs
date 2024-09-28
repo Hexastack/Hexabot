@@ -11,7 +11,7 @@ const nextConfig = withTM(["hexabot-widget"])({
     ];
   },
   webpack(config) {
-    if(process.env.NODE_ENV=="development"){
+    if (process.env.NODE_ENV==="development"){
       config.watchOptions = {
         poll: 1000,
         aggregateTimeout: 300,
