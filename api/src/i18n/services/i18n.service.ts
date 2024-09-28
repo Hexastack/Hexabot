@@ -8,22 +8,22 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { I18nService, Path, PathValue, TranslateOptions } from 'nestjs-i18n';
+import {
+  I18nService as NativeI18nService,
+  Path,
+  PathValue,
+  TranslateOptions,
+} from 'nestjs-i18n';
 import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
-import { Translation } from './chat/schemas/translation.schema';
-import { config } from './config';
+import { config } from '@/config';
+import { Translation } from '@/i18n/schemas/translation.schema';
 
 @Injectable()
-export class ExtendedI18nService<
+export class I18nService<
   K = Record<string, unknown>,
-> extends I18nService<K> {
-  private dynamicTranslations: Record<string, Record<string, string>> =
-    config.chatbot.lang.available.reduce(
-      (acc, curr) => ({ ...acc, [curr]: {} }),
-      {},
-    );
+> extends NativeI18nService<K> {
+  private dynamicTranslations: Record<string, Record<string, string>> = {};
 
   t<P extends Path<K> = any, R = PathValue<K, P>>(
     key: P,
@@ -35,17 +35,19 @@ export class ExtendedI18nService<
       ...options,
     };
     let { lang } = options;
-    lang = lang ?? this.i18nOptions.fallbackLanguage;
     lang = this.resolveLanguage(lang);
 
     // Translate block message, button text, ...
     if (lang in this.dynamicTranslations) {
       if (key in this.dynamicTranslations[lang]) {
-        return this.dynamicTranslations[lang][key] as IfAnyOrNever<
-          R,
-          string,
-          R
-        >;
+        if (this.dynamicTranslations[lang][key]) {
+          return this.dynamicTranslations[lang][key] as IfAnyOrNever<
+            R,
+            string,
+            R
+          >;
+        }
+        return options.defaultValue as IfAnyOrNever<R, string, R>;
       }
     }
 
@@ -54,15 +56,13 @@ export class ExtendedI18nService<
     return super.t<P, R>(key, options);
   }
 
-  @OnEvent('hook:i18n:refresh')
-  initDynamicTranslations(translations: Translation[]) {
+  refreshDynamicTranslations(translations: Translation[]) {
     this.dynamicTranslations = translations.reduce((acc, curr) => {
       const { str, translations } = curr;
-      Object.entries(translations)
-        .filter(([lang]) => lang in acc)
-        .forEach(([lang, t]) => {
-          acc[lang][str] = t;
-        });
+      Object.entries(translations).forEach(([lang, t]) => {
+        acc[lang] = acc[lang] || {};
+        acc[lang][str] = t;
+      });
 
       return acc;
     }, this.dynamicTranslations);

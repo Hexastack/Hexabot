@@ -14,7 +14,6 @@ import {
   DialogProps,
   MenuItem,
 } from "@mui/material";
-import { isAbsoluteUrl } from "next/dist/shared/lib/utils";
 import { useEffect, FC } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -26,6 +25,7 @@ import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
 import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
+import { isAbsoluteUrl } from "@/utils/URL";
 
 export type MenuDialogProps = DialogProps & {
   open: boolean;

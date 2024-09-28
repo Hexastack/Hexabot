@@ -26,13 +26,13 @@ import conversationSchema, {
 import labelSchema, { Label } from '@/chat/schemas/label.schema';
 import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
-import translationSchema, {
-  Translation,
-} from '@/chat/schemas/translation.schema';
 import { ContentType } from '@/cms/schemas/content-type.schema';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import menuSchema, { Menu } from '@/cms/schemas/menu.schema';
 import { config } from '@/config';
+import translationSchema, {
+  Translation,
+} from '@/i18n/schemas/translation.schema';
 import nlpEntitySchema, { NlpEntity } from '@/nlp/schemas/nlp-entity.schema';
 import nlpSampleEntitySchema, {
   NlpSampleEntity,

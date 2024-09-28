@@ -142,8 +142,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
 
   return (
     <Grid container gap={2} flexDirection="column">
-      {/* <PageHeader title={t("title.nlp_train")} icon={faGraduationCap} /> */}
-
       <Slide direction={direction} in={true} mountOnEnter unmountOnExit>
         <Grid item xs={12}>
           <Box sx={{ padding: 1 }}>

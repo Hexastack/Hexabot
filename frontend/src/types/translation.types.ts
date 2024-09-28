@@ -7,9 +7,9 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Format } from "@/services/types";
+import { EntityType, Format } from "@/services/types";
 
-import { IBaseSchema, IFormat } from "./base.types";
+import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
 export type ITranslations = Record<string, string>;
 
@@ -19,11 +19,8 @@ export interface ITranslationAttributes {
   translated: number;
 }
 
-export interface ITranslationStub extends IBaseSchema {
-  str: string;
-  translations: ITranslations;
-  translated: number;
-}
+export interface ITranslationStub
+  extends IBaseSchema,
+    OmitPopulate<ITranslationAttributes, EntityType.TRANSLATION> {}
 
 export interface ITranslation extends ITranslationStub, IFormat<Format.BASIC> {}
-

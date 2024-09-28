@@ -81,6 +81,7 @@ export const Nlp = ({
       text: params.text,
       type: params.type,
       entities: [...params.traitEntities, ...params.keywordEntities],
+      language: params.language,
     });
   };
 

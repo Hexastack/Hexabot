@@ -17,13 +17,23 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
+import { MessageController } from '@/chat/controllers/message.controller';
+import { BlockRepository } from '@/chat/repositories/block.repository';
+import { MessageRepository } from '@/chat/repositories/message.repository';
+import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
+import { BlockModel } from '@/chat/schemas/block.schema';
+import { MessageModel } from '@/chat/schemas/message.schema';
+import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { BlockService } from '@/chat/services/block.service';
+import { MessageService } from '@/chat/services/message.service';
+import { SubscriberService } from '@/chat/services/subscriber.service';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { ContentModel } from '@/cms/schemas/content.schema';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { ContentService } from '@/cms/services/content.service';
 import { MenuService } from '@/cms/services/menu.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -39,20 +49,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MessageController } from './message.controller';
 import { TranslationController } from './translation.controller';
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { BlockRepository } from '../repositories/block.repository';
-import { MessageRepository } from '../repositories/message.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
+import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { BlockModel } from '../schemas/block.schema';
-import { MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { LanguageModel } from '../schemas/language.schema';
 import { Translation, TranslationModel } from '../schemas/translation.schema';
-import { BlockService } from '../services/block.service';
-import { MessageService } from '../services/message.service';
-import { SubscriberService } from '../services/subscriber.service';
+import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 describe('TranslationController', () => {
@@ -73,6 +76,7 @@ describe('TranslationController', () => {
           MenuModel,
           BlockModel,
           ContentModel,
+          LanguageModel,
         ]),
       ],
       providers: [
@@ -114,10 +118,10 @@ describe('TranslationController', () => {
         EventEmitter2,
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-            initDynamicTranslations: jest.fn(),
+            refreshDynamicTranslations: jest.fn(),
           },
         },
         {
@@ -129,6 +133,8 @@ describe('TranslationController', () => {
           },
         },
         LoggerService,
+        LanguageService,
+        LanguageRepository,
       ],
     }).compile();
     translationService = module.get<TranslationService>(TranslationService);

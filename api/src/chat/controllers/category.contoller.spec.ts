@@ -18,7 +18,7 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentModel } from '@/cms/schemas/content.schema';
 import { ContentService } from '@/cms/services/content.service';
-import { ExtendedI18nService } from '@/extended-i18n.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -77,7 +77,7 @@ describe('CategoryController', () => {
         },
         LoggerService,
         {
-          provide: ExtendedI18nService,
+          provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },

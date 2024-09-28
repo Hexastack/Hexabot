@@ -26,6 +26,7 @@ export type TModel =
   | 'conversation'
   | 'message'
   | 'subscriber'
+  | 'language'
   | 'translation'
   | 'botstats'
   | 'menu'
