@@ -199,7 +199,7 @@ export class ConversationService extends BaseService<
 
       //TODO: add check if nothing changed don't update
 
-      this.subscriberService.updateOne(convo.sender, {
+      await this.subscriberService.updateOne(convo.sender, {
         context: profile.context,
       });
 
