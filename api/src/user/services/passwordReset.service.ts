@@ -56,7 +56,7 @@ export class PasswordResetService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const jwt = await this.sign(dto);
+    const jwt = await this.sign({ ...dto });
 
     if (this.mailerService) {
       try {

@@ -61,7 +61,7 @@ export class InvitationService extends BaseService<
    * @returns The newly created invitation with the generated token.
    */
   async create(dto: InvitationCreateDto): Promise<Invitation> {
-    const jwt = await this.sign(dto);
+    const jwt = await this.sign({ ...dto });
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
