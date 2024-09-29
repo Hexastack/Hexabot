@@ -22,6 +22,7 @@ moduleAlias.addAliases({
 import { AppModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
+import { seedDatabase } from './seeder';
 import { swagger } from './swagger';
 import { sessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
@@ -83,7 +84,10 @@ async function bootstrap() {
     else throw error;
   });
 
-  if (!isProduction) swagger(app);
+  if (!isProduction) {
+    await seedDatabase(app);
+    swagger(app);
+  }
 
   await app.listen(3000);
 }

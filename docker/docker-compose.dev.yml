@@ -1,18 +1,10 @@
 version: "3.8"
 
 services:
-  database-init:
-    build:
-      context: ../api
-    pull_policy: build
-    volumes:
-      - ../api/src:/app/src
-      - ../api/migrations:/app/migrations
-      # - ../api/node_modules:/app/node_modules
-
   api:
     build:
       context: ../api
+      target: development
     pull_policy: build
     ports:
       - ${API_PORT}:3000
@@ -21,7 +13,6 @@ services:
       - ../api/src:/app/src
       - ../api/migrations:/app/migrations
       #- ../api/node_modules:/app/node_modules
-    command: ["npm", "run", "start:debug"]
 
   mongo-express:
     container_name: mongoUi
