@@ -21,14 +21,19 @@ export class ContextVarService extends BaseService<ContextVar> {
     super(repository);
   }
 
+  /**
+   * Retrieves a mapping of context variable names to their corresponding `ContextVar` objects for a given block.
+   *
+   * @param {Block | BlockFull} block - The block containing the capture variables to retrieve context variables for.
+   * @returns {Promise<Record<string, ContextVar>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects.
+   */
   async getContextVarsByBlock(
     block: Block | BlockFull,
   ): Promise<Record<string, ContextVar>> {
-    return (
-      await this.find({
-        name: { $in: block.capture_vars.map((cv) => cv.context_var) },
-      })
-    ).reduce((acc, cv) => {
+    const vars = await this.find({
+      name: { $in: block.capture_vars.map(({ context_var }) => context_var) },
+    });
+    return vars.reduce((acc, cv) => {
       acc[cv.name] = cv;
       return acc;
     }, {});

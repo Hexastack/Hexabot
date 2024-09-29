@@ -70,11 +70,12 @@ export class BotService {
       event.getSenderForeignId(),
     );
     // Process message : Replace tokens with context data and then send the message
+    const recipient = event.getSender();
     const envelope: StdOutgoingEnvelope =
       await this.blockService.processMessage(
         block,
         context,
-        event.getSender().context,
+        recipient.context,
         fallback,
         conservationId,
       );
@@ -88,7 +89,6 @@ export class BotService {
     this.eventEmitter.emit('hook:stats:entry', 'all_messages', 'All Messages');
 
     // Trigger sent message event
-    const recipient = event.getSender();
     const sentMessage: MessageCreateDto = {
       mid: response && 'mid' in response ? response.mid : '',
       message: envelope.message,

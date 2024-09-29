@@ -19,11 +19,7 @@ export interface IContextVarAttributes {
 
 export interface IContextVarStub
   extends IBaseSchema,
-    OmitPopulate<IContextVarAttributes, EntityType.CONTEXT_VAR> {
-  name: string;
-  label: string;
-  permanent: boolean;
-}
+    OmitPopulate<IContextVarAttributes, EntityType.CONTEXT_VAR> {}
 
 export interface IContextVar extends IContextVarStub, IFormat<Format.BASIC> {}
 

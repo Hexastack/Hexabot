@@ -697,7 +697,8 @@
     "supported_message_type_others": "Seuls les messages de modèle générique sont pris en charge.",
     "notification_type_regular": "Son/Vibration",
     "notification_type_silent_push": "Notification à l'écran uniquement",
-    "notification_type_no_push": "Aucune notification"
+    "notification_type_no_push": "Aucune notification",
+    "permanent": "Lorsqu'elle est activée, cette variable sera stockée dans le profil de l'abonné(e) et conservée pour les futures conversations."
   },
   "charts": {
     "messages": "Messages",

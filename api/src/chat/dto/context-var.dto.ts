@@ -8,7 +8,7 @@
  */
 
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ContextVarCreateDto {
   @ApiProperty({ description: 'Context var label', type: String })
@@ -22,6 +22,8 @@ export class ContextVarCreateDto {
   name: string;
 
   @ApiProperty({ description: 'Is context var permanent', type: Boolean })
+  @IsOptional()
+  @IsBoolean()
   permanent?: boolean;
 }
 
