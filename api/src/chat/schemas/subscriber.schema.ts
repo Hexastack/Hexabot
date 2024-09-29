@@ -19,6 +19,7 @@ import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Label } from './label.schema';
 import { ChannelData } from './types/channel';
+import { SubscriberContext } from './types/subscriberContext';
 
 @Schema({ timestamps: true })
 export class SubscriberStub extends BaseSchema {
@@ -107,6 +108,12 @@ export class SubscriberStub extends BaseSchema {
     default: null,
   })
   avatar?: unknown;
+
+  @Prop({
+    type: Object,
+    default: { vars: {} }, //TODO: add this to the migration
+  })
+  context?: SubscriberContext;
 }
 
 @Schema({ timestamps: true })

@@ -14,14 +14,12 @@ import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 export interface IContextVarAttributes {
   name: string;
   label: string;
+  permanent: boolean;
 }
 
 export interface IContextVarStub
   extends IBaseSchema,
-    OmitPopulate<IContextVarAttributes, EntityType.CONTEXT_VAR> {
-  name: string;
-  label: string;
-}
+    OmitPopulate<IContextVarAttributes, EntityType.CONTEXT_VAR> {}
 
 export interface IContextVar extends IContextVarStub, IFormat<Format.BASIC> {}
 

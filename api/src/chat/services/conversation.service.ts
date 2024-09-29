@@ -7,13 +7,15 @@
  * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { FilterQuery } from 'mongoose';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { ContextVarService } from './context-var.service';
+import { SubscriberService } from './subscriber.service';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
@@ -34,6 +36,8 @@ export class ConversationService extends BaseService<
   constructor(
     readonly repository: ConversationRepository,
     private readonly logger: LoggerService,
+    private readonly contextVarService: ContextVarService,
+    private readonly subscriberService: SubscriberService,
   ) {
     super(repository);
   }
@@ -79,12 +83,16 @@ export class ConversationService extends BaseService<
     captureVars: boolean = false,
   ) {
     const msgType = event.getMessageType();
+    const profile = event.getSender();
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getChannel();
     convo.context.text = event.getText();
     convo.context.payload = event.getPayload();
     convo.context.nlp = event.getNLP();
     convo.context.vars = convo.context.vars || {};
+
+    const contextVars =
+      await this.contextVarService.getContextVarsByBlock(next);
 
     // Capture user entry in context vars
     if (captureVars && next.capture_vars && next.capture_vars.length > 0) {
@@ -121,12 +129,18 @@ export class ConversationService extends BaseService<
         contextValue =
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
-        convo.context.vars[capture.context_var] = contextValue;
+        if (contextVars[capture.context_var]?.permanent) {
+          Logger.debug(
+            `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
+          );
+          profile.context.vars[capture.context_var] = contextValue;
+        } else {
+          convo.context.vars[capture.context_var] = contextValue;
+        }
       });
     }
 
     // Store user infos
-    const profile = event.getSender();
     if (profile) {
       // @ts-expect-error : id needs to remain readonly
       convo.context.user.id = profile.id;
@@ -182,6 +196,13 @@ export class ConversationService extends BaseService<
           'Conversation Model : No conversation has been updated',
         );
       }
+
+      //TODO: add check if nothing changed don't update
+
+      await this.subscriberService.updateOne(convo.sender, {
+        context: profile.context,
+      });
+
       return updatedConversation;
     } catch (err) {
       this.logger.error('Conversation Model : Unable to store context', err);

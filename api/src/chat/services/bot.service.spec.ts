@@ -62,15 +62,18 @@ import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { BotService } from './bot.service';
 import { CategoryService } from './category.service';
+import { ContextVarService } from './context-var.service';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 import { BlockRepository } from '../repositories/block.repository';
+import { ContextVarRepository } from '../repositories/context-var.repository';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { MessageRepository } from '../repositories/message.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { BlockFull, BlockModel } from '../schemas/block.schema';
 import { CategoryModel } from '../schemas/category.schema';
+import { ContextVarModel } from '../schemas/context-var.schema';
 import {
   Conversation,
   ConversationFull,
@@ -110,6 +113,7 @@ describe('BlockService', () => {
           NlpEntityModel,
           NlpSampleEntityModel,
           NlpSampleModel,
+          ContextVarModel,
           LanguageModel,
         ]),
       ],
@@ -148,6 +152,8 @@ describe('BlockService', () => {
         NlpSampleEntityService,
         NlpSampleService,
         NlpService,
+        ContextVarService,
+        ContextVarRepository,
         LanguageService,
         {
           provide: PluginService,
