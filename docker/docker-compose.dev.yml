@@ -4,6 +4,7 @@ services:
   database-init:
     build:
       context: ../api
+      target: development
     pull_policy: build
     volumes:
       - ../api/src:/app/src

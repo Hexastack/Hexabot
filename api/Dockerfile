@@ -6,10 +6,6 @@ COPY . .
 
 RUN npm update -g npm
 
-RUN npm config set registry https://registry.npmjs.com/
-
-RUN npm run preinstall
-
 RUN npm i --verbose --maxsockets 6
 
 RUN npm run build
