@@ -72,9 +72,8 @@ export class Ability implements CanActivate {
           .map(([_, value]) => value);
 
         if (
-          permissionsFromRoles.some(
-            (permission) =>
-              permission[modelFromPathname]?.includes(MethodToAction[method]),
+          permissionsFromRoles.some((permission) =>
+            permission[modelFromPathname]?.includes(MethodToAction[method]),
           )
         ) {
           return true;
