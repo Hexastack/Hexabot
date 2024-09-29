@@ -19,8 +19,11 @@ import {
   Patch,
   Query,
   UseInterceptors,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Request } from 'express';
 import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -33,7 +36,9 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { Role, RoleFull, RolePopulate, RoleStub } from '../schemas/role.schema';
+import { User } from '../schemas/user.schema';
 import { RoleService } from '../services/role.service';
+import { UserService } from '../services/user.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('role')
@@ -46,6 +51,7 @@ export class RoleController extends BaseController<
   constructor(
     private readonly roleService: RoleService,
     private readonly logger: LoggerService,
+    private readonly userService: UserService,
   ) {
     super(roleService);
   }
@@ -147,12 +153,22 @@ export class RoleController extends BaseController<
   @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
-    const result = await this.roleService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
+  async deleteOne(@Param('id') id: string, @Req() req: Request) {
+    const userRoles = (req.user as User).roles;
+
+    const associatedUser = await this.userService.findOne({
+      roles: { $in: [id] },
+    });
+    if (userRoles.includes(id)) {
+      throw new ForbiddenException("Your account's role can't be deleted");
+    } else if (associatedUser) {
+      throw new ForbiddenException('Role is associated with other users');
+    } else {
+      const result = await this.roleService.deleteOne(id);
+      if (result.deletedCount === 0) {
+        throw new NotFoundException(`Role with ID ${id} not found`);
+      }
+      return result;
     }
-    return result;
   }
 }

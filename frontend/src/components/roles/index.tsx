@@ -57,8 +57,8 @@ export const Roles = () => {
     },
   );
   const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(t(error.message || "message.internal_server_error"));
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
