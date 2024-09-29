@@ -1,17 +1,6 @@
 version: "3.9"
 
 services:
-  database-init:
-    container_name: database-init
-    image: hexastack/hexabot-api:latest
-    command: sh -c "npm run cache:init && npm run migrate prune && npm run migrate up"
-    env_file: .env
-    networks:
-      - db-network
-    depends_on:
-      mongo:
-        condition: service_healthy
-
   api:
     container_name: api
     image: hexastack/hexabot-api:latest
@@ -26,8 +15,6 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      database-init:
-        condition: service_completed_successfully
     healthcheck:
       test: "wget --spider http://localhost:3000"
       interval: 10s

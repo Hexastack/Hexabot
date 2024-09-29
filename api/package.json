@@ -24,7 +24,6 @@
     "test:cov": "jest --coverage --runInBand --detectOpenHandles --forceExit",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "cache:init": "ts-node -T ./src/database-init.ts",
     "typecheck": "tsc --noEmit",
     "containers:restart": "cd .. && make init && make stop && make start",
     "containers:rebuild": "cd .. && make init && make destroy && make start",
@@ -77,13 +76,13 @@
     "rxjs": "^7.8.1",
     "slug": "^8.2.2",
     "ts-migrate-mongoose": "^3.8.3",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "@nestjs/swagger": "^7.2.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.24",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
-    "@nestjs/swagger": "^7.2.0",
     "@nestjs/testing": "^10.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.6",

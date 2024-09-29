@@ -41,7 +41,7 @@ start: check-env
 
 # Dev command: runs docker-compose with the main file, dev file, and any additional service dev files (if they exist)
 dev: check-env
-	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) up -d
+	@docker compose -f $(FOLDER)/docker-compose.yml -f $(FOLDER)/docker-compose.dev.yml $(call compose_files) $(call compose_dev_files) up --build -d
 
 # Start command: runs docker-compose with the main file and any additional service files
 start-prod: check-env
