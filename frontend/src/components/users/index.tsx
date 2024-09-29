@@ -8,7 +8,7 @@
 
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 
@@ -23,6 +23,7 @@ import { buildRenderPicture } from "@/app-components/tables/columns/renderPictur
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -42,6 +43,7 @@ export const Users = () => {
   const { ssoEnabled } = useConfig();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
       toast.error(error.message || t("message.internal_server_error"));
@@ -136,33 +138,29 @@ export const Users = () => {
       maxWidth: 120,
       field: "state",
       headerName: t("label.status"),
-      resizable: false,
       disableColumnMenu: true,
-      renderCell: (params) => (
-        <Grid justifyContent="center" alignItems="center">
-          <Button
-            variant="contained"
-            color={params.row.state ? "success" : "error"}
-            sx={{
-              paddingX: 2,
-              paddingY: 1,
-            }}
-            onClick={() => {
-              updateUser({
-                id: params.row.id,
-                params: {
-                  state: !params.row.state,
-                },
-              });
-            }}
-            disabled={ssoEnabled}
-          >
-            {t(params.row.state ? "label.enabled" : "label.disabled")}
-          </Button>
-        </Grid>
-      ),
-      headerAlign: "center",
       renderHeader,
+      headerAlign: "left",
+      renderCell: (params) => (
+        <Switch
+          checked={params.value}
+          color="primary"
+          inputProps={{ "aria-label": "primary checkbox" }}
+          disabled={
+            params.row.id === user?.id ||
+            ssoEnabled ||
+            !hasPermission(EntityType.USER, PermissionAction.UPDATE)
+          }
+          onChange={() => {
+            updateUser({
+              id: params.row.id,
+              params: {
+                state: !params.row.state,
+              },
+            });
+          }}
+        />
+      ),
     },
     {
       minWidth: 140,

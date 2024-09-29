@@ -107,6 +107,9 @@ export const ContextVars = () => {
           checked={params.value}
           color="primary"
           inputProps={{ "aria-label": "primary checkbox" }}
+          disabled={
+            !hasPermission(EntityType.CONTEXT_VAR, PermissionAction.UPDATE)
+          }
           onChange={() => {
             updateContextVar({
               id: params.row.id,
