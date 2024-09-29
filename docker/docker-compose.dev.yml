@@ -41,7 +41,10 @@ services:
     build:
       context: ../
       dockerfile: ./frontend/Dockerfile
+      target: development
     pull_policy: build
+    volumes:
+      - ../frontend/:/app/frontend/
 
   widget:
     build:
