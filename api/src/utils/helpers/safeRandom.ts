@@ -7,9 +7,9 @@
  */
 
 /**
- * Return a cryptographically secure random value between 0 and 1 is desired
+ * Return a cryptographically secure random value between 0 and 1
  *
- * @returns A cryptographically secure random value between 0 and 1 is desired
+ * @returns A cryptographically secure random value between 0 and 1
  */
 export const getRadom = (): number =>
   window.crypto.getRandomValues(new Uint32Array(1))[0] * Math.pow(2, -32);
