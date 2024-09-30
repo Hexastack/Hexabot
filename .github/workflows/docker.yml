@@ -58,6 +58,7 @@ jobs:
           file: ./frontend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          target: production
           tags: hexastack/hexabot-ui:latest
 
       - name: Build and push API Docker image
@@ -65,6 +66,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./api/
+          target: production
           file: ./api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true

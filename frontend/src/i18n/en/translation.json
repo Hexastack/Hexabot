@@ -293,6 +293,7 @@
     "assign_labels": "Assign labels",
     "replacement_tokens": "Replacement Tokens",
     "built_in": "Built-in",
+    "permanent": "Permanent",
     "assign_to": "Takeover By",
     "assigned_to": "Assigned To",
     "user_first_name": "First Name",
@@ -699,7 +700,8 @@
     "supported_message_type_others": "Only generic template messages are supported.",
     "notification_type_regular": "Sound/Vibration",
     "notification_type_silent_push": "On-screen notification only",
-    "notification_type_no_push": "No notification"
+    "notification_type_no_push": "No notification",
+    "permanent": "When enabled, the variable value will be stored in the subscriber's profile and retained for future conversations."
   },
   "charts": {
     "messages": "Messages",

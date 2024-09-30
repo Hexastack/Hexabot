@@ -4,14 +4,14 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { styled } from "@mui/material";
+import { useTheme } from "@mui/material";
 import {
   DataGridProps,
   gridClasses,
   GridColDef,
+  GridValidRowModel,
   DataGrid as MuiDataGrid,
 } from "@mui/x-data-grid";
 
@@ -19,22 +19,34 @@ import { renderHeader } from "./columns/renderHeader";
 import { styledPaginationSlots } from "./DataGridStyledPagination";
 import { NoDataOverlay } from "./NoDataOverlay";
 
-const StyledDataGrid = styled(MuiDataGrid)(({ theme }) => ({
-  "& .MuiDataGrid-overlayWrapper": {
-    height: "fit-content",
-  },
+export const StyledDataGrid = <T extends GridValidRowModel = any>(
+  props: DataGridProps<T>,
+) => {
+  const theme = useTheme();
+  const { sx, ...otherProps } = props;
 
-  [`& .${gridClasses.row}`]: {
-    "&:hover": {
-      backgroundColor: theme.palette.background.default,
-      "@media (hover: none)": {
-        backgroundColor: theme.palette.background.default,
-      },
-    },
-  },
-}));
+  return (
+    <MuiDataGrid
+      {...otherProps}
+      sx={{
+        "& .MuiDataGrid-overlayWrapper": {
+          height: "fit-content",
+        },
+        [`& .${gridClasses.row}`]: {
+          "&:hover": {
+            backgroundColor: theme.palette.background.default,
+            "@media (hover: none)": {
+              backgroundColor: theme.palette.background.default,
+            },
+          },
+        },
+        ...sx,
+      }}
+    />
+  );
+};
 
-export const DataGrid = ({
+export const DataGrid = <T extends GridValidRowModel = any>({
   columns,
   rows = [],
   autoHeight = true,
@@ -47,8 +59,8 @@ export const DataGrid = ({
   showColumnVerticalBorder = false,
   sx = { border: "none" },
   ...rest
-}: DataGridProps) => {
-  const styledColumns: GridColDef[] = columns.map((col) => ({
+}: DataGridProps<T>) => {
+  const styledColumns: GridColDef<T>[] = columns.map((col) => ({
     disableColumnMenu: true,
     renderHeader,
     headerAlign: "left",
@@ -57,7 +69,7 @@ export const DataGrid = ({
   }));
 
   return (
-    <StyledDataGrid
+    <StyledDataGrid<T>
       autoHeight={autoHeight}
       disableRowSelectionOnClick={disableRowSelectionOnClick}
       slots={slots}

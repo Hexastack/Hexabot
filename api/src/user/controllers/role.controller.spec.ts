@@ -4,14 +4,14 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Request } from 'express';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -42,7 +42,6 @@ describe('RoleController', () => {
   let roleService: RoleService;
   let permissionService: PermissionService;
   let userService: UserService;
-  let notFoundId: string;
   let roleAdmin: Role;
   let rolePublic: Role;
 
@@ -190,16 +189,50 @@ describe('RoleController', () => {
   });
 
   describe('deleteOne', () => {
-    it('should delete role by id', async () => {
-      const result = await roleController.deleteOne(roleAdmin.id);
-      notFoundId = roleAdmin.id;
-      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+    it("should throw ForbiddenException if the role is part of the user's roles", async () => {
+      const req = { user: { roles: ['role1'] } } as unknown as Request;
+      const roleId = 'role1';
+
+      userService.findOne = jest.fn().mockResolvedValue(null);
+
+      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
-    it('should throw a NotFoundException when attempting to delete a role by id', async () => {
-      await expect(roleController.deleteOne(notFoundId)).rejects.toThrow(
+    it('should throw ForbiddenException if the role is associated with other users', async () => {
+      const req = { user: { roles: ['role2'] } } as unknown as Request;
+      const roleId = 'role1';
+
+      userService.findOne = jest.fn().mockResolvedValue({ id: 'user2' });
+
+      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw NotFoundException if the role is not found', async () => {
+      const req = { user: { roles: ['role2'] } } as unknown as Request;
+      const roleId = 'role1';
+
+      userService.findOne = jest.fn().mockResolvedValue(null);
+      roleService.deleteOne = jest.fn().mockResolvedValue({ deletedCount: 0 });
+
+      await expect(roleController.deleteOne(roleId, req)).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should return the result if the role is successfully deleted', async () => {
+      const req = { user: { roles: ['role2'] } } as unknown as Request;
+      const roleId = 'role1';
+
+      userService.findOne = jest.fn().mockResolvedValue(null);
+      const deleteResult = { deletedCount: 1 };
+      roleService.deleteOne = jest.fn().mockResolvedValue(deleteResult);
+
+      const result = await roleController.deleteOne(roleId, req);
+      expect(result).toEqual(deleteResult);
     });
   });
 
@@ -225,6 +258,13 @@ describe('RoleController', () => {
     });
 
     it('should throw a NotFoundException when attempting to modify a role', async () => {
+      const notFoundId = 'nonexistentRoleId';
+      const roleUpdateDto = { name: 'newRoleName' };
+
+      roleService.updateOne = jest
+        .fn()
+        .mockRejectedValue(new NotFoundException());
+
       await expect(
         roleController.updateOne(notFoundId, roleUpdateDto),
       ).rejects.toThrow(NotFoundException);

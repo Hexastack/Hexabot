@@ -4,7 +4,6 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -52,6 +51,7 @@ import {
   contextBlankInstance,
   contextEmailVarInstance,
   contextGetStartedInstance,
+  subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
 import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
 import {
@@ -69,6 +69,7 @@ import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
@@ -436,6 +437,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 0 },
         },
+        subscriberContextBlankInstance,
         false,
         'conv_id',
       );
@@ -469,6 +471,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 2 },
         },
+        subscriberContextBlankInstance,
         false,
         'conv_id',
       );
@@ -513,9 +516,20 @@ describe('BlockService', () => {
       skip: { '1': 0 },
       attempt: 0,
     };
+    const subscriberContext: SubscriberContext = {
+      ...subscriberContextBlankInstance,
+      vars: {
+        phone: '123456789',
+      },
+    };
 
     it('should process empty text', () => {
-      const result = blockService.processText('', context, settings);
+      const result = blockService.processText(
+        '',
+        context,
+        subscriberContext,
+        settings,
+      );
       expect(result).toEqual('');
     });
 
@@ -524,6 +538,7 @@ describe('BlockService', () => {
       const result = blockService.processText(
         translation.en,
         context,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual(translation.fr);
@@ -533,6 +548,7 @@ describe('BlockService', () => {
       const result = blockService.processText(
         '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
         contextEmailVarInstance,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual('John Doe, email : email@example.com');
@@ -540,17 +556,19 @@ describe('BlockService', () => {
 
     it('should process text replacements with context vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
+        '{context.user.first_name} {context.user.last_name}, phone : {context.vars.phone}',
         contextEmailVarInstance,
+        subscriberContext,
         settings,
       );
-      expect(result).toEqual('John Doe, email : email@example.com');
+      expect(result).toEqual('John Doe, phone : 123456789');
     });
 
     it('should process text replacements with settings contact infos', () => {
       const result = blockService.processText(
         'Trying the settings : the name of company is <<{contact.company_name}>>',
         contextBlankInstance,
+        subscriberContext,
         settings,
       );
       expect(result).toEqual(

@@ -4,7 +4,6 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { Injectable } from '@nestjs/common';
@@ -70,10 +69,12 @@ export class BotService {
       event.getSenderForeignId(),
     );
     // Process message : Replace tokens with context data and then send the message
+    const recipient = event.getSender();
     const envelope: StdOutgoingEnvelope =
       await this.blockService.processMessage(
         block,
         context,
+        recipient.context,
         fallback,
         conservationId,
       );
@@ -87,7 +88,6 @@ export class BotService {
     this.eventEmitter.emit('hook:stats:entry', 'all_messages', 'All Messages');
 
     // Trigger sent message event
-    const recipient = event.getSender();
     const sentMessage: MessageCreateDto = {
       mid: response && 'mid' in response ? response.mid : '',
       message: envelope.message,

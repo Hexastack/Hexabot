@@ -4,7 +4,6 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { Injectable } from '@nestjs/common';
@@ -22,6 +21,7 @@ import { PluginType } from '@/plugins/types';
 import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
+import { getRandom } from '@/utils/helpers/safeRandom';
 
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
@@ -34,6 +34,7 @@ import {
 } from '../schemas/types/message';
 import { NlpPattern, Pattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 @Injectable()
 export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
@@ -300,22 +301,19 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   processTokenReplacements(
     text: string,
     context: Context,
+    subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
+    const vars = { ...subscriberContext.vars, ...context.vars };
     // Replace context tokens with their values
-    Object.keys(context.vars || {}).forEach((key) => {
-      if (
-        typeof context.vars[key] === 'string' &&
-        context.vars[key].indexOf(':') !== -1
-      ) {
-        const tmp = context.vars[key].split(':');
-        context.vars[key] = tmp[1];
+    Object.keys(vars).forEach((key) => {
+      if (typeof vars[key] === 'string' && vars[key].indexOf(':') !== -1) {
+        const tmp = vars[key].split(':');
+        vars[key] = tmp[1];
       }
       text = text.replace(
         '{context.vars.' + key + '}',
-        typeof context.vars[key] === 'string'
-          ? context.vars[key]
-          : JSON.stringify(context.vars[key]),
+        typeof vars[key] === 'string' ? vars[key] : JSON.stringify(vars[key]),
       );
     });
 
@@ -367,14 +365,24 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
    *
    * @returns The text message translated and tokens being replaces with values
    */
-  processText(text: string, context: Context, settings: Settings): string {
+  processText(
+    text: string,
+    context: Context,
+    subscriberContext: SubscriberContext,
+    settings: Settings,
+  ): string {
     // Translate
     text = this.i18n.t(text, {
       lang: context.user.language,
       defaultValue: text,
     });
     // Replace context tokens
-    text = this.processTokenReplacements(text, context, settings);
+    text = this.processTokenReplacements(
+      text,
+      context,
+      subscriberContext,
+      settings,
+    );
     return text;
   }
 
@@ -387,7 +395,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
    */
   getRandom<T>(array: T[]): T {
     return Array.isArray(array)
-      ? array[Math.floor(Math.random() * array.length)]
+      ? array[Math.floor(getRandom() * array.length)]
       : array;
   }
 
@@ -421,6 +429,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   async processMessage(
     block: Block | BlockFull,
     context: Context,
+    subscriberContext: SubscriberContext,
     fallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
@@ -438,6 +447,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       const text = this.processText(
         this.getRandom(blockMessage),
         context,
+        subscriberContext,
         settings,
       );
       const envelope: StdOutgoingEnvelope = {
@@ -454,12 +464,22 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         const envelope: StdOutgoingEnvelope = {
           format: OutgoingMessageFormat.quickReplies,
           message: {
-            text: this.processText(blockMessage.text, context, settings),
+            text: this.processText(
+              blockMessage.text,
+              context,
+              subscriberContext,
+              settings,
+            ),
             quickReplies: blockMessage.quickReplies.map((qr: StdQuickReply) => {
               return qr.title
                 ? {
                     ...qr,
-                    title: this.processText(qr.title, context, settings),
+                    title: this.processText(
+                      qr.title,
+                      context,
+                      subscriberContext,
+                      settings,
+                    ),
                   }
                 : qr;
             }),
@@ -474,12 +494,22 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         const envelope: StdOutgoingEnvelope = {
           format: OutgoingMessageFormat.buttons,
           message: {
-            text: this.processText(blockMessage.text, context, settings),
+            text: this.processText(
+              blockMessage.text,
+              context,
+              subscriberContext,
+              settings,
+            ),
             buttons: blockMessage.buttons.map((btn) => {
               return btn.title
                 ? {
                     ...btn,
-                    title: this.processText(btn.title, context, settings),
+                    title: this.processText(
+                      btn.title,
+                      context,
+                      subscriberContext,
+                      settings,
+                    ),
                   }
                 : btn;
             }),

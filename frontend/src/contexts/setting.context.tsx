@@ -4,17 +4,15 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
+import { useLoadSettings } from "@/hooks/entities/auth-hooks";
 import { ISetting } from "@/types/setting.types";
 
-import { useLoadSettings } from "./entities/auth-hooks";
-
-const SettingsContext = createContext<{
+export const SettingsContext = createContext<{
   settings: { [key: string]: ISetting[] } | undefined;
 }>({ settings: undefined });
 
@@ -40,13 +38,4 @@ export const SettingsProvider = ({
       {children}
     </SettingsContext.Provider>
   );
-};
-
-export const useSetting = (type: string, label: string) => {
-  const { settings } = useContext(SettingsContext);
-  const value = settings?.[type]?.find(
-    (setting) => setting.label === label,
-  )?.value;
-
-  return value;
 };

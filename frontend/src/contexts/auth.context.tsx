@@ -4,31 +4,32 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import getConfig from "next/config";
 import { useRouter } from "next/router";
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import { useState, useEffect, createContext, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  useQueryClient,
+  useQuery,
   QueryObserverResult,
   RefetchOptions,
   UseMutateFunction,
-  useQuery,
-  useQueryClient,
 } from "react-query";
 
 import { Progress } from "@/app-components/displays/Progress";
+import { useLogout } from "@/hooks/entities/auth-hooks";
+import { useApiClient } from "@/hooks/useApiClient";
+import {
+  useLogoutRedirection,
+  CURRENT_USER_KEY,
+  PUBLIC_PATHS,
+} from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
 import { getFromQuery } from "@/utils/URL";
-
-import { useLogout } from "./entities/auth-hooks";
-import { useApiClient } from "./useApiClient";
-import { useToast } from "./useToast";
-
-const { publicRuntimeConfig } = getConfig();
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -42,7 +43,7 @@ export interface AuthContextValue {
   error: Error | null;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 AuthContext.displayName = "AuthContext";
 
@@ -50,14 +51,7 @@ export interface AuthProviderProps {
   children: ReactNode;
 }
 
-const PUBLIC_PATHS = [
-  "/login/[[...token]]",
-  "/register/[token]",
-  "/reset/[token]",
-  "/reset",
-];
-
-export const CURRENT_USER_KEY = "current-user";
+const { publicRuntimeConfig } = getConfig();
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
@@ -114,7 +108,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const isAuthenticated = !!user;
 
-  React.useEffect(() => {
+  useEffect(() => {
     const search = location.search;
 
     setSearch(search);
@@ -138,34 +132,4 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error(`useAuth must be used within an AuthProvider`);
-  }
-
-  return context;
-};
-
-export const useLogoutRedirection = () => {
-  const router = useRouter();
-  const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
-  const logoutRedirection = async (fullReload: boolean = false) => {
-    if (!hasPublicPath) {
-      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(
-        router.pathname,
-      )}`;
-
-      if (fullReload) {
-        window.location.replace(redirectUrl);
-      } else {
-        await router.replace(redirectUrl);
-      }
-    }
-  };
-
-  return { logoutRedirection };
 };

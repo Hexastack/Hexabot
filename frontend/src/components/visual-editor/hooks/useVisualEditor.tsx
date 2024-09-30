@@ -4,14 +4,10 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { debounce } from "@mui/material";
-import createEngine, {
-  DefaultLinkModel,
-  DiagramModel,
-} from "@projectstorm/react-diagrams";
+import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
 import * as React from "react";
 import { createContext, useContext } from "react";
 
@@ -26,6 +22,8 @@ import {
 } from "@/types/visual-editor.types";
 
 import { ZOOM_LEVEL } from "../constants";
+import { AdvancedLinkFactory } from "../v2/AdvancedLink/AdvancedLinkFactory";
+import { AdvancedLinkModel } from "../v2/AdvancedLink/AdvancedLinkModel";
 import { CustomCanvasWidget } from "../v2/CustomCanvasWidget";
 import { CustomDeleteItemsAction } from "../v2/CustomDiagramNodes/CustomDeleteAction";
 import { NodeFactory } from "../v2/CustomDiagramNodes/NodeFactory";
@@ -87,6 +85,8 @@ const buildDiagram = ({
   model = new DiagramModel();
 
   engine.getNodeFactories().registerFactory(new NodeFactory());
+  engine.getLinkFactories().registerFactory(new AdvancedLinkFactory());
+
   engine
     .getActionEventBus()
     .registerAction(new CustomDeleteItemsAction({ callback: onRemoveNode }));
@@ -139,12 +139,12 @@ const buildDiagram = ({
         }
       }
     };
-    const links: DefaultLinkModel[] = [];
+    const links: AdvancedLinkModel[] = [];
 
     data.forEach((datum, index) => {
       if ("nextBlocks" in datum && Array.isArray(datum.nextBlocks)) {
         datum.nextBlocks?.forEach((nextBlock) => {
-          const link = new DefaultLinkModel();
+          const link = new AdvancedLinkModel();
           const sourceNode = nodes[index];
           const targetNode = nodes.find(
             // @ts-ignore
@@ -164,7 +164,7 @@ const buildDiagram = ({
 
       //recursive link
       if ("attachedBlock" in datum && datum.attachedBlock) {
-        const link = new DefaultLinkModel({
+        const link = new AdvancedLinkModel({
           color: "#019185",
           selectedColor: "#019185",
           type: "default",

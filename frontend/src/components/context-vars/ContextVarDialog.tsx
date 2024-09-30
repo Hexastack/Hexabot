@@ -4,12 +4,18 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+  FormHelperText,
+  Switch,
+} from "@mui/material";
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
@@ -58,6 +64,7 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     setValue,
     handleSubmit,
     formState: { errors },
+    control,
   } = useForm<IContextVarAttributes>({
     defaultValues: { name: data?.name || "", label: data?.label || "" },
   });
@@ -128,6 +135,19 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
                 helperText={errors.name ? errors.name.message : null}
                 InputLabelProps={{ shrink: true }}
               />
+            </ContentItem>
+            <ContentItem>
+              <Controller
+                name="permanent"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Switch {...field} checked={field.value} />}
+                    label={t("label.permanent")}
+                  />
+                )}
+              />
+              <FormHelperText>{t("help.permanent")}</FormHelperText>
             </ContentItem>
           </ContentContainer>
         </DialogContent>

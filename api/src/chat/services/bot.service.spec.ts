@@ -4,7 +4,6 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -62,15 +61,18 @@ import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { BotService } from './bot.service';
 import { CategoryService } from './category.service';
+import { ContextVarService } from './context-var.service';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 import { BlockRepository } from '../repositories/block.repository';
+import { ContextVarRepository } from '../repositories/context-var.repository';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { MessageRepository } from '../repositories/message.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { BlockFull, BlockModel } from '../schemas/block.schema';
 import { CategoryModel } from '../schemas/category.schema';
+import { ContextVarModel } from '../schemas/context-var.schema';
 import {
   Conversation,
   ConversationFull,
@@ -110,6 +112,7 @@ describe('BlockService', () => {
           NlpEntityModel,
           NlpSampleEntityModel,
           NlpSampleModel,
+          ContextVarModel,
           LanguageModel,
         ]),
       ],
@@ -148,6 +151,8 @@ describe('BlockService', () => {
         NlpSampleEntityService,
         NlpSampleService,
         NlpService,
+        ContextVarService,
+        ContextVarRepository,
         LanguageService,
         {
           provide: PluginService,

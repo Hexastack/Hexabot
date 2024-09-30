@@ -4,12 +4,11 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +23,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
@@ -52,6 +52,14 @@ export const ContextVars = () => {
       params: searchPayload,
     },
   );
+  const { mutateAsync: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
+    onError: () => {
+      toast.error(t("message.internal_server_error"));
+    },
+    onSuccess() {
+      toast.success(t("message.success_save"));
+    },
+  });
   const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -86,6 +94,30 @@ export const ContextVars = () => {
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",
+    },
+    {
+      maxWidth: 120,
+      field: "permanent",
+      headerName: t("label.permanent"),
+      disableColumnMenu: true,
+      renderHeader,
+      headerAlign: "left",
+      renderCell: (params) => (
+        <Switch
+          checked={params.value}
+          color="primary"
+          inputProps={{ "aria-label": "primary checkbox" }}
+          disabled={
+            !hasPermission(EntityType.CONTEXT_VAR, PermissionAction.UPDATE)
+          }
+          onChange={() => {
+            updateContextVar({
+              id: params.row.id,
+              params: { permanent: !params.value },
+            });
+          }}
+        />
+      ),
     },
     {
       maxWidth: 140,

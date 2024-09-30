@@ -4,7 +4,6 @@
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- * 3. SaaS Restriction: This software, or any derivative of it, may not be used to offer a competing product or service (SaaS) without prior written consent from Hexastack. Offering the software as a service or using it in a commercial cloud environment without express permission is strictly prohibited.
  */
 
 import {
@@ -19,8 +18,11 @@ import {
   Patch,
   Query,
   UseInterceptors,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Request } from 'express';
 import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -33,7 +35,9 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { Role, RoleFull, RolePopulate, RoleStub } from '../schemas/role.schema';
+import { User } from '../schemas/user.schema';
 import { RoleService } from '../services/role.service';
+import { UserService } from '../services/user.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('role')
@@ -46,6 +50,7 @@ export class RoleController extends BaseController<
   constructor(
     private readonly roleService: RoleService,
     private readonly logger: LoggerService,
+    private readonly userService: UserService,
   ) {
     super(roleService);
   }
@@ -147,12 +152,22 @@ export class RoleController extends BaseController<
   @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
-  async deleteOne(@Param('id') id: string) {
-    const result = await this.roleService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
+  async deleteOne(@Param('id') id: string, @Req() req: Request) {
+    const userRoles = (req.user as User).roles;
+
+    const associatedUser = await this.userService.findOne({
+      roles: { $in: [id] },
+    });
+    if (userRoles.includes(id)) {
+      throw new ForbiddenException("Your account's role can't be deleted");
+    } else if (associatedUser) {
+      throw new ForbiddenException('Role is associated with other users');
+    } else {
+      const result = await this.roleService.deleteOne(id);
+      if (result.deletedCount === 0) {
+        throw new NotFoundException(`Role with ID ${id} not found`);
+      }
+      return result;
     }
-    return result;
   }
 }
