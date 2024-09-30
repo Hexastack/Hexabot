@@ -13,11 +13,11 @@ interface Point {
   y: number;
 }
 
-const createCurvedPath = (start: Point, end: Point) => {
-  const controlPoint1X = start.x + 220;
-  const controlPoint1Y = start.y - 250;
-  const controlPoint2X = end.x - 250;
-  const controlPoint2Y = end.y - 250;
+const createCurvedPath = (start: Point, end: Point, nodeHeight: number) => {
+  const controlPoint1X = start.x + nodeHeight - 20;
+  const controlPoint1Y = start.y - nodeHeight;
+  const controlPoint2X = end.x - nodeHeight - 20;
+  const controlPoint2Y = end.y - nodeHeight;
 
   return `M ${start.x},${start.y} C ${controlPoint1X},${controlPoint1Y} ${controlPoint2X},${controlPoint2Y} ${end.x},${end.y}`;
 };
@@ -77,8 +77,14 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
         x: targetPortPosition.x + 20,
         y: targetPortPosition.y + 20,
       };
+      const targetPortHeight = model.getTargetPort().height;
+      const targetNdeHeight =
+        (model.getTargetPort().getPosition().y -
+          model.getTargetPort().getNode().getPosition().y) *
+          2 +
+        targetPortHeight;
 
-      path = createCurvedPath(startPoint, endPoint);
+      path = createCurvedPath(startPoint, endPoint, targetNdeHeight);
     }
 
     return (
