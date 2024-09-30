@@ -23,3 +23,11 @@ jest.mock('connect-mongo', () => ({
     }),
   })),
 }));
+
+jest.mock('@resvg/resvg-js', () => {
+  return {
+    Resvg: jest.fn().mockImplementation(() => ({
+      render: jest.fn().mockReturnValue({ asPng: jest.fn() }),
+    })),
+  };
+});
