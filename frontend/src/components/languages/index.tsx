@@ -8,7 +8,7 @@
 
 import { Flag } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
@@ -93,13 +93,6 @@ export const Languages = () => {
     EntityType.LANGUAGE,
     [
       {
-        label: ActionColumnLabel.Toggle,
-        action: (row) => toggleDefault(row),
-        requires: [PermissionAction.UPDATE],
-        getState: (row) => row.isDefault,
-        helperText: t("button.mark_as_default"),
-      },
-      {
         label: ActionColumnLabel.Edit,
         action: (row) => editDialogCtl.openDialog(row),
         requires: [PermissionAction.UPDATE],
@@ -133,21 +126,34 @@ export const Languages = () => {
     },
     {
       flex: 1,
-      field: "isDefault",
-      headerName: t("label.is_default"),
-      disableColumnMenu: true,
-      renderHeader,
-      headerAlign: "left",
-      valueGetter: (value) => (value ? t("label.yes") : t("label.no")),
-    },
-    {
-      flex: 1,
       field: "isRTL",
       headerName: t("label.is_rtl"),
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",
       valueGetter: (value) => (value ? t("label.yes") : t("label.no")),
+    },
+    {
+      maxWidth: 120,
+      field: "isDefault",
+      headerName: t("label.is_default"),
+      disableColumnMenu: true,
+      renderHeader,
+      headerAlign: "left",
+      renderCell: (params) => (
+        <Switch
+          checked={params.value}
+          color="primary"
+          inputProps={{ "aria-label": "primary checkbox" }}
+          disabled={
+            params.value ||
+            !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)
+          }
+          onChange={() => {
+            toggleDefault(params.row);
+          }}
+        />
+      ),
     },
     {
       minWidth: 140,

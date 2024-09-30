@@ -42,7 +42,6 @@ export class UserStub extends BaseSchema {
 
   @Prop({
     type: String,
-    unique: true,
     required: true,
   })
   password: string;
