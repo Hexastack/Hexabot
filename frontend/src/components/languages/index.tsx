@@ -146,6 +146,7 @@ export const Languages = () => {
           color="primary"
           inputProps={{ "aria-label": "primary checkbox" }}
           disabled={
+            params.value ||
             !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)
           }
           onChange={() => {
