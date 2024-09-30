@@ -26,6 +26,7 @@ import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { EntityType } from "@/services/types";
+import { getRadom } from "@/utils/safeRandom";
 
 import { borderLine, theme } from "./themes/theme";
 
@@ -84,7 +85,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   const [randomSeed, setRandomSeed] = useState<string>("randomseed");
 
   useEffect(() => {
-    setRandomSeed(Math.random().toString());
+    setRandomSeed(getRadom().toString());
   }, [user]);
 
   return (

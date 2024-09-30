@@ -6,15 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { getRadom } from "./safeRandom";
-
-export const generateId = () => {
-  const d =
-    typeof performance === "undefined" ? Date.now() : performance.now() * 1000;
-
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (getRadom() * 16 + d) % 16 | 0;
-
-    return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
-  });
-};
+/**
+ * Return a cryptographically secure random value between 0 and 1 is desired
+ *
+ * @returns A cryptographically secure random value between 0 and 1 is desired
+ */
+export const getRadom = (): number =>
+  window.crypto.getRandomValues(new Uint32Array(1))[0] * Math.pow(2, -32);
