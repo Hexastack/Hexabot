@@ -27,6 +27,7 @@ import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { getRandom } from '@/utils/helpers/safeRandom';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -126,7 +127,7 @@ describe('AuthController', () => {
     role = await roleService.findOne({});
     baseUser = {
       email: 'test@testing.com',
-      password: Math.random().toString(),
+      password: getRandom().toString(),
       username: 'test',
       first_name: 'test',
       last_name: 'test',

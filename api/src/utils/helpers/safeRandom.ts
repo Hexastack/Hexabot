@@ -5,16 +5,12 @@
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+import crypto from 'crypto';
 
-import { getRandom } from "./safeRandom";
-
-export const generateId = () => {
-  const d =
-    typeof performance === "undefined" ? Date.now() : performance.now() * 1000;
-
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (getRandom() * 16 + d) % 16 | 0;
-
-    return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
-  });
-};
+/**
+ * Return a cryptographically secure random value between 0 and 1
+ *
+ * @returns A cryptographically secure random value between 0 and 1
+ */
+export const getRandom = (): number =>
+  crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;

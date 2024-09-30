@@ -21,6 +21,7 @@ import { PluginType } from '@/plugins/types';
 import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
+import { getRandom } from '@/utils/helpers/safeRandom';
 
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
@@ -394,7 +395,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
    */
   getRandom<T>(array: T[]): T {
     return Array.isArray(array)
-      ? array[Math.floor(Math.random() * array.length)]
+      ? array[Math.floor(getRandom() * array.length)]
       : array;
   }
 
