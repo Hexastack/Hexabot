@@ -12,5 +12,5 @@ import crypto from 'crypto';
  *
  * @returns A cryptographically secure random value between 0 and 1
  */
-export const getRadom = (): number =>
+export const getRandom = (): number =>
   crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;

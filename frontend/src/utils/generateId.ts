@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { getRadom } from "./safeRandom";
+import { getRandom } from "./safeRandom";
 
 export const generateId = () => {
   const d =
     typeof performance === "undefined" ? Date.now() : performance.now() * 1000;
 
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (getRadom() * 16 + d) % 16 | 0;
+    const r = (getRandom() * 16 + d) % 16 | 0;
 
     return (c == "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
