@@ -194,6 +194,8 @@ export const Contents = () => {
                             id: params.row.id,
                             params: {
                               status: !params.row.status,
+                              title: params.row.title,
+                              entity: (params.row.entity as any).id,
                             },
                           });
                         }}
