@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useState, useEffect, createContext } from "react";
 
-const ConfigContext = createContext<IConfig | null>(null);
+export const ConfigContext = createContext<IConfig | null>(null);
 
 export interface IConfig {
   apiUrl: string;
@@ -34,14 +34,4 @@ export const ConfigProvider = ({ children }) => {
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
   );
-};
-
-export const useConfig = () => {
-  const context = useContext(ConfigContext);
-
-  if (!context) {
-    throw new Error("useConfig must be used within a ConfigProvider");
-  }
-
-  return context;
 };
