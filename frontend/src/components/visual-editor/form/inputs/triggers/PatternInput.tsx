@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Grid, MenuItem, Typography } from "@mui/material";
+import { Box, Grid, MenuItem, TextFieldProps, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -57,9 +57,15 @@ type PatternInputProps = {
   onChange: (pattern: Pattern) => void;
   block?: IBlockFull;
   idx: number;
+  getInputProps?: (index: number) => TextFieldProps;
 };
 
-const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
+const PatternInput: FC<PatternInputProps> = ({
+  value,
+  onChange,
+  idx,
+  getInputProps,
+}) => {
   const { t } = useTranslation();
   const {
     register,
@@ -272,6 +278,7 @@ const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
         ) : null}
         {typeof value === "string" && patternType === "text" ? (
           <Input
+            {...(getInputProps ? getInputProps(idx) : null)}
             label={t("label.text")}
             value={value}
             onChange={(e) => onChange(e.target.value)}

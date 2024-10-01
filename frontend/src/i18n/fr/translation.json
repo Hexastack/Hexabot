@@ -102,7 +102,8 @@
     "attachment_not_found": "La pièce jointe est introuvable",
     "title_length_exceeded": "Vous avez atteint la longueur maximale",
     "no_label_found": "Aucune étiquette trouvée",
-    "code_is_required": "Le code est requis"
+    "code_is_required": "Le code est requis",
+    "text_is_required": "Texte requis"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
