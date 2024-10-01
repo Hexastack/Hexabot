@@ -9,10 +9,11 @@
 import { Grid, MenuItem } from "@mui/material";
 import { FC } from "react";
 import { FieldPath, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { IBlockAttributes } from "@/types/block.types";
 import {
@@ -44,7 +45,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
   disablePayload = false,
   fieldPath,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const types: { value: ButtonType; label: string }[] = [
     { value: ButtonType.postback, label: t("label.postback") },
     { value: ButtonType.web_url, label: t("label.web_url") },

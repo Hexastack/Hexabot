@@ -11,12 +11,13 @@ import { Grid, Paper, Tab, Tabs } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useFind } from "@/hooks/crud/useFind";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import {
@@ -60,7 +61,7 @@ export const Nlp = ({
       },
     );
   };
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: createSample } = useCreate<
     EntityType.NLP_SAMPLE,

@@ -13,7 +13,7 @@ import { Box, Button, Chip, Grid, Slide } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -30,6 +30,7 @@ import { useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import { NlpLookups } from "@/types/nlp-entity.types";
@@ -46,7 +47,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const addNlpValueDialogCtl = useDialog<INlpValue>(false);
   const hasPermission = useHasPermission();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { data: nlpEntity, refetch: refetchEntity } = useGet(entityId, {
     entity: EntityType.NLP_ENTITY,

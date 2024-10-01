@@ -11,7 +11,6 @@ import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React from "react";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -27,6 +26,8 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TTranslationKeys } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -37,7 +38,7 @@ import { PermissionsDialog } from "./PermissionsDialog";
 import { RoleDialog } from "./RoleDialog";
 
 export const Roles = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const addDialogCtl = useDialog<IRole>(false);
   const editDialogCtl = useDialog<IRole>(false);
@@ -57,7 +58,12 @@ export const Roles = () => {
   );
   const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
     onError: (error) => {
-      toast.error(t(error.message || "message.internal_server_error"));
+      toast.error(
+        t(
+          (error.message as TTranslationKeys) ||
+            "message.internal_server_error",
+        ),
+      );
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();

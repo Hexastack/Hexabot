@@ -9,10 +9,11 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import { Button, Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { DialogTitle } from "@/app-components/dialogs";
 import { useDialog } from "@/hooks/useDialog";
+import { useTranslate } from "@/hooks/useTranslate";
 import {
   AttachmentAttrs,
   FileType,
@@ -68,7 +69,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     return <audio controls src={props.url} />;
   },
   [FileType.file]: (props: AttachmentInterface) => {
-    const { t } = useTranslation();
+    const { t } = useTranslate();
 
     return (
       <div>

@@ -9,10 +9,11 @@
 import { Grid, MenuItem } from "@mui/material";
 import { FC, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { QuickReplyType, StdQuickReply } from "@/types/message.types";
 
@@ -27,7 +28,7 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
   onChange,
   idx,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [quickReplyType, setQuickReplyType] = useState(value.content_type);
   const {
     register,

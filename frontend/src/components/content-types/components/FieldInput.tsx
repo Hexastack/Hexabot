@@ -16,10 +16,11 @@ import {
   UseFormSetValue,
   useWatch,
 } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { Input } from "@/app-components/inputs/Input";
+import { useTranslate } from "@/hooks/useTranslate";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
 import { slugify } from "@/utils/string";
 
@@ -34,7 +35,7 @@ export const FieldInput = ({
   control: Control<Partial<IContentType>>;
   setValue: UseFormSetValue<Partial<IContentType>>;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const label = useWatch({
     control: props.control,
     name: `fields.${index}.label`,

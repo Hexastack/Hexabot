@@ -13,9 +13,9 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
-import { useTranslation } from "react-i18next";
 
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { EntityType } from "@/services/types";
 
@@ -30,7 +30,7 @@ export const SubscribersList = (props: {
   assignedTo: AssignedTo;
 }) => {
   const { apiUrl } = useConfig();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslate();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
     useInfiniteLiveSubscribers(props);

@@ -10,7 +10,7 @@ import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
+
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -26,6 +26,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { IContentType } from "@/types/content-type.types";
@@ -36,7 +37,7 @@ import { ContentTypeDialog } from "./ContentTypeDialog";
 import { EditContentTypeFieldsDialog } from "./EditContentTypeFieldsDialog";
 
 export const ContentTypes = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const router = useRouter();
   // Dialog Controls

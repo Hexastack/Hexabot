@@ -8,12 +8,13 @@
 
 import { Typography } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes, ICustomBlockTemplate } from "@/types/block.types";
 import { ILabelFull } from "@/types/label.types";
@@ -24,7 +25,7 @@ import ContextVarsInput from "./inputs/options/ContextVarsInput";
 import LocalFallbackInput from "./inputs/options/LocalFallbackInput";
 
 export const OptionsForm = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const block = useBlock();
   const { control, register, watch } = useFormContext<IBlockAttributes>();
   const computed = watch("options.typing");

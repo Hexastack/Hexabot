@@ -8,11 +8,12 @@
 
 import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
 
@@ -32,7 +33,7 @@ export const ContentPostbackInput = ({
   value,
   onChange,
 }: ContentPostbackInputProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const block = useBlock();
   const { data: contents } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },

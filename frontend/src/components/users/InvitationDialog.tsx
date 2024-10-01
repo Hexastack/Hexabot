@@ -11,7 +11,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
@@ -21,6 +21,7 @@ import { Input } from "@/app-components/inputs/Input";
 import { useSendInvitation } from "@/hooks/entities/invitation-hooks";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { EntityType, Format } from "@/services/types";
 import { IInvitationAttributes } from "@/types/invitation.types";
@@ -34,7 +35,7 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: sendInvitation } = useSendInvitation({
     onSuccess: () => {

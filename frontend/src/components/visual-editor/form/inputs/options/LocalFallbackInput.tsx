@@ -11,11 +11,12 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
+import { useTranslate } from "@/hooks/useTranslate";
 import { BlockFallbackOptions, IBlockAttributes } from "@/types/block.types";
 
 type LocalFallbackProps = {
@@ -31,7 +32,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
       message: [""],
     },
   );
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     register,
     formState: { errors },

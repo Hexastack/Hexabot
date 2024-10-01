@@ -10,17 +10,18 @@ import ChatIcon from "@mui/icons-material/Chat";
 import { Avatar, Box, Typography } from "@mui/material";
 import UiChatWidget from "hexabot-widget/src/UiChatWidget";
 import { ReactElement } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { VisualEditor } from "@/components/visual-editor";
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import i18n from "@/i18n/config";
 import { Layout } from "@/layout";
 import { EntityType } from "@/services/types";
 
 const CustomWidgetHeader = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Box display="flex" alignItems="center" ml={2}>

@@ -24,7 +24,6 @@ import {
 } from "@mui/material";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -34,6 +33,7 @@ import Selectable from "@/app-components/inputs/Selectable";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
@@ -55,7 +55,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   sample,
   submitForm,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { data: entities, refetch: refetchEntities } = useFind(
     {
       entity: EntityType.NLP_ENTITY,
@@ -435,7 +435,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
           >
             {!selection?.value
               ? t("button.select_some_text")
-              : t("button.add_nlp_entity", { 0: selection.value })}
+              : t("button.add_nlp_entity", { defaultValue: selection.value })}
           </Button>
 
           <Button

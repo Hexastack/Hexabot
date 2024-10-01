@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { FC, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -25,6 +25,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import {
   ITranslation,
@@ -47,7 +48,7 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
       hasCount: false,
     },
   );
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: updateTranslation } = useUpdate(EntityType.TRANSLATION, {
     onError: () => {

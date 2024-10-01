@@ -11,7 +11,7 @@ import DeleteIcon from "@mui/icons-material/Close";
 import { Grid, IconButton, MenuItem, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -26,6 +26,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import { ILabel } from "@/types/label.types";
@@ -35,7 +36,7 @@ import { getDateTimeFormatter } from "@/utils/date";
 import { EditSubscriberDialog } from "./EditSubscriberDialog";
 
 export const Subscribers = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const editDialogCtl = useDialog<{
     labels: ILabel[];
     subscriber: ISubscriber;

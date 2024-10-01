@@ -9,12 +9,13 @@
 import { Box, Grid, MenuItem, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import {
   IBlockAttributes,
@@ -60,7 +61,7 @@ type PatternInputProps = {
 };
 
 const PatternInput: FC<PatternInputProps> = ({ value, onChange, idx }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     register,
     formState: { errors },

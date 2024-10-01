@@ -10,11 +10,12 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FolderCopyIcon from "@mui/icons-material/FolderCopy";
 import { Box, Button, Divider, Grid, styled, Typography } from "@mui/material";
 import { ChangeEvent, DragEvent, FC, useState } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { useUpload } from "@/hooks/crud/useUpload";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IAttachment } from "@/types/attachment.types";
 
@@ -76,7 +77,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
   );
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const { toast } = useToast();
   const { mutateAsync: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {

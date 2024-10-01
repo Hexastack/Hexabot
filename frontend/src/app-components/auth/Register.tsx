@@ -22,10 +22,11 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { IRegisterAttributes } from "@/types/auth/register.types";
 import { JWT } from "@/utils/Jwt";
@@ -49,7 +50,7 @@ const DEFAULT_VALUES: IRegisterAttributes = {
 type TRegisterExtendedPayload = IRegisterAttributes & { password2: string };
 
 export const Register = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const router = useRouter();
   const { toast } = useToast();
   const { mutateAsync: acceptInvite, isLoading } = useAcceptInvite({

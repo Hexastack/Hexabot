@@ -9,8 +9,8 @@
 import Home from "@mui/icons-material/Home";
 import { Grid, GridProps } from "@mui/material";
 import { PropsWithChildren } from "react";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 
 import AudienceChart from "./AudienceChart";
@@ -23,7 +23,7 @@ const DashboardContent = (props: PropsWithChildren<GridProps>) => (
 );
 
 export const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Grid container gap={3} flexDirection="column">

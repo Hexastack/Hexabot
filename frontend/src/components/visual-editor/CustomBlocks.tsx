@@ -7,16 +7,17 @@
  */
 
 import { Grid } from "@mui/material";
-import { useTranslation } from "react-i18next";
+
 
 import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
 import { useFind } from "@/hooks/crud/useFind";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
 import { Block, StyledTitle } from "./Aside";
 
 export const CustomBlocks = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { data: customBlocks } = useFind(
     { entity: EntityType.CUSTOM_BLOCK },
     { hasCount: false },

@@ -10,7 +10,7 @@ import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
+
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -29,6 +29,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -41,7 +42,7 @@ import { InvitationDialog } from "./InvitationDialog";
 
 export const Users = () => {
   const { ssoEnabled } = useConfig();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { user } = useAuth();
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {

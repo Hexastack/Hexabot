@@ -7,11 +7,12 @@
  */
 
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { ContentItem } from "@/app-components/dialogs";
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { FileType } from "@/types/message.types";
 import { MIME_TYPES, getFileType } from "@/utils/attachment";
@@ -21,7 +22,7 @@ import { FormSectionTitle } from "./FormSectionTitle";
 
 const AttachmentMessageForm = () => {
   const block = useBlock();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     control,
     formState: { errors },

@@ -20,7 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useGet } from "@/hooks/crud/useGet";
@@ -28,6 +28,7 @@ import { useDialog } from "@/hooks/useDialog";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -84,7 +85,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
     entity: EntityType.ATTACHMENT,
   });
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const deleteDialogCtl = useDialog<string>(false);
   const { mutateAsync: deleteAttachment } = useDelete(EntityType.ATTACHMENT, {
     onError: () => {

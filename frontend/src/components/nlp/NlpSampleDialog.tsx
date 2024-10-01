@@ -8,12 +8,13 @@
 
 import { Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import {
   INlpDatasetSample,
@@ -30,7 +31,7 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: updateSample } = useUpdate<
     EntityType.NLP_SAMPLE,

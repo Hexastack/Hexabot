@@ -7,12 +7,13 @@
  */
 
 import { Grid, Typography } from "@mui/material";
-import { useTranslation } from "react-i18next";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 import NoDataIcon from "../svg/NoDataIcon";
 
 export const NoDataOverlay = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Grid

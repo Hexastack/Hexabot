@@ -7,11 +7,12 @@
  */
 
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { ContentItem } from "@/app-components/dialogs";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 
 import { useBlock } from "./BlockFormProvider";
@@ -20,7 +21,7 @@ import ReplacementTokens from "./inputs/ReplacementTokens";
 
 const TextMessageForm = () => {
   const block = useBlock();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     control,
     register,

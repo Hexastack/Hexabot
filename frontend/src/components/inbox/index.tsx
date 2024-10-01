@@ -10,11 +10,12 @@ import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useSearch } from "@/hooks/useSearch";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
 import { ISubscriber } from "@/types/subscriber.types";
@@ -25,7 +26,7 @@ import { ChatProvider } from "./hooks/ChatContext";
 import { AssignedTo } from "./types";
 
 export const Inbox = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { onSearch, searchPayload } = useSearch<ISubscriber>({
     $or: ["first_name", "last_name"],
   });

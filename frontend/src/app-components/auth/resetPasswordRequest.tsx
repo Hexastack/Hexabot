@@ -9,16 +9,17 @@
 import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { ContentContainer } from "../dialogs";
 import { Input } from "../inputs/Input";
 
 export const ResetPasswordRequest = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const {
     register,

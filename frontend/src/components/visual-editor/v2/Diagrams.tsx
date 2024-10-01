@@ -36,7 +36,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
@@ -47,6 +47,7 @@ import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
@@ -58,7 +59,7 @@ import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 
 const Diagrams = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [model, setModel] = useState<
     DiagramModel<DiagramModelGenerics> | undefined
   >();

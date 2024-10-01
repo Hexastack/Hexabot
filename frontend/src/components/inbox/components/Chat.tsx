@@ -16,11 +16,12 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import QuestionAnswerTwoToneIcon from "@mui/icons-material/QuestionAnswerTwoTone";
 import { debounce, Grid } from "@mui/material";
-import { useTranslation } from "react-i18next";
+
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
 import { ChatActions } from "./ChatActions";
@@ -35,7 +36,7 @@ import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
 
 export function Chat() {
   const { apiUrl } = useConfig();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslate();
   const { subscriber } = useChat();
   const { user } = useAuth();
   const { mutateAsync: createMessage } = useCreate(EntityType.MESSAGE);

@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
+
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import {
@@ -30,6 +30,7 @@ import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
 
@@ -43,7 +44,7 @@ export const EditContentTypeFieldsDialog = ({
   closeDialog,
   open,
 }: EditContentTypeDialogFieldsProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { isLoading, data, refetch } = useGet(contentType?.id || "", {
     entity: EntityType.CONTENT_TYPE,
   });
