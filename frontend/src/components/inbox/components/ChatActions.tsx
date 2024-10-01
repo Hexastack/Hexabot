@@ -11,7 +11,6 @@ import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
 import { Button, Grid, IconButton, MenuItem, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
-
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";

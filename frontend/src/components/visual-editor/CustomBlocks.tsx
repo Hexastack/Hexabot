@@ -8,7 +8,6 @@
 
 import { Grid } from "@mui/material";
 
-
 import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
 import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";

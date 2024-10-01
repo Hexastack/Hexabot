@@ -11,7 +11,6 @@ import AddIcon from "@mui/icons-material/Add";
 import { Grid, Paper, Button, Box, debounce } from "@mui/material";
 import React, { useRef, useState } from "react";
 
-
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
 import { useCreate } from "@/hooks/crud/useCreate";

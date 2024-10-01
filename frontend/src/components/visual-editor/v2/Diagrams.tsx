@@ -37,7 +37,6 @@ import {
   useState,
 } from "react";
 
-
 import { DeleteDialog } from "@/app-components/dialogs";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";

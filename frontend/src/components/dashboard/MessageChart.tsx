@@ -9,7 +9,6 @@
 import { Card, CardContent, Divider } from "@mui/material";
 import { MultiLineChart, ResponsiveChartContainer } from "eazychart-react";
 
-
 import { StyledCardHeader } from "@/app-components/card/StyledCardHeader";
 import { useFindStats } from "@/hooks/entities/bot-stat-hooks";
 import { useTranslate } from "@/hooks/useTranslate";

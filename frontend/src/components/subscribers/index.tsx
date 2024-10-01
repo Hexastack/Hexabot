@@ -12,7 +12,6 @@ import { Grid, IconButton, MenuItem, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
-
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";

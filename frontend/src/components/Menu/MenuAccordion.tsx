@@ -26,7 +26,6 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 
-
 import { AnimatedChevron } from "@/app-components/icons/AnimatedChevron";
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { TMenuItem } from "@/app-components/menus/Sidebar";

@@ -12,7 +12,6 @@ import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
-
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";

@@ -17,7 +17,6 @@ import {
 } from "@mui/material";
 import { FC } from "react";
 
-
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { DialogControl } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";

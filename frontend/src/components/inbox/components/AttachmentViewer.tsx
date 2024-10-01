@@ -10,7 +10,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 import { Button, Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
 
-
 import { DialogTitle } from "@/app-components/dialogs";
 import { useDialog } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";

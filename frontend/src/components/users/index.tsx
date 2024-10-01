@@ -11,7 +11,6 @@ import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
-
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {

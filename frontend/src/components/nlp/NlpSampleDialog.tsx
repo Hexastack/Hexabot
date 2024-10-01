@@ -9,7 +9,6 @@
 import { Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
 
-
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";

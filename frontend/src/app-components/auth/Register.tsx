@@ -23,7 +23,6 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-
 import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";

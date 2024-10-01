@@ -17,7 +17,6 @@ import {
   useWatch,
 } from "react-hook-form";
 
-
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";

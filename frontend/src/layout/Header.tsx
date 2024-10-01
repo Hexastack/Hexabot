@@ -19,7 +19,6 @@ import {
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { FC, useEffect, useRef, useState } from "react";
 
-
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";

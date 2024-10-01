@@ -10,7 +10,6 @@ import { Grid, MenuItem } from "@mui/material";
 import { FC } from "react";
 import { FieldPath, useFormContext } from "react-hook-form";
 
-
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
 import { useTranslate } from "@/hooks/useTranslate";

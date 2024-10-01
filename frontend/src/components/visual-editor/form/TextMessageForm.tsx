@@ -8,7 +8,6 @@
 
 import { Controller, useFormContext } from "react-hook-form";
 
-
 import { ContentItem } from "@/app-components/dialogs";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";

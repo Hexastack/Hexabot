@@ -12,7 +12,6 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import React from "react";
 
-
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useFind } from "@/hooks/crud/useFind";

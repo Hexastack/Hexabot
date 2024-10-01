@@ -9,7 +9,6 @@
 import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
 
-
 import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";

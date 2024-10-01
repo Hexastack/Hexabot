@@ -11,7 +11,6 @@ import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
 import { useState } from "react";
 
-
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useSearch } from "@/hooks/useSearch";

@@ -10,7 +10,6 @@ import { Box, Grid, MenuItem, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
-
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { RegexInput } from "@/app-components/inputs/RegexInput";

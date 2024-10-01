@@ -10,7 +10,6 @@ import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 
-
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";

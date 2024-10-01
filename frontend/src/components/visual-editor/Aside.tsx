@@ -9,7 +9,6 @@
 import { Grid, IconButton, Paper, Typography, styled } from "@mui/material";
 import { FC, SVGProps } from "react";
 
-
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
 import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
 import ListIcon from "@/app-components/svg/toolbar/ListIcon";

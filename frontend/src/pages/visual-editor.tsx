@@ -11,7 +11,6 @@ import { Avatar, Box, Typography } from "@mui/material";
 import UiChatWidget from "hexabot-widget/src/UiChatWidget";
 import { ReactElement } from "react";
 
-
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { VisualEditor } from "@/components/visual-editor";
 import { useConfig } from "@/hooks/useConfig";

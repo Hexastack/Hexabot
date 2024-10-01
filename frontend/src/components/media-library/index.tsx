@@ -10,7 +10,6 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import { Box, Grid, Paper } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 
-
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";

@@ -8,7 +8,6 @@
 
 import { Controller, useFormContext } from "react-hook-form";
 
-
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { ContentItem } from "@/app-components/dialogs";
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
