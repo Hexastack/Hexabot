@@ -15,7 +15,6 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-
 import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
