@@ -28,15 +28,16 @@ export const getFromQuery = ({
 
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
-    const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-    const normalizedRelativePath = relativePath.startsWith("/")
-      ? relativePath.slice(1)
-      : relativePath;
-    const url = new URL(normalizedRelativePath, normalizedBaseUrl);
-
-    return url.toString();
+    return new URL(relativePath).toString();
   } catch {
-    throw new Error(`Invalid base URL: ${baseUrl}`);
+    try {
+      return new URL(
+        relativePath.replace(/^\//, ""),
+        baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`,
+      ).toString();
+    } catch {
+      throw new Error(`Invalid base URL: ${baseUrl}`);
+    }
   }
 };
 
