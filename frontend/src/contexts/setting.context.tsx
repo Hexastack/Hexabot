@@ -6,14 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode } from "react";
 
 import { Progress } from "@/app-components/displays/Progress";
+import { useLoadSettings } from "@/hooks/entities/auth-hooks";
 import { ISetting } from "@/types/setting.types";
 
-import { useLoadSettings } from "./entities/auth-hooks";
-
-const SettingsContext = createContext<{
+export const SettingsContext = createContext<{
   settings: { [key: string]: ISetting[] } | undefined;
 }>({ settings: undefined });
 
@@ -39,13 +38,4 @@ export const SettingsProvider = ({
       {children}
     </SettingsContext.Provider>
   );
-};
-
-export const useSetting = (type: string, label: string) => {
-  const { settings } = useContext(SettingsContext);
-  const value = settings?.[type]?.find(
-    (setting) => setting.label === label,
-  )?.value;
-
-  return value;
 };
