@@ -58,19 +58,15 @@ This will copy the `.env.example` file to `.env` in the `./docker` directory if 
 
 <details>
 
-<summary>If you are installing Hexabot on macOS, follow the steps below before you run the application</summary>
+<summary>Do you want to install Hexabot on a Windows machine?</summary>
 
-The `make` command is not installed by default on macOS, but there are a few ways to get it:
+1. Install Docker Desktop for Windows Download and install Docker Desktop for Windows.
+2. During installation, ensure that you select the option to use WSL 2 as the default backend for Docker.
+3. After installation, start Docker Desktop and verify that WSL integration is enabled:
+4. Open Docker Desktop and go to Settings. Under the General tab, ensure that "Use the WSL 2 based engine" is selected. Under Resources > WSL Integration, enable integration with your installed Linux distribution (e.g., Ubuntu). Restart your machine to finalize the Docker installation.
+5. Clone the Hexabot Repository Open your WSL terminal (e.g., Ubuntu).
 
-### Install Command Line Tools for Xcode
-
-The easiest way to get `make` on macOS is to install the Command Line Tools for Xcode:
-
-1. Open the Terminal app
-2. Run the command: `xcode-select --install`
-3. Follow the prompts to install the Command Line Tools
-
-This will install `make` and other developer tools without needing to install the full Xcode IDE
+Learn more : [https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers)
 
 </details>
 
