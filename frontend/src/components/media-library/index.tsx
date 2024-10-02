@@ -9,7 +9,6 @@
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import { Box, Grid, Paper } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
@@ -26,6 +25,7 @@ import { useDialog } from "@/hooks/useDialog";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -41,7 +41,7 @@ type MediaLibraryProps = {
 };
 
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const deleteDialogCtl = useDialog<string>(false);
   const formatFileSize = useFormattedFileSize();

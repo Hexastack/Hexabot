@@ -10,7 +10,6 @@ import { faBars } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Grid, Paper, Button, Box, debounce } from "@mui/material";
 import React, { useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
@@ -19,6 +18,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useHasPermission } from "@/hooks/useHasPermission";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { IMenuItem } from "@/types/menu.types";
@@ -28,7 +28,7 @@ import MenuAccordion from "./MenuAccordion";
 import { MenuDialog } from "./MenuDialog";
 
 export const Menu = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [addDialogOpened, setAddDialogOpened] = useState(false);
   const [editDialogOpened, setEditDialogOpened] = useState(false);
   const [selectedMenuId, setSelectedMenuId] = useState<string | undefined>(

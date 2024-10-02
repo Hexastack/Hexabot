@@ -16,13 +16,14 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import { useTranslation } from "react-i18next";
 
 import { useFind } from "@/hooks/crud/useFind";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
 
 function ReplacementTokens() {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const userInfos = [
     { name: "first_name", label: t("label.user_first_name") },
     { name: "last_name", label: t("label.user_last_name") },
@@ -99,7 +100,7 @@ function ReplacementTokens() {
             <ListItem key={index}>
               <ListItemText
                 primary={`{contact.${v.label}}`}
-                secondary={t("label." + v.label)}
+                secondary={t("label", v.label as TNestedTranslation<"label">)}
               />
             </ListItem>
           ))}

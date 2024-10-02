@@ -20,7 +20,6 @@ import {
 } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -32,6 +31,7 @@ import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { OutgoingMessageFormat } from "@/types/message.types";
 
@@ -49,7 +49,7 @@ const BlockDialog: FC<BlockDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [selectedTab, setSelectedTab] = useState("triggers");
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);

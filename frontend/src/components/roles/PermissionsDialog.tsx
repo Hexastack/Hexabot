@@ -24,7 +24,6 @@ import {
   Divider,
 } from "@mui/material";
 import { useState, FC, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -35,6 +34,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IPermission, IPermissionAttributes } from "@/types/permission.types";
 import { IRole } from "@/types/role.types";
@@ -70,7 +70,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
   data,
   closeDialog: closeFunction,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { data: models, refetch: modelRefetch } = useFind(
     { entity: EntityType.MODEL, format: Format.FULL },

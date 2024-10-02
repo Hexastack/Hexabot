@@ -25,13 +25,13 @@ import {
   styled,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { AnimatedChevron } from "@/app-components/icons/AnimatedChevron";
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { TMenuItem } from "@/app-components/menus/Sidebar";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
+import { useTranslate } from "@/hooks/useTranslate";
 import { theme } from "@/layout/themes/theme";
 import { EntityType } from "@/services/types";
 import { IMenuNode } from "@/types/menu-tree.types";
@@ -103,7 +103,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
   onUpdate,
   onDelete,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const hasPermission = useHasPermission();
 
   return (

@@ -9,11 +9,11 @@
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { GridEventListener } from "@mui/x-data-grid";
 import { FC, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { MediaLibrary } from "@/components/media-library";
 import { DialogControlProps } from "@/hooks/useDialog";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IAttachment } from "@/types/attachment.types";
 
 export type AttachmentDialogProps = DialogControlProps<
@@ -28,7 +28,7 @@ export const AttachmentDialog: FC<AttachmentDialogProps> = ({
   accept,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [selected, setSelected] = useState<IAttachment | null>(null);
   const handleSelection: GridEventListener<"rowClick"> = (data) => {
     setSelected(data.row);

@@ -10,7 +10,6 @@ import AddIcon from "@mui/icons-material/Add";
 import { Button, Chip, Grid } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -26,6 +25,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { PermissionAction } from "@/types/permission.types";
@@ -48,7 +48,7 @@ const NlpEntity = () => {
     },
   });
   const addDialogCtl = useDialog<INlpEntity>(false);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
     $or: ["name", "doc"],

@@ -9,7 +9,6 @@
 import { Grid } from "@mui/material";
 import dynamic from "next/dynamic";
 
-
 const Diagrams = dynamic(() => import("./v2/Diagrams"), { ssr: false });
 const VisualEditorProvider = dynamic(() => import("./hooks/useVisualEditor"), {
   ssr: false,

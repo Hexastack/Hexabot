@@ -8,10 +8,10 @@
 
 import { Box, Typography } from "@mui/material";
 import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
 import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
 import {
@@ -37,7 +37,7 @@ type PostbackInputProps = {
 export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
   const block = useBlock();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   //  General options
   const generalOptions = [
     {

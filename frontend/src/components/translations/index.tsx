@@ -10,7 +10,6 @@ import { faLanguage } from "@fortawesome/free-solid-svg-icons";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -25,6 +24,7 @@ import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
@@ -35,7 +35,7 @@ import { getDateTimeFormatter } from "@/utils/date";
 import { EditTranslationDialog } from "./EditTranslationDialog";
 
 export const Translations = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },

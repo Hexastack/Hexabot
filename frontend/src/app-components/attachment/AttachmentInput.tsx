@@ -8,7 +8,6 @@
 
 import { Box, FormHelperText, FormLabel } from "@mui/material";
 import { forwardRef } from "react";
-import { useTranslation } from "react-i18next";
 
 import { useGet } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -47,7 +46,6 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
     ref,
   ) => {
     const hasPermission = useHasPermission();
-    const { t } = useTranslation();
     const handleChange = (attachment: IAttachment | null) => {
       onChange && onChange(attachment?.id || null, attachment?.type || null);
     };
@@ -84,9 +82,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
             enableMediaLibrary={enableMediaLibrary}
             onChange={handleChange}
           />
-        ) : (
-          t("message.no_attachment")
-        )}
+        ) : null}
         {helperText ? (
           <FormHelperText error={error}>{helperText}</FormHelperText>
         ) : null}

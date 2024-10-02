@@ -9,15 +9,15 @@
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { Grid, Paper } from "@mui/material";
 import React from "react";
-import { useTranslation } from "react-i18next";
 
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 
 import { ProfileForm } from "./profile";
 
 export const Profile = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { user } = useAuth();
 
   return (

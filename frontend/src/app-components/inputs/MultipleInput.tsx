@@ -24,7 +24,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useTranslation } from "react-i18next";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { Input } from "./Input";
 
@@ -54,7 +55,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
     },
     ref,
   ) => {
-    const { t } = useTranslation();
+    const { t } = useTranslate();
     const [inputs, setInputs] = useState<Array<{ id: number; value: string }>>(
       value
         ? value.length >= minInput

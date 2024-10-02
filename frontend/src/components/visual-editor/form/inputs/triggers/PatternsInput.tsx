@@ -11,8 +11,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton, styled } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
@@ -34,7 +34,7 @@ const StyledNoPatternsDiv = styled("div")(
   }),
 );
 const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
     value.map((pattern) => createValueWithId(pattern)),
   );
