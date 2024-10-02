@@ -17,14 +17,15 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 
 import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
-import { ApiClientProvider } from "@/hooks/useApiClient";
-import { AuthProvider } from "@/hooks/useAuth";
-import { ConfigProvider } from "@/hooks/useConfig";
-import { PermissionProvider } from "@/hooks/useHasPermission";
-import { SettingsProvider } from "@/hooks/useSetting";
+import { ApiClientProvider } from "@/contexts/apiClient.context";
+import { AuthProvider } from "@/contexts/auth.context";
+import { ConfigProvider } from "@/contexts/config.context";
+import { PermissionProvider } from "@/contexts/permission.context";
+import { SettingsProvider } from "@/contexts/setting.context";
 import { ToastProvider } from "@/hooks/useToast";
 import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
+
 import "../components/inbox/inbox.css";
 import "../i18n/config";
 import "../styles/globals.css";

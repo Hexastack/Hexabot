@@ -16,10 +16,10 @@ import {
   Button,
 } from "@mui/material";
 import { FC } from "react";
-import { useTranslation } from "react-i18next";
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { DialogControl } from "@/hooks/useDialog";
+import { useTranslate } from "@/hooks/useTranslate";
 
 export type DeleteDialogProps = DialogControl<string>;
 export const DeleteDialog: FC<DeleteDialogProps> = ({
@@ -27,7 +27,7 @@ export const DeleteDialog: FC<DeleteDialogProps> = ({
   callback,
   closeDialog: closeFunction,
 }: DeleteDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Dialog open={open} fullWidth onClose={closeFunction}>

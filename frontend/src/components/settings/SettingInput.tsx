@@ -9,7 +9,6 @@
 import KeyIcon from "@mui/icons-material/Key";
 import { FormControlLabel, MenuItem, Switch } from "@mui/material";
 import { ControllerRenderProps } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { Adornment } from "@/app-components/inputs/Adornment";
@@ -17,6 +16,8 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ISetting } from "@/types/setting.types";
@@ -33,13 +34,11 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
   field,
   isDisabled = () => false,
 }) => {
-  const { t } = useTranslation();
-  const label = t(`label.${setting.label}`, {
-    defaultValue: setting.title || setting.label,
-  });
-  const helperText = t(`help.${setting.label}`, {
-    defaultValue: "",
-  });
+  const { t } = useTranslate();
+  const nestedLabel = setting.label as TNestedTranslation<"label">;
+  const nestedHelp = setting.label as TNestedTranslation<"help">;
+  const label = t("label", nestedLabel);
+  const helperText = t("help", nestedHelp);
 
   switch (setting.type) {
     case "text":

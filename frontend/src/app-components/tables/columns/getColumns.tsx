@@ -23,24 +23,37 @@ import {
   GridTreeNodeWithRender,
   GridValidRowModel,
 } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TTranslationKeys } from "@/i18n/i18n.types";
 import { theme } from "@/layout/themes/theme";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
 export enum ActionColumnLabel {
-  Edit = "button.edit",
-  Delete = "button.delete",
-  Values = "button.values",
-  Manage_Roles = "button.manage_roles",
-  Permissions = "button.permissions",
-  Content = "button.content",
-  Fields = "button.fields",
-  Manage_Labels = "title.manage_labels",
-  Toggle = "button.toggle",
+  Edit = "Edit",
+  Delete = "Delete",
+  Values = "Values",
+  Manage_Roles = "Manage_Roles",
+  Permissions = "Permissions",
+  Content = "Content",
+  Fields = "Fields",
+  Manage_Labels = "Manage_Labels",
+  Toggle = "Toggle",
 }
+
+const ACTION_COLUMN_LABEL_MAP: Record<ActionColumnLabel, TTranslationKeys> = {
+  [ActionColumnLabel.Edit]: "button.edit",
+  [ActionColumnLabel.Delete]: "button.delete",
+  [ActionColumnLabel.Values]: "button.values",
+  [ActionColumnLabel.Manage_Roles]: "button.manage_roles",
+  [ActionColumnLabel.Permissions]: "button.permissions",
+  [ActionColumnLabel.Content]: "button.content",
+  [ActionColumnLabel.Fields]: "button.fields",
+  [ActionColumnLabel.Manage_Labels]: "title.manage_labels",
+  [ActionColumnLabel.Toggle]: "button.toggle",
+} as const;
 
 export interface ActionColumn<T extends GridValidRowModel> {
   label: ActionColumnLabel;
@@ -99,7 +112,7 @@ function StackComponent<T extends GridValidRowModel>({
   actions: ActionColumn<T>[];
   params: GridRenderCellParams<T, any, any, GridTreeNodeWithRender>;
 }) {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Stack height="100%" alignItems="center" direction="row" spacing={0.5}>
@@ -116,9 +129,13 @@ function StackComponent<T extends GridValidRowModel>({
             key={label}
             className="actionButton"
             icon={
-              <Tooltip title={helperText || t(label)}>{getIcon(label)}</Tooltip>
+              <Tooltip
+                title={helperText || String(t(ACTION_COLUMN_LABEL_MAP[label]))}
+              >
+                {getIcon(label)}
+              </Tooltip>
             }
-            label={helperText || t(label)}
+            label={helperText || t(ACTION_COLUMN_LABEL_MAP[label])}
             showInMenu={false}
             sx={{
               color:

@@ -8,13 +8,14 @@
 
 import SearchIcon from "@mui/icons-material/Search";
 import { TextFieldProps } from "@mui/material";
-import { useTranslation } from "react-i18next";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { Adornment } from "./Adornment";
 import { Input } from "./Input";
 
 export const FilterTextfield = (props: TextFieldProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   //TODO: replace the native delete text button by a styled custom button
   return (

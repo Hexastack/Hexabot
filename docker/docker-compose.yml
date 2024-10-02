@@ -60,6 +60,8 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    ports:
+      - ${APP_WIDGET_PORT}:5173
 
 volumes:
   mongo-data:

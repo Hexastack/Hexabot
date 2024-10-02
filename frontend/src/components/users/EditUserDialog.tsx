@@ -16,7 +16,6 @@ import {
 import Link from "next/link";
 import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -27,6 +26,7 @@ import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IRole } from "@/types/role.types";
 import { IUser, IUserAttributes } from "@/types/user.types";
@@ -44,7 +44,7 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const [fullName, setFullName] = useState<string>("");
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {

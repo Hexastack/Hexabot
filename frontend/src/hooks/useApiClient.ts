@@ -8,9 +8,10 @@
 
 import axios from "axios";
 import { stringify } from "qs";
-import React, { createContext, ReactNode, useContext, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { useContext, useMemo } from "react";
 
+import { ApiClientContext } from "@/contexts/apiClient.context";
+import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
@@ -23,7 +24,7 @@ export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
       baseURL: apiUrl,
@@ -65,20 +66,13 @@ export const useAxiosInstance = () => {
   return axiosInstance;
 };
 
-interface ApiClientContextProps {
-  children: ReactNode;
-}
-
 export const entityApiClients = new Map();
 
-interface ApiClientContext {
-  apiClient: ApiClient;
-  getApiClientByEntity: <TAttr, TStub extends IBaseSchema, TFull = never>(
-    type: EntityType,
-  ) => EntityApiClient<TAttr, TStub, TFull>;
-}
-
-const getApiClientByEntity = <TAttr, TStub extends IBaseSchema, TFull = never>(
+export const getApiClientByEntity = <
+  TAttr,
+  TStub extends IBaseSchema,
+  TFull = never,
+>(
   type: EntityType,
   apiClient: ApiClient,
 ) => {
@@ -89,32 +83,6 @@ const getApiClientByEntity = <TAttr, TStub extends IBaseSchema, TFull = never>(
   }
 
   return entityApiClients.get(type) as EntityApiClient<TAttr, TStub, TFull>;
-};
-const ApiClientContext = createContext<ApiClientContext>({
-  apiClient: new ApiClient(axios.create()),
-  getApiClientByEntity: () => {
-    throw new Error(
-      "getApiClientByEntity must be used within an ApiClientProvider",
-    );
-  },
-});
-
-export const ApiClientProvider: React.FC<ApiClientContextProps> = ({
-  children,
-}) => {
-  const axiosInstance = useAxiosInstance();
-  const apiClient = new ApiClient(axiosInstance);
-
-  return (
-    <ApiClientContext.Provider
-      value={{
-        apiClient,
-        getApiClientByEntity: (type) => getApiClientByEntity(type, apiClient),
-      }}
-    >
-      {children}
-    </ApiClientContext.Provider>
-  );
 };
 
 export const useApiClient = (): ApiClientContext => {

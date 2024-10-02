@@ -90,6 +90,7 @@
     "labels_are_required": "You need to add at least one Label",
     "type_is_required": "Type is required",
     "permission_already_exists": "Permission already exists",
+    "button_block_message_label": "What would you like to know about us?",
     "network_error": "Network error. Please try again later",
     "content_is_required": "Content is required",
     "message_is_required": "Message is required",
@@ -101,7 +102,8 @@
     "attachment_not_found": "Attachment is not found",
     "title_length_exceeded": "You have reached the maximum length",
     "no_label_found": "No label found",
-    "code_is_required": "Language code is required"
+    "code_is_required": "Language code is required",
+    "text_is_required": "Text is required"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -544,7 +546,7 @@
     "gb": "GB",
     "or": "OR",
     "click_or_dragndrop_to_upload": "Click or Drag & Drop to upload a file",
-    "button_block_message_label": "What would you like to know about us",
+    "button_block_message_label": "What would you like to know about us ?",
     "menu": "Menu",
     "total": "Total",
     "general": "General",
@@ -553,7 +555,9 @@
     "code": "Code",
     "is_default": "Default",
     "is_rtl": "RTL",
-    "original_text": "Original Text"
+    "original_text": "Original Text",
+    "inputs": "Inputs",
+    "outputs": "Outputs"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -589,7 +593,8 @@
     "start_date": "Start Date",
     "end_date": "End Date",
     "nlp_value": "Value",
-    "type_message_here": "Type message here ...."
+    "type_message_here": "Type message here ....",
+    "mark_as_default": "By Default"
   },
   "button": {
     "login": "Sign In",
@@ -652,7 +657,8 @@
     "manage_roles": "Manage Roles",
     "connect_with_sso": "Connect with SSO",
     "add_pattern": "Add pattern",
-    "mark_as_default": "Mark as Default"
+    "mark_as_default": "Mark as Default",
+    "toggle": "Toggle button"
   },
   "input": {
     "search": "Search"

@@ -1,3 +1,3 @@
 export interface SubscriberContext {
-  [key: string]: any;
+  vars?: { [key: string]: any };
 }

@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { HttpModule } from '@nestjs/axios';
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
@@ -28,7 +29,7 @@ export interface ChannelModuleOptions {
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],
   exports: [ChannelService],
-  imports: [NlpModule, ChatModule, AttachmentModule, CmsModule],
+  imports: [NlpModule, ChatModule, AttachmentModule, CmsModule, HttpModule],
 })
 export class ChannelModule {
   configure(consumer: MiddlewareConsumer) {

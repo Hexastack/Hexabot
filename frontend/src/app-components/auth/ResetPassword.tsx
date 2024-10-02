@@ -11,10 +11,10 @@ import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import { useResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 
 import { ContentContainer } from "../dialogs";
@@ -22,7 +22,7 @@ import { Adornment } from "../inputs/Adornment";
 import { PasswordInput } from "../inputs/PasswordInput";
 
 export const ResetPassword = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const rules = useValidationRules();
   const validationRules = {

@@ -10,7 +10,6 @@ import { Avatar } from "@chatscope/chat-ui-kit-react";
 import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
 import { Button, Grid, IconButton, MenuItem, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
 import { Input } from "@/app-components/inputs/Input";
@@ -18,6 +17,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
@@ -25,7 +25,7 @@ import { useChat } from "../hooks/ChatContext";
 
 export const ChatActions = () => {
   const { apiUrl } = useConfig();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { subscriber: activeChat } = useChat();
   const [takeoverBy, setTakeoverBy] = useState<string>(
     activeChat?.assignedTo ?? "",
