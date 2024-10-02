@@ -14,7 +14,6 @@ import LanguageIcon from "@mui/icons-material/Language";
 import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
 import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
@@ -26,6 +25,7 @@ import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { IUser, IUserAttributes } from "@/types/user.types";
 import { MIME_TYPES } from "@/utils/attachment";
@@ -35,7 +35,7 @@ type TUserProfileExtendedPayload = IUserAttributes & { password2: string };
 type ProfileFormProps = { user: IUser };
 
 export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { mutateAsync: updateProfile, isLoading } = useUpdateProfile({

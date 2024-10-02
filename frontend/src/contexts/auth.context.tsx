@@ -9,7 +9,6 @@
 import getConfig from "next/config";
 import { useRouter } from "next/router";
 import { useState, useEffect, createContext, ReactNode } from "react";
-import { useTranslation } from "react-i18next";
 import {
   useQueryClient,
   useQuery,
@@ -27,6 +26,7 @@ import {
   PUBLIC_PATHS,
 } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
 import { getFromQuery } from "@/utils/URL";
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const { logoutRedirection } = useLogoutRedirection();
   const [search, setSearch] = useState("");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
-  const { i18n, t } = useTranslation();
+  const { i18n, t } = useTranslate();
   const { toast } = useToast();
   const [isReady, setIsReady] = useState(false);
   const queryClient = useQueryClient();

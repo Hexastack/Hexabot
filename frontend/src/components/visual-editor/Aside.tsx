@@ -8,13 +8,13 @@
 
 import { Grid, IconButton, Paper, Typography, styled } from "@mui/material";
 import { FC, SVGProps } from "react";
-import { useTranslation } from "react-i18next";
 
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
 import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
 import ListIcon from "@/app-components/svg/toolbar/ListIcon";
 import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
@@ -116,7 +116,7 @@ export const Block = ({
 };
 
 const Aside = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <Grid

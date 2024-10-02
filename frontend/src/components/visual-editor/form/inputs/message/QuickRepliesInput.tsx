@@ -10,8 +10,8 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { QuickReplyType, StdQuickReply } from "@/types/message.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
 
@@ -28,7 +28,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   onChange,
   minInput = 1,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [quickReplies, setQuickReplies] = useState<
     ValueWithId<StdQuickReply>[]
   >(value.map((quickReplie) => createValueWithId(quickReplie)));

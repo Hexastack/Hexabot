@@ -9,9 +9,9 @@
 import axios from "axios";
 import { stringify } from "qs";
 import { useContext, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
 import { ApiClientContext } from "@/contexts/apiClient.context";
+import { useTranslate } from "@/hooks/useTranslate";
 import { ApiClient, EntityApiClient } from "@/services/api.class";
 import { EntityType } from "@/services/types";
 import { IBaseSchema } from "@/types/base.types";
@@ -24,7 +24,7 @@ export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
       baseURL: apiUrl,

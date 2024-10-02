@@ -103,7 +103,8 @@
     "attachment_not_found": "La pièce jointe est introuvable",
     "title_length_exceeded": "Vous avez atteint la longueur maximale",
     "no_label_found": "Aucune étiquette trouvée",
-    "code_is_required": "Le code est requis"
+    "code_is_required": "Le code est requis",
+    "text_is_required": "Texte requis"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
@@ -546,6 +547,7 @@
     "gb": "Go",
     "or": "Ou",
     "click_or_dragndrop_to_upload": "Cliquez ou faîtes un Drag & Drop pour charger un fichier",
+    "button_block_message_label": "Que souhaitez-vous savoir sur nous ?",
     "menu": "Menu",
     "total": "Totale",
     "general": "Général",
@@ -554,7 +556,9 @@
     "code": "Code",
     "is_default": "Par Défaut",
     "is_rtl": "RTL",
-    "original_text": "Texte par défaut"
+    "original_text": "Texte par défaut",
+    "inputs": "Port d'entré",
+    "outputs": "Port de sorti"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
@@ -574,10 +578,12 @@
     "type_message": "Composez votre message ...",
     "keywords": "Mot-clés",
     "label": "Libellé",
+    "type": "Type",
     "name": "Nom",
     "entities": "Entités",
     "block_name": "Nom du bloc",
     "select": "Sélectionner",
+    "unselect": "Non sélectionner",
     "title": "Titre",
     "url": "URL",
     "payload": "Payload",
@@ -651,7 +657,9 @@
     "media_library": "Bibliothéque Media",
     "manage_roles": "Gérer les rôles",
     "connect_with_sso": "Se connecter avec SSO",
-    "add_pattern": "Ajouter un motif"
+    "add_pattern": "Ajouter un motif",
+    "mark_as_default": "Par Défaut",
+    "toggle": "Bouton de bascule"
   },
   "input": {
     "search": "Recherche"

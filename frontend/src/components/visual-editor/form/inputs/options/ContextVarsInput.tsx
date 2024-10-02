@@ -19,8 +19,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { CaptureVar } from "@/types/block.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
 
@@ -32,7 +32,7 @@ type ContextVarsInputProps = {
 };
 
 const ContextVarsInput: FC<ContextVarsInputProps> = ({ value, onChange }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [vars, setVars] = useState<ValueWithId<CaptureVar>[]>(
     value.map((v) => createValueWithId(v)),
   );

@@ -18,12 +18,13 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { ISetting } from "@/types/setting.types";
@@ -67,7 +68,7 @@ function groupBy(array: ISetting[]) {
 }
 
 export const Settings = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState("live-chat-tester");
   const { control, watch } = useForm();
@@ -156,14 +157,16 @@ export const Settings = () => {
                 },
               }}
             >
-              {Object.keys(groups).map((group, index) => (
-                <StyledTab
-                  value={group}
-                  key={group}
-                  label={t(`title.${group}`)}
-                  {...a11yProps(index)}
-                />
-              ))}
+              {(Object.keys(groups) as TNestedTranslation<"title">[]).map(
+                (group, index) => (
+                  <StyledTab
+                    value={group}
+                    key={group}
+                    label={t("title", group)}
+                    {...a11yProps(index)}
+                  />
+                ),
+              )}
             </Tabs>
             <StyledForm sx={{ width: "100%", px: 3, paddingY: 2 }}>
               {Object.entries(groups).map(([group, settings]) => (

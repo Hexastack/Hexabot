@@ -10,7 +10,6 @@ import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -23,6 +22,7 @@ import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
@@ -41,7 +41,7 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
   canHaveSynonyms,
   callback,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
   const { refetch: refetchEntity } = useGet(data?.entity || String(query.id), {

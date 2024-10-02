@@ -9,8 +9,8 @@
 import { faChartLine } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { styled, Typography } from "@mui/material";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 export const StyledMessage = styled(Typography)(
@@ -24,7 +24,7 @@ export const StyledMessage = styled(Typography)(
 );
 
 export const NoDataChart = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   return (
     <StyledMessage>

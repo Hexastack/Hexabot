@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@/hooks/useTranslate";
 
 function useFormattedFileSize() {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const formatBytes = (bytes: number, decimals = 2) => {
     if (bytes === 0) return "0 " + t("label.bytes");
 

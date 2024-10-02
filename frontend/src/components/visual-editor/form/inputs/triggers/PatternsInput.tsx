@@ -10,8 +10,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton, styled } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useFormContext } from "react-hook-form";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
@@ -33,10 +34,23 @@ const StyledNoPatternsDiv = styled("div")(
   }),
 );
 const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
     value.map((pattern) => createValueWithId(pattern)),
   );
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<any>();
+  const getInputProps = (index: number) => {
+    return {
+      ...register(`message.${index}`, {
+        required: t("message.text_is_required"),
+      }),
+      error: !!errors?.message?.[index],
+      helperText: errors?.message?.[index]?.message,
+    };
+  };
   const addInput = () => {
     setPatterns([...patterns, createValueWithId<Pattern>("")]);
   };
@@ -73,6 +87,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                 idx={idx}
                 value={value}
                 onChange={updateInput(idx)}
+                getInputProps={getInputProps}
               />
             </Fragment>
           ))

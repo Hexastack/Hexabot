@@ -8,15 +8,15 @@
 
 import { Box } from "@mui/material";
 import React from "react";
-import { useTranslation } from "react-i18next";
 
 import { StyledCardHeader } from "@/app-components/card/StyledCardHeader";
 import { useCount } from "@/hooks/crud/useCount";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { NlpSampleType } from "@/types/nlp-sample.types";
 
 const NlpDatasetCounter: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const train = useCount(EntityType.NLP_SAMPLE, { type: NlpSampleType.train });
   const test = useCount(EntityType.NLP_SAMPLE, { type: NlpSampleType.test });
   const entity = useCount(EntityType.NLP_ENTITY, {});

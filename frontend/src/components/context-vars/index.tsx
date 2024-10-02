@@ -11,7 +11,6 @@ import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import React from "react";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -28,6 +27,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { IContextVar } from "@/types/context-var.types";
@@ -37,7 +37,7 @@ import { getDateTimeFormatter } from "@/utils/date";
 import { ContextVarDialog } from "./ContextVarDialog";
 
 export const ContextVars = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const addDialogCtl = useDialog<IContextVar>(false);
   const editDialogCtl = useDialog<IContextVar>(false);

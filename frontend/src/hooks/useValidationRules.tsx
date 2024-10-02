@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useTranslation } from "react-i18next";
+import { useTranslate } from "@/hooks/useTranslate";
 
 export const useValidationRules = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const validationRules = {
     first_name: {},
     last_name: {},

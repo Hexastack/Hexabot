@@ -26,8 +26,9 @@ import {
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
+import { TTranslationKeys } from "@/i18n/i18n.types";
 import { theme } from "@/layout/themes/theme";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
@@ -160,7 +161,7 @@ const VerticalMenuItem = ({
   isNested?: boolean;
   isToggled?: boolean;
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const linkProps = {
     href,
     onClick,
@@ -173,7 +174,11 @@ const VerticalMenuItem = ({
       : theme.palette.text.secondary;
 
   return (
-    <Tooltip title={t(text)} disableHoverListener={isToggled} {...tooltip}>
+    <Tooltip
+      title={String(t(text as TTranslationKeys))}
+      disableHoverListener={isToggled}
+      {...tooltip}
+    >
       <StyledListItemButton
         selected={!!(!(isToggled && !href && isSubmenuOpen) && isSelected)}
         {...linkProps}
@@ -196,7 +201,7 @@ const VerticalMenuItem = ({
         ) : null}
         {isToggled ? (
           <StyledListItemText
-            primary={t(text)}
+            primary={String(t(text as TTranslationKeys))}
             isNested={isNested}
             isSelected={isSelected}
           />
@@ -221,7 +226,7 @@ export const Sidebar = ({
   isToggled,
   toggleFunction,
 }: TSidebarProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [openItems, setOpenItems] = useState<string[]>([]);
   const toggleCollapse = (menuItem: string) => () => {
     if (isToggled || !openItems.includes(menuItem))
@@ -301,7 +306,9 @@ export const Sidebar = ({
         return (
           <StyledDivider key={`divider_${text}`}>
             {isToggled && text ? (
-              <StyledListSubheader>{t(text)}</StyledListSubheader>
+              <StyledListSubheader>
+                {String(t(text as TTranslationKeys))}
+              </StyledListSubheader>
             ) : null}
           </StyledDivider>
         );

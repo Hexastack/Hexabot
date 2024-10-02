@@ -8,11 +8,11 @@
 
 import { Divider } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 import { IChannel } from "@/types/channel.types";
@@ -23,7 +23,7 @@ import PatternsInput from "./inputs/triggers/PatternsInput";
 
 export const TriggersForm = () => {
   const block = useBlock();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { control } = useFormContext<IBlockAttributes>();
 
   return (

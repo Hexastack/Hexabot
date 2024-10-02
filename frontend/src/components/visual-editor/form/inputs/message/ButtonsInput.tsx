@@ -11,8 +11,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { FieldPath } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { AnyButton, ButtonType } from "@/types/message.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
@@ -36,7 +36,7 @@ const ButtonsInput: FC<ButtonsInput> = ({
   disablePayload = false,
   fieldPath,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [buttons, setButtons] = useState<ValueWithId<AnyButton>[]>(
     value.map((button) => createValueWithId(button)),
   );

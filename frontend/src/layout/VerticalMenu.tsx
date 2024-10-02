@@ -33,13 +33,13 @@ import MuiDrawer from "@mui/material/Drawer";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { useRouter } from "next/router";
 import { FC, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { Sidebar } from "@/app-components/menus/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useHasPermission } from "@/hooks/useHasPermission";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { getLayout } from "@/utils/laylout";
@@ -285,7 +285,7 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
   onToggleOut,
 }) => {
   const { ssoEnabled } = useConfig();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
   const hasPermission = useHasPermission();
