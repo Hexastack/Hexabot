@@ -110,7 +110,7 @@ export class SubscriberStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    default: { vars: {} }, //TODO: add this to the migration
+    default: { vars: {} },
   })
   context?: SubscriberContext;
 }

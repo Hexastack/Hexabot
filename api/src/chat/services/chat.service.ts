@@ -287,7 +287,7 @@ export class ChatService {
    *
    * @param subscriber - The end user (subscriber)
    */
-  @OnEvent('hook:chatbot:subscriber:create')
+  @OnEvent('hook:subscriber:create')
   onSubscriberCreate(subscriber: Subscriber) {
     this.websocketGateway.broadcastSubscriberNew(subscriber);
   }
@@ -297,7 +297,7 @@ export class ChatService {
    *
    * @param subscriber - The end user (subscriber)
    */
-  @OnEvent('hook:chatbot:subscriber:update:after')
+  @OnEvent('hook:subscriber:update:after')
   onSubscriberUpdate(subscriber: Subscriber) {
     this.websocketGateway.broadcastSubscriberUpdate(subscriber);
   }

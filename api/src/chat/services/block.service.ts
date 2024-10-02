@@ -304,7 +304,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    const vars = { ...subscriberContext.vars, ...context.vars };
+    const vars = { ...(subscriberContext?.vars || {}), ...context.vars };
     // Replace context tokens with their values
     Object.keys(vars).forEach((key) => {
       if (typeof vars[key] === 'string' && vars[key].indexOf(':') !== -1) {
