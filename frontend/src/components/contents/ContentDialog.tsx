@@ -178,8 +178,8 @@ export const ContentDialog: FC<ContentDialogProps> = ({
       createContent(
         { ...params, entity: contentType.id },
         {
-          onError: () => {
-            toast.error(t("message.internal_server_error"));
+          onError: (error) => {
+            toast.error(error);
           },
           onSuccess: () => {
             closeDialog();

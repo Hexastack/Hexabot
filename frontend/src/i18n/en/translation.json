@@ -1,5 +1,6 @@
 {
   "message": {
+    "duplicate_error": "Duplicate entry. Please choose a unique value.",
     "bad_request": "400 BAD REQUEST",
     "unable_to_process_request": "Unable to process request",
     "not_found": "404 NOT FOUND",

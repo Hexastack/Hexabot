@@ -33,8 +33,8 @@ export const RoleDialog: FC<RoleDialogProps> = ({
   const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: createRole } = useCreate(EntityType.ROLE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
     onSuccess() {
       closeDialog();

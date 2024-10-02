@@ -34,8 +34,8 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
   const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: createCategory } = useCreate(EntityType.CATEGORY, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
     onSuccess: () => {
       closeDialog();

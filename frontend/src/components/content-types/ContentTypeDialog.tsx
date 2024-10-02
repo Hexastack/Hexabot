@@ -49,8 +49,8 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   const { mutateAsync: createContentType } = useCreate(
     EntityType.CONTENT_TYPE,
     {
-      onError: () => {
-        toast.error(t("message.internal_server_error"));
+      onError: (error) => {
+        toast.error(error);
       },
       onSuccess: () => {
         closeDialog();

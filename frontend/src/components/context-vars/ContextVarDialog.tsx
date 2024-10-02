@@ -41,8 +41,8 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
   const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: createContextVar } = useCreate(EntityType.CONTEXT_VAR, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
     onSuccess() {
       closeDialog();

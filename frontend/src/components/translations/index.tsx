@@ -55,8 +55,8 @@ export const Translations = () => {
     },
   );
   const { mutateAsync: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();

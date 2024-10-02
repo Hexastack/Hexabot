@@ -27,7 +27,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TTranslationKeys } from "@/i18n/i18n.types";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
@@ -58,12 +57,7 @@ export const Roles = () => {
   );
   const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
     onError: (error) => {
-      toast.error(
-        t(
-          (error.message as TTranslationKeys) ||
-            "message.internal_server_error",
-        ),
-      );
+      toast.error(error);
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();

@@ -1,5 +1,6 @@
 {
   "message": {
+    "duplicate_error" : "Entrée en double. Veuillez choisir une valeur unique.",
     "bad_request": "400 MAUVAISE REQUÊTE",
     "unable_to_process_request": "Impossible de traiter la requête",
     "not_found": "404 RESSOURCE INTROUVABLE",
