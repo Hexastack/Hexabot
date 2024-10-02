@@ -156,7 +156,7 @@ describe('ContentController', () => {
       expect(result).toEqualPayload([
         {
           ...contentFixtures.find(({ title }) => title === 'Jean'),
-          entity: contentType,
+          entity: contentType.id,
         },
       ]);
     });
