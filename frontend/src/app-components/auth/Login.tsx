@@ -14,11 +14,11 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { ILoginAttributes } from "@/types/auth/login.types";
 
@@ -33,7 +33,7 @@ const DEFAULT_VALUES: ILoginAttributes = {
 };
 
 export const Login = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const router = useRouter();
   const { authenticate } = useAuth();
@@ -91,59 +91,57 @@ export const Login = () => {
   return (
     <Grid container justifyContent="center">
       <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
-          <form onSubmit={handleSubmit(onSubmitForm)}>
-            <ContentContainer gap={2}>
-              <Typography variant="h1" fontSize="19px" fontWeight={700}>
-                {t("title.login")}
-              </Typography>
-              <Input
-                label={t("placeholder.email")}
-                error={!!errors.identifier}
-                required
-                autoFocus
-                InputProps={{
-                  startAdornment: <Adornment Icon={EmailIcon} />,
-                }}
-                helperText={
-                  errors.identifier ? errors.identifier.message : null
-                }
-                {...register("identifier", validationRules.email)}
-              />
+        <form onSubmit={handleSubmit(onSubmitForm)}>
+          <ContentContainer gap={2}>
+            <Typography variant="h1" fontSize="19px" fontWeight={700}>
+              {t("title.login")}
+            </Typography>
+            <Input
+              label={t("placeholder.email")}
+              error={!!errors.identifier}
+              required
+              autoFocus
+              InputProps={{
+                startAdornment: <Adornment Icon={EmailIcon} />,
+              }}
+              helperText={errors.identifier ? errors.identifier.message : null}
+              {...register("identifier", validationRules.email)}
+            />
 
-              <PasswordInput
-                label={t("placeholder.password")}
-                error={!!errors.password}
-                required
-                InputProps={{
-                  startAdornment: <Adornment Icon={KeyIcon} />,
-                }}
-                helperText={errors.password ? errors.password.message : null}
-                {...register("password", validationRules.password)}
-              />
-              <Grid container gap={2} justifyContent="space-between">
-                <Grid alignContent="center">
-                  <Link href="/reset">
-                    <Button variant="text" sx={{ textDecoration: "underline" }}>
-                      {t("link.reset")}
-                    </Button>
-                  </Link>
-                </Grid>
-                <Grid>
-                  <Button
-                    color="primary"
-                    variant="contained"
-                    type="submit"
-                    endIcon={<KeyboardArrowRightIcon />}
-                    onClick={handleSubmit(onSubmitForm)}
-                    disabled={isLoading}
-                  >
-                    {t("button.login")}
+            <PasswordInput
+              label={t("placeholder.password")}
+              error={!!errors.password}
+              required
+              InputProps={{
+                startAdornment: <Adornment Icon={KeyIcon} />,
+              }}
+              helperText={errors.password ? errors.password.message : null}
+              {...register("password", validationRules.password)}
+            />
+            <Grid container gap={2} justifyContent="space-between">
+              <Grid alignContent="center">
+                <Link href="/reset">
+                  <Button variant="text" sx={{ textDecoration: "underline" }}>
+                    {t("link.reset")}
                   </Button>
-                </Grid>
+                </Link>
               </Grid>
-            </ContentContainer>
-          </form>
-        </Paper>
+              <Grid>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  type="submit"
+                  endIcon={<KeyboardArrowRightIcon />}
+                  onClick={handleSubmit(onSubmitForm)}
+                  disabled={isLoading}
+                >
+                  {t("button.login")}
+                </Button>
+              </Grid>
+            </Grid>
+          </ContentContainer>
+        </form>
+      </Paper>
     </Grid>
   );
 };

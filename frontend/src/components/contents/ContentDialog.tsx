@@ -23,7 +23,6 @@ import {
   FieldErrors,
   useForm,
 } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import DialogButtons from "@/app-components/buttons/DialogButtons";
@@ -36,6 +35,8 @@ import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
 import {
   ContentField,
@@ -60,7 +61,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
   field,
   errors,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
 
   switch (contentField.type) {
     case ContentFieldType.TEXT:
@@ -70,7 +71,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
         <Input
           multiline={contentField.type === ContentFieldType.TEXTAREA}
           rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
-          label={t(`label.${contentField.name}`, {
+          label={t("label", contentField.name as TNestedTranslation<"label">, {
             defaultValue: contentField.label,
           })}
           InputProps={
@@ -92,7 +93,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.CHECKBOX:
       return (
         <FormControlLabel
-          label={t(`label.${contentField.name}`, {
+          label={t("label", contentField.name as TNestedTranslation<"label">, {
             defaultValue: contentField.label,
           })}
           {...field}
@@ -102,7 +103,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.FILE:
       return (
         <AttachmentInput
-          label={t(`label.${contentField.name}`, {
+          label={t("label", contentField.name as TNestedTranslation<"label">, {
             defaultValue: contentField.label,
           })}
           {...field}
@@ -133,7 +134,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
     content: undefined,
     contentType: undefined,
   };
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const {
     reset,

@@ -10,7 +10,6 @@ import { Flag } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
@@ -29,6 +28,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
@@ -38,7 +38,7 @@ import { getDateTimeFormatter } from "@/utils/date";
 import { LanguageDialog } from "./LanguageDialog";
 
 export const Languages = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const addDialogCtl = useDialog<ILanguage>(false);
   const editDialogCtl = useDialog<ILanguage>(false);

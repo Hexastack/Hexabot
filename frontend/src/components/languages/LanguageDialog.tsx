@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { FC, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -26,6 +25,7 @@ import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ILanguage, ILanguageAttributes } from "@/types/language.types";
 
@@ -36,7 +36,7 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const { mutateAsync: createLanguage } = useCreate(EntityType.LANGUAGE, {
     onError: () => {

@@ -45,16 +45,16 @@ export class SubscriberRepository extends BaseRepository<
   /**
    * Emits events related to the creation of a new subscriber.
    *
-   * @param _created - The newly created subscriber document.
+   * @param created - The newly created subscriber document.
    */
-  async postCreate(_created: SubscriberDocument): Promise<void> {
+  async postCreate(created: SubscriberDocument): Promise<void> {
     this.eventEmitter.emit(
       'hook:stats:entry',
       'new_users',
       'New users',
-      _created,
+      created,
     );
-    this.eventEmitter.emit('hook:chatbot:subscriber:create', _created);
+    this.eventEmitter.emit('hook:subscriber:create', created);
   }
 
   /**
@@ -81,7 +81,7 @@ export class SubscriberRepository extends BaseRepository<
     const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
 
     this.eventEmitter.emit(
-      'hook:chatbot:subscriber:update:before',
+      'hook:subscriber:update:before',
       criteria,
       subscriberUpdates,
     );
@@ -122,7 +122,7 @@ export class SubscriberRepository extends BaseRepository<
     >,
     updated: Subscriber,
   ) {
-    this.eventEmitter.emit('hook:chatbot:subscriber:update:after', updated);
+    this.eventEmitter.emit('hook:subscriber:update:after', updated);
   }
 
   /**

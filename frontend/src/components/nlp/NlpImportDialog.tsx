@@ -9,7 +9,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "react-query";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
@@ -20,6 +19,7 @@ import { isSameEntity } from "@/hooks/crud/helpers";
 import { useApiClient } from "@/hooks/useApiClient";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, QueryType } from "@/services/types";
 
 export type NlpImportDialogProps = DialogControlProps<never>;
@@ -30,7 +30,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
   ...rest
 }) => {
   const [attachmentId, setAttachementId] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { apiClient } = useApiClient();

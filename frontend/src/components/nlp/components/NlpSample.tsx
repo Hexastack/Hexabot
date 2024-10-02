@@ -22,7 +22,6 @@ import {
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
@@ -43,6 +42,8 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import {
@@ -67,7 +68,7 @@ const NLP_SAMPLE_TYPE_COLORS = {
 export default function NlpSample() {
   const { apiUrl } = useConfig();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const [type, setType] = useState<NlpSampleType | undefined>(undefined);
   const [language, setLanguage] = useState<string | undefined>(undefined);
   const hasPermission = useHasPermission();
@@ -296,7 +297,9 @@ export default function NlpSample() {
                   </IconButton>
                 ),
               }),
-              renderValue: (value) => <Box>{t(`label.${value}`)}</Box>,
+              renderValue: (value) => (
+                <Box>{t("label", value as TNestedTranslation<"label">)}</Box>
+              ),
             }}
           >
             {Object.values(NlpSampleType).map((nlpSampleType, index) => (

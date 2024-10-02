@@ -16,7 +16,6 @@ import {
 import Link from "next/link";
 import { useEffect, FC, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -27,6 +26,7 @@ import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ILabel } from "@/types/label.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
@@ -43,7 +43,7 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const { toast } = useToast();
   const [fullName, setFullName] = useState<string>("");
   const { mutateAsync: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {

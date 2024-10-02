@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { useEffect, FC } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -23,6 +22,8 @@ import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContai
 import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
+import { useTranslate } from "@/hooks/useTranslate";
+import { TNestedTranslation } from "@/i18n/i18n.types";
 import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
 
@@ -45,7 +46,7 @@ export const MenuDialog: FC<MenuDialogProps> = ({
   parentId,
   ...rest
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     reset,
     resetField,
@@ -123,9 +124,11 @@ export const MenuDialog: FC<MenuDialogProps> = ({
                         helperText={errors.type ? errors.type.message : null}
                         {...rest}
                       >
-                        {Object.keys(MenuType).map((value, key) => (
+                        {(
+                          Object.keys(MenuType) as TNestedTranslation<"label">[]
+                        ).map((value, key) => (
                           <MenuItem value={value} key={key}>
-                            {t(`label.${value}`)}
+                            {t("label", value)}
                           </MenuItem>
                         ))}
                       </Input>

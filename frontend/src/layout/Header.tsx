@@ -18,13 +18,13 @@ import {
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { FC, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
@@ -74,7 +74,7 @@ export type HeaderProps = {
 };
 export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   const { apiUrl, ssoEnabled } = useConfig();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const anchorRef = useRef(null);
   const [isMenuPopoverOpen, setIsMenuPopoverOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();

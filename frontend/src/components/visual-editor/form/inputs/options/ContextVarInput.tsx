@@ -10,11 +10,11 @@ import ArrowLeftOutlinedIcon from "@mui/icons-material/ArrowLeftOutlined";
 import { Grid } from "@mui/material";
 import { FC } from "react";
 import { useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import { useFind } from "@/hooks/crud/useFind";
+import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { CaptureVar, IBlockAttributes, IBlockFull } from "@/types/block.types";
 import { IContextVar } from "@/types/context-var.types";
@@ -37,7 +37,7 @@ const ContextVarInput: FC<ContextVarInputProps> = ({
   value,
   onChange,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     register,
     formState: { errors },

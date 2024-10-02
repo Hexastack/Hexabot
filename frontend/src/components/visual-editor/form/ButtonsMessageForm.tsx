@@ -7,12 +7,12 @@
  */
 
 import { Controller, useFormContext } from "react-hook-form";
-import { useTranslation } from "react-i18next";
 
 import { ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
+import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 
 import { useBlock } from "./BlockFormProvider";
@@ -21,7 +21,7 @@ import ButtonsInput from "./inputs/message/ButtonsInput";
 
 const ButtonsMessageForm = () => {
   const block = useBlock();
-  const { t } = useTranslation();
+  const { t } = useTranslate();
   const {
     control,
     formState: { errors },
