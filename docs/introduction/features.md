@@ -87,7 +87,7 @@ When your chatbot encounters a complex or sensitive issue, Hexabot's Agent Takeo
 
 ## User and Role Management
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>Manage Users</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (20).png" alt=""><figcaption><p>Manage Users</p></figcaption></figure>
 
 Hexabot offers robust user management features that streamline collaboration and enhance security within your chatbot projects. You can effortlessly invite new users to join your workspace, making it easy to bring team members, stakeholders, or clients on board. Invitations are sent directly through the platform, allowing for a smooth onboarding process and immediate engagement with your project.
 

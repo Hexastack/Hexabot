@@ -32,11 +32,20 @@ Check NVM official documentation for more details :[https://github.com/nvm-sh/nv
 $ git clone https://github.com/hexastack/hexabot.git
 ```
 
-2. **Environment Setup:** \
-   To configure the environment variables, use the Makefile at the root folder for initialization:
+2. **Installation:**
+
+Install node dependencies using:
 
 ```
-$ make init
+$ npm install
+```
+
+2. **Environment Setup:**&#x20;
+
+To configure the environment variables, use the Makefile at the root folder for initialization:
+
+```
+$ npx hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
@@ -66,13 +75,19 @@ This will install `make` and other developer tools without needing to install th
 </details>
 
 ```
-$ make start
+$ npx hexabot start
 ```
 
 Or for development mode:
 
 ```
-$ make dev
+$ npx hexabot dev
+```
+
+You can enable specific services like the NLU engine, nginx or smtp4dev (coma seperated) :
+
+```
+$ npx hexabot dev --enable=nlu
 ```
 
 ### Usage
@@ -95,9 +110,8 @@ Live Chat Widget demo is accessible via [http://localhost:5173](http://localhost
 
 ### Useful Commands
 
-* `make init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-* `make dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
-* `make start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
-* `make stop` : Stops all running Docker services defined in the compose files.
-* `make destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
-* `make check-env` : Checks if the ./docker/.env file exists and contains all the necessary environment variables as defined in ./docker/.env.example. If the file does not exist, it is created from the example. It also lists missing variables if any.
+* `npx hexabot init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
+* `npx hexabot dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
+* `npx hexabot start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
+* `npx hexabot stop` : Stops all running Docker services defined in the compose files.
+* `npx hexabot destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
