@@ -42,26 +42,11 @@ export const useUpdate = <
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const normalizeAndCache = useNormalizeAndCache<TBasic, string>(entity);
-  // const queryClient = useQueryClient();
-  // const { invalidate = true } = options || {};
 
   return useMutation({
     mutationFn: async ({ id, params }) => {
       const data = await api.update(id, params);
       const { entities, result } = normalizeAndCache(data);
-
-      // if (invalidate) {
-      //   queryClient.removeQueries({
-      //     predicate: ({ queryKey }) => {
-      //       const [qType, qEntity] = queryKey;
-
-      //       return (
-      //         (qType === QueryType.count || qType === QueryType.collection) &&
-      //         isSameEntity(qEntity, entity)
-      //       );
-      //     },
-      //   });
-      // }
 
       return entities[entity]?.[result] as unknown as TBasic;
     },
