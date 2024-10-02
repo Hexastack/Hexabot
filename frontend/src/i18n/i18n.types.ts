@@ -12,10 +12,12 @@ import { translations } from ".";
 
 import { TFilterNestedKeysOfType } from "@/types/common/object.types";
 
-export type TTranslation =
-  | (typeof translations)["en"]
-  | (typeof translations)["fr"];
-export type TTranslationKeys = TFilterNestedKeysOfType<TTranslation>;
+type TEnTranslation = (typeof translations)["en"];
+type TFrTranslation = (typeof translations)["fr"];
+
+export type TTranslation = TEnTranslation & TFrTranslation;
+export type TTranslationKeys = TFilterNestedKeysOfType<TEnTranslation> &
+  TFilterNestedKeysOfType<TFrTranslation>;
 
 export type TNestedTranslation<T extends keyof TTranslation> =
   TFilterNestedKeysOfType<TTranslation[T]>;
