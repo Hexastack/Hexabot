@@ -17,7 +17,7 @@ layout:
 
 Welcome to the Hexabot Documentation! Hexabot is a powerful and versatile open-source chatbot platform designed to simplify the creation and management of intelligent conversational chatbots. Whether you're a business owner seeking to automate customer interactions, an organization looking to engage your audience, or a developer wanting to integrate conversational AI into your applications, Hexabot provides the tools and flexibility you need.
 
-<figure><img src=".gitbook/assets/mediamodifier_image.png" alt=""><figcaption><p>A preview of Hexabot visual editor</p></figcaption></figure>
+<figure><img src=".gitbook/assets/Mockup 01.png" alt=""><figcaption><p>A preview of Hexabot visual editor</p></figcaption></figure>
 
 ## Key Features
 
