@@ -163,10 +163,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
   const onSubmitForm = async (params: IContentAttributes) => {
     if (content) {
       updateContent(
-        {
-          id: content.id,
-          params: { ...params, entity: params.entity },
-        },
+        { id: content.id, params },
         {
           onError: () => {
             toast.error(t("message.internal_server_error"));
