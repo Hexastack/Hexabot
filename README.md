@@ -4,8 +4,10 @@
 
 ## Description
 
-[Hexabot](https://hexabot.ai/) Community Edition is an open-source chatbot solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with extensions.
+[Hexabot](https://hexabot.ai/) is an open-source chatbot solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with extensions.
 
+
+<a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 ## Features
 
 - **Analytics Dashboard:** Monitor chatbot interactions and performance with insightful metrics and visualizations.
@@ -43,24 +45,36 @@ To ensure Hexabot runs smoothly, you'll need the following:
 $ git clone https://github.com/hexastack/hexabot.git
 ```
 
-2. **Environment Setup:** To configure the environment variables, use the Makefile at the root folder for initialization:
+2. **Install:**
 
 ```bash
-$ make init
+$ npm install
+```
+
+3. **Environment Setup:** To configure the environment variables, use the following command at the root folder for initialization:
+
+```bash
+$ npx hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
-3. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
+4. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
 
 ```bash
-$ make start
+$ npx hexabot start
 ```
 
 or for development mode:
 
 ```bash
-$ make dev
+$ npx hexabot dev
+```
+
+You can also enable services such as the NLU engine or Nginx :
+
+```bash
+$ npx hexabot --enable=nlu
 ```
 
 **Note:** The first time you run the app, Docker will take some time to download all the required images.
@@ -76,17 +90,16 @@ Live Chat Widget is accessible via http://localhost:5173
 
 ## Commands
 
-- `make init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-- `make dev` : Starts all configured Docker services in development mode. It first checks the .env file for completeness against .env.example and builds the docker images locally.
-- `make start` : Starts all configured Docker services by loading all images from Docker Hub. This target also checks the .env file for required variables.
-- `make stop` : Stops all running Docker services defined in the compose files.
-- `make destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
-- `make check-env` : Checks if the ./docker/.env file exists and contains all the necessary environment variables as defined in ./docker/.env.example. If the file does not exist, it is created from the example. It also lists missing variables if any.
+- `npx hexabot init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
+- `npx hexabot dev` : Starts all configured Docker services in development mode. It first checks the .env file for completeness against .env.example and builds the docker images locally.
+- `npx hexabot start` : Starts all configured Docker services by loading all images from Docker Hub. This target also checks the .env file for required variables.
+- `npx hexabot stop` : Stops all running Docker services defined in the compose files.
+- `npx hexabot destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
 
 Example on how to start the stack by adding the Nginx service :
 
 ```sh
-make start NGINX=1
+npx hexabot start --enable=nginx
 ```
 
 ## Documentation
@@ -105,6 +118,8 @@ You can also find specific documentation for different components of the project
 We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
 
 Please refer to our contribution policy first : [How to contribute to Hexabot](./CONTRIBUTING.md)
+
+
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
 
 Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)

@@ -82,5 +82,5 @@ jobs:
             cd /home/***/hexabot
             git checkout release
             git pull origin release
-            make stop NLU=1 
-            make start NLU=1
+            npx hexabot stop --enable=nlu 
+            npx hexabot start --enable=nlu
