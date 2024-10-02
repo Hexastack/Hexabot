@@ -1,0 +1,35 @@
+{
+  "name": "hexabot-cli",
+  "version": "2.0.0",
+  "description": "Hexabot CLI for creating and managing chatbots built with Hexabot.",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "hexabot": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js",
+    "dev": "ts-node src/cli.ts",
+    "prepare": "npm run build"
+  },
+  "keywords": [],
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "degit": "^2.8.4",
+    "dotenv": "^16.4.5",
+    "figlet": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/commander": "^2.12.2",
+    "@types/degit": "^2.8.6",
+    "@types/figlet": "^1.5.8",
+    "@types/node": "^22.7.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
