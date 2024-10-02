@@ -43,7 +43,7 @@ export class LabelRepository extends BaseRepository<
    */
   async postCreate(created: LabelDocument): Promise<void> {
     this.eventEmitter.emit(
-      'hook:chatbot:label:create',
+      'hook:label:create',
       created,
       async (result: Record<string, any>) => {
         await this.model.updateOne(
@@ -82,6 +82,6 @@ export class LabelRepository extends BaseRepository<
     const labels = await this.find(
       typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
     );
-    this.eventEmitter.emit('hook:chatbot:label:delete', labels);
+    this.eventEmitter.emit('hook:label:delete', labels);
   }
 }
