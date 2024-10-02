@@ -23,7 +23,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
+import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -82,7 +82,6 @@ export const Contents = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
   const actionColumns = useActionColumns<IContent>(
     EntityType.CONTENT,
     [
@@ -165,10 +164,8 @@ export const Contents = () => {
                     field: "entity",
                     headerName: t("label.entity"),
                     flex: 1,
-                    valueGetter: (row: IContent) => {
-                      const contentType = getEntityFromCache(row.id);
-
-                      return contentType?.name;
+                    valueGetter: () => {
+                      return data?.name;
                     },
                   },
                   {
@@ -195,7 +192,7 @@ export const Contents = () => {
                             params: {
                               status: !params.row.status,
                               title: params.row.title,
-                              entity: (params.row.entity as any).id,
+                              entity: params.row.entity,
                             },
                           });
                         }}

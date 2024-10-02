@@ -165,7 +165,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
       updateContent(
         {
           id: content.id,
-          params: { ...params, entity: (params.entity as any).id },
+          params: { ...params, entity: params.entity },
         },
         {
           onError: () => {

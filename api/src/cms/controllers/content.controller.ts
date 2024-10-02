@@ -215,9 +215,7 @@ export class ContentController extends BaseController<
     )
     filters: TFilterQuery<Content>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.contentService.findPageAndPopulate(filters, pageQuery)
-      : await this.contentService.findPage(filters, pageQuery);
+    return await this.contentService.findPage(filters, pageQuery);
   }
 
   /**
