@@ -10,7 +10,6 @@ import {
   enqueueSnackbar,
   SnackbarProvider as ToastProvider,
 } from "notistack";
-
 import { useTranslation } from "react-i18next";
 
 export { ToastProvider };
@@ -41,7 +40,6 @@ const TOAST_WARNING_STYLE = {
 
 export const useToast = () => {
   const { t } = useTranslation();
-
   const extractErrorMessage = (error: any) => {
     if (error?.statusCode == 409) {
       return t("message.duplicate_error");
@@ -54,6 +52,7 @@ export const useToast = () => {
     toast: {
       error: (error: any, options?: OptionsObject<"error">) => {
         const errorMessage = extractErrorMessage(error);
+
         enqueueSnackbar(errorMessage, {
           variant: "error",
           ...options,
