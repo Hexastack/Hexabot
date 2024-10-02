@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
+import degit from 'degit';
 
 console.log(figlet.textSync('Hexabot'));
 
@@ -91,7 +92,10 @@ const dockerCompose = (args: string): void => {
  * @returns Array of services
  */
 const parseServices = (serviceString: string): string[] => {
-  return serviceString.split(',').map((service) => service.trim());
+  return serviceString
+    .split(',')
+    .map((service) => service.trim())
+    .filter((s) => s);
 };
 
 // Check if the docker folder exists
@@ -172,6 +176,77 @@ program
     const services = parseServices(options.enable);
     const composeArgs = generateComposeFiles(services);
     dockerCompose(`${composeArgs} down -v`);
+  });
+
+// Add install command to install extensions (e.g., channels, plugins)
+program
+  .command('install')
+  .description('Install an extension for Hexabot')
+  .argument('<type>', 'The type of extension (e.g., channel, plugin)')
+  .argument(
+    '<repository>',
+    'GitHub repository for the extension (user/repo format)',
+  )
+  .action(async (type, repository) => {
+    // Define the target folder based on the extension type
+    let targetFolder = '';
+    switch (type) {
+      case 'channel':
+        targetFolder = 'api/src/extensions/channels/';
+        break;
+      case 'plugin':
+        targetFolder = 'api/src/extensions/plugins/';
+        break;
+      default:
+        console.error(chalk.red(`Unknown extension type: ${type}`));
+        process.exit(1);
+    }
+
+    // Get the last part of the repository name
+    const repoName = repository.split('/').pop();
+
+    // If the repo name starts with "hexabot-channel-", remove that prefix
+    const extensionName = repoName.startsWith('hexabot-channel-')
+      ? repoName.replace('hexabot-channel-', '')
+      : repoName;
+
+    const extensionPath = path.resolve(
+      process.cwd(),
+      targetFolder,
+      extensionName,
+    );
+
+    // Check if the extension folder already exists
+    if (fs.existsSync(extensionPath)) {
+      console.error(
+        chalk.red(`Error: Extension already exists at ${extensionPath}`),
+      );
+      process.exit(1);
+    }
+
+    try {
+      console.log(
+        chalk.cyan(`Fetching ${repository} into ${extensionPath}...`),
+      );
+
+      // Use degit to fetch the repository without .git history
+      const emitter = degit(repository);
+      await emitter.clone(extensionPath);
+
+      console.log(chalk.cyan('Running npm install in the api/ folder...'));
+      // Run npm install in the api folder to install dependencies
+      execSync('npm install', {
+        cwd: path.resolve(process.cwd(), 'api'),
+        stdio: 'inherit',
+      });
+
+      console.log(
+        chalk.green(`Successfully installed ${extensionName} as a ${type}.`),
+      );
+    } catch (error) {
+      console.error(chalk.red('Error during installation:'), error);
+      process.exit(1);
+    }
   });
 
 // Parse arguments

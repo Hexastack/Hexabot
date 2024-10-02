@@ -19,12 +19,14 @@
   "dependencies": {
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
+    "degit": "^2.8.4",
     "dotenv": "^16.4.5",
     "figlet": "^1.7.0"
   },
   "devDependencies": {
     "@types/chalk": "^2.2.0",
     "@types/commander": "^2.12.2",
+    "@types/degit": "^2.8.6",
     "@types/figlet": "^1.5.8",
     "@types/node": "^22.7.4",
     "ts-node": "^10.9.2",

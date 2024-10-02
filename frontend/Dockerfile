@@ -47,7 +47,8 @@ WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-COPY . .
+COPY ./frontend ./frontend
+COPY ./widget ./widget
 
 RUN npm install
 
