@@ -8,6 +8,5 @@ node_modules
 .husky
 .prettierrc
 coverage*
-Makefile
 README.md
 test
