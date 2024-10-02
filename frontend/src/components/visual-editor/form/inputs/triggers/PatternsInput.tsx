@@ -10,6 +10,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton, styled } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
@@ -37,6 +38,19 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
     value.map((pattern) => createValueWithId(pattern)),
   );
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<any>();
+  const getInputProps = (index: number) => {
+    return {
+      ...register(`message.${index}`, {
+        required: t("message.text_is_required"),
+      }),
+      error: !!errors?.message?.[index],
+      helperText: errors?.message?.[index]?.message,
+    };
+  };
   const addInput = () => {
     setPatterns([...patterns, createValueWithId<Pattern>("")]);
   };
@@ -73,6 +87,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                 idx={idx}
                 value={value}
                 onChange={updateInput(idx)}
+                getInputProps={getInputProps}
               />
             </Fragment>
           ))
