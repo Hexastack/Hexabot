@@ -32,3 +32,25 @@ export class ContentCreateDto {
   @IsOptional()
   dynamicFields?: Record<string, any>;
 }
+
+export class ContentUpdateDto {
+  @ApiProperty({ description: 'Content entity', type: String })
+  @IsString()
+  @IsNotEmpty()
+  @IsObjectId({ message: 'Entity must be a valid ObjectId' })
+  entity: string;
+
+  @ApiProperty({ description: 'Content title', type: String })
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @ApiPropertyOptional({ description: 'Content status', type: Boolean })
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean;
+
+  @ApiPropertyOptional({ description: 'Content dynamic fields', type: Object })
+  @IsOptional()
+  dynamicFields?: Record<string, any>;
+}

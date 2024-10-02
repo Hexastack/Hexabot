@@ -16,7 +16,7 @@ export const preprocessDynamicFields = (
     _csrf: _csrf?.toString(),
     entity: entity.toString(),
     status: !!status,
-    title: title.toString(),
+    title: title?.toString(),
     dynamicFields,
   };
 
