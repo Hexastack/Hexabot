@@ -39,8 +39,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
-import { ContentCreateDto } from '../dto/content.dto';
-import { ContentTransformInterceptor } from '../interceptors/content.interceptor';
+import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
 import { ContentType } from '../schemas/content-type.schema';
 import {
   Content,
@@ -48,9 +47,8 @@ import {
   ContentPopulate,
   ContentStub,
 } from '../schemas/content.schema';
-import { preprocessDynamicFields } from '../utilities';
 
-@UseInterceptors(ContentTransformInterceptor, CsrfInterceptor)
+@UseInterceptors(CsrfInterceptor)
 @Controller('content')
 export class ContentController extends BaseController<
   Content,
@@ -116,8 +114,7 @@ export class ContentController extends BaseController<
         entity: contentType?.id,
       },
     });
-    const newContent = this.filterDynamicFields(contentDto, contentType);
-    return await this.contentService.create(newContent);
+    return await this.contentService.create(contentDto);
   }
 
   /**
@@ -186,12 +183,22 @@ export class ContentController extends BaseController<
       });
     }
 
-    const contentsDto = result.data.map((content) => {
-      content.entity = targetContentType;
-      const dto = preprocessDynamicFields(content);
-      // Match headers against entity fields
-      return this.filterDynamicFields(dto, contentType);
-    });
+    const contentsDto = result.data.reduce(
+      (acc, { title, status, ...rest }) => [
+        ...acc,
+        {
+          title,
+          status,
+          entity: targetContentType,
+          dynamicFields: Object.keys(rest)
+            .filter((key) =>
+              contentType.fields.map((field) => field.name).includes(key),
+            )
+            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+        },
+      ],
+      [],
+    );
 
     // Create content
     return await this.contentService.createMany(contentsDto);
@@ -319,16 +326,12 @@ export class ContentController extends BaseController<
    * @returns The updated content document.
    */
   @CsrfCheck(true)
-  @Patch('/:id')
+  @Patch(':id')
   async updateOne(
-    @Body() contentDto: ContentCreateDto,
+    @Body() contentDto: ContentUpdateDto,
     @Param('id') id: string,
   ): Promise<Content> {
-    const contentType = await this.contentTypeService.findOne(
-      contentDto.entity,
-    );
-    const newContent = this.filterDynamicFields(contentDto, contentType);
-    const updatedContent = await this.contentService.updateOne(id, newContent);
+    const updatedContent = await this.contentService.updateOne(id, contentDto);
     if (!updatedContent) {
       this.logger.warn(
         `Failed to update content with id ${id}. Content not found.`,

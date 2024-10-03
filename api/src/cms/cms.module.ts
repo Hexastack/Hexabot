@@ -6,13 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  forwardRef,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
@@ -21,7 +15,6 @@ import { ChatModule } from '@/chat/chat.module';
 import { ContentTypeController } from './controllers/content-type.controller';
 import { ContentController } from './controllers/content.controller';
 import { MenuController } from './controllers/menu.controller';
-import { ContentMiddleWare } from './middlewares/content.middleware';
 import { ContentTypeRepository } from './repositories/content-type.repository';
 import { ContentRepository } from './repositories/content.repository';
 import { MenuRepository } from './repositories/menu.repository';
@@ -55,13 +48,4 @@ import { AttachmentModel } from '../attachment/schemas/attachment.schema';
   ],
   exports: [MenuService, ContentService, ContentTypeService],
 })
-export class CmsModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ContentMiddleWare)
-      .forRoutes(
-        { path: 'content', method: RequestMethod.POST },
-        { path: 'content/:id', method: RequestMethod.PATCH },
-      );
-  }
-}
+export class CmsModule {}
