@@ -41,7 +41,6 @@ export const ContentTypes = () => {
   const router = useRouter();
   // Dialog Controls
   const addDialogCtl = useDialog<IContentType>(false);
-  const editDialogCtl = useDialog<IContentType>(false);
   const deleteDialogCtl = useDialog<string>(false);
   const fieldsDialogCtl = useDialog<IContentType>(false);
   // data fetching
@@ -119,7 +118,6 @@ export const ContentTypes = () => {
       <Grid item xs={12}>
         <Paper>
           <ContentTypeDialog {...getDisplayDialogs(addDialogCtl)} />
-          <ContentTypeDialog {...getDisplayDialogs(editDialogCtl)} />
           <DeleteDialog
             {...deleteDialogCtl}
             callback={() => {
