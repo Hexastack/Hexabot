@@ -164,10 +164,14 @@ export const ContentTypeEntity = new schema.Entity(
   },
 );
 
-export const ContentEntity = new schema.Entity(EntityType.CONTENT, undefined, {
-  idAttribute: ({ id }) => id,
-  processStrategy: processCommonStrategy,
-});
+export const ContentEntity = new schema.Entity(
+  EntityType.CONTENT,
+  { entity: ContentTypeEntity },
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
 
 export const SettingEntity = new schema.Entity(EntityType.SETTING, {
   idAttribute: ({ id }) => id,
