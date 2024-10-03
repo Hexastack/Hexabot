@@ -39,7 +39,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
-import { ContentCreateDto } from '../dto/content.dto';
+import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
 import { ContentTransformInterceptor } from '../interceptors/content.interceptor';
 import { ContentType } from '../schemas/content-type.schema';
 import {
@@ -319,16 +319,12 @@ export class ContentController extends BaseController<
    * @returns The updated content document.
    */
   @CsrfCheck(true)
-  @Patch('/:id')
+  @Patch(':id')
   async updateOne(
-    @Body() contentDto: ContentCreateDto,
+    @Body() contentDto: ContentUpdateDto,
     @Param('id') id: string,
   ): Promise<Content> {
-    const contentType = await this.contentTypeService.findOne(
-      contentDto.entity,
-    );
-    const newContent = this.filterDynamicFields(contentDto, contentType);
-    const updatedContent = await this.contentService.updateOne(id, newContent);
+    const updatedContent = await this.contentService.updateOne(id, contentDto);
     if (!updatedContent) {
       this.logger.warn(
         `Failed to update content with id ${id}. Content not found.`,

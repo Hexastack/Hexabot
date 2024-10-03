@@ -14,9 +14,9 @@ export const preprocessDynamicFields = (
   const { _csrf, title, status, entity, ...dynamicFields } = content;
   const processed: ContentCreateDto & { _csrf?: string } = {
     _csrf: _csrf?.toString(),
-    entity: entity.toString(),
+    entity: entity?.toString(),
     status: !!status,
-    title: title.toString(),
+    title: title?.toString(),
     dynamicFields,
   };
 

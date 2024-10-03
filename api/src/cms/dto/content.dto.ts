@@ -32,3 +32,15 @@ export class ContentCreateDto {
   @IsOptional()
   dynamicFields?: Record<string, any>;
 }
+
+export class ContentUpdateDto {
+  @ApiPropertyOptional({ description: 'Content title', type: String })
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @ApiPropertyOptional({ description: 'Content status', type: Boolean })
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean;
+}
