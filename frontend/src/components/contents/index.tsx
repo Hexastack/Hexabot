@@ -165,8 +165,9 @@ export const Contents = () => {
                     field: "entity",
                     headerName: t("label.entity"),
                     flex: 1,
-                    valueGetter: (row: IContent) => {
-                      const contentType = getEntityFromCache(row.id);
+                    renderCell: ({ value }) => {
+                      const id = typeof value === "string" ? value : value.id;
+                      const contentType = getEntityFromCache(id);
 
                       return contentType?.name;
                     },
