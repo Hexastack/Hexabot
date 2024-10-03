@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsString, IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
@@ -33,18 +33,4 @@ export class ContentCreateDto {
   dynamicFields?: Record<string, any>;
 }
 
-export class ContentUpdateDto {
-  @ApiPropertyOptional({ description: 'Content title', type: String })
-  @IsString()
-  @IsOptional()
-  title?: string;
-
-  @ApiPropertyOptional({ description: 'Content status', type: Boolean })
-  @IsBoolean()
-  @IsOptional()
-  status?: boolean;
-
-  @ApiPropertyOptional({ description: 'Content dynamic fields', type: Object })
-  @IsOptional()
-  dynamicFields?: Record<string, any>;
-}
+export class ContentUpdateDto extends PartialType(ContentCreateDto) {}
