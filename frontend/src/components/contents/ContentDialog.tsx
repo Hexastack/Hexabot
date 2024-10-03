@@ -119,6 +119,20 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
       return <Input {...field} error={!!errors[contentField.name]} />;
   }
 };
+const INITIAL_FIELDS = ["title", "status"];
+const buildDynamicFields = (
+  content: IContentAttributes,
+  contentType?: IContentType,
+) => ({
+  title: content.title,
+  entity: content.entity,
+  status: content.status,
+  dynamicFields: {
+    ...contentType?.fields
+      ?.filter(({ name }) => !INITIAL_FIELDS.includes(name))
+      .reduce((acc, { name }) => ({ ...acc, [name]: content[name] }), {}),
+  },
+});
 
 export type ContentDialogProps = DialogControlProps<{
   content?: IContent;
@@ -163,7 +177,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
   const onSubmitForm = async (params: IContentAttributes) => {
     if (content) {
       updateContent(
-        { id: content.id, params },
+        { id: content.id, params: buildDynamicFields(params, contentType) },
         {
           onError: () => {
             toast.error(t("message.internal_server_error"));
@@ -176,7 +190,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
       );
     } else if (contentType) {
       createContent(
-        { ...params, entity: contentType.id },
+        { ...buildDynamicFields(params, contentType), entity: contentType.id },
         {
           onError: (error) => {
             toast.error(error);
@@ -198,11 +212,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
 
   useEffect(() => {
     if (content) {
-      reset({
-        entity: content.entity,
-        status: content.status,
-        title: content.title,
-      });
+      reset(content);
     } else {
       reset();
     }
@@ -221,7 +231,11 @@ export const ContentDialog: FC<ContentDialogProps> = ({
                 <Controller
                   name={contentField.name}
                   control={control}
-                  defaultValue={content ? content[contentField.name] : null}
+                  defaultValue={
+                    content
+                      ? content?.["dynamicFields"]?.[contentField.name]
+                      : null
+                  }
                   rules={
                     contentField.name === "title"
                       ? validationRules.title
