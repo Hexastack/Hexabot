@@ -43,6 +43,7 @@
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.3.7",
+    "@nestjs/swagger": "^7.2.0",
     "@nestjs/websockets": "^10.3.7",
     "@resvg/resvg-js": "^2.6.2",
     "@tekuconcept/nestjs-csrf": "^1.1.0",
@@ -63,7 +64,6 @@
     "nestjs-dynamic-providers": "^0.3.4",
     "nestjs-i18n": "^10.4.0",
     "nodemailer": "^6.9.13",
-    "openai": "^4.54.0",
     "papaparse": "^5.4.1",
     "passport": "^0.6.0",
     "passport-anonymous": "^1.0.1",
@@ -74,8 +74,7 @@
     "rxjs": "^7.8.1",
     "slug": "^8.2.2",
     "ts-migrate-mongoose": "^3.8.3",
-    "uuid": "^9.0.1",
-    "@nestjs/swagger": "^7.2.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.24",
