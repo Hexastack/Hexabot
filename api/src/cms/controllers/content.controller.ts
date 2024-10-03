@@ -40,7 +40,6 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
-import { ContentTransformInterceptor } from '../interceptors/content.interceptor';
 import { ContentType } from '../schemas/content-type.schema';
 import {
   Content,
@@ -48,9 +47,8 @@ import {
   ContentPopulate,
   ContentStub,
 } from '../schemas/content.schema';
-import { preprocessDynamicFields } from '../utilities';
 
-@UseInterceptors(ContentTransformInterceptor, CsrfInterceptor)
+@UseInterceptors(CsrfInterceptor)
 @Controller('content')
 export class ContentController extends BaseController<
   Content,
@@ -116,8 +114,7 @@ export class ContentController extends BaseController<
         entity: contentType?.id,
       },
     });
-    const newContent = this.filterDynamicFields(contentDto, contentType);
-    return await this.contentService.create(newContent);
+    return await this.contentService.create(contentDto);
   }
 
   /**
@@ -186,12 +183,22 @@ export class ContentController extends BaseController<
       });
     }
 
-    const contentsDto = result.data.map((content) => {
-      content.entity = targetContentType;
-      const dto = preprocessDynamicFields(content);
-      // Match headers against entity fields
-      return this.filterDynamicFields(dto, contentType);
-    });
+    const contentsDto = result.data.reduce(
+      (acc, { title, status, ...rest }) => [
+        ...acc,
+        {
+          title,
+          status,
+          entity: targetContentType,
+          dynamicFields: Object.keys(rest)
+            .filter((key) =>
+              contentType.fields.map((field) => field.name).includes(key),
+            )
+            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+        },
+      ],
+      [],
+    );
 
     // Create content
     return await this.contentService.createMany(contentsDto);

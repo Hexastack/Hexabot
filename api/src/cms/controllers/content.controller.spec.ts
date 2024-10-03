@@ -35,7 +35,6 @@ import {
 
 import { ContentController } from './content.controller';
 import { ContentCreateDto } from '../dto/content.dto';
-import { ContentTransformInterceptor } from '../interceptors/content.interceptor';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
 import { ContentType, ContentTypeModel } from '../schemas/content-type.schema';
@@ -48,7 +47,6 @@ describe('ContentController', () => {
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
   let attachmentService: AttachmentService;
-  let transformInterceptor: ContentTransformInterceptor;
   let contentType: ContentType;
   let content: Content;
   let attachment: Attachment;
@@ -74,7 +72,6 @@ describe('ContentController', () => {
         AttachmentService,
         ContentTypeRepository,
         AttachmentRepository,
-        ContentTransformInterceptor,
         EventEmitter2,
       ],
     }).compile();
@@ -82,9 +79,6 @@ describe('ContentController', () => {
     contentService = module.get<ContentService>(ContentService);
     attachmentService = module.get<AttachmentService>(AttachmentService);
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    transformInterceptor = module.get<ContentTransformInterceptor>(
-      ContentTransformInterceptor,
-    );
     contentType = await contentTypeService.findOne({ name: 'Product' });
     content = await contentService.findOne({
       title: 'Jean',
@@ -234,28 +228,6 @@ describe('ContentController', () => {
         'rag',
         ...IGNORED_TEST_FIELDS,
       ]);
-    });
-  });
-
-  describe('filterDynamicFields', () => {
-    it('should flatten dynamic fields', () => {
-      const result = transformInterceptor.transformDynamicFields(
-        contentFixtures[0],
-      );
-
-      expect(result).toEqualPayload(
-        {
-          title: 'Jean',
-          status: true,
-          subtitle: 'Jean Droit Taille Normale',
-          image: {
-            payload: {
-              url: 'https://images-na.ssl-images-amazon.com/images/I/31DY09uzLDL._SX38_SY50_CR,0,0,38,50_.jpg',
-            },
-          },
-        },
-        ['entity', 'rag', ...IGNORED_TEST_FIELDS],
-      );
     });
   });
 
