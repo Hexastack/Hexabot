@@ -1,6 +1,13 @@
-# Hexabot
+# Hexabot - Chatbot Builder
 
-![App Screenshot](https://www.hexabot.ai/assets/images/screencast.gif)
+![Hexabot Logo](https://i.imgur.com/gz1FnM7.png)
+
+[![🎥 Introduction](https://img.shields.io/badge/🎥_Introduction-teal?style=rounded-square)](https://www.youtube.com/watch?v=VrQHbubOiG8)
+[![🌐 Website](https://img.shields.io/badge/🌐_Website-teal?style=rounded-square)](https://hexabot.ai)
+[![📄 Documentation](https://img.shields.io/badge/📄_Documentation-teal?style=rounded-square)](https://docs.hexabot.ai)
+[![💬 Discord](https://img.shields.io/badge/💬_Discord-teal?style=rounded-square)](https://discord.gg/rNb9t2MFkG)
+
+![App Screenshot](https://i.imgur.com/S4Baks4.gif)
 
 ## Description
 
