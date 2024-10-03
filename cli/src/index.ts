@@ -109,6 +109,21 @@ program
   .version('1.0.0');
 
 program
+  .command('init')
+  .description('Initialize the environment by copying .env.example to .env')
+  .action(() => {
+    const envPath = path.join(FOLDER, '.env');
+    const exampleEnvPath = path.join(FOLDER, '.env.example');
+
+    if (fs.existsSync(envPath)) {
+      console.log(chalk.yellow('.env file already exists.'));
+    } else {
+      fs.copyFileSync(exampleEnvPath, envPath);
+      console.log(chalk.green('Copied .env.example to .env'));
+    }
+  });
+
+program
   .command('start')
   .description('Start specified services with Docker Compose')
   .option(
