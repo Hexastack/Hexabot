@@ -205,9 +205,9 @@ program
     // Get the last part of the repository name
     const repoName = repository.split('/').pop();
 
-    // If the repo name starts with "hexabot-channel-", remove that prefix
-    const extensionName = repoName.startsWith('hexabot-channel-')
-      ? repoName.replace('hexabot-channel-', '')
+    // If the repo name starts with "hexabot-<TYPE>-", remove that prefix
+    const extensionName = repoName.startsWith(`hexabot-${type}-`)
+      ? repoName.replace(`hexabot-${type}-`, '')
       : repoName;
 
     const extensionPath = path.resolve(

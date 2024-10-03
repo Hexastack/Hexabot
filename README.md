@@ -4,8 +4,9 @@
 
 ## Description
 
-[Hexabot](https://hexabot.ai/) is an open-source chatbot solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with extensions.
+[Hexabot](https://hexabot.ai/) is an open-source AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with extensions.
 
+**NOTE:** We are currently working to package it in a way that it would be easy to install and use, hence there's no version release just yet.
 
 <a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 ## Features
@@ -45,8 +46,8 @@ To ensure Hexabot runs smoothly, you'll need the following:
 $ git clone https://github.com/hexastack/hexabot.git
 ```
 
-2. **Install:**
-
+2. **Installation:**
+Install node dependencies:
 ```bash
 $ npm install
 ```
