@@ -1,13 +1,33 @@
-# Hexabot - Chatbot Builder
+<p align="center">
+  <a href="https://hexabot.ai" target="_blank">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://i.imgur.com/Ov50Pwe.png">
+    <img alt="Logo" src="https://i.imgur.com/gz1FnM7.png" width="280"/>
+  </picture>
+  </a>
+</p>
 
-![Hexabot Logo](https://i.imgur.com/gz1FnM7.png)
+<div align="center">
+  <strong>
+  <h2>Build Smooth AI Chatbots / Agents</h2><br />
+  </strong>
+  Hexabot provides everything you need to create and manage your own AI powered chatbot / agent,<br />Customizable, Multi-Channel, Multi-Lingual and Text-to-Action Capabilities.
+</div>
 
-[![🎥 Introduction](https://img.shields.io/badge/🎥_Introduction-teal?style=rounded-square)](https://www.youtube.com/watch?v=VrQHbubOiG8)
-[![🌐 Website](https://img.shields.io/badge/🌐_Website-teal?style=rounded-square)](https://hexabot.ai)
-[![📄 Documentation](https://img.shields.io/badge/📄_Documentation-teal?style=rounded-square)](https://docs.hexabot.ai)
-[![💬 Discord](https://img.shields.io/badge/💬_Discord-teal?style=rounded-square)](https://discord.gg/rNb9t2MFkG)
+<p align="center">
+  <br />
+  <a href="https://docs.hexabot.ai" rel="dofollow"><strong>Explore the docs »</strong></a>
+  <br />
 
-![App Screenshot](https://i.imgur.com/S4Baks4.gif)
+  <br/>
+  <a href="https://www.youtube.com/watch?v=-SBwHcFQESg">Video Tutorial</a>
+  ·
+  <a href="https://discord.gg/rNb9t2MFkG">Join Our Discord</a>
+</p>
+
+<p align="center">
+  <video src="https://i.imgur.com/puWBpPI.mp4" width="100%" />
+</p>
 
 ## Description
 
