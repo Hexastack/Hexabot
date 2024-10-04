@@ -66,34 +66,6 @@ export class ContentController extends BaseController<
   }
 
   /**
-   * Filters and processes dynamic fields in the content DTO based on the associated content type.
-   * It ensures that only fields matching the content type are passed forward.
-   *
-   * @param contentDto - The content DTO containing dynamic fields.
-   * @param contentType - The content type schema defining valid fields.
-   *
-   * @returns The content DTO with filtered dynamic fields.
-   */
-  filterDynamicFields(contentDto: ContentCreateDto, contentType: ContentType) {
-    if (!contentType) {
-      this.logger.warn(
-        `Content type of id ${contentDto.entity}. Content type not found.`,
-      );
-      throw new NotFoundException(
-        `Content type of id ${contentDto.entity} not found`,
-      );
-    }
-    // Filter the fields coming from the request body to correspond to the contentType
-    const dynamicFields = contentType.fields.reduce((acc, { name }) => {
-      return name in contentDto.dynamicFields && contentDto.dynamicFields[name]
-        ? { ...acc, [name]: contentDto.dynamicFields[name] }
-        : acc;
-    }, {});
-
-    return { ...contentDto, dynamicFields };
-  }
-
-  /**
    * Creates new content based on the provided DTO, filtering dynamic fields to match
    * the associated content type before persisting it.
    *
