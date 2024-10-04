@@ -42,6 +42,7 @@ import { TriggersForm } from "./form/TriggersForm";
 import { IBlockAttributes, IBlock } from "../../types/block.types";
 
 export type BlockDialogProps = DialogControlProps<IBlock>;
+type TSelectedTab = "triggers" | "options" | "messages";
 
 const BlockDialog: FC<BlockDialogProps> = ({
   open,
@@ -50,8 +51,11 @@ const BlockDialog: FC<BlockDialogProps> = ({
   ...rest
 }) => {
   const { t } = useTranslate();
-  const [selectedTab, setSelectedTab] = useState("triggers");
-  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+  const [selectedTab, setSelectedTab] = useState<TSelectedTab>("triggers");
+  const handleChange = (
+    _event: React.SyntheticEvent,
+    newValue: TSelectedTab,
+  ) => {
     setSelectedTab(newValue);
   };
   const { toast } = useToast();
@@ -102,7 +106,10 @@ const BlockDialog: FC<BlockDialogProps> = ({
   };
 
   useEffect(() => {
-    if (open) reset();
+    if (open) {
+      reset();
+      setSelectedTab("triggers");
+    }
   }, [open, reset]);
 
   useEffect(() => {
