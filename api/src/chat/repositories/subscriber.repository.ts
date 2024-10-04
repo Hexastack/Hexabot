@@ -24,7 +24,6 @@ import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
   SUBSCRIBER_POPULATE,
-  SubscriberDocument,
   SubscriberFull,
   SubscriberPopulate,
 } from '../schemas/subscriber.schema';
@@ -37,24 +36,10 @@ export class SubscriberRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
-    private readonly eventEmitter: EventEmitter2,
+    readonly eventEmitter: EventEmitter2,
   ) {
     super(model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
-  }
-
-  /**
-   * Emits events related to the creation of a new subscriber.
-   *
-   * @param created - The newly created subscriber document.
-   */
-  async postCreate(created: SubscriberDocument): Promise<void> {
-    this.eventEmitter.emit(
-      'hook:stats:entry',
-      'new_users',
-      'New users',
-      created,
-    );
-    this.eventEmitter.emit('hook:subscriber:create', created);
+    super.setEventEmitter(eventEmitter);
   }
 
   /**
@@ -80,12 +65,6 @@ export class SubscriberRepository extends BaseRepository<
   ): Promise<void> {
     const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
 
-    this.eventEmitter.emit(
-      'hook:subscriber:update:before',
-      criteria,
-      subscriberUpdates,
-    );
-
     const oldSubscriber = await this.findOne(criteria);
 
     if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
@@ -103,26 +82,6 @@ export class SubscriberRepository extends BaseRepository<
         );
       }
     }
-  }
-
-  /**
-   * Emits an event after successfully updating a subscriber.
-   * Triggers the event with the updated subscriber data.
-   *
-   * @param _query - The Mongoose query object for finding and updating a subscriber.
-   * @param updated - The updated subscriber entity.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Subscriber, any, any>,
-      Document<Subscriber, any, any>,
-      unknown,
-      Subscriber,
-      'findOneAndUpdate'
-    >,
-    updated: Subscriber,
-  ) {
-    this.eventEmitter.emit('hook:subscriber:update:after', updated);
   }
 
   /**

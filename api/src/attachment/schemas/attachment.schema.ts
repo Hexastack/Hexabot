@@ -12,6 +12,7 @@ import { THydratedDocument } from 'mongoose';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { buildURL } from '@/utils/helpers/URL';
 
 import { MIME_REGEX } from '../utilities';
@@ -115,10 +116,10 @@ export class Attachment extends BaseSchema {
 
 export type AttachmentDocument = THydratedDocument<Attachment>;
 
-export const AttachmentModel: ModelDefinition = {
+export const AttachmentModel: ModelDefinition = LifecycleHookManager.attach({
   name: Attachment.name,
   schema: SchemaFactory.createForClass(Attachment),
-};
+});
 
 AttachmentModel.schema.virtual('url').get(function () {
   if (this._id && this.name)

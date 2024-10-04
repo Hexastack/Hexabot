@@ -9,9 +9,9 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, TFilterQuery, Types } from 'mongoose';
+import { Model, TFilterQuery } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 
 import { Permission } from '../schemas/permission.schema';
@@ -32,60 +32,10 @@ export class RoleRepository extends BaseRepository<
     @InjectModel(Role.name) readonly model: Model<Role>,
     @InjectModel(Permission.name)
     private readonly permissionModel: Model<Permission>,
-    private readonly eventEmitter: EventEmitter2,
+    readonly eventEmitter: EventEmitter2,
   ) {
     super(model, Role, ROLE_POPULATE, RoleFull);
-  }
-
-  /**
-   * Emits a hook event after a role is successfully created.
-   *
-   * @param created The created Role document.
-   */
-  async preCreate(
-    created: Document<unknown, object, Role> & Role & { _id: Types.ObjectId },
-  ): Promise<void> {
-    if (created) {
-      this.eventEmitter.emit('hook:access:role:create', created);
-    }
-  }
-
-  /**
-   * Emits a hook event after a role is successfully updated.
-   *
-   * @param _query The query used to update the Role.
-   * @param updated The updated Role entity.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Role, any, any>,
-      Document<Role, any, any>,
-      unknown,
-      Role,
-      'findOneAndUpdate'
-    >,
-    updated: Role,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:access:role:update', updated);
-  }
-
-  /**
-   * Emits a hook event after a role is successfully deleted.
-   *
-   * @param _query The query used to delete the Role.
-   * @param result The result of the deletion operation.
-   */
-  async postDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Role, any, any>,
-      unknown,
-      Role,
-      'deleteOne' | 'deleteMany'
-    >,
-    result: DeleteResult,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:access:role:delete', result);
+    super.setEventEmitter(eventEmitter);
   }
 
   /**

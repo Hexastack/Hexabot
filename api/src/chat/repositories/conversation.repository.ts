@@ -16,7 +16,6 @@ import { BaseRepository } from '@/utils/generics/base-repository';
 import {
   Conversation,
   CONVERSATION_POPULATE,
-  ConversationDocument,
   ConversationFull,
   ConversationPopulate,
 } from '../schemas/conversation.schema';
@@ -29,19 +28,10 @@ export class ConversationRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(Conversation.name) readonly model: Model<Conversation>,
-    private readonly eventEmitter: EventEmitter2,
+    readonly eventEmitter: EventEmitter2,
   ) {
     super(model, Conversation, CONVERSATION_POPULATE, ConversationFull);
-  }
-
-  /**
-   * Called after a new conversation is created. This method emits the event
-   * with the newly created conversation document.
-   *
-   * @param created - The newly created conversation document.
-   */
-  async postCreate(created: ConversationDocument): Promise<void> {
-    this.eventEmitter.emit('hook:chatbot:conversation:start', created);
+    super.setEventEmitter(eventEmitter);
   }
 
   /**
