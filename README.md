@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <video src="https://i.imgur.com/puWBpPI.mp4" width="100%" />
+  <video src="https://github.com/user-attachments/assets/623d94d1-12ae-4230-b6bb-fab64fc733c3" width="100%" />
 </p>
 
 ## Description
