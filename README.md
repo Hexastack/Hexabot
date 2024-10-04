@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <video draggable="false" playsinline="" autoplay="true" loop="" class="" hash="puWBpPI" width="100%"><source type="video/mp4" src="https://i.imgur.com/puWBpPI.mp4"></video>
+  <video src="https://i.imgur.com/puWBpPI.mp4" width="100%" />
 </p>
 
 ## Description
