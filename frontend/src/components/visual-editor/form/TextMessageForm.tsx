@@ -17,6 +17,7 @@ import { IBlockAttributes } from "@/types/block.types";
 import { useBlock } from "./BlockFormProvider";
 import { FormSectionTitle } from "./FormSectionTitle";
 import ReplacementTokens from "./inputs/ReplacementTokens";
+import { getInputControls } from "./utils/inputControls";
 
 const TextMessageForm = () => {
   const block = useBlock();
@@ -26,15 +27,6 @@ const TextMessageForm = () => {
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  const getInputProps = (index: number) => {
-    return {
-      ...register(`message.${index}`, {
-        required: t("message.message_is_required"),
-      }),
-      error: !!errors?.message?.[index],
-      helperText: errors?.message?.[index]?.message,
-    };
-  };
 
   return (
     <ContentItem>
@@ -50,7 +42,12 @@ const TextMessageForm = () => {
             <MultipleInput
               label=""
               {...rest}
-              getInputProps={getInputProps}
+              getInputProps={getInputControls(
+                "message",
+                errors,
+                register,
+                t("message.text_message_is_invalid"),
+              )}
               value={value as string[]}
               multiline={true}
               minRows={3}
