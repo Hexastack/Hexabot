@@ -250,6 +250,10 @@ program
 
       console.log(chalk.cyan('Running npm install in the api/ folder...'));
       // Run npm install in the api folder to install dependencies
+      execSync('npm run preinstall', {
+        cwd: path.resolve(process.cwd(), 'api'),
+        stdio: 'inherit',
+      });
       execSync('npm install', {
         cwd: path.resolve(process.cwd(), 'api'),
         stdio: 'inherit',
