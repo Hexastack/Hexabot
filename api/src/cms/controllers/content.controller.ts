@@ -40,7 +40,6 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
-import { ContentType } from '../schemas/content-type.schema';
 import {
   Content,
   ContentFull,
