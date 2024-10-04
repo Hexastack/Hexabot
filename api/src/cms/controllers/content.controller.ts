@@ -40,7 +40,6 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
-import { ContentType } from '../schemas/content-type.schema';
 import {
   Content,
   ContentFull,
@@ -63,34 +62,6 @@ export class ContentController extends BaseController<
     private readonly logger: LoggerService,
   ) {
     super(contentService);
-  }
-
-  /**
-   * Filters and processes dynamic fields in the content DTO based on the associated content type.
-   * It ensures that only fields matching the content type are passed forward.
-   *
-   * @param contentDto - The content DTO containing dynamic fields.
-   * @param contentType - The content type schema defining valid fields.
-   *
-   * @returns The content DTO with filtered dynamic fields.
-   */
-  filterDynamicFields(contentDto: ContentCreateDto, contentType: ContentType) {
-    if (!contentType) {
-      this.logger.warn(
-        `Content type of id ${contentDto.entity}. Content type not found.`,
-      );
-      throw new NotFoundException(
-        `Content type of id ${contentDto.entity} not found`,
-      );
-    }
-    // Filter the fields coming from the request body to correspond to the contentType
-    const dynamicFields = contentType.fields.reduce((acc, { name }) => {
-      return name in contentDto.dynamicFields && contentDto.dynamicFields[name]
-        ? { ...acc, [name]: contentDto.dynamicFields[name] }
-        : acc;
-    }, {});
-
-    return { ...contentDto, dynamicFields };
   }
 
   /**
