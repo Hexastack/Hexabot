@@ -24,7 +24,7 @@ Welcome to the Hexabot Documentation! Hexabot is a powerful and versatile open-s
 Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:
 
 * **Intuitive Visual Editor:** Build complex conversation flows without coding using our drag-and-drop interface and a diverse library of pre-built blocks.
-* **NLU Engine:** Leverage state-of-the-art NLP technology to understand user intent, extract key information, and deliver personalized responses.
+* **NLU Engine:** Leverage state-of-the-art NLU technology to understand user intent, extract key information, and deliver personalized responses.
 * **Flexible Deployment Options:** Deploy your chatbots on various platforms, including Facebook Messenger, web widgets, and custom integrations.
 * **Comprehensive Analytics and Reporting:** Track key metrics, monitor chatbot performance, and gain valuable insights into user interactions.
 * **And More:** Discover a range of additional features, including user segmentation, content management, and third-party integrations.
