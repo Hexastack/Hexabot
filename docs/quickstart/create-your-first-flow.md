@@ -8,7 +8,7 @@ This interactive tutorial will guide you through the process of building your fi
 
 {% @supademo/embed demoId="cm1tjkxgn01jcjca2ufvh7l62" url="https://app.supademo.com/demo/cm1tjkxgn01jcjca2ufvh7l62" %}
 
-This is just a basic example to get you started. Hexabot offers a wide range of features and blocks to create more complex and engaging chatbot flows. Explore the different block types, experiment with NLP/NLU features, and integrate with your content sources to build a chatbot that truly meets your needs.
+This is just a basic example to get you started. Hexabot offers a wide range of features and blocks to create more complex and engaging chatbot flows. Explore the different block types, experiment with NLU features, and integrate with your content sources to build a chatbot that truly meets your needs.
 
 #### 0. Enter your login credentials.
 
@@ -46,11 +46,11 @@ Pa**ssword :** adminadmin
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/UoYDblK\_HGxLBTbUc\_qn1.jpg\&x=2764\&y=1090\&fill=009185\&color=009185)
 
-#### 7. Select 'NLP' from the dropdown to create a condition based on natural language understanding.
+#### 7. Select 'NLU' from the dropdown to create a condition based on natural language understanding.
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/dwhn4kTe7dQjOtBBc841n.jpg\&x=1416\&y=1396\&fill=009185\&color=009185)
 
-#### 8. NLP triggers can detect the user's intent, even if the message is in different words or forms.
+#### 8. NLU triggers can detect the user's intent, even if the message is in different words or forms.
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/nazb\_s2kFhalgmRoZ1quX.jpg\&x=1300\&y=1403\&fill=009185\&color=009185)
 
@@ -102,13 +102,13 @@ Pa**ssword :** adminadmin
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/70glz\_-zfifRTaxIvdGPH.jpg\&x=2259\&y=979\&fill=009185\&color=009185)
 
-#### 21. Let's modify the trigger to use natural language processing (NLP) instead of basic keyword matching.
+#### 21. Let's modify the trigger to use natural language understanding (NLU) instead of basic keyword matching.
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/yCDcgQKJ1sExX6-i72QPA.jpg\&x=1330\&y=963\&fill=009185\&color=009185)
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/MhkSyrREej324K3ZkghM4.jpg\&x=1275\&y=1331\&fill=009185\&color=009185)
 
-#### 23. We've previously created a new intent in our NLP provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlu-training.md](../user-guide/nlu-training.md "mention") guide:
+#### 23. We've previously created a new intent in our NLU provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlu-training.md](../user-guide/nlu-training.md "mention") guide:
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/FtF1bEnRR66bfUlRS5rNa.jpg\&x=2868\&y=951\&fill=009185\&color=009185)
 
