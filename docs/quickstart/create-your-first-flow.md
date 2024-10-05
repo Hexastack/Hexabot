@@ -108,7 +108,7 @@ Pa**ssword :** adminadmin
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/MhkSyrREej324K3ZkghM4.jpg\&x=1275\&y=1331\&fill=009185\&color=009185)
 
-#### 23. We've previously created a new intent in our NLP provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlp-training.md](../user-guide/nlp-training.md "mention") guide:
+#### 23. We've previously created a new intent in our NLP provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlu-training.md](../user-guide/nlu-training.md "mention") guide:
 
 ![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/FtF1bEnRR66bfUlRS5rNa.jpg\&x=2868\&y=951\&fill=009185\&color=009185)
 

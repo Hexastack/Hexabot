@@ -1,6 +1,6 @@
 # Web Channel
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Web Channel settings in Hexabot allow you to configure how your chatbot integrates into your website. You can control the appearance of the chatbot widget, manage the chatbot's initial greeting message, and more.
 

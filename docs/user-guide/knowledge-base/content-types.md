@@ -4,11 +4,9 @@ icon: folder-grid
 
 # Content Types
 
-The Hexabot CMS allows you to organize your chatbot's content into different types, making it easy to structure and manage the information your chatbot uses to interact with users. This guide walks you through creating, customizing, and managing your content types effectively:
+The Knowledge Base allows you to organize your chatbot's content into different types, making it easy to structure and manage the information your chatbot uses to interact with users. This guide walks you through creating, customizing, and managing your content types effectively:
 
-**1. Access the Hexabot CMS:**
-
-* Go to the "CMS" or "Content Management" section, usually found in the main menu or chatbot settings.
+**1. Access the Knowledge Base:** Go to the "Knowledge Base" section, usually found in the main menu or chatbot settings.
 
 **2. Create a New Content Type:**
 
@@ -17,12 +15,12 @@ The Hexabot CMS allows you to organize your chatbot's content into different typ
 * **Save the Content Type:** Click the "Submit" button to save the new content type.
 
 {% hint style="info" %}
-**Important** Each new content type you create in Hexabot CMS comes with two default fields: "Title" and "Status." These fields provide basic information for your content entries.
+**Important** Each new content type you create in the Knowledge Base comes with two default fields: "Title" and "Status." These fields provide basic information for your content entries.
 {% endhint %}
 
 **3. Add Fields to a Content Type:**
 
-* **Locate the Content Type:** Find the content type you just created in the list of available content types within the CMS.
+* **Locate the Content Type:** Find the content type you just created in the list of available content types within the Knowledge Base.
 * **Access Field Management:** Look for the "Manage Content" option
 * **Add New Field:** In addition to the default "Title" and "Status" fields, click +ADD button to create a new field and configure the following: Click a button to create a new field and configure the following:
   * **Field Label:** This is the display name for the field, the name that will be visible to users. Choose a clear and descriptive label, e.g., "Product Name," "Description," "Price."

@@ -8,7 +8,7 @@ This guide covers the primary settings areas that are essential for managing you
 
 * **Email:** Configure your chatbot's email settings for sending notifications or automated responses.
 * **Chatbot Global Fallback:** Define a default response for situations where the chatbot cannot understand or respond to a user's query.
-* **NLP Provider:** Choose the natural language processing engine that your chatbot will use to understand user input.
+* **NLU Provider:** Choose the natural language understanding engine that your chatbot will use to understand user input.
 * **Web Channel:** Manage settings for integrating your chatbot into your website.
 * **Live Chat Widget:** Configure the appearance and functionality of the live chat widget.
 * **Facebook Messenger:** Configure settings for integrating your chatbot with Facebook Messenger.
