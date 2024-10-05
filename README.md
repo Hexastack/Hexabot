@@ -42,9 +42,9 @@
 - **Multi-Channel Support:** Create consistent chatbot experiences across multiple channels like web, mobile, and social media platforms.
 - **Visual Editor:** Design and manage chatbot flows with an intuitive drag-and-drop interface. Supports text messages, quick replies, carousels, and more.
 - **Plugin System:** Extend Hexabot's functionality by developing custom plugins. Enable features like text-to-action responses, 3rd party system integrations, and more.
-- **NLP/NLU Management:** Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
+- **NLU (Natural Language Understanding) Management:** Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
 - **Multi-lingual Support:** Define multiple languages, allowing the chatbot to interact with users in their preferred language.
-- **CMS Integration:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
+- **Knowledge Base:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
 - **User Roles & Permissions:** Granular access control to manage user roles and permissions for different parts of the system.
 - **Contextual Data:** Define variables to collect and leverage relevant information about end-users to deliver personalized responses.
 - **Subscribers & Labels:** Organize users by assigning labels and customize their chat experience based on defined segments.

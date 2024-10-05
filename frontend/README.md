@@ -1,14 +1,14 @@
 # Hexabot UI Admin Panel
 
-The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React/Next.js application that serves as the admin interface for managing chatbot configurations, workflows, and interactions. The admin panel allows users to easily create and manage chat flows, monitor analytics, manage content, handle NLP datasets, and configure system settings.
+The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React/Next.js application that serves as the admin interface for managing chatbot configurations, workflows, and interactions. The admin panel allows users to easily create and manage chat flows, monitor analytics, manage content, handle NLU (Natural Language Understanding) datasets, and configure system settings.
 
 
 ## Key Features
 - **Visual Editor:** An intuitive drag-and-drop interface for managing chat flows, including text messages, quick replies, carousels, and more.
 - **Multi-Channel Management:** Configure and manage multiple communication channels (e.g., web, mobile, social media) from a single interface.
 - **Analytics Dashboard:** Track user interactions, messages sent, and retention rates through detailed analytics.
-- **NLP Management:** Manage datasets for training machine learning models for intent detection and language recognition.
-- **Content Management (CMS):** Seamlessly integrate and manage content such as product catalogs, lists of stores, or any dynamic content needed by the chatbot.
+- **NLU (Natural Language Understanding) Management:** Manage datasets for training machine learning models for intent detection and language recognition.
+- **Knowledge Base:** Seamlessly integrate and manage content such as product catalogs, lists of stores, or any dynamic content needed by the chatbot.
 - **User, Roles, and Permissions:** Administer user access controls, roles, and permissions to ensure secure and appropriate access to different parts of the system.
 
 ## Directory Structure
