@@ -46,13 +46,13 @@ By default, Hexabot comes with a default installed plugin that is called **"LLM 
 
 ## **Knowledge Base**
 
-Hexabot features a built-in Content Management System (CMS) that serves as a centralized knowledge base for your chatbot. This empowers you to easily update and expand your chatbot's knowledge without requiring changes to the conversation flow itself.
+Hexabot features a built-in Knowledge Base that serves as a centralized hub for your chatbot. This empowers you to easily update and expand your chatbot's knowledge without requiring changes to the conversation flow itself.
 
 **Centralized Content Hub:**\
-The Hexabot CMS provides a central location within the admin panel to manage all the content that your chatbot uses to interact with users. Organize content by type, define custom fields to structure information, and easily edit or update content as needed.
+The Hexabot Knowledge Base provides a central location within the admin panel to manage all the content that your chatbot uses to interact with users. Organize content by type, define custom fields to structure information, and easily edit or update content as needed.
 
 **Multilingual Support and Translation Management:**\
-Create and manage translations for all of your chatbot's content directly within the CMS. This enables you to build chatbots that cater to a diverse, multilingual audience, delivering a more personalized and engaging experience for users around the globe.
+Create and manage translations for all of your chatbot's content directly within the Knowledge Base. This enables you to build chatbots that cater to a diverse, multilingual audience, delivering a more personalized and engaging experience for users around the globe.
 
 ## Multilingual **Support and Translation Management**
 
