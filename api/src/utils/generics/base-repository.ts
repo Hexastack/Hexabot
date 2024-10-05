@@ -86,7 +86,7 @@ export abstract class BaseRepository<
     });
 
     hooks?.save.post.execute(async function (created: HydratedDocument<T>) {
-      repository.emitter?.emit(
+      repository.emitter.emit(
         repository.getEventName(EHook.postCreate),
         created,
       );
@@ -111,7 +111,7 @@ export abstract class BaseRepository<
     });
 
     hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
-      repository.emitter?.emit(
+      repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
         result,
       );
@@ -124,7 +124,7 @@ export abstract class BaseRepository<
       const criteria = query.getFilter();
       const updates = query.getUpdate();
 
-      repository.emitter?.emit(
+      repository.emitter.emit(
         repository.getEventName(EHook.preUpdate),
         criteria,
         updates?.['$set'],
@@ -136,7 +136,7 @@ export abstract class BaseRepository<
       updated: HydratedDocument<T>,
     ) {
       if (updated) {
-        repository.emitter?.emit(
+        repository.emitter.emit(
           repository.getEventName(EHook.postUpdate),
           updated,
         );
