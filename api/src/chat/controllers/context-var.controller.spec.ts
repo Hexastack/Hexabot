@@ -7,6 +7,7 @@
  */
 
 import { NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
@@ -44,7 +45,12 @@ describe('ContextVarController', () => {
         rootMongooseTestModule(installContextVarFixtures),
         MongooseModule.forFeature([ContextVarModel]),
       ],
-      providers: [LoggerService, ContextVarService, ContextVarRepository],
+      providers: [
+        LoggerService,
+        ContextVarService,
+        ContextVarRepository,
+        EventEmitter2,
+      ],
     }).compile();
     contextVarController =
       module.get<ContextVarController>(ContextVarController);
