@@ -29,16 +29,16 @@ Construct complex conversation flows effortlessly with our drag-and-drop interfa
 
 ### **Natural Language Understanding Engine**
 
-Hexabot leverages cutting-edge NLP technology, to understand user intent, extract key information from messages, and tailor personalized responses. This allows for more natural and engaging conversations.
+Hexabot leverages cutting-edge NLU technology, to understand user intent, extract key information from messages, and tailor personalized responses. This allows for more natural and engaging conversations.
 
 {% hint style="info" %}
-**What is NLP ?** In simple terms, NLP is a branch of AI that focuses on enabling computers to understand, interpret, and respond to human language in a way that is both meaningful and useful. You can read more about NLP in the [Broken link](broken-reference "mention") section.
+**What is NLU ?** In simple terms, NLU is a branch of AI that focuses on enabling computers to understand, interpret, and respond to human language in a way that is both meaningful and useful. You can read more about NLU in the [Broken link](broken-reference "mention") section.
 {% endhint %}
 
-* **Intent Recognition:** Hexabot's NLP engine analyzes user messages to identify the underlying intent. This understanding drives the chatbot's ability to provide relevant responses and trigger specific actions.
+* **Intent Recognition:** Hexabot's NLU engine analyzes user messages to identify the underlying intent. This understanding drives the chatbot's ability to provide relevant responses and trigger specific actions.
 * **Entity Extraction:** Identify and extract key information from user input, such as dates, locations, names, or product preferences. This data can be used to personalize the conversation and improve the accuracy of the chatbot's responses.
 * **Language Detection:** Hexabot can be configured to understand and respond in multiple languages, expanding its reach and usability for diverse audiences.
-* **NLP Training and Management:** The platform provides tools to train and refine the NLP model. Users can add training examples, define intents and entities, and improve the chatbot's comprehension over time.
+* **NLU Training and Management:** The platform provides tools to train and refine the NLU model. Users can add training examples, define intents and entities, and improve the chatbot's comprehension over time.
 
 ### Generative AI Capabilities
 
@@ -58,7 +58,7 @@ Create and manage translations for all of your chatbot's content directly within
 
 <figure><img src="../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
 
-Hexabot provides comprehensive tools for managing multilingual chatbots. Our translation management system allows you to easily translate your chatbot's messages, prompts, and responses. Combined with advanced NLP capabilities for language detection and intent understanding, Hexabot empowers to build chatbots that seamlessly communicate with users in their preferred language.
+Hexabot provides comprehensive tools for managing multilingual chatbots. Our translation management system allows you to easily translate your chatbot's messages, prompts, and responses. Combined with advanced NLU capabilities for language detection and intent understanding, Hexabot empowers to build chatbots that seamlessly communicate with users in their preferred language.
 
 ## Multi-channel Communication
 
