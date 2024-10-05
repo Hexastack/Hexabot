@@ -435,7 +435,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
           >
             {!selection?.value
               ? t("button.select_some_text")
-              : t("button.add_nlp_entity", { defaultValue: selection.value })}
+              : t("button.add_nlp_entity", { 0: selection.value })}
           </Button>
 
           <Button

@@ -22,8 +22,13 @@ export type TTranslationKeys = TFilterNestedKeysOfType<TEnTranslation> &
 export type TNestedTranslation<T extends keyof TTranslation> =
   TFilterNestedKeysOfType<TTranslation[T]>;
 
+export type TOptionsBaseExtended = TOptionsBase & { 0?: string };
+
 export type TTranslateProps = {
-  <K extends TTranslationKeys>(prop1: K, prop2?: TOptionsBase & object): string;
+  <K extends TTranslationKeys>(
+    prop1: K,
+    prop2?: TOptionsBaseExtended & object,
+  ): string;
   <K extends keyof TTranslation, N = TNestedTranslation<K>>(
     prop1: K,
     prop2: N & TNestedTranslation<K>,
