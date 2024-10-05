@@ -10,11 +10,10 @@ Hexabot aims to simplify the complexities of chatbot creation while offering a r
 
 The platform is built on the principle of user-friendliness, recognizing that not all chatbot creators are programmers. Hexabot's visual editor empowers users to construct conversation flows using a drag-and-drop interface and pre-built blocks representing different chatbot actions. This no-code approach eliminates the need for complex coding, allowing users to focus on the logic and design of their chatbot interactions.
 
-## **AI-Powered Interactions: NLP, NLU, and RAG**
+## **AI-Powered Interactions: NLU, LLM and RAG**
 
 Hexabot integrates advanced artificial intelligence (AI) capabilities to elevate chatbot interactions beyond simple rule-based responses.
 
-* **Natural Language Processing (NLP):** Hexabot employs NLP to analyze user messages, understand the structure and meaning of language, and extract relevant information, such as entities and keywords.
 * **Natural Language Understanding (NLU):** NLU takes NLP a step further by focusing on the comprehension of user intent. It allows the chatbot to decipher the user's underlying goal, even if expressed in different ways, and trigger the appropriate response or action.
 * **Retrieval Augmented Generation (RAG):** Hexabot leverages RAG to access and utilize external knowledge sources, expanding the chatbot's ability to provide relevant and informative responses. RAG allows the chatbot to dynamically retrieve information from documents, databases, or APIs, augmenting its knowledge base and improving its ability to handle complex or open-ended questions.
 
@@ -26,15 +25,16 @@ Recognizing the unique requirements of different businesses and use cases, Hexab
 
 ## **Analytics Dashboard**
 
-Hexabot provides valuable insights into chatbot performance through its analytics dashboard. Users can track key metrics, such as conversation volume, and user engagement, to measure the effectiveness of their chatbots. These data-driven insights inform iterative improvements to conversation flows, NLP models, and overall chatbot strategies, enabling users to continuously optimize their chatbot's performance and achieve their desired objectives.
+Hexabot provides valuable insights into chatbot performance through its analytics dashboard. Users can track key metrics, such as conversation volume, and user engagement, to measure the effectiveness of their chatbots. These data-driven insights inform iterative improvements to conversation flows, NLU models, and overall chatbot strategies, enabling users to continuously optimize their chatbot's performance and achieve their desired objectives.
 
 ## Key Features
 
 * **Visual Editor (No-Code Interface)**
-* **Natural Language Processing (NLP)**
-* **Natural Language Understanding (NLU)**
-* **Retrieval Augmented Generation (RAG)**
-* **Content Management System (CMS)**
+* **Built-in Natural Language Understanding (NLU) Engine**
+* **Supports Integration with Large Language Models (LLMs)**
+* **Integrated Retrieval Augmented Generation (RAG)**
+* **Knowledge Base**
+* **Multi-Language Support**
 * **Subscriber Management**
 * **Inbox and Live Chat**
 * **Analytics Dashboard**
