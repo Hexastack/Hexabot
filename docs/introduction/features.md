@@ -44,7 +44,7 @@ Hexabot leverages cutting-edge NLU technology, to understand user intent, extrac
 
 By default, Hexabot comes with a default installed plugin that is called **"LLM RAG"** that integrates with _OpenAI ChatGPT_. You can choose of course to build your own plugin that integrates with a custom fine-tuned LLM or any other LLM. This plugin leverages cutting-edge Large Language Models (LLMs) and Generative AI techniques to enhance your chatbot's contextual understanding and responsiveness. Provide your chatbot with relevant context, and the **"LLM RAG"** plugin will generate more informative, and human-like responses, resulting in more engaging and satisfying conversations for your audience.
 
-## **Content Management System (CMS)**&#x20;
+## **Knowledge Base**
 
 Hexabot features a built-in Content Management System (CMS) that serves as a centralized knowledge base for your chatbot. This empowers you to easily update and expand your chatbot's knowledge without requiring changes to the conversation flow itself.
 
