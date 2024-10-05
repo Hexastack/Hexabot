@@ -1,6 +1,6 @@
 # Hexabot API
 
-[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLP (Natural Language Processing), and plugin integrations.
+[Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and plugin integrations.
 
 ## Key Features
 - **RESTful Architecture:** Simple, standardized API architecture following REST principles.
@@ -16,8 +16,8 @@ The API is divided into several key modules, each responsible for specific funct
 - **Attachment:** Manages file uploads and downloads, enabling attachment handling across the chatbot.
 - **Channel:** Manages different communication channels through which the chatbot operates (e.g., web, mobile apps, etc.).
 - **Chat:** The core module for handling incoming channel requests and managing the chat flow as defined by the visual editor in the UI.
-- **CMS:** Content management module for defining content types, managing content, and configuring menus for chatbot interactions.
-- **NLP:** Manages NLP entities such as intents, languages, and values used to detect and process user inputs intelligently.
+- **Knowledge Base:** Content management module for defining content types, managing content, and configuring menus for chatbot interactions.
+- **NLU:** Manages NLU (Natural Language Understanding) entities such as intents, languages, and values used to detect and process user inputs intelligently.
 - **Plugins:** Manages extensions and plugins that integrate additional features and functionalities into the chatbot.
 - **User:** Manages user authentication, roles, and permissions, ensuring secure access to different parts of the system.
 - **Extensions:** A container for all types of extensions (channels, plugins, helpers) that can be added to expand the chatbot's functionality.

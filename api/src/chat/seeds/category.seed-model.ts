@@ -10,9 +10,6 @@ import { CategoryCreateDto } from '../dto/category.dto';
 
 export const categoryModels: CategoryCreateDto[] = [
   {
-    label: 'category1',
-  },
-  {
-    label: 'category2',
+    label: 'Default',
   },
 ];
