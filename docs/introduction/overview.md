@@ -14,7 +14,7 @@ The platform is built on the principle of user-friendliness, recognizing that no
 
 Hexabot integrates advanced artificial intelligence (AI) capabilities to elevate chatbot interactions beyond simple rule-based responses.
 
-* **Natural Language Understanding (NLU):** NLU takes NLP a step further by focusing on the comprehension of user intent. It allows the chatbot to decipher the user's underlying goal, even if expressed in different ways, and trigger the appropriate response or action.
+* **Natural Language Understanding (NLU):** NLU takes the chatbot a step further by focusing on the comprehension of user intent. It allows the chatbot to decipher the user's underlying goal, even if expressed in different ways, and trigger the appropriate response or action.
 * **Retrieval Augmented Generation (RAG):** Hexabot leverages RAG to access and utilize external knowledge sources, expanding the chatbot's ability to provide relevant and informative responses. RAG allows the chatbot to dynamically retrieve information from documents, databases, or APIs, augmenting its knowledge base and improving its ability to handle complex or open-ended questions.
 
 These AI capabilities work together to create chatbots that can engage in more natural, context-aware, and dynamic conversations, leading to improved user experiences and increased efficiency.
