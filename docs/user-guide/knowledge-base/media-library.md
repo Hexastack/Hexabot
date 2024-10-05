@@ -9,7 +9,7 @@ Hexabot's Media Library serves as a centralized repository for all the media fil
 **1. Accessing the Media Library:**
 
 * Log in to your Hexabot account.
-* Find the "Media Library" within the CMS section.
+* Find the "Media Library" within the Knowledge Base section.
 
 **2. Managing Existing Files:**
 
