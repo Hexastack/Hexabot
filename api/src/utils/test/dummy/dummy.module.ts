@@ -7,6 +7,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { installDummyFixtures } from '@/utils/test/fixtures/dummy';
@@ -21,6 +22,6 @@ import { DummyService } from './services/dummy.service';
     rootMongooseTestModule(installDummyFixtures),
     MongooseModule.forFeature([DummyModel]),
   ],
-  providers: [DummyRepository, DummyService],
+  providers: [DummyRepository, DummyService, EventEmitter2],
 })
 export class DummyModule {}

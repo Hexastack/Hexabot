@@ -18,10 +18,9 @@ import { Attachment } from '../schemas/attachment.schema';
 @Injectable()
 export class AttachmentRepository extends BaseRepository<Attachment, never> {
   constructor(
-    @InjectModel(Attachment.name) readonly model: Model<Attachment>,
     readonly eventEmitter: EventEmitter2,
+    @InjectModel(Attachment.name) readonly model: Model<Attachment>,
   ) {
-    super(model, Attachment);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Attachment);
   }
 }

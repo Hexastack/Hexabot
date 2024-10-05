@@ -18,10 +18,9 @@ import { Translation } from '../../i18n/schemas/translation.schema';
 @Injectable()
 export class TranslationRepository extends BaseRepository<Translation> {
   constructor(
-    @InjectModel(Translation.name) readonly model: Model<Translation>,
     readonly eventEmitter: EventEmitter2,
+    @InjectModel(Translation.name) readonly model: Model<Translation>,
   ) {
-    super(model, Translation);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Translation);
   }
 }

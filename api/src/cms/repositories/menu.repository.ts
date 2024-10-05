@@ -29,11 +29,10 @@ export class MenuRepository extends BaseRepository<
   MenuFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Menu.name) readonly model: Model<Menu>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Menu, MENU_POPULATE, MenuFull);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Menu, MENU_POPULATE, MenuFull);
   }
 
   /**

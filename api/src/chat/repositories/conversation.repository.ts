@@ -27,11 +27,16 @@ export class ConversationRepository extends BaseRepository<
   ConversationFull
 > {
   constructor(
-    @InjectModel(Conversation.name) readonly model: Model<Conversation>,
     readonly eventEmitter: EventEmitter2,
+    @InjectModel(Conversation.name) readonly model: Model<Conversation>,
   ) {
-    super(model, Conversation, CONVERSATION_POPULATE, ConversationFull);
-    super.setEventEmitter(eventEmitter);
+    super(
+      eventEmitter,
+      model,
+      Conversation,
+      CONVERSATION_POPULATE,
+      ConversationFull,
+    );
   }
 
   /**

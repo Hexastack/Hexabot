@@ -7,6 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -16,7 +17,10 @@ import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
 export class ContextVarRepository extends BaseRepository<ContextVar> {
-  constructor(@InjectModel(ContextVar.name) readonly model: Model<ContextVar>) {
-    super(model, ContextVar);
+  constructor(
+    readonly eventEmitter: EventEmitter2,
+    @InjectModel(ContextVar.name) readonly model: Model<ContextVar>,
+  ) {
+    super(eventEmitter, model, ContextVar);
   }
 }

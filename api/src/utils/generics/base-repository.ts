@@ -49,9 +49,8 @@ export abstract class BaseRepository<
 
   private readonly leanOpts = { virtuals: true, defaults: true, getters: true };
 
-  private emitter: EventEmitter2;
-
   constructor(
+    private readonly emitter: EventEmitter2,
     readonly model: Model<T>,
     private readonly cls: new () => T,
     protected readonly populate: P[] = [],
@@ -66,10 +65,6 @@ export abstract class BaseRepository<
 
   getEventName(suffix: EHook) {
     return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix.toLocaleLowerCase()}`;
-  }
-
-  setEventEmitter(eventEmitter: EventEmitter2) {
-    this.emitter = eventEmitter;
   }
 
   private registerLifeCycleHooks() {

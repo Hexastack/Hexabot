@@ -24,6 +24,7 @@ import { SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
   SUBSCRIBER_POPULATE,
+  SubscriberDocument,
   SubscriberFull,
   SubscriberPopulate,
 } from '../schemas/subscriber.schema';
@@ -35,11 +36,24 @@ export class SubscriberRepository extends BaseRepository<
   SubscriberFull
 > {
   constructor(
-    @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
     readonly eventEmitter: EventEmitter2,
+    @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
   ) {
-    super(model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
+  }
+
+  /**
+   * Emits events related to the creation of a new subscriber.
+   *
+   * @param created - The newly created subscriber document.
+   */
+  async postCreate(created: SubscriberDocument): Promise<void> {
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      'new_users',
+      'New users',
+      created,
+    );
   }
 
   /**

@@ -29,13 +29,12 @@ export class RoleRepository extends BaseRepository<
   RoleFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Role.name) readonly model: Model<Role>,
     @InjectModel(Permission.name)
     private readonly permissionModel: Model<Permission>,
-    readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Role, ROLE_POPULATE, RoleFull);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Role, ROLE_POPULATE, RoleFull);
   }
 
   /**

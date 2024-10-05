@@ -7,6 +7,7 @@
  */
 
 import { Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -39,12 +40,14 @@ export class MessageRepository extends BaseRepository<
   private readonly languageService: LanguageService;
 
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Message.name) readonly model: Model<AnyMessage>,
     @Optional() nlpSampleService?: NlpSampleService,
     @Optional() logger?: LoggerService,
     @Optional() languageService?: LanguageService,
   ) {
     super(
+      eventEmitter,
       model,
       Message as new () => AnyMessage,
       MESSAGE_POPULATE,

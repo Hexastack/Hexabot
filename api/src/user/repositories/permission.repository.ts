@@ -27,11 +27,10 @@ export class PermissionRepository extends BaseRepository<
   PermissionFull
 > {
   constructor(
-    @InjectModel(Permission.name) readonly model: Model<Permission>,
     readonly eventEmitter: EventEmitter2,
+    @InjectModel(Permission.name) readonly model: Model<Permission>,
   ) {
-    super(model, Permission, PERMISSION_POPULATE, PermissionFull);
-    super.setEventEmitter(eventEmitter);
+    super(eventEmitter, model, Permission, PERMISSION_POPULATE, PermissionFull);
   }
 
   /**

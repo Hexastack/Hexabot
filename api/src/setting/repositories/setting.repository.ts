@@ -19,11 +19,11 @@ import { Setting } from '../schemas/setting.schema';
 @Injectable()
 export class SettingRepository extends BaseRepository<Setting> {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Setting.name) readonly model: Model<Setting>,
-    private readonly eventEmitter: EventEmitter2,
     private readonly i18n: I18nService,
   ) {
-    super(model, Setting);
+    super(eventEmitter, model, Setting);
   }
 
   /**
