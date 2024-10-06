@@ -93,6 +93,7 @@ export interface ISettingAttributes {
   config?: Record<string, any>;
   weight?: number;
   title?: string;
+  help?: string;
 }
 
 export interface ISettingStub extends IBaseSchema, ISettingAttributes {}
