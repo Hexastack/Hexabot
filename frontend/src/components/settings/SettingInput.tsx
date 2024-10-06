@@ -36,9 +36,11 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
 }) => {
   const { t } = useTranslate();
   const nestedLabel = setting.label as TNestedTranslation<"label">;
-  const nestedHelp = setting.label as TNestedTranslation<"help">;
-  const label = t("label", nestedLabel);
-  const helperText = t("help", nestedHelp);
+  const nestedHelp = setting.help as TNestedTranslation<"help">;
+  const label = t("label", nestedLabel, { defaultValue: nestedLabel });
+  const helperText = nestedHelp
+    ? t("help", nestedHelp, { defaultValue: nestedHelp })
+    : "";
 
   switch (setting.type) {
     case "text":
