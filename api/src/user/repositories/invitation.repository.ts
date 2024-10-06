@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, TFilterQuery } from 'mongoose';
 
@@ -25,8 +26,11 @@ export class InvitationRepository extends BaseRepository<
   InvitationPopulate,
   InvitationFull
 > {
-  constructor(@InjectModel(Invitation.name) readonly model: Model<Invitation>) {
-    super(model, Invitation, INVITATION_POPULATE, InvitationFull);
+  constructor(
+    readonly eventEmitter: EventEmitter2,
+    @InjectModel(Invitation.name) readonly model: Model<Invitation>,
+  ) {
+    super(eventEmitter, model, Invitation, INVITATION_POPULATE, InvitationFull);
   }
 
   /**

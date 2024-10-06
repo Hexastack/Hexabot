@@ -7,6 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -26,9 +27,11 @@ export class NlpSampleEntityRepository extends BaseRepository<
   NlpSampleEntityFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpSampleEntity.name) readonly model: Model<NlpSampleEntity>,
   ) {
     super(
+      eventEmitter,
       model,
       NlpSampleEntity,
       NLP_SAMPLE_ENTITY_POPULATE,

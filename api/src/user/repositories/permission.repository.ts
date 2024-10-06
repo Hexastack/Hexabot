@@ -9,9 +9,9 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, TFilterQuery, Types } from 'mongoose';
+import { Model, TFilterQuery } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import {
   Permission,
@@ -27,60 +27,10 @@ export class PermissionRepository extends BaseRepository<
   PermissionFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Permission.name) readonly model: Model<Permission>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Permission, PERMISSION_POPULATE, PermissionFull);
-  }
-
-  /**
-   * Emits an event after a permission is created.
-   *
-   * @param created - The created permission document.
-   */
-  async postCreate(
-    created: Document<unknown, unknown, Permission> &
-      Permission & { _id: Types.ObjectId },
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:access:permission:create', created);
-  }
-
-  /**
-   * Emits an event after a permission is updated.
-   *
-   * @param _query - The query used for updating the permission.
-   * @param updated - The updated permission entity.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Permission, any, any>,
-      Document<Permission, any, any>,
-      unknown,
-      Permission,
-      'findOneAndUpdate'
-    >,
-    updated: Permission,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:access:permission:update', updated);
-  }
-
-  /**
-   * Emits an event after a permission is deleted.
-   *
-   * @param _query - The query used for deleting the permission.
-   * @param result - The result of the delete operation.
-   */
-  async postDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Permission, any, any>,
-      unknown,
-      Permission,
-      'deleteOne' | 'deleteMany'
-    >,
-    result: DeleteResult,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:access:permission:delete', result);
+    super(eventEmitter, model, Permission, PERMISSION_POPULATE, PermissionFull);
   }
 
   /**

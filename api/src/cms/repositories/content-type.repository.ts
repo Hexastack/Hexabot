@@ -7,6 +7,7 @@
  */
 
 import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
@@ -19,11 +20,12 @@ import { Content } from '../schemas/content.schema';
 @Injectable()
 export class ContentTypeRepository extends BaseRepository<ContentType> {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(ContentType.name) readonly model: Model<ContentType>,
     @InjectModel(Content.name) private readonly contentModel: Model<Content>,
     @Optional() private readonly blockService?: BlockService,
   ) {
-    super(model, ContentType);
+    super(eventEmitter, model, ContentType);
   }
 
   /**

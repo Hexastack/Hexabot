@@ -9,9 +9,9 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import {
   Menu,
@@ -29,10 +29,10 @@ export class MenuRepository extends BaseRepository<
   MenuFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Menu.name) readonly model: Model<Menu>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Menu, MENU_POPULATE, MenuFull);
+    super(eventEmitter, model, Menu, MENU_POPULATE, MenuFull);
   }
 
   /**
@@ -67,53 +67,5 @@ export class MenuRepository extends BaseRepository<
           break;
       }
     }
-  }
-
-  /**
-   * Post-create hook that triggers the event after a `Menu` document has been successfully created.
-   *
-   * @param created - The newly created `MenuDocument`.
-   */
-  async postCreate(created: MenuDocument): Promise<void> {
-    this.eventEmitter.emit('hook:menu:create', created);
-  }
-
-  /**
-   * @description
-   * Post-update hook that triggers the event after a `Menu` document has been successfully updated.
-   *
-   * @param query - The query used to update the `Menu` document.
-   * @param updated - The updated `Menu` document.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Menu, any, any>,
-      Document<Menu, any, any>,
-      unknown,
-      Menu,
-      'findOneAndUpdate'
-    >,
-    updated: Menu,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:menu:update', updated);
-  }
-
-  /**
-   * Post-delete hook that triggers the event after a `Menu` document has been successfully deleted.
-   *
-   * @param query - The query used to delete the `Menu` document.
-   * @param result - The result of the deletion.
-   */
-  async postDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Menu, any, any>,
-      unknown,
-      Menu,
-      'deleteOne' | 'deleteMany'
-    >,
-    result: DeleteResult,
-  ): Promise<void> {
-    this.eventEmitter.emit('hook:menu:delete', result);
   }
 }

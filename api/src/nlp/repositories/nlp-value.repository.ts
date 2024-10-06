@@ -29,11 +29,11 @@ export class NlpValueRepository extends BaseRepository<
   NlpValueFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
+    super(eventEmitter, model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
 
   /**

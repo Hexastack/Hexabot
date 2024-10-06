@@ -18,10 +18,10 @@ import { Language } from '../schemas/language.schema';
 @Injectable()
 export class LanguageRepository extends BaseRepository<Language> {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Language.name) readonly model: Model<Language>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Language);
+    super(eventEmitter, model, Language);
   }
 
   /**

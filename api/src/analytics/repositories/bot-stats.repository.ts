@@ -7,6 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -16,8 +17,11 @@ import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
 
 @Injectable()
 export class BotStatsRepository extends BaseRepository<BotStats> {
-  constructor(@InjectModel(BotStats.name) readonly model: Model<BotStats>) {
-    super(model, BotStats);
+  constructor(
+    readonly eventEmitter: EventEmitter2,
+    @InjectModel(BotStats.name) readonly model: Model<BotStats>,
+  ) {
+    super(eventEmitter, model, BotStats);
   }
 
   /**

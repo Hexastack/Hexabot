@@ -13,23 +13,14 @@ import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
-import { Attachment, AttachmentDocument } from '../schemas/attachment.schema';
+import { Attachment } from '../schemas/attachment.schema';
 
 @Injectable()
 export class AttachmentRepository extends BaseRepository<Attachment, never> {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Attachment.name) readonly model: Model<Attachment>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Attachment);
-  }
-
-  /**
-   * Handles post-creation operations for an attachment.
-   *
-   * @param  created - The created attachment document.
-   */
-  async postCreate(created: AttachmentDocument): Promise<void> {
-    this.eventEmitter.emit('hook:chatbot:attachment:upload', created);
+    super(eventEmitter, model, Attachment);
   }
 }

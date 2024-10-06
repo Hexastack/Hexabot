@@ -9,68 +9,18 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, Types } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Translation } from '../../i18n/schemas/translation.schema';
 
 @Injectable()
 export class TranslationRepository extends BaseRepository<Translation> {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Translation.name) readonly model: Model<Translation>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Translation);
-  }
-
-  /**
-   * Emits an event after a translation document is updated.
-   *
-   * @param query - The query object representing the update operation.
-   * @param updated - The updated translation document.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Translation, any, any>,
-      Document<Translation, any, any>,
-      unknown,
-      Translation,
-      'findOneAndUpdate'
-    >,
-    _updated: Translation,
-  ) {
-    this.eventEmitter.emit('hook:translation:update');
-  }
-
-  /**
-   * Emits an event after a new translation document is created.
-   *
-   * @param created - The newly created translation document.
-   */
-  async postCreate(
-    _created: Document<unknown, unknown, Translation> &
-      Translation & { _id: Types.ObjectId },
-  ) {
-    this.eventEmitter.emit('hook:translation:create');
-  }
-
-  /**
-   * Emits an event after a translation document is deleted.
-   *
-   * @param query - The query object representing the delete operation.
-   * @param result - The result of the delete operation.
-   */
-  async postDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Translation, any, any>,
-      unknown,
-      Translation,
-      'deleteOne' | 'deleteMany'
-    >,
-    _result: DeleteResult,
-  ) {
-    this.eventEmitter.emit('hook:translation:delete');
+    super(eventEmitter, model, Translation);
   }
 }

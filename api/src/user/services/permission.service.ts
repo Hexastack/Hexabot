@@ -42,7 +42,8 @@ export class PermissionService extends BaseService<
    * This method listens to events matching the pattern 'hook:access:*:*' and clears
    * the permissions cache to ensure fresh data is used for subsequent requests.
    */
-  @OnEvent('hook:access:*:*')
+  @OnEvent('hook:role:*')
+  @OnEvent('hook:permission:*')
   async handlePermissionUpdateEvent() {
     await this.cacheManager.del(PERMISSION_CACHE_KEY);
   }

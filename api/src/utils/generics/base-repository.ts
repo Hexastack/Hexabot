@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
@@ -28,6 +29,15 @@ export type DeleteResult = {
   deletedCount: number;
 };
 
+export enum EHook {
+  preCreate = 'preCreate',
+  preUpdate = 'preUpdate',
+  preDelete = 'preDelete',
+  postCreate = 'postCreate',
+  postUpdate = 'postUpdate',
+  postDelete = 'postDelete',
+}
+
 export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
   P extends string = never,
@@ -40,6 +50,7 @@ export abstract class BaseRepository<
   private readonly leanOpts = { virtuals: true, defaults: true, getters: true };
 
   constructor(
+    private readonly emitter: EventEmitter2,
     readonly model: Model<T>,
     private readonly cls: new () => T,
     protected readonly populate: P[] = [],
@@ -50,6 +61,10 @@ export abstract class BaseRepository<
 
   getPopulate() {
     return this.populate;
+  }
+
+  getEventName(suffix: EHook) {
+    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix.toLocaleLowerCase()}`;
   }
 
   private registerLifeCycleHooks() {
@@ -71,6 +86,10 @@ export abstract class BaseRepository<
     });
 
     hooks?.save.post.execute(async function (created: HydratedDocument<T>) {
+      repository.emitter.emit(
+        repository.getEventName(EHook.postCreate),
+        created,
+      );
       await repository.postCreate(created);
     });
 
@@ -92,6 +111,10 @@ export abstract class BaseRepository<
     });
 
     hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
+      repository.emitter.emit(
+        repository.getEventName(EHook.postDelete),
+        result,
+      );
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       await repository.postDelete(query, result);
     });
@@ -100,6 +123,12 @@ export abstract class BaseRepository<
       const query = this as Query<D, D, unknown, T, 'findOneAndUpdate'>;
       const criteria = query.getFilter();
       const updates = query.getUpdate();
+
+      repository.emitter.emit(
+        repository.getEventName(EHook.preUpdate),
+        criteria,
+        updates?.['$set'],
+      );
       await repository.preUpdate(query, criteria, updates);
     });
 
@@ -107,6 +136,10 @@ export abstract class BaseRepository<
       updated: HydratedDocument<T>,
     ) {
       if (updated) {
+        repository.emitter.emit(
+          repository.getEventName(EHook.postUpdate),
+          updated,
+        );
         const query = this as Query<D, D, unknown, T, 'findOneAndUpdate'>;
         await repository.postUpdate(
           query,

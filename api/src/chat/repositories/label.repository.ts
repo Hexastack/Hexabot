@@ -28,10 +28,10 @@ export class LabelRepository extends BaseRepository<
   LabelFull
 > {
   constructor(
+    readonly eventEmitter: EventEmitter2,
     @InjectModel(Label.name) readonly model: Model<Label>,
-    private readonly eventEmitter: EventEmitter2,
   ) {
-    super(model, Label, LABEL_POPULATE, LabelFull);
+    super(eventEmitter, model, Label, LABEL_POPULATE, LabelFull);
   }
 
   /**

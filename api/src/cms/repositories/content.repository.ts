@@ -7,6 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
@@ -33,8 +34,11 @@ export class ContentRepository extends BaseRepository<
   ContentPopulate,
   ContentFull
 > {
-  constructor(@InjectModel(Content.name) readonly model: Model<Content>) {
-    super(model, Content, CONTENT_POPULATE, ContentFull);
+  constructor(
+    readonly eventEmitter: EventEmitter2,
+    @InjectModel(Content.name) readonly model: Model<Content>,
+  ) {
+    super(eventEmitter, model, Content, CONTENT_POPULATE, ContentFull);
   }
 
   /**

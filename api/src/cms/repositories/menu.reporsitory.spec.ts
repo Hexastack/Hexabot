@@ -10,7 +10,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerModule } from '@/logger/logger.module';
 import {
   installMenuFixtures,
   rootMenuFixtures,
@@ -31,7 +30,6 @@ describe('MenuRepository', () => {
       imports: [
         rootMongooseTestModule(installMenuFixtures),
         MongooseModule.forFeature([MenuModel]),
-        LoggerModule,
       ],
       providers: [MenuRepository, EventEmitter2],
     }).compile();
