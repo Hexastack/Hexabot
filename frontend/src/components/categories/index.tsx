@@ -135,12 +135,14 @@ export const Categories = () => {
       <DeleteDialog
         {...deleteDialogCtl}
         callback={async () => {
+          if (selectedCategories.length > 0) {
+            deleteCategories(selectedCategories), setSelectedCategories([]);
+            deleteDialogCtl.closeDialog();
+          }
           if (deleteDialogCtl?.data) {
-            if (selectedCategories.length > 0) {
-              deleteCategories(selectedCategories), setSelectedCategories([]);
-              deleteDialogCtl.closeDialog();
-            } else {
+            {
               deleteCategory(deleteDialogCtl.data);
+              deleteDialogCtl.closeDialog();
             }
           }
         }}
