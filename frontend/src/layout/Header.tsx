@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import ChatIcon from "@mui/icons-material/Chat";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
   Avatar,
@@ -17,6 +18,8 @@ import {
   styled,
 } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import UiChatWidget from "hexabot-widget/src/UiChatWidget";
+import { usePathname } from "next/navigation";
 import { FC, useEffect, useRef, useState } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
@@ -25,7 +28,8 @@ import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import i18n from "@/i18n/config";
+import { EntityType, RouterType } from "@/services/types";
 import { getRandom } from "@/utils/safeRandom";
 
 import { borderLine, theme } from "./themes/theme";
@@ -72,8 +76,23 @@ export type HeaderProps = {
   isSideBarOpen: boolean;
   onToggleSidebar: () => void;
 };
+
+const CustomWidgetHeader = () => {
+  const { t } = useTranslate();
+
+  return (
+    <Box display="flex" alignItems="center" ml={2}>
+      <ChatIcon />
+      <Typography component="h2" fontSize="1.5rem" ml={2}>
+        {t("title.live_chat_tester")}
+      </Typography>
+    </Box>
+  );
+};
+
 export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   const { apiUrl, ssoEnabled } = useConfig();
+  const pathname = usePathname();
   const { t } = useTranslate();
   const anchorRef = useRef(null);
   const [isMenuPopoverOpen, setIsMenuPopoverOpen] = useState(false);
@@ -87,6 +106,8 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   useEffect(() => {
     setRandomSeed(getRandom().toString());
   }, [user]);
+
+  const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
 
   return (
     <StyledAppBar open={isSideBarOpen}>
@@ -193,6 +214,24 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
             ) : null}
           </Grid>
         ) : null}
+
+        <Grid sx={{ display: isVisualEditor ? "block" : "none" }}>
+          <UiChatWidget
+            config={{
+              apiUrl,
+              channel: "live-chat-tester",
+              token: "test",
+              language: i18n.language,
+            }}
+            CustomHeader={CustomWidgetHeader as any}
+            CustomAvatar={() => (
+              <Avatar
+                sx={{ width: "32px", height: "32px", fontSize: ".75rem" }}
+                src={getAvatarSrc(apiUrl, EntityType.USER, "bot")}
+              />
+            )}
+          />
+        </Grid>
       </Grid>
     </StyledAppBar>
   );
