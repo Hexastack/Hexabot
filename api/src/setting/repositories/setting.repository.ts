@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, Types } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
@@ -57,31 +57,5 @@ export class SettingRepository extends BaseRepository<Setting> {
     ) {
       throw new Error('Setting Model : Value must be a boolean!');
     }
-  }
-
-  /**
-   * Emits an event after a `Setting` has been updated.
-   *
-   * This method is used to synchronize global settings by emitting an event
-   * based on the `group` and `label` of the `Setting`.
-   *
-   * @param _query The Mongoose query object used to find and update the document.
-   * @param setting The updated `Setting` object.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Setting, any, any>,
-      Document<Setting, any, any>,
-      unknown,
-      Setting,
-      'findOneAndUpdate'
-    >,
-    setting: Setting,
-  ) {
-    // Sync global settings var
-    this.eventEmitter.emit(
-      'hook:settings:' + setting.group + ':' + setting.label,
-      setting,
-    );
   }
 }

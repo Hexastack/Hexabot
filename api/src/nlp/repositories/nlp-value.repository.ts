@@ -17,7 +17,6 @@ import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
-  NlpValueDocument,
   NlpValueFull,
   NlpValuePopulate,
 } from '../schemas/nlp-value.schema';
@@ -41,10 +40,10 @@ export class NlpValueRepository extends BaseRepository<
    *
    * @param created - The newly created NLP value document.
    */
-  async postCreate(created: NlpValueDocument): Promise<void> {
+  async postCreate(created: NlpValue): Promise<void> {
     if (!created.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:value:create', created);
+      this.eventEmitter.emit('hook:nlpValue:create', created);
     }
   }
 
@@ -66,7 +65,7 @@ export class NlpValueRepository extends BaseRepository<
   ): Promise<void> {
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:value:update', updated);
+      this.eventEmitter.emit('hook:nlpValue:update', updated);
     }
   }
 
@@ -96,7 +95,7 @@ export class NlpValueRepository extends BaseRepository<
       entities
         .filter((e) => !e.builtin)
         .map((e) => {
-          this.eventEmitter.emit('hook:nlp:value:delete', e);
+          this.eventEmitter.emit('hook:nlpValue:delete', e);
         });
     } else if (criteria.entity) {
       // Do nothing : cascading deletes coming from Nlp Sample Entity

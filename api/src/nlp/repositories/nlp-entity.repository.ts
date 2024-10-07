@@ -50,7 +50,7 @@ export class NlpEntityRepository extends BaseRepository<
   ): Promise<void> {
     if (!_created.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:entity:create', _created);
+      this.eventEmitter.emit('hook:nlpEntity:create', _created);
     }
   }
 
@@ -74,7 +74,7 @@ export class NlpEntityRepository extends BaseRepository<
   ): Promise<void> {
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:entity:update', updated);
+      this.eventEmitter.emit('hook:nlpEntity:update', updated);
     }
   }
 
@@ -107,7 +107,7 @@ export class NlpEntityRepository extends BaseRepository<
       entities
         .filter((e) => !e.builtin)
         .map((e) => {
-          this.eventEmitter.emit('hook:nlp:entity:delete', e);
+          this.eventEmitter.emit('hook:nlpEntity:delete', e);
         });
     } else {
       throw new Error('Attempted to delete NLP entity using unknown criteria');

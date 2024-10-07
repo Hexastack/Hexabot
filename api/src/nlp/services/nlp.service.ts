@@ -100,7 +100,7 @@ export class NlpService {
   /**
    * Handles the event triggered when NLP settings are updated. Re-initializes the NLP service.
    */
-  @OnEvent('hook:settings:nlp_settings:*')
+  @OnEvent('hook:nlp:settings')
   async handleSettingsUpdate() {
     this.initNLP();
   }
@@ -111,7 +111,7 @@ export class NlpService {
    * @param entity - The NLP entity to be created.
    * @returns The updated entity after synchronization.
    */
-  @OnEvent('hook:nlp:entity:create')
+  @OnEvent('hook:nlpEntity:create')
   async handleEntityCreate(entity: NlpEntity) {
     // Synchonize new entity with NLP
     try {
@@ -131,7 +131,7 @@ export class NlpService {
    *
    * @param entity - The NLP entity to be updated.
    */
-  @OnEvent('hook:nlp:entity:update')
+  @OnEvent('hook:nlpEntity:update')
   async handleEntityUpdate(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
@@ -147,7 +147,7 @@ export class NlpService {
    *
    * @param entity - The NLP entity to be deleted.
    */
-  @OnEvent('hook:nlp:entity:delete')
+  @OnEvent('hook:nlpEntity:delete')
   async handleEntityDelete(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
@@ -165,7 +165,7 @@ export class NlpService {
    *
    * @returns The updated value after synchronization.
    */
-  @OnEvent('hook:nlp:value:create')
+  @OnEvent('hook:nlpValue:create')
   async handleValueCreate(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
@@ -185,7 +185,7 @@ export class NlpService {
    *
    * @param value - The NLP value to be updated.
    */
-  @OnEvent('hook:nlp:value:update')
+  @OnEvent('hook:nlpValue:update')
   async handleValueUpdate(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
@@ -201,7 +201,7 @@ export class NlpService {
    *
    * @param value - The NLP value to be deleted.
    */
-  @OnEvent('hook:nlp:value:delete')
+  @OnEvent('hook:nlpValue:delete')
   async handleValueDelete(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
