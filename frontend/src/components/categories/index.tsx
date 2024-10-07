@@ -7,9 +7,11 @@
  */
 
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
 import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -20,6 +22,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -56,9 +59,21 @@ export const Categories = () => {
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
+      setSelectedCategories([]);
       toast.success(t("message.item_delete_success"));
     },
   });
+  const { mutateAsync: deleteCategories } = useDeleteMany(EntityType.CATEGORY, {
+    onError: (error) => {
+      toast.error(error.message || t("message.internal_server_error"));
+    },
+    onSuccess: () => {
+      deleteDialogCtl.closeDialog();
+      setSelectedCategories([]);
+      toast.success(t("message.item_delete_success"));
+    },
+  });
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const actionColumns = useActionColumns<ICategory>(
     EntityType.CATEGORY,
     [
@@ -109,6 +124,9 @@ export const Categories = () => {
     },
     actionColumns,
   ];
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedCategories(selection as string[]);
+  };
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -116,8 +134,17 @@ export const Categories = () => {
       <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteCategory(deleteDialogCtl.data);
+        callback={async () => {
+          if (selectedCategories.length > 0) {
+            deleteCategories(selectedCategories), setSelectedCategories([]);
+            deleteDialogCtl.closeDialog();
+          }
+          if (deleteDialogCtl?.data) {
+            {
+              deleteCategory(deleteDialogCtl.data);
+              deleteDialogCtl.closeDialog();
+            }
+          }
         }}
       />
       <Grid>
@@ -145,13 +172,30 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
+            {selectedCategories.length > 0 && (
+              <Grid item>
+                <Button
+                  startIcon={<DeleteIcon />}
+                  variant="contained"
+                  color="error"
+                  onClick={() => deleteDialogCtl.openDialog(undefined)}
+                >
+                  {t("button.delete")}
+                </Button>
+              </Grid>
+            )}
           </Grid>
         </PageHeader>
       </Grid>
       <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
+            <DataGrid
+              columns={columns}
+              {...dataGridProps}
+              checkboxSelection
+              onRowSelectionModelChange={handleSelectionChange}
+            />
           </Grid>
         </Paper>
       </Grid>

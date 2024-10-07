@@ -37,7 +37,7 @@ export class CategoryRepository extends BaseRepository<Category> {
    * @param criteria - The filter criteria for finding blocks to delete.
    */
   async preDelete(
-    _query: Query<
+    query: Query<
       DeleteResult,
       Document<Category, any, any>,
       unknown,
@@ -46,11 +46,18 @@ export class CategoryRepository extends BaseRepository<Category> {
     >,
     criteria: TFilterQuery<Category>,
   ) {
-    const associatedBlocks = await this.blockService.findOne({
-      category: criteria._id,
-    });
-    if (associatedBlocks) {
-      throw new ForbiddenException(`Category have blocks associated to it`);
+    criteria = query.getQuery();
+    const ids = Array.isArray(criteria._id) ? criteria._id : [criteria._id];
+
+    for (const id of ids) {
+      const associatedBlocks = await this.blockService.findOne({
+        category: id,
+      });
+      if (associatedBlocks) {
+        throw new ForbiddenException(
+          `Category ${id} has blocks associated with it`,
+        );
+      }
     }
   }
 }

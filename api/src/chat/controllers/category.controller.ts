@@ -7,6 +7,7 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -136,5 +137,30 @@ export class CategoryController extends BaseController<Category> {
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
     return result;
+  }
+
+  /**
+   * Deletes multiple categories by their IDs.
+   * @param ids - IDs of categories to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+  @CsrfCheck(true)
+  @Delete('')
+  @HttpCode(204)
+  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('No IDs provided for deletion.');
+    }
+    const deleteResult = await this.categoryService.deleteMany({
+      _id: { $in: ids },
+    });
+
+    if (deleteResult.deletedCount === 0) {
+      this.logger.warn(`Unable to delete categories with provided IDs: ${ids}`);
+      throw new NotFoundException('Categories with provided IDs not found');
+    }
+
+    this.logger.log(`Successfully deleted categories with IDs: ${ids}`);
+    return deleteResult;
   }
 }

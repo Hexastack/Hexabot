@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -181,6 +181,44 @@ describe('CategoryController', () => {
         new NotFoundException(
           `Category with ID ${categoryToDelete.id} not found`,
         ),
+      );
+    });
+  });
+
+  describe('deleteMany', () => {
+    it('should delete multiple categories by ids', async () => {
+      const deleteResult = { acknowledged: true, deletedCount: 2 };
+      jest.spyOn(categoryService, 'deleteMany').mockResolvedValue(deleteResult);
+
+      const result = await categoryController.deleteMany([
+        category.id,
+        categoryToDelete.id,
+      ]);
+
+      expect(categoryService.deleteMany).toHaveBeenCalledWith({
+        _id: { $in: [category.id, categoryToDelete.id] },
+      });
+      expect(result).toEqual(deleteResult);
+    });
+
+    it('should throw a NotFoundException when no categories are deleted', async () => {
+      const deleteResult = { acknowledged: true, deletedCount: 0 };
+      jest.spyOn(categoryService, 'deleteMany').mockResolvedValue(deleteResult);
+
+      await expect(
+        categoryController.deleteMany([category.id, categoryToDelete.id]),
+      ).rejects.toThrow(
+        new NotFoundException('Categories with provided IDs not found'),
+      );
+
+      expect(categoryService.deleteMany).toHaveBeenCalledWith({
+        _id: { $in: [category.id, categoryToDelete.id] },
+      });
+    });
+
+    it('should throw a BadRequestException when no ids are provided', async () => {
+      await expect(categoryController.deleteMany([])).rejects.toThrow(
+        new BadRequestException('No IDs provided for deletion.'),
       );
     });
   });
