@@ -27,8 +27,7 @@
     "typecheck": "tsc --noEmit",
     "reset": "npm install && npm run containers:restart",
     "reset:hard": "npm clean-install && npm run containers:rebuild",
-    "migrate": "./node_modules/ts-migrate-mongoose/dist/cjs/bin.js --config-path ./migrations/config/migrate.ts",
-    "create-migration": "ts-node ./migrations/config/create.ts"
+    "migrate": "export USER_ID=$(id -u) && export GROUP_ID=$(id -g) && docker exec -it --user $USER_ID:$GROUP_ID api npx ts-migrate-mongoose --config-path ./migrations/config/migrate.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.11.2",
@@ -73,7 +72,7 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "slug": "^8.2.2",
-    "ts-migrate-mongoose": "^3.8.3",
+    "ts-migrate-mongoose": "^3.8.4",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

@@ -3,15 +3,18 @@
 [Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and plugin integrations.
 
 ## Key Features
+
 - **RESTful Architecture:** Simple, standardized API architecture following REST principles.
 - **Multi-Channel Support:** Handles requests from different communication channels (e.g., web, mobile).
 - **Modular Design:** Organized into multiple modules for better scalability and maintainability.
 - **Real-Time Communication:** Integrates WebSocket support for real-time features.
 
 ## API Modules
+
 The API is divided into several key modules, each responsible for specific functionalities:
 
 ### Core Modules
+
 - **Analytics:** Tracks and serves analytics data such as the number of messages exchanged and end-user retention statistics.
 - **Attachment:** Manages file uploads and downloads, enabling attachment handling across the chatbot.
 - **Channel:** Manages different communication channels through which the chatbot operates (e.g., web, mobile apps, etc.).
@@ -24,6 +27,7 @@ The API is divided into several key modules, each responsible for specific funct
 - **Settings:** A module for management all types of settings that can be adjusted to customize the chatbot.
 
 ### Utility Modules
+
 - **WebSocket:** Adds support for Websicket with Socket.IO, enabling real-time communication for events like live chat and user interactions.
 - **Logger:** Provides logging functionality to track and debug API requests and events.
 
@@ -60,8 +64,8 @@ $ npm run test:cov
 ```
 
 ## Migrations
-The API includes a migrations feature to help manage database schema and data changes over time. Migrations allow you to apply or revert changes to the database in a consistent and controlled manner.
 
+The API includes a migrations feature to help manage database schema and data changes over time. Migrations allow you to apply or revert changes to the database in a consistent and controlled manner.
 
 ### Creating a Migration
 
@@ -69,13 +73,13 @@ You need to navigate to the `api` folder to run the following commands.
 To create a new migration, use the following command:
 
 ```bash
-$ npm run create-migration <migration-name>
+$ npm run migrate create <migration-name>
 ```
 
 Example:
 
 ```bash
-$ npm run create-migration all-users-language-fr
+$ npm run migrate create all-users-language-fr
 ```
 
 This command generates a new migration file in the `./migrations` folder. The file will look like this:
@@ -107,20 +111,18 @@ export async function down(): Promise<void> {}
 
 ### Running Migrations Up
 
-All migrations are run automatically when the app starts.
-
-Alternatively, you can run the following command in the `root` directory to run all pending migrations:
+You can run the following command to run all pending migrations:
 
 ```bash
-$ make migrate-up
+$ npm run migrate up
 ```
 
 ### Running Migrations Manually
 
-If you want to run specific actions manually, you need to gain access to the `api` container and use the following command to run what you specifically want:
+If you want to run specific actions manually, you can get help by running the following command:
 
 ```bash
-$ npm run migrate -h
+$ npm run migrate help
 ```
 
 ## Documentation
@@ -131,13 +133,14 @@ It's also possible to access the API reference documentation by running `npm run
 
 For detailed information about the API routes and usage, refer to the API documentation or visit [https://docs.hexabot.ai](https://docs.hexabot.ai).
 
+## Contributing
 
-## Contributing 
 We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
 
 Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 ## License
+
 This software is licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
 
 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
