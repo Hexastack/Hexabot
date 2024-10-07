@@ -339,6 +339,21 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
   }
 
   /**
+   * Bulk Delete entries.
+   */
+  async deleteMany(ids: string[]) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.delete<string>(`${ROUTES[this.type]}`, {
+      data: {
+        _csrf,
+        ids,
+      },
+    });
+
+    return data;
+  }
+
+  /**
    * Count elements.
    */
   async count(params?: any) {
