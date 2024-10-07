@@ -9,6 +9,7 @@
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import UploadIcon from "@mui/icons-material/Upload";
 import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -38,6 +39,7 @@ import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { ContentDialog } from "./ContentDialog";
+import { ContentImportDialog } from "./ContentImportDialog";
 
 export const Contents = () => {
   const { t } = useTranslate();
@@ -58,6 +60,9 @@ export const Contents = () => {
     $eq: [{ entity: String(query.id) }],
     $iLike: ["title"],
   });
+  const importDialogCtl = useDialog<{
+    contentType?: IContentType;
+  }>(false);
   const hasPermission = useHasPermission();
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
@@ -137,6 +142,18 @@ export const Contents = () => {
                 </Button>
               </Grid>
             ) : null}
+            {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
+              <Grid item>
+                <Button
+                  startIcon={<UploadIcon />}
+                  variant="contained"
+                  onClick={() => importDialogCtl.openDialog({ contentType })}
+                  sx={{ float: "right" }}
+                >
+                  {t("button.import")}
+                </Button>
+              </Grid>
+            ) : null}
           </Grid>
         </PageHeader>
       </Grid>
@@ -144,6 +161,7 @@ export const Contents = () => {
         <Paper>
           <ContentDialog {...getDisplayDialogs(addDialogCtl)} />
           <ContentDialog {...getDisplayDialogs(editDialogCtl)} />
+          <ContentImportDialog {...getDisplayDialogs(importDialogCtl)} />
           <DeleteDialog
             {...deleteDialogCtl}
             callback={() => {
