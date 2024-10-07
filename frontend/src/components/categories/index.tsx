@@ -59,6 +59,7 @@ export const Categories = () => {
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
+      setSelectedCategories([]);
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -68,6 +69,7 @@ export const Categories = () => {
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
+      setSelectedCategories([]);
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -134,10 +136,12 @@ export const Categories = () => {
         {...deleteDialogCtl}
         callback={async () => {
           if (deleteDialogCtl?.data) {
-            deleteCategory(deleteDialogCtl.data);
-          } else if (selectedCategories.length > 0) {
-            deleteCategories(selectedCategories), setSelectedCategories([]);
-            deleteDialogCtl.closeDialog();
+            if (selectedCategories.length > 0) {
+              deleteCategories(selectedCategories), setSelectedCategories([]);
+              deleteDialogCtl.closeDialog();
+            } else {
+              deleteCategory(deleteDialogCtl.data);
+            }
           }
         }}
       />
