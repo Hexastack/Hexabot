@@ -141,13 +141,13 @@ export const EditContentTypeFieldsDialog = ({
         {t("title.manage_fields")}
       </DialogTitle>
       <form
-        onSubmit={handleSubmit(async (data) => {
+        onSubmit={handleSubmit(async ({ name, fields }) => {
           if (!!contentType)
             await updateContentType({
               id: contentType.id,
               params: {
-                fields: data.fields,
-                name: data.name,
+                name,
+                fields,
               },
             });
           handleClose();
