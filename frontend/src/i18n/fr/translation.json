@@ -104,7 +104,8 @@
     "title_length_exceeded": "Vous avez atteint la longueur maximale",
     "no_label_found": "Aucune étiquette trouvée",
     "code_is_required": "Le code est requis",
-    "text_is_required": "Texte requis"
+    "text_is_required": "Texte requis",
+    "invalid_file_type": "Type de fichier invalide"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

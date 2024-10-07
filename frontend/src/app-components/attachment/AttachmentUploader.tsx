@@ -99,6 +99,17 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.target.files.item(0);
 
       if (file) {
+        const acceptedTypes = accept.split(',');
+        const isValidType = acceptedTypes.some((type) =>
+          file.type === type || file.name.endsWith(type.replace('.*', ''))
+        );
+
+        if (!isValidType) {
+          toast.error(t("message.invalid_file_type"));
+          
+return;
+        }
+
         uploadAttachment(file);
       }
     }
