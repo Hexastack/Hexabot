@@ -33,9 +33,11 @@ export enum EHook {
   preCreate = 'preCreate',
   preUpdate = 'preUpdate',
   preDelete = 'preDelete',
+  preValidate = 'preValidate',
   postCreate = 'postCreate',
   postUpdate = 'postUpdate',
   postDelete = 'postDelete',
+  postValidate = 'postValidate',
 }
 
 export abstract class BaseRepository<
@@ -63,8 +65,8 @@ export abstract class BaseRepository<
     return this.populate;
   }
 
-  getEventName(suffix: EHook) {
-    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix.toLocaleLowerCase()}`;
+  getEventName(suffix: EHook): any {
+    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix}`;
   }
 
   private registerLifeCycleHooks() {
@@ -73,15 +75,21 @@ export abstract class BaseRepository<
 
     hooks?.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
+      repository.emitter.emit(repository.getEventName(EHook.preValidate), doc);
       await repository.preValidate(doc);
     });
 
     hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
+      repository.emitter.emit(
+        repository.getEventName(EHook.postValidate),
+        created,
+      );
       await repository.postValidate(created);
     });
 
     hooks?.save.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
+      repository.emitter.emit(repository.getEventName(EHook.preCreate), doc);
       await repository.preCreate(doc);
     });
 
@@ -96,11 +104,21 @@ export abstract class BaseRepository<
     hooks?.deleteOne.pre.execute(async function () {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       const criteria = query.getQuery();
+      repository.emitter.emit(
+        repository.getEventName(EHook.preDelete),
+        query,
+        criteria,
+      );
       await repository.preDelete(query, criteria);
     });
 
     hooks?.deleteOne.post.execute(async function (result: DeleteResult) {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
+      repository.emitter.emit(
+        repository.getEventName(EHook.postDelete),
+        query,
+        result,
+      );
       await repository.postDelete(query, result);
     });
 
