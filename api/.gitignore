@@ -4,4 +4,3 @@ coverage/
 uploads/
 documentation/
 avatars
-migrations/*.ts

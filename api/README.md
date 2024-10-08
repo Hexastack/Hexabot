@@ -65,24 +65,23 @@ $ npm run test:cov
 
 ## Migrations
 
-The API includes a migrations feature to help manage database schema and data changes over time. Migrations allow you to apply or revert changes to the database in a consistent and controlled manner.
+Hexabot includes a migrations feature to help manage database schema and data changes over time. Migrations allow you to apply or revert changes to the database in a consistent and controlled manner.
 
 ### Creating a Migration
 
-You need to navigate to the `api` folder to run the following commands.
-To create a new migration, use the following command:
+To create a new migration, use the following command from the root directory of Hexabot:
 
 ```bash
-$ npm run migrate create <migration-name>
+$ npx hexabot migrate create <migration-name>
 ```
 
 Example:
 
 ```bash
-$ npm run migrate create all-users-language-fr
+$ npx hexabot migrate create all-users-language-fr
 ```
 
-This command generates a new migration file in the `./migrations` folder. The file will look like this:
+This command generates a new migration file in the `/api/migrations` folder. The file will look like this:
 
 ```typescript
 import getModels from '@/models/index';
@@ -114,7 +113,7 @@ export async function down(): Promise<void> {}
 You can run the following command to run all pending migrations:
 
 ```bash
-$ npm run migrate up
+$ npx hexabot migrate up
 ```
 
 ### Running Migrations Manually
@@ -122,7 +121,7 @@ $ npm run migrate up
 If you want to run specific actions manually, you can get help by running the following command:
 
 ```bash
-$ npm run migrate help
+$ npx hexabot migrate help
 ```
 
 ## Documentation
