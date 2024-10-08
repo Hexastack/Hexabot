@@ -8,6 +8,7 @@
 
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-widget/src/UiChatWidget";
+import { usePathname } from "next/navigation";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useConfig } from "@/hooks/useConfig";
@@ -16,7 +17,8 @@ import { EntityType, RouterType } from "@/services/types";
 
 import { ChatWidgetHeader } from "./ChatWidgetHeader";
 
-export const ChatWidget = ({ pathname }: { pathname: string }) => {
+export const ChatWidget = () => {
+  const pathname = usePathname();
   const { apiUrl } = useConfig();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
 

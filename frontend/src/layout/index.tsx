@@ -7,7 +7,6 @@
  */
 
 import { BoxProps, Grid } from "@mui/material";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
@@ -29,7 +28,6 @@ export const Layout: React.FC<LayoutProps> = ({
   sxContent,
   ...rest
 }) => {
-  const pathname = usePathname();
   const [isSideBarOpen, setIsSideBarOpen] = useState(false);
 
   return (
@@ -46,7 +44,7 @@ export const Layout: React.FC<LayoutProps> = ({
       <Content sx={sxContent} {...rest}>
         {children}
       </Content>
-      <ChatWidget pathname={pathname} />
+      <ChatWidget />
     </Grid>
   );
 };
