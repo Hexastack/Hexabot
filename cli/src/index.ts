@@ -102,7 +102,7 @@ const dockerExec = (
       stdio: 'inherit',
     });
   } catch (error) {
-    console.error(chalk.red('Error executing Docker Compose command.'));
+    console.error(chalk.red('Error executing Docker Exec command.'));
     process.exit(1);
   }
 };
