@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Chip, ChipTypeMap } from "@mui/material";
+import { Box, Chip, ChipTypeMap, CircularProgress } from "@mui/material";
 import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
@@ -185,6 +185,9 @@ const AutoCompleteSelect = <
                 {options.length === 0 && !loading && noOptionsWarning && (
                   <AlertAdornment title={noOptionsWarning} type="warning" />
                 )}
+                {loading ? (
+                  <CircularProgress color="inherit" size={20} />
+                ) : null}
                 {props.InputProps.endAdornment}
               </>
             ),

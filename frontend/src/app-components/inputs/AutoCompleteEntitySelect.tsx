@@ -8,13 +8,14 @@
 
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 
-import { useFind } from "@/hooks/crud/useFind";
+import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
 import { useSearch } from "@/hooks/useSearch";
-import { Format } from "@/services/types";
+import { Format, QueryType } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 import { TFilterStringFields } from "@/types/search.types";
+import { generateId } from "@/utils/generateId";
 
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
@@ -62,75 +63,53 @@ const AutoCompleteEntitySelect = <
     helperText,
     preprocess,
     idKey = "id",
+    labelKey,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
   const { onSearch, searchPayload } = useSearch<Value>({
-    $iLike: searchFields as TFilterStringFields<unknown>,
+    $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
   });
-  const [initialValue] = useState(value);
-  const { data: defaultData, isLoading: isDefaultLoading } = useFind(
+  const idRef = useRef(generateId());
+  const params = {
+    where: {
+      or: [
+        ...(searchPayload.where.or || []),
+        ...(value
+          ? Array.isArray(value)
+            ? value.map((v) => ({ [idKey]: v }))
+            : [{ [idKey]: value }]
+          : []),
+      ],
+    },
+  };
+  const { data, isFetching, fetchNextPage } = useInfiniteFind(
     { entity, format },
     {
-      params: {
-        where: {
-          ...(initialValue && Array.isArray(initialValue)
-            ? initialValue.length > 1
-              ? { or: initialValue.map((v) => ({ [idKey]: v })) }
-              : { [idKey]: initialValue[0] }
-            : { [idKey]: initialValue }),
-        },
-      },
+      params,
       hasCount: false,
     },
     {
       keepPreviousData: true,
-      enabled: Array.isArray(initialValue) ? initialValue.length > 0 : !!value,
+      queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
     },
   );
-  const { data: newData, isLoading } = useFind(
-    { entity, format },
-    {
-      params: {
-        ...searchPayload,
-        where: { ...searchPayload.where, skip: 0, limit: 10 },
-      },
-      hasCount: false,
-    },
-    {
-      keepPreviousData: true,
-    },
-  );
-  const data = [...(defaultData || []), ...(newData || [])];
-  const [accumulatedOptions, setAccumulatedOptions] = useState<
-    Map<string, Value>
-  >(new Map());
+  // flatten & filter unique
+  const flattenedData = data?.pages
+    ?.flat()
+    .filter(
+      (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
+    );
+  const options =
+    preprocess && flattenedData
+      ? preprocess((flattenedData || []) as unknown as Value[])
+      : ((flattenedData || []) as Value[]);
 
   useEffect(() => {
-    if (data) {
-      const newOptions =
-        preprocess && data
-          ? preprocess((data || []) as Value[])
-          : ((data || []) as Value[]);
-
-      setAccumulatedOptions((prevMap) => {
-        const newMap = new Map(prevMap);
-
-        newOptions.forEach((option) => {
-          const id = option[idKey];
-
-          if (!newMap.has(id)) {
-            newMap.set(id, option);
-          }
-        });
-
-        return newMap;
-      });
-    }
-  }, [JSON.stringify(newData), idKey]);
-
-  const options = Array.from(accumulatedOptions.values());
+    fetchNextPage({ pageParam: params });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(searchPayload)]);
 
   return (
     <AutoCompleteSelect<Value, Label, Multiple>
@@ -140,11 +119,12 @@ const AutoCompleteEntitySelect = <
       multiple={multiple}
       ref={ref}
       idKey={idKey}
+      labelKey={labelKey}
       options={options || []}
       onSearch={onSearch}
       error={error}
       helperText={helperText}
-      loading={isLoading || isDefaultLoading}
+      loading={isFetching}
       {...rest}
     />
   );
