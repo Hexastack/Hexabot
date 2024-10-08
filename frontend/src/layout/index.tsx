@@ -9,6 +9,8 @@
 import { BoxProps, Grid } from "@mui/material";
 import { useState } from "react";
 
+import { ChatWidget } from "@/app-components/widget/ChatWidget";
+
 import { Content } from "./content";
 import { Header } from "./Header";
 import { VerticalMenu } from "./VerticalMenu";
@@ -42,6 +44,7 @@ export const Layout: React.FC<LayoutProps> = ({
       <Content sx={sxContent} {...rest}>
         {children}
       </Content>
+      <ChatWidget />
     </Grid>
   );
 };
