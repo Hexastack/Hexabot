@@ -137,7 +137,7 @@ describe('ContextVarController', () => {
         contextVarController.deleteOne(contextVarToDelete.id),
       ).rejects.toThrow(
         new NotFoundException(
-          `ContextVar with ID ${contextVarToDelete.id} not found`,
+          `Context var with ID ${contextVarToDelete.id} not found.`,
         ),
       );
     });

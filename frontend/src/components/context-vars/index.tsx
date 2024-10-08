@@ -63,8 +63,8 @@ export const ContextVars = () => {
     },
   });
   const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error);
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
@@ -76,7 +76,7 @@ export const ContextVars = () => {
     EntityType.CONTEXT_VAR,
     {
       onError: (error) => {
-        toast.error(error.message || t("message.internal_server_error"));
+        toast.error(error);
       },
       onSuccess: () => {
         deleteDialogCtl.closeDialog();
