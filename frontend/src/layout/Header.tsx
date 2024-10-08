@@ -72,7 +72,6 @@ export type HeaderProps = {
   isSideBarOpen: boolean;
   onToggleSidebar: () => void;
 };
-
 export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   const { apiUrl, ssoEnabled } = useConfig();
   const { t } = useTranslate();
