@@ -7,6 +7,7 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -143,5 +144,32 @@ export class ContextVarController extends BaseController<ContextVar> {
       throw new NotFoundException(`ContextVar with ID ${id} not found`);
     }
     return result;
+  }
+
+  /**
+   * Deletes multiple categories by their IDs.
+   * @param ids - IDs of categories to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+  @CsrfCheck(true)
+  @Delete('')
+  @HttpCode(204)
+  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('No IDs provided for deletion.');
+    }
+    const deleteResult = await this.contextVarService.deleteMany({
+      _id: { $in: ids },
+    });
+
+    if (deleteResult.deletedCount === 0) {
+      this.logger.warn(
+        `Unable to delete context vars with provided IDs: ${ids}`,
+      );
+      throw new NotFoundException('Context vars with provided IDs not found');
+    }
+
+    this.logger.log(`Successfully deleted context vars with IDs: ${ids}`);
+    return deleteResult;
   }
 }

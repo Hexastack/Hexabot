@@ -8,9 +8,10 @@
 
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
+import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import React, { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -21,6 +22,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -66,9 +68,24 @@ export const ContextVars = () => {
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
+      setSelectedContextVars([]);
       toast.success(t("message.item_delete_success"));
     },
   });
+  const { mutateAsync: deleteContextVars } = useDeleteMany(
+    EntityType.CONTEXT_VAR,
+    {
+      onError: (error) => {
+        toast.error(error.message || t("message.internal_server_error"));
+      },
+      onSuccess: () => {
+        deleteDialogCtl.closeDialog();
+        setSelectedContextVars([]);
+        toast.success(t("message.item_delete_success"));
+      },
+    },
+  );
+  const [selectedContextVars, setSelectedContextVars] = useState<string[]>([]);
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
     [
@@ -143,6 +160,9 @@ export const ContextVars = () => {
     },
     actionColumns,
   ];
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedContextVars(selection as string[]);
+  };
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -152,7 +172,13 @@ export const ContextVars = () => {
       <DeleteDialog
         {...deleteDialogCtl}
         callback={() => {
-          if (deleteDialogCtl?.data) deleteContextVar(deleteDialogCtl.data);
+          if (selectedContextVars.length > 0) {
+            deleteContextVars(selectedContextVars);
+            setSelectedContextVars([]);
+            deleteDialogCtl.closeDialog();
+          } else if (deleteDialogCtl?.data) {
+            deleteContextVar(deleteDialogCtl.data);
+          }
         }}
       />
       <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
@@ -179,12 +205,29 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
+          {selectedContextVars.length > 0 && (
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteDialogCtl.openDialog(undefined)}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
+            <DataGrid
+              columns={columns}
+              {...dataGridProps}
+              checkboxSelection
+              onRowSelectionModelChange={handleSelectionChange}
+            />
           </Grid>
         </Paper>
       </Grid>
