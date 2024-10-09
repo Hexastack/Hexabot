@@ -16,8 +16,8 @@ import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
 import BaseNlpHelper from '../lib/BaseNlpHelper';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
+import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
+import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
 
 @Injectable()
 export class NlpService {
@@ -100,7 +100,7 @@ export class NlpService {
   /**
    * Handles the event triggered when NLP settings are updated. Re-initializes the NLP service.
    */
-  @OnEvent('hook:nlp:settings')
+  @OnEvent('hook:nlp_settings:*')
   async handleSettingsUpdate() {
     this.initNLP();
   }
@@ -112,12 +112,12 @@ export class NlpService {
    * @returns The updated entity after synchronization.
    */
   @OnEvent('hook:nlpEntity:create')
-  async handleEntityCreate(entity: NlpEntity) {
+  async handleEntityCreate(entity: NlpEntityDocument) {
     // Synchonize new entity with NLP
     try {
       const foreignId = await this.getNLP().addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
-      return await this.nlpEntityService.updateOne(entity.id, {
+      return await this.nlpEntityService.updateOne(entity._id, {
         foreign_id: foreignId,
       });
     } catch (err) {
@@ -166,12 +166,12 @@ export class NlpService {
    * @returns The updated value after synchronization.
    */
   @OnEvent('hook:nlpValue:create')
-  async handleValueCreate(value: NlpValue) {
+  async handleValueCreate(value: NlpValueDocument) {
     // Synchonize new value with NLP provider
     try {
       const foreignId = await this.getNLP().addValue(value);
       this.logger.debug('New value successfully synced!', foreignId);
-      return await this.nlpValueService.updateOne(value.id, {
+      return await this.nlpValueService.updateOne(value._id, {
         foreign_id: foreignId,
       });
     } catch (err) {
