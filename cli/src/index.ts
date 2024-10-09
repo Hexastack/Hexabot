@@ -87,6 +87,27 @@ const dockerCompose = (args: string): void => {
 };
 
 /**
+ * Execute a Docker Exec command.
+ * @param container Container for the docker exec command
+ * @param options Additional options for the docker exec command
+ * @param command Command to be executed within the container
+ */
+const dockerExec = (
+  container: string,
+  command: string,
+  options?: string
+): void => {
+  try {
+    execSync(`docker exec -it ${options} ${container} ${command}`, {
+      stdio: 'inherit',
+    });
+  } catch (error) {
+    console.error(chalk.red('Error executing Docker Exec command.'));
+    process.exit(1);
+  }
+};
+
+/**
  * Parse the comma-separated service list.
  * @param serviceString Comma-separated list of services
  * @returns Array of services
@@ -151,6 +172,14 @@ program
     const services = parseServices(options.enable);
     const composeArgs = generateComposeFiles(services, 'dev');
     dockerCompose(`${composeArgs} up --build -d`);
+  });
+
+program
+  .command('migrate [args...]')
+  .description('Run database migrations')
+  .action((args) => {
+    const migrateArgs = args.join(' ');
+    dockerExec('api', `npm run migrate ${migrateArgs}`, '--user $(id -u):$(id -g)');
   });
 
 program
@@ -275,3 +304,4 @@ program.parse(process.argv);
 if (!process.argv.slice(2).length) {
   program.outputHelp();
 }
+
