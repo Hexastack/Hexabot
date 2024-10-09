@@ -111,8 +111,8 @@ declare module '@nestjs/event-emitter' {
     chatbot: TDefinition<
       object,
       {
-        sent: string;
-        received: number;
+        sent: unknown;
+        received: unknown;
         message: unknown;
         delivery: unknown;
         read: unknown;
