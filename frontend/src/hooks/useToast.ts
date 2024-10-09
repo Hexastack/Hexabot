@@ -41,7 +41,11 @@ const TOAST_WARNING_STYLE = {
 export const useToast = () => {
   const { t } = useTranslation();
   const extractErrorMessage = (error: any) => {
-    if (error?.statusCode == 409) {
+    if(typeof error === 'string') {
+      return error;
+    }
+
+    else if (error?.statusCode == 409) {
       return t("message.duplicate_error");
     }
 

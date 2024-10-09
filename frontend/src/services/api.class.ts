@@ -35,6 +35,7 @@ export const ROUTES = {
   RESET: "/user/reset",
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
+  CONTENT_IMPORT: "/content/import",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -204,6 +205,14 @@ export class ApiClient {
     const { data } = await this.request.post(
       `${ROUTES.NLP_SAMPLE_IMPORT}/${attachementId}`,
       { _csrf },
+    );
+
+    return data;
+  }
+
+  async importContent(contentTypeId: string, attachementId: string) {
+    const { data } = await this.request.get(
+      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachementId}`,
     );
 
     return data;
