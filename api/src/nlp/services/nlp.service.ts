@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -20,7 +20,7 @@ import { NlpEntity } from '../schemas/nlp-entity.schema';
 import { NlpValue } from '../schemas/nlp-value.schema';
 
 @Injectable()
-export class NlpService {
+export class NlpService implements OnApplicationBootstrap {
   private registry: Map<string, BaseNlpHelper> = new Map();
 
   private nlp: BaseNlpHelper;
@@ -31,7 +31,9 @@ export class NlpService {
     protected readonly nlpSampleService: NlpSampleService,
     protected readonly nlpEntityService: NlpEntityService,
     protected readonly nlpValueService: NlpValueService,
-  ) {
+  ) {}
+
+  onApplicationBootstrap() {
     this.initNLP();
   }
 
