@@ -28,6 +28,7 @@ import {
   type NlpValue,
 } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
+import type { CheckboxSetting, TextSetting } from '@/setting/schemas/types';
 import { type Invitation } from '@/user/schemas/invitation.schema';
 import { type Model } from '@/user/schemas/model.schema';
 import { type Permission } from '@/user/schemas/permission.schema';
@@ -38,7 +39,6 @@ import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
 import { type SubscriberUpdateDto } from './chat/dto/subscriber.dto';
 
 import '@nestjs/event-emitter';
-
 /**
  * @description Module declaration that extends the NestJS EventEmitter with custom event types and methods.
  */
@@ -52,10 +52,10 @@ declare module '@nestjs/event-emitter' {
     messenger_settings: TDefinition<
       object,
       {
-        get_started_button: unknown;
-        access_token: unknown;
-        composer_input_disabled: unknown;
-        greeting_text: unknown;
+        get_started_button: Setting;
+        access_token: Setting;
+        composer_input_disabled: CheckboxSetting;
+        greeting_text: TextSetting;
       }
     >;
   }
