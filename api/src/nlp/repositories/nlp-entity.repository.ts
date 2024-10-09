@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, TFilterQuery, Types } from 'mongoose';
+import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
@@ -18,6 +18,7 @@ import { NlpValueRepository } from './nlp-value.repository';
 import {
   NLP_ENTITY_POPULATE,
   NlpEntity,
+  NlpEntityDocument,
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
@@ -44,11 +45,8 @@ export class NlpEntityRepository extends BaseRepository<
    *
    * @param created - The newly created NLP entity document.
    */
-  async postCreate(
-    _created: Document<unknown, object, NlpEntity> &
-      NlpEntity & { _id: Types.ObjectId },
-  ): Promise<void> {
-    if (!_created.builtin) {
+  async postCreate(_created: NlpEntityDocument): Promise<void> {
+    if (!_created) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpEntity:create', _created);
     }

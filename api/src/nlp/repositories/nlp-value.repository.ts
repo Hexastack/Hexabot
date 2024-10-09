@@ -17,6 +17,7 @@ import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
+  NlpValueDocument,
   NlpValueFull,
   NlpValuePopulate,
 } from '../schemas/nlp-value.schema';
@@ -40,7 +41,7 @@ export class NlpValueRepository extends BaseRepository<
    *
    * @param created - The newly created NLP value document.
    */
-  async postCreate(created: NlpValue): Promise<void> {
+  async postCreate(created: NlpValueDocument): Promise<void> {
     if (!created.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpValue:create', created);
