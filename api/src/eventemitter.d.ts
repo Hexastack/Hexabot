@@ -49,7 +49,7 @@ declare module '@nestjs/event-emitter' {
   }
 
   interface IHookExtensionsOperationMap {
-    messenger_settings: TDefinition<
+    messenger: TDefinition<
       object,
       {
         get_started_button: Setting;
