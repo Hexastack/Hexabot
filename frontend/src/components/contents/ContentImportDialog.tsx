@@ -38,17 +38,23 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   const { refetch, isFetching } = useQuery(
     ["importContent", data?.contentType?.id, attachmentId],
     async () => {
-      await apiClient.importContent(data?.contentType?.id!, attachmentId!)},
+      if (data?.contentType?.id && attachmentId) {
+        await apiClient.importContent(data.contentType.id, attachmentId);
+      }
+    },
     {
       enabled: false,
       onSuccess: () => {
         handleCloseDialog();
         toast.success(t("message.success_save"));
+        if (rest.callback) {
+          rest.callback();
+        }
       },
       onError: () => {
         toast.error(t("message.internal_server_error"));
       },
-    }
+    },
   );
   const handleCloseDialog = () => {
     closeDialog();

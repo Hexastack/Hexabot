@@ -15,7 +15,7 @@ export type DialogControlProps<T, C = never> = Omit<
 >;
 export type DialogControl<T = null, C = never> = DialogProps & {
   data?: T;
-  callback?: (data: C) => void;
+  callback?: (data?: C) => void;
   openDialog: (data?: T) => void;
   closeDialog: () => void;
 };

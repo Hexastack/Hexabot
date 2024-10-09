@@ -65,7 +65,7 @@ export type FileUploadProps = {
   imageButton?: boolean;
   accept: string;
   enableMediaLibrary?: boolean;
-  onChange?: (data: IAttachment | null) => void;
+  onChange?: (data?: IAttachment | null) => void;
 };
 
 const AttachmentUploader: FC<FileUploadProps> = ({
@@ -99,15 +99,16 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.target.files.item(0);
 
       if (file) {
-        const acceptedTypes = accept.split(',');
-        const isValidType = acceptedTypes.some((type) =>
-          file.type === type || file.name.endsWith(type.replace('.*', ''))
+        const acceptedTypes = accept.split(",");
+        const isValidType = acceptedTypes.some(
+          (type) =>
+            file.type === type || file.name.endsWith(type.replace(".*", "")),
         );
 
         if (!isValidType) {
           toast.error(t("message.invalid_file_type"));
-          
-return;
+
+          return;
         }
 
         uploadAttachment(file);
