@@ -147,8 +147,8 @@ export class ContextVarController extends BaseController<ContextVar> {
   }
 
   /**
-   * Deletes multiple categories by their IDs.
-   * @param ids - IDs of categories to be deleted.
+   * Deletes multiple context variables by their IDs.
+   * @param ids - IDs of context variables to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
   @CsrfCheck(true)

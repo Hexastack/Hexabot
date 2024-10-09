@@ -65,9 +65,11 @@ export class ContextVarRepository extends BaseRepository<ContextVar> {
       });
 
       if (associatedBlocks?.length > 0) {
-        const blockIds = associatedBlocks.map((block) => block.id).join(', ');
+        const blockNames = associatedBlocks
+          .map((block) => block.name)
+          .join(', ');
         throw new ForbiddenException(
-          `Context var "${contextVar.name}" is associated with the following block(s): ${blockIds} and cannot be deleted.`,
+          `Context var "${contextVar.name}" is associated with the following block(s): ${blockNames} and cannot be deleted.`,
         );
       }
     }
