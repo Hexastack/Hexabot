@@ -107,7 +107,7 @@ export abstract class BaseRepository<
       await repository.preDelete(query, criteria);
       repository.emitter.emit(
         repository.getEventName(EHook.preDelete),
-        query,
+        query as any,
         criteria,
       );
     });
@@ -117,7 +117,7 @@ export abstract class BaseRepository<
       await repository.postDelete(query, result);
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
-        query,
+        query as any,
         result,
       );
     });
@@ -131,7 +131,7 @@ export abstract class BaseRepository<
     hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
-        result,
+        result as any,
       );
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       await repository.postDelete(query, result);
@@ -145,7 +145,7 @@ export abstract class BaseRepository<
       await repository.preUpdate(query, criteria, updates);
       repository.emitter.emit(
         repository.getEventName(EHook.preUpdate),
-        criteria,
+        criteria as any,
         updates?.['$set'],
       );
     });
