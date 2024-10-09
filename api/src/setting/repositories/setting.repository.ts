@@ -78,10 +78,9 @@ export class SettingRepository extends BaseRepository<Setting> {
     >,
     setting: Setting,
   ) {
+    const group = setting.group as any;
+    const label = setting.label as string;
     // Sync global settings var
-    this.eventEmitter.emit(
-      'hook:settings:' + setting.group + ':' + setting.label,
-      setting,
-    );
+    this.eventEmitter.emit(`hook:${group}:${label}`, setting as any);
   }
 }

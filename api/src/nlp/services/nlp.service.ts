@@ -16,8 +16,8 @@ import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
 import BaseNlpHelper from '../lib/BaseNlpHelper';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
-import { NlpValue } from '../schemas/nlp-value.schema';
+import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
+import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
 
 @Injectable()
 export class NlpService implements OnApplicationBootstrap {
@@ -102,7 +102,7 @@ export class NlpService implements OnApplicationBootstrap {
   /**
    * Handles the event triggered when NLP settings are updated. Re-initializes the NLP service.
    */
-  @OnEvent('hook:settings:nlp_settings:*')
+  @OnEvent('hook:nlp_settings:*')
   async handleSettingsUpdate() {
     this.initNLP();
   }
@@ -113,13 +113,13 @@ export class NlpService implements OnApplicationBootstrap {
    * @param entity - The NLP entity to be created.
    * @returns The updated entity after synchronization.
    */
-  @OnEvent('hook:nlp:entity:create')
-  async handleEntityCreate(entity: NlpEntity) {
+  @OnEvent('hook:nlpEntity:create')
+  async handleEntityCreate(entity: NlpEntityDocument) {
     // Synchonize new entity with NLP
     try {
       const foreignId = await this.getNLP().addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
-      return await this.nlpEntityService.updateOne(entity.id, {
+      return await this.nlpEntityService.updateOne(entity._id, {
         foreign_id: foreignId,
       });
     } catch (err) {
@@ -133,7 +133,7 @@ export class NlpService implements OnApplicationBootstrap {
    *
    * @param entity - The NLP entity to be updated.
    */
-  @OnEvent('hook:nlp:entity:update')
+  @OnEvent('hook:nlpEntity:update')
   async handleEntityUpdate(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
@@ -149,7 +149,7 @@ export class NlpService implements OnApplicationBootstrap {
    *
    * @param entity - The NLP entity to be deleted.
    */
-  @OnEvent('hook:nlp:entity:delete')
+  @OnEvent('hook:nlpEntity:delete')
   async handleEntityDelete(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
@@ -167,13 +167,13 @@ export class NlpService implements OnApplicationBootstrap {
    *
    * @returns The updated value after synchronization.
    */
-  @OnEvent('hook:nlp:value:create')
-  async handleValueCreate(value: NlpValue) {
+  @OnEvent('hook:nlpValue:create')
+  async handleValueCreate(value: NlpValueDocument) {
     // Synchonize new value with NLP provider
     try {
       const foreignId = await this.getNLP().addValue(value);
       this.logger.debug('New value successfully synced!', foreignId);
-      return await this.nlpValueService.updateOne(value.id, {
+      return await this.nlpValueService.updateOne(value._id, {
         foreign_id: foreignId,
       });
     } catch (err) {
@@ -187,7 +187,7 @@ export class NlpService implements OnApplicationBootstrap {
    *
    * @param value - The NLP value to be updated.
    */
-  @OnEvent('hook:nlp:value:update')
+  @OnEvent('hook:nlpValue:update')
   async handleValueUpdate(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
@@ -203,7 +203,7 @@ export class NlpService implements OnApplicationBootstrap {
    *
    * @param value - The NLP value to be deleted.
    */
-  @OnEvent('hook:nlp:value:delete')
+  @OnEvent('hook:nlpValue:delete')
   async handleValueDelete(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {

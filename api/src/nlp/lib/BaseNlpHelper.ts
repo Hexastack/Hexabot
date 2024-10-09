@@ -20,9 +20,17 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
-import { NlpEntity, NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityDocument,
+  NlpEntityFull,
+} from '@/nlp/schemas/nlp-entity.schema';
 import { NlpSample, NlpSampleFull } from '@/nlp/schemas/nlp-sample.schema';
-import { NlpValue, NlpValueFull } from '@/nlp/schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueDocument,
+  NlpValueFull,
+} from '@/nlp/schemas/nlp-value.schema';
 import { Settings } from '@/setting/schemas/types';
 
 import { Nlp } from './types';
@@ -68,7 +76,7 @@ export default abstract class BaseNlpHelper {
    * @param entity - The entity to add
    * @returns The added entity otherwise an error
    */
-  addEntity(_entity: NlpEntity): Promise<string> {
+  addEntity(_entity: NlpEntityDocument): Promise<string> {
     return new Promise((resolve, _reject) => {
       return resolve(uuidv4());
     });
@@ -103,7 +111,7 @@ export default abstract class BaseNlpHelper {
    *
    * @returns The added value otherwise it should throw an error
    */
-  addValue(_value: NlpValue): Promise<string> {
+  addValue(_value: NlpValueDocument): Promise<string> {
     return new Promise((resolve, _reject) => {
       return resolve(uuidv4());
     });

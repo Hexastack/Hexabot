@@ -44,7 +44,7 @@ export class NlpValueRepository extends BaseRepository<
   async postCreate(created: NlpValueDocument): Promise<void> {
     if (!created.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:value:create', created);
+      this.eventEmitter.emit('hook:nlpValue:create', created);
     }
   }
 
@@ -66,7 +66,7 @@ export class NlpValueRepository extends BaseRepository<
   ): Promise<void> {
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlp:value:update', updated);
+      this.eventEmitter.emit('hook:nlpValue:update', updated);
     }
   }
 
@@ -96,7 +96,7 @@ export class NlpValueRepository extends BaseRepository<
       entities
         .filter((e) => !e.builtin)
         .map((e) => {
-          this.eventEmitter.emit('hook:nlp:value:delete', e);
+          this.eventEmitter.emit('hook:nlpValue:delete', e);
         });
     } else if (criteria.entity) {
       // Do nothing : cascading deletes coming from Nlp Sample Entity

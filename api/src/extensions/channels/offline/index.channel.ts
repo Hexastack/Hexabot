@@ -835,7 +835,7 @@ export default class OfflineHandler extends ChannelHandler {
 
           const type = event.getEventType();
           if (type) {
-            this.eventEmitter.emit('hook:chatbot:' + type, event);
+            this.eventEmitter.emit(`hook:chatbot:${type}`, event);
           } else {
             this.logger.error(
               'Offline Channel Handler : Webhook received unknown event ',

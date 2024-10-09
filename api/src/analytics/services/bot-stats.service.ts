@@ -68,7 +68,7 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param {Subscriber} subscriber - The subscriber object that contains last visit and retention data.
    */
   @OnEvent('hook:user:lastvisit')
-  private handleLastVisit(subscriber: Subscriber) {
+  handleLastVisit(subscriber: Subscriber) {
     const now = +new Date();
     if (subscriber.lastvisit) {
       // A loyal subscriber is a subscriber that comes back after some inactivity
@@ -110,7 +110,7 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  private async handleStatEntry(type: BotStatsType, name: string) {
+  async handleStatEntry(type: BotStatsType, name: string) {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);

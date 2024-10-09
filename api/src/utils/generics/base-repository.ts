@@ -33,9 +33,11 @@ export enum EHook {
   preCreate = 'preCreate',
   preUpdate = 'preUpdate',
   preDelete = 'preDelete',
+  preValidate = 'preValidate',
   postCreate = 'postCreate',
   postUpdate = 'postUpdate',
   postDelete = 'postDelete',
+  postValidate = 'postValidate',
 }
 
 export abstract class BaseRepository<
@@ -63,8 +65,8 @@ export abstract class BaseRepository<
     return this.populate;
   }
 
-  getEventName(suffix: EHook) {
-    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix.toLocaleLowerCase()}`;
+  getEventName(suffix: EHook): any {
+    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix}`;
   }
 
   private registerLifeCycleHooks() {
@@ -74,34 +76,50 @@ export abstract class BaseRepository<
     hooks?.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preValidate(doc);
+      repository.emitter.emit(repository.getEventName(EHook.preValidate), doc);
     });
 
     hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postValidate(created);
+      repository.emitter.emit(
+        repository.getEventName(EHook.postValidate),
+        created,
+      );
     });
 
     hooks?.save.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreate(doc);
+      repository.emitter.emit(repository.getEventName(EHook.preCreate), doc);
     });
 
     hooks?.save.post.execute(async function (created: HydratedDocument<T>) {
+      await repository.postCreate(created);
       repository.emitter.emit(
         repository.getEventName(EHook.postCreate),
         created,
       );
-      await repository.postCreate(created);
     });
 
     hooks?.deleteOne.pre.execute(async function () {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       const criteria = query.getQuery();
       await repository.preDelete(query, criteria);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preDelete),
+        query as any,
+        criteria,
+      );
     });
 
     hooks?.deleteOne.post.execute(async function (result: DeleteResult) {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       await repository.postDelete(query, result);
+      repository.emitter.emit(
+        repository.getEventName(EHook.postDelete),
+        query as any,
+        result,
+      );
     });
 
     hooks?.deleteMany.pre.execute(async function () {
@@ -113,7 +131,7 @@ export abstract class BaseRepository<
     hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
-        result,
+        result as any,
       );
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       await repository.postDelete(query, result);
@@ -124,26 +142,26 @@ export abstract class BaseRepository<
       const criteria = query.getFilter();
       const updates = query.getUpdate();
 
+      await repository.preUpdate(query, criteria, updates);
       repository.emitter.emit(
         repository.getEventName(EHook.preUpdate),
-        criteria,
+        criteria as any,
         updates?.['$set'],
       );
-      await repository.preUpdate(query, criteria, updates);
     });
 
     hooks?.findOneAndUpdate.post.execute(async function (
       updated: HydratedDocument<T>,
     ) {
       if (updated) {
-        repository.emitter.emit(
-          repository.getEventName(EHook.postUpdate),
-          updated,
-        );
         const query = this as Query<D, D, unknown, T, 'findOneAndUpdate'>;
         await repository.postUpdate(
           query,
           plainToClass(repository.cls, updated, repository.transformOpts),
+        );
+        repository.emitter.emit(
+          repository.getEventName(EHook.postUpdate),
+          updated,
         );
       }
     });

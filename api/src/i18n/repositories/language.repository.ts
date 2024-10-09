@@ -38,11 +38,11 @@ export class LanguageRepository extends BaseRepository<Language> {
       Language,
       'deleteOne' | 'deleteMany'
     >,
-    criteria: TFilterQuery<Language>,
+    _criteria: TFilterQuery<Language>,
   ): Promise<void> {
-    if (criteria._id) {
-      const language = await this.findOne(
-        typeof criteria === 'string' ? { _id: criteria } : criteria,
+    if (_criteria._id) {
+      const language = await this.find(
+        typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
       );
       this.eventEmitter.emit('hook:language:delete', language);
     } else {

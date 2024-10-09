@@ -235,7 +235,7 @@ export class SubscriberService extends BaseService<
    * @param subscriber The subscriber whose is being handled.
    */
   @OnEvent('hook:user:lastvisit')
-  private async handleLastVisit(subscriber: Subscriber) {
+  async handleLastVisit(subscriber: Subscriber) {
     if (subscriber.lastvisit) {
       try {
         const user = await this.updateOne(subscriber.id, {
