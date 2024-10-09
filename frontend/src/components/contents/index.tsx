@@ -67,7 +67,7 @@ export const Contents = () => {
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
-  const { dataGridProps } = useFind(
+  const { dataGridProps, refetch } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
     {
       params: searchPayload,
@@ -161,7 +161,12 @@ export const Contents = () => {
         <Paper>
           <ContentDialog {...getDisplayDialogs(addDialogCtl)} />
           <ContentDialog {...getDisplayDialogs(editDialogCtl)} />
-          <ContentImportDialog {...getDisplayDialogs(importDialogCtl)} />
+          <ContentImportDialog
+            {...getDisplayDialogs(importDialogCtl)}
+            callback={() => {
+              refetch();
+            }}
+          />
           <DeleteDialog
             {...deleteDialogCtl}
             callback={() => {

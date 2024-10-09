@@ -46,7 +46,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
     ref,
   ) => {
     const hasPermission = useHasPermission();
-    const handleChange = (attachment: IAttachment | null) => {
+    const handleChange = (attachment?: IAttachment | null) => {
       onChange && onChange(attachment?.id || null, attachment?.type || null);
     };
 

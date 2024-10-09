@@ -43,7 +43,16 @@ export const DeleteDialog: FC<DeleteDialogProps> = ({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" color="error" onClick={callback} autoFocus>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => {
+            if (callback) {
+              callback();
+            }
+          }}
+          autoFocus
+        >
           {t("button.yes")}
         </Button>
         <Button variant="outlined" onClick={closeFunction}>
