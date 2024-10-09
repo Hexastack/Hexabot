@@ -138,8 +138,7 @@ export const Categories = () => {
           if (selectedCategories.length > 0) {
             deleteCategories(selectedCategories), setSelectedCategories([]);
             deleteDialogCtl.closeDialog();
-          }
-          if (deleteDialogCtl?.data) {
+          } else if (deleteDialogCtl?.data) {
             {
               deleteCategory(deleteDialogCtl.data);
               deleteDialogCtl.closeDialog();

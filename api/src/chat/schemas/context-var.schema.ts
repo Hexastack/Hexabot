@@ -10,6 +10,7 @@ import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
 import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 @Schema({ timestamps: true })
 export class ContextVar extends BaseSchema {
@@ -40,10 +41,10 @@ export class ContextVar extends BaseSchema {
   permanent?: boolean;
 }
 
-export const ContextVarModel: ModelDefinition = {
+export const ContextVarModel: ModelDefinition = LifecycleHookManager.attach({
   name: ContextVar.name,
   schema: SchemaFactory.createForClass(ContextVar),
-};
+});
 
 export type ContextVarDocument = THydratedDocument<ContextVar>;
 

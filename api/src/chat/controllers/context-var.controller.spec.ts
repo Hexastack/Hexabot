@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -137,8 +137,46 @@ describe('ContextVarController', () => {
         contextVarController.deleteOne(contextVarToDelete.id),
       ).rejects.toThrow(
         new NotFoundException(
-          `ContextVar with ID ${contextVarToDelete.id} not found`,
+          `Context var with ID ${contextVarToDelete.id} not found.`,
         ),
+      );
+    });
+  });
+
+  describe('deleteMany', () => {
+    const deleteResult = { acknowledged: true, deletedCount: 2 };
+
+    it('should delete contextVars when valid IDs are provided', async () => {
+      jest
+        .spyOn(contextVarService, 'deleteMany')
+        .mockResolvedValue(deleteResult);
+      const result = await contextVarController.deleteMany([
+        contextVarToDelete.id,
+        contextVar.id,
+      ]);
+
+      expect(contextVarService.deleteMany).toHaveBeenCalledWith({
+        _id: { $in: [contextVarToDelete.id, contextVar.id] },
+      });
+      expect(result).toEqual(deleteResult);
+    });
+
+    it('should throw BadRequestException when no IDs are provided', async () => {
+      await expect(contextVarController.deleteMany([])).rejects.toThrow(
+        new BadRequestException('No IDs provided for deletion.'),
+      );
+    });
+
+    it('should throw NotFoundException when no contextVars are deleted', async () => {
+      jest.spyOn(contextVarService, 'deleteMany').mockResolvedValue({
+        acknowledged: true,
+        deletedCount: 0,
+      });
+
+      await expect(
+        contextVarController.deleteMany([contextVarToDelete.id, contextVar.id]),
+      ).rejects.toThrow(
+        new NotFoundException('Context vars with provided IDs not found'),
       );
     });
   });

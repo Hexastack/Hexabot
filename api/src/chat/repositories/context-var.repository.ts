@@ -6,21 +6,72 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { ContextVar } from '../schemas/context-var.schema';
+import { BlockService } from '../services/block.service';
 
 @Injectable()
 export class ContextVarRepository extends BaseRepository<ContextVar> {
+  private readonly blockService: BlockService;
+
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(ContextVar.name) readonly model: Model<ContextVar>,
+    @Optional() blockService?: BlockService,
   ) {
     super(eventEmitter, model, ContextVar);
+    this.blockService = blockService;
+  }
+
+  /**
+   * Pre-processing logic before deleting a context var.
+   * It avoids deleting a context var if its unique name is used in blocks within the capture_vars array.
+   * If the context var is found in blocks, the block IDs are returned in the exception message.
+   *
+   * @param query - The delete query.
+   * @param criteria - The filter criteria for finding context vars to delete.
+   */
+  async preDelete(
+    _query: Query<
+      DeleteResult,
+      Document<ContextVar, any, any>,
+      unknown,
+      ContextVar,
+      'deleteOne' | 'deleteMany'
+    >,
+    criteria: TFilterQuery<ContextVar>,
+  ) {
+    const ids = Array.isArray(criteria._id) ? criteria._id : [criteria._id];
+
+    for (const id of ids) {
+      const contextVar = await this.findOne({ _id: id });
+      if (!contextVar) {
+        throw new NotFoundException(`Context var with ID ${id} not found.`);
+      }
+
+      const associatedBlocks = await this.blockService?.find({
+        capture_vars: { $elemMatch: { context_var: contextVar.name } },
+      });
+
+      if (associatedBlocks?.length > 0) {
+        const blockNames = associatedBlocks
+          .map((block) => block.name)
+          .join(', ');
+        throw new ForbiddenException(
+          `Context var "${contextVar.name}" is associated with the following block(s): ${blockNames} and cannot be deleted.`,
+        );
+      }
+    }
   }
 }
