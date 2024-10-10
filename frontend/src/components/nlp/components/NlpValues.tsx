@@ -9,8 +9,9 @@
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Box, Button, Chip, Grid, Slide } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Box, Button, ButtonGroup, Chip, Grid, Slide } from "@mui/material";
+import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -23,6 +24,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet } from "@/hooks/crud/useGet";
 import { useDialog } from "@/hooks/useDialog";
@@ -72,6 +74,17 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       refetchEntity();
     },
   });
+  const { mutateAsync: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
+    onError: (error) => {
+      toast.error(error);
+    },
+    onSuccess: () => {
+      deleteEntityDialogCtl.closeDialog();
+      setSelectedNlpValues([]);
+      toast.success(t("message.item_delete_success"));
+    },
+  });
+  const [selectedNlpValues, setSelectedNlpValues] = useState<string[]>([]);
   const actionColumns = useActionColumns<INlpValue>(
     EntityType.NLP_VALUE,
     [
@@ -138,6 +151,9 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   }, []);
 
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedNlpValues(selection as string[]);
+  };
 
   return (
     <Grid container gap={2} flexDirection="column">
@@ -174,7 +190,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                 <Grid item>
                   <FilterTextfield onChange={onSearch} />
                 </Grid>
-                <Grid item>
+                <ButtonGroup sx={{ marginLeft: "auto" }}>
                   {hasPermission(
                     EntityType.NLP_VALUE,
                     PermissionAction.CREATE,
@@ -188,7 +204,21 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       {t("button.add")}
                     </Button>
                   ) : null}
-                </Grid>
+                  {selectedNlpValues.length > 0 && (
+                    <Grid item>
+                      <Button
+                        startIcon={<DeleteIcon />}
+                        variant="contained"
+                        color="error"
+                        onClick={() =>
+                          deleteEntityDialogCtl.openDialog(undefined)
+                        }
+                      >
+                        {t("button.delete")}
+                      </Button>
+                    </Grid>
+                  )}
+                </ButtonGroup>
               </Grid>
             </PageHeader>
             <NlpValueDialog
@@ -201,8 +231,13 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             <DeleteDialog
               {...deleteEntityDialogCtl}
               callback={() => {
-                if (deleteEntityDialogCtl.data)
+                if (selectedNlpValues.length > 0) {
+                  deleteNlpValues(selectedNlpValues);
+                  setSelectedNlpValues([]);
+                  deleteEntityDialogCtl.closeDialog();
+                } else if (deleteEntityDialogCtl.data) {
                   deleteNlpValue(deleteEntityDialogCtl.data);
+                }
               }}
             />
             <NlpValueDialog
@@ -211,7 +246,12 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
               callback={() => {}}
             />
             <Grid padding={1} marginTop={2} container>
-              <DataGrid columns={columns} {...dataGridProps} />
+              <DataGrid
+                columns={columns}
+                {...dataGridProps}
+                checkboxSelection
+                onRowSelectionModelChange={handleSelectionChange}
+              />
             </Grid>
           </Box>
         </Grid>

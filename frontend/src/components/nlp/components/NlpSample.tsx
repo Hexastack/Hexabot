@@ -7,7 +7,7 @@
  */
 
 import CircleIcon from "@mui/icons-material/Circle";
-import DeleteIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import UploadIcon from "@mui/icons-material/Upload";
 import {
