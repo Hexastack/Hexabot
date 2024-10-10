@@ -128,6 +128,9 @@ export class ChannelService {
     );
 
     if (!req.session?.passport?.user?.id) {
+      setTimeout(() => {
+        req.socket.client.conn.close();
+      }, 300);
       throw new UnauthorizedException(
         'Only authenticated users are allowed to use this channel',
       );

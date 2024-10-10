@@ -207,31 +207,45 @@ export class WebsocketGateway
     // Handle session
     this.io.use((client, next) => {
       this.logger.verbose('Client connected, attempting to load session.');
-      if (client.request.headers.cookie) {
-        const cookies = cookie.parse(client.request.headers.cookie);
-        if (cookies && config.session.name in cookies) {
-          const sessionID = cookieParser.signedCookie(
-            cookies[config.session.name],
-            config.session.secret,
-          );
-          if (sessionID) {
-            return this.loadSession(sessionID, (err, session) => {
-              if (err) {
-                this.logger.warn(
-                  'Unable to load session, creating a new one ...',
-                  err,
-                );
-                return this.createAndStoreSession(client, next);
-              }
-              client.data.session = session;
-              client.data.sessionID = sessionID;
-              next();
-            });
+      try {
+        const { searchParams } = new URL(`ws://localhost${client.request.url}`);
+        if (client.request.headers.cookie) {
+          const cookies = cookie.parse(client.request.headers.cookie);
+          if (cookies && config.session.name in cookies) {
+            const sessionID = cookieParser.signedCookie(
+              cookies[config.session.name],
+              config.session.secret,
+            );
+            if (sessionID) {
+              return this.loadSession(sessionID, (err, session) => {
+                if (err || !session) {
+                  this.logger.warn(
+                    'Unable to load session, creating a new one ...',
+                    err,
+                  );
+                  if (searchParams.get('channel') === 'offline') {
+                    return this.createAndStoreSession(client, next);
+                  } else {
+                    return next(new Error('Unauthorized: Unknown session ID'));
+                  }
+                }
+                client.data.session = session;
+                client.data.sessionID = sessionID;
+                next();
+              });
+            } else {
+              return next(new Error('Unable to parse session ID from cookie'));
+            }
           }
+        } else if (searchParams.get('channel') === 'offline') {
+          return this.createAndStoreSession(client, next);
+        } else {
+          return next(new Error('Unauthorized to connect to WS'));
         }
+      } catch (e) {
+        this.logger.warn('Something unexpected happening');
+        return next(e);
       }
-
-      return this.createAndStoreSession(client, next);
     });
   }
 

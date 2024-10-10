@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
+import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
@@ -45,10 +46,13 @@ export const useLogout = (
   >,
 ) => {
   const { apiClient } = useApiClient();
+  const { socket } = useSocket();
 
   return useMutation({
     ...options,
     async mutationFn() {
+      socket?.disconnect();
+
       return await apiClient.logout();
     },
     onSuccess: () => {},
