@@ -10,12 +10,10 @@
   width: 100%;
   position: relative;
   text-align: center;
+  align-content: center;
+  overflow: auto;
 
   .user-subscription {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-
     .user-subscription-title {
       margin: 2rem;
     }
