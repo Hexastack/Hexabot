@@ -11,6 +11,7 @@ import UiChatWidget from "hexabot-widget/src/UiChatWidget";
 import { usePathname } from "next/navigation";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import i18n from "@/i18n/config";
 import { EntityType, RouterType } from "@/services/types";
@@ -20,9 +21,10 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 export const ChatWidget = () => {
   const pathname = usePathname();
   const { apiUrl } = useConfig();
+  const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
 
-  return (
+  return isAuthenticated ? (
     <Box
       sx={{
         display: isVisualEditor ? "block" : "none",
@@ -44,5 +46,5 @@ export const ChatWidget = () => {
         )}
       />
     </Box>
-  );
+  ) : null;
 };
