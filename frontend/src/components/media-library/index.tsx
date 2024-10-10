@@ -6,9 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import { Box, Grid, Paper } from "@mui/material";
-import { GridColDef, GridEventListener } from "@mui/x-data-grid";
+import { Box, Button, Grid, Paper } from "@mui/material";
+import {
+  GridColDef,
+  GridEventListener,
+  GridRowSelectionModel,
+} from "@mui/x-data-grid";
+import { useState } from "react";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
@@ -20,6 +26,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialog } from "@/hooks/useDialog";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
@@ -69,7 +76,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       },
     },
   );
-  const { mutateAsync: deleteCategory } = useDelete(EntityType.ATTACHMENT, {
+  const { mutateAsync: deleteAttachement } = useDelete(EntityType.ATTACHMENT, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -78,6 +85,20 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       toast.success(t("message.item_delete_success"));
     },
   });
+  const { mutateAsync: deleteAttachments } = useDeleteMany(
+    EntityType.ATTACHMENT,
+    {
+      onError: (error) => {
+        toast.error(error);
+      },
+      onSuccess: () => {
+        deleteDialogCtl.closeDialog();
+        setSelectedAttachments([]);
+        toast.success(t("message.item_delete_success"));
+      },
+    },
+  );
+  const [selectedAttachments, setSelectedAttachments] = useState<string[]>([]);
   const actionColumns = useActionColumns<IAttachment>(
     EntityType.ATTACHMENT,
     [
@@ -163,13 +184,22 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
     },
     actionColumns,
   ];
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedAttachments(selection as string[]);
+  };
 
   return (
     <Grid container gap={3} flexDirection="column">
       <DeleteDialog
         {...deleteDialogCtl}
         callback={() => {
-          if (deleteDialogCtl?.data) deleteCategory(deleteDialogCtl.data);
+          if (selectedAttachments.length > 0) {
+            deleteAttachments(selectedAttachments);
+            setSelectedAttachments([]);
+            deleteDialogCtl.closeDialog();
+          } else if (deleteDialogCtl?.data) {
+            deleteAttachement(deleteDialogCtl.data);
+          }
         }}
       />
       <PageHeader title={t("title.media_library")} icon={DriveFolderUploadIcon}>
@@ -184,6 +214,18 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
           <Grid item>
             <FilterTextfield onChange={onSearch} />
           </Grid>
+          {selectedAttachments.length > 0 && (
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteDialogCtl.openDialog(undefined)}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
@@ -192,6 +234,8 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
             <DataGrid
               columns={columns}
               {...dataGridProps}
+              checkboxSelection
+              onRowSelectionModelChange={handleSelectionChange}
               disableRowSelectionOnClick={!onSelect}
               onRowClick={onSelect}
               rowHeight={86}
