@@ -20,7 +20,7 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
@@ -35,6 +35,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useConfig } from "@/hooks/useConfig";
@@ -91,6 +92,20 @@ export default function NlpSample() {
       toast.success(t("message.item_delete_success"));
     },
   });
+  const { mutateAsync: deleteNlpSamples } = useDeleteMany(
+    EntityType.NLP_SAMPLE,
+    {
+      onError: (error) => {
+        toast.error(error);
+      },
+      onSuccess: () => {
+        deleteDialogCtl.closeDialog();
+        setSelectedNlpSamples([]);
+        toast.success(t("message.item_delete_success"));
+      },
+    },
+  );
+  const [selectedNlpSamples, setSelectedNlpSamples] = useState<string[]>([]);
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_SAMPLE, format: Format.FULL },
     {
@@ -242,6 +257,9 @@ export default function NlpSample() {
     },
     actionColumns,
   ];
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedNlpSamples(selection as string[]);
+  };
 
   return (
     <Grid item xs={12}>
@@ -249,7 +267,13 @@ export default function NlpSample() {
       <DeleteDialog
         {...deleteDialogCtl}
         callback={() => {
-          if (deleteDialogCtl.data) deleteNlpSample(deleteDialogCtl.data);
+          if (selectedNlpSamples.length > 0) {
+            deleteNlpSamples(selectedNlpSamples);
+            setSelectedNlpSamples([]);
+            deleteDialogCtl.closeDialog();
+          } else if (deleteDialogCtl.data) {
+            deleteNlpSample(deleteDialogCtl.data);
+          }
         }}
       />
       <NlpImportDialog {...getDisplayDialogs(importDialogCtl)} />
@@ -346,12 +370,29 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
+            {selectedNlpSamples.length > 0 && (
+              <Grid item>
+                <Button
+                  startIcon={<DeleteIcon />}
+                  variant="contained"
+                  color="error"
+                  onClick={() => deleteDialogCtl.openDialog(undefined)}
+                >
+                  {t("button.delete")}
+                </Button>
+              </Grid>
+            )}
           </ButtonGroup>
         </Grid>
       </Grid>
 
       <Grid mt={3}>
-        <DataGrid columns={columns} {...dataGridProps} />
+        <DataGrid
+          columns={columns}
+          {...dataGridProps}
+          checkboxSelection
+          onRowSelectionModelChange={handleSelectionChange}
+        />
       </Grid>
     </Grid>
   );
