@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MethodNotAllowedException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  MethodNotAllowedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -256,6 +260,47 @@ describe('NlpEntityController', () => {
       await expect(
         nlpEntityController.updateOne(buitInEntityId, updateNlpEntity),
       ).rejects.toThrow(MethodNotAllowedException);
+    });
+  });
+  describe('deleteMany', () => {
+    it('should delete multiple nlp entities', async () => {
+      const entitiesToDelete = [
+        (
+          await nlpEntityService.findOne({
+            name: 'sentiment',
+          })
+        )?.id,
+        (
+          await nlpEntityService.findOne({
+            name: 'updated',
+          })
+        )?.id,
+      ];
+
+      const result = await nlpEntityController.deleteMany(entitiesToDelete);
+
+      expect(result.deletedCount).toEqual(entitiesToDelete.length);
+      const remainingEntities = await nlpEntityService.find({
+        _id: { $in: entitiesToDelete },
+      });
+      expect(remainingEntities.length).toBe(0);
+    });
+
+    it('should throw BadRequestException when no IDs are provided', async () => {
+      await expect(nlpEntityController.deleteMany([])).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw NotFoundException when provided IDs do not exist', async () => {
+      const nonExistentIds = [
+        '614c1b2f58f4f04c876d6b8d',
+        '614c1b2f58f4f04c876d6b8e',
+      ];
+
+      await expect(
+        nlpEntityController.deleteMany(nonExistentIds),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
