@@ -429,45 +429,4 @@ describe('NlpSampleController', () => {
       expect(result).toEqual({ success: true });
     });
   });
-  describe('deleteMany', () => {
-    it('should delete multiple nlp samples', async () => {
-      const samplesToDelete = [
-        (
-          await nlpSampleService.findOne({
-            text: 'How much does a BMW cost?',
-          })
-        ).id,
-        (
-          await nlpSampleService.findOne({
-            text: 'text1',
-          })
-        ).id,
-      ];
-
-      const result = await nlpSampleController.deleteMany(samplesToDelete);
-
-      expect(result.deletedCount).toEqual(samplesToDelete.length);
-      const remainingSamples = await nlpSampleService.find({
-        _id: { $in: samplesToDelete },
-      });
-      expect(remainingSamples.length).toBe(0);
-    });
-
-    it('should throw BadRequestException when no IDs are provided', async () => {
-      await expect(nlpSampleController.deleteMany([])).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw NotFoundException when provided IDs do not exist', async () => {
-      const nonExistentIds = [
-        '614c1b2f58f4f04c876d6b8d',
-        '614c1b2f58f4f04c876d6b8e',
-      ];
-
-      await expect(
-        nlpSampleController.deleteMany(nonExistentIds),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
 });

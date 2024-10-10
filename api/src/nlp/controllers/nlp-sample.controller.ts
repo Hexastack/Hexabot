@@ -37,7 +37,6 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -320,33 +319,6 @@ export class NlpSampleController extends BaseController<
       throw new NotFoundException(`NLP Sample with ID ${id} not found`);
     }
     return result;
-  }
-
-  /**
-   * Deletes multiple NLP samples by their IDs.
-   * @param ids - IDs of NLP samples to be deleted.
-   * @returns A Promise that resolves to the deletion result.
-   */
-  @CsrfCheck(true)
-  @Delete('')
-  @HttpCode(204)
-  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
-    if (!ids || ids.length === 0) {
-      throw new BadRequestException('No IDs provided for deletion.');
-    }
-    const deleteResult = await this.nlpSampleService.deleteMany({
-      _id: { $in: ids },
-    });
-
-    if (deleteResult.deletedCount === 0) {
-      this.logger.warn(
-        `Unable to delete NLP samples with provided IDs: ${ids}`,
-      );
-      throw new NotFoundException('NLP samples with provided IDs not found');
-    }
-
-    this.logger.log(`Successfully deleted NLP samples with IDs: ${ids}`);
-    return deleteResult;
   }
 
   /**
