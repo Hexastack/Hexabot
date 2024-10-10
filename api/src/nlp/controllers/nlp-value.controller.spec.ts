@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -40,6 +40,7 @@ describe('NlpValueController', () => {
   let nlpEntityService: NlpEntityService;
   let jhonNlpValue: NlpValue;
   let positiveValue: NlpValue;
+  let negativeValue: NlpValue;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -67,6 +68,7 @@ describe('NlpValueController', () => {
     nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
     jhonNlpValue = await nlpValueService.findOne({ value: 'jhon' });
     positiveValue = await nlpValueService.findOne({ value: 'positive' });
+    negativeValue = await nlpValueService.findOne({ value: 'negative' });
   });
   afterAll(async () => {
     await closeInMongodConnection();
@@ -225,6 +227,36 @@ describe('NlpValueController', () => {
           expressions: [],
           builtin: true,
         }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+  describe('deleteMany', () => {
+    it('should delete multiple nlp values', async () => {
+      const valuesToDelete = [positiveValue.id, negativeValue.id];
+
+      const result = await nlpValueController.deleteMany(valuesToDelete);
+
+      expect(result.deletedCount).toEqual(valuesToDelete.length);
+      const remainingValues = await nlpValueService.find({
+        _id: { $in: valuesToDelete },
+      });
+      expect(remainingValues.length).toBe(0);
+    });
+
+    it('should throw BadRequestException when no IDs are provided', async () => {
+      await expect(nlpValueController.deleteMany([])).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw NotFoundException when provided IDs do not exist', async () => {
+      const nonExistentIds = [
+        '614c1b2f58f4f04c876d6b8d',
+        '614c1b2f58f4f04c876d6b8e',
+      ];
+
+      await expect(
+        nlpValueController.deleteMany(nonExistentIds),
       ).rejects.toThrow(NotFoundException);
     });
   });
