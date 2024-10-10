@@ -39,8 +39,8 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
       mutationFn: async (attachmentId: string | null) => {
         attachmentId && (await apiClient.importNlpSamples(attachmentId));
       },
-      onSuccess: () => {
-        queryClient.removeQueries({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({
           predicate: ({ queryKey }) => {
             const [qType, qEntity] = queryKey;
 
