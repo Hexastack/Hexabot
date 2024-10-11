@@ -8,6 +8,7 @@
 
 import { InputAdornment, TextFieldProps } from "@mui/material";
 import React, { ForwardedRef, forwardRef, useState } from "react";
+
 import { Input } from "./Input";
 
 export const RegexInput = forwardRef(
@@ -28,18 +29,18 @@ export const RegexInput = forwardRef(
   ) => {
     const [localError, setLocalError] = useState(false);
     const [localHelperText, setLocalHelperText] = useState("");
-
     const validateRegex = (regexString: string): boolean => {
       try {
         new RegExp(regexString);
+
         return true;
       } catch (e) {
         setLocalError(true);
         setLocalHelperText("Regex is Invalid");
+
         return false;
       }
     };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
       const inputValue = e.target.value;
       const regexContent = inputValue;
