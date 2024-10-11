@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
@@ -48,21 +48,5 @@ export class ConversationRepository extends BaseRepository<
    */
   async end(convo: Conversation | ConversationFull) {
     return await this.updateOne(convo.id, { active: false });
-  }
-
-  /**
-   * Finds a single conversation by a given criteria and populates the related fields: `sender`, `current`, and `next`.
-   *
-   * @param criteria The search criteria, either a string or a filter query.
-   *
-   * @returns A promise resolving to the populated conversation full object.
-   */
-  async findOneAndPopulate(criteria: string | FilterQuery<Conversation>) {
-    const query = this.findOneQuery(criteria).populate([
-      'sender',
-      'current',
-      'next',
-    ]);
-    return await this.executeOne(query, ConversationFull);
   }
 }
