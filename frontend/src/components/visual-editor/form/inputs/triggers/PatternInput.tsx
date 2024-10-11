@@ -265,12 +265,6 @@ const PatternInput: FC<PatternInputProps> = ({
         ) : null}
         {typeof value === "string" && patternType === "regex" ? (
           <RegexInput
-            {...registerInput(t("message.regex_is_invalid"), idx, {
-              validate: (value) =>
-                (value.trim() !== "" && value !== "/") ??
-                t("message.regex_is_invalid"),
-              setValueAs: (v) => `/${v}/`,
-            })}
             label={t("label.regex")}
             value={value.slice(1, -1)}
             onChange={(v) => onChange(v)}
@@ -279,6 +273,7 @@ const PatternInput: FC<PatternInputProps> = ({
         {typeof value === "string" && patternType === "text" ? (
           <Input
             {...(getInputProps ? getInputProps(idx) : null)}
+            {...registerInput(t("message.text_is_required"), idx)}
             label={t("label.text")}
             value={value}
             onChange={(e) => onChange(e.target.value)}
