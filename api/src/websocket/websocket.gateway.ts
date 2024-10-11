@@ -251,30 +251,26 @@ export class WebsocketGateway
 
   handleConnection(client: Socket, ..._args: any[]): void {
     const { sockets } = this.io.sockets;
-    const handshake = client.handshake;
-    const { channel } = handshake.query;
     this.logger.log(`Client id: ${client.id} connected`);
     this.logger.debug(`Number of connected clients: ${sockets?.size}`);
 
     this.eventEmitter.emit(`hook:websocket:connection`, client);
     // @TODO : Revisit once we don't use anymore in frontend
-    if (!channel) {
-      const response = new SocketResponse();
-      client.send(
-        response
-          .setHeaders({
-            'access-control-allow-origin':
-              config.security.cors.allowOrigins.join(','),
-            vary: 'Origin',
-            'access-control-allow-credentials':
-              config.security.cors.allowCredentials.toString(),
-          })
-          .status(200)
-          .json({
-            success: true,
-          }),
-      );
-    }
+    const response = new SocketResponse();
+    client.send(
+      response
+        .setHeaders({
+          'access-control-allow-origin':
+            config.security.cors.allowOrigins.join(','),
+          vary: 'Origin',
+          'access-control-allow-credentials':
+            config.security.cors.allowCredentials.toString(),
+        })
+        .status(200)
+        .json({
+          success: true,
+        }),
+    );
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
