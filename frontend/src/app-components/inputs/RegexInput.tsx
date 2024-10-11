@@ -29,7 +29,7 @@ export const RegexInput = forwardRef(
     const [localError, setLocalError] = useState(false);
     const [localHelperText, setLocalHelperText] = useState("");
 
-    const validateRegex = (regexString: string) => {
+    const validateRegex = (regexString: string): boolean => {
       try {
         new RegExp(regexString);
         return true;
@@ -40,7 +40,7 @@ export const RegexInput = forwardRef(
       }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
       const inputValue = e.target.value;
       const regexContent = inputValue;
 
