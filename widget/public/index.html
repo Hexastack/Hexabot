@@ -18,15 +18,26 @@
   <body>
     <div id="hb-chat-widget"></div>
     <script>
-      const el = React.createElement;
-      const domContainer = document.getElementById('hb-chat-widget');
+      // Create the shadow root and attach it to the widget container
+      const createElement = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+      const shadowContainer = createElement("div");
+      document
+          .getElementById('hb-chat-widget')
+          .attachShadow({ mode: 'open' })
+          .append( 
+            shadowContainer,
+            createElement("link", {
+              rel: "stylesheet",
+              href: "./style.css"
+            })
+          );
       ReactDOM.render(
-        el(HexabotWidget, {
+        React.createElement(HexabotWidget, {
           apiUrl: 'http://localhost:4000',
           channel: 'offline',
           token: 'token123',
         }),
-        domContainer,
+        shadowContainer,
       );
     </script>
   </body>

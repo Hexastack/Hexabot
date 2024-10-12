@@ -11,6 +11,7 @@
     "back": "Retour"
   },
   "messages": {
+    "get_started": "Démarrer",
     "file_message": {
       "browser_audio_unsupport": "Le navigateur ne prend pas en charge l'élément audio.",
       "browser_video_unsupport": "Le navigateur ne prend pas en charge l'élément vidéo.",

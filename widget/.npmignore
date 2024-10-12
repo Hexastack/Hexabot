@@ -1,0 +1,17 @@
+src
+node_modules
+build
+public
+tests
+Dockerfile
+.dockerignore
+.eslintrc.json
+index.html
+package.json
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+dist/index.html
+dist/shadow.html
+vite.svg

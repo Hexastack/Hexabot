@@ -67,7 +67,7 @@ export const settingModels: SettingCreateDto[] = [
   {
     group: 'nlp_settings',
     label: 'threshold',
-    value: 0.9,
+    value: 0.1,
     type: SettingType.number,
     config: {
       min: 0,

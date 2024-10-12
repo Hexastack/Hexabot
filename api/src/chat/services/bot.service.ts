@@ -443,7 +443,7 @@ export class BotService {
         });
 
         if (!blocks.length) {
-          return this.logger.debug('No starting message blocks was found');
+          this.logger.debug('No starting message blocks was found');
         }
 
         // Search for a block match

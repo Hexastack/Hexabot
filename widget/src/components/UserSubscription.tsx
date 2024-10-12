@@ -6,7 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { SyntheticEvent, useCallback, useEffect, useState } from 'react';
+import React, {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { useChat } from '../providers/ChatProvider';
@@ -39,6 +45,7 @@ const UserSubscription: React.FC = () => {
   } = useChat();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
+  const isInitialized = useRef(false);
   const handleSubmit = useCallback(
     async (event?: React.FormEvent<HTMLFormElement>) => {
       event?.preventDefault();
@@ -83,7 +90,7 @@ const UserSubscription: React.FC = () => {
             data: {
               type: TOutgoingMessageType.postback,
               data: {
-                text: 'GET_STARTED', //TODO:use translation here?
+                text: t('messages.get_started'),
                 payload: 'GET_STARTED',
               },
               author: profile.foreign_id,
@@ -113,14 +120,18 @@ const UserSubscription: React.FC = () => {
   );
 
   useEffect(() => {
-    const profile = localStorage.getItem('profile');
+    // User already subscribed ? (example : refreshed the page)
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      const profile = localStorage.getItem('profile');
 
-    if (profile) {
-      const parsedProfile = JSON.parse(profile);
+      if (profile) {
+        const parsedProfile = JSON.parse(profile);
 
-      setFirstName(parsedProfile.first_name);
-      setLastName(parsedProfile.last_name);
-      handleSubmit();
+        setFirstName(parsedProfile.first_name);
+        setLastName(parsedProfile.last_name);
+        handleSubmit();
+      }
     }
   }, [handleSubmit, setScreen]);
 

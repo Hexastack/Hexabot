@@ -11,6 +11,7 @@
     "back": "Back"
   },
   "messages": {
+    "get_started": "Get Started",
     "file_message": {
       "browser_audio_unsupport": "Browser does not support the audio element.",
       "browser_video_unsupport": "Browser does not support the video element.",

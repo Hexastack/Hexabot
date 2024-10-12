@@ -1,6 +1,12 @@
 .sc-user-input--file-wrapper {
+  background: none;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  outline: none;
   position: relative;
   cursor: pointer;
+  opacity: .5;
 }
 .sc-user-input--file-icon-wrapper {
   background: none;
@@ -8,7 +14,7 @@
   padding: 0px;
   margin: 0px;
   outline: none;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .sc-user-input--file-icon {
@@ -19,6 +25,6 @@
   vertical-align: middle;
 }
 
-.sc-user-input--file-icon:hover path {
-  filter: contrast(15%);
+.sc-user-input--file-wrapper:hover {
+  opacity: 1
 }
