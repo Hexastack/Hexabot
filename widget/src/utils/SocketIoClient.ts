@@ -16,6 +16,12 @@ import {
 
 type SocketIoClientConfig = Partial<ManagerOptions & SocketOptions>;
 
+type SocketIoEventHandlers = {
+  onConnect?: () => void;
+  onDisconnect?: (reason: string, details: unknown) => void;
+  onConnectError?: (error: Error) => void;
+};
+
 export class SocketIoClient {
   /**
    * Default configuration for the socket client
@@ -50,9 +56,11 @@ export class SocketIoClient {
 
   private config: SocketIoClientConfig;
 
-  private initialized: boolean = false;
-
-  constructor(apiUrl: string, socketConfig?: SocketIoClientConfig) {
+  constructor(
+    apiUrl: string,
+    socketConfig: SocketIoClientConfig,
+    handlers: SocketIoEventHandlers,
+  ) {
     this.config = {
       ...SocketIoClient.defaultConfig,
       ...socketConfig,
@@ -61,6 +69,7 @@ export class SocketIoClient {
     const url = new URL(apiUrl);
 
     this.socket = io(url.origin, this.config);
+    this.init(handlers);
   }
 
   /**
@@ -71,16 +80,10 @@ export class SocketIoClient {
     onConnect,
     onDisconnect,
     onConnectError,
-  }: {
-    onConnect?: () => void;
-    onDisconnect?: (reason: string, details: unknown) => void;
-    onConnectError?: (error: Error) => void;
-  }) {
-    if (!this.initialized) this.socket.connect();
+  }: SocketIoEventHandlers) {
     onConnect && this.uniqueOn('connect', onConnect);
     onDisconnect && this.uniqueOn('disconnect', onDisconnect);
     onConnectError && this.uniqueOn('connect_error', onConnectError);
-    this.initialized = true;
   }
 
   /**
@@ -100,7 +103,6 @@ export class SocketIoClient {
    */
   public disconnect() {
     this.socket.disconnect();
-    this.initialized = false;
   }
 
   /**
@@ -184,10 +186,28 @@ export class SocketIoClient {
   }
 }
 
-export const builSocketIoClient = (config: Config) =>
-  new SocketIoClient(config.apiUrl, {
-    query: {
-      channel: config.channel,
-      verification_token: config.token,
-    },
-  });
+let socketIoClient: SocketIoClient;
+
+/**
+ * Returns a singleton instance of the socket io client
+ *
+ * @param config The socket connection config
+ * @param handlers Event handlers
+ * @returns Socket io client instance
+ */
+export const getSocketIoClient = (config: Config, handlers: SocketIoEventHandlers) => {
+  if (!socketIoClient) {
+    socketIoClient = new SocketIoClient(
+      config.apiUrl,
+      {
+        query: {
+          channel: config.channel,
+          verification_token: config.token,
+        },
+      },
+      handlers,
+    );
+  }
+
+  return socketIoClient;
+};

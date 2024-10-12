@@ -63,6 +63,10 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     blocks: BlockFull[],
     event: EventWrapper<any, any>,
   ): Promise<BlockFull | undefined> {
+    if (!blocks.length) {
+      return undefined;
+    }
+
     // Search for block matching a given event
     let block: BlockFull | undefined = undefined;
     const payload = event.getPayload();

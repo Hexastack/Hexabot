@@ -15,7 +15,6 @@ import { useChat } from '../providers/ChatProvider';
 import { useColors } from '../providers/ColorProvider';
 import { useSocketLifecycle } from '../providers/SocketProvider';
 import { useWidget, WidgetContextType } from '../providers/WidgetProvider';
-
 import './Launcher.scss';
 
 type LauncherProps = PropsWithChildren<{

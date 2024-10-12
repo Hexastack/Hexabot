@@ -7,7 +7,7 @@
  */
 
 import { Avatar, Box } from "@mui/material";
-import UiChatWidget from "hexabot-widget/src/UiChatWidget";
+import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import { usePathname } from "next/navigation";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";

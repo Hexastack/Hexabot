@@ -241,15 +241,14 @@ const ChatProvider: React.FC<{
     ) {
       if ('author' in newIOMessage) {
         newIOMessage.direction =
-          newIOMessage.author === participants[1].foreign_id ||
-          newIOMessage.author === participants[1].id
-            ? Direction.sent
-            : Direction.received;
+          newIOMessage.author === 'chatbot'
+            ? Direction.received
+            : Direction.sent;
         newIOMessage.read = true;
         newIOMessage.delivery = true;
       }
 
-      messages.push(newIOMessage as TMessage);
+      setMessages([...messages, newIOMessage as TMessage]);
       setScroll(0);
     }
 
@@ -310,30 +309,29 @@ const ChatProvider: React.FC<{
         }>(
           `/webhook/${config.channel}/?verification_token=${config.token}&first_name=${firstName}&last_name=${lastName}`,
         );
-        const { messages, profile } = body;
 
-        localStorage.setItem('profile', JSON.stringify(profile));
-        // @TODO : condition mix on id VS foreign_id
-        messages.forEach((message) => {
-          const direction =
-            message.author === profile.foreign_id ||
-            message.author === profile.id
-              ? Direction.sent
-              : Direction.received;
-
-          message.direction = direction;
-          if (message.direction === Direction.sent) {
-            message.read = true;
-            message.delivery = false;
-          }
-        });
-        setMessages(messages);
+        localStorage.setItem('profile', JSON.stringify(body.profile));
+        setMessages(
+          body.messages.map((message) => {
+            return {
+              ...message,
+              direction:
+                message.author === body.profile.foreign_id ||
+                message.author === body.profile.id
+                  ? Direction.sent
+                  : Direction.received,
+              read: message.direction === Direction.sent || message.read,
+              delivery:
+                message.direction === Direction.sent || message.delivery,
+            } as TMessage;
+          }),
+        );
         setParticipants([
           ...participants,
           {
-            id: profile.foreign_id,
-            foreign_id: profile.foreign_id,
-            name: `${profile.first_name} ${profile.last_name}`,
+            id: body.profile.foreign_id,
+            foreign_id: body.profile.foreign_id,
+            name: `${body.profile.first_name} ${body.profile.last_name}`,
           },
         ]);
         setConnectionState(3);
