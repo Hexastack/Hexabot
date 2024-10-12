@@ -11,34 +11,34 @@ import { ColorState } from '../types/colors.types';
 const colors: Record<string, ColorState> = {
   orange: {
     header: {
-      bg: '#E6A23D',
+      bg: '#FF851B',
       text: '#fff',
     },
     launcher: {
-      bg: '#E6A23D',
+      bg: '#FF851B',
     },
     messageList: {
       bg: '#fff',
     },
     sent: {
-      bg: '#E6A23D',
+      bg: '#FF851B',
       text: '#fff',
     },
     received: {
       bg: '#eaeaea',
-      text: '#222222',
+      text: '#000',
     },
     userInput: {
-      bg: '#fff',
-      text: '#212121',
+      bg: '#fbfbfb',
+      text: '#000',
     },
     button: {
       bg: '#ffffff',
-      text: '#E6A23D',
-      border: '#E6A23D',
+      text: '#FF851B',
+      border: '#FF851B',
     },
     messageStatus: {
-      bg: '#E6A23D',
+      bg: '#FF851B',
     },
     messageTime: {
       text: '#9C9C9C',
@@ -46,139 +46,139 @@ const colors: Record<string, ColorState> = {
   },
   red: {
     header: {
-      bg: '#AB1251',
+      bg: '#FF4136',
       text: '#fff',
     },
     launcher: {
-      bg: '#AB1251',
+      bg: '#FF4136',
     },
     messageList: {
       bg: '#fff',
     },
     sent: {
-      bg: '#AB1251',
+      bg: '#FF4136',
       text: '#fff',
     },
     received: {
       bg: '#eaeaea',
-      text: '#222222',
+      text: '#000',
     },
     userInput: {
-      bg: '#fff',
-      text: '#212121',
+      bg: '#fbfbfb',
+      text: '#000',
     },
     button: {
       bg: '#ffffff',
-      text: '#AB1251',
-      border: '#AB1251',
+      text: '#FF4136',
+      border: '#FF4136',
     },
     messageStatus: {
-      bg: '#AB1251',
+      bg: '#FF4136',
     },
     messageTime: {
-      text: '#9C9C9C',
+      text: '#FF4136',
     },
   },
   green: {
     header: {
-      bg: '#ABBD49',
+      bg: '#2ECC40',
       text: '#fff',
     },
     launcher: {
-      bg: '#ABBD49',
+      bg: '#2ECC40',
     },
     messageList: {
       bg: '#fff',
     },
     sent: {
-      bg: '#4CAF50',
+      bg: '#2ECC40',
       text: '#fff',
     },
     received: {
       bg: '#eaeaea',
-      text: '#222222',
+      text: '#000',
     },
     userInput: {
-      bg: '#fff',
-      text: '#212121',
+      bg: '#fbfbfb',
+      text: '#000',
     },
     button: {
       bg: '#ffffff',
-      text: '#ABBD49',
-      border: '#ABBD49',
+      text: '#2ECC40',
+      border: '#2ECC40',
     },
     messageStatus: {
-      bg: '#ABBD49',
+      bg: '#2ECC40',
     },
     messageTime: {
-      text: '#9C9C9C',
+      text: '#2ECC40',
     },
   },
   blue: {
     header: {
-      bg: '#108AA8',
-      text: '#ffffff',
+      bg: '#0074D9',
+      text: '#fff',
     },
     launcher: {
-      bg: '#108AA8',
+      bg: '#0074D9',
     },
     messageList: {
-      bg: '#ffffff',
+      bg: '#fff',
     },
     sent: {
-      bg: '#108AA8',
-      text: '#ffffff',
+      bg: '#0074D9',
+      text: '#fff',
     },
     received: {
       bg: '#eaeaea',
-      text: '#222222',
+      text: '#000',
     },
     userInput: {
-      bg: '#f4f7f9',
-      text: '#565867',
+      bg: '#fbfbfb',
+      text: '#000',
     },
     button: {
       bg: '#ffffff',
-      text: '#108AA8',
-      border: '#108AA8',
+      text: '#0074D9',
+      border: '#0074D9',
     },
     messageStatus: {
-      bg: '#108AA8',
+      bg: '#0074D9',
     },
     messageTime: {
-      text: '#9C9C9C',
+      text: '#0074D9',
     },
   },
   teal: {
     header: {
-      bg: '#279084',
-      text: '#ffffff',
+      bg: '#1BA089',
+      text: '#fff',
     },
     launcher: {
-      bg: '#279084',
+      bg: '#1BA089',
     },
     messageList: {
-      bg: '#ffffff',
+      bg: '#fff',
     },
     sent: {
-      bg: '#279084',
-      text: '#ffffff',
+      bg: '#1BA089',
+      text: '#fff',
     },
     received: {
       bg: '#eaeaea',
-      text: '#222222',
+      text: '#000',
     },
     userInput: {
-      bg: '#f4f7f9',
-      text: '#565867',
+      bg: '#fbfbfb',
+      text: '#000',
     },
     button: {
       bg: '#ffffff',
-      text: '#279084',
-      border: '#279084',
+      text: '#1BA089',
+      border: '#1BA089',
     },
     messageStatus: {
-      bg: '#279084',
+      bg: '#1BA089',
     },
     messageTime: {
       text: '#9C9C9C',
@@ -186,26 +186,26 @@ const colors: Record<string, ColorState> = {
   },
   dark: {
     header: {
-      bg: '#34495e',
+      bg: '#000',
       text: '#ecf0f1',
     },
     launcher: {
-      bg: '#34495e',
+      bg: '#000',
     },
     messageList: {
-      bg: '#2c3e50',
+      bg: '#FFF',
     },
     sent: {
-      bg: '#7f8c8d',
-      text: '#ecf0f1',
+      bg: '#000',
+      text: '#FFF',
     },
     received: {
-      bg: '#95a5a6',
-      text: '#ecf0f1',
+      bg: '#F0F0F0',
+      text: '#000',
     },
     userInput: {
-      bg: '#34495e',
-      text: '#ecf0f1',
+      bg: '#FFF',
+      text: '#000',
     },
     button: {
       bg: '#2c3e50',

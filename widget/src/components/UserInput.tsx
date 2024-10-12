@@ -137,10 +137,7 @@ const UserInput: React.FC = () => {
   const uploading = outgoingMessageState === OutgoingMessageState.uploading;
 
   return (
-    <div
-      className="sc-user-input-wrapper"
-      style={{ fill: colors.userInput.text }}
-    >
+    <div className="sc-user-input-wrapper">
       {suggestions.length > 0 && <Suggestions />}
 
       {(file || uploading) && (
