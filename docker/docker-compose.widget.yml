@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  widget:
+    container_name: widget
+    image: hexastack/hexabot-widget:latest
+    networks:
+      - app-network
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - ${APP_WIDGET_PORT}:5173

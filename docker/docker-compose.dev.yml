@@ -36,13 +36,3 @@ services:
     pull_policy: build
     volumes:
       - ../frontend/:/app/frontend/
-
-  widget:
-    build:
-      context: ../widget
-      target: development
-    pull_policy: build
-    volumes:
-      - ../widget/src:/app/src
-    ports:
-      - ${APP_WIDGET_PORT}:5173

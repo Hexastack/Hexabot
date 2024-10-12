@@ -52,17 +52,6 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  widget:
-    container_name: widget
-    image: hexastack/hexabot-widget:latest
-    networks:
-      - app-network
-    depends_on:
-      api:
-        condition: service_healthy
-    ports:
-      - ${APP_WIDGET_PORT}:5173
-
 volumes:
   mongo-data:
   api-data:
