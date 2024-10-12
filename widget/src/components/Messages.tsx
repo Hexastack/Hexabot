@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 
-import Message from './Message';
-import TypingMessage from './messages/TypingMessage';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useWidget } from '../providers/WidgetProvider';
-
-import './Messages.scss';
+import Message from "./Message";
+import TypingMessage from "./messages/TypingMessage";
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { useWidget } from "../providers/WidgetProvider";
+import "./Messages.scss";
+import { TMessage } from "../types/message.types";
 
 type MessagesProps = PropsWithChildren<{
   Avatar?: () => JSX.Element;
@@ -25,34 +25,16 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
   const { messages, showTypingIndicator, setNewIOMessage } = useChat();
   const { colors } = useColors();
   const scrollListRef = useRef<HTMLDivElement>(null);
-  const [timeoutId, setTimeoutId] = useState<number | null>(null);
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    const scrollPercent = Math.round(
-      (100 * e.currentTarget.scrollTop) / (e.currentTarget.scrollHeight || 1),
-    );
-
-    if (!scroll && scrollPercent) {
-      setScroll(scrollPercent);
-    } else if (scrollPercent) {
-      const id = setTimeout(() => {
-        setScroll(scrollPercent);
-      }, 400) as unknown as number;
-
-      setTimeoutId(id);
-    } else if (scroll) {
-      setScroll(scrollPercent);
-    }
-  };
+  const [lastReceivedMessage, setLastReceivedMessage] = useState<
+    TMessage | undefined
+  >();
 
   useEffect(() => {
     const scrollTo = (scroll: number) => {
       if (scrollListRef.current) {
         const scrollPercent = Math.round(
           (100 * scrollListRef.current.scrollTop) /
-            (scrollListRef.current.scrollHeight || 1),
+            (scrollListRef.current.scrollHeight || 1)
         );
 
         if (Math.abs(scrollPercent - scroll) > 1 || scroll === 100) {
@@ -60,9 +42,9 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
             if (scrollListRef.current) {
               scrollListRef.current.scrollTo({
                 top: Math.round(
-                  (scroll * scrollListRef.current.scrollHeight) / 100,
+                  (scroll * scrollListRef.current.scrollHeight) / 100
                 ),
-                behavior: 'instant',
+                behavior: "instant",
                 left: 0,
               });
             }
@@ -83,12 +65,22 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const newestReceivedMessage = messages[messages.length - 1];
+
+    if (lastReceivedMessage !== newestReceivedMessage) {
+      setLastReceivedMessage(newestReceivedMessage);
+      setScroll(100);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length]);
+
   return (
     <div
       className="sc-message-list"
       ref={scrollListRef}
       style={{ backgroundColor: colors.messageList.bg }}
-      onScroll={handleScroll}
     >
       {messages.map((message) => (
         <Message key={message.mid} message={message} Avatar={Avatar} />
