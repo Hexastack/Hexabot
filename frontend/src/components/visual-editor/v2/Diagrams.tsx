@@ -199,6 +199,8 @@ const Diagrams = () => {
       }) => {
         const link = model.getLink(entity.getOptions().id as string);
 
+        if (!link) return;
+
         if (
           !port.getOptions().in ||
           [BlockPorts.nextBlocksOutPort, BlockPorts.attachmentOutPort].includes(
