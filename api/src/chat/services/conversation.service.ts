@@ -7,7 +7,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { FilterQuery } from 'mongoose';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
@@ -39,21 +38,6 @@ export class ConversationService extends BaseService<
     private readonly subscriberService: SubscriberService,
   ) {
     super(repository);
-  }
-
-  /**
-   * Finds and retrieves a single conversation entity based on the provided criteria,
-   * while populating the necessary related data.
-   *
-   * @param criteria - The search criteria to find a conversation, which can be a string
-   * representing a unique identifier or a filter query object that specifies the conditions
-   * for the search.
-   *
-   * @returns A Promise that resolves with the found conversation, populated with any related data,
-   * or `null` if no conversation matches the criteria.
-   */
-  async findOneAndPopulate(criteria: string | FilterQuery<Conversation>) {
-    return await this.repository.findOneAndPopulate(criteria);
   }
 
   /**

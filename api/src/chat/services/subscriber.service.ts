@@ -14,13 +14,11 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { TFilterQuery } from 'mongoose';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
   SocketGet,
   SocketPost,
@@ -80,34 +78,6 @@ export class SubscriberService extends BaseService<
       );
       throw new InternalServerErrorException(e);
     }
-  }
-
-  /**
-   * Retrieves a paginated list of subscribers based on the provided filters
-   * and populates the result with related data.
-   *
-   * @param filters - The criteria used to filter the subscribers.
-   * @param pageQuery - The pagination and sorting details.
-   *
-   * @returns A paginated list of subscribers with populated related data.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<Subscriber>,
-    pageQuery: PageQueryDto<Subscriber>,
-  ) {
-    return await this.repository.findPageAndPopulate(filters, pageQuery);
-  }
-
-  /**
-   * Finds and returns a single subscriber based on its ID or filters,
-   * and populates the result with related data.
-   *
-   * @param id - The ID of the subscriber or a set of query filters.
-   *
-   * @returns The subscriber with populated related data.
-   */
-  async findOneAndPopulate(id: string | TFilterQuery<Subscriber>) {
-    return await this.repository.findOneAndPopulate(id);
   }
 
   /**

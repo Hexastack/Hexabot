@@ -33,8 +33,8 @@ export abstract class BaseService<
     return await this.repository.findOne(criteria, options);
   }
 
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
+  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
+    return await this.repository.findOneAndPopulate(criteria);
   }
 
   async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>): Promise<T[]> {

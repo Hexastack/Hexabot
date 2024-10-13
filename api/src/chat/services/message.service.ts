@@ -11,11 +11,9 @@ import {
   InternalServerErrorException,
   Optional,
 } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
   SocketGet,
   SocketPost,
@@ -73,34 +71,6 @@ export class MessageService extends BaseService<
       );
       throw new InternalServerErrorException(e);
     }
-  }
-
-  /**
-   * Retrieves a paginated list of messages based on the provided filters
-   * and page query, and populates the results with additional data.
-   *
-   * @param filters - The query filters to apply for message retrieval.
-   * @param pageQuery - The page query containing pagination information.
-   *
-   * @returns A paginated list of populated messages.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<AnyMessage>,
-    pageQuery: PageQueryDto<AnyMessage>,
-  ) {
-    return await this.messageRepository.findPageAndPopulate(filters, pageQuery);
-  }
-
-  /**
-   * Retrieves a single message by its identifier and populates it with
-   * additional data.
-   *
-   * @param id - The identifier of the message to retrieve.
-   *
-   * @returns A populated message object.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.messageRepository.findOneAndPopulate(id);
   }
 
   /**
