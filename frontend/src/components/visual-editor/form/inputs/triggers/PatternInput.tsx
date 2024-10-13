@@ -265,6 +265,7 @@ const PatternInput: FC<PatternInputProps> = ({
         ) : null}
         {typeof value === "string" && patternType === "regex" ? (
           <RegexInput
+            {...registerInput(t("message.regex_is_invalid"), idx)}
             label={t("label.regex")}
             value={value.slice(1, -1)}
             onChange={(v) => onChange(v)}

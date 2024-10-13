@@ -30,6 +30,12 @@ export const RegexInput = forwardRef(
     const [localError, setLocalError] = useState(false);
     const [localHelperText, setLocalHelperText] = useState("");
     const validateRegex = (regexString: string): boolean => {
+      if (regexString.trim() === "") {
+        setLocalError(true);
+        setLocalHelperText("Field cannot be empty!");
+
+        return false;
+      }
       try {
         new RegExp(regexString);
 
