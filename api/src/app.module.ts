@@ -9,7 +9,7 @@
 import path from 'path';
 
 import { CacheModule } from '@nestjs/cache-manager';
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -33,7 +33,6 @@ import { CmsModule } from './cms/cms.module';
 import { config } from './config';
 import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
-import { DtoUpdateMiddleware } from './middlewares/dto.update.middleware';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
@@ -133,10 +132,4 @@ const i18nOptions: I18nOptions = {
     AppService,
   ],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(DtoUpdateMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.PATCH });
-  }
-}
+export class AppModule {}
