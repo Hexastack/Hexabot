@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 
+import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs";
 import { Adornment } from "../inputs/Adornment";
 import { PasswordInput } from "../inputs/PasswordInput";
@@ -55,7 +56,7 @@ export const ResetPassword = () => {
   });
 
   return (
-    <Grid container justifyContent="center">
+    <PublicContentWrapper>
       <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
         <form
           onSubmit={handleSubmit((payload) => {
@@ -97,6 +98,6 @@ export const ResetPassword = () => {
           </ContentContainer>
         </form>
       </Paper>
-    </Grid>
+    </PublicContentWrapper>
   );
 };

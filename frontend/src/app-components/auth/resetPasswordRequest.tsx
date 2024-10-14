@@ -14,6 +14,7 @@ import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 
+import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs";
 import { Input } from "../inputs/Input";
 
@@ -37,7 +38,7 @@ export const ResetPasswordRequest = () => {
   });
 
   return (
-    <Grid container justifyContent="center">
+    <PublicContentWrapper>
       <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
         <form
           id="resetPasswordForm"
@@ -74,6 +75,6 @@ export const ResetPasswordRequest = () => {
           </ContentContainer>
         </form>
       </Paper>
-    </Grid>
+    </PublicContentWrapper>
   );
 };

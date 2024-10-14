@@ -22,6 +22,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { ILoginAttributes } from "@/types/auth/login.types";
 
+import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs/layouts/ContentContainer";
 import { Adornment } from "../inputs/Adornment";
 import { Input } from "../inputs/Input";
@@ -89,7 +90,7 @@ export const Login = () => {
   }, [router.query.token]);
 
   return (
-    <Grid container justifyContent="center">
+    <PublicContentWrapper>
       <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
         <form onSubmit={handleSubmit(onSubmitForm)}>
           <ContentContainer gap={2}>
@@ -142,6 +143,6 @@ export const Login = () => {
           </ContentContainer>
         </form>
       </Paper>
-    </Grid>
+    </PublicContentWrapper>
   );
 };
