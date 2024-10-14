@@ -110,7 +110,7 @@ If you would like to use the official widget and benefit from updates automatica
 or lastest from major version:
 `https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2/dist/`
 
-JsDelivr uses the package published in the NPM registry : https://www.npmjs.com/package/hexabot-widget
+JsDelivr uses the package published in the NPM registry : https://www.npmjs.com/package/hexabot-chat-widget
 
 ## Examples
 As a proof of concept we developed a Wordpress plugin to embed the chat widget in a Wordpress website : [https://github.com/hexastack/hexabot-wordpress-live-chat-widget](https://github.com/hexastack/hexabot-wordpress-live-chat-widget)
