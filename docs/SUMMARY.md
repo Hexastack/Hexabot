@@ -49,7 +49,7 @@
 ***
 
 * [FAQ](faq/README.md)
-  * [How can I add the Chatbot Widget in my Website?](faq/how-can-i-add-the-chatbot-widget-in-my-website.md)
+  * [How can I add the Chatbot Widget to my Website?](faq/how-can-i-add-the-chatbot-widget-to-my-website.md)
 
 ## Developer Guide
 
