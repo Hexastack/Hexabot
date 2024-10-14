@@ -46,6 +46,11 @@
 * [Subscribers](user-guide/subscribers.md)
 * [Analytics Dashboard](user-guide/analytics-dashboard.md)
 
+***
+
+* [FAQ](faq/README.md)
+  * [How can I add the Chatbot Widget in my Website?](faq/how-can-i-add-the-chatbot-widget-in-my-website.md)
+
 ## Developer Guide
 
 * [Developers Installation Guide](developer-guide/developers-installation-guide.md)
