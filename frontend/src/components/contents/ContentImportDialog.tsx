@@ -31,7 +31,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const [attachmentId, setAttachementId] = useState<string | null>(null);
+  const [attachmentId, setAttachmentId] = useState<string | null>(null);
   const { t } = useTranslate();
   const { toast } = useToast();
   const { apiClient } = useApiClient();
@@ -58,7 +58,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   );
   const handleCloseDialog = () => {
     closeDialog();
-    setAttachementId(null);
+    setAttachmentId(null);
   };
   const handleImportClick = () => {
     if (attachmentId && data?.contentType?.id) {
@@ -76,7 +76,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
               format="basic"
               accept="text/csv"
               onChange={(id, _) => {
-                setAttachementId(id);
+                setAttachmentId(id);
               }}
               label=""
               value={attachmentId}

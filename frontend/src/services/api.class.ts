@@ -200,19 +200,19 @@ export class ApiClient {
     return data;
   }
 
-  async importNlpSamples(attachementId: string) {
+  async importNlpSamples(attachmentId: string) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.post(
-      `${ROUTES.NLP_SAMPLE_IMPORT}/${attachementId}`,
+      `${ROUTES.NLP_SAMPLE_IMPORT}/${attachmentId}`,
       { _csrf },
     );
 
     return data;
   }
 
-  async importContent(contentTypeId: string, attachementId: string) {
+  async importContent(contentTypeId: string, attachmentId: string) {
     const { data } = await this.request.get(
-      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachementId}`,
+      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
     );
 
     return data;

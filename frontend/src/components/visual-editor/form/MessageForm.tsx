@@ -24,7 +24,7 @@ export const MessageForm = () => {
       {/* TEXT BLOCK */}
       {Array.isArray(block?.message) ? <TextMessageForm /> : null}
 
-      {/* ATTACHEMENT BLOCK */}
+      {/* ATTACHMENT BLOCK */}
       {block?.message && "attachment" in block?.message ? (
         <AttachmentMessageForm />
       ) : null}

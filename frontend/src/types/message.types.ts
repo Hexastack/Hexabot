@@ -38,7 +38,7 @@ export enum FileType {
   unknown = "unknown",
 }
 
-// Attachements
+// Attachments
 export interface AttachmentAttrs {
   name: string;
   type: string;
