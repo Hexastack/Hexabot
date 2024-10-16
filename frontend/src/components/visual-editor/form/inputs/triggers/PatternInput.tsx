@@ -274,7 +274,6 @@ const PatternInput: FC<PatternInputProps> = ({
         {typeof value === "string" && patternType === "text" ? (
           <Input
             {...(getInputProps ? getInputProps(idx) : null)}
-            {...registerInput(t("message.text_is_required"), idx)}
             label={t("label.text")}
             value={value}
             onChange={(e) => onChange(e.target.value)}
