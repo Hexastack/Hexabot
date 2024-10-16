@@ -20,9 +20,10 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
+import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+
 import { BaseSchema } from './base-schema';
 import { LifecycleHookManager } from './lifecycle-hook-manager';
-import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 
 export type DeleteResult = {
   acknowledged: boolean;

@@ -14,9 +14,10 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
+import { Action } from '../types/action.type';
+
 import { Model } from './model.schema';
 import { Role } from './role.schema';
-import { Action } from '../types/action.type';
 
 @Schema({ timestamps: true })
 export class PermissionStub extends BaseSchema {

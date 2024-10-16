@@ -13,8 +13,6 @@ import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-import { NlpValueRepository } from './nlp-value.repository';
 import {
   NLP_ENTITY_POPULATE,
   NlpEntity,
@@ -22,6 +20,9 @@ import {
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
+
+import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
+import { NlpValueRepository } from './nlp-value.repository';
 
 @Injectable()
 export class NlpEntityRepository extends BaseRepository<

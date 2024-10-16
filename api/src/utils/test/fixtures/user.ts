@@ -12,9 +12,10 @@ import { UserCreateDto } from '@/user/dto/user.dto';
 import { UserModel, User } from '@/user/schemas/user.schema';
 import { hash } from '@/user/utilities/bcryptjs';
 
-import { installRoleFixtures } from './role';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installRoleFixtures } from './role';
 
 export const users: UserCreateDto[] = [
   {

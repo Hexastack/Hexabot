@@ -18,13 +18,14 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { roleFixtures } from './../../utils/test/fixtures/role';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { Role, RoleModel } from '../schemas/role.schema';
 import { User, UserModel } from '../schemas/user.schema';
+
+import { roleFixtures } from './../../utils/test/fixtures/role';
 
 describe('RoleRepository', () => {
   let roleRepository: RoleRepository;

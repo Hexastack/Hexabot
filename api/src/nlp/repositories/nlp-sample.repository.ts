@@ -13,13 +13,14 @@ import { Document, Model, Query, TFilterQuery } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import {
   NLP_SAMPLE_POPULATE,
   NlpSample,
   NlpSampleFull,
   NlpSamplePopulate,
 } from '../schemas/nlp-sample.schema';
+
+import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 
 @Injectable()
 export class NlpSampleRepository extends BaseRepository<

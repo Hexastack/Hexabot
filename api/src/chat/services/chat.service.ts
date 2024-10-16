@@ -15,14 +15,15 @@ import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { BotService } from './bot.service';
-import { ConversationService } from './conversation.service';
-import { MessageService } from './message.service';
-import { SubscriberService } from './subscriber.service';
 import { MessageCreateDto } from '../dto/message.dto';
 import { Conversation } from '../schemas/conversation.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { OutgoingMessage } from '../schemas/types/message';
+
+import { BotService } from './bot.service';
+import { ConversationService } from './conversation.service';
+import { MessageService } from './message.service';
+import { SubscriberService } from './subscriber.service';
 
 @Injectable()
 export class ChatService {

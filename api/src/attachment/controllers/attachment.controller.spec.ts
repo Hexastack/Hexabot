@@ -25,11 +25,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { AttachmentController } from './attachment.controller';
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { AttachmentModel, Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
+
+import { AttachmentController } from './attachment.controller';
 
 describe('AttachmentController', () => {
   let attachmentController: AttachmentController;

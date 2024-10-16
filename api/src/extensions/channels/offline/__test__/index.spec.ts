@@ -49,6 +49,8 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import OfflineHandler from '../index.channel';
+
 import {
   offlineAttachment,
   offlineButtons,
@@ -57,7 +59,6 @@ import {
   offlineQuickReplies,
   offlineText,
 } from './data.mock';
-import OfflineHandler from '../index.channel';
 
 describe('Offline Handler', () => {
   let subscriberService: SubscriberService;

@@ -36,7 +36,6 @@ import {
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { LocalAuthController } from './auth.controller';
 import { UserCreateDto } from '../dto/user.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -51,6 +50,8 @@ import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
+
+import { LocalAuthController } from './auth.controller';
 
 describe('AuthController', () => {
   let authController: LocalAuthController;

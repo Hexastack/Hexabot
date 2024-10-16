@@ -20,13 +20,14 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-import { NlpSampleRepository } from './nlp-sample.repository';
 import {
   NlpSampleEntityModel,
   NlpSampleEntity,
 } from '../schemas/nlp-sample-entity.schema';
 import { NlpSampleModel, NlpSample } from '../schemas/nlp-sample.schema';
+
+import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
+import { NlpSampleRepository } from './nlp-sample.repository';
 
 describe('NlpSampleRepository', () => {
   let nlpSampleRepository: NlpSampleRepository;

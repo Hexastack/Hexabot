@@ -20,9 +20,10 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { BotStatsService } from './bot-stats.service';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
 import { BotStatsModel, BotStatsType } from '../schemas/bot-stats.schema';
+
+import { BotStatsService } from './bot-stats.service';
 
 describe('BotStatsService', () => {
   let botStatsService: BotStatsService;

@@ -24,7 +24,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { ModelController } from './model.controller';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -37,6 +36,8 @@ import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
+
+import { ModelController } from './model.controller';
 
 describe('ModelController', () => {
   let modelController: ModelController;

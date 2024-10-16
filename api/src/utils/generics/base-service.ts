@@ -11,9 +11,10 @@ import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
 import { TFilterQuery } from 'mongoose';
 
+import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
-import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 
 export abstract class BaseService<
   T extends BaseSchema,

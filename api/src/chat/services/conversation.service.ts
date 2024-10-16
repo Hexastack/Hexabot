@@ -12,8 +12,6 @@ import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { ContextVarService } from './context-var.service';
-import { SubscriberService } from './subscriber.service';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
@@ -24,6 +22,9 @@ import {
 } from '../schemas/conversation.schema';
 import { OutgoingMessageFormat } from '../schemas/types/message';
 import { Payload } from '../schemas/types/quick-reply';
+
+import { ContextVarService } from './context-var.service';
+import { SubscriberService } from './subscriber.service';
 
 @Injectable()
 export class ConversationService extends BaseService<

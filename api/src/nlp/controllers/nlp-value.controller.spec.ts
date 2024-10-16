@@ -23,7 +23,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { NlpValueController } from './nlp-value.controller';
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
@@ -33,6 +32,8 @@ import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel, NlpValue } from '../schemas/nlp-value.schema';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
+
+import { NlpValueController } from './nlp-value.controller';
 
 describe('NlpValueController', () => {
   let nlpValueController: NlpValueController;

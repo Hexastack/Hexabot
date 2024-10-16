@@ -24,10 +24,11 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { Content, ContentModel } from '../schemas/content.schema';
+
 import { installContentFixtures } from './../../utils/test/fixtures/content';
 import { ContentTypeRepository } from './content-type.repository';
 import { ContentRepository } from './content.repository';
-import { Content, ContentModel } from '../schemas/content.schema';
 
 describe('ContentTypeRepository', () => {
   let contentTypeRepository: ContentTypeRepository;

@@ -32,12 +32,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { SubscriberRepository } from './../repositories/subscriber.repository';
-import { MessageService } from './message.service';
-import { SubscriberService } from './subscriber.service';
 import { MessageRepository } from '../repositories/message.repository';
 import { Message, MessageModel } from '../schemas/message.schema';
 import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+
+import { SubscriberRepository } from './../repositories/subscriber.repository';
+import { MessageService } from './message.service';
+import { SubscriberService } from './subscriber.service';
 
 describe('MessageService', () => {
   let messageRepository: MessageRepository;

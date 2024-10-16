@@ -23,8 +23,9 @@ import { SettingService } from '@/setting/services/setting.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
-import EventWrapper from './EventWrapper';
 import { ChannelService } from '../channel.service';
+
+import EventWrapper from './EventWrapper';
 
 @Injectable()
 export default abstract class ChannelHandler {

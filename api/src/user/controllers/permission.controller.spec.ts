@@ -19,7 +19,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { PermissionController } from './permission.controller';
 import { PermissionCreateDto } from '../dto/permission.dto';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -31,6 +30,8 @@ import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { Action } from '../types/action.type';
+
+import { PermissionController } from './permission.controller';
 
 describe('PermissionController', () => {
   let permissionController: PermissionController;

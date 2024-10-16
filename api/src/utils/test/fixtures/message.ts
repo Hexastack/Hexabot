@@ -11,9 +11,10 @@ import mongoose from 'mongoose';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { MessageModel, Message } from '@/chat/schemas/message.schema';
 
-import { installSubscriberFixtures } from './subscriber';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installSubscriberFixtures } from './subscriber';
 
 const messages: MessageCreateDto[] = [
   {

@@ -11,10 +11,11 @@ import mongoose from 'mongoose';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
 
-import { installLabelFixtures } from './label';
-import { installUserFixtures } from './user';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installLabelFixtures } from './label';
+import { installUserFixtures } from './user';
 
 const subscribers: SubscriberCreateDto[] = [
   {

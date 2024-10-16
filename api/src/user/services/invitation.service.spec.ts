@@ -30,9 +30,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { InvitationService } from './invitation.service';
-import { PermissionService } from './permission.service';
-import { RoleService } from './role.service';
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -40,6 +37,10 @@ import { RoleRepository } from '../repositories/role.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
+
+import { InvitationService } from './invitation.service';
+import { PermissionService } from './permission.service';
+import { RoleService } from './role.service';
 
 describe('InvitationService', () => {
   let invitationService: InvitationService;

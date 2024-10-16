@@ -23,12 +23,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { InvitationRepository } from './invitation.repository';
-import { PermissionRepository } from './permission.repository';
-import { RoleRepository } from './role.repository';
 import { InvitationModel, Invitation } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
+
+import { InvitationRepository } from './invitation.repository';
+import { PermissionRepository } from './permission.repository';
+import { RoleRepository } from './role.repository';
 
 describe('InvitationRepository', () => {
   let roleRepository: RoleRepository;
