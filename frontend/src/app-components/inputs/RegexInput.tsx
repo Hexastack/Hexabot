@@ -9,6 +9,8 @@
 import { InputAdornment, TextFieldProps } from "@mui/material";
 import React, { ForwardedRef, forwardRef, useState } from "react";
 
+import { useTranslate } from "@/hooks/useTranslate";
+
 import { Input } from "./Input";
 
 export const RegexInput = forwardRef(
@@ -27,22 +29,25 @@ export const RegexInput = forwardRef(
     },
     ref: ForwardedRef<HTMLDivElement>,
   ) => {
+    const { t } = useTranslate();
     const [localError, setLocalError] = useState(false);
     const [localHelperText, setLocalHelperText] = useState("");
     const validateRegex = (regexString: string): boolean => {
       if (regexString.trim() === "") {
         setLocalError(true);
-        setLocalHelperText("Field cannot be empty!");
+        setLocalHelperText(t("message.text_is_required"));
 
         return false;
       }
       try {
         new RegExp(regexString);
+        setLocalError(false);
+        setLocalHelperText("");
 
         return true;
       } catch (e) {
         setLocalError(true);
-        setLocalHelperText("Regex is Invalid");
+        setLocalHelperText(t("message.regex_is_invalid"));
 
         return false;
       }
@@ -50,15 +55,14 @@ export const RegexInput = forwardRef(
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
       const inputValue = e.target.value;
       const regexContent = inputValue;
-
+      
+      onChange(`/${inputValue}/`);
       if (validateRegex(regexContent)) {
         setLocalError(false);
         setLocalHelperText("");
       } else {
-        setLocalHelperText("Regex is Invalid");
+        setLocalHelperText(t("message.regex_is_invalid"));
       }
-
-      onChange(`/${inputValue}/`);
     };
 
     return (
