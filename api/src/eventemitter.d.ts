@@ -1,11 +1,11 @@
 import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
-import type { TFilterQuery, HydratedDocument, Query, Document } from 'mongoose';
+import type { Document, HydratedDocument, Query, TFilterQuery } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
 import { type Attachment } from '@/attachment/schemas/attachment.schema';
 import type EventWrapper from '@/channel/lib/EventWrapper';
-import { type Block, BlockFull } from '@/chat/schemas/block.schema';
+import { BlockFull, type Block } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
 import { type Conversation } from '@/chat/schemas/conversation.schema';
@@ -64,33 +64,33 @@ declare module '@nestjs/event-emitter' {
     chatbot_settings: TDefinition<
       object,
       {
-        global_fallback: unknown;
-        fallback_block: unknown;
-        fallback_message: unknown;
+        global_fallback: Setting;
+        fallback_block: Setting;
+        fallback_message: Setting;
       }
     >;
     contact: TDefinition<
       object,
       {
-        contact_email_recipient: unknown;
-        company_name: unknown;
-        company_phone: unknown;
-        company_email: unknown;
-        company_address1: unknown;
-        company_address2: unknown;
-        company_city: unknown;
-        company_zipcode: unknown;
-        company_state: unknown;
-        company_country: unknown;
+        contact_email_recipient: Setting;
+        company_name: Setting;
+        company_phone: Setting;
+        company_email: Setting;
+        company_address1: Setting;
+        company_address2: Setting;
+        company_city: Setting;
+        company_zipcode: Setting;
+        company_state: Setting;
+        company_country: Setting;
       }
     >;
     nlp_settings: TDefinition<
       object,
       {
-        provider: unknown;
-        endpoint: unknown;
-        token: unknown;
-        threshold: number;
+        provider: Setting;
+        endpoint: Setting;
+        token: Setting;
+        threshold: Setting;
       }
     >;
   }

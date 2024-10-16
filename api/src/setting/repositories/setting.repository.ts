@@ -7,7 +7,10 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookSettingsGroupLabelOperationMap,
+} from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query, Types } from 'mongoose';
 
@@ -78,9 +81,10 @@ export class SettingRepository extends BaseRepository<Setting> {
     >,
     setting: Setting,
   ) {
-    const group = setting.group as any;
-    const label = setting.label as string;
+    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
+    const label = setting.label as '*';
+
     // Sync global settings var
-    this.eventEmitter.emit(`hook:${group}:${label}`, setting as any);
+    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
   }
 }
