@@ -33,8 +33,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { InvitationService } from './../services/invitation.service';
-import { ReadWriteUserController } from './user.controller';
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import {
   UserCreateDto,
@@ -54,6 +52,9 @@ import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
+
+import { InvitationService } from './../services/invitation.service';
+import { ReadWriteUserController } from './user.controller';
 
 describe('UserController', () => {
   let userController: ReadWriteUserController;

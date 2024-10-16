@@ -33,10 +33,11 @@ import {
 } from '@/nlp/schemas/nlp-value.schema';
 import { Settings } from '@/setting/schemas/types';
 
-import { Nlp } from './types';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 import { NlpService } from '../services/nlp.service';
+
+import { Nlp } from './types';
 
 export default abstract class BaseNlpHelper {
   protected settings: Settings['nlp_settings'];

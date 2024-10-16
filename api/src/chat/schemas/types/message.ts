@@ -9,6 +9,8 @@
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { Content } from '@/cms/schemas/content.schema';
 
+import { Message } from '../message.schema';
+
 import {
   AttachmentForeignKey,
   AttachmentPayload,
@@ -18,7 +20,6 @@ import {
 import { Button } from './button';
 import { ContentOptions } from './options';
 import { StdQuickReply } from './quick-reply';
-import { Message } from '../message.schema';
 
 /**
  * StdEventType enum is declared, and currently not used

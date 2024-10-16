@@ -22,11 +22,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { SettingService } from './setting.service';
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting, SettingModel } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
+
+import { SettingService } from './setting.service';
 
 describe('SettingService', () => {
   let settingService: SettingService;

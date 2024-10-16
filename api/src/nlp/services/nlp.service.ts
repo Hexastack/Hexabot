@@ -12,12 +12,13 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
-import { NlpEntityService } from './nlp-entity.service';
-import { NlpSampleService } from './nlp-sample.service';
-import { NlpValueService } from './nlp-value.service';
 import BaseNlpHelper from '../lib/BaseNlpHelper';
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
 import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
+
+import { NlpEntityService } from './nlp-entity.service';
+import { NlpSampleService } from './nlp-sample.service';
+import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
 export class NlpService implements OnApplicationBootstrap {

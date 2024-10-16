@@ -32,8 +32,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { Category, CategoryModel } from './../schemas/category.schema';
-import { CategoryController } from './category.controller';
 import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { CategoryRepository } from '../repositories/category.repository';
@@ -41,6 +39,9 @@ import { BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
+
+import { Category, CategoryModel } from './../schemas/category.schema';
+import { CategoryController } from './category.controller';
 
 describe('CategoryController', () => {
   let categoryController: CategoryController;

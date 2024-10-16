@@ -57,7 +57,8 @@ module.exports = {
           'builtin', // Built-in imports (come from NodeJS native) go first
           'external', // <- External imports
           'unknown', // <- unknown
-          ['sibling', 'parent'], // <- Relative imports, the sibling and parent types they can be mingled together
+          'parent', // <- Relative imports, the sibling and parent types they can be mingled together
+          'sibling',
           'index', // <- index imports
           'internal', // <- Absolute imports
         ],

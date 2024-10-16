@@ -21,11 +21,12 @@ import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import OfflineHandler from '../offline/index.channel';
+
 import {
   DEFAULT_LIVE_CHAT_TEST_SETTINGS,
   LIVE_CHAT_TEST_CHANNEL_NAME,
 } from './settings';
-import OfflineHandler from '../offline/index.channel';
 
 @Injectable()
 export default class LiveChatTesterHandler extends OfflineHandler {

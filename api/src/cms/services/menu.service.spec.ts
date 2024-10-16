@@ -22,11 +22,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MenuService } from './menu.service';
 import { MenuRepository } from '../repositories/menu.repository';
 import { MenuModel } from '../schemas/menu.schema';
 import { MenuType } from '../schemas/types/menu';
 import { verifyTree } from '../utilities/verifyTree';
+
+import { MenuService } from './menu.service';
 
 describe('MenuService', () => {
   let menuService: MenuService;

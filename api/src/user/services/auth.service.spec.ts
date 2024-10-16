@@ -21,14 +21,15 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { AuthService } from './auth.service';
-import { RoleService } from './role.service';
-import { UserService } from './user.service';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
+
+import { AuthService } from './auth.service';
+import { RoleService } from './role.service';
+import { UserService } from './user.service';
 
 describe('AuthService', () => {
   let authService: AuthService;

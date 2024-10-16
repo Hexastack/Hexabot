@@ -14,9 +14,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 
-import { BlockService } from './block.service';
-import { ConversationService } from './conversation.service';
-import { SubscriberService } from './subscriber.service';
 import { MessageCreateDto } from '../dto/message.dto';
 import { BlockFull } from '../schemas/block.schema';
 import {
@@ -29,6 +26,10 @@ import {
   IncomingMessageType,
   StdOutgoingEnvelope,
 } from '../schemas/types/message';
+
+import { BlockService } from './block.service';
+import { ConversationService } from './conversation.service';
+import { SubscriberService } from './subscriber.service';
 
 @Injectable()
 export class BotService {
