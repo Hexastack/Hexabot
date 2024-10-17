@@ -12,15 +12,17 @@ import { ForwardedRef, forwardRef } from "react";
 export const Input = forwardRef(
   (props: TextFieldProps, ref: ForwardedRef<HTMLDivElement>) => (
     <TextField
+      {...props}
       ref={ref}
       type="text"
       size="small"
       fullWidth
+      error={props.error}
+      helperText={props.error ? props.helperText : ""}
       inputProps={{
         ...(props.required && { required: false }),
         ...props.inputProps,
       }}
-      {...props}
     />
   ),
 );

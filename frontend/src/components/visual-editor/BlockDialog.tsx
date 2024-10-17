@@ -61,7 +61,7 @@ const BlockDialog: FC<BlockDialogProps> = ({
   const { toast } = useToast();
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      return;
     },
     onSuccess: () => {
       closeDialog();
@@ -100,8 +100,18 @@ const BlockDialog: FC<BlockDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: IBlockAttributes) => {
+    const { errors } = methods.formState;
+
+    if(Object.keys(errors).length > 0){
+      return;
+    }
     if (block) {
-      updateBlock({ id: block.id, params });
+      try{
+        updateBlock({ id: block.id, params });
+      } catch(err) {
+        toast.error(t("message.internal_server_error"));
+      }
+      
     }
   };
 

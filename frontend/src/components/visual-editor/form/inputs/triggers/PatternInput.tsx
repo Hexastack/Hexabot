@@ -266,10 +266,25 @@ const PatternInput: FC<PatternInputProps> = ({
         {typeof value === "string" && patternType === "regex" ? (
           <RegexInput
             {...registerInput(t("message.regex_is_invalid"), idx, {
-              validate: (value) =>
-                (value.trim() !== "" && value !== "/") ??
-                t("message.regex_is_invalid"),
-              setValueAs: (v) => `/${v}/`,
+              validate: (value) => {
+                if(value.trim() === ""){
+                  return t("message.regex_is_invalid");
+                }
+                try{
+                  new RegExp(value);
+                  
+                  return true;
+                } catch (e) {
+                  return t("message.regex_is_invalid");
+                }
+              },
+              setValueAs: (v) => {
+                if(!v.startsWith("/") || !v.endsWith("/")) {
+                  return `/${v}/`;
+                }
+
+                return v;
+              },
             })}
             label={t("label.regex")}
             value={value.slice(1, -1)}
