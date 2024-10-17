@@ -9,7 +9,7 @@ import { BlockFull, type Block } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
 import { type Conversation } from '@/chat/schemas/conversation.schema';
-import { LabelDocument, type Label } from '@/chat/schemas/label.schema';
+import type { Label, LabelDocument } from '@/chat/schemas/label.schema';
 import { type Message } from '@/chat/schemas/message.schema';
 import { type Subscriber } from '@/chat/schemas/subscriber.schema';
 import { type ContentType } from '@/cms/schemas/content-type.schema';
@@ -23,9 +23,9 @@ import type {
 } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
-import {
+import type {
+  NlpValue,
   NlpValueDocument,
-  type NlpValue,
 } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
 import type { CheckboxSetting, TextSetting } from '@/setting/schemas/types';
