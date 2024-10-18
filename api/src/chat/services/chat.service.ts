@@ -91,6 +91,11 @@ export class ChatService {
     }
   }
 
+  @OnEvent('hook:gemini:flowGenerated')
+  async handleReceivedTextToActions(actions: string[]) {
+    this.websocketGateway.broadcastTextToActions(actions);
+  }
+
   /**
    * Creates the received message and broadcast it to the websocket "Message" room
    *
