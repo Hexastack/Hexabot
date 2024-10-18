@@ -135,7 +135,11 @@ export default class DefaultNlpHelper extends BaseNlpHelper {
         entities: nlp.entities.slice(),
       };
       if (threshold) {
-        minConfidence = Number.parseFloat(this.settings.threshold);
+        const threshold = this.settings.threshold;
+        minConfidence =
+          typeof threshold === 'string'
+            ? Number.parseFloat(threshold)
+            : threshold;
         guess.entities = guess.entities
           .map((e) => {
             e.confidence =

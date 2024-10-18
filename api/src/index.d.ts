@@ -9,9 +9,9 @@
 import 'mongoose';
 import { SubscriberStub } from './chat/schemas/subscriber.schema';
 import {
-  WithoutGenericAny,
-  RecursivePartial,
   ObjectWithNestedKeys,
+  RecursivePartial,
+  WithoutGenericAny,
 } from './utils/types/filter.types';
 
 type TOmitId<T> = Omit<T, 'id'>;
@@ -62,4 +62,10 @@ declare module 'mongoose' {
     WithoutGenericAny<RootQuerySelector<S>>;
 
   type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
+}
+
+declare global {
+  type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
+    ? `${P}_${HyphenToUnderscore<Q>}`
+    : S;
 }

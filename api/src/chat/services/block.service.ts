@@ -18,7 +18,6 @@ import { LoggerService } from '@/logger/logger.service';
 import { Nlp } from '@/nlp/lib/types';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';

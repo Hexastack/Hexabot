@@ -22,7 +22,7 @@ import { nlpEntityModels } from './nlp/seeds/nlp-entity.seed-model';
 import { NlpValueSeeder } from './nlp/seeds/nlp-value.seed';
 import { nlpValueModels } from './nlp/seeds/nlp-value.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
-import { settingModels } from './setting/seeds/setting.seed-model';
+import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
 import { PermissionSeeder } from './user/seeds/permission.seed';
@@ -106,7 +106,7 @@ export async function seedDatabase(app: INestApplicationContext) {
     }
     // Seed users
     try {
-      await settingSeeder.seed(settingModels);
+      await settingSeeder.seed(DEFAULT_SETTINGS);
     } catch (e) {
       logger.error('Unable to seed the database with settings!');
       throw e;

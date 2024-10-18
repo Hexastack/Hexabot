@@ -72,6 +72,7 @@
     "patch-package": "^8.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "sanitize-filename": "^1.6.3",
     "slug": "^8.2.2",
     "ts-migrate-mongoose": "^3.8.4",
     "uuid": "^9.0.1"

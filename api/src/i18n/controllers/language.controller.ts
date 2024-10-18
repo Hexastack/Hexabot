@@ -46,10 +46,10 @@ export class LanguageController extends BaseController<Language> {
   }
 
   /**
-   * Retrieves a paginated list of categories based on provided filters and pagination settings.
+   * Retrieves a paginated list of languages based on provided filters and pagination settings.
    * @param pageQuery - The pagination settings.
    * @param filters - The filters to apply to the language search.
-   * @returns A Promise that resolves to a paginated list of categories.
+   * @returns A Promise that resolves to a paginated list of languages.
    */
   @Get()
   async findPage(
@@ -61,8 +61,8 @@ export class LanguageController extends BaseController<Language> {
   }
 
   /**
-   * Counts the filtered number of categories.
-   * @returns A promise that resolves to an object representing the filtered number of categories.
+   * Counts the filtered number of languages.
+   * @returns A promise that resolves to an object representing the filtered number of languages.
    */
   @Get('count')
   async filterCount(

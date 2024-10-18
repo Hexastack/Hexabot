@@ -19,7 +19,7 @@ import {
 } from '@/chat/schemas/types/message';
 import { Payload } from '@/chat/schemas/types/quick-reply';
 
-import OfflineHandler from './index.channel';
+import BaseWebChannelHandler from './base-web-channel';
 import { Offline } from './types';
 
 type OfflineEventAdapter =
@@ -66,10 +66,9 @@ type OfflineEventAdapter =
       raw: Offline.IncomingMessage<Offline.IncomingAttachmentMessage>;
     };
 
-export default class OfflineEventWrapper extends EventWrapper<
-  OfflineEventAdapter,
-  Offline.Event
-> {
+export default class OfflineEventWrapper<
+  T extends BaseWebChannelHandler<string> = BaseWebChannelHandler<string>,
+> extends EventWrapper<OfflineEventAdapter, Offline.Event> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -77,7 +76,7 @@ export default class OfflineEventWrapper extends EventWrapper<
    * @param event - The message event received
    * @param channelData - Channel's specific extra data {isSocket, ipAddress}
    */
-  constructor(handler: OfflineHandler, event: Offline.Event, channelData: any) {
+  constructor(handler: T, event: Offline.Event, channelData: any) {
     super(handler, event, channelData);
   }
 

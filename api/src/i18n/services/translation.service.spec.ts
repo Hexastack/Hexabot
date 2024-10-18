@@ -10,7 +10,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { Block } from '../../chat/schemas/block.schema';
@@ -64,7 +63,7 @@ describe('TranslationService', () => {
                 global_fallback: true,
                 fallback_message: ['Global fallback message'],
               },
-            } as Settings),
+            }),
           },
         },
         {

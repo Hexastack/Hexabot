@@ -9,7 +9,7 @@
 import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block } from '@/chat/schemas/block.schema';
 import { Conversation } from '@/chat/schemas/conversation.schema';
-import { Setting } from '@/setting/schemas/setting.schema';
+import { SettingCreateDto } from '@/setting/dto/setting.dto';
 
 export enum PluginType {
   event = 'event',
@@ -22,7 +22,7 @@ export interface CustomBlocks {}
 type ChannelEvent = any;
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>;
+export type PluginSetting = SettingCreateDto;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,

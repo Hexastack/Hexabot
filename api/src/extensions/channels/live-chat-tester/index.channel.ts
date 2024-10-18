@@ -17,11 +17,10 @@ import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import OfflineHandler from '../offline/index.channel';
+import BaseWebChannelHandler from '../offline/base-web-channel';
 
 import {
   DEFAULT_LIVE_CHAT_TEST_SETTINGS,
@@ -29,9 +28,9 @@ import {
 } from './settings';
 
 @Injectable()
-export default class LiveChatTesterHandler extends OfflineHandler {
-  protected settings: SettingCreateDto[] = DEFAULT_LIVE_CHAT_TEST_SETTINGS;
-
+export default class LiveChatTesterHandler extends BaseWebChannelHandler<
+  typeof LIVE_CHAT_TEST_CHANNEL_NAME
+> {
   constructor(
     settingService: SettingService,
     channelService: ChannelService,
@@ -46,6 +45,8 @@ export default class LiveChatTesterHandler extends OfflineHandler {
     websocketGateway: WebsocketGateway,
   ) {
     super(
+      LIVE_CHAT_TEST_CHANNEL_NAME,
+      DEFAULT_LIVE_CHAT_TEST_SETTINGS,
       settingService,
       channelService,
       nlpService,
@@ -58,13 +59,5 @@ export default class LiveChatTesterHandler extends OfflineHandler {
       menuService,
       websocketGateway,
     );
-  }
-
-  /**
-   * Returns the channel's name
-   * @returns {String}
-   */
-  getChannel() {
-    return LIVE_CHAT_TEST_CHANNEL_NAME;
   }
 }

@@ -31,7 +31,6 @@ import {
   NlpValueDocument,
   NlpValueFull,
 } from '@/nlp/schemas/nlp-value.schema';
-import { Settings } from '@/setting/schemas/types';
 
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';

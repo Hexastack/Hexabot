@@ -94,18 +94,3 @@ export type AnySetting =
   | MultipleAttachmentSetting;
 
 export type SettingDict = { [group: string]: Setting[] };
-
-export type Settings = {
-  nlp_settings: {
-    threshold: string;
-    provider: string;
-    endpoint: string;
-    token: string;
-  };
-  contact: { [key: string]: string };
-  chatbot_settings: {
-    global_fallback: boolean;
-    fallback_message: string[];
-    fallback_block: string;
-  };
-} & Record<string, any>;

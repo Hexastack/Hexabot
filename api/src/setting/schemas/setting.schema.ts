@@ -7,6 +7,7 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Transform } from 'class-transformer';
 import { IsArray, IsIn } from 'class-validator';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
@@ -21,6 +22,13 @@ export class Setting extends BaseSchema {
     required: true,
   })
   group: string;
+
+  @Prop({
+    type: String,
+    default: '',
+  })
+  @Transform(({ obj }) => obj.subgroup || undefined)
+  subgroup?: string;
 
   @Prop({
     type: String,

@@ -34,7 +34,6 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import {
   blockFixtures,

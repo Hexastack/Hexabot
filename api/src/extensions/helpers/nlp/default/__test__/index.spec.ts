@@ -152,9 +152,12 @@ describe('NLP Default Helper', () => {
     const nlp = nlpService.getNLP();
     const results = nlp.bestGuess(nlpParseResult, true);
     const settings = await settingService.getSettings();
+    const threshold = settings.nlp_settings.threshold;
     const thresholdGuess = {
       entities: nlpBestGuess.entities.filter(
-        (g) => g.confidence > parseFloat(settings.nlp_settings.threshold),
+        (g) =>
+          g.confidence >
+          (typeof threshold === 'string' ? parseFloat(threshold) : threshold),
       ),
     };
     expect(results).toEqual(thresholdGuess);
