@@ -711,7 +711,7 @@ export default class BaseWebChannelHandler<
         storage: diskStorage({
           destination: dirPath, // Set the destination directory for file storage
           filename: (_req, _file, cb) => {
-            cb(null, filename); // Set the file name
+            cb(null, sanitizedFilename); // Set the file name
           },
         }),
       }).single('file'); // 'file' is the field name in the form
