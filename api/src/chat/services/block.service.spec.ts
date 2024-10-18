@@ -34,7 +34,6 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import {
   blockFixtures,
@@ -67,6 +66,9 @@ import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
+import { CategoryRepository } from './../repositories/category.repository';
+import { BlockService } from './block.service';
+import { CategoryService } from './category.service';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';

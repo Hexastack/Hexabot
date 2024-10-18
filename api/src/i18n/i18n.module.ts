@@ -26,6 +26,7 @@ import { Observable } from 'rxjs';
 
 import { ChatModule } from '@/chat/chat.module';
 
+import { I18nController } from './controllers/i18n.controller';
 import { LanguageController } from './controllers/language.controller';
 import { TranslationController } from './controllers/translation.controller';
 import { LanguageRepository } from './repositories/language.repository';
@@ -62,6 +63,7 @@ export class I18nModule extends NativeI18nModule {
       controllers: (controllers || []).concat([
         LanguageController,
         TranslationController,
+        I18nController,
       ]),
       providers: providers.concat([
         I18nService,

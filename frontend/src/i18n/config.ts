@@ -26,14 +26,7 @@ i18n
     backend: {
       loadPath: "/locales/{{lng}}/{{ns}}.json",
     },
-    ns: [
-      "translation",
-      "chatbot_settings.json",
-      "contact",
-      "nlp_settings",
-      "offline",
-      "live-chat-tester",
-    ],
+    ns: ["translation", "chatbot_settings", "contact", "nlp_settings"],
     interpolation: {
       escapeValue: false,
     },

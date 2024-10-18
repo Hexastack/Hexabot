@@ -11,7 +11,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { MessageCreateDto } from '../dto/message.dto';

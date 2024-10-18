@@ -9,7 +9,7 @@
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingType } from '../schemas/types';
 
-export const settingModels: SettingCreateDto[] = [
+export const DEFAULT_SETTINGS = [
   {
     group: 'chatbot_settings',
     label: 'global_fallback',
@@ -38,7 +38,7 @@ export const settingModels: SettingCreateDto[] = [
     value: [
       "Sorry but i didn't understand your request. Maybe you can check the menu",
       "I'm really sorry but i don't quite understand what you are saying :(",
-    ],
+    ] as string[],
     type: SettingType.multiple_text,
     weight: 3,
   },
@@ -146,4 +146,4 @@ export const settingModels: SettingCreateDto[] = [
     type: SettingType.text,
     weight: 10,
   },
-];
+] as const satisfies SettingCreateDto[];
