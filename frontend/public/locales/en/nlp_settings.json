@@ -1,0 +1,16 @@
+{
+  "title": {
+    "nlp_settings": "NLU Engine"
+  },
+  "label": {
+    "provider": "Provider",
+    "token": "API Access Token",
+    "endpoint": "API Endpoint URL",
+    "threshold": "Fallback Threshold"
+  },
+  "help": {
+    "endpoint": "NLU (Natural Language Understanding) API URL (Depends on the provider).",
+    "token": "Every API request must contain an Authorize HTTP header with a token.",
+    "threshold": "Threshold above which the chatbot will use its prediction (min=0 & max=1)"
+  }
+}

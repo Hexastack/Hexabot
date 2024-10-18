@@ -17,7 +17,6 @@ import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ISetting } from "@/types/setting.types";
@@ -34,13 +33,13 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
   field,
   isDisabled = () => false,
 }) => {
-  const { t } = useTranslate();
-  const nestedLabel = setting.label as TNestedTranslation<"label">;
-  const nestedHelp = setting.help as TNestedTranslation<"help">;
-  const label = t("label", nestedLabel, { defaultValue: nestedLabel });
-  const helperText = nestedHelp
-    ? t("help", nestedHelp, { defaultValue: nestedHelp })
-    : "";
+  const { t } = useTranslate(setting.group);
+  const label = t(`label.${setting.label}`, {
+    defaultValue: setting.label,
+  });
+  const helperText = t(`help.${setting.label}`, {
+    defaultValue: "",
+  });
 
   switch (setting.type) {
     case "text":

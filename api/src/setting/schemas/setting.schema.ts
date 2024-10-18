@@ -6,8 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
-import { Transform } from 'class-transformer';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsArray, IsIn } from 'class-validator';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
@@ -45,13 +44,6 @@ export class Setting extends BaseSchema {
 
   @Prop({ type: JSON, default: {} })
   config?: Record<string, any>;
-
-  @Prop({
-    type: String,
-    default: '',
-  })
-  @Transform(({ obj }) => obj.help || undefined)
-  help?: string;
 
   @Prop({
     type: Number,
