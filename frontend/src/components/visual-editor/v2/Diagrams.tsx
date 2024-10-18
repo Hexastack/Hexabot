@@ -51,11 +51,12 @@ import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
+import { useSocket, useSocketGetQuery } from "@/websocket/socket-hooks";
 
-import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
+import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
 
 const Diagrams = () => {
   const { t } = useTranslate();
@@ -79,15 +80,23 @@ const Diagrams = () => {
   const { searchPayload } = useSearch<IBlock>({
     $eq: [{ category: selectedCategoryId }],
   });
-  const { data: categories } = useFind(
+  const [hasTextToActions, setHasTextToActions] = useState(false);
+  const { data: categories, refetch } = useFind(
     { entity: EntityType.CATEGORY },
     {
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
-      onSuccess([{ id, zoom, offset }]) {
-        if (id) {
+      onSuccess(categories) {
+        const { id, zoom, offset } = categories[0];
+        const aiGeneratedFlowId = categories.find(
+          (category) => category.label === "AI Flow",
+        )?.id;
+
+        if (aiGeneratedFlowId && hasTextToActions) {
+          setSelectedCategoryId?.(aiGeneratedFlowId);
+        } else if (id) {
           setSelectedCategoryId?.(id);
           if (engine?.getModel()) {
             setViewerOffset(offset || [0, 0]);
@@ -428,6 +437,23 @@ const Diagrams = () => {
       deleteDialogCtl.closeDialog();
     }
   };
+
+  useSocketGetQuery("/subscriber/subscribe/");
+
+  const { socket } = useSocket();
+
+  socket?.on(
+    "actions",
+    async (event: { op: "textToActions"; msg: string[] }) => {
+      if (
+        event?.op === "textToActions" &&
+        event.msg.includes("navigateToAiFlow")
+      ) {
+        setHasTextToActions(true);
+        await refetch();
+      }
+    },
+  );
 
   return (
     <div
