@@ -27,8 +27,6 @@ import { ChannelSetting } from '../types';
 
 import EventWrapper from './EventWrapper';
 
-import EventWrapper from './EventWrapper';
-
 @Injectable()
 export default abstract class ChannelHandler<N extends string = string> {
   private readonly name: N;

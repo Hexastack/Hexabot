@@ -66,9 +66,6 @@ import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
-import { CategoryRepository } from './../repositories/category.repository';
-import { BlockService } from './block.service';
-import { CategoryService } from './category.service';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';

@@ -13,6 +13,7 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import multer, { diskStorage } from 'multer';
+import sanitize from 'sanitize-filename';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -684,9 +685,9 @@ export default class BaseWebChannelHandler<
 
     // Store file as attachment
     const dirPath = path.join(config.parameters.uploadDir);
-    const filename = `${req.session.offline.profile.id}_${+new Date()}_${
-      upload.name
-    }`;
+    const filename = sanitize(
+      `${req.session.offline.profile.id}_${+new Date()}_${upload.name}`,
+    );
     if ('isSocket' in req && req.isSocket) {
       // @TODO : test this
       try {
