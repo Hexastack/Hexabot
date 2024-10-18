@@ -8,9 +8,10 @@
 
 import React from 'react';
 
-import CheckIcon from './icons/CheckIcon';
 import { useColors } from '../providers/ColorProvider';
 import { TMessage } from '../types/message.types';
+
+import CheckIcon from './icons/CheckIcon';
 import './MessageStatus.scss';
 
 interface MessageStatusProps {

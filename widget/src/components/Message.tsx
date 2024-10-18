@@ -12,6 +12,10 @@ import 'dayjs/locale/fr';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import React, { PropsWithChildren, useState } from 'react';
 
+import { useChat } from '../providers/ChatProvider';
+import { useColors } from '../providers/ColorProvider';
+import { TMessage } from '../types/message.types';
+
 import ChatIcon from './icons/ChatIcon';
 import ButtonsMessage from './messages/ButtonMessage';
 import CarouselMessage from './messages/CarouselMessage';
@@ -20,9 +24,6 @@ import GeolocationMessage from './messages/GeolocationMessage';
 import ListMessage from './messages/ListMessage';
 import TextMessage from './messages/TextMessage';
 import MessageStatus from './MessageStatus';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { TMessage } from '../types/message.types';
 import './Message.scss';
 
 dayjs.extend(relativeTime);

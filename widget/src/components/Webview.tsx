@@ -8,10 +8,11 @@
 
 import React, { useEffect, useState } from 'react';
 
-import BackIcon from './icons/BackIcon';
 import { useTranslation } from '../hooks/useTranslation';
 import { useChat } from '../providers/ChatProvider';
 import { useColors } from '../providers/ColorProvider';
+
+import BackIcon from './icons/BackIcon';
 import './Webview.scss';
 
 const Webview: React.FC = () => {

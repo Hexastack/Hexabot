@@ -8,10 +8,11 @@
 
 import { FC, PropsWithChildren } from 'react';
 
-import CloseIcon from './icons/CloseIcon';
 import { useColors } from '../providers/ColorProvider';
 import { useSettings } from '../providers/SettingsProvider';
 import { useWidget } from '../providers/WidgetProvider';
+
+import CloseIcon from './icons/CloseIcon';
 import './ChatHeader.scss';
 
 type ChatHeaderProps = PropsWithChildren;
