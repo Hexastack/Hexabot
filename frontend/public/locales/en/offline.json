@@ -23,6 +23,6 @@
     "show_file": "Enable Attachment Uploader",
     "show_location": "Enable Geolocation Share",
     "allowed_upload_size": "Max Upload Size (in bytes)",
-    "allowed_upload_types": "Allowed Upload Mime Types (comma seperated)"
+    "allowed_upload_types": "Allowed Upload Mime Types (comma separated)"
   }
 }
