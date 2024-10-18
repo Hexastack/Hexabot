@@ -22,7 +22,11 @@ import {
 } from './types';
 
 @Injectable()
-export abstract class BaseBlockPlugin extends BasePlugin {
+export abstract class BaseBlockPlugin<
+  T extends PluginSetting[] = PluginSetting[],
+> extends BasePlugin {
+  public abstract readonly settings: T;
+
   public readonly type: PluginType = PluginType.block;
 
   constructor(id: string, pluginService: PluginService<BasePlugin>) {
@@ -30,8 +34,6 @@ export abstract class BaseBlockPlugin extends BasePlugin {
   }
 
   title: string;
-
-  settings: PluginSetting[];
 
   template: PluginBlockTemplate;
 
@@ -42,4 +44,8 @@ export abstract class BaseBlockPlugin extends BasePlugin {
     context: Context,
     convId?: string,
   ): Promise<StdOutgoingEnvelope>;
+
+  protected getArguments(block: Block) {
+    return block.message['args'] as SettingObject<T>;
+  }
 }

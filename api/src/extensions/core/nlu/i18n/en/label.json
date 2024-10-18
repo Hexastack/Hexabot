@@ -1,0 +1,6 @@
+{
+  "provider": "Provider",
+  "token": "API Access Token",
+  "endpoint": "API Endpoint URL",
+  "threshold": "Fallback Threshold"
+}

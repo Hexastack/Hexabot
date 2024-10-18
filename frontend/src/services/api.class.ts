@@ -32,6 +32,7 @@ export const ROUTES = {
   CSRF: "/csrftoken",
   BOTSTATS: "/botstats",
   REFRESH_TRANSLATIONS: "/translation/refresh",
+  FETCH_REMOTE_I18N: "/i18n",
   RESET: "/user/reset",
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
@@ -164,6 +165,7 @@ export class ApiClient {
 
     return data;
   }
+
   async requestReset(payload: IResetRequest) {
     const { data } = await this.request.post<
       IResetRequest,
@@ -186,6 +188,12 @@ export class ApiClient {
       acknowledged: boolean;
       deletedCount: number;
     }>(ROUTES.REFRESH_TRANSLATIONS, { _csrf });
+
+    return data;
+  }
+
+  async fetchRemoteI18n() {
+    const { data } = await this.request.get(ROUTES.FETCH_REMOTE_I18N);
 
     return data;
   }

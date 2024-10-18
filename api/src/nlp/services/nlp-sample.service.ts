@@ -15,7 +15,7 @@ import {
   EntitySynonym,
   ExampleEntity,
   LookupTable,
-} from '@/extensions/helpers/nlp/default/types';
+} from '@/extensions/core/nlu/types';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { BaseService } from '@/utils/generics/base-service';

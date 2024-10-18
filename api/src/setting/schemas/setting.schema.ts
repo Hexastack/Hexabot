@@ -25,6 +25,13 @@ export class Setting extends BaseSchema {
 
   @Prop({
     type: String,
+    default: '',
+  })
+  @Transform(({ obj }) => obj.subgroup || undefined)
+  subgroup?: string;
+
+  @Prop({
+    type: String,
     required: true,
   })
   label: string;
@@ -45,13 +52,6 @@ export class Setting extends BaseSchema {
 
   @Prop({ type: JSON, default: {} })
   config?: Record<string, any>;
-
-  @Prop({
-    type: String,
-    default: '',
-  })
-  @Transform(({ obj }) => obj.help || undefined)
-  help?: string;
 
   @Prop({
     type: Number,

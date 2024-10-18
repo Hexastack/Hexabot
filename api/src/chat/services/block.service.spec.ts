@@ -24,17 +24,16 @@ import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
-import OfflineHandler from '@/extensions/channels/offline/index.channel';
-import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
-import { Offline } from '@/extensions/channels/offline/types';
-import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import OfflineHandler from '@/extensions/core/offline/index.channel';
+import { OFFLINE_CHANNEL_NAME } from '@/extensions/core/offline/settings';
+import { Offline } from '@/extensions/core/offline/types';
+import OfflineEventWrapper from '@/extensions/core/offline/wrapper';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import {
   blockFixtures,

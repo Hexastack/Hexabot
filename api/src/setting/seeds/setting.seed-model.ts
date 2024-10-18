@@ -9,7 +9,7 @@
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingType } from '../schemas/types';
 
-export const settingModels: SettingCreateDto[] = [
+export const settingModels = [
   {
     group: 'chatbot_settings',
     label: 'global_fallback',
@@ -41,40 +41,6 @@ export const settingModels: SettingCreateDto[] = [
     ],
     type: SettingType.multiple_text,
     weight: 3,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'provider',
-    value: 'default',
-    options: ['default'],
-    type: SettingType.select,
-    weight: 1,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'endpoint',
-    value: 'http://nlu-api:5000/',
-    type: SettingType.text,
-    weight: 2,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'token',
-    value: 'token123',
-    type: SettingType.text,
-    weight: 3,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'threshold',
-    value: 0.1,
-    type: SettingType.number,
-    config: {
-      min: 0,
-      max: 1,
-      step: 0.01,
-    },
-    weight: 4,
   },
   {
     group: 'contact',
@@ -146,4 +112,4 @@ export const settingModels: SettingCreateDto[] = [
     type: SettingType.text,
     weight: 10,
   },
-];
+] as const satisfies SettingCreateDto[];

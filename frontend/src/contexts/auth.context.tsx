@@ -8,22 +8,22 @@
 
 import getConfig from "next/config";
 import { useRouter } from "next/router";
-import { useState, useEffect, createContext, ReactNode } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import {
-  useQueryClient,
-  useQuery,
   QueryObserverResult,
   RefetchOptions,
   UseMutateFunction,
+  useQuery,
+  useQueryClient,
 } from "react-query";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import {
-  useLogoutRedirection,
   CURRENT_USER_KEY,
   PUBLIC_PATHS,
+  useLogoutRedirection,
 } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";

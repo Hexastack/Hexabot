@@ -56,7 +56,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
-    ...(config.emails.isEnabled
+    ...(config.emails.isEnabled && false
       ? [
           MailerModule.forRoot({
             transport: new SMTPTransport({

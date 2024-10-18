@@ -18,10 +18,15 @@ import {
 import { SettingType } from '../schemas/types';
 
 export class SettingCreateDto {
-  @ApiProperty({ description: 'Setting group of setting', type: String })
+  @ApiProperty({ description: 'Group of setting', type: String })
   @IsNotEmpty()
   @IsString()
   group: string;
+
+  @ApiProperty({ description: 'Subgroup of setting', type: String })
+  @IsOptional()
+  @IsString()
+  subgroup?: string;
 
   @ApiProperty({ description: 'Setting label of setting', type: String })
   @IsNotEmpty()

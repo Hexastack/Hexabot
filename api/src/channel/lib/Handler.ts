@@ -64,7 +64,7 @@ export default abstract class ChannelHandler {
    */
   async getSettings<S>() {
     const settings = await this.settingService.getSettings();
-    return settings[this.getChannel()] as S;
+    return settings[this.getSettingGroup()] as S;
   }
 
   /**
@@ -72,6 +72,14 @@ export default abstract class ChannelHandler {
    * @returns {String}
    */
   abstract getChannel(): string;
+
+  /**
+   * Returns the channel's settings group
+   * @returns {String}
+   */
+  getSettingGroup(): string {
+    return this.getChannel().replaceAll('-', '_');
+  }
 
   /**
    * Perform any initialization needed

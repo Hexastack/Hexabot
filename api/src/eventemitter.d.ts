@@ -84,7 +84,7 @@ declare module '@nestjs/event-emitter' {
         company_country: unknown;
       }
     >;
-    nlp_settings: TDefinition<
+    nlu: TDefinition<
       object,
       {
         provider: unknown;

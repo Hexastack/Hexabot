@@ -10,8 +10,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { LIVE_CHAT_TEST_CHANNEL_NAME } from '@/extensions/channels/live-chat-tester/settings';
-import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
+import { LIVE_CHAT_TEST_CHANNEL_NAME } from '@/extensions/core/live-chat-tester/settings';
+import { OFFLINE_CHANNEL_NAME } from '@/extensions/core/offline/settings';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SocketGet,
@@ -116,8 +116,8 @@ export class ChannelService {
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet('/webhook/live-chat-tester/')
-  @SocketPost('/webhook/live-chat-tester/')
+  @SocketGet(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
   async handleWebsocketForLiveChatTester(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,

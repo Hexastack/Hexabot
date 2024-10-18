@@ -15,16 +15,11 @@ import { SettingService } from '@/setting/services/setting.service';
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
-import BaseNlpHelper from '../lib/BaseNlpHelper';
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
 import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
 
 @Injectable()
 export class NlpService implements OnApplicationBootstrap {
-  private registry: Map<string, BaseNlpHelper> = new Map();
-
-  private nlp: BaseNlpHelper;
-
   constructor(
     private readonly settingService: SettingService,
     private readonly logger: LoggerService,
@@ -37,45 +32,10 @@ export class NlpService implements OnApplicationBootstrap {
     this.initNLP();
   }
 
-  /**
-   * Registers a helper with a specific name in the registry.
-   *
-   * @param name - The name of the helper to register.
-   * @param helper - The NLP helper to be associated with the given name.
-   * @typeParam C - The type of the helper, which must extend `BaseNlpHelper`.
-   */
-  public setHelper<C extends BaseNlpHelper>(name: string, helper: C) {
-    this.registry.set(name, helper);
-  }
-
-  /**
-   * Retrieves all registered helpers.
-   *
-   * @returns An array of all helpers currently registered.
-   */
-  public getAll() {
-    return Array.from(this.registry.values());
-  }
-
-  /**
-   * Retrieves the appropriate helper based on the helper name.
-   *
-   * @param helperName - The name of the helper (messenger, offline, ...).
-   *
-   * @returns The specified helper.
-   */
-  public getHelper<C extends BaseNlpHelper>(name: string): C {
-    const handler = this.registry.get(name);
-    if (!handler) {
-      throw new Error(`NLP Helper ${name} not found`);
-    }
-    return handler as C;
-  }
-
   async initNLP() {
     try {
       const settings = await this.settingService.getSettings();
-      const nlpSettings = settings.nlp_settings;
+      const nlpSettings = settings.nlu;
       const helper = this.getHelper(nlpSettings.provider);
 
       if (helper) {
@@ -102,7 +62,7 @@ export class NlpService implements OnApplicationBootstrap {
   /**
    * Handles the event triggered when NLP settings are updated. Re-initializes the NLP service.
    */
-  @OnEvent('hook:nlp_settings:*')
+  @OnEvent('hook:nlu:*')
   async handleSettingsUpdate() {
     this.initNLP();
   }
