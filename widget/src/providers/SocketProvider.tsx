@@ -14,8 +14,9 @@ import {
   useRef,
 } from 'react';
 
-import { useConfig } from './ConfigProvider';
 import { getSocketIoClient, SocketIoClient } from '../utils/SocketIoClient';
+
+import { useConfig } from './ConfigProvider';
 
 interface socketContext {
   socket: SocketIoClient;

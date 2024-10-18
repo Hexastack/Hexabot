@@ -16,10 +16,6 @@ import React, {
   useState,
 } from 'react';
 
-import { useConfig } from './ConfigProvider';
-import { useSettings } from './SettingsProvider';
-import { useSocket, useSubscribe } from './SocketProvider';
-import { useWidget } from './WidgetProvider';
 import { StdEventType } from '../types/chat-io-messages.types';
 import {
   Direction,
@@ -32,6 +28,11 @@ import {
   TPostMessageEvent,
 } from '../types/message.types';
 import { ConnectionState, OutgoingMessageState } from '../types/state.types';
+
+import { useConfig } from './ConfigProvider';
+import { useSettings } from './SettingsProvider';
+import { useSocket, useSubscribe } from './SocketProvider';
+import { useWidget } from './WidgetProvider';
 
 interface Participant {
   id: string;

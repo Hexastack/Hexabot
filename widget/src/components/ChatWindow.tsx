@@ -8,13 +8,14 @@
 
 import React, { PropsWithChildren } from 'react';
 
+import { useChat } from '../providers/ChatProvider';
+import { useWidget } from '../providers/WidgetProvider';
+
 import ChatHeader from './ChatHeader';
 import ConnectionLost from './ConnectionLost';
 import Messages from './Messages';
 import UserInput from './UserInput';
 import Webview from './Webview';
-import { useChat } from '../providers/ChatProvider';
-import { useWidget } from '../providers/WidgetProvider';
 import './ChatWindow.scss';
 
 type ChatWindowProps = PropsWithChildren<{

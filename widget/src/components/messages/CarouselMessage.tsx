@@ -6,13 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-import ButtonsMessage from './ButtonMessage';
-import { useColors } from '../../providers/ColorProvider';
-import { TButton, Direction, TMessage } from '../../types/message.types';
-import './CarouselMessage.scss';
-import { processContent } from '../../utils/text';
+import { useColors } from "../../providers/ColorProvider";
+import { Direction, TButton, TMessage } from "../../types/message.types";
+import { processContent } from "../../utils/text";
+
+import ButtonsMessage from "./ButtonMessage";
+import "./CarouselMessage.scss";
 
 interface Element {
   title: string;
@@ -73,13 +74,13 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
     setActiveIndex(
-      (prevIndex) => (prevIndex + items.length - 1) % items.length,
+      (prevIndex) => (prevIndex + items.length - 1) % items.length
     );
   };
   const goToNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
-  const colors = allColors[messageCarousel.direction || 'received'];
+  const colors = allColors[messageCarousel.direction || "received"];
 
   return (
     <div
