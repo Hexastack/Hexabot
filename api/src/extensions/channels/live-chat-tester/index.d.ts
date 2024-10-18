@@ -1,6 +1,6 @@
 import {
   DEFAULT_LIVE_CHAT_TEST_SETTINGS,
-  LIVE_CHAT_TEST_CHANNEL_NAME,
+  LIVE_CHAT_TEST_GROUP_NAME,
 } from './settings';
 
 declare global {
@@ -10,7 +10,7 @@ declare global {
 
 declare module '@nestjs/event-emitter' {
   interface IHookSettingsGroupLabelOperationMap {
-    [name: HyphenToUnderscore<typeof LIVE_CHAT_TEST_CHANNEL_NAME>]: TDefinition<
+    [LIVE_CHAT_TEST_GROUP_NAME]: TDefinition<
       object,
       SettingObject<typeof DEFAULT_LIVE_CHAT_TEST_SETTINGS>
     >;
