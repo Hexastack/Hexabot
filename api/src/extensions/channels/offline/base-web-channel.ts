@@ -685,14 +685,20 @@ export default class BaseWebChannelHandler<
 
     // Store file as attachment
     const dirPath = path.join(config.parameters.uploadDir);
-    const filename = sanitize(
+    const sanitizedFilename = sanitize(
       `${req.session.offline.profile.id}_${+new Date()}_${upload.name}`,
     );
+    const filePath = path.resolve(dirPath, sanitizedFilename);
+
+    if (!filePath.startsWith(dirPath)) {
+      return next(new Error('Invalid file path!'), false);
+    }
+
     if ('isSocket' in req && req.isSocket) {
       // @TODO : test this
       try {
-        await fsPromises.writeFile(path.join(dirPath, filename), upload.file);
-        this.storeAttachment(upload, filename, next);
+        await fsPromises.writeFile(filePath, upload.file);
+        this.storeAttachment(upload, sanitizedFilename, next);
       } catch (err) {
         this.logger.error(
           'Offline Channel Handler : Unable to write uploaded file',
