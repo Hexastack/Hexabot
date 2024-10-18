@@ -11,9 +11,10 @@ import mongoose from 'mongoose';
 import { InvitationModel, Invitation } from '@/user/schemas/invitation.schema';
 import { hash } from '@/user/utilities/hash';
 
-import { installRoleFixtures } from './role';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixtures } from '../types';
+
+import { installRoleFixtures } from './role';
 
 const invitations: TFixtures<Invitation>[] = [
   {

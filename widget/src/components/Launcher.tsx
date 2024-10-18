@@ -8,13 +8,14 @@
 
 import React, { PropsWithChildren } from 'react';
 
-import ChatWindow from './ChatWindow';
-import CloseIcon from './icons/CloseIcon';
-import OpenIcon from './icons/OpenIcon';
 import { useChat } from '../providers/ChatProvider';
 import { useColors } from '../providers/ColorProvider';
 import { useSocketLifecycle } from '../providers/SocketProvider';
 import { useWidget, WidgetContextType } from '../providers/WidgetProvider';
+
+import ChatWindow from './ChatWindow';
+import CloseIcon from './icons/CloseIcon';
+import OpenIcon from './icons/OpenIcon';
 import './Launcher.scss';
 
 type LauncherProps = PropsWithChildren<{

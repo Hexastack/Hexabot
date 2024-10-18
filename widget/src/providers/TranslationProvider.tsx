@@ -8,8 +8,9 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-import { useConfig } from './ConfigProvider';
 import { translations } from '../translations';
+
+import { useConfig } from './ConfigProvider';
 
 type Language = keyof typeof translations;
 

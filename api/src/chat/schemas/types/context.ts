@@ -8,8 +8,9 @@
 
 import { Nlp } from '@/nlp/lib/types';
 
-import { Payload } from './quick-reply';
 import { Subscriber } from '../subscriber.schema';
+
+import { Payload } from './quick-reply';
 
 export interface Context {
   channel?: string;

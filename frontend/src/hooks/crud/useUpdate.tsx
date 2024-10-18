@@ -17,9 +17,10 @@ import {
 } from "@/types/base.types";
 import { merge } from "@/utils/object";
 
+import { useEntityApiClient } from "../useApiClient";
+
 import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
-import { useEntityApiClient } from "../useApiClient";
 
 export const useUpdate = <
   TEntity extends IDynamicProps["entity"],

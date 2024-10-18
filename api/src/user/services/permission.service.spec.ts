@@ -21,7 +21,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { PermissionService } from './permission.service';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -33,6 +32,8 @@ import {
 } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
+
+import { PermissionService } from './permission.service';
 
 describe('PermissionService', () => {
   let permissionService: PermissionService;

@@ -21,8 +21,9 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 
-import { UserService } from './user.service';
 import { UserCreateDto } from '../dto/user.dto';
+
+import { UserService } from './user.service';
 
 @Injectable()
 export class ValidateAccountService {

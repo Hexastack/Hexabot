@@ -8,13 +8,14 @@
 
 import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
 
-import Message from "./Message";
-import TypingMessage from "./messages/TypingMessage";
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import "./Messages.scss";
 import { TMessage } from "../types/message.types";
+
+import Message from "./Message";
+import "./Messages.scss";
+import TypingMessage from "./messages/TypingMessage";
 
 type MessagesProps = PropsWithChildren<{
   Avatar?: () => JSX.Element;

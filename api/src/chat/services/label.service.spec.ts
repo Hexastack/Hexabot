@@ -25,12 +25,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { SubscriberRepository } from './../repositories/subscriber.repository';
-import { LabelService } from './label.service';
-import { SubscriberService } from './subscriber.service';
 import { LabelRepository } from '../repositories/label.repository';
 import { LabelModel, Label, LabelFull } from '../schemas/label.schema';
 import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
+
+import { SubscriberRepository } from './../repositories/subscriber.repository';
+import { LabelService } from './label.service';
+import { SubscriberService } from './subscriber.service';
 
 describe('LabelService', () => {
   let labelRepository: LabelRepository;

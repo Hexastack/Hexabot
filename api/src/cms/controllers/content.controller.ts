@@ -37,8 +37,6 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 
-import { ContentTypeService } from './../services/content-type.service';
-import { ContentService } from './../services/content.service';
 import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
 import {
   Content,
@@ -46,6 +44,9 @@ import {
   ContentPopulate,
   ContentStub,
 } from '../schemas/content.schema';
+
+import { ContentTypeService } from './../services/content-type.service';
+import { ContentService } from './../services/content.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('content')

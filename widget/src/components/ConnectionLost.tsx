@@ -8,11 +8,12 @@
 
 import React from 'react';
 
-import ConnectionIcon from './icons/ConnectionIcon';
-import LoadingIcon from './icons/LoadingIcon';
 import { useTranslation } from '../hooks/useTranslation';
 import { useChat } from '../providers/ChatProvider';
 import { useColors } from '../providers/ColorProvider';
+
+import ConnectionIcon from './icons/ConnectionIcon';
+import LoadingIcon from './icons/LoadingIcon';
 import './ConnectionLost.scss';
 
 const ConnectionLost: React.FC = () => {

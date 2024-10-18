@@ -36,11 +36,12 @@ import { EntityType } from "@/services/types";
 import { OutgoingMessageFormat } from "@/types/message.types";
 import { trimObjectValues } from "@/utils/object";
 
+import { IBlockAttributes, IBlock } from "../../types/block.types";
+
 import BlockFormProvider from "./form/BlockFormProvider";
 import { MessageForm } from "./form/MessageForm";
 import { OptionsForm } from "./form/OptionsForm";
 import { TriggersForm } from "./form/TriggersForm";
-import { IBlockAttributes, IBlock } from "../../types/block.types";
 
 export type BlockDialogProps = DialogControlProps<IBlock>;
 type TSelectedTab = "triggers" | "options" | "messages";

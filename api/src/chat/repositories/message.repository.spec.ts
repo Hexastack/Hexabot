@@ -23,11 +23,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MessageRepository } from './message.repository';
-import { SubscriberRepository } from './subscriber.repository';
 import { MessageModel, Message } from '../schemas/message.schema';
 import { SubscriberModel } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
+
+import { MessageRepository } from './message.repository';
+import { SubscriberRepository } from './subscriber.repository';
 
 describe('MessageRepository', () => {
   let messageRepository: MessageRepository;

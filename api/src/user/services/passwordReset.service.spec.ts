@@ -31,14 +31,15 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { PasswordResetService } from './passwordReset.service';
-import { RoleService } from './role.service';
-import { UserService } from './user.service';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { User, UserModel } from '../schemas/user.schema';
+
+import { PasswordResetService } from './passwordReset.service';
+import { RoleService } from './role.service';
+import { UserService } from './user.service';
 
 describe('PasswordResetService', () => {
   let passwordResetService: PasswordResetService;

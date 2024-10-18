@@ -32,7 +32,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { LabelController } from './label.controller';
 import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -40,6 +39,8 @@ import { Label, LabelModel } from '../schemas/label.schema';
 import { SubscriberModel } from '../schemas/subscriber.schema';
 import { LabelService } from '../services/label.service';
 import { SubscriberService } from '../services/subscriber.service';
+
+import { LabelController } from './label.controller';
 
 describe('LabelController', () => {
   let labelController: LabelController;

@@ -44,8 +44,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { CategoryModel, Category } from './../schemas/category.schema';
-import { BlockController } from './block.controller';
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { CategoryRepository } from '../repositories/category.repository';
@@ -55,6 +53,9 @@ import { LabelModel } from '../schemas/label.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
+
+import { CategoryModel, Category } from './../schemas/category.schema';
+import { BlockController } from './block.controller';
 
 describe('BlockController', () => {
   let blockController: BlockController;

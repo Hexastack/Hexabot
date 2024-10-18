@@ -28,14 +28,15 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { RoleService } from './role.service';
-import { UserService } from './user.service';
-import { ValidateAccountService } from './validate-account.service';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
+
+import { RoleService } from './role.service';
+import { UserService } from './user.service';
+import { ValidateAccountService } from './validate-account.service';
 
 describe('ValidateAccountService', () => {
   let validateAccountService: ValidateAccountService;

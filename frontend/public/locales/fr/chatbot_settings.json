@@ -1,0 +1,13 @@
+{
+  "title": {
+    "chatbot_settings": "Chatbot"
+  },
+  "label": {
+    "global_fallback": "Activer le message de secours global?",
+    "fallback_message": "Message de secours"
+  },
+  "help": {
+    "global_fallback": "Le message de secours global vous permet d'envoyer des messages personnalisés lorsque le message de l'utilisateur ne déclenche aucun bloc de message.",
+    "fallback_message": "Si aucun bloc de secours n'est spécifié, alors de ces messages sera envoyé."
+  }
+}

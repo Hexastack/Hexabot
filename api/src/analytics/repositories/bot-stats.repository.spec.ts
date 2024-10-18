@@ -21,12 +21,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { BotStatsRepository } from './bot-stats.repository';
 import {
   BotStats,
   BotStatsModel,
   BotStatsType,
 } from '../schemas/bot-stats.schema';
+
+import { BotStatsRepository } from './bot-stats.repository';
 
 describe('BotStatsRepository', () => {
   let botStatsRepository: BotStatsRepository;

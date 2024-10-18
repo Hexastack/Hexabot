@@ -23,7 +23,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { ContextVarController } from './context-var.controller';
 import {
   ContextVarCreateDto,
   ContextVarUpdateDto,
@@ -31,6 +30,8 @@ import {
 import { ContextVarRepository } from '../repositories/context-var.repository';
 import { ContextVarModel, ContextVar } from '../schemas/context-var.schema';
 import { ContextVarService } from '../services/context-var.service';
+
+import { ContextVarController } from './context-var.controller';
 
 describe('ContextVarController', () => {
   let contextVarController: ContextVarController;

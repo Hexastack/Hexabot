@@ -23,9 +23,10 @@ import {
   TType,
 } from "@/types/base.types";
 
+import { useEntityApiClient } from "../useApiClient";
+
 import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
-import { useEntityApiClient } from "../useApiClient";
 
 export const useInfiniteFind = <
   TDynamicProps extends IDynamicProps,

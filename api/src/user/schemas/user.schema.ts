@@ -15,8 +15,9 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
-import { Role } from './role.schema';
 import { UserProvider } from '../types/user-provider.type';
+
+import { Role } from './role.schema';
 
 @Schema({ timestamps: true })
 export class UserStub extends BaseSchema {

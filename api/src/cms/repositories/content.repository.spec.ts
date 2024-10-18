@@ -23,12 +23,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { Content, ContentModel } from '../schemas/content.schema';
+
 import {
   installContentFixtures,
   contentFixtures,
 } from './../../utils/test/fixtures/content';
 import { ContentRepository } from './content.repository';
-import { Content, ContentModel } from '../schemas/content.schema';
 
 describe('ContentRepository', () => {
   let contentRepository: ContentRepository;

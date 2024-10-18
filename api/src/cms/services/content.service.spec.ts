@@ -28,12 +28,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { ContentTypeService } from './content-type.service';
-import { ContentService } from './content.service';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
 import { ContentTypeModel } from '../schemas/content-type.schema';
 import { Content, ContentModel } from '../schemas/content.schema';
+
+import { ContentTypeService } from './content-type.service';
+import { ContentService } from './content.service';
 
 describe('ContentService', () => {
   let contentService: ContentService;

@@ -52,10 +52,11 @@ import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
-import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
 import BlockDialog from "../BlockDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
+
+import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
 
 const Diagrams = () => {
   const { t } = useTranslate();

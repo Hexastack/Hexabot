@@ -11,10 +11,11 @@ import mongoose from 'mongoose';
 import { ContentCreateDto } from '@/cms/dto/content.dto';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 
-import { installAttachmentFixtures } from './attachment';
-import { installContentTypeFixtures } from './contenttype';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installAttachmentFixtures } from './attachment';
+import { installContentTypeFixtures } from './contenttype';
 
 const contents: ContentCreateDto[] = [
   {

@@ -22,7 +22,7 @@ export interface CustomBlocks {}
 type ChannelEvent = any;
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = Omit<Setting, 'createdAt' | 'updatedAt'>;
+export type PluginSetting = Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,

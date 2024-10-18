@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useState, useEffect, createContext } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export const ConfigContext = createContext<IConfig | null>(null);
 
@@ -16,13 +16,13 @@ export interface IConfig {
 }
 
 export const ConfigProvider = ({ children }) => {
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState<IConfig | null>(null);
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const res = await fetch("/config");
-        const data = await res.json();
+        const data = (await res.json()) as IConfig;
 
         setConfig(data);
       } catch (error) {

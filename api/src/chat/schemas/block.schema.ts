@@ -14,6 +14,11 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
+import { isValidMessage } from '../validation-rules/is-message';
+import { isPatternList } from '../validation-rules/is-pattern-list';
+import { isPosition } from '../validation-rules/is-position';
+import { isValidVarCapture } from '../validation-rules/is-valid-capture';
+
 import { Category } from './category.schema';
 import { Label } from './label.schema';
 import { CaptureVar } from './types/capture-var';
@@ -21,10 +26,6 @@ import { BlockMessage } from './types/message';
 import { BlockOptions } from './types/options';
 import { Pattern } from './types/pattern';
 import { Position } from './types/position';
-import { isValidMessage } from '../validation-rules/is-message';
-import { isPatternList } from '../validation-rules/is-pattern-list';
-import { isPosition } from '../validation-rules/is-position';
-import { isValidVarCapture } from '../validation-rules/is-valid-capture';
 
 @Schema({ timestamps: true })
 export class BlockStub extends BaseSchema {

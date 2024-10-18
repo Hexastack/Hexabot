@@ -9,9 +9,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { TFilterQuery } from 'mongoose';
 
+import { TValidateProps } from '../types/filter.types';
+
 import { BaseSchema } from './base-schema';
 import { BaseService } from './base-service';
-import { TValidateProps } from '../types/filter.types';
 
 export abstract class BaseController<
   T extends BaseSchema,

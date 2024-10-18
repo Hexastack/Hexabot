@@ -39,13 +39,14 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MessageController } from './message.controller';
 import { MessageRepository } from '../repositories/message.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { Message, MessageModel } from '../schemas/message.schema';
 import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
+
+import { MessageController } from './message.controller';
 
 describe('MessageController', () => {
   let messageController: MessageController;

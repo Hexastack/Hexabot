@@ -16,8 +16,9 @@ import {
   TType,
 } from "@/types/base.types";
 
-import { isSameEntity } from "./helpers";
 import { useEntityApiClient } from "../useApiClient";
+
+import { isSameEntity } from "./helpers";
 
 export const useDelete = <
   TEntity extends IDynamicProps["entity"],

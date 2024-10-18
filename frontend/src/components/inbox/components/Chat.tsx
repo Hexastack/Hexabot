@@ -23,8 +23,6 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
-import { ChatActions } from "./ChatActions";
-import { ChatHeader } from "./ChatHeader";
 import {
   getAvatarSrc,
   getMessageContent,
@@ -32,6 +30,9 @@ import {
 } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
 import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
+
+import { ChatActions } from "./ChatActions";
+import { ChatHeader } from "./ChatHeader";
 
 export function Chat() {
   const { apiUrl } = useConfig();

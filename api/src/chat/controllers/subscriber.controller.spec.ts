@@ -33,14 +33,15 @@ import {
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { UserService } from './../../user/services/user.service';
-import { LabelService } from './../services/label.service';
-import { SubscriberController } from './subscriber.controller';
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { LabelModel, Label } from '../schemas/label.schema';
 import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
 import { SubscriberService } from '../services/subscriber.service';
+
+import { UserService } from './../../user/services/user.service';
+import { LabelService } from './../services/label.service';
+import { SubscriberController } from './subscriber.controller';
 
 describe('SubscriberController', () => {
   let subscriberController: SubscriberController;

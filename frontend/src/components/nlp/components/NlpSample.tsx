@@ -44,7 +44,6 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import {
@@ -321,9 +320,7 @@ export default function NlpSample() {
                   </IconButton>
                 ),
               }),
-              renderValue: (value) => (
-                <Box>{t("label", value as TNestedTranslation<"label">)}</Box>
-              ),
+              renderValue: (value) => <Box>{t(`label.${value}`)}</Box>,
             }}
           >
             {Object.values(NlpSampleType).map((nlpSampleType, index) => (

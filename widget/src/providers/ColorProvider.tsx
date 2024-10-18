@@ -8,9 +8,10 @@
 
 import React, { createContext, ReactNode, useContext } from 'react';
 
-import { useSettings } from './SettingsProvider';
 import colors from '../constants/colors';
 import { ColorState } from '../types/colors.types';
+
+import { useSettings } from './SettingsProvider';
 
 const initialState: ColorState = colors['orange'];
 const ColorContext = createContext<{

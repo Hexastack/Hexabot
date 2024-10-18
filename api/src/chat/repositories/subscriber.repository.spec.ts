@@ -31,14 +31,15 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { LabelRepository } from './label.repository';
-import { SubscriberRepository } from './subscriber.repository';
 import { LabelModel, Label } from '../schemas/label.schema';
 import {
   SubscriberModel,
   Subscriber,
   SubscriberFull,
 } from '../schemas/subscriber.schema';
+
+import { LabelRepository } from './label.repository';
+import { SubscriberRepository } from './subscriber.repository';
 
 describe('SubscriberRepository', () => {
   let subscriberRepository: SubscriberRepository;

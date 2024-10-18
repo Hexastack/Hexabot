@@ -18,8 +18,9 @@ import {
   TType,
 } from "@/types/base.types";
 
-import { useNormalizeAndCache } from "./helpers";
 import { useEntityApiClient } from "../useApiClient";
+
+import { useNormalizeAndCache } from "./helpers";
 
 export const useGet = <
   TDynamicProps extends IDynamicProps,

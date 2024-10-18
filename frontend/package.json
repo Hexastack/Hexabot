@@ -30,6 +30,7 @@
     "eazychart-css": "^0.2.1-alpha.0",
     "eazychart-react": "^0.8.0-alpha.0",
     "hexabot-chat-widget": "*",
+    "i18next-http-backend": "^2.6.2",
     "next": "^14.2.13",
     "next-transpile-modules": "^10.0.1",
     "normalizr": "^3.6.2",

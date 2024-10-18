@@ -25,7 +25,6 @@ import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
 import ListIcon from "@/app-components/svg/toolbar/ListIcon";
 import { useGet } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import {
   ContentField,
@@ -68,12 +67,10 @@ const ListMessageForm = () => {
               name="options.content.display_mode"
               render={({ field }) => (
                 <RadioGroup row {...field}>
-                  {(
-                    [
-                      OutgoingMessageFormat.list,
-                      OutgoingMessageFormat.carousel,
-                    ] as TNestedTranslation<"label">[]
-                  ).map((display) => (
+                  {[
+                    OutgoingMessageFormat.list,
+                    OutgoingMessageFormat.carousel,
+                  ].map((display) => (
                     <FormControlLabel
                       key={display}
                       value={display}
@@ -83,7 +80,7 @@ const ListMessageForm = () => {
                           {...register("options.content.display")}
                         />
                       }
-                      label={t("label", display)}
+                      label={t(`label.${display}`)}
                     />
                   ))}
                 </RadioGroup>
@@ -106,7 +103,7 @@ const ListMessageForm = () => {
                       key={style}
                       value={style}
                       control={<Radio />}
-                      label={t("label", style)}
+                      label={t(`label.${style}`)}
                     />
                   ))}
                 </RadioGroup>

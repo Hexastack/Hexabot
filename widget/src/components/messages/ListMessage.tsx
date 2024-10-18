@@ -8,9 +8,10 @@
 
 import React from 'react';
 
-import ButtonsMessage from './ButtonMessage';
 import { useColors } from '../../providers/ColorProvider';
 import { TMessage } from '../../types/message.types';
+
+import ButtonsMessage from './ButtonMessage';
 
 import './ListMessage.scss';
 

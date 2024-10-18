@@ -8,16 +8,27 @@ import { TOptionsBase } from "i18next";
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { translations } from ".";
-
 import { TFilterNestedKeysOfType } from "@/types/common/object.types";
 
-type TEnTranslation = (typeof translations)["en"];
-type TFrTranslation = (typeof translations)["fr"];
+export type TTranslation = string;
 
-export type TTranslation = TEnTranslation & TFrTranslation;
-export type TTranslationKeys = TFilterNestedKeysOfType<TEnTranslation> &
-  TFilterNestedKeysOfType<TFrTranslation>;
+export type TTranslationPrefix =
+  | "message"
+  | "menu"
+  | "title"
+  | "label"
+  | "placeholder"
+  | "button"
+  | "input"
+  | "link"
+  | "help"
+  | "charts"
+  | "datetime"
+  | "visual_editor";
+
+export type TTranslationKeys =
+  | `${TTranslationPrefix}`
+  | `${TTranslationPrefix}.${TTranslation}`;
 
 export type TNestedTranslation<T extends keyof TTranslation> =
   TFilterNestedKeysOfType<TTranslation[T]>;

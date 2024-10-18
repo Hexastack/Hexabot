@@ -17,8 +17,9 @@ import { Pattern } from "@/types/block.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
 
-import PatternInput from "./PatternInput";
 import { getInputControls } from "../../utils/inputControls";
+
+import PatternInput from "./PatternInput";
 
 type PatternsInputProps = {
   value: Pattern[];

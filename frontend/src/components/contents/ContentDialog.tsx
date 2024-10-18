@@ -36,7 +36,6 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
 import {
   ContentField,
@@ -71,7 +70,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
         <Input
           multiline={contentField.type === ContentFieldType.TEXTAREA}
           rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
-          label={t("label", contentField.name as TNestedTranslation<"label">, {
+          label={t(`label.${contentField.name}`, {
             defaultValue: contentField.label,
           })}
           InputProps={
@@ -93,7 +92,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.CHECKBOX:
       return (
         <FormControlLabel
-          label={t("label", contentField.name as TNestedTranslation<"label">, {
+          label={t(`label.${contentField.name}`, {
             defaultValue: contentField.label,
           })}
           {...field}
@@ -103,7 +102,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.FILE:
       return (
         <AttachmentInput
-          label={t("label", contentField.name as TNestedTranslation<"label">, {
+          label={t(`label.${contentField.name}`, {
             defaultValue: contentField.label,
           })}
           {...field}
