@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { OutgoingMessageFormat } from "@/types/message.types";
+import { trimObjectValues } from "@/utils/object";
 
 import BlockFormProvider from "./form/BlockFormProvider";
 import { MessageForm } from "./form/MessageForm";
@@ -101,7 +102,7 @@ const BlockDialog: FC<BlockDialogProps> = ({
   };
   const onSubmitForm = async (params: IBlockAttributes) => {
     if (block) {
-      updateBlock({ id: block.id, params });
+      updateBlock({ id: block.id, params: trimObjectValues(params) });
     }
   };
 
