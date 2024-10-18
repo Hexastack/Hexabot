@@ -14,8 +14,9 @@ import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQu
 import { EntityType, QueryType } from "@/services/types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
-import { useChat } from "./ChatContext";
 import { SocketMessageEvents } from "../types";
+
+import { useChat } from "./ChatContext";
 
 export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
