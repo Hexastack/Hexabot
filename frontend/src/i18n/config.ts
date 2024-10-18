@@ -13,7 +13,11 @@ import i18n from "i18next";
 import getConfig from "next/config";
 import { initReactI18next } from "react-i18next";
 
+import enChatbotTranslations from "./en/chatbot_settings.json";
+import enContactTranslations from "./en/contact.json";
 import enTranslations from "./en/translation.json";
+import frChatbotTranslations from "./fr/chatbot_settings.json";
+import frContactTranslations from "./fr/contact.json";
 import frTranslations from "./fr/translation.json";
 
 const { publicRuntimeConfig } = getConfig();
@@ -25,9 +29,13 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       translation: enTranslations,
+      chatbot_settings: enChatbotTranslations,
+      contact: enContactTranslations,
     },
     fr: {
       translation: frTranslations,
+      chatbot_settings: frChatbotTranslations,
+      contact: frContactTranslations,
     },
   },
   interpolation: {

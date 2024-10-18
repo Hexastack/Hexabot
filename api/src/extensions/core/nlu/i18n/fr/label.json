@@ -1,0 +1,6 @@
+{
+  "provider": "Fournisseur",
+  "token": "Token d'accès à l'API",
+  "endpoint": "URL de l'API",
+  "threshold": "Seuil de repli"
+}

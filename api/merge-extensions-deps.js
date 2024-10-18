@@ -5,9 +5,7 @@ const path = require('path');
 
 // Define the paths
 const rootPackageJsonPath = path.join(__dirname, 'package.json');
-const pluginsDir = path.join(__dirname, 'src', 'extensions', 'plugins');
-const channelsDir = path.join(__dirname, 'src', 'extensions', 'channels');
-const helpersDir = path.join(__dirname, 'src', 'extensions', 'helpers');
+const extensionsDir = path.join(__dirname, 'src', 'extensions');
 
 // Helper function to merge dependencies
 function mergeDependencies(rootDeps, pluginDeps) {
@@ -33,20 +31,12 @@ if (!rootPackageJson.dependencies) {
 }
 
 // Iterate over extension directories
-[
-  ...fs.readdirSync(pluginsDir),
-  ...fs.readdirSync(helpersDir),
-  ...fs.readdirSync(channelsDir),
-].forEach((pluginFolder) => {
-  const pluginPackageJsonPath = path.join(
-    pluginsDir,
-    pluginFolder,
-    'package.json',
-  );
+[...fs.readdirSync(extensionsDir)].forEach((folder) => {
+  const packageJsonPath = path.join(extensionsDir, folder, 'package.json');
 
-  if (fs.existsSync(pluginPackageJsonPath)) {
+  if (fs.existsSync(packageJsonPath)) {
     const pluginPackageJson = JSON.parse(
-      fs.readFileSync(pluginPackageJsonPath, 'utf-8'),
+      fs.readFileSync(packageJsonPath, 'utf-8'),
     );
 
     // Merge extension dependencies into root dependencies

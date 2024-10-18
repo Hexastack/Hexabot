@@ -34,13 +34,12 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
   field,
   isDisabled = () => false,
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslate(setting.group);
   const nestedLabel = setting.label as TNestedTranslation<"label">;
-  const nestedHelp = setting.help as TNestedTranslation<"help">;
   const label = t("label", nestedLabel, { defaultValue: nestedLabel });
-  const helperText = nestedHelp
-    ? t("help", nestedHelp, { defaultValue: nestedHelp })
-    : "";
+  const helperText = t("help", nestedLabel as TNestedTranslation<"help">, {
+    defaultValue: "",
+  });
 
   switch (setting.type) {
     case "text":

@@ -17,6 +17,7 @@ import { BlockModel } from '@/chat/schemas/block.schema';
 import { CmsModule } from '@/cms/cms.module';
 import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { ContentModel } from '@/cms/schemas/content.schema';
+import { HelperModule } from '@/helper/helper.module';
 
 import { PluginService } from './plugins.service';
 
@@ -33,6 +34,7 @@ import { PluginService } from './plugins.service';
     CmsModule,
     AttachmentModule,
     ChatModule,
+    HelperModule,
   ],
   providers: [PluginService],
   exports: [PluginService],

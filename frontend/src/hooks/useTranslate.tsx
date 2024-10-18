@@ -14,8 +14,8 @@ import {
   TOptionsBaseExtended,
 } from "@/i18n/i18n.types";
 
-export const useTranslate = () => {
-  const { t, i18n } = useTranslation();
+export const useTranslate = (ns?: string) => {
+  const { t, i18n } = useTranslation(ns);
   const translate: TTranslateProps = (
     prop1: unknown,
     prop2?: unknown,

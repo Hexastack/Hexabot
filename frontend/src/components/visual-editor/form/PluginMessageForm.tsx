@@ -53,11 +53,11 @@ const PluginMessageForm = () => {
         sx={{ display: "none" }}
       />
       {(settings || []).map((setting) => (
-        <ContentItem key={setting.id}>
+        <ContentItem key={setting.label}>
           <Controller
-            name={`message.args.${setting.id}`}
+            name={`message.args.${setting.label}`}
             control={control}
-            defaultValue={message.args?.[setting.id] || setting.value}
+            defaultValue={message.args?.[setting.label] || setting.value}
             render={({ field }) => (
               <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
                 <SettingInput setting={setting} field={field} />

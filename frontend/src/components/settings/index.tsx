@@ -70,13 +70,13 @@ function groupBy(array: ISetting[]) {
 export const Settings = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("live-chat-tester");
+  const [selectedTab, setSelectedTab] = useState("chatbot_settings");
   const { control, watch } = useForm();
   const { data: settings } = useFind(
     { entity: EntityType.SETTING },
     {
       hasCount: false,
-      initialSortState: [{ field: "weight", sort: "desc" }],
+      initialSortState: [{ field: "weight", sort: "asc" }],
     },
   );
   const { mutateAsync: updateSetting } = useUpdate(EntityType.SETTING, {
@@ -157,16 +157,16 @@ export const Settings = () => {
                 },
               }}
             >
-              {(Object.keys(groups) as TNestedTranslation<"title">[]).map(
-                (group, index) => (
+              {(Object.keys(groups) as TNestedTranslation<"title">[])
+                .sort((a, b) => a.localeCompare(b))
+                .map((group, index) => (
                   <StyledTab
                     value={group}
                     key={group}
-                    label={t("title", group)}
+                    label={t("title", group, { ns: group })}
                     {...a11yProps(index)}
                   />
-                ),
-              )}
+                ))}
             </Tabs>
             <StyledForm sx={{ width: "100%", px: 3, paddingY: 2 }}>
               {Object.entries(groups).map(([group, settings]) => (

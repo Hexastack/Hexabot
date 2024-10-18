@@ -21,7 +21,6 @@ import { BaseService } from '@/utils/generics/base-service';
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting } from '../schemas/setting.schema';
-import { Settings } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
 
 @Injectable()
@@ -67,15 +66,15 @@ export class SettingService extends BaseService<Setting> {
    *
    * @returns A `Settings` object organized by group.
    */
-  public buildTree(settings: Setting[]): Settings {
-    return settings.reduce((acc: Settings, s: Setting) => {
+  public buildTree<T extends Settings = Settings>(settings: Setting[]): T {
+    return settings.reduce((acc: T, s: Setting) => {
       const groupKey = s.group || 'undefinedGroup';
 
       acc[groupKey] = acc[groupKey] || {};
       acc[groupKey][s.label] = s.value;
 
       return acc;
-    }, {} as Settings);
+    }, {} as T);
   }
 
   /**
@@ -122,8 +121,8 @@ export class SettingService extends BaseService<Setting> {
    * @returns A promise that resolves to a `Settings` object.
    */
   @Cacheable(SETTING_CACHE_KEY)
-  async getSettings(): Promise<Settings> {
+  async getSettings<T extends Settings = Settings>(): Promise<T> {
     const settings = await this.findAll();
-    return this.buildTree(settings);
+    return this.buildTree<T>(settings);
   }
 }

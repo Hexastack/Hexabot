@@ -59,7 +59,7 @@ export class BlockController extends BaseController<
     private readonly categoryService: CategoryService,
     private readonly labelService: LabelService,
     private readonly userService: UserService,
-    private pluginsService: PluginService<BaseBlockPlugin>,
+    private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
     super(blockService);
   }
@@ -130,7 +130,7 @@ export class BlockController extends BaseController<
               plugin: p.id,
               args: p.settings.reduce(
                 (acc, setting) => {
-                  acc[setting.id] = setting.value;
+                  acc[setting.label] = setting.value;
                   return acc;
                 },
                 {} as { [key: string]: any },
