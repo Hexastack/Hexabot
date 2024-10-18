@@ -17,14 +17,15 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { roleFixtures } from './../../utils/test/fixtures/role';
-import { RoleService } from './role.service';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel, Permission } from '../schemas/permission.schema';
 import { RoleModel, Role } from '../schemas/role.schema';
 import { UserModel, User } from '../schemas/user.schema';
+
+import { roleFixtures } from './../../utils/test/fixtures/role';
+import { RoleService } from './role.service';
 
 describe('RoleService', () => {
   let roleService: RoleService;

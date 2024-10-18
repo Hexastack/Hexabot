@@ -20,11 +20,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { BlockRepository } from './block.repository';
-import { CategoryRepository } from './category.repository';
 import { BlockModel, Block } from '../schemas/block.schema';
 import { CategoryModel, Category } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
+
+import { BlockRepository } from './block.repository';
+import { CategoryRepository } from './category.repository';
 
 describe('BlockRepository', () => {
   let blockRepository: BlockRepository;

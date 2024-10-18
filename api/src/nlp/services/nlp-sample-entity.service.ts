@@ -10,8 +10,6 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
-import { NlpEntityService } from './nlp-entity.service';
-import { NlpValueService } from './nlp-value.service';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import {
   NlpSampleEntity,
@@ -20,6 +18,9 @@ import {
 } from '../schemas/nlp-sample-entity.schema';
 import { NlpSample } from '../schemas/nlp-sample.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
+
+import { NlpEntityService } from './nlp-entity.service';
+import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
 export class NlpSampleEntityService extends BaseService<

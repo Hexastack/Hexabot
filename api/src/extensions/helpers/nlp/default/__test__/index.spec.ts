@@ -36,6 +36,8 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import DefaultNlpHelper from '../index.nlp.helper';
+
 import { entitiesMock, samplesMock } from './__mock__/base.mock';
 import {
   nlpBestGuess,
@@ -43,7 +45,6 @@ import {
   nlpFormatted,
   nlpParseResult,
 } from './index.mock';
-import DefaultNlpHelper from '../index.nlp.helper';
 
 describe('NLP Default Helper', () => {
   let settingService: SettingService;

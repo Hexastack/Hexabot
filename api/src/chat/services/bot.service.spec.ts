@@ -57,14 +57,6 @@ import {
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { CategoryRepository } from './../repositories/category.repository';
-import { BlockService } from './block.service';
-import { BotService } from './bot.service';
-import { CategoryService } from './category.service';
-import { ContextVarService } from './context-var.service';
-import { ConversationService } from './conversation.service';
-import { MessageService } from './message.service';
-import { SubscriberService } from './subscriber.service';
 import { BlockRepository } from '../repositories/block.repository';
 import { ContextVarRepository } from '../repositories/context-var.repository';
 import { ConversationRepository } from '../repositories/conversation.repository';
@@ -81,6 +73,15 @@ import {
 import { LabelModel } from '../schemas/label.schema';
 import { MessageModel } from '../schemas/message.schema';
 import { SubscriberModel } from '../schemas/subscriber.schema';
+
+import { CategoryRepository } from './../repositories/category.repository';
+import { BlockService } from './block.service';
+import { BotService } from './bot.service';
+import { CategoryService } from './category.service';
+import { ContextVarService } from './context-var.service';
+import { ConversationService } from './conversation.service';
+import { MessageService } from './message.service';
+import { SubscriberService } from './subscriber.service';
 
 describe('BlockService', () => {
   let blockService: BlockService;

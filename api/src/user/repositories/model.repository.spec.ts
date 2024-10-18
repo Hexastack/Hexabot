@@ -18,11 +18,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { Model as ModelType } from './../schemas/model.schema';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { ModelModel } from '../schemas/model.schema';
 import { Permission, PermissionModel } from '../schemas/permission.schema';
+
+import { Model as ModelType } from './../schemas/model.schema';
 
 describe('ModelRepository', () => {
   let modelRepository: ModelRepository;

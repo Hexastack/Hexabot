@@ -22,10 +22,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { NlpEntityService } from './nlp-entity.service';
-import { NlpSampleEntityService } from './nlp-sample-entity.service';
-import { NlpSampleService } from './nlp-sample.service';
-import { NlpValueService } from './nlp-value.service';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
@@ -37,6 +33,11 @@ import {
 } from '../schemas/nlp-sample-entity.schema';
 import { NlpSampleModel, NlpSample } from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
+
+import { NlpEntityService } from './nlp-entity.service';
+import { NlpSampleEntityService } from './nlp-sample-entity.service';
+import { NlpSampleService } from './nlp-sample.service';
+import { NlpValueService } from './nlp-value.service';
 
 describe('NlpSampleService', () => {
   let nlpSampleService: NlpSampleService;

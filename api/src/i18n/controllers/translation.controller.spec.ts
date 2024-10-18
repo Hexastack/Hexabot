@@ -48,7 +48,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { TranslationController } from './translation.controller';
 import { TranslationUpdateDto } from '../dto/translation.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
@@ -56,6 +55,8 @@ import { LanguageModel } from '../schemas/language.schema';
 import { Translation, TranslationModel } from '../schemas/translation.schema';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
+
+import { TranslationController } from './translation.controller';
 
 describe('TranslationController', () => {
   let translationController: TranslationController;

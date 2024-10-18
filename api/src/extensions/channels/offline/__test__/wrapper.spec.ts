@@ -36,9 +36,10 @@ import {
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { offlineEvents } from './events.mock';
 import OfflineHandler from '../index.channel';
 import OfflineEventWrapper from '../wrapper';
+
+import { offlineEvents } from './events.mock';
 
 describe(`Offline event wrapper`, () => {
   let handler: OfflineHandler;

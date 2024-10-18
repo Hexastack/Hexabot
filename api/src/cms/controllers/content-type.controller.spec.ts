@@ -25,7 +25,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { ContentTypeController } from './content-type.controller';
 import { ContentTypeCreateDto } from '../dto/contentType.dto';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
@@ -33,6 +32,8 @@ import { ContentType, ContentTypeModel } from '../schemas/content-type.schema';
 import { ContentModel } from '../schemas/content.schema';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
+
+import { ContentTypeController } from './content-type.controller';
 
 describe('ContentTypeController', () => {
   let contentTypeController: ContentTypeController;

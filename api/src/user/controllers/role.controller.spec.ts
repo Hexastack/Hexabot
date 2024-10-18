@@ -25,7 +25,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { RoleController } from './role.controller';
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -36,6 +35,8 @@ import { UserModel } from '../schemas/user.schema';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
+
+import { RoleController } from './role.controller';
 
 describe('RoleController', () => {
   let roleController: RoleController;
