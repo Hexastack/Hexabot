@@ -276,7 +276,7 @@ export const CustomBlockSettingEntity = new schema.Entity(
   EntityType.CUSTOM_BLOCK_SETTINGS,
   undefined,
   {
-    idAttribute: ({ id }) => id,
+    idAttribute: ({ id, label }) => id || label,
   },
 );
 

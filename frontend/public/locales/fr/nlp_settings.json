@@ -1,0 +1,16 @@
+{
+  "title": {
+    "nlp_settings": "Serveur NLU"
+  },
+  "label": {
+    "provider": "Fournisseur",
+    "token": "Token d'accès à l'API",
+    "endpoint": "URL de l'API",
+    "threshold": "Seuil de repli"
+  },
+  "help": {
+    "endpoint": "URL vers laquelle les requêtes de NLU HTTP sont envoyées et qui dépend du fournisseur.",
+    "token": "Chaque requête vers l'API doit contenir un jeton d'authentification.",
+    "threshold": "Seuil en dessus duquel le chatbot va utiliser sa prediction (min=0 & max=1)"
+  }
+}

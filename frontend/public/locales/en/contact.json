@@ -1,0 +1,18 @@
+{
+  "title": {
+    "contact": "Contact Infos"
+  },
+  "label": {
+    "contact_email_recipient": "Contact Email Recipient",
+    "company_name": "Your company's name",
+    "company_phone": "Phone number",
+    "company_email": "Email address",
+    "company_address1": "Address",
+    "company_address2": "Address 2",
+    "company_city": "City",
+    "company_zipcode": "Zipcode",
+    "company_state": "State",
+    "company_country": "Country"
+  },
+  "help": {}
+}
