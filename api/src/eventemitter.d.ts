@@ -1,11 +1,17 @@
 import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
-import type { Document, HydratedDocument, Query, TFilterQuery } from 'mongoose';
+import type { Listener, OnOptions } from 'eventemitter2';
+import type {
+  Document,
+  Query,
+  TFilterQuery,
+  THydratedDocument,
+} from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
 import { type Attachment } from '@/attachment/schemas/attachment.schema';
 import type EventWrapper from '@/channel/lib/EventWrapper';
-import { BlockFull, type Block } from '@/chat/schemas/block.schema';
+import type { Block, BlockFull } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
 import { type Conversation } from '@/chat/schemas/conversation.schema';
@@ -23,9 +29,9 @@ import type {
 } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
-import type {
-  NlpValue,
+import {
   NlpValueDocument,
+  type NlpValue,
 } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
 import type { CheckboxSetting, TextSetting } from '@/setting/schemas/types';
@@ -181,10 +187,10 @@ declare module '@nestjs/event-emitter' {
   type EventNamespaces = keyof IHookEntityOperationMap;
 
   /* pre hooks */
-  type TPreValidate<T> = HydratedDocument<T>;
-  type TPreCreate<T> = HydratedDocument<T>;
+  type TPreValidate<T> = THydratedDocument<T>;
+  type TPreCreate<T> = THydratedDocument<T>;
   type TPreUpdate<T> = TFilterQuery<T> & object;
-  type TPreDelete = Query<
+  type TPreDelete<T> = Query<
     DeleteResult,
     Document<T>,
     unknown,
@@ -196,12 +202,12 @@ declare module '@nestjs/event-emitter' {
     | TPreValidate<T>
     | TPreCreate<T>
     | TPreUpdate<T>
-    | TPreDelete;
+    | TPreDelete<T>;
 
   /* post hooks */
-  type TPostValidate<T> = HydratedDocument<T>;
-  type TPostCreate<T> = HydratedDocument<T>;
-  type TPostUpdate<T> = HydratedDocument<T>;
+  type TPostValidate<T> = THydratedDocument<T>;
+  type TPostCreate<T> = THydratedDocument<T>;
+  type TPostUpdate<T> = THydratedDocument<T>;
   type TPostDelete = DeleteResult;
   type TPostUnion<T> =
     | TPostValidate<T>
@@ -209,16 +215,14 @@ declare module '@nestjs/event-emitter' {
     | TPostUpdate<T>
     | TPostDelete;
 
-  /* union hooks */
-  type TUnion<G, E> = E extends keyof IHookOperationMap
-    ? IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']]
-    :
-        | TPreUnion<G>
-        | TPostUnion<G>
-        | IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']];
+  type TCustomOperations<E extends keyof IHookEntityOperationMap> =
+    IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']];
 
-  type THookSplitter<H> = H extends `hook:${infer E}:${infer O}`
-    ? [E, O]
+  /* union hooks */
+  type TUnion<G, E> = E extends keyof IHookEntityOperationMap
+    ? E extends keyof IHookOperationMap
+      ? TCustomOperations<E>
+      : TPreUnion<G> | TPostUnion<G> | TCustomOperations<E>
     : never;
 
   /* Normalized hook */
@@ -235,57 +239,76 @@ declare module '@nestjs/event-emitter' {
   type TPreHook = TCompatibleHook<EHookPrefix.pre>;
   type TPostHook = TCompatibleHook<EHookPrefix.post>;
 
-  type hookTypes<O = never> = O extends keyof IHookOperationMap
-    ? '*'
-    : '*' | TPreHook | TPostHook;
+  type TNormalizedEvents = '*' | TPreHook | TPostHook;
 
-  type TNormalizedPreHook<E, O> = O extends `${EHook.preValidate}`
-    ? TPreValidate<IHookEntityOperationMap[E]['schema']>
-    : O extends `${EHook.preCreate}`
-      ? TPreCreate<IHookEntityOperationMap[E]['schema']>
-      : O extends `${EHook.preUpdate}`
-        ? TPreUpdate<IHookEntityOperationMap[E]['schema']>
-        : O extends `${EHook.preDelete}`
-          ? TPreDelete
-          : never;
-  type TNormalizedPostHook<E, O> = O extends `${EHook.postValidate}`
-    ? TPostValidate<IHookEntityOperationMap[E]['schema']>
-    : O extends `${EHook.postCreate}`
-      ? TPostCreate<IHookEntityOperationMap[E]['schema']>
-      : O extends `${EHook.postUpdate}`
-        ? TPostUpdate<IHookEntityOperationMap[E]['schema']>
-        : O extends `${EHook.postDelete}`
-          ? TPostDelete
-          : never;
-  type TNormalizedHook<E, O> = TNormalizedPreHook<E, O> &
-    TNormalizedPostHook<E, O>;
+  type TNormalizedHooks<
+    E extends keyof IHookEntityOperationMap,
+    T = IHookEntityOperationMap[E]['schema'],
+  > =
+    | {
+        [EHook.preValidate]: TPreValidate<T>;
+      }
+    | {
+        [EHook.preCreate]: TPreCreate<T>;
+      }
+    | {
+        [EHook.preUpdate]: TPostUpdate<T>;
+      }
+    | {
+        [EHook.preDelete]: TPreDelete<T>;
+      }
+    | {
+        [EHook.postValidate]: TPostValidate<T>;
+      }
+    | {
+        [EHook.postCreate]: TPostCreate<T>;
+      }
+    | {
+        [EHook.postUpdate]: TPostUpdate<T>;
+      }
+    | {
+        [EHook.postDelete]: TPostDelete;
+      };
+
+  type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<
+    TNormalizedHooks<E>,
+    { [key in O]: unknown }
+  >[O];
 
   /* Extended hook */
-  type TExtendedHook<E, O> = IHookEntityOperationMap[E]['operations'][O];
+  type TExtendedHook<
+    E extends keyof IHookEntityOperationMap,
+    O extends keyof IHookEntityOperationMap[E]['operations'],
+  > = IHookEntityOperationMap[E]['operations'][O];
 
-  type EventValueOf<
-    G,
-    E = THookSplitter<G>[0],
-    O = THookSplitter<G>[1],
-  > = O extends '*'
-    ? TUnion<G, E>
-    : O extends hookTypes
-      ? TNormalizedHook<E, O>
-      : TExtendedHook<E, O>;
-
-  type IsHookEvent<G extends EventNamespaces> = G extends EventNamespaces
-    ? true
-    : G extends `hook:${infer N}:${string}`
-      ? N extends keyof IHookEntityOperationMap
-        ? true
-        : false
-      : false;
-
-  type customEvent<G extends EventNamespaces> = G extends EventNamespaces
-    ? G extends `hook:${string}`
-      ? G
-      : `hook:${G}:${hookTypes<G> | keyof IHookEntityOperationMap[G]['operations']}`
+  type EventValueOf<G> = G extends `hook:${infer E}:${infer O}`
+    ? O extends '*'
+      ? TUnion<G, E>
+      : E extends keyof IHookEntityOperationMap
+        ? O extends keyof IHookEntityOperationMap[E]['operations']
+          ? TExtendedHook<E, O>
+          : TNormalizedHook<E, O>
+        : never
     : never;
+
+  type IsHookEvent<G extends EventNamespaces | ConstrainedString> =
+    G extends EventNamespaces
+      ? true
+      : G extends `hook:${infer N}:${string}`
+        ? N extends keyof IHookEntityOperationMap
+          ? true
+          : false
+        : false;
+
+  type TCustomEvents<G extends keyof IHookEntityOperationMap> =
+    keyof IHookEntityOperationMap[G]['operations'] & string;
+
+  type customEvent<G extends EventNamespaces | ConstrainedString> =
+    G extends EventNamespaces
+      ? G extends `hook:${string}`
+        ? G
+        : `hook:${G}:${TNormalizedEvents | TCustomEvents<G>}`
+      : never;
 
   export interface ListenerFn<G extends EventNamespaces | ConstrainedString> {
     (value: EventValueOf<G>, ...values: any[]): void;
