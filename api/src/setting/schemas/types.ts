@@ -38,6 +38,20 @@ export interface TextSetting extends Setting {
   config: never;
 }
 
+export interface TextareaSetting extends Setting {
+  type: SettingType.textarea;
+  value: string;
+  options: never;
+  config: never;
+}
+
+export interface SecretSetting extends Setting {
+  type: SettingType.secret;
+  value: string;
+  options: never;
+  config: never;
+}
+
 export interface MultiTextSetting extends Setting {
   type: SettingType.multiple_text;
   value: string[];
@@ -83,6 +97,26 @@ export interface MultipleAttachmentSetting extends Setting {
   options: never;
   config: never;
 }
+
+export type SettingByType<T extends SettingType> = T extends SettingType.text
+  ? TextSetting
+  : T extends SettingType.textarea
+    ? TextareaSetting
+    : T extends SettingType.secret
+      ? SecretSetting
+      : T extends SettingType.multiple_text
+        ? MultiTextSetting
+        : T extends SettingType.checkbox
+          ? CheckboxSetting
+          : T extends SettingType.select
+            ? SelectSetting
+            : T extends SettingType.number
+              ? NumberSetting
+              : T extends SettingType.attachment
+                ? AttachmentSetting
+                : T extends SettingType.multiple_attachment
+                  ? MultipleAttachmentSetting
+                  : never;
 
 export type AnySetting =
   | TextSetting

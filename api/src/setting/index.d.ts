@@ -1,3 +1,4 @@
+import { SettingByType } from './schemas/types';
 import { DEFAULT_SETTINGS } from './seeds/setting.seed-model';
 
 declare global {
@@ -17,6 +18,12 @@ declare global {
     T extends Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>[],
   > = {
     [K in T[number] as K['label']]: TNativeType<K['value']>;
+  };
+
+  type SettingMapByType<
+    T extends Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>[],
+  > = {
+    [K in T[number] as K['label']]: SettingByType<K['type']>;
   };
 
   type SettingTree<

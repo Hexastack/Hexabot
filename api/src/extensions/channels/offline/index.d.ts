@@ -5,10 +5,10 @@ declare global {
 }
 
 declare module '@nestjs/event-emitter' {
-  interface IHookSettingsGroupLabelOperationMap {
+  interface IHookExtensionsOperationMap {
     [OFFLINE_GROUP_NAME]: TDefinition<
       object,
-      SettingObject<typeof DEFAULT_OFFLINE_SETTINGS>
+      SettingMapByType<typeof DEFAULT_OFFLINE_SETTINGS>
     >;
   }
 }

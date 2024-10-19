@@ -9,10 +9,10 @@ declare global {
 }
 
 declare module '@nestjs/event-emitter' {
-  interface IHookSettingsGroupLabelOperationMap {
+  interface IHookExtensionsOperationMap {
     [LIVE_CHAT_TEST_GROUP_NAME]: TDefinition<
       object,
-      SettingObject<typeof DEFAULT_LIVE_CHAT_TEST_SETTINGS>
+      SettingMapByType<typeof DEFAULT_LIVE_CHAT_TEST_SETTINGS>
     >;
   }
 }

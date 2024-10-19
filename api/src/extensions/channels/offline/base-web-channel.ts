@@ -59,6 +59,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
+import { OFFLINE_GROUP_NAME } from './settings';
 import { Offline } from './types';
 import OfflineEventWrapper from './wrapper';
 
@@ -90,7 +91,7 @@ export default class BaseWebChannelHandler<
    * @returns -
    */
   init(): void {
-    this.logger.debug('Offline Channel Handler : initialization ...');
+    this.logger.debug('Web Channel Handler : initialization ...');
   }
 
   /**
@@ -111,21 +112,21 @@ export default class BaseWebChannelHandler<
       await this.verifyToken(verification_token.toString());
       try {
         this.logger.debug(
-          'Offline Channel Handler : WS connected .. sending settings',
+          'Web Channel Handler : WS connected .. sending settings',
         );
         try {
           const menu = await this.menuService.getTree();
           return client.emit('settings', { menu, ...settings });
         } catch (err) {
           this.logger.warn(
-            'Offline Channel Handler : Unable to retrieve menu ',
+            'Web Channel Handler : Unable to retrieve menu ',
             err,
           );
           return client.emit('settings', settings);
         }
       } catch (err) {
         this.logger.warn(
-          'Offline Channel Handler : Unable to verify token, disconnecting ...',
+          'Web Channel Handler : Unable to verify token, disconnecting ...',
           err,
         );
         client.disconnect();
@@ -133,7 +134,7 @@ export default class BaseWebChannelHandler<
       }
     } catch (err) {
       this.logger.error(
-        'Offline Channel Handler : Unable to initiate websocket connection',
+        'Web Channel Handler : Unable to initiate websocket connection',
         err,
       );
     }
@@ -300,7 +301,8 @@ export default class BaseWebChannelHandler<
    * @param verificationToken - Verification Token
    */
   private async verifyToken(verificationToken: string) {
-    const settings = await this.getSettings();
+    const settings =
+      (await this.getSettings()) as Settings[typeof OFFLINE_GROUP_NAME];
     const verifyToken = settings.verification_token;
 
     if (!verifyToken) {
@@ -313,7 +315,7 @@ export default class BaseWebChannelHandler<
       throw new Error('Make sure the validation tokens match.');
     }
     this.logger.log(
-      'Offline Channel Handler : Token has been verified successfully!',
+      'Web Channel Handler : Token has been verified successfully!',
     );
   }
 
@@ -327,7 +329,7 @@ export default class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
-    const settings = await this.getSettings();
+    const settings = await this.getSettings<typeof OFFLINE_GROUP_NAME>();
     // If we have an origin header...
     if (req.headers && req.headers.origin) {
       // Get the allowed origins
@@ -344,7 +346,7 @@ export default class BaseWebChannelHandler<
         // interpret as, 'no way Jose.'
         res.set('Access-Control-Allow-Origin', '');
         this.logger.debug(
-          'Offline Channel Handler : No origin found ',
+          'Web Channel Handler : No origin found ',
           req.headers.origin,
         );
         throw new Error('CORS - Domain not allowed!');
@@ -362,7 +364,7 @@ export default class BaseWebChannelHandler<
       }
       return;
     }
-    this.logger.debug('Offline Channel Handler : No origin ', req.headers);
+    this.logger.debug('Web Channel Handler : No origin ', req.headers);
     throw new Error('CORS - No origin provided!');
   }
 
@@ -379,23 +381,23 @@ export default class BaseWebChannelHandler<
   ) {
     if (!req.session?.offline?.profile?.id) {
       this.logger.warn(
-        'Offline Channel Handler : No session ID to be found!',
+        'Web Channel Handler : No session ID to be found!',
         req.session,
       );
       return res
         .status(403)
-        .json({ err: 'Offline Channel Handler : Unauthorized!' });
+        .json({ err: 'Web Channel Handler : Unauthorized!' });
     } else if (
       ('isSocket' in req && !!req.isSocket !== req.session.offline.isSocket) ||
       !Array.isArray(req.session.offline.messageQueue)
     ) {
       this.logger.warn(
-        'Offline Channel Handler : Mixed channel request or invalid session data!',
+        'Web Channel Handler : Mixed channel request or invalid session data!',
         req.session,
       );
       return res
         .status(403)
-        .json({ err: 'Offline Channel Handler : Unauthorized!' });
+        .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
     next(req.session?.offline?.profile);
   }
@@ -417,15 +419,12 @@ export default class BaseWebChannelHandler<
           'verification_token' in req.query ? req.query : req.body;
         await this.verifyToken(verification_token);
       } catch (err) {
-        this.logger.warn(
-          'Offline Channel Handler : Unable to verify token ',
-          err,
-        );
+        this.logger.warn('Web Channel Handler : Unable to verify token ', err);
         throw new Error('Unauthorized, invalid token!');
       }
     } catch (err) {
       this.logger.warn(
-        'Offline Channel Handler : Attempt to access from an unauthorized origin',
+        'Web Channel Handler : Attempt to access from an unauthorized origin',
         err,
       );
       throw new Error('Unauthorized, invalid origin !');
@@ -504,7 +503,7 @@ export default class BaseWebChannelHandler<
     // Polling not authorized when using websockets
     if ('isSocket' in req && req.isSocket) {
       this.logger.warn(
-        'Offline Channel Handler : Polling not authorized when using websockets',
+        'Web Channel Handler : Polling not authorized when using websockets',
       );
       return res
         .status(403)
@@ -515,7 +514,7 @@ export default class BaseWebChannelHandler<
       !(req.session && req.session.offline && req.session.offline.profile.id)
     ) {
       this.logger.warn(
-        'Offline Channel Handler : Must be connected to poll messages',
+        'Web Channel Handler : Must be connected to poll messages',
       );
       return res
         .status(403)
@@ -525,7 +524,7 @@ export default class BaseWebChannelHandler<
     // Can only request polling once at a time
     if (req.session && req.session.offline && req.session.offline.polling) {
       this.logger.warn(
-        'Offline Channel Handler : Poll rejected ... already requested',
+        'Web Channel Handler : Poll rejected ... already requested',
       );
       return res
         .status(403)
@@ -548,7 +547,7 @@ export default class BaseWebChannelHandler<
           return res.status(200).json(messages.map((msg) => ['message', msg]));
         } else {
           this.logger.error(
-            'Offline Channel Handler : Polling failed .. no session data',
+            'Web Channel Handler : Polling failed .. no session data',
           );
           return res.status(500).json({ err: 'No session data' });
         }
@@ -556,7 +555,7 @@ export default class BaseWebChannelHandler<
         if (req.session.offline) {
           req.session.offline.polling = false;
         }
-        this.logger.error('Offline Channel Handler : Polling failed', err);
+        this.logger.error('Web Channel Handler : Polling failed', err);
         return res.status(500).json({ err: 'Polling failed' });
       }
     };
@@ -574,7 +573,7 @@ export default class BaseWebChannelHandler<
     res: Response | SocketResponse,
   ) {
     this.logger.debug(
-      'Offline Channel Handler : subscribe (isSocket=' +
+      'Web Channel Handler : subscribe (isSocket=' +
         ('isSocket' in req && !!req.isSocket) +
         ')',
     );
@@ -586,7 +585,7 @@ export default class BaseWebChannelHandler<
           await req.socket.join(profile.foreign_id);
         } catch (err) {
           this.logger.error(
-            'Offline Channel Handler : Unable to subscribe via websocket',
+            'Web Channel Handler : Unable to subscribe via websocket',
             err,
           );
         }
@@ -600,7 +599,7 @@ export default class BaseWebChannelHandler<
         return res.status(200).json({ profile, messages });
       });
     } catch (err) {
-      this.logger.warn('Offline Channel Handler : Unable to subscribe ', err);
+      this.logger.warn('Web Channel Handler : Unable to subscribe ', err);
       return res.status(500).json({ err: 'Unable to subscribe' });
     }
   }
@@ -620,7 +619,7 @@ export default class BaseWebChannelHandler<
     ) => void,
   ): Promise<void> {
     try {
-      this.logger.debug('Offline Channel Handler : Successfully uploaded file');
+      this.logger.debug('Web Channel Handler : Successfully uploaded file');
 
       const attachment = await this.attachmentService.create({
         name: upload.name || '',
@@ -631,7 +630,7 @@ export default class BaseWebChannelHandler<
       });
 
       this.logger.debug(
-        'Offline Channel Handler : Successfully stored file as attachment',
+        'Web Channel Handler : Successfully stored file as attachment',
       );
 
       next(null, {
@@ -640,7 +639,7 @@ export default class BaseWebChannelHandler<
       });
     } catch (err) {
       this.logger.error(
-        'Offline Channel Handler : Unable to store uploaded file as attachment',
+        'Web Channel Handler : Unable to store uploaded file as attachment',
         err,
       );
       next(err, false);
@@ -664,12 +663,12 @@ export default class BaseWebChannelHandler<
     const data: Offline.IncomingMessage = req.body;
     // Check if any file is provided
     if (!req.session.offline) {
-      this.logger.debug('Offline Channel Handler : No session provided');
+      this.logger.debug('Web Channel Handler : No session provided');
       return next(null, false);
     }
     // Check if any file is provided
     if (!data || !data.type || data.type !== 'file') {
-      this.logger.debug('Offline Channel Handler : No files provided');
+      this.logger.debug('Web Channel Handler : No files provided');
       return next(null, false);
     }
 
@@ -701,7 +700,7 @@ export default class BaseWebChannelHandler<
         this.storeAttachment(upload, sanitizedFilename, next);
       } catch (err) {
         this.logger.error(
-          'Offline Channel Handler : Unable to write uploaded file',
+          'Web Channel Handler : Unable to write uploaded file',
           err,
         );
         return next(new Error('Unable to upload file!'), false);
@@ -719,7 +718,7 @@ export default class BaseWebChannelHandler<
       upload(req as Request, res as Response, (err) => {
         if (err) {
           this.logger.error(
-            'Offline Channel Handler : Unable to write uploaded file',
+            'Web Channel Handler : Unable to write uploaded file',
             err,
           );
           return next(new Error('Unable to upload file!'), false);
@@ -794,12 +793,12 @@ export default class BaseWebChannelHandler<
         (err: Error, upload: Offline.IncomingMessageData) => {
           if (err) {
             this.logger.warn(
-              'Offline Channel Handler : Unable to upload file ',
+              'Web Channel Handler : Unable to upload file ',
               err,
             );
             return res
               .status(403)
-              .json({ err: 'Offline Channel Handler : File upload failed!' });
+              .json({ err: 'Web Channel Handler : File upload failed!' });
           }
           // Set data in file upload case
           if (upload) {
@@ -837,7 +836,7 @@ export default class BaseWebChannelHandler<
             this.eventEmitter.emit(`hook:chatbot:${type}`, event);
           } else {
             this.logger.error(
-              'Offline Channel Handler : Webhook received unknown event ',
+              'Web Channel Handler : Webhook received unknown event ',
               event,
             );
           }
@@ -863,7 +862,7 @@ export default class BaseWebChannelHandler<
           switch (req.query._get) {
             case 'settings':
               this.logger.debug(
-                'Offline Channel Handler : connected .. sending settings',
+                'Web Channel Handler : connected .. sending settings',
               );
               try {
                 const menu = await this.menuService.getTree();
@@ -874,7 +873,7 @@ export default class BaseWebChannelHandler<
                 });
               } catch (err) {
                 this.logger.warn(
-                  'Offline Channel Handler : Unable to retrieve menu ',
+                  'Web Channel Handler : Unable to retrieve menu ',
                   err,
                 );
                 return res.status(500).json({ err: 'Unable to retrieve menu' });
@@ -884,7 +883,7 @@ export default class BaseWebChannelHandler<
               return this.getMessageQueue(req, res as Response);
             default:
               this.logger.error(
-                'Offline Channel Handler : Webhook received unknown command',
+                'Web Channel Handler : Webhook received unknown command',
               );
               return res
                 .status(500)
@@ -902,10 +901,10 @@ export default class BaseWebChannelHandler<
         return this._handleEvent(req, res);
       }
     } catch (err) {
-      this.logger.warn('Offline Channel Handler : Request check failed', err);
+      this.logger.warn('Web Channel Handler : Request check failed', err);
       return res
         .status(403)
-        .json({ err: 'Offline Channel Handler : Unauthorized!' });
+        .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
   }
 
@@ -1103,7 +1102,7 @@ export default class BaseWebChannelHandler<
     // Items count min check
     if (!data.length) {
       this.logger.error(
-        'Offline Channel Handler : Unsufficient content count (must be >= 0 for list)',
+        'Web Channel Handler : Unsufficient content count (must be >= 0 for list)',
       );
       throw new Error('Unsufficient content count (list >= 0)');
     }
@@ -1152,7 +1151,7 @@ export default class BaseWebChannelHandler<
     // Items count min check
     if (data.length === 0) {
       this.logger.error(
-        'Offline Channel Handler : Unsufficient content count (must be > 0 for carousel)',
+        'Web Channel Handler : Unsufficient content count (must be > 0 for carousel)',
       );
       throw new Error('Unsufficient content count (carousel > 0)');
     }
@@ -1263,7 +1262,7 @@ export default class BaseWebChannelHandler<
         return next();
       } catch (err) {
         this.logger.error(
-          'Offline Channel Handler : Failed in sending typing indicator ',
+          'Web Channel Handler : Failed in sending typing indicator ',
           err,
         );
       }

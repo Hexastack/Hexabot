@@ -56,7 +56,7 @@ export default abstract class ChannelHandler<N extends string = string> {
   }
 
   protected getGroup() {
-    return this.getChannel().replaceAll('-', '_');
+    return this.getChannel().replaceAll('-', '_') as ChannelSetting<N>['group'];
   }
 
   async setup() {
@@ -92,9 +92,10 @@ export default abstract class ChannelHandler<N extends string = string> {
    * Returns the channel's settings
    * @returns Channel's settings
    */
-  async getSettings() {
+  async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
-    return settings[this.getGroup()];
+    // @ts-expect-error workaround typing
+    return settings[this.getGroup() as keyof Settings] as Settings[S];
   }
 
   /**
