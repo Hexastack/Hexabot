@@ -25,15 +25,17 @@ import { MIME_TYPES } from "@/utils/attachment";
 interface RenderSettingInputProps {
   setting: ISetting;
   field: ControllerRenderProps<any, string>;
+  ns: string;
   isDisabled?: (setting: ISetting) => boolean;
 }
 
 const SettingInput: React.FC<RenderSettingInputProps> = ({
   setting,
   field,
+  ns,
   isDisabled = () => false,
 }) => {
-  const { t } = useTranslate(setting.group);
+  const { t } = useTranslate(ns);
   const label = t(`label.${setting.label}`, {
     defaultValue: setting.label,
   });

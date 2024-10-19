@@ -15,18 +15,15 @@ import {
 import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
+import { PluginSetting } from '@/plugins/types';
 
 @Injectable()
-export class DummyPlugin extends BaseBlockPlugin {
+export class DummyPlugin extends BaseBlockPlugin<PluginSetting[]> {
   constructor(
     pluginService: PluginService,
     private logger: LoggerService,
   ) {
-    super('dummy', pluginService);
-
-    this.title = 'Dummy';
-
-    this.settings = [];
+    super('dummy', [], pluginService);
 
     this.template = { name: 'Dummy Plugin' };
 

@@ -20,7 +20,7 @@ import { ContentModel } from '@/cms/schemas/content.schema';
 
 import { PluginService } from './plugins.service';
 
-@InjectDynamicProviders('dist/**/*.plugin.js')
+@InjectDynamicProviders('dist/extensions/**/*.plugin.js')
 @Global()
 @Module({
   imports: [
