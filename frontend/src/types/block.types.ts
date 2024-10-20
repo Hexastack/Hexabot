@@ -50,7 +50,6 @@ export interface BlockOptions {
   fallback?: BlockFallbackOptions;
   assignTo?: string;
   // plugins effects
-  effects?: string[];
 }
 
 export type BlockMessage =
