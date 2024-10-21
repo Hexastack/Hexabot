@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
@@ -86,11 +86,16 @@ export class I18nService<K = Record<string, unknown>>
 
   async loadExtensionI18nTranslations() {
     const baseDir = path.join(__dirname, '..', '..', 'extensions');
-    const extensionTypes = ['channels', 'plugins'];
+    const extensionTypes = ['channels', 'helpers', 'plugins'];
 
     try {
       for (const type of extensionTypes) {
         const extensionsDir = path.join(baseDir, type);
+
+        if (!existsSync(extensionsDir)) {
+          continue;
+        }
+
         const extensionFolders = await fs.readdir(extensionsDir, {
           withFileTypes: true,
         });
