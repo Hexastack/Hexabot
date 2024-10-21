@@ -17,7 +17,7 @@ import {
   StdIncomingMessage,
 } from '@/chat/schemas/types/message';
 import { Payload } from '@/chat/schemas/types/quick-reply';
-import { Nlp } from '@/nlp/lib/types';
+import { Nlp } from '@/helper/types';
 
 import ChannelHandler from './Handler';
 

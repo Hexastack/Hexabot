@@ -17,6 +17,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -33,6 +34,7 @@ import Papa from 'papaparse';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
+import { HelperService } from '@/helper/helper.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
@@ -72,6 +74,7 @@ export class NlpSampleController extends BaseController<
     private readonly logger: LoggerService,
     private readonly nlpService: NlpService,
     private readonly languageService: LanguageService,
+    private readonly helperService: HelperService,
   ) {
     super(nlpSampleService);
   }
@@ -93,7 +96,8 @@ export class NlpSampleController extends BaseController<
       type ? { type } : {},
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
-    const result = await this.nlpSampleService.formatRasaNlu(samples, entities);
+    const helper = await this.helperService.getDefaultNluHelper();
+    const result = helper.format(samples, entities);
 
     // Sending the JSON data as a file
     const buffer = Buffer.from(JSON.stringify(result));
@@ -171,7 +175,8 @@ export class NlpSampleController extends BaseController<
    */
   @Get('message')
   async message(@Query('text') text: string) {
-    return this.nlpService.getNLP().parse(text);
+    const helper = await this.helperService.getDefaultNluHelper();
+    return helper.predict(text);
   }
 
   /**
@@ -201,7 +206,21 @@ export class NlpSampleController extends BaseController<
     const { samples, entities } =
       await this.getSamplesAndEntitiesByType('train');
 
-    return await this.nlpService.getNLP().train(samples, entities);
+    try {
+      const helper = await this.helperService.getDefaultNluHelper();
+      const response = await helper.train(samples, entities);
+      // Mark samples as trained
+      await this.nlpSampleService.updateMany(
+        { type: 'train' },
+        { trained: true },
+      );
+      return response;
+    } catch (err) {
+      this.logger.error(err);
+      throw new InternalServerErrorException(
+        'Unable to perform the train operation',
+      );
+    }
   }
 
   /**
@@ -214,7 +233,8 @@ export class NlpSampleController extends BaseController<
     const { samples, entities } =
       await this.getSamplesAndEntitiesByType('test');
 
-    return await this.nlpService.getNLP().evaluate(samples, entities);
+    const helper = await this.helperService.getDefaultNluHelper();
+    return await helper.evaluate(samples, entities);
   }
 
   /**

@@ -4,10 +4,12 @@
   },
   "label": {
     "global_fallback": "Enable Global Fallback?",
-    "fallback_message": "Fallback Message"
+    "fallback_message": "Fallback Message",
+    "default_nlu_helper": "Default NLU Helper"
   },
   "help": {
     "global_fallback": "Global fallback allows you to send custom messages when user entry does not match any of the block messages.",
-    "fallback_message": "If no fallback block is selected, then one of these messages will be sent."
+    "fallback_message": "If no fallback block is selected, then one of these messages will be sent.",
+    "default_nlu_helper": "The NLU helper is responsible for processing and understanding user inputs, including tasks like intent prediction, language detection, and entity recognition."
   }
 }

@@ -1,0 +1,5 @@
+{
+  "endpoint": "Enter the endpoint URL for the Core NLU API where requests will be sent.",
+  "token": "Provide the API token for authenticating requests to the Core NLU API.",
+  "threshold": "Set the minimum confidence score for predictions to be considered valid."
+}
