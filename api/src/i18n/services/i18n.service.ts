@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
@@ -22,6 +22,7 @@ import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
 import { config } from '@/config';
 import { Translation } from '@/i18n/schemas/translation.schema';
+import { hyphenToUnderscore } from '@/utils/helpers/misc';
 
 @Injectable()
 export class I18nService<K = Record<string, unknown>>
@@ -84,41 +85,45 @@ export class I18nService<K = Record<string, unknown>>
   }
 
   async loadExtensionI18nTranslations() {
-    const extensionsDir = path.join(
-      __dirname,
-      '..',
-      '..',
-      'extensions',
-      'channels',
-    );
+    const baseDir = path.join(__dirname, '..', '..', 'extensions');
+    const extensionTypes = ['channels', 'helpers', 'plugins'];
+
     try {
-      const extensionFolders = await fs.readdir(extensionsDir, {
-        withFileTypes: true,
-      });
+      for (const type of extensionTypes) {
+        const extensionsDir = path.join(baseDir, type);
 
-      for (const folder of extensionFolders) {
-        if (folder.isDirectory()) {
-          const i18nPath = path.join(extensionsDir, folder.name, 'i18n');
-          const extensionName = folder.name.replaceAll('-', '_');
-          try {
-            // Check if the i18n directory exists
-            await fs.access(i18nPath);
+        if (!existsSync(extensionsDir)) {
+          continue;
+        }
 
-            // Load and merge translations
-            const i18nLoader = new I18nJsonLoader({ path: i18nPath });
-            const translations = await i18nLoader.load();
-            for (const lang in translations) {
-              if (!this.extensionTranslations[lang]) {
-                this.extensionTranslations[lang] = {
-                  [extensionName]: translations[lang],
-                };
-              } else {
-                this.extensionTranslations[lang][extensionName] =
-                  translations[lang];
+        const extensionFolders = await fs.readdir(extensionsDir, {
+          withFileTypes: true,
+        });
+
+        for (const folder of extensionFolders) {
+          if (folder.isDirectory()) {
+            const i18nPath = path.join(extensionsDir, folder.name, 'i18n');
+            const namespace = hyphenToUnderscore(folder.name);
+            try {
+              // Check if the i18n directory exists
+              await fs.access(i18nPath);
+
+              // Load and merge translations
+              const i18nLoader = new I18nJsonLoader({ path: i18nPath });
+              const translations = await i18nLoader.load();
+              for (const lang in translations) {
+                if (!this.extensionTranslations[lang]) {
+                  this.extensionTranslations[lang] = {
+                    [namespace]: translations[lang],
+                  };
+                } else {
+                  this.extensionTranslations[lang][namespace] =
+                    translations[lang];
+                }
               }
+            } catch (error) {
+              // If the i18n folder does not exist or error in reading, skip this folder
             }
-          } catch (error) {
-            // If the i18n folder does not exist or error in reading, skip this folder
           }
         }
       }

@@ -24,7 +24,7 @@ export interface ChannelModuleOptions {
   folder: string;
 }
 
-@InjectDynamicProviders('dist/**/*.channel.js')
+@InjectDynamicProviders('dist/extensions/**/*.channel.js')
 @Module({
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],

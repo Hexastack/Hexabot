@@ -19,6 +19,7 @@ import { LoggerService } from '@/logger/logger.service';
 import BaseNlpHelper from '@/nlp/lib/BaseNlpHelper';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { hyphenToUnderscore } from '@/utils/helpers/misc';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
@@ -56,7 +57,7 @@ export default abstract class ChannelHandler<N extends string = string> {
   }
 
   protected getGroup() {
-    return this.getChannel().replaceAll('-', '_') as ChannelSetting<N>['group'];
+    return hyphenToUnderscore(this.getChannel()) as ChannelSetting<N>['group'];
   }
 
   async setup() {

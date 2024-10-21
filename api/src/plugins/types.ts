@@ -22,7 +22,7 @@ export interface CustomBlocks {}
 type ChannelEvent = any;
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = SettingCreateDto;
+export type PluginSetting = Omit<SettingCreateDto, 'weight'>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,

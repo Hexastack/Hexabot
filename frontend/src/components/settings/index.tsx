@@ -186,6 +186,7 @@ export const Settings = () => {
                           <SettingInput
                             setting={setting}
                             field={field}
+                            ns={setting.group}
                             isDisabled={isDisabled}
                           />
                         </FormControl>

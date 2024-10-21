@@ -60,7 +60,11 @@ const PluginMessageForm = () => {
             defaultValue={message.args?.[setting.label] || setting.value}
             render={({ field }) => (
               <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
-                <SettingInput setting={setting} field={field} />
+                <SettingInput
+                  setting={setting}
+                  field={field}
+                  ns={message.plugin}
+                />
               </FormControl>
             )}
           />

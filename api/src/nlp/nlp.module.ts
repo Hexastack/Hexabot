@@ -33,7 +33,7 @@ import { NlpSampleService } from './services/nlp-sample.service';
 import { NlpValueService } from './services/nlp-value.service';
 import { NlpService } from './services/nlp.service';
 
-@InjectDynamicProviders('dist/**/*.nlp.helper.js')
+@InjectDynamicProviders('dist/extensions/**/*.nlp.helper.js')
 @Module({
   imports: [
     MongooseModule.forFeature([
