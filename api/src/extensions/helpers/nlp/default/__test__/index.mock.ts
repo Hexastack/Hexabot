@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Nlp } from '@/helper/types';
+import { Nlp } from '@/nlp/lib/types';
 
-import { NlpParseResultType, RasaNlu } from '../types';
+import { DatasetType, NlpParseResultType } from '../types';
 
-export const nlpEmptyFormated: RasaNlu.Dataset = {
+export const nlpEmptyFormated: DatasetType = {
   common_examples: [],
   regex_features: [],
   lookup_tables: [
@@ -35,7 +35,7 @@ export const nlpEmptyFormated: RasaNlu.Dataset = {
   ],
 };
 
-export const nlpFormatted: RasaNlu.Dataset = {
+export const nlpFormatted: DatasetType = {
   common_examples: [
     {
       text: 'Hello',

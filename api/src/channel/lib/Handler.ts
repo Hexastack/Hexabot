@@ -16,6 +16,8 @@ import {
   StdOutgoingMessage,
 } from '@/chat/schemas/types/message';
 import { LoggerService } from '@/logger/logger.service';
+import BaseNlpHelper from '@/nlp/lib/BaseNlpHelper';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { hyphenToUnderscore } from '@/utils/helpers/misc';
 import { SocketRequest } from '@/websocket/utils/socket-request';
@@ -32,11 +34,14 @@ export default abstract class ChannelHandler<N extends string = string> {
 
   private readonly settings: ChannelSetting<N>[];
 
+  protected NLP: BaseNlpHelper;
+
   constructor(
     name: N,
     settings: ChannelSetting<N>[],
     protected readonly settingService: SettingService,
     private readonly channelService: ChannelService,
+    protected readonly nlpService: NlpService,
     protected readonly logger: LoggerService,
   ) {
     this.name = name;
@@ -51,6 +56,10 @@ export default abstract class ChannelHandler<N extends string = string> {
     this.setup();
   }
 
+  protected getGroup() {
+    return hyphenToUnderscore(this.getChannel()) as ChannelSetting<N>['group'];
+  }
+
   async setup() {
     await this.settingService.seedIfNotExist(
       this.getChannel(),
@@ -59,7 +68,17 @@ export default abstract class ChannelHandler<N extends string = string> {
         weight: i + 1,
       })),
     );
+    const nlp = this.nlpService.getNLP();
+    this.setNLP(nlp);
     this.init();
+  }
+
+  setNLP(nlp: BaseNlpHelper) {
+    this.NLP = nlp;
+  }
+
+  getNLP() {
+    return this.NLP;
   }
 
   /**
@@ -68,14 +87,6 @@ export default abstract class ChannelHandler<N extends string = string> {
    */
   getChannel() {
     return this.name;
-  }
-
-  /**
-   * Returns the channel's group
-   * @returns Channel's group
-   */
-  protected getGroup() {
-    return hyphenToUnderscore(this.getChannel()) as ChannelSetting<N>['group'];
   }
 
   /**

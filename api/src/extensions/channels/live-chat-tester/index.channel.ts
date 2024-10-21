@@ -16,6 +16,7 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -33,6 +34,7 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
   constructor(
     settingService: SettingService,
     channelService: ChannelService,
+    nlpService: NlpService,
     logger: LoggerService,
     eventEmitter: EventEmitter2,
     i18n: I18nService,
@@ -47,6 +49,7 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
       DEFAULT_LIVE_CHAT_TEST_SETTINGS,
       settingService,
       channelService,
+      nlpService,
       logger,
       eventEmitter,
       i18n,

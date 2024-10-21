@@ -6,19 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { HttpModule } from '@nestjs/axios';
-import { Global, Module } from '@nestjs/common';
-import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
+export namespace Nlp {
+  export interface Config {
+    endpoint?: string;
+    token: string;
+  }
 
-import { HelperController } from './helper.controller';
-import { HelperService } from './helper.service';
+  export interface ParseEntity {
+    entity: string; // Entity name
+    value: string; // Value name
+    confidence: number;
+    start?: number;
+    end?: number;
+  }
 
-@Global()
-@InjectDynamicProviders('dist/extensions/**/*.helper.js')
-@Module({
-  imports: [HttpModule],
-  controllers: [HelperController],
-  providers: [HelperService],
-  exports: [HelperService],
-})
-export class HelperModule {}
+  export interface ParseEntities {
+    entities: ParseEntity[];
+  }
+}
