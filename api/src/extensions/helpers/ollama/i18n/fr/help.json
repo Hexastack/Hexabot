@@ -1,0 +1,23 @@
+{
+  "api_url": "Adresse URL du serveur Ollama.",
+  "model": "Détermine le modèle à utiliser. Assurez-vous de charger le modèle sur Ollama pour pouvoir l'utiliser.",
+  "keep_alive": "Temps pendant lequel le modèle reste en mémoire.",
+  "max_messages_ctx": "Nombre maximum de messages à inclure dans le contexte.",
+  "context": "Fournit un contexte à l'assistant (par exemple : Vous êtes un assistant IA).",
+  "instructions": "Instructions à donner à l'assistant.",
+  "fallback_message": "Message à retourner en cas d'erreur API.",
+  "mirostat": "Active le prélèvement de Mirostat pour contrôler la perplexité. (par défaut : 0, 0 = désactivé, 1 = Mirostat, 2 = Mirostat 2.0)",
+  "mirostat_eta": "Influence la rapidité de réaction de l'algorithme aux retours du texte généré. Un taux d'apprentissage plus bas entraînera des ajustements plus lents, tandis qu'un taux plus élevé rendra l'algorithme plus réactif. (Par défaut : 0.1)",
+  "mirostat_tau": "Contrôle l'équilibre entre la cohérence et la diversité de la sortie. Une valeur plus basse résulte en un texte plus concentré et cohérent. (Par défaut : 5.0)",
+  "num_ctx": "Définit la taille de la fenêtre de contexte utilisée pour générer le prochain jeton. (Par défaut : 2048)",
+  "repeat_last_n": "Définit jusqu'où le modèle doit regarder en arrière pour éviter la répétition. (Par défaut : 64, 0 = désactivé, -1 = num_ctx)",
+  "repeat_penalty": "Définit la force de la pénalité pour les répétitions. Une valeur plus élevée (par exemple, 1.5) pénalisera plus fortement les répétitions, tandis qu'une valeur plus basse (par exemple, 0.9) sera plus clémente. (Par défaut : 1.1)",
+  "temperature": "La température du modèle. Augmenter la température rendra le modèle plus créatif. (Par défaut : 0.8)",
+  "seed": "Définit la graine de nombre aléatoire à utiliser pour la génération. Fixer ce numéro permettra au modèle de générer le même texte pour la même invite. (Par défaut : 0)",
+  "stop": "Définit les séquences d'arrêt à utiliser. Lorsque ce motif est rencontré, le modèle cessera de générer du texte et retournera. Plusieurs motifs d'arrêt peuvent être définis en spécifiant plusieurs paramètres `stop` séparés dans un fichier de modèle.",
+  "tfs_z": "L'échantillonnage sans queue est utilisé pour réduire l'impact des jetons moins probables dans la sortie. Une valeur plus élevée (par exemple, 2.0) réduira davantage l'impact, tandis qu'une valeur de 1.0 désactive ce paramètre. (par défaut : 1)",
+  "num_predict": "Nombre maximum de jetons à prédire lors de la génération de texte. (Par défaut : 128, -1 = génération infinie, -2 = remplir le contexte)",
+  "top_k": "Réduit la probabilité de générer des non-sens. Une valeur plus élevée (par exemple, 100) donnera des réponses plus diverses, tandis qu'une valeur plus basse (par exemple, 10) sera plus conservatrice. (Par défaut : 40)",
+  "top_p": "Fonctionne conjointement avec top-k. Une valeur plus élevée (par exemple, 0.95) conduira à un texte plus diversifié, tandis qu'une valeur plus basse (par exemple, 0.5) générera un texte plus concentré et conservateur. (Par défaut : 0.9)",
+  "min_p": "Alternative au top_p, et vise à assurer un équilibre entre la qualité et la variété. Le paramètre *p* représente la probabilité minimum pour qu'un jeton soit considéré, par rapport à la probabilité du jeton le plus probable. Par exemple, avec *p* = 0.05 et le jeton le plus probable ayant une probabilité de 0.9, les logits d'une valeur inférieure à 0.045 sont filtrés. (Par défaut : 0.0)"
+}

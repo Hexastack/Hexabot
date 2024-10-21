@@ -37,6 +37,7 @@ export enum EntityType {
   CHANNEL = "Channel",
   HELPER = "Helper",
   NLU_HELPER = "NluHelper",
+  LLM_HELPER = "LlmHelper",
 }
 
 export type NormalizedEntities = Record<string, Record<string, any>>;

@@ -1,0 +1,11 @@
+{
+  "name": "hexabot-ollama",
+  "version": "2.0.0",
+  "description": "The Ollama Plugin Extension for Hexabot Chatbot / Agent Builder that provides a custom block for Generative AI + RAG",
+  "dependencies": {},
+  "extensions": {
+    "hexabot-helper-ollama": "2.0.0"
+  },
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

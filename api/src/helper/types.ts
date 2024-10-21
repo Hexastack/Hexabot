@@ -1,6 +1,7 @@
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
 
 import BaseHelper from './lib/base-helper';
+import BaseLlmHelper from './lib/base-llm-helper';
 import BaseNlpHelper from './lib/base-nlp-helper';
 
 export namespace Nlp {
@@ -24,12 +25,15 @@ export namespace Nlp {
 
 export enum HelperType {
   NLU = 'nlu',
+  LLM = 'llm',
   UTIL = 'util',
 }
 
-export type TypeOfHelper<T extends HelperType> = T extends HelperType.NLU
-  ? BaseNlpHelper<string>
-  : BaseHelper;
+export type TypeOfHelper<T extends HelperType> = T extends HelperType.LLM
+  ? BaseLlmHelper<string>
+  : T extends HelperType.NLU
+    ? BaseNlpHelper<string>
+    : BaseHelper;
 
 export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
   HelperType,

@@ -115,6 +115,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CHANNEL]: [],
   [EntityType.HELPER]: [],
   [EntityType.NLU_HELPER]: [],
+  [EntityType.LLM_HELPER]: [],
 } as const;
 
 export type Populate<C extends EntityType> =
@@ -205,6 +206,7 @@ export interface IEntityMapTypes {
   [EntityType.CHANNEL]: IEntityTypes<IChannelAttributes, IChannel>;
   [EntityType.HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
   [EntityType.NLU_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
+  [EntityType.LLM_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
 }
 
 export type TType<TParam extends keyof IEntityMapTypes> =

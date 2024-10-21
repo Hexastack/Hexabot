@@ -27,7 +27,6 @@ import { HelperSetting, HelperType, Nlp } from '../types';
 
 import BaseHelper from './base-helper';
 
-// eslint-disable-next-line prettier/prettier
 export default abstract class BaseNlpHelper<
   N extends string,
 > extends BaseHelper<N> {

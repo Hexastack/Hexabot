@@ -1,0 +1,10 @@
+{
+  "name": "hexabot-helper-ollama",
+  "version": "2.0.0",
+  "description": "The Ollama Helper Extension for Hexabot Chatbot / Agent Builder to enable the LLM Capability",
+  "dependencies": {
+    "ollama": "^0.5.9"
+  },
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

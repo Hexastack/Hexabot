@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    volumes:
+      - ollama:/root/.ollama
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - ollama-network
+
+  api:
+    networks:
+      - ollama-network
+
+volumes:
+  ollama:
+
+networks:
+  ollama-network:
