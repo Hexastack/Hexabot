@@ -47,13 +47,6 @@ export const DEFAULT_SETTINGS = [
   },
   {
     group: 'chatbot_settings',
-    label: 'global_fallback',
-    value: true,
-    type: SettingType.checkbox,
-    weight: 4,
-  },
-  {
-    group: 'chatbot_settings',
     label: 'fallback_block',
     value: '',
     options: [],
@@ -65,7 +58,7 @@ export const DEFAULT_SETTINGS = [
       idKey: 'id',
       labelKey: 'name',
     },
-    weight: 5,
+    weight: 4,
   },
   {
     group: 'chatbot_settings',
@@ -75,7 +68,7 @@ export const DEFAULT_SETTINGS = [
       "I'm really sorry but i don't quite understand what you are saying :(",
     ] as string[],
     type: SettingType.multiple_text,
-    weight: 6,
+    weight: 5,
   },
   {
     group: 'contact',
