@@ -11,15 +11,15 @@ import { EntityType, Format } from "@/services/types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { ILabel } from "./label.types";
 import {
-  StdOutgoingQuickRepliesMessage,
+  AttachmentForeignKey,
+  ContentOptions,
+  PayloadType,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,
   StdOutgoingListMessage,
+  StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
-  AttachmentForeignKey,
   StdPluginMessage,
-  ContentOptions,
-  PayloadType,
 } from "./message.types";
 import { IUser } from "./user.types";
 
@@ -132,8 +132,6 @@ export interface IBlockFull extends IBlockStub, IFormat<Format.FULL> {
 }
 
 export interface ICustomBlockTemplateAttributes {
-  title: string;
-  name: string;
   template: IBlockAttributes;
   effects: string[];
 }

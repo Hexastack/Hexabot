@@ -73,8 +73,8 @@ export class AttachmentController extends BaseController<Attachment> {
   async findOne(@Param('id') id: string): Promise<Attachment> {
     const doc = await this.attachmentService.findOne(id);
     if (!doc) {
-      this.logger.warn(`Unable to find Attachement by id ${id}`);
-      throw new NotFoundException(`Attachement with ID ${id} not found`);
+      this.logger.warn(`Unable to find Attachment by id ${id}`);
+      throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
     return doc;
   }

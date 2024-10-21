@@ -30,8 +30,8 @@ export const CustomBlocks = () => {
       <Grid container>
         {customBlocks?.map((customBlock) => (
           <Block
-            key={customBlock.name}
-            title={customBlock.title}
+            key={customBlock.id}
+            title={t(`title.${customBlock.id}`, { ns: customBlock.id })}
             Icon={PluginIcon}
             blockTemplate={customBlock.template}
             name={customBlock.template.name}

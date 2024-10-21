@@ -9,13 +9,34 @@
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingType } from '../schemas/types';
 
-export const settingModels: SettingCreateDto[] = [
+export const DEFAULT_SETTINGS = [
+  {
+    group: 'chatbot_settings',
+    label: 'default_nlu_helper',
+    value: 'core-nlu',
+    type: SettingType.select,
+    config: {
+      multiple: false,
+      allowCreate: false,
+      entity: 'Helper',
+      idKey: 'name',
+      labelKey: 'name',
+    },
+    weight: 1,
+  },
   {
     group: 'chatbot_settings',
     label: 'global_fallback',
     value: true,
     type: SettingType.checkbox,
-    weight: 1,
+    weight: 3,
+  },
+  {
+    group: 'chatbot_settings',
+    label: 'global_fallback',
+    value: true,
+    type: SettingType.checkbox,
+    weight: 4,
   },
   {
     group: 'chatbot_settings',
@@ -26,11 +47,11 @@ export const settingModels: SettingCreateDto[] = [
     config: {
       multiple: false,
       allowCreate: false,
-      source: '/Block/',
-      valueKey: 'id',
+      entity: 'Block',
+      idKey: 'id',
       labelKey: 'name',
     },
-    weight: 2,
+    weight: 5,
   },
   {
     group: 'chatbot_settings',
@@ -38,43 +59,9 @@ export const settingModels: SettingCreateDto[] = [
     value: [
       "Sorry but i didn't understand your request. Maybe you can check the menu",
       "I'm really sorry but i don't quite understand what you are saying :(",
-    ],
+    ] as string[],
     type: SettingType.multiple_text,
-    weight: 3,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'provider',
-    value: 'default',
-    options: ['default'],
-    type: SettingType.select,
-    weight: 1,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'endpoint',
-    value: 'http://nlu-api:5000/',
-    type: SettingType.text,
-    weight: 2,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'token',
-    value: 'token123',
-    type: SettingType.text,
-    weight: 3,
-  },
-  {
-    group: 'nlp_settings',
-    label: 'threshold',
-    value: 0.9,
-    type: SettingType.number,
-    config: {
-      min: 0,
-      max: 1,
-      step: 0.01,
-    },
-    weight: 4,
+    weight: 6,
   },
   {
     group: 'contact',
@@ -146,4 +133,4 @@ export const settingModels: SettingCreateDto[] = [
     type: SettingType.text,
     weight: 10,
   },
-];
+] as const satisfies SettingCreateDto[];

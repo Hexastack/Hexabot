@@ -5,6 +5,7 @@
     padding: 0px;
     margin: 0px;
     outline: none;
+    opacity: .5;
   }
   
   .sc-user-input--emoji-icon-wrapper:focus {
@@ -12,18 +13,14 @@
   }
   
   .sc-user-input--emoji-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     align-self: center;
     vertical-align: middle;
   }
   
-  .sc-user-input--emoji-icon-wrapper:focus .sc-user-input--emoji-icon path,
-  .sc-user-input--emoji-icon-wrapper:focus .sc-user-input--emoji-icon circle,
-  .sc-user-input--emoji-icon.active path,
-  .sc-user-input--emoji-icon.active circle,
-  .sc-user-input--emoji-icon:hover path,
-  .sc-user-input--emoji-icon:hover circle {
-    filter: contrast(15%);
+  .sc-user-input--emoji-icon-wrapper:focus,
+  .sc-user-input--emoji-icon-wrapper:hover {
+    opacity: 1;
   }

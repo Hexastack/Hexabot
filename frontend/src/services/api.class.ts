@@ -32,6 +32,7 @@ export const ROUTES = {
   CSRF: "/csrftoken",
   BOTSTATS: "/botstats",
   REFRESH_TRANSLATIONS: "/translation/refresh",
+  FETCH_REMOTE_I18N: "/i18n",
   RESET: "/user/reset",
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
@@ -63,6 +64,8 @@ export const ROUTES = {
   [EntityType.TRANSLATION]: "/translation",
   [EntityType.ATTACHMENT]: "/attachment",
   [EntityType.CHANNEL]: "/channel",
+  [EntityType.HELPER]: "/helper",
+  [EntityType.NLU_HELPER]: "/helper/nlu",
 } as const;
 
 export class ApiClient {
@@ -190,6 +193,12 @@ export class ApiClient {
     return data;
   }
 
+  async fetchRemoteI18n() {
+    const { data } = await this.request.get(ROUTES.FETCH_REMOTE_I18N);
+
+    return data;
+  }
+
   async reset(token: string, payload: IResetPayload) {
     const { data } = await this.request.post<
       IResetPayload,
@@ -200,19 +209,19 @@ export class ApiClient {
     return data;
   }
 
-  async importNlpSamples(attachementId: string) {
+  async importNlpSamples(attachmentId: string) {
     const { _csrf } = await this.getCsrf();
     const { data } = await this.request.post(
-      `${ROUTES.NLP_SAMPLE_IMPORT}/${attachementId}`,
+      `${ROUTES.NLP_SAMPLE_IMPORT}/${attachmentId}`,
       { _csrf },
     );
 
     return data;
   }
 
-  async importContent(contentTypeId: string, attachementId: string) {
+  async importContent(contentTypeId: string, attachmentId: string) {
     const { data } = await this.request.get(
-      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachementId}`,
+      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
     );
 
     return data;

@@ -16,7 +16,6 @@ import { AttachmentModule } from '@/attachment/attachment.module';
 import { NlpEntityController } from './controllers/nlp-entity.controller';
 import { NlpSampleController } from './controllers/nlp-sample.controller';
 import { NlpValueController } from './controllers/nlp-value.controller';
-import { NlpController } from './controllers/nlp.controller';
 import { NlpEntityRepository } from './repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from './repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from './repositories/nlp-sample.repository';
@@ -33,7 +32,7 @@ import { NlpSampleService } from './services/nlp-sample.service';
 import { NlpValueService } from './services/nlp-value.service';
 import { NlpService } from './services/nlp.service';
 
-@InjectDynamicProviders('dist/**/*.nlp.helper.js')
+@InjectDynamicProviders('dist/extensions/**/*.nlp.helper.js')
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -45,12 +44,7 @@ import { NlpService } from './services/nlp.service';
     AttachmentModule,
     HttpModule,
   ],
-  controllers: [
-    NlpEntityController,
-    NlpValueController,
-    NlpSampleController,
-    NlpController,
-  ],
+  controllers: [NlpEntityController, NlpValueController, NlpSampleController],
   providers: [
     NlpEntityRepository,
     NlpValueRepository,

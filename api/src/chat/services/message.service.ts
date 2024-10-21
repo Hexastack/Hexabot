@@ -11,11 +11,9 @@ import {
   InternalServerErrorException,
   Optional,
 } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
   SocketGet,
   SocketPost,
@@ -76,34 +74,6 @@ export class MessageService extends BaseService<
   }
 
   /**
-   * Retrieves a paginated list of messages based on the provided filters
-   * and page query, and populates the results with additional data.
-   *
-   * @param filters - The query filters to apply for message retrieval.
-   * @param pageQuery - The page query containing pagination information.
-   *
-   * @returns A paginated list of populated messages.
-   */
-  async findPageAndPopulate(
-    filters: TFilterQuery<AnyMessage>,
-    pageQuery: PageQueryDto<AnyMessage>,
-  ) {
-    return await this.messageRepository.findPageAndPopulate(filters, pageQuery);
-  }
-
-  /**
-   * Retrieves a single message by its identifier and populates it with
-   * additional data.
-   *
-   * @param id - The identifier of the message to retrieve.
-   *
-   * @returns A populated message object.
-   */
-  async findOneAndPopulate(id: string) {
-    return await this.messageRepository.findOneAndPopulate(id);
-  }
-
-  /**
    * Retrieves the message history for a given subscriber up until a specific
    * date, with an optional limit on the number of messages to return.
    *
@@ -145,5 +115,24 @@ export class MessageService extends BaseService<
       since,
       limit,
     );
+  }
+
+  /**
+   * Retrieves the latest messages for a given subscriber
+   *
+   * @param subscriber - The subscriber whose message history is being retrieved.
+   * @param limit - The maximum number of messages to return (defaults to 5).
+   *
+   * @returns The message history since the specified date.
+   */
+  async findLastMessages(subscriber: Subscriber, limit: number = 5) {
+    const lastMessages = await this.findPage(
+      {
+        $or: [{ sender: subscriber.id }, { recipient: subscriber.id }],
+      },
+      { sort: ['createdAt', 'desc'], skip: 0, limit },
+    );
+
+    return lastMessages.reverse();
   }
 }

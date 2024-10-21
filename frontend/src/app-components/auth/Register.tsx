@@ -30,6 +30,7 @@ import { useValidationRules } from "@/hooks/useValidationRules";
 import { IRegisterAttributes } from "@/types/auth/register.types";
 import { JWT } from "@/utils/Jwt";
 
+import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs/layouts/ContentContainer";
 import { ContentItem } from "../dialogs/layouts/ContentItem";
 import { Adornment } from "../inputs/Adornment";
@@ -136,7 +137,7 @@ export const Register = () => {
   }, [router.query.token]);
 
   return (
-    <Grid container justifyContent="center" sx={{ p: "4vh 0" }}>
+    <PublicContentWrapper>
       <Paper
         sx={{
           width: { xs: "100%", md: "33%" },
@@ -259,6 +260,6 @@ export const Register = () => {
           </ContentContainer>
         </form>
       </Paper>
-    </Grid>
+    </PublicContentWrapper>
   );
 };

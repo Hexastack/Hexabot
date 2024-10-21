@@ -14,10 +14,11 @@ import React, {
   useState,
 } from 'react';
 
-import { useSubscribe } from './SocketProvider';
 import { useTranslation } from '../hooks/useTranslation';
 import { IMenuNode } from '../types/menu.type';
 import { SessionStorage } from '../utils/sessionStorage';
+
+import { useSubscribe } from './SocketProvider';
 
 type ChannelSettings = {
   menu: IMenuNode[];

@@ -59,7 +59,7 @@ export class BlockController extends BaseController<
     private readonly categoryService: CategoryService,
     private readonly labelService: LabelService,
     private readonly userService: UserService,
-    private pluginsService: PluginService<BaseBlockPlugin>,
+    private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
     super(blockService);
   }
@@ -122,15 +122,14 @@ export class BlockController extends BaseController<
       const plugins = this.pluginsService
         .getAllByType(PluginType.block)
         .map((p) => ({
-          title: p.title,
-          name: p.id,
+          id: p.id,
           template: {
             ...p.template,
             message: {
               plugin: p.id,
               args: p.settings.reduce(
                 (acc, setting) => {
-                  acc[setting.id] = setting.value;
+                  acc[setting.label] = setting.value;
                   return acc;
                 },
                 {} as { [key: string]: any },

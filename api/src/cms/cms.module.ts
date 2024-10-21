@@ -12,6 +12,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
 
+import { AttachmentModel } from '../attachment/schemas/attachment.schema';
+
 import { ContentTypeController } from './controllers/content-type.controller';
 import { ContentController } from './controllers/content.controller';
 import { MenuController } from './controllers/menu.controller';
@@ -24,7 +26,6 @@ import { MenuModel } from './schemas/menu.schema';
 import { ContentTypeService } from './services/content-type.service';
 import { ContentService } from './services/content.service';
 import { MenuService } from './services/menu.service';
-import { AttachmentModel } from '../attachment/schemas/attachment.schema';
 
 @Module({
   imports: [

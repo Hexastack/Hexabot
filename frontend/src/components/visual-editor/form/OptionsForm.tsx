@@ -109,16 +109,19 @@ export const OptionsForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<ICustomBlockTemplate, "title">
-                searchFields={["title", "name"]}
+              <AutoCompleteEntitySelect<ICustomBlockTemplate, "id">
+                searchFields={["id"]}
                 entity={EntityType.CUSTOM_BLOCK}
                 format={Format.BASIC}
-                idKey="name"
-                labelKey="title"
+                idKey="id"
+                labelKey="id"
                 label={t("label.effects")}
                 multiple={true}
+                getOptionLabel={(option) => {
+                  return t(`title.${option.id}`, { ns: option.id });
+                }}
                 onChange={(_e, selected) =>
-                  onChange(selected.map(({ name }) => name))
+                  onChange(selected.map(({ id }) => id))
                 }
                 preprocess={(options) => {
                   return options.filter(({ effects }) => effects.length > 0);

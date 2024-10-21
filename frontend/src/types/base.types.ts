@@ -22,6 +22,7 @@ import { IChannel, IChannelAttributes } from "./channel.types";
 import { IContentType, IContentTypeAttributes } from "./content-type.types";
 import { IContent, IContentAttributes, IContentFull } from "./content.types";
 import { IContextVar, IContextVarAttributes } from "./context-var.types";
+import { IHelper, IHelperAttributes } from "./helper.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
 import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
@@ -112,6 +113,8 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CUSTOM_BLOCK]: [],
   [EntityType.CUSTOM_BLOCK_SETTINGS]: [],
   [EntityType.CHANNEL]: [],
+  [EntityType.HELPER]: [],
+  [EntityType.NLU_HELPER]: [],
 } as const;
 
 export type Populate<C extends EntityType> =
@@ -200,6 +203,8 @@ export interface IEntityMapTypes {
     IMessageFull
   >;
   [EntityType.CHANNEL]: IEntityTypes<IChannelAttributes, IChannel>;
+  [EntityType.HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
+  [EntityType.NLU_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
 }
 
 export type TType<TParam extends keyof IEntityMapTypes> =

@@ -17,6 +17,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -35,7 +36,6 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { NlpSampleController } from './nlp-sample.controller';
 import { NlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
@@ -51,6 +51,8 @@ import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 import { NlpValueService } from '../services/nlp-value.service';
 import { NlpService } from '../services/nlp.service';
+
+import { NlpSampleController } from './nlp-sample.controller';
 
 describe('NlpSampleController', () => {
   let nlpSampleController: NlpSampleController;
@@ -97,6 +99,7 @@ describe('NlpSampleController', () => {
         LanguageService,
         EventEmitter2,
         NlpService,
+        HelperService,
         SettingRepository,
         SettingService,
         SettingSeeder,

@@ -25,11 +25,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { LanguageController } from './language.controller';
 import { LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { Language, LanguageModel } from '../schemas/language.schema';
 import { LanguageService } from '../services/language.service';
+
+import { LanguageController } from './language.controller';
 
 describe('LanguageController', () => {
   let languageController: LanguageController;

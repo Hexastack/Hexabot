@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 import withTM from "next-transpile-modules";
 
-const nextConfig = withTM(["hexabot-widget"])({
+const nextConfig = withTM(["hexabot-chat-widget"])({
   async rewrites() {
     return [
       {
@@ -11,7 +11,7 @@ const nextConfig = withTM(["hexabot-widget"])({
     ];
   },
   webpack(config) {
-    if (process.env.NODE_ENV==="development") {
+    if (process.env.NODE_ENV === "development") {
       config.watchOptions = {
         poll: 1000,
         aggregateTimeout: 300,

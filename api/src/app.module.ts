@@ -8,13 +8,15 @@
 
 import path from 'path';
 
+// eslint-disable-next-line import/order
+import { MailerModule } from '@nestjs-modules/mailer';
+// eslint-disable-next-line import/order
+import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { CacheModule } from '@nestjs/cache-manager';
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { CsrfGuard, CsrfModule } from '@tekuconcept/nestjs-csrf';
 import {
   AcceptLanguageResolver,
@@ -31,9 +33,9 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
+import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
-import { DtoUpdateMiddleware } from './middlewares/dto.update.middleware';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
@@ -100,6 +102,7 @@ const i18nOptions: I18nOptions = {
     ChatModule,
     ChannelModule,
     PluginsModule,
+    HelperModule,
     LoggerModule,
     WebsocketModule,
     EventEmitterModule.forRoot({
@@ -133,10 +136,4 @@ const i18nOptions: I18nOptions = {
     AppService,
   ],
 })
-export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(DtoUpdateMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.PATCH });
-  }
-}
+export class AppModule {}

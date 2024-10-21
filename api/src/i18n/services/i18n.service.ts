@@ -6,8 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { existsSync, promises as fs } from 'fs';
+import * as path from 'path';
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
+  I18nJsonLoader,
+  I18nTranslation,
   I18nService as NativeI18nService,
   Path,
   PathValue,
@@ -17,12 +22,24 @@ import { IfAnyOrNever } from 'nestjs-i18n/dist/types';
 
 import { config } from '@/config';
 import { Translation } from '@/i18n/schemas/translation.schema';
+import { hyphenToUnderscore } from '@/utils/helpers/misc';
 
 @Injectable()
-export class I18nService<
-  K = Record<string, unknown>,
-> extends NativeI18nService<K> {
+export class I18nService<K = Record<string, unknown>>
+  extends NativeI18nService<K>
+  implements OnModuleInit
+{
   private dynamicTranslations: Record<string, Record<string, string>> = {};
+
+  private extensionTranslations: I18nTranslation = {};
+
+  onModuleInit() {
+    this.loadExtensionI18nTranslations();
+  }
+
+  getExtensionI18nTranslations() {
+    return this.extensionTranslations;
+  }
 
   t<P extends Path<K> = any, R = PathValue<K, P>>(
     key: P,
@@ -65,5 +82,53 @@ export class I18nService<
 
       return acc;
     }, this.dynamicTranslations);
+  }
+
+  async loadExtensionI18nTranslations() {
+    const baseDir = path.join(__dirname, '..', '..', 'extensions');
+    const extensionTypes = ['channels', 'helpers', 'plugins'];
+
+    try {
+      for (const type of extensionTypes) {
+        const extensionsDir = path.join(baseDir, type);
+
+        if (!existsSync(extensionsDir)) {
+          continue;
+        }
+
+        const extensionFolders = await fs.readdir(extensionsDir, {
+          withFileTypes: true,
+        });
+
+        for (const folder of extensionFolders) {
+          if (folder.isDirectory()) {
+            const i18nPath = path.join(extensionsDir, folder.name, 'i18n');
+            const namespace = hyphenToUnderscore(folder.name);
+            try {
+              // Check if the i18n directory exists
+              await fs.access(i18nPath);
+
+              // Load and merge translations
+              const i18nLoader = new I18nJsonLoader({ path: i18nPath });
+              const translations = await i18nLoader.load();
+              for (const lang in translations) {
+                if (!this.extensionTranslations[lang]) {
+                  this.extensionTranslations[lang] = {
+                    [namespace]: translations[lang],
+                  };
+                } else {
+                  this.extensionTranslations[lang][namespace] =
+                    translations[lang];
+                }
+              }
+            } catch (error) {
+              // If the i18n folder does not exist or error in reading, skip this folder
+            }
+          }
+        }
+      }
+    } catch (error) {
+      throw new Error(`Failed to read extensions directory: ${error.message}`);
+    }
   }
 }

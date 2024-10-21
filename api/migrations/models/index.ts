@@ -63,7 +63,7 @@ async function mongoMigrationConnection() {
 
 async function getModels() {
   await mongoMigrationConnection();
-  const AttachementModel = mongoose.model<Attachment>(
+  const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
   );
@@ -117,7 +117,7 @@ async function getModels() {
   const UserModel = mongoose.model<User>(User.name, userSchema);
 
   return {
-    AttachementModel,
+    AttachmentModel,
     BlockModel,
     BotstatsModel,
     ContentModel,

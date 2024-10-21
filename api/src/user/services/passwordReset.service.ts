@@ -24,8 +24,9 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 
-import { UserService } from './user.service';
 import { UserRequestResetDto, UserResetPasswordDto } from '../dto/user.dto';
+
+import { UserService } from './user.service';
 
 @Injectable()
 export class PasswordResetService {

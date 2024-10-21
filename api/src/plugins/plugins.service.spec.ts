@@ -8,8 +8,8 @@
 
 import { Test } from '@nestjs/testing';
 
-import { DummyPlugin } from '@/extensions/plugins/dummy.plugin';
 import { LoggerModule } from '@/logger/logger.module';
+import { DummyPlugin } from '@/utils/test/dummy/dummy.plugin';
 
 import { BaseBlockPlugin } from './base-block-plugin';
 import { PluginService } from './plugins.service';

@@ -12,9 +12,10 @@ import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSampleModel, NlpSample } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/schemas/types';
 
-import { installLanguageFixtures } from './language';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installLanguageFixtures } from './language';
 
 const nlpSamples: NlpSampleCreateDto[] = [
   {

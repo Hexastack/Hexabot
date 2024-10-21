@@ -19,9 +19,10 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MenuRepository } from './menu.repository';
 import { MenuModel } from '../schemas/menu.schema';
 import { MenuType } from '../schemas/types/menu';
+
+import { MenuRepository } from './menu.repository';
 
 describe('MenuRepository', () => {
   let menuRepository: MenuRepository;

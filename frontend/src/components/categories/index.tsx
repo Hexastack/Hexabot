@@ -34,8 +34,9 @@ import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { CategoryDialog } from "./CategoryDialog";
 import { ICategory } from "../../types/category.types";
+
+import { CategoryDialog } from "./CategoryDialog";
 
 export const Categories = () => {
   const { t } = useTranslate();

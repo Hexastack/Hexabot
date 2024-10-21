@@ -268,7 +268,7 @@ export const CustomBlockEntity = new schema.Entity(
   EntityType.CUSTOM_BLOCK,
   undefined,
   {
-    idAttribute: ({ name }) => name,
+    idAttribute: ({ id }) => id,
   },
 );
 
@@ -276,13 +276,26 @@ export const CustomBlockSettingEntity = new schema.Entity(
   EntityType.CUSTOM_BLOCK_SETTINGS,
   undefined,
   {
-    idAttribute: ({ id }) => id,
+    idAttribute: ({ id, label }) => id || label,
   },
 );
 
 export const ChannelEntity = new schema.Entity(EntityType.CHANNEL, undefined, {
   idAttribute: ({ name }) => name,
 });
+
+export const HelperEntity = new schema.Entity(EntityType.HELPER, undefined, {
+  idAttribute: ({ name }) => name,
+});
+
+export const NluHelperEntity = new schema.Entity(
+  EntityType.NLU_HELPER,
+  undefined,
+  {
+    idAttribute: ({ name }) => name,
+  },
+);
+
 
 export const ENTITY_MAP = {
   [EntityType.SUBSCRIBER]: SubscriberEntity,
@@ -310,4 +323,6 @@ export const ENTITY_MAP = {
   [EntityType.CUSTOM_BLOCK]: CustomBlockEntity,
   [EntityType.CUSTOM_BLOCK_SETTINGS]: CustomBlockSettingEntity,
   [EntityType.CHANNEL]: ChannelEntity,
+  [EntityType.HELPER]: HelperEntity,
+  [EntityType.NLU_HELPER]: NluHelperEntity,
 } as const;

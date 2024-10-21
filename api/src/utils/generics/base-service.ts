@@ -11,9 +11,10 @@ import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
 import { TFilterQuery } from 'mongoose';
 
+import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
-import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 
 export abstract class BaseService<
   T extends BaseSchema,
@@ -33,8 +34,8 @@ export abstract class BaseService<
     return await this.repository.findOne(criteria, options);
   }
 
-  async findOneAndPopulate(id: string) {
-    return await this.repository.findOneAndPopulate(id);
+  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
+    return await this.repository.findOneAndPopulate(criteria);
   }
 
   async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>): Promise<T[]> {

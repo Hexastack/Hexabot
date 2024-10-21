@@ -17,30 +17,32 @@ import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
+import { IHelper } from "@/types/helper.types";
 import { ISetting } from "@/types/setting.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
 interface RenderSettingInputProps {
   setting: ISetting;
   field: ControllerRenderProps<any, string>;
+  ns: string;
   isDisabled?: (setting: ISetting) => boolean;
 }
 
 const SettingInput: React.FC<RenderSettingInputProps> = ({
   setting,
   field,
+  ns,
   isDisabled = () => false,
 }) => {
-  const { t } = useTranslate();
-  const nestedLabel = setting.label as TNestedTranslation<"label">;
-  const nestedHelp = setting.help as TNestedTranslation<"help">;
-  const label = t("label", nestedLabel, { defaultValue: nestedLabel });
-  const helperText = nestedHelp
-    ? t("help", nestedHelp, { defaultValue: nestedHelp })
-    : "";
+  const { t } = useTranslate(ns);
+  const label = t(`label.${setting.label}`, {
+    defaultValue: setting.label,
+  });
+  const helperText = t(`help.${setting.label}`, {
+    defaultValue: "",
+  });
 
   switch (setting.type) {
     case "text":
@@ -114,8 +116,26 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             format={Format.BASIC}
             labelKey="name"
             label={t("label.fallback_block")}
+            helperText={t("help.fallback_block")}
             multiple={false}
             onChange={(_e, selected, ..._) => onChange(selected?.id)}
+            {...rest}
+          />
+        );
+      } else if (setting.label === "default_nlu_helper") {
+        const { onChange, ...rest } = field;
+
+        return (
+          <AutoCompleteEntitySelect<IHelper, "name", false>
+            searchFields={["name"]}
+            entity={EntityType.NLU_HELPER}
+            format={Format.BASIC}
+            labelKey="name"
+            idKey="name"
+            label={t("label.default_nlu_helper")}
+            helperText={t("help.default_nlu_helper")}
+            multiple={false}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
             {...rest}
           />
         );

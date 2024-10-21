@@ -14,10 +14,11 @@ import {
   Conversation,
 } from '@/chat/schemas/conversation.schema';
 
-import { installBlockFixtures } from './block';
-import { installSubscriberFixtures } from './subscriber';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
+
+import { installBlockFixtures } from './block';
+import { installSubscriberFixtures } from './subscriber';
 
 const conversations: ConversationCreateDto[] = [
   {

@@ -4,6 +4,7 @@
   padding: 0px;
   margin: 0px;
   outline: none;
+  opacity: .5;
 }
 
 .sc-user-input--location-icon-wrapper:focus {
@@ -11,20 +12,13 @@
 }
 
 .sc-user-input--location-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   align-self: center;
   vertical-align: middle;
 }
 
-.sc-user-input--location-icon-wrapper:focus .sc-user-input--location-icon path,
-.sc-user-input--location-icon-wrapper:focus
-  .sc-user-input--location-icon
-  circle,
-.sc-user-input--location-icon.active path,
-.sc-user-input--location-icon.active circle,
-.sc-user-input--location-icon:hover path,
-.sc-user-input--location-icon:hover circle {
-  filter: contrast(15%);
+.sc-user-input--location-icon-wrapper:hover {
+  opacity: 1;
 }

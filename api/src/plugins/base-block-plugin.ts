@@ -22,16 +22,21 @@ import {
 } from './types';
 
 @Injectable()
-export abstract class BaseBlockPlugin extends BasePlugin {
+export abstract class BaseBlockPlugin<
+  T extends PluginSetting[],
+> extends BasePlugin {
   public readonly type: PluginType = PluginType.block;
 
-  constructor(id: string, pluginService: PluginService<BasePlugin>) {
+  public readonly settings: T;
+
+  constructor(
+    id: string,
+    settings: T,
+    pluginService: PluginService<BasePlugin>,
+  ) {
     super(id, pluginService);
+    this.settings = settings;
   }
-
-  title: string;
-
-  settings: PluginSetting[];
 
   template: PluginBlockTemplate;
 
@@ -42,4 +47,11 @@ export abstract class BaseBlockPlugin extends BasePlugin {
     context: Context,
     convId?: string,
   ): Promise<StdOutgoingEnvelope>;
+
+  protected getArguments(block: Block) {
+    if ('args' in block.message) {
+      return block.message.args as SettingObject<T>;
+    }
+    throw new Error(`Block "${block.name}" does not have any arguments.`);
+  }
 }

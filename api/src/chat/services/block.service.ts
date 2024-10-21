@@ -12,13 +12,12 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
+import { Nlp } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
-import { Nlp } from '@/nlp/lib/types';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { Settings } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';
@@ -63,6 +62,10 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     blocks: BlockFull[],
     event: EventWrapper<any, any>,
   ): Promise<BlockFull | undefined> {
+    if (!blocks.length) {
+      return undefined;
+    }
+
     // Search for block matching a given event
     let block: BlockFull | undefined = undefined;
     const payload = event.getPayload();

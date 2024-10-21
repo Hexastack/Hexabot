@@ -1,0 +1,5 @@
+{
+  "endpoint": "Entrez l'URL de point de terminaison pour l'API NLU Core où les requêtes seront envoyées.",
+  "token": "Fournissez le jeton d'API pour authentifier les requêtes à l'API NLU Core.",
+  "threshold": "Définissez le score de confiance minimum pour que les prédictions soient considérées comme valides."
+}

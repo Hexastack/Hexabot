@@ -26,7 +26,7 @@ import ChannelHandler from './lib/Handler';
 
 @Injectable()
 export class ChannelService {
-  private registry: Map<string, ChannelHandler> = new Map();
+  private registry: Map<string, ChannelHandler<string>> = new Map();
 
   constructor(
     private readonly logger: LoggerService,
@@ -40,7 +40,10 @@ export class ChannelService {
    * @param channel - The channel handler associated with the channel name.
    * @typeParam C The channel handler's type that extends `ChannelHandler`.
    */
-  public setChannel<C extends ChannelHandler>(name: string, channel: C) {
+  public setChannel<T extends string, C extends ChannelHandler<T>>(
+    name: T,
+    channel: C,
+  ) {
     this.registry.set(name, channel);
   }
 
@@ -71,7 +74,9 @@ export class ChannelService {
    * @param channelName - The name of the channel (messenger, offline, ...).
    * @returns The handler for the specified channel.
    */
-  public getChannelHandler<C extends ChannelHandler>(name: string): C {
+  public getChannelHandler<T extends string, C extends ChannelHandler<T>>(
+    name: T,
+  ): C {
     const handler = this.registry.get(name);
     if (!handler) {
       throw new Error(`Channel ${name} not found`);
@@ -98,8 +103,8 @@ export class ChannelService {
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet('/webhook/offline/')
-  @SocketPost('/webhook/offline/')
+  @SocketGet(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
   handleWebsocketForOffline(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
@@ -116,8 +121,8 @@ export class ChannelService {
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet('/webhook/live-chat-tester/')
-  @SocketPost('/webhook/live-chat-tester/')
+  @SocketGet(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
   async handleWebsocketForLiveChatTester(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
@@ -128,6 +133,9 @@ export class ChannelService {
     );
 
     if (!req.session?.passport?.user?.id) {
+      setTimeout(() => {
+        req.socket.client.conn.close();
+      }, 300);
       throw new UnauthorizedException(
         'Only authenticated users are allowed to use this channel',
       );

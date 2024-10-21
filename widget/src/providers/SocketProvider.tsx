@@ -12,43 +12,43 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState,
 } from 'react';
 
+import { getSocketIoClient, SocketIoClient } from '../utils/SocketIoClient';
+
 import { useConfig } from './ConfigProvider';
-import { builSocketIoClient, SocketIoClient } from '../utils/SocketIoClient';
 
 interface socketContext {
   socket: SocketIoClient;
-  connected: boolean;
 }
 
 const socketContext = createContext<socketContext>({
   socket: {} as SocketIoClient,
-  connected: false,
 });
 
 export const SocketProvider = (props: PropsWithChildren) => {
   const config = useConfig();
-  const socketRef = useRef(builSocketIoClient(config));
-  const [connected, setConnected] = useState(false);
-
-  useEffect(() => {
-    socketRef.current.init({
+  const socketRef = useRef(
+    getSocketIoClient(config, {
       onConnect: () => {
-        setConnected(true);
+        // eslint-disable-next-line no-console
+        console.info(
+          'Hexabot Live Chat : Successfully established WS Connection!',
+        );
       },
       onConnectError: () => {
-        setConnected(false);
+        // eslint-disable-next-line no-console
+        console.error('Hexabot Live Chat : Failed to establish WS Connection!');
       },
       onDisconnect: () => {
-        setConnected(false);
+        // eslint-disable-next-line no-console
+        console.info('Hexabot Live Chat : Disconnected WS.');
       },
-    });
-  }, []);
+    }),
+  );
 
   return (
-    <socketContext.Provider value={{ socket: socketRef.current, connected }}>
+    <socketContext.Provider value={{ socket: socketRef.current }}>
       {props.children}
     </socketContext.Provider>
   );
@@ -56,12 +56,6 @@ export const SocketProvider = (props: PropsWithChildren) => {
 
 export const useSocket = () => {
   return useContext(socketContext);
-};
-
-export const useSocketConnected = () => {
-  const { connected } = useSocket();
-
-  return connected;
 };
 
 export const useSubscribe = <T,>(event: string, callback: (arg: T) => void) => {
@@ -83,5 +77,6 @@ export const useSocketLifecycle = () => {
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 };

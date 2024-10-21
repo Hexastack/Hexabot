@@ -9,3 +9,7 @@
 export const isEmpty = (value: string): boolean => {
   return value === undefined || value === null || value === '';
 };
+
+export const hyphenToUnderscore = (str: string) => {
+  return str.replaceAll('-', '_');
+};

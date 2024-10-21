@@ -285,6 +285,7 @@ const PatternInput: FC<PatternInputProps> = ({
 
                 return v;
               },
+
             })}
             label={t("label.regex")}
             value={value.slice(1, -1)}

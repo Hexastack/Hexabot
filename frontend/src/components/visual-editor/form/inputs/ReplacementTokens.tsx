@@ -19,7 +19,6 @@ import {
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";
-import { TNestedTranslation } from "@/i18n/i18n.types";
 import { EntityType } from "@/services/types";
 
 function ReplacementTokens() {
@@ -94,13 +93,17 @@ function ReplacementTokens() {
             </ListItem>
           ))}
         </List>
-        <Typography variant="h6">{t("title.contact_infos")}</Typography>
+        <Typography variant="h6">
+          {t("title.contact", { ns: "contact" })}
+        </Typography>
         <List>
           {(contactInfos || []).map((v, index) => (
             <ListItem key={index}>
               <ListItemText
                 primary={`{contact.${v.label}}`}
-                secondary={t("label", v.label as TNestedTranslation<"label">)}
+                secondary={t(`label.${v.label}`, {
+                  ns: "contact",
+                })}
               />
             </ListItem>
           ))}

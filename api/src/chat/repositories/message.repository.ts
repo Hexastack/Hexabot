@@ -6,16 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
-import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
-import { NlpSampleState } from '@/nlp/schemas/types';
-import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import {
@@ -33,18 +28,9 @@ export class MessageRepository extends BaseRepository<
   MessagePopulate,
   MessageFull
 > {
-  private readonly nlpSampleService: NlpSampleService;
-
-  private readonly logger: LoggerService;
-
-  private readonly languageService: LanguageService;
-
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(Message.name) readonly model: Model<AnyMessage>,
-    @Optional() nlpSampleService?: NlpSampleService,
-    @Optional() logger?: LoggerService,
-    @Optional() languageService?: LanguageService,
   ) {
     super(
       eventEmitter,
@@ -53,9 +39,6 @@ export class MessageRepository extends BaseRepository<
       MESSAGE_POPULATE,
       MessageFull,
     );
-    this.logger = logger;
-    this.nlpSampleService = nlpSampleService;
-    this.languageService = languageService;
   }
 
   /**
@@ -69,34 +52,7 @@ export class MessageRepository extends BaseRepository<
   async preCreate(_doc: AnyMessage): Promise<void> {
     if (_doc) {
       if (!('sender' in _doc) && !('recipient' in _doc)) {
-        this.logger.error('Either sender or recipient must be provided!', _doc);
         throw new Error('Either sender or recipient must be provided!');
-      }
-      // If message is sent by the user then add it as an inbox sample
-      if (
-        'sender' in _doc &&
-        _doc.sender &&
-        'message' in _doc &&
-        'text' in _doc.message
-      ) {
-        const defaultLang = await this.languageService?.getDefaultLanguage();
-        const record: NlpSampleCreateDto = {
-          text: _doc.message.text,
-          type: NlpSampleState.inbox,
-          trained: false,
-          // @TODO : We need to define the language in the message entity
-          language: defaultLang.id,
-        };
-        try {
-          await this.nlpSampleService.findOneOrCreate(record, record);
-          this.logger.debug('User message saved as a inbox sample !');
-        } catch (err) {
-          this.logger.error(
-            'Unable to add message as a new inbox sample!',
-            err,
-          );
-          throw err;
-        }
       }
     }
   }

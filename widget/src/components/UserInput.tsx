@@ -8,6 +8,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { useChat } from '../providers/ChatProvider';
+import { useColors } from '../providers/ColorProvider';
+import { useSettings } from '../providers/SettingsProvider';
+import { TOutgoingMessageType } from '../types/message.types';
+import { OutgoingMessageState } from '../types/state.types';
+
 import EmojiButton from './buttons/EmojiButton';
 import FileButton from './buttons/FileButton';
 import LocationButton from './buttons/LocationButton';
@@ -16,12 +23,6 @@ import SendButton from './buttons/SendButton';
 import CloseIcon from './icons/CloseIcon';
 import FileInputIcon from './icons/FileInputIcon';
 import Suggestions from './Suggestions';
-import { useTranslation } from '../hooks/useTranslation';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useSettings } from '../providers/SettingsProvider';
-import { TOutgoingMessageType } from '../types/message.types';
-import { OutgoingMessageState } from '../types/state.types';
 
 import './UserInput.scss';
 
@@ -137,10 +138,7 @@ const UserInput: React.FC = () => {
   const uploading = outgoingMessageState === OutgoingMessageState.uploading;
 
   return (
-    <div
-      className="sc-user-input-wrapper"
-      style={{ fill: colors.userInput.text }}
-    >
+    <div className="sc-user-input-wrapper">
       {suggestions.length > 0 && <Suggestions />}
 
       {(file || uploading) && (

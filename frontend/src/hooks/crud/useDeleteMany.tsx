@@ -11,8 +11,9 @@ import { useMutation, useQueryClient } from "react-query";
 import { QueryType, TMutationOptions } from "@/services/types";
 import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
 
-import { isSameEntity } from "./helpers";
 import { useEntityApiClient } from "../useApiClient";
+
+import { isSameEntity } from "./helpers";
 
 export const useDeleteMany = <
   TEntity extends IDynamicProps["entity"],

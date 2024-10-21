@@ -1,6 +1,8 @@
 # Hexabot Live Chat Widget
 The [Hexabot](https://hexabot.ai/) Live Chat Widget is a React-based embeddable widget that allows users to integrate real-time chat functionality into their websites. It connects to the Hexabot API and facilitates seamless interaction between end-users and chatbots across multiple channels.
 
+[Hexabot](https://hexabot.ai/) is an open-source chatbot / agent solution that allows users to create and manage AI-powered, multi-channel, and multilingual chatbots with ease. If you would like to learn more, please visit the [official github repo](https://github.com/Hexastack/Hexabot/).
+
 ## Key Features
 - **Real-Time Chat:** Engage in real-time conversations with users directly through your website.
 - **Customizable:** Easily customize the widget's appearance and behavior to fit your brand and website.
@@ -67,6 +69,51 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
 </script>
 ```
 Replace the values in apiUrl and token with your configuration details.
+
+To prevent the website css from conflicting with the chat widget css, we can leverage the shadow dom: 
+```js
+<script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="<<WIDGET URL>>/hexabot-widget.umd.js"></script>
+
+<div id="hb-chat-widget"></div>
+<script>
+  // Create the shadow root and attach it to the widget container
+  const createElement = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+  const shadowContainer = createElement("div");
+  document
+      .getElementById('hb-chat-widget')
+      .attachShadow({ mode: 'open' })
+      .append( 
+        shadowContainer,
+        createElement("link", {
+          rel: "stylesheet",
+          href: "<<WIDGET URL>>/style.css"
+        });
+      );
+
+  // Render the widget inside the shadow root
+  ReactDOM.render(
+    React.createElement(HexabotWidget, {
+      apiUrl: 'https://api.yourdomain.com',
+      channel: 'offline',
+      token: 'token123',
+    }),
+    shadowContainer,
+  );
+</script>
+```
+
+If you would like to use the official widget and benefit from updates automatically, you can consider using the cdn url: 
+`https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2.0.4/dist/`
+
+or lastest from major version:
+`https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2/dist/`
+
+JsDelivr uses the package published in the NPM registry : https://www.npmjs.com/package/hexabot-chat-widget
+
+## Examples
+As a proof of concept we developed a Wordpress plugin to embed the chat widget in a Wordpress website : [https://github.com/hexastack/hexabot-wordpress-live-chat-widget](https://github.com/hexastack/hexabot-wordpress-live-chat-widget)
 
 ## Customization
 You can customize the look and feel of the chat widget by modifying the widget’s scss styles or behavior. The widget allows you to:

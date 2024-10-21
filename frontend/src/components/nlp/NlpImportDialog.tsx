@@ -29,7 +29,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
   closeDialog,
   ...rest
 }) => {
-  const [attachmentId, setAttachementId] = useState<string | null>(null);
+  const [attachmentId, setAttachmentId] = useState<string | null>(null);
   const { t } = useTranslate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -63,7 +63,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
   );
   const handleCloseDialog = () => {
     closeDialog();
-    setAttachementId(null);
+    setAttachmentId(null);
   };
 
   return (
@@ -76,7 +76,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
               format="basic"
               accept="text/csv"
               onChange={(id, _) => {
-                setAttachementId(id);
+                setAttachmentId(id);
               }}
               label=""
               value={attachmentId}
