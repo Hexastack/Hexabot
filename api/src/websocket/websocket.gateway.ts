@@ -62,6 +62,13 @@ export class WebsocketGateway
     });
   }
 
+  broadcastTextToActions(actions: string[]): void {
+    this.io.to(Room.SUBSCRIBER).emit('actions', {
+      op: 'textToActions',
+      msg: actions,
+    });
+  }
+
   broadcastMessageReceived(
     message: MessageFull,
     subscriber: Subscriber | SubscriberFull,
