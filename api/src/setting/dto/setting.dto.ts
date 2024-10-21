@@ -11,25 +11,30 @@ import {
   IsArray,
   IsIn,
   IsNotEmpty,
-  IsString,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
 import { SettingType } from '../schemas/types';
 
 export class SettingCreateDto {
-  @ApiProperty({ description: 'Setting group of setting', type: String })
+  @ApiProperty({ description: 'Setting group', type: String })
   @IsNotEmpty()
   @IsString()
   group: string;
 
-  @ApiProperty({ description: 'Setting label of setting', type: String })
+  @ApiProperty({ description: 'Setting subgroup', type: String })
+  @IsOptional()
+  @IsString()
+  subgroup?: string;
+
+  @ApiProperty({ description: 'Setting label (system name)', type: String })
   @IsNotEmpty()
   @IsString()
   label: string;
 
   @ApiProperty({
-    description: 'Setting type of the setting',
+    description: 'Setting type',
     enum: [
       'text',
       'multiple_text',
@@ -44,12 +49,12 @@ export class SettingCreateDto {
   @IsIn(Object.values(SettingType))
   type: SettingType;
 
-  @ApiProperty({ description: 'Setting value of the setting' })
+  @ApiProperty({ description: 'Setting value' })
   @IsNotEmpty()
   value: any;
 
   @ApiPropertyOptional({
-    description: 'Setting options',
+    description: 'Setting options (required when type is select)',
     isArray: true,
     type: Array,
   })

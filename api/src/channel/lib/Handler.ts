@@ -18,35 +18,55 @@ import {
 import { LoggerService } from '@/logger/logger.service';
 import BaseNlpHelper from '@/nlp/lib/BaseNlpHelper';
 import { NlpService } from '@/nlp/services/nlp.service';
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingService } from '@/setting/services/setting.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import { ChannelService } from '../channel.service';
+import { ChannelSetting } from '../types';
 
 import EventWrapper from './EventWrapper';
 
 @Injectable()
-export default abstract class ChannelHandler {
-  protected settings: SettingCreateDto[] = [];
+export default abstract class ChannelHandler<N extends string = string> {
+  private readonly name: N;
+
+  private readonly settings: ChannelSetting<N>[];
 
   protected NLP: BaseNlpHelper;
 
   constructor(
+    name: N,
+    settings: ChannelSetting<N>[],
     protected readonly settingService: SettingService,
     private readonly channelService: ChannelService,
     protected readonly nlpService: NlpService,
     protected readonly logger: LoggerService,
-  ) {}
+  ) {
+    this.name = name;
+    this.settings = settings;
+  }
 
   onModuleInit() {
-    this.channelService.setChannel(this.getChannel(), this);
+    this.channelService.setChannel(
+      this.getChannel(),
+      this as unknown as ChannelHandler<N>,
+    );
     this.setup();
   }
 
+  protected getGroup() {
+    return this.getChannel().replaceAll('-', '_') as ChannelSetting<N>['group'];
+  }
+
   async setup() {
-    await this.settingService.seedIfNotExist(this.getChannel(), this.settings);
+    await this.settingService.seedIfNotExist(
+      this.getChannel(),
+      this.settings.map((s, i) => ({
+        ...s,
+        weight: i + 1,
+      })),
+    );
     const nlp = this.nlpService.getNLP();
     this.setNLP(nlp);
     this.init();
@@ -61,30 +81,33 @@ export default abstract class ChannelHandler {
   }
 
   /**
-   * Returns the channel specific settings
+   * Returns the channel's name
+   * @returns Channel's name
    */
-  async getSettings<S>() {
-    const settings = await this.settingService.getSettings();
-    return settings[this.getChannel()] as S;
+  getChannel() {
+    return this.name;
   }
 
   /**
-   * Returns the channel's name
-   * @returns {String}
+   * Returns the channel's settings
+   * @returns Channel's settings
    */
-  abstract getChannel(): string;
+  async getSettings<S extends string = HyphenToUnderscore<N>>() {
+    const settings = await this.settingService.getSettings();
+    // @ts-expect-error workaround typing
+    return settings[this.getGroup() as keyof Settings] as Settings[S];
+  }
 
   /**
    * Perform any initialization needed
-   * @returns 
-   
    */
   abstract init(): void;
 
   /**
+   * Process incoming channel data via POST/GET methods
+   *
    * @param {module:Controller.req} req
    * @param {module:Controller.res} res
-   * Process incoming channel data via POST/GET methods
    */
   abstract handle(
     req: Request | SocketRequest,
@@ -93,26 +116,28 @@ export default abstract class ChannelHandler {
 
   /**
    * Format a text message that will be sent to the channel
+   *
    * @param message - A text to be sent to the end user
    * @param options - might contain additional settings
    * @returns {Object} - A text message in the channel specific format
-   
    */
   abstract _textFormat(message: StdOutgoingMessage, options?: any): any;
 
   /**
+   * Format a text + quick replies message that can be sent to the channel
+   *
    * @param message - A text + quick replies to be sent to the end user
    * @param options - might contain additional settings
    * @returns {Object} - A quick replies message in the channel specific format
-   * Format a text + quick replies message that can be sent to the channel
    */
   abstract _quickRepliesFormat(message: StdOutgoingMessage, options?: any): any;
 
   /**
+   * From raw buttons, construct a channel understable message containing those buttons
+   *
    * @param message - A text + buttons to be sent to the end user
    * @param options - Might contain additional settings
    * @returns {Object} - A buttons message in the format required by the channel
-   * From raw buttons, construct a channel understable message containing those buttons
    */
   abstract _buttonsFormat(
     message: StdOutgoingMessage,
@@ -121,27 +146,29 @@ export default abstract class ChannelHandler {
   ): any;
 
   /**
+   * Format an attachment + quick replies message that can be sent to the channel
+   *
    * @param message - An attachment + quick replies to be sent to the end user
    * @param options - Might contain additional settings
    * @returns {Object} - An attachment message in the format required by the channel
-   * Format an attachment + quick replies message that can be sent to the channel
    */
   abstract _attachmentFormat(message: StdOutgoingMessage, options?: any): any;
 
   /**
+   * Format a collection of items to be sent to the channel in carousel/list format
+   *
    * @param data - A list of data items to be sent to the end user
    * @param options - Might contain additional settings
    * @returns {Object[]} - An array of element objects
-   * Format a collection of items to be sent to the channel in carousel/list format
    */
   abstract _formatElements(data: any[], options: any, ...args: any): any[];
 
   /**
    * Format a list of elements
+   *
    * @param message - Contains elements to be sent to the end user
    * @param options - Might contain additional settings
    * @returns {Object} - A ready to be sent list template message in the format required by the channel
-   
    */
   abstract _listFormat(
     message: StdOutgoingMessage,

@@ -53,7 +53,7 @@ export class Ability implements CanActivate {
 
     if (user?.roles?.length) {
       if (
-        ['/auth/logout', '/logout', '/auth/me', '/channel'].includes(
+        ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
           _parsedUrl.pathname,
         )
       ) {

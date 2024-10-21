@@ -28,7 +28,6 @@ import type {
   NlpValueDocument,
 } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
-import type { CheckboxSetting, TextSetting } from '@/setting/schemas/types';
 import { type Invitation } from '@/user/schemas/invitation.schema';
 import { type Model } from '@/user/schemas/model.schema';
 import { type Permission } from '@/user/schemas/permission.schema';
@@ -48,17 +47,7 @@ declare module '@nestjs/event-emitter' {
     operations: O;
   }
 
-  interface IHookExtensionsOperationMap {
-    messenger: TDefinition<
-      object,
-      {
-        get_started_button: Setting;
-        access_token: Setting;
-        composer_input_disabled: CheckboxSetting;
-        greeting_text: TextSetting;
-      }
-    >;
-  }
+  interface IHookExtensionsOperationMap {}
 
   interface IHookSettingsGroupLabelOperationMap {
     chatbot_settings: TDefinition<

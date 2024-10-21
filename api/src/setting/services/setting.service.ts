@@ -21,7 +21,6 @@ import { BaseService } from '@/utils/generics/base-service';
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting } from '../schemas/setting.schema';
-import { Settings } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
 
 @Injectable()
