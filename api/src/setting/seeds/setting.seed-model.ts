@@ -26,20 +26,6 @@ export const DEFAULT_SETTINGS = [
   },
   {
     group: 'chatbot_settings',
-    label: 'default_llm_helper',
-    value: 'ollama',
-    type: SettingType.select,
-    config: {
-      multiple: false,
-      allowCreate: false,
-      entity: 'Helper',
-      idKey: 'name',
-      labelKey: 'name',
-    },
-    weight: 2,
-  },
-  {
-    group: 'chatbot_settings',
     label: 'global_fallback',
     value: true,
     type: SettingType.checkbox,
