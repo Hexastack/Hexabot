@@ -99,28 +99,28 @@ class JISFDL(tfbp.DataLoader):
         k = 0
 
         # Filter examples by language
-        lang = self.hparams.language
-        all_examples = data["common_examples"]
-
-        if not bool(lang):
-            examples = all_examples
-        else:
-            examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
+        # lang = self.hparams.language
+        # all_examples = data["common_examples"]
+        #
+        # if not bool(lang):
+        #     examples = all_examples
+        # else:
+        #     examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
 
         # Parse raw data
-        for exp in examples:
+        for exp in data:
             text = exp["text"]
             intent = exp["intent"]
-            entities = exp["entities"]
+            # entities = exp["entities"]
 
             # Filter out language entities
-            slot_entities = filter(
-                lambda e: e["entity"] != "language", entities)
-            slots = {e["entity"]: e["value"] for e in slot_entities}
-            positions = [[e.get("start", -1), e.get("end", -1)]
-                         for e in slot_entities]
+            # slot_entities = filter(
+            #     lambda e: e["entity"] != "language", entities)
+            # slots = {e["entity"]: e["value"] for e in slot_entities}
+            # positions = [[e.get("start", -1), e.get("end", -1)]
+            #              for e in slot_entities]
 
-            temp = JointRawData(k, intent, positions, slots, text)
+            temp = JointRawData(k, intent, None, None, text)
             k += 1
             intents.append(temp)
 
@@ -133,7 +133,7 @@ class JISFDL(tfbp.DataLoader):
         helper = JsonHelper()
 
         if self.method in ["fit", "train"]:
-            dataset = helper.read_dataset_json_file('train.json')
+            dataset = helper.read_dataset_json_file('english.json')
             train_data = self.parse_dataset_intents(dataset)
             return self._transform_dataset(train_data, tokenizer)
         elif self.method in ["evaluate"]:
@@ -154,14 +154,14 @@ class JISFDL(tfbp.DataLoader):
             intent_names = list(set(intents))
             # Map slots, load from the model (evaluate), recompute from dataset otherwise (train)
             slot_names = set()
-            for td in dataset:
-                slots = td.slots
-                for slot in slots:
-                    slot_names.add(slot)
-            slot_names = list(slot_names)
-            # To pad all the texts to the same length, the tokenizer will use special characters.
-            # To handle those we need to add <PAD> to slots_names. It can be some other symbol as well.
-            slot_names.insert(0, "<PAD>")
+            # for td in dataset:
+            #     slots = td.slots
+            #     for slot in slots:
+            #         slot_names.add(slot)
+            # slot_names = list(slot_names)
+            # # To pad all the texts to the same length, the tokenizer will use special characters.
+            # # To handle those we need to add <PAD> to slots_names. It can be some other symbol as well.
+            # slot_names.insert(0, "<PAD>")
         else:
             if "intent_names" in model_params:
                 intent_names = model_params["intent_names"]
@@ -210,10 +210,6 @@ class JISFDL(tfbp.DataLoader):
 
         return encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names
 
-    def get_prediction_data(self) -> str:
-        helper = JsonHelper()
-        dataset = helper.read_dataset_json_file('predict.json')
-        return dataset["text"]
 
     def encode_text(self, text: str, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast]):
         return self.encode_texts([text], tokenizer)
