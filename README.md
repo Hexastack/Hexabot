@@ -38,17 +38,17 @@
 <a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 ## Features
 
-- **Analytics Dashboard:** Monitor chatbot interactions and performance with insightful metrics and visualizations.
+- **LLMs & NLU Support:** Integrate with your favorite LLM model whether it's by using Ollama, ChatGPT, Mistral or Gemini ... Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
 - **Multi-Channel Support:** Create consistent chatbot experiences across multiple channels like web, mobile, and social media platforms.
 - **Visual Editor:** Design and manage chatbot flows with an intuitive drag-and-drop interface. Supports text messages, quick replies, carousels, and more.
 - **Plugin System:** Extend Hexabot's functionality by developing custom plugins. Enable features like text-to-action responses, 3rd party system integrations, and more.
-- **NLU (Natural Language Understanding) Management:** Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
 - **Multi-lingual Support:** Define multiple languages, allowing the chatbot to interact with users in their preferred language.
 - **Knowledge Base:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
 - **User Roles & Permissions:** Granular access control to manage user roles and permissions for different parts of the system.
 - **Contextual Data:** Define variables to collect and leverage relevant information about end-users to deliver personalized responses.
 - **Subscribers & Labels:** Organize users by assigning labels and customize their chat experience based on defined segments.
 - **Inbox & Handover:** Provides a real-time chat window where conversations can be monitored and handed over to human agents when necessary.
+- **Analytics Dashboard:** Monitor chatbot interactions and performance with insightful metrics and visualizations.
 
 ## Directory Structure
 
@@ -99,10 +99,10 @@ or for development mode:
 $ npx hexabot dev
 ```
 
-You can also enable services such as the NLU engine or Nginx :
+You can also enable services such as the NLU engine and Ollama (The services are declared under the `./docker` folder) :
 
 ```bash
-$ npx hexabot --enable=nlu
+$ npx hexabot dev --enable=ollama,nlu
 ```
 
 **Note:** The first time you run the app, Docker will take some time to download all the required images.
