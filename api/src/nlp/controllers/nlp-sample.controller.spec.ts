@@ -17,6 +17,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -98,6 +99,7 @@ describe('NlpSampleController', () => {
         LanguageService,
         EventEmitter2,
         NlpService,
+        HelperService,
         SettingRepository,
         SettingService,
         SettingSeeder,

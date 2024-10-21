@@ -1,0 +1,5 @@
+{
+  "endpoint": "Core NLU API",
+  "token": "API Token",
+  "threshold": "Confidence Threshold"
+}

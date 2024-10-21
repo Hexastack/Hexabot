@@ -13,7 +13,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
-import { NlpModule } from '@/nlp/nlp.module';
 import { UserModule } from '@/user/user.module';
 
 import { BlockController } from './controllers/block.controller';
@@ -63,7 +62,6 @@ import { SubscriberService } from './services/subscriber.service';
     forwardRef(() => ChannelModule),
     CmsModule,
     AttachmentModule,
-    NlpModule,
     EventEmitter2,
     UserModule,
   ],

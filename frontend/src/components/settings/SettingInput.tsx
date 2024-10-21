@@ -19,6 +19,7 @@ import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
+import { IHelper } from "@/types/helper.types";
 import { ISetting } from "@/types/setting.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
@@ -115,8 +116,26 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             format={Format.BASIC}
             labelKey="name"
             label={t("label.fallback_block")}
+            helperText={t("help.fallback_block")}
             multiple={false}
             onChange={(_e, selected, ..._) => onChange(selected?.id)}
+            {...rest}
+          />
+        );
+      } else if (setting.label === "default_nlu_helper") {
+        const { onChange, ...rest } = field;
+
+        return (
+          <AutoCompleteEntitySelect<IHelper, "name", false>
+            searchFields={["name"]}
+            entity={EntityType.NLU_HELPER}
+            format={Format.BASIC}
+            labelKey="name"
+            idKey="name"
+            label={t("label.default_nlu_helper")}
+            helperText={t("help.default_nlu_helper")}
+            multiple={false}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
             {...rest}
           />
         );

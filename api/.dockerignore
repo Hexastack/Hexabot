@@ -10,3 +10,7 @@ node_modules
 coverage*
 README.md
 test
+*.spec.ts
+*.mock.ts
+__mock__
+__test__
