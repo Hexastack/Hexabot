@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
+import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { SettingService } from '@/setting/services/setting.service';
 
-import BaseNlpHelper from '../lib/BaseNlpHelper';
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
 import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
 
@@ -21,92 +20,14 @@ import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
-export class NlpService implements OnApplicationBootstrap {
-  private registry: Map<string, BaseNlpHelper> = new Map();
-
-  private nlp: BaseNlpHelper;
-
+export class NlpService {
   constructor(
-    private readonly settingService: SettingService,
     private readonly logger: LoggerService,
     protected readonly nlpSampleService: NlpSampleService,
     protected readonly nlpEntityService: NlpEntityService,
     protected readonly nlpValueService: NlpValueService,
+    protected readonly helperService: HelperService,
   ) {}
-
-  onApplicationBootstrap() {
-    this.initNLP();
-  }
-
-  /**
-   * Registers a helper with a specific name in the registry.
-   *
-   * @param name - The name of the helper to register.
-   * @param helper - The NLP helper to be associated with the given name.
-   * @typeParam C - The type of the helper, which must extend `BaseNlpHelper`.
-   */
-  public setHelper<C extends BaseNlpHelper>(name: string, helper: C) {
-    this.registry.set(name, helper);
-  }
-
-  /**
-   * Retrieves all registered helpers.
-   *
-   * @returns An array of all helpers currently registered.
-   */
-  public getAll() {
-    return Array.from(this.registry.values());
-  }
-
-  /**
-   * Retrieves the appropriate helper based on the helper name.
-   *
-   * @param helperName - The name of the helper (messenger, offline, ...).
-   *
-   * @returns The specified helper.
-   */
-  public getHelper<C extends BaseNlpHelper>(name: string): C {
-    const handler = this.registry.get(name);
-    if (!handler) {
-      throw new Error(`NLP Helper ${name} not found`);
-    }
-    return handler as C;
-  }
-
-  async initNLP() {
-    try {
-      const settings = await this.settingService.getSettings();
-      const nlpSettings = settings.nlp_settings;
-      const helper = this.getHelper(nlpSettings.provider);
-
-      if (helper) {
-        this.nlp = helper;
-        this.nlp.setSettings(nlpSettings);
-      } else {
-        throw new Error(`Undefined NLP Helper ${nlpSettings.provider}`);
-      }
-    } catch (e) {
-      this.logger.error('NLP Service : Unable to instantiate NLP Helper !', e);
-      // throw e;
-    }
-  }
-
-  /**
-   * Retrieves the currently active NLP helper.
-   *
-   * @returns The current NLP helper.
-   */
-  getNLP() {
-    return this.nlp;
-  }
-
-  /**
-   * Handles the event triggered when NLP settings are updated. Re-initializes the NLP service.
-   */
-  @OnEvent('hook:nlp_settings:*')
-  async handleSettingsUpdate() {
-    this.initNLP();
-  }
 
   /**
    * Handles the event triggered when a new NLP entity is created. Synchronizes the entity with the external NLP provider.
@@ -118,7 +39,8 @@ export class NlpService implements OnApplicationBootstrap {
   async handleEntityCreate(entity: NlpEntityDocument) {
     // Synchonize new entity with NLP
     try {
-      const foreignId = await this.getNLP().addEntity(entity);
+      const helper = await this.helperService.getDefaultNluHelper();
+      const foreignId = await helper.addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
       return await this.nlpEntityService.updateOne(entity._id, {
         foreign_id: foreignId,
@@ -138,7 +60,8 @@ export class NlpService implements OnApplicationBootstrap {
   async handleEntityUpdate(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
-      await this.getNLP().updateEntity(entity);
+      const helper = await this.helperService.getDefaultNluHelper();
+      await helper.updateEntity(entity);
       this.logger.debug('Updated entity successfully synced!', entity);
     } catch (err) {
       this.logger.error('Unable to sync updated entity', err);
@@ -154,7 +77,8 @@ export class NlpService implements OnApplicationBootstrap {
   async handleEntityDelete(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
-      await this.getNLP().deleteEntity(entity.foreign_id);
+      const helper = await this.helperService.getDefaultNluHelper();
+      await helper.deleteEntity(entity.foreign_id);
       this.logger.debug('Deleted entity successfully synced!', entity);
     } catch (err) {
       this.logger.error('Unable to sync deleted entity', err);
@@ -172,7 +96,8 @@ export class NlpService implements OnApplicationBootstrap {
   async handleValueCreate(value: NlpValueDocument) {
     // Synchonize new value with NLP provider
     try {
-      const foreignId = await this.getNLP().addValue(value);
+      const helper = await this.helperService.getDefaultNluHelper();
+      const foreignId = await helper.addValue(value);
       this.logger.debug('New value successfully synced!', foreignId);
       return await this.nlpValueService.updateOne(value._id, {
         foreign_id: foreignId,
@@ -192,7 +117,8 @@ export class NlpService implements OnApplicationBootstrap {
   async handleValueUpdate(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
-      await this.getNLP().updateValue(value);
+      const helper = await this.helperService.getDefaultNluHelper();
+      await helper.updateValue(value);
       this.logger.debug('Updated value successfully synced!', value);
     } catch (err) {
       this.logger.error('Unable to sync updated value', err);
@@ -208,10 +134,11 @@ export class NlpService implements OnApplicationBootstrap {
   async handleValueDelete(value: NlpValue) {
     // Synchonize new value with NLP provider
     try {
+      const helper = await this.helperService.getDefaultNluHelper();
       const populatedValue = await this.nlpValueService.findOneAndPopulate(
         value.id,
       );
-      await this.getNLP().deleteValue(populatedValue);
+      await helper.deleteValue(populatedValue);
       this.logger.debug('Deleted value successfully synced!', value);
     } catch (err) {
       this.logger.error('Unable to sync deleted value', err);

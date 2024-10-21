@@ -6,34 +6,36 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export interface ExampleEntity {
-  entity: string;
-  value: string;
-  start?: number;
-  end?: number;
-}
+export namespace RasaNlu {
+  export interface ExampleEntity {
+    entity: string;
+    value: string;
+    start?: number;
+    end?: number;
+  }
 
-export interface CommonExample {
-  text: string;
-  intent: string;
-  entities: ExampleEntity[];
-}
+  export interface CommonExample {
+    text: string;
+    intent: string;
+    entities: ExampleEntity[];
+  }
 
-export interface LookupTable {
-  name: string;
-  elements: string[];
-}
+  export interface LookupTable {
+    name: string;
+    elements: string[];
+  }
 
-export interface EntitySynonym {
-  value: string;
-  synonyms: string[];
-}
+  export interface EntitySynonym {
+    value: string;
+    synonyms: string[];
+  }
 
-export interface DatasetType {
-  common_examples: CommonExample[];
-  regex_features: any[];
-  lookup_tables: LookupTable[];
-  entity_synonyms: EntitySynonym[];
+  export interface Dataset {
+    common_examples: CommonExample[];
+    regex_features: any[];
+    lookup_tables: LookupTable[];
+    entity_synonyms: EntitySynonym[];
+  }
 }
 
 export interface ParseEntity {

@@ -6,17 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-/**
- * @file NlpAdapter is an abstract class for define an NLP provider adapter
- * @author Hexastack <contact@hexastack.com>
- */
-
-/**
- * @module Services/NLP
- *
- * NlpAdapter is an abstract class from which each NLP provider adapter should extend from.
- */
-
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -31,33 +20,28 @@ import {
   NlpValueDocument,
   NlpValueFull,
 } from '@/nlp/schemas/nlp-value.schema';
+import { SettingService } from '@/setting/services/setting.service';
 
-import { NlpEntityService } from '../services/nlp-entity.service';
-import { NlpSampleService } from '../services/nlp-sample.service';
-import { NlpService } from '../services/nlp.service';
+import { HelperService } from '../helper.service';
+import { HelperSetting, HelperType, Nlp } from '../types';
 
-import { Nlp } from './types';
+import BaseHelper from './base-helper';
 
-export default abstract class BaseNlpHelper {
-  protected settings: Settings['nlp_settings'];
+// eslint-disable-next-line prettier/prettier
+export default abstract class BaseNlpHelper<
+  N extends string,
+> extends BaseHelper<N> {
+  protected readonly type: HelperType = HelperType.NLU;
 
   constructor(
-    protected readonly logger: LoggerService,
-    protected readonly nlpService: NlpService,
-    protected readonly nlpSampleService: NlpSampleService,
-    protected readonly nlpEntityService: NlpEntityService,
-  ) {}
-
-  setSettings(settings: Settings['nlp_settings']) {
-    this.settings = settings;
+    name: N,
+    settings: HelperSetting<N>[],
+    settingService: SettingService,
+    helperService: HelperService,
+    logger: LoggerService,
+  ) {
+    super(name, settings, settingService, helperService, logger);
   }
-
-  /**
-   * Returns the helper's name
-   *
-   * @returns Helper's name
-   */
-  abstract getName(): string;
 
   /**
    * Updates an entity
@@ -183,7 +167,10 @@ export default abstract class BaseNlpHelper {
    *
    * @returns NLP Parsed entities
    */
-  abstract bestGuess(nlp: any, threshold: boolean): Nlp.ParseEntities;
+  abstract filterEntitiesByConfidence(
+    nlp: any,
+    threshold: boolean,
+  ): Promise<Nlp.ParseEntities>;
 
   /**
    * Returns only the entities that have strong confidence (> than the threshold), can return an empty result
@@ -194,7 +181,7 @@ export default abstract class BaseNlpHelper {
    *
    * @returns NLP Parsed entities
    */
-  abstract parse(
+  abstract predict(
     text: string,
     threshold?: boolean,
     project?: string,

@@ -13,7 +13,6 @@ import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms/cms.module';
-import { NlpModule } from '@/nlp/nlp.module';
 
 import { ChannelController } from './channel.controller';
 import { ChannelMiddleware } from './channel.middleware';
@@ -29,7 +28,7 @@ export interface ChannelModuleOptions {
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],
   exports: [ChannelService],
-  imports: [NlpModule, ChatModule, AttachmentModule, CmsModule, HttpModule],
+  imports: [ChatModule, AttachmentModule, CmsModule, HttpModule],
 })
 export class ChannelModule {
   configure(consumer: MiddlewareConsumer) {
