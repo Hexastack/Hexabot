@@ -12,31 +12,19 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
-import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
-import { NlpSampleRepository } from '@/nlp/repositories/nlp-sample.repository';
-import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
-import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
-import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
-import { NlpSampleEntityService } from '@/nlp/services/nlp-sample-entity.service';
-import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
-import { NlpValueService } from '@/nlp/services/nlp-value.service';
-import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import DefaultNlpHelper from '../index.nlp.helper';
+import CoreNluHelper from '../index.helper';
 
 import { entitiesMock, samplesMock } from './__mock__/base.mock';
 import {
@@ -46,45 +34,31 @@ import {
   nlpParseResult,
 } from './index.mock';
 
-describe('NLP Default Helper', () => {
+describe('Core NLU Helper', () => {
   let settingService: SettingService;
-  let nlpService: NlpService;
-  let defaultNlpHelper: DefaultNlpHelper;
+  let defaultNlpHelper: CoreNluHelper;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        rootMongooseTestModule(installNlpSampleEntityFixtures),
-        MongooseModule.forFeature([
-          NlpEntityModel,
-          NlpValueModel,
-          NlpSampleModel,
-          NlpSampleEntityModel,
-          LanguageModel,
-        ]),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+        }),
+        MongooseModule.forFeature([LanguageModel]),
         HttpModule,
       ],
       providers: [
-        NlpService,
-        NlpSampleService,
-        NlpSampleRepository,
-        NlpEntityService,
-        NlpEntityRepository,
-        NlpValueService,
-        NlpValueRepository,
-        NlpSampleEntityService,
-        NlpSampleEntityRepository,
         LanguageService,
         LanguageRepository,
         EventEmitter2,
-        DefaultNlpHelper,
+        HelperService,
+        CoreNluHelper,
         LoggerService,
         {
           provide: SettingService,
           useValue: {
             getSettings: jest.fn(() => ({
-              nlp_settings: {
-                provider: 'default',
+              core_nlu: {
                 endpoint: 'path',
                 token: 'token',
                 threshold: '0.5',
@@ -103,56 +77,51 @@ describe('NLP Default Helper', () => {
       ],
     }).compile();
     settingService = module.get<SettingService>(SettingService);
-    nlpService = module.get<NlpService>(NlpService);
-    defaultNlpHelper = module.get<DefaultNlpHelper>(DefaultNlpHelper);
-    nlpService.setHelper('default', defaultNlpHelper);
-    nlpService.initNLP();
+    defaultNlpHelper = module.get<CoreNluHelper>(CoreNluHelper);
   });
 
   afterAll(closeInMongodConnection);
 
-  it('should init() properly', () => {
-    const nlp = nlpService.getNLP();
-    expect(nlp).toBeDefined();
-  });
-
   it('should format empty training set properly', async () => {
-    const nlp = nlpService.getNLP();
-    const results = await nlp.format([], entitiesMock);
+    const results = await defaultNlpHelper.format([], entitiesMock);
     expect(results).toEqual(nlpEmptyFormated);
   });
 
   it('should format training set properly', async () => {
-    const nlp = nlpService.getNLP();
-    const results = await nlp.format(samplesMock, entitiesMock);
+    const results = await defaultNlpHelper.format(samplesMock, entitiesMock);
     expect(results).toEqual(nlpFormatted);
   });
 
-  it('should return best guess from empty parse results', () => {
-    const nlp = nlpService.getNLP();
-    const results = nlp.bestGuess(
+  it('should return best guess from empty parse results', async () => {
+    const results = await defaultNlpHelper.filterEntitiesByConfidence(
       {
         entities: [],
-        intent: {},
+        intent: { name: 'greeting', confidence: 0 },
         intent_ranking: [],
         text: 'test',
       },
       false,
     );
-    expect(results).toEqual({ entities: [] });
+    expect(results).toEqual({
+      entities: [{ entity: 'intent', value: 'greeting', confidence: 0 }],
+    });
   });
 
-  it('should return best guess from parse results', () => {
-    const nlp = nlpService.getNLP();
-    const results = nlp.bestGuess(nlpParseResult, false);
+  it('should return best guess from parse results', async () => {
+    const results = await defaultNlpHelper.filterEntitiesByConfidence(
+      nlpParseResult,
+      false,
+    );
     expect(results).toEqual(nlpBestGuess);
   });
 
   it('should return best guess from parse results with threshold', async () => {
-    const nlp = nlpService.getNLP();
-    const results = nlp.bestGuess(nlpParseResult, true);
+    const results = await defaultNlpHelper.filterEntitiesByConfidence(
+      nlpParseResult,
+      true,
+    );
     const settings = await settingService.getSettings();
-    const threshold = settings.nlp_settings.threshold;
+    const threshold = settings.core_nlu.threshold;
     const thresholdGuess = {
       entities: nlpBestGuess.entities.filter(
         (g) =>
