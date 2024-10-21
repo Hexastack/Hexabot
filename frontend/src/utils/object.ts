@@ -39,3 +39,27 @@ export function merge<
 
   return output as T & U;
 }
+
+export function trimObjectValues(obj) {
+  if (typeof obj === "object" && obj !== null) {
+    if (Array.isArray(obj)) {
+      return obj.map(trimObjectValues);
+    }
+
+    const trimmedObject = {};
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        trimmedObject[key] = trimObjectValues(obj[key]);
+      }
+    }
+
+    return trimmedObject;
+  }
+
+  if (typeof obj === "string") {
+    return obj.trim();
+  }
+
+  return obj;
+}
