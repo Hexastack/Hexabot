@@ -66,6 +66,7 @@ export const ROUTES = {
   [EntityType.CHANNEL]: "/channel",
   [EntityType.HELPER]: "/helper",
   [EntityType.NLU_HELPER]: "/helper/nlu",
+  [EntityType.LLM_HELPER]: "/helper/llm",
 } as const;
 
 export class ApiClient {

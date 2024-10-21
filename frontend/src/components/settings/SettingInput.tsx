@@ -139,6 +139,23 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             {...rest}
           />
         );
+      } else if (setting.label === "default_llm_helper") {
+        const { onChange, ...rest } = field;
+
+        return (
+          <AutoCompleteEntitySelect<IHelper, "name", false>
+            searchFields={["name"]}
+            entity={EntityType.LLM_HELPER}
+            format={Format.BASIC}
+            labelKey="name"
+            idKey="name"
+            label={t("label.default_llm_helper")}
+            helperText={t("help.default_llm_helper")}
+            multiple={false}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
+            {...rest}
+          />
+        );
       }
 
       return (

@@ -86,4 +86,24 @@ export class HelperService {
 
     return defaultHelper;
   }
+
+  /**
+   * Get default LLM helper.
+   *
+   * @returns - The helper
+   */
+  async getDefaultLlmHelper() {
+    const settings = await this.settingService.getSettings();
+
+    const defaultHelper = this.get(
+      HelperType.LLM,
+      settings.chatbot_settings.default_llm_helper,
+    );
+
+    if (!defaultHelper) {
+      throw new Error(`Unable to find default LLM helper`);
+    }
+
+    return defaultHelper;
+  }
 }

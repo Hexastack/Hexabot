@@ -296,6 +296,13 @@ export const NluHelperEntity = new schema.Entity(
   },
 );
 
+export const LlmHelperEntity = new schema.Entity(
+  EntityType.LLM_HELPER,
+  undefined,
+  {
+    idAttribute: ({ name }) => name,
+  },
+);
 
 export const ENTITY_MAP = {
   [EntityType.SUBSCRIBER]: SubscriberEntity,
@@ -325,4 +332,5 @@ export const ENTITY_MAP = {
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.HELPER]: HelperEntity,
   [EntityType.NLU_HELPER]: NluHelperEntity,
+  [EntityType.LLM_HELPER]: LlmHelperEntity,
 } as const;
