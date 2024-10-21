@@ -64,8 +64,6 @@ export const ROUTES = {
   [EntityType.TRANSLATION]: "/translation",
   [EntityType.ATTACHMENT]: "/attachment",
   [EntityType.CHANNEL]: "/channel",
-  [EntityType.HELPER]: "/helper",
-  [EntityType.NLU_HELPER]: "/helper/nlu",
 } as const;
 
 export class ApiClient {

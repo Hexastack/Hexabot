@@ -36,6 +36,7 @@ import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { UserModel } from '@/user/schemas/user.schema';
 import { installMessageFixtures } from '@/utils/test/fixtures/message';
@@ -89,6 +90,12 @@ describe('Offline Handler', () => {
             getSettings: jest.fn(() => ({
               offline: offlineSettings,
             })),
+          },
+        },
+        {
+          provide: NlpService,
+          useValue: {
+            getNLP: jest.fn(() => undefined),
           },
         },
         ChannelService,

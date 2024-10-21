@@ -9,20 +9,25 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
-import { AnyMessage } from '@/chat/schemas/types/message';
+import {
+  CommonExample,
+  DatasetType,
+  EntitySynonym,
+  ExampleEntity,
+  LookupTable,
+} from '@/extensions/helpers/nlp/default/types';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { NlpSampleCreateDto } from '../dto/nlp-sample.dto';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
+import { NlpEntity, NlpEntityFull } from '../schemas/nlp-entity.schema';
 import {
   NlpSample,
   NlpSampleFull,
   NlpSamplePopulate,
 } from '../schemas/nlp-sample.schema';
-import { NlpSampleState } from '../schemas/types';
+import { NlpValue } from '../schemas/nlp-value.schema';
 
 @Injectable()
 export class NlpSampleService extends BaseService<
@@ -33,7 +38,6 @@ export class NlpSampleService extends BaseService<
   constructor(
     readonly repository: NlpSampleRepository,
     private readonly languageService: LanguageService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -47,6 +51,95 @@ export class NlpSampleService extends BaseService<
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
+  }
+
+  /**
+   * Formats a set of NLP samples into the Rasa NLU-compatible training dataset format.
+   *
+   * @param samples - The NLP samples to format.
+   * @param entities - The NLP entities available in the dataset.
+   *
+   * @returns The formatted Rasa NLU training dataset.
+   */
+  async formatRasaNlu(
+    samples: NlpSampleFull[],
+    entities: NlpEntityFull[],
+  ): Promise<DatasetType> {
+    const entityMap = NlpEntity.getEntityMap(entities);
+    const valueMap = NlpValue.getValueMap(
+      NlpValue.getValuesFromEntities(entities),
+    );
+
+    const common_examples: CommonExample[] = samples
+      .filter((s) => s.entities.length > 0)
+      .map((s) => {
+        const intent = s.entities.find(
+          (e) => entityMap[e.entity].name === 'intent',
+        );
+        if (!intent) {
+          throw new Error('Unable to find the `intent` nlp entity.');
+        }
+        const sampleEntities: ExampleEntity[] = s.entities
+          .filter((e) => entityMap[<string>e.entity].name !== 'intent')
+          .map((e) => {
+            const res: ExampleEntity = {
+              entity: entityMap[<string>e.entity].name,
+              value: valueMap[<string>e.value].value,
+            };
+            if ('start' in e && 'end' in e) {
+              Object.assign(res, {
+                start: e.start,
+                end: e.end,
+              });
+            }
+            return res;
+          })
+          // TODO : place language at the same level as the intent
+          .concat({
+            entity: 'language',
+            value: s.language.code,
+          });
+
+        return {
+          text: s.text,
+          intent: valueMap[intent.value].value,
+          entities: sampleEntities,
+        };
+      });
+
+    const languages = await this.languageService.getLanguages();
+    const lookup_tables: LookupTable[] = entities
+      .map((e) => {
+        return {
+          name: e.name,
+          elements: e.values.map((v) => {
+            return v.value;
+          }),
+        };
+      })
+      .concat({
+        name: 'language',
+        elements: Object.keys(languages),
+      });
+    const entity_synonyms = entities
+      .reduce((acc, e) => {
+        const synonyms = e.values.map((v) => {
+          return {
+            value: v.value,
+            synonyms: v.expressions,
+          };
+        });
+        return acc.concat(synonyms);
+      }, [] as EntitySynonym[])
+      .filter((s) => {
+        return s.synonyms.length > 0;
+      });
+    return {
+      common_examples,
+      regex_features: [],
+      lookup_tables,
+      entity_synonyms,
+    };
   }
 
   /**
@@ -64,32 +157,5 @@ export class NlpSampleService extends BaseService<
         language: null,
       },
     );
-  }
-
-  @OnEvent('hook:message:preCreate')
-  async handleNewMessage(doc: AnyMessage) {
-    // If message is sent by the user then add it as an inbox sample
-    if (
-      'sender' in doc &&
-      doc.sender &&
-      'message' in doc &&
-      'text' in doc.message
-    ) {
-      const defaultLang = await this.languageService.getDefaultLanguage();
-      const record: NlpSampleCreateDto = {
-        text: doc.message.text,
-        type: NlpSampleState.inbox,
-        trained: false,
-        // @TODO : We need to define the language in the message entity
-        language: defaultLang.id,
-      };
-      try {
-        await this.findOneOrCreate(record, record);
-        this.logger.debug('User message saved as a inbox sample !');
-      } catch (err) {
-        this.logger.error('Unable to add message as a new inbox sample!', err);
-        throw err;
-      }
-    }
   }
 }

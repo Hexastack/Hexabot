@@ -16,6 +16,7 @@ import { AttachmentModule } from '@/attachment/attachment.module';
 import { NlpEntityController } from './controllers/nlp-entity.controller';
 import { NlpSampleController } from './controllers/nlp-sample.controller';
 import { NlpValueController } from './controllers/nlp-value.controller';
+import { NlpController } from './controllers/nlp.controller';
 import { NlpEntityRepository } from './repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from './repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from './repositories/nlp-sample.repository';
@@ -44,7 +45,12 @@ import { NlpService } from './services/nlp.service';
     AttachmentModule,
     HttpModule,
   ],
-  controllers: [NlpEntityController, NlpValueController, NlpSampleController],
+  controllers: [
+    NlpEntityController,
+    NlpValueController,
+    NlpSampleController,
+    NlpController,
+  ],
   providers: [
     NlpEntityRepository,
     NlpValueRepository,

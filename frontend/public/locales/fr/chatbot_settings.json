@@ -1,15 +1,13 @@
 {
   "title": {
-    "chatbot_settings": "Paramètres du Chatbot"
+    "chatbot_settings": "Chatbot"
   },
   "label": {
-    "global_fallback": "Activer la réponse de secours globale ?",
-    "fallback_message": "Message de secours",
-    "default_nlu_helper": "Utilitaire NLU par défaut"
+    "global_fallback": "Activer le message de secours global?",
+    "fallback_message": "Message de secours"
   },
   "help": {
-    "global_fallback": "La réponse de secours globale vous permet d'envoyer des messages personnalisés lorsque l'entrée de l'utilisateur ne correspond à aucun des messages des blocs.",
-    "fallback_message": "Si aucun bloc de secours n'est sélectionné, l'un de ces messages sera envoyé.",
-    "default_nlu_helper": "Utilitaire du traitement et de la compréhension des entrées des utilisateurs, incluant des tâches telles que la prédiction d'intention, la détection de langue et la reconnaissance d'entités."
+    "global_fallback": "Le message de secours global vous permet d'envoyer des messages personnalisés lorsque le message de l'utilisateur ne déclenche aucun bloc de message.",
+    "fallback_message": "Si aucun bloc de secours n'est spécifié, alors de ces messages sera envoyé."
   }
 }

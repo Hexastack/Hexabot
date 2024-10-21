@@ -11,8 +11,8 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
-import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageCreateDto } from '../dto/message.dto';
@@ -35,7 +35,7 @@ export class ChatService {
     private readonly subscriberService: SubscriberService,
     private readonly botService: BotService,
     private readonly websocketGateway: WebsocketGateway,
-    private readonly helperService: HelperService,
+    private readonly nlpService: NlpService,
   ) {}
 
   /**
@@ -268,9 +268,9 @@ export class ChatService {
       }
 
       if (event.getText() && !event.getNLP()) {
+        const nlpAdapter = this.nlpService.getNLP();
         try {
-          const helper = await this.helperService.getDefaultNluHelper();
-          const nlp = await helper.predict(event.getText());
+          const nlp = await nlpAdapter.parse(event.getText());
           event.setNLP(nlp);
         } catch (err) {
           this.logger.error('Unable to perform NLP parse', err);

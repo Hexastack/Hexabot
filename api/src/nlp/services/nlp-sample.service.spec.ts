@@ -14,7 +14,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -29,10 +28,10 @@ import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
-  NlpSampleEntity,
   NlpSampleEntityModel,
+  NlpSampleEntity,
 } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleModel } from '../schemas/nlp-sample.schema';
+import { NlpSampleModel, NlpSample } from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
@@ -73,7 +72,6 @@ describe('NlpSampleService', () => {
         NlpValueService,
         LanguageService,
         EventEmitter2,
-        LoggerService,
         {
           provide: CACHE_MANAGER,
           useValue: {

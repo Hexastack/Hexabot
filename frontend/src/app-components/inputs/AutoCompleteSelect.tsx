@@ -11,7 +11,7 @@ import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
 } from "@mui/material/Autocomplete";
-import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { useState, useCallback, useMemo, useEffect, forwardRef } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
 
