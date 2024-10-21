@@ -16,7 +16,7 @@ export const OLLAMA_HELPER_SETTINGS = [
     label: 'model',
     group: OLLAMA_HELPER_GROUP,
     type: SettingType.text,
-    value: 'tinyllama', // Default model
+    value: 'llama3.2', // Default model
   },
   {
     label: 'keep_alive',

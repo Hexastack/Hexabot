@@ -68,6 +68,29 @@ export class HelperService {
   }
 
   /**
+   * Get a helper by class.
+   *
+   * @param type - The type of helper.
+   * @param name - The helper's name.
+   *
+   * @returns - The helper
+   */
+  public use<
+    T extends HelperType,
+    C extends new (...args: any[]) => TypeOfHelper<T>,
+  >(type: T, cls: C) {
+    const helpers = this.getAllByType(type);
+
+    const helper = helpers.find((h) => h instanceof cls);
+
+    if (!helper) {
+      throw new Error(`Unable to find the requested helper`);
+    }
+
+    return helper as InstanceType<C>;
+  }
+
+  /**
    * Get default NLU helper.
    *
    * @returns - The helper
