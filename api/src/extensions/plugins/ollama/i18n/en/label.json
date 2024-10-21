@@ -1,0 +1,23 @@
+{
+  "api_url": "API URL",
+  "model": "Model",
+  "keep_alive": "Keep Alive",
+  "max_messages_ctx": "Max Context Messages",
+  "context": "Context",
+  "instructions": "Instructions",
+  "fallback_message": "Fallback Message",
+  "mirostat": "Mirostat",
+  "mirostat_eta": "Mirostat Eta",
+  "mirostat_tau": "Mirostat Tau",
+  "num_ctx": "Context Window Size",
+  "repeat_last_n": "Repeat Last N",
+  "repeat_penalty": "Repeat Penalty",
+  "temperature": "Temperature",
+  "seed": "Seed",
+  "stop": "Stop",
+  "tfs_z": "TFS Z",
+  "num_predict": "Maximum number of tokens",
+  "top_k": "Top K",
+  "top_p": "Top P",
+  "min_p": "Min P"
+}
