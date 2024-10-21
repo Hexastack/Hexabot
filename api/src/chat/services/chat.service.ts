@@ -17,7 +17,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageCreateDto } from '../dto/message.dto';
 import { Conversation } from '../schemas/conversation.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+import { SubscriberDocument } from '../schemas/subscriber.schema';
 import { OutgoingMessage } from '../schemas/types/message';
 
 import { BotService } from './bot.service';
@@ -289,7 +289,8 @@ export class ChatService {
    * @param subscriber - The end user (subscriber)
    */
   @OnEvent('hook:subscriber:postCreate')
-  onSubscriberCreate(subscriber: Subscriber) {
+  async onSubscriberCreate({ _id }: SubscriberDocument) {
+    const subscriber = await this.subscriberService.findOne(_id);
     this.websocketGateway.broadcastSubscriberNew(subscriber);
   }
 
@@ -299,7 +300,8 @@ export class ChatService {
    * @param subscriber - The end user (subscriber)
    */
   @OnEvent('hook:subscriber:postUpdate')
-  onSubscriberUpdate(subscriber: Subscriber) {
+  async onSubscriberUpdate({ _id }: SubscriberDocument) {
+    const subscriber = await this.subscriberService.findOne(_id);
     this.websocketGateway.broadcastSubscriberUpdate(subscriber);
   }
 }
