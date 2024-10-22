@@ -1,5 +1,5 @@
 import DEFAULT_LIVE_CHAT_TEST_SETTINGS, {
-  LIVE_CHAT_TEST_GROUP_NAME,
+  LIVE_CHAT_TEST_CHANNEL_NAMESPACE,
 } from './settings';
 
 declare global {
@@ -9,7 +9,7 @@ declare global {
 
 declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
-    [LIVE_CHAT_TEST_GROUP_NAME]: TDefinition<
+    [LIVE_CHAT_TEST_CHANNEL_NAMESPACE]: TDefinition<
       object,
       SettingMapByType<typeof DEFAULT_LIVE_CHAT_TEST_SETTINGS>
     >;

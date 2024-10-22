@@ -58,7 +58,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { OFFLINE_GROUP_NAME } from './settings';
+import { OFFLINE_CHANNEL_NAMESPACE } from './settings';
 import { Offline } from './types';
 import OfflineEventWrapper from './wrapper';
 
@@ -299,7 +299,7 @@ export default abstract class BaseWebChannelHandler<
    */
   private async verifyToken(verificationToken: string) {
     const settings =
-      (await this.getSettings()) as Settings[typeof OFFLINE_GROUP_NAME];
+      (await this.getSettings()) as Settings[typeof OFFLINE_CHANNEL_NAMESPACE];
     const verifyToken = settings.verification_token;
 
     if (!verifyToken) {
@@ -326,7 +326,7 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
-    const settings = await this.getSettings<typeof OFFLINE_GROUP_NAME>();
+    const settings = await this.getSettings<typeof OFFLINE_CHANNEL_NAMESPACE>();
     // If we have an origin header...
     if (req.headers && req.headers.origin) {
       // Get the allowed origins
