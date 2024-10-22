@@ -4,4 +4,4 @@ certbot
 docker/**/data
 node_modules/
 /docker/**/db_data
-*.idea
+.idea/
