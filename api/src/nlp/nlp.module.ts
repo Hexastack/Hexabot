@@ -9,7 +9,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 
@@ -32,7 +31,6 @@ import { NlpSampleService } from './services/nlp-sample.service';
 import { NlpValueService } from './services/nlp-value.service';
 import { NlpService } from './services/nlp.service';
 
-@InjectDynamicProviders('dist/extensions/**/*.nlp.helper.js')
 @Module({
   imports: [
     MongooseModule.forFeature([
