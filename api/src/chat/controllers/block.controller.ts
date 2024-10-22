@@ -27,7 +27,7 @@ import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
-import { PluginType } from '@/plugins/types';
+import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
@@ -85,20 +85,23 @@ export class BlockController extends BaseController<
   /**
    * Retrieves a custom block settings for a specific plugin.
    *
-   * @param pluginId - The name of the plugin for which settings are to be retrieved.
+   * @param pluginName - The name of the plugin for which settings are to be retrieved.
    *
    * @returns An array containing the settings of the specified plugin.
    */
   @Get('customBlocks/settings')
-  findSettings(@Query('plugin') pluginId: string) {
+  findSettings(@Query('plugin') pluginName: PluginName) {
     try {
-      if (!pluginId) {
+      if (!pluginName) {
         throw new BadRequestException(
           'Plugin id must be supplied as a query param',
         );
       }
 
-      const plugin = this.pluginsService.getPlugin(PluginType.block, pluginId);
+      const plugin = this.pluginsService.getPlugin(
+        PluginType.block,
+        pluginName,
+      );
 
       if (!plugin) {
         throw new NotFoundException('Plugin Not Found');
@@ -122,11 +125,12 @@ export class BlockController extends BaseController<
       const plugins = this.pluginsService
         .getAllByType(PluginType.block)
         .map((p) => ({
-          id: p.id,
+          id: p.getName(),
+          namespace: p.getNamespace(),
           template: {
             ...p.template,
             message: {
-              plugin: p.id,
+              plugin: p.name,
               args: p.settings.reduce(
                 (acc, setting) => {
                   acc[setting.label] = setting.value;

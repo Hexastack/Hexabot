@@ -16,7 +16,7 @@ import { modelInstance } from './misc';
 import { subscriberInstance } from './subscriber';
 
 export const contextBlankInstance: Context = {
-  channel: 'offline',
+  channel: 'offline-channel',
   text: '',
   payload: undefined,
   nlp: { entities: [] },
@@ -42,7 +42,7 @@ export const contextEmailVarInstance: Context = {
 };
 
 export const contextGetStartedInstance: Context = {
-  channel: 'offline',
+  channel: 'offline-channel',
   text: 'Get Started',
   payload: 'GET_STARTED',
   nlp: { entities: [] },

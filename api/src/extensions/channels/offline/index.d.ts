@@ -1,4 +1,4 @@
-import { DEFAULT_OFFLINE_SETTINGS, OFFLINE_GROUP_NAME } from './settings';
+import DEFAULT_OFFLINE_SETTINGS, { OFFLINE_GROUP_NAME } from './settings';
 
 declare global {
   interface Settings extends SettingTree<typeof DEFAULT_OFFLINE_SETTINGS> {}

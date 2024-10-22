@@ -224,7 +224,7 @@ describe('BlockService', () => {
               nlp: null,
               payload: null,
               attempt: 0,
-              channel: 'offline',
+              channel: 'offline-channel',
               text: offlineEventText.data.text,
             },
           });
@@ -283,7 +283,7 @@ describe('BlockService', () => {
               nlp: null,
               payload: null,
               attempt: 0,
-              channel: 'offline',
+              channel: 'offline-channel',
               text: offlineEventText.data.text,
             },
           });

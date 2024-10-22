@@ -23,23 +23,23 @@ import {
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
-import { HelperSetting, HelperType, Nlp } from '../types';
+import { HelperName, HelperType, Nlp } from '../types';
 
 import BaseHelper from './base-helper';
 
+// eslint-disable-next-line prettier/prettier
 export default abstract class BaseNlpHelper<
-  N extends string,
+  N extends HelperName = HelperName,
 > extends BaseHelper<N> {
   protected readonly type: HelperType = HelperType.NLU;
 
   constructor(
     name: N,
-    settings: HelperSetting<N>[],
     settingService: SettingService,
     helperService: HelperService,
     logger: LoggerService,
   ) {
-    super(name, settings, settingService, helperService, logger);
+    super(name, settingService, helperService, logger);
   }
 
   /**

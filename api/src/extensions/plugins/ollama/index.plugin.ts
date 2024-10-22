@@ -14,14 +14,13 @@ import { HelperType } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
+import { PluginBlockTemplate } from '@/plugins/types';
 
-import { OLLAMA_PLUGIN_SETTINGS } from './settings';
+import SETTINGS from './settings';
 
 @Injectable()
-export class OllamaPlugin extends BaseBlockPlugin<
-  typeof OLLAMA_PLUGIN_SETTINGS
-> {
-  public readonly settings = OLLAMA_PLUGIN_SETTINGS;
+export class OllamaPlugin extends BaseBlockPlugin<typeof SETTINGS> {
+  template: PluginBlockTemplate = { name: 'Ollama Plugin' };
 
   constructor(
     pluginService: PluginService,
@@ -30,12 +29,11 @@ export class OllamaPlugin extends BaseBlockPlugin<
     private contentService: ContentService,
     private messageService: MessageService,
   ) {
-    super('ollama', OLLAMA_PLUGIN_SETTINGS, pluginService);
+    super('ollama-plugin', pluginService);
+  }
 
-    this.template = { name: 'Ollama Plugin' };
-    this.effects = {
-      onStoreContextData: () => {},
-    };
+  getPath(): string {
+    return __dirname;
   }
 
   async process(block: Block, context: Context, _convId: string) {

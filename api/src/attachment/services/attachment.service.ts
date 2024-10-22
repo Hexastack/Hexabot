@@ -108,13 +108,13 @@ export class AttachmentService extends BaseService<Attachment> {
         await this.getStoragePlugin().uploadAvatar(picture);
         this.logger.log(
           `Profile picture uploaded successfully to ${
-            this.getStoragePlugin().id
+            this.getStoragePlugin().name
           }`,
         );
       } catch (err) {
         this.logger.error(
           `Error while uploading profile picture to ${
-            this.getStoragePlugin().id
+            this.getStoragePlugin().name
           }`,
           err,
         );

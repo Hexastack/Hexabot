@@ -21,10 +21,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import BaseWebChannelHandler from '../offline/base-web-channel';
 
-import {
-  DEFAULT_LIVE_CHAT_TEST_SETTINGS,
-  LIVE_CHAT_TEST_CHANNEL_NAME,
-} from './settings';
+import { LIVE_CHAT_TEST_CHANNEL_NAME } from './settings';
 
 @Injectable()
 export default class LiveChatTesterHandler extends BaseWebChannelHandler<
@@ -44,7 +41,6 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
   ) {
     super(
       LIVE_CHAT_TEST_CHANNEL_NAME,
-      DEFAULT_LIVE_CHAT_TEST_SETTINGS,
       settingService,
       channelService,
       logger,
@@ -56,5 +52,9 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
       menuService,
       websocketGateway,
     );
+  }
+
+  getPath(): string {
+    return __dirname;
   }
 }

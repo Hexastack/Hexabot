@@ -7,6 +7,7 @@
  */
 
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { ChannelName } from '@/channel/types';
 import {
   AttachmentForeignKey,
   AttachmentPayload,
@@ -67,7 +68,8 @@ type OfflineEventAdapter =
     };
 
 export default class OfflineEventWrapper<
-  T extends BaseWebChannelHandler<string> = BaseWebChannelHandler<string>,
+  T extends
+    BaseWebChannelHandler<ChannelName> = BaseWebChannelHandler<ChannelName>,
 > extends EventWrapper<OfflineEventAdapter, Offline.Event> {
   /**
    * Constructor : channel's event wrapper

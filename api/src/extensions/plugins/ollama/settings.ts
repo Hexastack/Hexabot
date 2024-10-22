@@ -1,7 +1,7 @@
 import { PluginSetting } from '@/plugins/types';
 import { SettingType } from '@/setting/schemas/types';
 
-export const OLLAMA_PLUGIN_SETTINGS = [
+export default [
   {
     label: 'model',
     group: 'default',

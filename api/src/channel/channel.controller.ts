@@ -23,7 +23,7 @@ export class ChannelController {
   getChannels(): { name: string }[] {
     return this.channelService.getAll().map((handler) => {
       return {
-        name: handler.getChannel(),
+        name: handler.getName(),
       };
     });
   }

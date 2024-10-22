@@ -23,10 +23,11 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import ChannelHandler from './lib/Handler';
+import { ChannelName } from './types';
 
 @Injectable()
 export class ChannelService {
-  private registry: Map<string, ChannelHandler<string>> = new Map();
+  private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
 
   constructor(
     private readonly logger: LoggerService,
@@ -40,7 +41,7 @@ export class ChannelService {
    * @param channel - The channel handler associated with the channel name.
    * @typeParam C The channel handler's type that extends `ChannelHandler`.
    */
-  public setChannel<T extends string, C extends ChannelHandler<T>>(
+  public setChannel<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
     channel: C,
   ) {
@@ -62,9 +63,9 @@ export class ChannelService {
    * @param name - The name of the channel to find.
    * @returns The channel handler associated with the specified name, or undefined if the channel is not found.
    */
-  public findChannel(name: string) {
+  public findChannel(name: ChannelName) {
     return this.getAll().find((c) => {
-      return c.getChannel() === name;
+      return c.getName() === name;
     });
   }
 
@@ -74,7 +75,7 @@ export class ChannelService {
    * @param channelName - The name of the channel (messenger, offline, ...).
    * @returns The handler for the specified channel.
    */
-  public getChannelHandler<T extends string, C extends ChannelHandler<T>>(
+  public getChannelHandler<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
   ): C {
     const handler = this.registry.get(name);
@@ -93,7 +94,7 @@ export class ChannelService {
    * @returns A promise that resolves when the handler has processed the request.
    */
   async handle(channel: string, req: Request, res: Response): Promise<void> {
-    const handler = this.getChannelHandler(channel);
+    const handler = this.getChannelHandler(`${channel}-channel`);
     handler.handle(req, res);
   }
 

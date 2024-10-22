@@ -27,7 +27,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'FR',
     channel: {
-      name: 'messenger',
+      name: 'messenger-channel',
     },
     labels: [],
     assignedAt: null,
@@ -43,7 +43,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline',
+      name: 'offline-channel',
     },
     labels: [],
     assignedAt: null,
@@ -59,7 +59,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline',
+      name: 'offline-channel',
     },
     labels: [],
     assignedAt: null,
@@ -75,7 +75,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline',
+      name: 'offline-channel',
     },
     labels: [],
     assignedAt: null,

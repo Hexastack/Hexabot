@@ -131,7 +131,7 @@ describe('Offline Handler', () => {
 
   it('should have correct name', () => {
     expect(handler).toBeDefined();
-    expect(handler.getChannel()).toEqual('offline');
+    expect(handler.getName()).toEqual('offline-channel');
   });
 
   it('should format text properly', () => {
@@ -192,7 +192,7 @@ describe('Offline Handler', () => {
         agent: req.headers['user-agent'],
         ipAddress: '0.0.0.0',
         isSocket: false,
-        name: 'offline',
+        name: 'offline-channel',
       },
       country: '',
       first_name: req.query.first_name,

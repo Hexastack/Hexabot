@@ -222,7 +222,7 @@ describe('BlockService', () => {
 
   describe('match', () => {
     const handlerMock = {
-      getChannel: jest.fn(() => OFFLINE_CHANNEL_NAME),
+      getName: jest.fn(() => OFFLINE_CHANNEL_NAME),
     } as any as OfflineHandler;
     const offlineEventGreeting = new OfflineEventWrapper(
       handlerMock,
@@ -502,7 +502,7 @@ describe('BlockService', () => {
   describe('processText', () => {
     const context: Context = {
       ...contextGetStartedInstance,
-      channel: 'offline',
+      channel: 'offline-channel',
       text: '',
       payload: undefined,
       nlp: { entities: [] },

@@ -17,7 +17,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { PluginType } from '@/plugins/types';
+import { PluginName, PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';
@@ -71,7 +71,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     const payload = event.getPayload();
 
     // Perform a filter on the specific channels
-    const channel = event.getHandler().getChannel();
+    const channel = event.getHandler().getName();
     blocks = blocks.filter((b) => {
       return (
         !b.trigger_channels ||
@@ -593,7 +593,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     } else if (blockMessage && 'plugin' in blockMessage) {
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
-        blockMessage.plugin,
+        blockMessage.plugin as PluginName,
       );
       // Process custom plugin block
       try {

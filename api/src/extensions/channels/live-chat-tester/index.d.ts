@@ -1,5 +1,4 @@
-import {
-  DEFAULT_LIVE_CHAT_TEST_SETTINGS,
+import DEFAULT_LIVE_CHAT_TEST_SETTINGS, {
   LIVE_CHAT_TEST_GROUP_NAME,
 } from './settings';
 

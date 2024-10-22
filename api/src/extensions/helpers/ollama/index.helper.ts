@@ -17,7 +17,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { Setting } from '@/setting/schemas/setting.schema';
 import { SettingService } from '@/setting/services/setting.service';
 
-import { OLLAMA_HELPER_NAME, OLLAMA_HELPER_SETTINGS } from './settings';
+import { OLLAMA_HELPER_NAME } from './settings';
 
 @Injectable()
 export default class OllamaLlmHelper
@@ -36,13 +36,11 @@ export default class OllamaLlmHelper
     helperService: HelperService,
     protected readonly logger: LoggerService,
   ) {
-    super(
-      OLLAMA_HELPER_NAME,
-      OLLAMA_HELPER_SETTINGS,
-      settingService,
-      helperService,
-      logger,
-    );
+    super('ollama-helper', settingService, helperService, logger);
+  }
+
+  getPath(): string {
+    return __dirname;
   }
 
   async onApplicationBootstrap() {
@@ -51,7 +49,7 @@ export default class OllamaLlmHelper
     this.client = new Ollama({ host: settings.api_url });
   }
 
-  @OnEvent('hook:ollama:api_url')
+  @OnEvent('hook:ollama_helper:api_url')
   handleApiUrlChange(setting: Setting) {
     this.client = new Ollama({ host: setting.value });
   }

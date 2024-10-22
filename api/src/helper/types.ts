@@ -29,10 +29,12 @@ export enum HelperType {
   UTIL = 'util',
 }
 
+export type HelperName = `${string}-helper`;
+
 export type TypeOfHelper<T extends HelperType> = T extends HelperType.LLM
-  ? BaseLlmHelper<string>
+  ? BaseLlmHelper<HelperName>
   : T extends HelperType.NLU
-    ? BaseNlpHelper<string>
+    ? BaseNlpHelper<HelperName>
     : BaseHelper;
 
 export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
@@ -40,7 +42,7 @@ export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
   Map<string, H>
 >;
 
-export type HelperSetting<N extends string = string> = Omit<
+export type HelperSetting<N extends HelperName = HelperName> = Omit<
   SettingCreateDto,
   'group' | 'weight'
 > & {

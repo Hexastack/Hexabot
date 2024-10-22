@@ -12,7 +12,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import BaseHelper from './lib/base-helper';
-import { HelperRegistry, HelperType, TypeOfHelper } from './types';
+import { HelperName, HelperRegistry, HelperType, TypeOfHelper } from './types';
 
 @Injectable()
 export class HelperService {
@@ -33,7 +33,7 @@ export class HelperService {
    *
    * @param name - The helper to be registered.
    */
-  public register<H extends BaseHelper<string>>(helper: H) {
+  public register<H extends BaseHelper>(helper: H) {
     const helpers = this.registry.get(helper.getType());
     helpers.set(helper.getName(), helper);
     this.logger.log(`Helper "${helper.getName()}" has been registered!`);
@@ -47,7 +47,7 @@ export class HelperService {
    *
    * @returns - The helper
    */
-  public get<T extends HelperType>(type: T, name: string) {
+  public get<T extends HelperType>(type: T, name: HelperName) {
     const helpers = this.registry.get(type);
 
     if (!helpers.has(name)) {
@@ -65,6 +65,16 @@ export class HelperService {
     const helpers = this.registry.get(type) as Map<string, TypeOfHelper<T>>;
 
     return Array.from(helpers.values());
+  }
+
+  /**
+   * Retrieves all registered helpers as an array.
+   *
+   * @returns An array containing all the registered helpers.
+   */
+  public getAll(): BaseHelper[] {
+    return Array.from(this.registry.values()) // Get all the inner maps
+      .flatMap((innerMap) => Array.from(innerMap.values())); // Flatten and get the values from each inner map
   }
 
   /**
@@ -100,7 +110,7 @@ export class HelperService {
 
     const defaultHelper = this.get(
       HelperType.NLU,
-      settings.chatbot_settings.default_nlu_helper,
+      settings.chatbot_settings.default_nlu_helper as HelperName,
     );
 
     if (!defaultHelper) {
@@ -120,7 +130,7 @@ export class HelperService {
 
     const defaultHelper = this.get(
       HelperType.LLM,
-      settings.chatbot_settings.default_llm_helper,
+      settings.chatbot_settings.default_llm_helper as HelperName,
     );
 
     if (!defaultHelper) {

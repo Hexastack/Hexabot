@@ -12,11 +12,11 @@ import { SettingType } from '@/setting/schemas/types';
 
 import { Offline } from '../offline/types';
 
-export const LIVE_CHAT_TEST_CHANNEL_NAME = 'live-chat-tester';
+export const LIVE_CHAT_TEST_CHANNEL_NAME = 'live-chat-tester-channel';
 
-export const LIVE_CHAT_TEST_GROUP_NAME = 'live_chat_tester';
+export const LIVE_CHAT_TEST_GROUP_NAME = 'live_chat_tester_channel';
 
-export const DEFAULT_LIVE_CHAT_TEST_SETTINGS = [
+export default [
   {
     group: LIVE_CHAT_TEST_GROUP_NAME,
     label: Offline.SettingLabel.verification_token,

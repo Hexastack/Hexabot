@@ -7,7 +7,7 @@
  */
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 import { ChannelService } from './channel.service';
 
@@ -20,7 +20,9 @@ export class ChannelMiddleware implements NestMiddleware {
     try {
       const [_, path, channelName] = req.path.split('/');
       if (path === 'webhook' && channelName) {
-        const channel = this.channelService.getChannelHandler(channelName);
+        const channel = this.channelService.getChannelHandler(
+          `${channelName}-channel`,
+        );
         if (channel) {
           return await channel.middleware(req, res, next);
         }
