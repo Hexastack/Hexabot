@@ -12,7 +12,6 @@ if platform == "darwin":
 else:
     from keras.optimizers import Adam
 
-from keras.losses import SparseCategoricalCrossentropy
 from keras.metrics import SparseCategoricalAccuracy
 from focal_loss import SparseCategoricalFocalLoss
 import numpy as np
