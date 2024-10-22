@@ -6,7 +6,7 @@ class JsonHelper:
 
     def __init__(self, model:str = "intent_classifier"):
         self.data_folder=os.path.join("data",model)
-        
+
     def read_dataset_json_file(self, filename):
         file_path = os.path.join(self.data_folder, filename)
         if os.path.exists(file_path):

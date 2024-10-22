@@ -125,14 +125,6 @@ class TFLCDL(tfbp.DataLoader):
         else:
             raise ValueError("Unknown method!")
 
-    def get_prediction_data(self):
-        # The predict file contains a single JSON object whose only key is text.
-        data = self.json_helper.read_dataset_json_file("predict.json")
-        text = self.strip_numbers(data["text"])
-        encoded_texts = np.array(self.tfidf.transform(
-            [text]).toarray())  # type: ignore
-        return np.array([text]), encoded_texts
-
     def encode_text(self, text: str):
         sanitized_text = self.strip_numbers(text)
         return self.tfidf.transform([sanitized_text]).toarray() # type: ignore

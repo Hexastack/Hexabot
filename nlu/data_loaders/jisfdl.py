@@ -210,10 +210,6 @@ class JISFDL(tfbp.DataLoader):
 
         return encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names
 
-    def get_prediction_data(self) -> str:
-        helper = JsonHelper()
-        dataset = helper.read_dataset_json_file('predict.json')
-        return dataset["text"]
 
     def encode_text(self, text: str, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast]):
         return self.encode_texts([text], tokenizer)

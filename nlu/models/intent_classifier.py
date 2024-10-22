@@ -12,8 +12,8 @@ if platform == "darwin":
 else:
     from keras.optimizers import Adam
 
-from keras.losses import SparseCategoricalCrossentropy
 from keras.metrics import SparseCategoricalAccuracy
+from focal_loss import SparseCategoricalFocalLoss
 import numpy as np
 
 from data_loaders.jisfdl import JISFDL
@@ -42,6 +42,8 @@ class IntentClassifier(tfbp.Model):
         "num_epochs": 2,
         "dropout_prob": 0.1,
         "intent_num_labels": 7,
+        "gamma": 2,
+        "k": 3
     }
     data_loader: JISFDL
 
@@ -128,7 +130,7 @@ class IntentClassifier(tfbp.Model):
         # Hyperparams, Optimizer and Loss function
         opt = Adam(learning_rate=3e-5, epsilon=1e-08)
 
-        losses = SparseCategoricalCrossentropy()
+        losses = SparseCategoricalFocalLoss(gamma=self.hparams.gamma)
 
         metrics = [SparseCategoricalAccuracy("accuracy")]
 
@@ -172,32 +174,48 @@ class IntentClassifier(tfbp.Model):
 
         return scores
 
-    @tfbp.runnable
-    def predict(self):
-        text = self.data_loader.get_prediction_data()
-
-        info = self.get_prediction(text)
-
-        print(self.summary())
-        print("Text : " + text)
-        print(json.dumps(info, indent=2))
-
-        return json.dumps(info, indent=2)
 
     def get_prediction(self, text: str):
         inputs = self.data_loader.encode_text(text, self.tokenizer)
         intent_probas = self(inputs)  # type: ignore
 
         intent_probas_np = intent_probas.numpy()
-        
+
         # Get the indices of the maximum values
         intent_id = intent_probas_np.argmax(axis=-1)[0]
-        
+
         # get the confidences for each intent
         intent_confidences = intent_probas_np[0]
 
-        return {
+        margin = self.compute_normalized_confidence_margin(intent_probas_np)
+        output = {
             "text": text,
             "intent": {"name": self.extra_params["intent_names"][intent_id],
                        "confidence": float(intent_confidences[intent_id])},
+            "margin": margin,
         }
+
+        return output
+
+    def compute_top_k_confidence(self, probs, k=3):
+        sorted_probas = np.sort(probs[0])[::-1]  # Sort in descending order
+        top_k_sum = np.sum(sorted_probas[:k])
+        return top_k_sum
+
+    def compute_normalized_confidence_margin(self, probs):
+        highest_proba = np.max(probs[0])
+        sum_of_probas = self.compute_top_k_confidence(probs, self.hparams.k)
+        # Normalized margin
+        normalized_margin = highest_proba / sum_of_probas
+        return normalized_margin
+
+    @tfbp.runnable
+    def predict(self):
+        while True:
+
+            text = input("Provide text: ")
+            output = self.get_prediction(text)
+            print(output)
+            # Optionally, provide a way to exit the loop
+            if input("Try again? (y/n): ").lower() != 'y':
+                break

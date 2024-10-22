@@ -95,19 +95,27 @@ class TFLC(tfbp.Model):
 
         self.calculate_metrics(y_test, y_pred, languages)
 
+    def preprocess_text(self, text):
+        # The predict file contains a single JSON object whose only key is text.
+        stripped_text = self.strip_numbers(text)
+        encoded_text = np.array(self.tfidf.transform(
+            [stripped_text]).toarray())  # type: ignore
+        return np.array([stripped_text]), encoded_text
+
     @tfbp.runnable
     def predict(self):
         languages = list(self.extra_params['languages'])
-        texts, encoded_texts = self.data_loader.get_prediction_data()
+        input_provided = input("Provide text: ")
+        text, encoded_text = self.preprocess_text(input_provided)
         # converting a one hot output to language index
-        probas = super().predict(encoded_texts)
+        probas = super().predict(encoded_text)
         predictions = np.argmax(probas, axis=1)
 
         results = []
         for idx, prediction in enumerate(predictions):
             print('The sentence "{}" is in {}.'.format(
-                texts[idx], languages[prediction].upper()))
-            results.append({'text': texts[idx], 'language': prediction})
+                text[idx], languages[prediction].upper()))
+            results.append({'text': text[idx], 'language': prediction})
         return results
 
     def get_prediction(self, text: str):
