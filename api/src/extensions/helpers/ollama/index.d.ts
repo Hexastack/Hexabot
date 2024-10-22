@@ -1,4 +1,4 @@
-import OLLAMA_HELPER_SETTINGS, { OLLAMA_HELPER_GROUP } from './settings';
+import OLLAMA_HELPER_SETTINGS, { OLLAMA_HELPER_NAMESPACE } from './settings';
 
 declare global {
   interface Settings extends SettingTree<typeof OLLAMA_HELPER_SETTINGS> {}
@@ -6,7 +6,7 @@ declare global {
 
 declare module '@nestjs/event-emitter' {
   interface IHookExtensionsOperationMap {
-    [OLLAMA_HELPER_GROUP]: TDefinition<
+    [OLLAMA_HELPER_NAMESPACE]: TDefinition<
       object,
       SettingMapByType<typeof OLLAMA_HELPER_SETTINGS>
     >;

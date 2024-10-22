@@ -3,23 +3,23 @@ import { SettingType } from '@/setting/schemas/types';
 
 export const CORE_NLU_HELPER_NAME = 'core-nlu-helper';
 
-export const CORE_NLU_HELPER_GROUP = 'core_nlu_helper';
+export const CORE_NLU_HELPER_NAMESPACE = 'core_nlu_helper';
 
 export default [
   {
-    group: CORE_NLU_HELPER_GROUP,
+    group: CORE_NLU_HELPER_NAMESPACE,
     label: 'endpoint',
     value: 'http://nlu-api:5000/',
     type: SettingType.text,
   },
   {
-    group: CORE_NLU_HELPER_GROUP,
+    group: CORE_NLU_HELPER_NAMESPACE,
     label: 'token',
     value: 'token123',
     type: SettingType.text,
   },
   {
-    group: CORE_NLU_HELPER_GROUP,
+    group: CORE_NLU_HELPER_NAMESPACE,
     label: 'threshold',
     value: 0.1,
     type: SettingType.number,
