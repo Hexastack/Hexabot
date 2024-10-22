@@ -11,7 +11,7 @@ import { Button, WebUrlButton } from '@/chat/schemas/types/button';
 import { FileType } from '@/chat/schemas/types/message';
 import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
 
-export namespace Offline {
+export namespace Web {
   export enum SettingLabel {
     secret = 'secret',
     verification_token = 'verification_token',
@@ -39,7 +39,7 @@ export namespace Offline {
   };
 
   export type RequestSession = {
-    offline?: {
+    web?: {
       profile: SubscriberFull;
       isSocket: boolean;
       messageQueue: any[];
@@ -61,7 +61,7 @@ export namespace Offline {
     file = 'file',
   }
 
-  export type EventType = Offline.StatusEventType | Offline.IncomingMessageType;
+  export type EventType = Web.StatusEventType | Web.IncomingMessageType;
 
   export enum OutgoingMessageType {
     text = 'text',

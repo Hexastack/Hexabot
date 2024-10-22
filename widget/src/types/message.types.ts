@@ -82,7 +82,7 @@ export type TChannelData = {
 };
 
 export type TRequestSession = {
-  offline?: {
+  web?: {
     profile: ISubscriber;
     isSocket: boolean;
     // @TODO : not sure why we added messageQuery (long pooling ?)

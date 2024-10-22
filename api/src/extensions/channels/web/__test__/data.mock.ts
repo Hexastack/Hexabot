@@ -12,14 +12,14 @@ import { ButtonType } from '@/chat/schemas/types/button';
 import { FileType } from '@/chat/schemas/types/message';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
-import { Offline } from '../types';
+import { Web } from '../types';
 
-export const offlineText: Offline.OutgoingMessageBase = {
-  type: Offline.OutgoingMessageType.text,
+export const webText: Web.OutgoingMessageBase = {
+  type: Web.OutgoingMessageType.text,
   data: textMessage,
 };
 
-export const offlineQuickReplies: Offline.OutgoingMessageBase = {
+export const webQuickReplies: Web.OutgoingMessageBase = {
   data: {
     quick_replies: [
       {
@@ -35,10 +35,10 @@ export const offlineQuickReplies: Offline.OutgoingMessageBase = {
     ],
     text: 'Choose one option',
   },
-  type: Offline.OutgoingMessageType.quick_replies,
+  type: Web.OutgoingMessageType.quick_replies,
 };
 
-export const offlineButtons: Offline.OutgoingMessageBase = {
+export const webButtons: Web.OutgoingMessageBase = {
   data: {
     buttons: [
       {
@@ -56,10 +56,10 @@ export const offlineButtons: Offline.OutgoingMessageBase = {
     ],
     text: 'Hit one of these buttons :',
   },
-  type: Offline.OutgoingMessageType.buttons,
+  type: Web.OutgoingMessageType.buttons,
 };
 
-export const offlineList: Offline.OutgoingMessageBase = {
+export const webList: Web.OutgoingMessageBase = {
   data: {
     buttons: [
       {
@@ -95,10 +95,10 @@ export const offlineList: Offline.OutgoingMessageBase = {
       },
     ],
   },
-  type: Offline.OutgoingMessageType.list,
+  type: Web.OutgoingMessageType.list,
 };
 
-export const offlineCarousel: Offline.OutgoingMessageBase = {
+export const webCarousel: Web.OutgoingMessageBase = {
   data: {
     elements: [
       {
@@ -127,10 +127,10 @@ export const offlineCarousel: Offline.OutgoingMessageBase = {
       },
     ],
   },
-  type: Offline.OutgoingMessageType.carousel,
+  type: Web.OutgoingMessageType.carousel,
 };
 
-export const offlineAttachment: Offline.OutgoingMessageBase = {
+export const webAttachment: Web.OutgoingMessageBase = {
   data: {
     quick_replies: [
       {
@@ -142,5 +142,5 @@ export const offlineAttachment: Offline.OutgoingMessageBase = {
     type: FileType.image,
     url: 'http://localhost:4000/attachment/download/1/attachment.jpg',
   },
-  type: Offline.OutgoingMessageType.file,
+  type: Web.OutgoingMessageType.file,
 };

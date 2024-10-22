@@ -36,14 +36,14 @@ import {
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import OfflineHandler from '../index.channel';
-import OfflineEventWrapper from '../wrapper';
+import WebChannelHandler from '../index.channel';
+import WebEventWrapper from '../wrapper';
 
-import { offlineEvents } from './events.mock';
+import { webEvents } from './events.mock';
 
-describe(`Offline event wrapper`, () => {
-  let handler: OfflineHandler;
-  const offlineSettings = {};
+describe(`Web event wrapper`, () => {
+  let handler: WebChannelHandler;
+  const webSettings = {};
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
@@ -65,7 +65,7 @@ describe(`Offline event wrapper`, () => {
               chatbot: { lang: { default: 'fr' } },
             })),
             getSettings: jest.fn(() => ({
-              offline: offlineSettings,
+              web: webSettings,
             })),
           },
         },
@@ -86,7 +86,7 @@ describe(`Offline event wrapper`, () => {
         MessageRepository,
         MenuService,
         MenuRepository,
-        OfflineHandler,
+        WebChannelHandler,
         EventEmitter2,
         LoggerService,
         {
@@ -105,7 +105,7 @@ describe(`Offline event wrapper`, () => {
         },
       ],
     }).compile();
-    handler = module.get<OfflineHandler>(OfflineHandler);
+    handler = module.get<WebChannelHandler>(WebChannelHandler);
   });
 
   afterAll(async () => {
@@ -113,21 +113,18 @@ describe(`Offline event wrapper`, () => {
     await closeInMongodConnection();
   });
 
-  test.each(offlineEvents)(
-    'should wrap event : %s',
-    (_testCase, e, expected) => {
-      const event = new OfflineEventWrapper(
-        handler as unknown as OfflineHandler,
-        e,
-        expected.channelData,
-      );
-      expect(event.getChannelData()).toEqual(expected.channelData);
-      expect(event.getId()).toEqual(expected.id);
-      expect(event.getEventType()).toEqual(expected.eventType);
-      expect(event.getMessageType()).toEqual(expected.messageType);
-      expect(event.getPayload()).toEqual(expected.payload);
-      expect(event.getMessage()).toEqual(expected.message);
-      expect(event.getDeliveredMessages()).toEqual([]);
-    },
-  );
+  test.each(webEvents)('should wrap event : %s', (_testCase, e, expected) => {
+    const event = new WebEventWrapper(
+      handler as unknown as WebChannelHandler,
+      e,
+      expected.channelData,
+    );
+    expect(event.getChannelData()).toEqual(expected.channelData);
+    expect(event.getId()).toEqual(expected.id);
+    expect(event.getEventType()).toEqual(expected.eventType);
+    expect(event.getMessageType()).toEqual(expected.messageType);
+    expect(event.getPayload()).toEqual(expected.payload);
+    expect(event.getMessage()).toEqual(expected.message);
+    expect(event.getDeliveredMessages()).toEqual([]);
+  });
 });

@@ -173,7 +173,7 @@ describe('LabelController', () => {
         name: 'LABEL_2',
         label_id: {
           messenger: 'messenger',
-          offline: 'offline',
+          web: 'web',
           twitter: 'twitter',
           dimelo: 'dimelo',
         },

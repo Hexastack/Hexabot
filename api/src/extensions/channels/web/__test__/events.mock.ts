@@ -12,56 +12,55 @@ import {
   StdEventType,
 } from '@/chat/schemas/types/message';
 
-import { Offline } from '../types';
+import { Web } from '../types';
 
 const img_url =
   'http://demo.hexabot.ai/attachment/download/5c334078e2c41d11206bd152/myimage.png';
 
-// Offline events
-const offlineEventPayload: Offline.Event = {
-  type: Offline.IncomingMessageType.postback,
+// Web events
+const webEventPayload: Web.Event = {
+  type: Web.IncomingMessageType.postback,
   data: {
     text: 'Get Started',
     payload: 'GET_STARTED',
   },
-  author: 'offline-9be7aq09-b45a-452q-bcs0-f145b9qce1cad',
-  mid: 'offline-event-payload',
+  author: 'web-9be7aq09-b45a-452q-bcs0-f145b9qce1cad',
+  mid: 'web-event-payload',
   read: true,
 };
 
-export const offlineEventText: Offline.IncomingMessage<Offline.IncomingTextMessage> =
-  {
-    type: Offline.IncomingMessageType.text,
-    data: {
-      text: 'Hello',
-    },
-    author: 'offline-9qsdfgqxac09-f83a-452d-bca0-f1qsdqg457c1ad',
-    mid: 'offline-event-text',
-    read: true,
-  };
+export const webEventText: Web.IncomingMessage<Web.IncomingTextMessage> = {
+  type: Web.IncomingMessageType.text,
+  data: {
+    text: 'Hello',
+  },
+  author: 'web-9qsdfgqxac09-f83a-452d-bca0-f1qsdqg457c1ad',
+  mid: 'web-event-text',
+  read: true,
+};
 
-const offlineEventLocation: Offline.IncomingMessage = {
-  type: Offline.IncomingMessageType.location,
+const webEventLocation: Web.IncomingMessage = {
+  type: Web.IncomingMessageType.location,
   data: {
     coordinates: {
       lat: 2.0545,
       lng: 12.2558,
     },
   },
-  author: 'offline-9beqsdqa09-b489a-438c-bqd0-f11buykkhl851ad',
-  mid: 'offline-event-location',
+  author: 'web-9beqsdqa09-b489a-438c-bqd0-f11buykkhl851ad',
+  mid: 'web-event-location',
   read: true,
 };
 
-const offlineEventFile: Offline.Event = {
-  type: Offline.IncomingMessageType.file,
+const webEventFile: Web.Event = {
+  type: Web.IncomingMessageType.file,
   data: {
     type: FileType.image,
     url: img_url,
     size: 500,
   },
-  author: 'offline-9be8ac09-b43a-432d-bca0-f11b98cec1ad',
-  mid: 'offline-event-file',
+  author: 'web-9be8ac09-b43a-432d-bca0-f11b98cec1ad',
+  mid: 'web-event-file',
   read: true,
 };
 
@@ -85,66 +84,66 @@ const fileChannelData = {
   ipAddress: '3.3.3.3',
 };
 
-export const offlineEvents: [string, Offline.IncomingMessage, any][] = [
+export const webEvents: [string, Web.IncomingMessage, any][] = [
   [
     'Payload Event',
-    offlineEventPayload,
+    webEventPayload,
     {
       channelData: payloadChannelData,
-      id: offlineEventPayload.mid,
+      id: webEventPayload.mid,
       eventType: StdEventType.message,
       messageType: IncomingMessageType.postback,
-      payload: offlineEventPayload.data.payload,
+      payload: webEventPayload.data.payload,
       message: {
-        postback: offlineEventPayload.data.payload,
-        text: offlineEventPayload.data.text,
+        postback: webEventPayload.data.payload,
+        text: webEventPayload.data.text,
       },
     },
   ],
   [
     'Text Event',
-    offlineEventText,
+    webEventText,
     {
       channelData: textChannelData,
-      id: offlineEventText.mid,
+      id: webEventText.mid,
       eventType: StdEventType.message,
       messageType: IncomingMessageType.message,
       payload: undefined,
       message: {
-        text: offlineEventText.data.text,
+        text: webEventText.data.text,
       },
     },
   ],
   [
     'Location Event',
-    offlineEventLocation,
+    webEventLocation,
     {
       channelData: locationChannelData,
-      id: offlineEventLocation.mid,
+      id: webEventLocation.mid,
       eventType: StdEventType.message,
       messageType: IncomingMessageType.location,
       payload: {
-        type: Offline.IncomingMessageType.location,
+        type: Web.IncomingMessageType.location,
         coordinates: {
-          lat: offlineEventLocation.data.coordinates.lat,
-          lon: offlineEventLocation.data.coordinates.lng,
+          lat: webEventLocation.data.coordinates.lat,
+          lon: webEventLocation.data.coordinates.lng,
         },
       },
       message: {
-        type: Offline.IncomingMessageType.location,
+        type: Web.IncomingMessageType.location,
         coordinates: {
-          lat: offlineEventLocation.data.coordinates.lat,
-          lon: offlineEventLocation.data.coordinates.lng,
+          lat: webEventLocation.data.coordinates.lat,
+          lon: webEventLocation.data.coordinates.lng,
         },
       },
     },
   ],
   [
     'File Event',
-    offlineEventFile,
+    webEventFile,
     {
       channelData: fileChannelData,
-      id: offlineEventFile.mid,
+      id: webEventFile.mid,
       eventType: StdEventType.message,
       messageType: IncomingMessageType.attachments,
       payload: {

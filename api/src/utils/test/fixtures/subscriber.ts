@@ -35,7 +35,7 @@ const subscribers: SubscriberCreateDto[] = [
     retainedFrom: new Date('2020-01-01T20:40:03.249Z'),
   },
   {
-    foreign_id: 'foreign-id-offline-1',
+    foreign_id: 'foreign-id-web-1',
     first_name: 'Maynard',
     last_name: 'James Keenan',
     language: 'en',
@@ -43,7 +43,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline-channel',
+      name: 'web-channel',
     },
     labels: [],
     assignedAt: null,
@@ -51,7 +51,7 @@ const subscribers: SubscriberCreateDto[] = [
     retainedFrom: new Date('2021-01-02T20:40:03.249Z'),
   },
   {
-    foreign_id: 'foreign-id-offline-2',
+    foreign_id: 'foreign-id-web-2',
     first_name: 'Queen',
     last_name: 'Elisabeth',
     language: 'en',
@@ -59,7 +59,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline-channel',
+      name: 'web-channel',
     },
     labels: [],
     assignedAt: null,
@@ -75,7 +75,7 @@ const subscribers: SubscriberCreateDto[] = [
     gender: 'male',
     country: 'US',
     channel: {
-      name: 'offline-channel',
+      name: 'web-channel',
     },
     labels: [],
     assignedAt: null,

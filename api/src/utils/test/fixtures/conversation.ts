@@ -71,7 +71,7 @@ const conversations: ConversationCreateDto[] = [
   {
     sender: '1',
     context: {
-      channel: 'offline-channel',
+      channel: 'web-channel',
       text: 'Hello',
       payload: '',
       nlp: {
@@ -106,7 +106,7 @@ const conversations: ConversationCreateDto[] = [
         foreign_id: '',
         labels: [],
         assignedTo: null,
-        channel: { name: 'offline-channel' },
+        channel: { name: 'web-channel' },
       },
       skip: {},
       attempt: 0,
