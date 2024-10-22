@@ -4,10 +4,6 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY merge-extensions-deps.js ./
-
-COPY src/extensions ./src/extensions
-
 COPY patches ./patches
 
 RUN npm ci
@@ -21,8 +17,6 @@ FROM node:18-alpine AS development
 WORKDIR /app
 
 COPY package*.json ./
-
-COPY --from=builder /app/merge-extensions-deps.js ./
 
 COPY --from=builder /app/src/extensions ./src/extensions
 
@@ -43,8 +37,6 @@ FROM node:18-alpine AS production
 WORKDIR /app
 
 COPY package*.json ./
-
-COPY --from=builder /app/merge-extensions-deps.js ./
 
 COPY --from=builder /app/src/extensions ./src/extensions
 

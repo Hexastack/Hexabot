@@ -6,7 +6,6 @@
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "preinstall": "node merge-extensions-deps.js",
     "postinstall": "patch-package",
     "build:clean": "rm -rf src/.hexabot",
     "build:channels": "mkdir -p src/.hexabot/channels && find node_modules/ -name 'hexabot-channel-*' -exec cp -R {} src/.hexabot/channels/ \\;",

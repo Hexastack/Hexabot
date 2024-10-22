@@ -94,7 +94,7 @@ export class BlockController extends BaseController<
     try {
       if (!pluginName) {
         throw new BadRequestException(
-          'Plugin id must be supplied as a query param',
+          'Plugin name must be supplied as a query param',
         );
       }
 
