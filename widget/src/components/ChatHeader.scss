@@ -1,5 +1,5 @@
 .sc-header {
-  min-height: 75px;
+  min-height: 64px;
   border-top-left-radius: 9px;
   border-top-right-radius: 9px;
   padding: 10px;
@@ -20,10 +20,9 @@
 
 .sc-header--title {
   align-self: center;
-  padding: 10px;
   flex: 1;
   user-select: none;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .sc-header--title.enabled {

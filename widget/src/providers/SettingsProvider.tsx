@@ -67,7 +67,7 @@ const defaultSettings: ChatSettings = {
   alwaysScrollToBottom: true,
   focusOnOpen: true,
   title: 'Hexabot :)',
-  titleImageUrl: 'https://i.pravatar.cc/300',
+  titleImageUrl: '',
   inputDisabled: false,
   placeholder: 'Write something...',
   menu: [],

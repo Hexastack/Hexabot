@@ -12,8 +12,9 @@ import { useColors } from '../providers/ColorProvider';
 import { useSettings } from '../providers/SettingsProvider';
 import { useWidget } from '../providers/WidgetProvider';
 
-import CloseIcon from './icons/CloseIcon';
 import './ChatHeader.scss';
+import CloseIcon from './icons/CloseIcon';
+import OpenIcon from './icons/OpenIcon';
 
 type ChatHeaderProps = PropsWithChildren;
 
@@ -31,13 +32,14 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
         children
       ) : (
         <>
-          {settings.titleImageUrl && (
-            <img
-              className="sc-header--img"
-              src={settings.titleImageUrl}
-              alt=""
-            />
-          )}
+          <a
+            href="https://hexabot.ai"
+            target="_blank"
+            title="Powered By Hexabot.ai"
+            className="sc-header--img"
+          >
+            <OpenIcon width={32} height={32} />
+          </a>
           <div className="sc-header--title">{settings.title}</div>
         </>
       )}
