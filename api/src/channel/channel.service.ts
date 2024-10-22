@@ -10,7 +10,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { LIVE_CHAT_TEST_CHANNEL_NAME } from '@/extensions/channels/live-chat-tester/settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
 import {
@@ -116,20 +116,20 @@ export class ChannelService {
   }
 
   /**
-   * Handles a websocket request for the live chat tester channel.
+   * Handles a websocket request for the admin chat console channel.
    * It considers the user as a subscriber.
    *
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
-  async handleWebsocketForLiveChatTester(
+  @SocketGet(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
+  async handleWebsocketForAdminChatConsole(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
     this.logger.log(
-      'Channel notification (Live Chat Tester Socket) : ',
+      'Channel notification (Admin Chat Console Socket) : ',
       req.method,
     );
 
@@ -158,7 +158,7 @@ export class ChannelService {
         country: '',
         labels: [],
         channel: {
-          name: LIVE_CHAT_TEST_CHANNEL_NAME,
+          name: CONSOLE_CHANNEL_NAME,
           isSocket: true,
         },
       },
@@ -172,7 +172,7 @@ export class ChannelService {
       polling: false,
     };
 
-    const handler = this.getChannelHandler(LIVE_CHAT_TEST_CHANNEL_NAME);
+    const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
     return handler.handle(req, res);
   }
 }

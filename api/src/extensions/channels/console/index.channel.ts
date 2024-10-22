@@ -21,11 +21,11 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import BaseWebChannelHandler from '../web/base-web-channel';
 
-import { LIVE_CHAT_TEST_CHANNEL_NAME } from './settings';
+import { CONSOLE_CHANNEL_NAME } from './settings';
 
 @Injectable()
-export default class LiveChatTesterHandler extends BaseWebChannelHandler<
-  typeof LIVE_CHAT_TEST_CHANNEL_NAME
+export default class ConsoleChannelHandler extends BaseWebChannelHandler<
+  typeof CONSOLE_CHANNEL_NAME
 > {
   constructor(
     settingService: SettingService,
@@ -40,7 +40,7 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
     websocketGateway: WebsocketGateway,
   ) {
     super(
-      LIVE_CHAT_TEST_CHANNEL_NAME,
+      CONSOLE_CHANNEL_NAME,
       settingService,
       channelService,
       logger,

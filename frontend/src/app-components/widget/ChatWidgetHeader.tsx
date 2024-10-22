@@ -18,7 +18,7 @@ export const ChatWidgetHeader = () => {
     <Box display="flex" alignItems="center" ml={2}>
       <ChatIcon />
       <Typography component="h2" fontSize="1.5rem" ml={2}>
-        {t("title.live_chat_tester")}
+        {t("title.console")}
       </Typography>
     </Box>
   );

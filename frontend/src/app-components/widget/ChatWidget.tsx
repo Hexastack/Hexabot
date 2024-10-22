@@ -33,7 +33,7 @@ export const ChatWidget = () => {
       <UiChatWidget
         config={{
           apiUrl,
-          channel: "live-chat-tester-channel",
+          channel: "console-channel",
           token: "test",
           language: i18n.language,
         }}

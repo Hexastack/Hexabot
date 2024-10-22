@@ -220,8 +220,7 @@
     "log_entry": "Journal des entrées",
     "dashboard": "Tableau de bord",
     "warning": "Avertissement",
-    "live_chat_tester": "Testeur Live Chat",
-    "live-chat-tester": "Testeur Live Chat"
+    "console": "Console de Chat Admin"
   },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",

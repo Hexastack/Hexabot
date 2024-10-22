@@ -49,8 +49,8 @@ describe('WebsocketGateway', () => {
     ioClient = io('http://localhost:3000', {
       autoConnect: false,
       transports: ['websocket', 'polling'],
-      // path: '/socket.io/?EIO=4&transport=websocket&channel=web',
-      query: { EIO: '4', transport: 'websocket', channel: 'web' },
+      // path: '/socket.io/?EIO=4&transport=websocket&channel=web-channel',
+      query: { EIO: '4', transport: 'websocket', channel: 'web-channel' },
     });
 
     app.listen(3000);

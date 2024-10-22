@@ -220,8 +220,7 @@
     "log_entry": "Log entry",
     "dashboard": "Dashboard",
     "warning": "Warning",
-    "live_chat_tester": "Live Chat Tester",
-    "live-chat-tester": "Live Chat Tester"
+    "console": "Admin Chat Console"
   },
   "label": {
     "terms": "I have read and approve the terms and conditions.",
