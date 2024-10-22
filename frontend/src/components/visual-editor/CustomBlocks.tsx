@@ -31,7 +31,9 @@ export const CustomBlocks = () => {
         {customBlocks?.map((customBlock) => (
           <Block
             key={customBlock.id}
-            title={t(`title.${customBlock.id}`, { ns: customBlock.id })}
+            title={t(`title.${customBlock.namespace}`, {
+              ns: customBlock.namespace,
+            })}
             Icon={PluginIcon}
             blockTemplate={customBlock.template}
             name={customBlock.template.name}

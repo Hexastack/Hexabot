@@ -1,11 +1,11 @@
 import { HelperSetting } from '@/helper/types';
 import { SettingType } from '@/setting/schemas/types';
 
-export const CORE_NLU_HELPER_NAME = 'core-nlu';
+export const CORE_NLU_HELPER_NAME = 'core-nlu-helper';
 
-export const CORE_NLU_HELPER_GROUP = 'core_nlu';
+export const CORE_NLU_HELPER_GROUP = 'core_nlu_helper';
 
-export const CORE_NLU_HELPER_SETTINGS = [
+export default [
   {
     group: CORE_NLU_HELPER_GROUP,
     label: 'endpoint',

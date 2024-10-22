@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginInstance } from './map-types';
-import { PluginType } from './types';
+import { PluginName, PluginType } from './types';
 
 /**
  * @summary Service for managing and retrieving plugins.
@@ -38,18 +38,18 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
   constructor() {}
 
   /**
-   * Registers a plugin with a given key.
+   * Registers a plugin with a given name.
    *
-   * @param key The unique identifier for the plugin.
+   * @param name The unique identifier for the plugin.
    * @param plugin The plugin instance to register.
    */
-  public setPlugin(type: PluginType, key: string, plugin: T) {
+  public setPlugin(type: PluginType, name: PluginName, plugin: T) {
     const registry = this.registry.get(type);
-    registry.set(key, plugin);
+    registry.set(name, plugin);
   }
 
   /**
-   * Retrieves all registered plugins as an array.
+   * Retrieves all registered plugins by as an array.
    *
    * @returns An array containing all the registered plugins.
    */
@@ -59,28 +59,38 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
   }
 
   /**
+   * Retrieves all registered plugins as an array.
+   *
+   * @returns An array containing all the registered plugins.
+   */
+  public getAll(): T[] {
+    return Array.from(this.registry.values()) // Get all the inner maps
+      .flatMap((innerMap) => Array.from(innerMap.values())); // Flatten and get the values from each inner map
+  }
+
+  /**
    * Retrieves a plugin based on its key.
    *
-   * @param id The key used to register the plugin.
+   * @param name The key used to register the plugin.
    *
    * @returns The plugin associated with the given key, or `undefined` if not found.
    */
-  public getPlugin<PT extends PluginType>(type: PT, id: string) {
+  public getPlugin<PT extends PluginType>(type: PT, name: PluginName) {
     const registry = this.registry.get(type);
-    const plugin = registry.get(id);
+    const plugin = registry.get(name);
     return plugin ? (plugin as PluginInstance<PT>) : undefined;
   }
 
   /**
    * Finds a plugin by its internal `id` property.
    *
-   * @param pluginId The unique `id` of the plugin to find.
+   * @param name The unique `id` of the plugin to find.
    *
    * @returns The plugin with the matching `id`, or `undefined` if no plugin is found.
    */
-  public findPlugin<PT extends PluginType>(type: PT, pluginId: string) {
+  public findPlugin<PT extends PluginType>(type: PT, name: PluginName) {
     return this.getAllByType(type).find((plugin) => {
-      return plugin.id === pluginId;
+      return plugin.name === name;
     });
   }
 }

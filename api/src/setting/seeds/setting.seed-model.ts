@@ -13,7 +13,7 @@ export const DEFAULT_SETTINGS = [
   {
     group: 'chatbot_settings',
     label: 'default_nlu_helper',
-    value: 'core-nlu',
+    value: 'core-nlu-helper',
     type: SettingType.select,
     config: {
       multiple: false,
@@ -27,7 +27,7 @@ export const DEFAULT_SETTINGS = [
   {
     group: 'chatbot_settings',
     label: 'default_llm_helper',
-    value: 'ollama',
+    value: 'ollama-helper',
     type: SettingType.select,
     config: {
       multiple: false,

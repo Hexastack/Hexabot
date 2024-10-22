@@ -1,11 +1,13 @@
 import { HelperSetting } from '@/helper/types';
 import { SettingType } from '@/setting/schemas/types';
 
-export const OLLAMA_HELPER_NAME = 'ollama';
+export const OLLAMA_HELPER_NAME = 'ollama-helper';
 
-export const OLLAMA_HELPER_GROUP = 'ollama';
+export const OLLAMA_HELPER_GROUP: HyphenToUnderscore<
+  typeof OLLAMA_HELPER_NAME
+> = 'ollama_helper';
 
-export const OLLAMA_HELPER_SETTINGS = [
+export default [
   {
     label: 'api_url',
     group: OLLAMA_HELPER_GROUP,

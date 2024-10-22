@@ -1,4 +1,4 @@
-import { CORE_NLU_HELPER_GROUP, CORE_NLU_HELPER_SETTINGS } from './settings';
+import CORE_NLU_HELPER_SETTINGS, { CORE_NLU_HELPER_GROUP } from './settings';
 
 declare global {
   interface Settings extends SettingTree<typeof CORE_NLU_HELPER_SETTINGS> {}

@@ -22,7 +22,7 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import ChannelHandler from '@/channel/lib/Handler';
-import { ChannelSetting } from '@/channel/types';
+import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
@@ -63,12 +63,11 @@ import { Offline } from './types';
 import OfflineEventWrapper from './wrapper';
 
 @Injectable()
-export default class BaseWebChannelHandler<
-  N extends string,
+export default abstract class BaseWebChannelHandler<
+  N extends ChannelName,
 > extends ChannelHandler<N> {
   constructor(
     name: N,
-    settings: ChannelSetting<N>[],
     settingService: SettingService,
     channelService: ChannelService,
     logger: LoggerService,
@@ -80,7 +79,7 @@ export default class BaseWebChannelHandler<
     protected readonly menuService: MenuService,
     private readonly websocketGateway: WebsocketGateway,
   ) {
-    super(name, settings, settingService, channelService, logger);
+    super(name, settingService, channelService, logger);
   }
 
   /**
@@ -102,7 +101,7 @@ export default class BaseWebChannelHandler<
     const settings = await this.getSettings();
     const handshake = client.handshake;
     const { channel } = handshake.query;
-    if (channel !== this.getChannel()) {
+    if (channel !== this.getName()) {
       return;
     }
     try {
@@ -464,7 +463,7 @@ export default class BaseWebChannelHandler<
       retainedFrom: new Date(),
       channel: {
         ...channelData,
-        name: this.getChannel(),
+        name: this.getName() as ChannelName,
       },
       language: '',
       locale: '',

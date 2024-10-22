@@ -55,7 +55,7 @@ export default abstract class EventWrapper<
   toString() {
     return JSON.stringify(
       {
-        handler: this._handler.getChannel(),
+        handler: this._handler.getName(),
         channelData: this.getChannelData(),
         sender: this.getSender(),
         recipient: this.getRecipientForeignId(),

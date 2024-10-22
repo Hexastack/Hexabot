@@ -8,19 +8,24 @@
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
 
+import { Extension } from '@/utils/generics/extension';
+
 import { PluginService } from './plugins.service';
-import { PluginType } from './types';
+import { PluginName, PluginType } from './types';
 
 @Injectable()
-export abstract class BasePlugin implements OnModuleInit {
+export abstract class BasePlugin extends Extension implements OnModuleInit {
   public readonly type: PluginType;
 
   constructor(
-    public readonly id: string,
+    public readonly name: PluginName,
     private pluginService: PluginService<BasePlugin>,
-  ) {}
+  ) {
+    super(name);
+  }
 
-  onModuleInit() {
-    this.pluginService.setPlugin(this.type, this.id, this);
+  async onModuleInit() {
+    await super.onModuleInit();
+    this.pluginService.setPlugin(this.type, this.name, this);
   }
 }

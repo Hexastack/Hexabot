@@ -11,11 +11,11 @@ import { SettingType } from '@/setting/schemas/types';
 
 import { Offline } from './types';
 
-export const OFFLINE_CHANNEL_NAME = 'offline' as const;
+export const OFFLINE_CHANNEL_NAME = 'offline-channel' as const;
 
-export const OFFLINE_GROUP_NAME = OFFLINE_CHANNEL_NAME;
+export const OFFLINE_GROUP_NAME = 'offline_channel';
 
-export const DEFAULT_OFFLINE_SETTINGS = [
+export default [
   {
     group: OFFLINE_GROUP_NAME,
     label: Offline.SettingLabel.verification_token,

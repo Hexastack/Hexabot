@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { ChannelName } from '@/channel/types';
 import { Nlp } from '@/helper/types';
 
 import { Subscriber } from '../subscriber.schema';
@@ -13,7 +14,7 @@ import { Subscriber } from '../subscriber.schema';
 import { Payload } from './quick-reply';
 
 export interface Context {
-  channel?: string;
+  channel?: ChannelName;
   text?: string;
   payload?: Payload | string;
   nlp?: Nlp.ParseEntities | null;

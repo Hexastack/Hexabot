@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import path from 'path';
+
 import { Injectable } from '@nestjs/common';
 
 import { Block, BlockFull } from '@/chat/schemas/block.schema';
@@ -17,6 +19,7 @@ import { PluginService } from './plugins.service';
 import {
   PluginBlockTemplate,
   PluginEffects,
+  PluginName,
   PluginSetting,
   PluginType,
 } from './types';
@@ -29,16 +32,13 @@ export abstract class BaseBlockPlugin<
 
   public readonly settings: T;
 
-  constructor(
-    id: string,
-    settings: T,
-    pluginService: PluginService<BasePlugin>,
-  ) {
-    super(id, pluginService);
-    this.settings = settings;
+  constructor(name: PluginName, pluginService: PluginService<BasePlugin>) {
+    super(name, pluginService);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
-  template: PluginBlockTemplate;
+  abstract template: PluginBlockTemplate;
 
   effects?: PluginEffects;
 

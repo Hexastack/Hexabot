@@ -18,7 +18,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ChatWidget
       {...{
         apiUrl: process.env.REACT_APP_WIDGET_API_URL || 'http://localhost:4000',
-        channel: process.env.REACT_APP_WIDGET_CHANNEL || 'offline',
+        channel: process.env.REACT_APP_WIDGET_CHANNEL || 'offline-channel',
         token: process.env.REACT_APP_WIDGET_TOKEN || 'token123',
         language: 'en',
       }}

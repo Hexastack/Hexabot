@@ -1,4 +1,4 @@
-import { OLLAMA_HELPER_GROUP, OLLAMA_HELPER_SETTINGS } from './settings';
+import OLLAMA_HELPER_SETTINGS, { OLLAMA_HELPER_GROUP } from './settings';
 
 declare global {
   interface Settings extends SettingTree<typeof OLLAMA_HELPER_SETTINGS> {}

@@ -6,10 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { ChannelEvent } from '@/channel/lib/EventWrapper';
 import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block } from '@/chat/schemas/block.schema';
 import { Conversation } from '@/chat/schemas/conversation.schema';
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
+
+export type PluginName = `${string}-plugin`;
 
 export enum PluginType {
   event = 'event',
@@ -19,7 +22,6 @@ export enum PluginType {
 
 export interface CustomBlocks {}
 
-type ChannelEvent = any;
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
 export type PluginSetting = Omit<SettingCreateDto, 'weight'>;

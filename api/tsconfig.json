@@ -23,5 +23,11 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.json", "test/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "test/**/*.ts",
+    "src/.hexabot/**/*.ts",
+    "src/.hexabot/**/*.json"
+  ]
 }

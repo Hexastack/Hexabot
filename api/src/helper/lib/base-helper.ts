@@ -6,33 +6,37 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { LoggerService } from '@nestjs/common';
+import path from 'path';
+
+import { LoggerService, OnModuleInit } from '@nestjs/common';
 
 import { SettingService } from '@/setting/services/setting.service';
-import { hyphenToUnderscore } from '@/utils/helpers/misc';
+import { Extension } from '@/utils/generics/extension';
 
 import { HelperService } from '../helper.service';
-import { HelperSetting, HelperType } from '../types';
+import { HelperName, HelperSetting, HelperType } from '../types';
 
-export default abstract class BaseHelper<N extends string = string> {
-  protected readonly name: N;
-
+export default abstract class BaseHelper<N extends HelperName = HelperName>
+  extends Extension
+  implements OnModuleInit
+{
   protected readonly settings: HelperSetting<N>[] = [];
 
   protected abstract type: HelperType;
 
   constructor(
     name: N,
-    settings: HelperSetting<N>[],
     protected readonly settingService: SettingService,
     protected readonly helperService: HelperService,
     protected readonly logger: LoggerService,
   ) {
-    this.name = name;
-    this.settings = settings;
+    super(name);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
-  onModuleInit() {
+  async onModuleInit() {
+    await super.onModuleInit();
     this.helperService.register(this);
     this.setup();
   }
@@ -45,23 +49,6 @@ export default abstract class BaseHelper<N extends string = string> {
         weight: i + 1,
       })),
     );
-  }
-
-  /**
-   * Returns the helper's name
-   *
-   * @returns Helper's name
-   */
-  public getName() {
-    return this.name;
-  }
-
-  /**
-   * Returns the helper's group
-   * @returns Helper's group
-   */
-  protected getGroup() {
-    return hyphenToUnderscore(this.getName()) as HelperSetting<N>['group'];
   }
 
   /**
@@ -81,6 +68,6 @@ export default abstract class BaseHelper<N extends string = string> {
   async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
     // @ts-expect-error workaround typing
-    return settings[this.getGroup() as keyof Settings] as Settings[S];
+    return settings[this.getNamespace() as keyof Settings] as Settings[S];
   }
 }

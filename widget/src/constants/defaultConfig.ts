@@ -8,7 +8,7 @@
 
 export const DEFAULT_CONFIG = {
   apiUrl: process.env.REACT_APP_WIDGET_API_URL || 'http://localhost:4000',
-  channel: process.env.REACT_APP_WIDGET_CHANNEL || 'live-chat-tester',
+  channel: process.env.REACT_APP_WIDGET_CHANNEL || 'live-chat-tester-channel',
   token: process.env.REACT_APP_WIDGET_TOKEN || 'test',
   language: 'en',
 };
