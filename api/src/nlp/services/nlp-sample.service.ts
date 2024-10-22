@@ -8,8 +8,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { THydratedDocument } from 'mongoose';
 
-import { AnyMessage } from '@/chat/schemas/types/message';
+import { Message } from '@/chat/schemas/message.schema';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -67,7 +68,7 @@ export class NlpSampleService extends BaseService<
   }
 
   @OnEvent('hook:message:preCreate')
-  async handleNewMessage(doc: AnyMessage) {
+  async handleNewMessage(doc: THydratedDocument<Message>) {
     // If message is sent by the user then add it as an inbox sample
     if (
       'sender' in doc &&
