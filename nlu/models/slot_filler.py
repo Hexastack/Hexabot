@@ -151,16 +151,19 @@ class SlotFiller(tfbp.Model):
 
     @tfbp.runnable
     def predict(self):
-        text = self.data_loader.get_prediction_data()
+        while True:
+            text = input("Provide text: ")
+            info = self.get_prediction(text)
 
-        info = self.get_prediction(text)
+            print(self.summary())
+            print("Text : " + text)
+            print(info)
+            
+            # Optionally, provide a way to exit the loop
+            if input("Try again? (y/n): ").lower() != 'y':
+                break
 
-        print(self.summary())
-        print("Text : " + text)
-        print(json.dumps(info, indent=2))
 
-        return json.dumps(info, indent=2)
-    
     def get_slots_prediction(self, text: str, inputs, slot_probas):
         slot_probas_np = slot_probas.numpy()
         # Get the indices of the maximum values

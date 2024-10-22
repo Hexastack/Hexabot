@@ -211,27 +211,10 @@ class IntentClassifier(tfbp.Model):
     @tfbp.runnable
     def predict(self):
         while True:
+
             text = input("Provide text: ")
-            inputs = self.data_loader.encode_text(text, self.tokenizer)
-            intent_probas = self(inputs)  # type: ignore
-
-            intent_probas_np = intent_probas.numpy()
-
-            # Get the indices of the maximum values
-            intent_id = intent_probas_np.argmax(axis=-1)[0]
-
-            # get the confidences for each intent
-            intent_confidences = intent_probas_np[0]
-
-            weighted_margin = self.compute_normalized_confidence_margin(intent_probas_np)
-            output = {
-                "text": text,
-                "intent": {"name": self.extra_params["intent_names"][intent_id],
-                           "confidence": float(intent_confidences[intent_id])},
-                "margin": weighted_margin,
-            }
+            output = self.get_prediction(text)
             print(output)
-
             # Optionally, provide a way to exit the loop
             if input("Try again? (y/n): ").lower() != 'y':
                 break
