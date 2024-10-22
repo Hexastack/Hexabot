@@ -93,6 +93,12 @@ import { SubscriberService } from './services/subscriber.service';
     ChatService,
     BotService,
   ],
-  exports: [SubscriberService, MessageService, LabelService, BlockService],
+  exports: [
+    SubscriberService,
+    MessageService,
+    LabelService,
+    BlockService,
+    CategoryService,
+  ],
 })
 export class ChatModule {}
