@@ -43,6 +43,8 @@ class IntentClassifier(tfbp.Model):
         "num_epochs": 2,
         "dropout_prob": 0.1,
         "intent_num_labels": 7,
+        "gamma": 2,
+        "k": 3
     }
     data_loader: JISFDL
 
@@ -129,7 +131,7 @@ class IntentClassifier(tfbp.Model):
         # Hyperparams, Optimizer and Loss function
         opt = Adam(learning_rate=3e-5, epsilon=1e-08)
 
-        losses = SparseCategoricalFocalLoss(gamma=2.5)
+        losses = SparseCategoricalFocalLoss(gamma=self.hparams.gamma)
 
         metrics = [SparseCategoricalAccuracy("accuracy")]
 
@@ -203,7 +205,7 @@ class IntentClassifier(tfbp.Model):
 
     def compute_normalized_confidence_margin(self, probs):
         highest_proba = np.max(probs[0])
-        sum_of_probas = self.compute_top_k_confidence(probs)
+        sum_of_probas = self.compute_top_k_confidence(probs, self.hparams.k)
         # Normalized margin
         normalized_margin = highest_proba / sum_of_probas
         return normalized_margin
