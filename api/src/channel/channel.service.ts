@@ -11,7 +11,7 @@ import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { LIVE_CHAT_TEST_CHANNEL_NAME } from '@/extensions/channels/live-chat-tester/settings';
-import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SocketGet,
@@ -72,7 +72,7 @@ export class ChannelService {
   /**
    * Retrieves the appropriate channel handler based on the channel name.
    *
-   * @param channelName - The name of the channel (messenger, offline, ...).
+   * @param channelName - The name of the channel (messenger, web, ...).
    * @returns The handler for the specified channel.
    */
   public getChannelHandler<T extends ChannelName, C extends ChannelHandler<T>>(
@@ -99,19 +99,19 @@ export class ChannelService {
   }
 
   /**
-   * Handles a websocket request for the offline channel.
+   * Handles a websocket request for the web channel.
    *
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
-  handleWebsocketForOffline(
+  @SocketGet(`/webhook/${WEB_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${WEB_CHANNEL_NAME}/`)
+  handleWebsocketForWebChannel(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
-    this.logger.log('Channel notification (Offline Socket) : ', req.method);
-    const handler = this.getChannelHandler(OFFLINE_CHANNEL_NAME);
+    this.logger.log('Channel notification (Web Socket) : ', req.method);
+    const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
     return handler.handle(req, res);
   }
 
@@ -165,7 +165,7 @@ export class ChannelService {
     );
 
     // Update session (end user is both a user + subscriber)
-    req.session.offline = {
+    req.session.web = {
       profile: testSubscriber,
       isSocket: true,
       messageQueue: [],

@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { LabelCreateDto } from '@/chat/dto/label.dto';
-import { LabelModel, Label } from '@/chat/schemas/label.schema';
+import { Label, LabelModel } from '@/chat/schemas/label.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -19,7 +19,7 @@ export const labels: LabelCreateDto[] = [
     description: 'test description 1',
     label_id: {
       messenger: 'messenger',
-      offline: 'offline',
+      web: 'web',
       twitter: 'twitter',
       dimelo: 'dimelo',
     },
@@ -30,7 +30,7 @@ export const labels: LabelCreateDto[] = [
     description: 'test description 2',
     label_id: {
       messenger: 'messenger',
-      offline: 'offline',
+      web: 'web',
       twitter: 'twitter',
       dimelo: 'dimelo',
     },

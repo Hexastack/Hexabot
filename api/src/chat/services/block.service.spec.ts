@@ -24,10 +24,10 @@ import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
-import OfflineHandler from '@/extensions/channels/offline/index.channel';
-import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
-import { Offline } from '@/extensions/channels/offline/types';
-import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import WebChannelHandler from '@/extensions/channels/web/index.channel';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
+import { Web } from '@/extensions/channels/web/types';
+import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -222,22 +222,22 @@ describe('BlockService', () => {
 
   describe('match', () => {
     const handlerMock = {
-      getName: jest.fn(() => OFFLINE_CHANNEL_NAME),
-    } as any as OfflineHandler;
-    const offlineEventGreeting = new OfflineEventWrapper(
+      getName: jest.fn(() => WEB_CHANNEL_NAME),
+    } as any as WebChannelHandler;
+    const webEventGreeting = new WebEventWrapper(
       handlerMock,
       {
-        type: Offline.IncomingMessageType.text,
+        type: Web.IncomingMessageType.text,
         data: {
           text: 'Hello',
         },
       },
       {},
     );
-    const offlineEventGetStarted = new OfflineEventWrapper(
+    const webEventGetStarted = new WebEventWrapper(
       handlerMock,
       {
-        type: Offline.IncomingMessageType.postback,
+        type: Web.IncomingMessageType.postback,
         data: {
           text: 'Get Started',
           payload: 'GET_STARTED',
@@ -247,40 +247,37 @@ describe('BlockService', () => {
     );
 
     it('should return undefined when no blocks are provided', async () => {
-      const result = await blockService.match([], offlineEventGreeting);
+      const result = await blockService.match([], webEventGreeting);
       expect(result).toBe(undefined);
     });
 
     it('should return undefined for empty blocks', async () => {
-      const result = await blockService.match(
-        [blockEmpty],
-        offlineEventGreeting,
-      );
+      const result = await blockService.match([blockEmpty], webEventGreeting);
       expect(result).toEqual(undefined);
     });
 
     it('should return undefined for no matching labels', async () => {
-      offlineEventGreeting.setSender(subscriberWithoutLabels);
-      const result = await blockService.match(blocks, offlineEventGreeting);
+      webEventGreeting.setSender(subscriberWithoutLabels);
+      const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(undefined);
     });
 
     it('should match block text and labels', async () => {
-      offlineEventGreeting.setSender(subscriberWithLabels);
-      const result = await blockService.match(blocks, offlineEventGreeting);
+      webEventGreeting.setSender(subscriberWithLabels);
+      const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(blockGetStarted);
     });
 
     it('should match block with payload', async () => {
-      offlineEventGetStarted.setSender(subscriberWithLabels);
-      const result = await blockService.match(blocks, offlineEventGetStarted);
+      webEventGetStarted.setSender(subscriberWithLabels);
+      const result = await blockService.match(blocks, webEventGetStarted);
       expect(result).toEqual(blockGetStarted);
     });
 
     it('should match block with nlp', async () => {
-      offlineEventGreeting.setSender(subscriberWithLabels);
-      offlineEventGreeting.setNLP(nlpEntitiesGreeting);
-      const result = await blockService.match(blocks, offlineEventGreeting);
+      webEventGreeting.setSender(subscriberWithLabels);
+      webEventGreeting.setNLP(nlpEntitiesGreeting);
+      const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(blockGetStarted);
     });
   });
@@ -502,7 +499,7 @@ describe('BlockService', () => {
   describe('processText', () => {
     const context: Context = {
       ...contextGetStartedInstance,
-      channel: 'offline-channel',
+      channel: 'web-channel',
       text: '',
       payload: undefined,
       nlp: { entities: [] },

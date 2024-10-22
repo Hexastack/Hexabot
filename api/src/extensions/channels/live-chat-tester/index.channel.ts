@@ -19,7 +19,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import BaseWebChannelHandler from '../offline/base-web-channel';
+import BaseWebChannelHandler from '../web/base-web-channel';
 
 import { LIVE_CHAT_TEST_CHANNEL_NAME } from './settings';
 

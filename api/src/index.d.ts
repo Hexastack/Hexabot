@@ -27,7 +27,7 @@ declare module 'express-session' {
     passport?: {
       user?: SessionUser;
     };
-    offline?: {
+    web?: {
       profile?: T;
       isSocket: boolean;
       messageQueue: any[];
@@ -40,7 +40,7 @@ declare module 'express-session' {
     passport?: {
       user?: SessionUser;
     };
-    offline?: {
+    web?: {
       profile?: SubscriberStub;
       isSocket: boolean;
       messageQueue: any[];

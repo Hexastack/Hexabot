@@ -21,56 +21,56 @@ import {
 import { Payload } from '@/chat/schemas/types/quick-reply';
 
 import BaseWebChannelHandler from './base-web-channel';
-import { Offline } from './types';
+import { Web } from './types';
 
-type OfflineEventAdapter =
+type WebEventAdapter =
   | {
       eventType: StdEventType.unknown;
       messageType: never;
-      raw: Offline.Event;
+      raw: Web.Event;
     }
   | {
       eventType: StdEventType.read;
       messageType: never;
-      raw: Offline.StatusReadEvent;
+      raw: Web.StatusReadEvent;
     }
   | {
       eventType: StdEventType.delivery;
       messageType: never;
-      raw: Offline.StatusDeliveryEvent;
+      raw: Web.StatusDeliveryEvent;
     }
   | {
       eventType: StdEventType.typing;
       messageType: never;
-      raw: Offline.StatusTypingEvent;
+      raw: Web.StatusTypingEvent;
     }
   | {
       eventType: StdEventType.message;
       messageType: IncomingMessageType.message;
-      raw: Offline.IncomingMessage<Offline.IncomingTextMessage>;
+      raw: Web.IncomingMessage<Web.IncomingTextMessage>;
     }
   | {
       eventType: StdEventType.message;
       messageType:
         | IncomingMessageType.postback
         | IncomingMessageType.quick_reply;
-      raw: Offline.IncomingMessage<Offline.IncomingPayloadMessage>;
+      raw: Web.IncomingMessage<Web.IncomingPayloadMessage>;
     }
   | {
       eventType: StdEventType.message;
       messageType: IncomingMessageType.location;
-      raw: Offline.IncomingMessage<Offline.IncomingLocationMessage>;
+      raw: Web.IncomingMessage<Web.IncomingLocationMessage>;
     }
   | {
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
-      raw: Offline.IncomingMessage<Offline.IncomingAttachmentMessage>;
+      raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
     };
 
-export default class OfflineEventWrapper<
+export default class WebEventWrapper<
   T extends
     BaseWebChannelHandler<ChannelName> = BaseWebChannelHandler<ChannelName>,
-> extends EventWrapper<OfflineEventAdapter, Offline.Event> {
+> extends EventWrapper<WebEventAdapter, Web.Event> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -78,7 +78,7 @@ export default class OfflineEventWrapper<
    * @param event - The message event received
    * @param channelData - Channel's specific extra data {isSocket, ipAddress}
    */
-  constructor(handler: T, event: Offline.Event, channelData: any) {
+  constructor(handler: T, event: Web.Event, channelData: any) {
     super(handler, event, channelData);
   }
 
@@ -90,34 +90,34 @@ export default class OfflineEventWrapper<
    *
    * @param event - The message event received
    */
-  _init(event: Offline.Event) {
+  _init(event: Web.Event) {
     switch (event.type) {
-      case Offline.StatusEventType.delivery:
+      case Web.StatusEventType.delivery:
         this._adapter.eventType = StdEventType.delivery;
         break;
-      case Offline.StatusEventType.read:
+      case Web.StatusEventType.read:
         this._adapter.eventType = StdEventType.read;
         break;
-      case Offline.StatusEventType.typing:
+      case Web.StatusEventType.typing:
         this._adapter.eventType = StdEventType.typing;
         break;
-      case Offline.IncomingMessageType.text:
+      case Web.IncomingMessageType.text:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.message;
         break;
-      case Offline.IncomingMessageType.quick_reply:
+      case Web.IncomingMessageType.quick_reply:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.quick_reply;
         break;
-      case Offline.IncomingMessageType.postback:
+      case Web.IncomingMessageType.postback:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.postback;
         break;
-      case Offline.IncomingMessageType.location:
+      case Web.IncomingMessageType.location:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.location;
         break;
-      case Offline.IncomingMessageType.file:
+      case Web.IncomingMessageType.file:
         this._adapter.eventType = StdEventType.message;
         this._adapter.messageType = IncomingMessageType.attachments;
         break;

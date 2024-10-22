@@ -223,7 +223,7 @@ export class WebsocketGateway
                     'Unable to load session, creating a new one ...',
                     err,
                   );
-                  if (searchParams.get('channel') === 'offline') {
+                  if (searchParams.get('channel') === 'web') {
                     return this.createAndStoreSession(client, next);
                   } else {
                     return next(new Error('Unauthorized: Unknown session ID'));
@@ -237,7 +237,7 @@ export class WebsocketGateway
               return next(new Error('Unable to parse session ID from cookie'));
             }
           }
-        } else if (searchParams.get('channel') === 'offline') {
+        } else if (searchParams.get('channel') === 'web') {
           return this.createAndStoreSession(client, next);
         } else {
           return next(new Error('Unauthorized to connect to WS'));

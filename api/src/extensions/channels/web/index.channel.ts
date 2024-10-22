@@ -20,11 +20,11 @@ import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import BaseWebChannelHandler from './base-web-channel';
-import { OFFLINE_CHANNEL_NAME } from './settings';
+import { WEB_CHANNEL_NAME } from './settings';
 
 @Injectable()
-export default class OfflineHandler extends BaseWebChannelHandler<
-  typeof OFFLINE_CHANNEL_NAME
+export default class WebChannelHandler extends BaseWebChannelHandler<
+  typeof WEB_CHANNEL_NAME
 > {
   constructor(
     settingService: SettingService,
@@ -39,7 +39,7 @@ export default class OfflineHandler extends BaseWebChannelHandler<
     websocketGateway: WebsocketGateway,
   ) {
     super(
-      OFFLINE_CHANNEL_NAME,
+      WEB_CHANNEL_NAME,
       settingService,
       channelService,
       logger,
