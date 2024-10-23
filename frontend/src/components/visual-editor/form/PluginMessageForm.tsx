@@ -63,7 +63,8 @@ const PluginMessageForm = () => {
                 <SettingInput
                   setting={setting}
                   field={field}
-                  ns={message.plugin}
+                  // @TODO : clean this later
+                  ns={message.plugin.replaceAll("-", "_")}
                 />
               </FormControl>
             )}

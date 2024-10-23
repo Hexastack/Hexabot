@@ -1,3 +1,4 @@
+.hexabot/
 node_modules/
 dist/
 coverage/

@@ -25,7 +25,7 @@ export const subscriberInstance: Subscriber = {
   lastvisit: new Date(),
   retainedFrom: new Date(),
   channel: {
-    name: 'offline',
+    name: 'web-channel',
   },
   labels: [],
   ...modelInstance,

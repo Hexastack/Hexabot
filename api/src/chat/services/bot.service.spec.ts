@@ -24,9 +24,9 @@ import { MenuModel } from '@/cms/schemas/menu.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import { MenuService } from '@/cms/services/menu.service';
-import { offlineEventText } from '@/extensions/channels/offline/__test__/events.mock';
-import OfflineHandler from '@/extensions/channels/offline/index.channel';
-import OfflineEventWrapper from '@/extensions/channels/offline/wrapper';
+import { webEventText } from '@/extensions/channels/web/__test__/events.mock';
+import WebChannelHandler from '@/extensions/channels/web/index.channel';
+import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
@@ -75,7 +75,7 @@ describe('BlockService', () => {
   let blockService: BlockService;
   let subscriberService: SubscriberService;
   let botService: BotService;
-  let handler: OfflineHandler;
+  let handler: WebChannelHandler;
   let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
@@ -126,7 +126,7 @@ describe('BlockService', () => {
         ChannelService,
         MessageService,
         MenuService,
-        OfflineHandler,
+        WebChannelHandler,
         ContextVarService,
         ContextVarRepository,
         LanguageService,
@@ -170,7 +170,7 @@ describe('BlockService', () => {
     botService = module.get<BotService>(BotService);
     blockService = module.get<BlockService>(BlockService);
     eventEmitter = module.get<EventEmitter2>(EventEmitter2);
-    handler = module.get<OfflineHandler>(OfflineHandler);
+    handler = module.get<WebChannelHandler>(WebChannelHandler);
   });
 
   afterEach(jest.clearAllMocks);
@@ -183,38 +183,38 @@ describe('BlockService', () => {
       triggeredEvents.push(args);
     });
 
-    const event = new OfflineEventWrapper(handler, offlineEventText, {
+    const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
     });
 
     const [block] = await blockService.findAndPopulate({ patterns: ['Hi'] });
-    const offlineSubscriber = await subscriberService.findOne({
-      foreign_id: 'foreign-id-offline-1',
+    const webSubscriber = await subscriberService.findOne({
+      foreign_id: 'foreign-id-web-1',
     });
 
-    event.setSender(offlineSubscriber);
+    event.setSender(webSubscriber);
 
     let hasBotSpoken = false;
     const clearMock = jest
       .spyOn(botService, 'findBlockAndSendReply')
       .mockImplementation(
         (
-          actualEvent: OfflineEventWrapper,
+          actualEvent: WebEventWrapper,
           actualConversation: Conversation,
           actualBlock: BlockFull,
           isFallback: boolean,
         ) => {
           expect(actualConversation).toEqualPayload({
-            sender: offlineSubscriber.id,
+            sender: webSubscriber.id,
             active: true,
             next: [],
             context: {
               user: {
-                first_name: offlineSubscriber.first_name,
-                last_name: offlineSubscriber.last_name,
+                first_name: webSubscriber.first_name,
+                last_name: webSubscriber.last_name,
                 language: 'en',
-                id: offlineSubscriber.id,
+                id: webSubscriber.id,
               },
               user_location: {
                 lat: 0,
@@ -224,8 +224,8 @@ describe('BlockService', () => {
               nlp: null,
               payload: null,
               attempt: 0,
-              channel: 'offline',
-              text: offlineEventText.data.text,
+              channel: 'web-channel',
+              text: webEventText.data.text,
             },
           });
           expect(actualEvent).toEqual(event);
@@ -251,40 +251,40 @@ describe('BlockService', () => {
       triggeredEvents.push(args);
     });
 
-    const event = new OfflineEventWrapper(handler, offlineEventText, {
+    const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
     });
-    const offlineSubscriber = await subscriberService.findOne({
-      foreign_id: 'foreign-id-offline-1',
+    const webSubscriber = await subscriberService.findOne({
+      foreign_id: 'foreign-id-web-1',
     });
-    event.setSender(offlineSubscriber);
+    event.setSender(webSubscriber);
 
     const clearMock = jest
       .spyOn(botService, 'handleIncomingMessage')
       .mockImplementation(
         async (
           actualConversation: ConversationFull,
-          event: OfflineEventWrapper,
+          event: WebEventWrapper,
         ) => {
           expect(actualConversation).toEqualPayload({
             next: [],
-            sender: offlineSubscriber,
+            sender: webSubscriber,
             active: true,
             context: {
               user: {
-                first_name: offlineSubscriber.first_name,
-                last_name: offlineSubscriber.last_name,
+                first_name: webSubscriber.first_name,
+                last_name: webSubscriber.last_name,
                 language: 'en',
-                id: offlineSubscriber.id,
+                id: webSubscriber.id,
               },
               user_location: { lat: 0, lon: 0 },
               vars: {},
               nlp: null,
               payload: null,
               attempt: 0,
-              channel: 'offline',
-              text: offlineEventText.data.text,
+              channel: 'web-channel',
+              text: webEventText.data.text,
             },
           });
           expect(event).toEqual(event);
@@ -304,14 +304,14 @@ describe('BlockService', () => {
     eventEmitter.on('hook:stats:entry', (...args) => {
       triggeredEvents.push(args);
     });
-    const event = new OfflineEventWrapper(handler, offlineEventText, {
+    const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
     });
-    const offlineSubscriber = await subscriberService.findOne({
-      foreign_id: 'foreign-id-offline-2',
+    const webSubscriber = await subscriberService.findOne({
+      foreign_id: 'foreign-id-web-2',
     });
-    event.setSender(offlineSubscriber);
+    event.setSender(webSubscriber);
     const captured = await botService.processConversationMessage(event);
 
     expect(captured).toBe(false);

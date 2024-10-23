@@ -10,13 +10,13 @@ import { Injectable } from '@nestjs/common';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginService } from './plugins.service';
-import { PluginType } from './types';
+import { PluginName, PluginType } from './types';
 
 @Injectable()
 export abstract class BaseEventPlugin extends BasePlugin {
   public readonly type: PluginType = PluginType.event;
 
-  constructor(id: string, pluginService: PluginService<BasePlugin>) {
-    super(id, pluginService);
+  constructor(name: PluginName, pluginService: PluginService<BasePlugin>) {
+    super(name, pluginService);
   }
 }

@@ -14,7 +14,12 @@ import { HelperController } from './helper.controller';
 import { HelperService } from './helper.service';
 
 @Global()
-@InjectDynamicProviders('dist/extensions/**/*.helper.js')
+@InjectDynamicProviders(
+  // Core & under dev helpers
+  'dist/extensions/**/*.helper.js',
+  // Installed helpers via npm
+  'dist/.hexabot/helpers/**/*.helper.js',
+)
 @Module({
   imports: [HttpModule],
   controllers: [HelperController],

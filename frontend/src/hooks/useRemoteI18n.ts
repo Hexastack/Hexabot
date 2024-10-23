@@ -22,14 +22,13 @@ export const useRemoteI18n = () => {
     const fetchRemoteI18n = async () => {
       try {
         const additionalTranslations = await apiClient.fetchRemoteI18n();
-        // Assuming additionalTranslations is an object like { en: { translation: { key: 'value' } } }
 
-        Object.keys(additionalTranslations).forEach((lang) => {
-          Object.keys(additionalTranslations[lang]).forEach((namespace) => {
+        Object.keys(additionalTranslations).forEach((namespace) => {
+          Object.keys(additionalTranslations[namespace]).forEach((lang) => {
             i18n.addResourceBundle(
               lang,
               namespace,
-              additionalTranslations[lang][namespace],
+              additionalTranslations[namespace][lang],
               true,
               true,
             );

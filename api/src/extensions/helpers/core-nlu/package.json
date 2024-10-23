@@ -1,5 +1,5 @@
 {
-  "name": "hexabot-core-nlu",
+  "name": "hexabot-helper-core-nlu",
   "version": "2.0.0",
   "description": "The Core NLU Helper Extension for Hexabot Chatbot / Agent Builder to enable the Intent Classification and Language Detection",
   "dependencies": {},

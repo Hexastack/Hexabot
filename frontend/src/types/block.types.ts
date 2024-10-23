@@ -139,4 +139,6 @@ export interface ICustomBlockTemplateAttributes {
 // @TODO : templates doe not contain base schema attributes
 export interface ICustomBlockTemplate
   extends IBaseSchema,
-    OmitPopulate<ICustomBlockTemplateAttributes, EntityType.CUSTOM_BLOCK> {}
+    OmitPopulate<ICustomBlockTemplateAttributes, EntityType.CUSTOM_BLOCK> {
+  namespace: string;
+}

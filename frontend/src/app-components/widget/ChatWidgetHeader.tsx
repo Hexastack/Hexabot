@@ -19,7 +19,7 @@ export const ChatWidgetHeader = () => {
     <Box display="flex" alignItems="center" ml={2}>
       <HexabotLogoRound width={32} height={32} />
       <Typography component="h2" fontSize="1.25rem" ml={2}>
-        {t("title.live_chat_tester")}
+        {t("title.console")}
       </Typography>
     </Box>
   );

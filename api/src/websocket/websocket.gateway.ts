@@ -209,6 +209,7 @@ export class WebsocketGateway
       this.logger.verbose('Client connected, attempting to load session.');
       try {
         const { searchParams } = new URL(`ws://localhost${client.request.url}`);
+
         if (client.request.headers.cookie) {
           const cookies = cookie.parse(client.request.headers.cookie);
           if (cookies && config.session.name in cookies) {
@@ -223,7 +224,7 @@ export class WebsocketGateway
                     'Unable to load session, creating a new one ...',
                     err,
                   );
-                  if (searchParams.get('channel') === 'offline') {
+                  if (searchParams.get('channel') === 'web-channel') {
                     return this.createAndStoreSession(client, next);
                   } else {
                     return next(new Error('Unauthorized: Unknown session ID'));
@@ -237,7 +238,7 @@ export class WebsocketGateway
               return next(new Error('Unable to parse session ID from cookie'));
             }
           }
-        } else if (searchParams.get('channel') === 'offline') {
+        } else if (searchParams.get('channel') === 'web-channel') {
           return this.createAndStoreSession(client, next);
         } else {
           return next(new Error('Unauthorized to connect to WS'));

@@ -13,14 +13,14 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginService } from './plugins.service';
-import { PluginType } from './types';
+import { PluginName, PluginType } from './types';
 
 @Injectable()
 export abstract class BaseStoragePlugin extends BasePlugin {
   public readonly type: PluginType = PluginType.storage;
 
-  constructor(id: string, pluginService: PluginService<BasePlugin>) {
-    super(id, pluginService);
+  constructor(name: PluginName, pluginService: PluginService<BasePlugin>) {
+    super(name, pluginService);
   }
 
   abstract fileExists(attachment: Attachment): Promise<boolean>;

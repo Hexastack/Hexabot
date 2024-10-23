@@ -61,7 +61,7 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
   ReactDOM.render(
     el(HexabotWidget, {
       apiUrl: 'https://api.yourdomain.com',
-      channel: 'offline',
+      channel: 'web-channel',
       token: 'token123',
     }),
     domContainer,
@@ -96,7 +96,7 @@ To prevent the website css from conflicting with the chat widget css, we can lev
   ReactDOM.render(
     React.createElement(HexabotWidget, {
       apiUrl: 'https://api.yourdomain.com',
-      channel: 'offline',
+      channel: 'web-channel',
       token: 'token123',
     }),
     shadowContainer,

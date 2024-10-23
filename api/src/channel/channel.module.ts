@@ -7,7 +7,12 @@
  */
 
 import { HttpModule } from '@nestjs/axios';
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import {
+  Global,
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+} from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
@@ -23,7 +28,13 @@ export interface ChannelModuleOptions {
   folder: string;
 }
 
-@InjectDynamicProviders('dist/extensions/**/*.channel.js')
+@Global()
+@InjectDynamicProviders(
+  // Core & under dev channels
+  'dist/extensions/**/*.channel.js',
+  // Installed channels via npm
+  'dist/.hexabot/channels/**/*.channel.js',
+)
 @Module({
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],

@@ -22,7 +22,7 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import ChannelHandler from '@/channel/lib/Handler';
-import { ChannelSetting } from '@/channel/types';
+import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
@@ -58,17 +58,16 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { OFFLINE_GROUP_NAME } from './settings';
-import { Offline } from './types';
-import OfflineEventWrapper from './wrapper';
+import { WEB_CHANNEL_NAMESPACE } from './settings';
+import { Web } from './types';
+import WebEventWrapper from './wrapper';
 
 @Injectable()
-export default class BaseWebChannelHandler<
-  N extends string,
+export default abstract class BaseWebChannelHandler<
+  N extends ChannelName,
 > extends ChannelHandler<N> {
   constructor(
     name: N,
-    settings: ChannelSetting<N>[],
     settingService: SettingService,
     channelService: ChannelService,
     logger: LoggerService,
@@ -80,7 +79,7 @@ export default class BaseWebChannelHandler<
     protected readonly menuService: MenuService,
     private readonly websocketGateway: WebsocketGateway,
   ) {
-    super(name, settings, settingService, channelService, logger);
+    super(name, settingService, channelService, logger);
   }
 
   /**
@@ -93,7 +92,7 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Verify offline websocket connection and return settings
+   * Verify web websocket connection and return settings
    *
    * @param client - The socket client
    */
@@ -102,7 +101,7 @@ export default class BaseWebChannelHandler<
     const settings = await this.getSettings();
     const handshake = client.handshake;
     const { channel } = handshake.query;
-    if (channel !== this.getChannel()) {
+    if (channel !== this.getName()) {
       return;
     }
     try {
@@ -139,20 +138,20 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Adapt incoming message structure for offline channel
+   * Adapt incoming message structure for web channel
    *
    * @param incoming - Incoming message
-   * @returns Formatted offline message
+   * @returns Formatted web message
    */
   private formatIncomingHistoryMessage(
     incoming: IncomingMessage,
-  ): Offline.IncomingMessageBase {
+  ): Web.IncomingMessageBase {
     // Format incoming message
     if ('type' in incoming.message) {
       if (incoming.message.type === PayloadType.location) {
         const coordinates = incoming.message.coordinates;
         return {
-          type: Offline.IncomingMessageType.location,
+          type: Web.IncomingMessageType.location,
           data: {
             coordinates: {
               lat: coordinates.lat,
@@ -166,7 +165,7 @@ export default class BaseWebChannelHandler<
           ? incoming.message.attachment[0]
           : incoming.message.attachment;
         return {
-          type: Offline.IncomingMessageType.file,
+          type: Web.IncomingMessageType.file,
           data: {
             type: attachment.type,
             url: attachment.payload.url,
@@ -175,21 +174,21 @@ export default class BaseWebChannelHandler<
       }
     } else {
       return {
-        type: Offline.IncomingMessageType.text,
+        type: Web.IncomingMessageType.text,
         data: incoming.message,
       };
     }
   }
 
   /**
-   * Adapt the outgoing message structure for offline channel
+   * Adapt the outgoing message structure for web channel
    *
    * @param outgoing - The outgoing message
-   * @returns Formatted offline message
+   * @returns Formatted web message
    */
   private formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     // Format outgoing message
     if ('buttons' in outgoing.message) {
       return this._buttonsFormat(outgoing.message);
@@ -213,13 +212,13 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Adapt the message structure for offline channel
+   * Adapt the message structure for web channel
    *
    * @param messages - The messages to be formatted
    *
    * @returns Formatted message
    */
-  private formatHistoryMessages(messages: AnyMessage[]): Offline.Message[] {
+  private formatHistoryMessages(messages: AnyMessage[]): Web.Message[] {
     return messages.map((anyMessage: AnyMessage) => {
       if ('sender' in anyMessage && anyMessage.sender) {
         return {
@@ -228,7 +227,7 @@ export default class BaseWebChannelHandler<
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           createdAt: anyMessage.createdAt,
-        } as Offline.IncomingMessage;
+        } as Web.IncomingMessage;
       } else {
         const outgoingMessage = anyMessage as OutgoingMessage;
         return {
@@ -238,7 +237,7 @@ export default class BaseWebChannelHandler<
           mid: outgoingMessage.mid,
           handover: !!outgoingMessage.handover,
           createdAt: outgoingMessage.createdAt,
-        } as Offline.OutgoingMessage;
+        } as Web.OutgoingMessage;
       }
     });
   }
@@ -255,8 +254,8 @@ export default class BaseWebChannelHandler<
     req: Request | SocketRequest,
     until: Date = new Date(),
     n: number = 30,
-  ): Promise<Offline.Message[]> {
-    const profile = req.session?.offline?.profile;
+  ): Promise<Web.Message[]> {
+    const profile = req.session?.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistoryUntilDate(
         profile,
@@ -280,8 +279,8 @@ export default class BaseWebChannelHandler<
     req: Request,
     since: Date = new Date(10e14),
     n: number = 30,
-  ): Promise<Offline.Message[]> {
-    const profile = req.session?.offline?.profile;
+  ): Promise<Web.Message[]> {
+    const profile = req.session?.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistorySinceDate(
         profile,
@@ -300,7 +299,7 @@ export default class BaseWebChannelHandler<
    */
   private async verifyToken(verificationToken: string) {
     const settings =
-      (await this.getSettings()) as Settings[typeof OFFLINE_GROUP_NAME];
+      (await this.getSettings()) as Settings[typeof WEB_CHANNEL_NAMESPACE];
     const verifyToken = settings.verification_token;
 
     if (!verifyToken) {
@@ -327,7 +326,7 @@ export default class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
-    const settings = await this.getSettings<typeof OFFLINE_GROUP_NAME>();
+    const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
     // If we have an origin header...
     if (req.headers && req.headers.origin) {
       // Get the allowed origins
@@ -377,7 +376,7 @@ export default class BaseWebChannelHandler<
     res: Response | SocketResponse,
     next: (profile: Subscriber) => void,
   ) {
-    if (!req.session?.offline?.profile?.id) {
+    if (!req.session?.web?.profile?.id) {
       this.logger.warn(
         'Web Channel Handler : No session ID to be found!',
         req.session,
@@ -386,8 +385,8 @@ export default class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     } else if (
-      ('isSocket' in req && !!req.isSocket !== req.session.offline.isSocket) ||
-      !Array.isArray(req.session.offline.messageQueue)
+      ('isSocket' in req && !!req.isSocket !== req.session.web.isSocket) ||
+      !Array.isArray(req.session.web.messageQueue)
     ) {
       this.logger.warn(
         'Web Channel Handler : Mixed channel request or invalid session data!',
@@ -397,7 +396,7 @@ export default class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
-    next(req.session?.offline?.profile);
+    next(req.session?.web?.profile);
   }
 
   /**
@@ -441,15 +440,15 @@ export default class BaseWebChannelHandler<
   ): Promise<SubscriberFull> {
     const data = req.query;
     // Subscriber has already a session
-    const sessionProfile = req.session?.offline?.profile;
+    const sessionProfile = req.session?.web?.profile;
     if (sessionProfile) {
       const subscriber = await this.subscriberService.findOneAndPopulate(
         sessionProfile.id,
       );
-      if (!subscriber || !req.session.offline) {
+      if (!subscriber || !req.session.web) {
         throw new Error('Subscriber session was not persisted in DB');
       }
-      req.session.offline.profile = subscriber;
+      req.session.web.profile = subscriber;
       return subscriber;
     }
 
@@ -457,14 +456,14 @@ export default class BaseWebChannelHandler<
     const newProfile: SubscriberCreateDto = {
       foreign_id: this.generateId(),
       first_name: data.first_name ? data.first_name.toString() : 'Anon.',
-      last_name: data.last_name ? data.last_name.toString() : 'Offline User',
+      last_name: data.last_name ? data.last_name.toString() : 'Web User',
       assignedTo: null,
       assignedAt: null,
       lastvisit: new Date(),
       retainedFrom: new Date(),
       channel: {
         ...channelData,
-        name: this.getChannel(),
+        name: this.getName() as ChannelName,
       },
       language: '',
       locale: '',
@@ -482,7 +481,7 @@ export default class BaseWebChannelHandler<
       avatar: null,
     };
 
-    req.session.offline = {
+    req.session.web = {
       profile,
       isSocket: 'isSocket' in req && !!req.isSocket,
       messageQueue: [],
@@ -508,9 +507,7 @@ export default class BaseWebChannelHandler<
         .json({ err: 'Polling not authorized when using websockets' });
     }
     // Session must be active
-    if (
-      !(req.session && req.session.offline && req.session.offline.profile.id)
-    ) {
+    if (!(req.session && req.session.web && req.session.web.profile.id)) {
       this.logger.warn(
         'Web Channel Handler : Must be connected to poll messages',
       );
@@ -520,7 +517,7 @@ export default class BaseWebChannelHandler<
     }
 
     // Can only request polling once at a time
-    if (req.session && req.session.offline && req.session.offline.polling) {
+    if (req.session && req.session.web && req.session.web.polling) {
       this.logger.warn(
         'Web Channel Handler : Poll rejected ... already requested',
       );
@@ -529,7 +526,7 @@ export default class BaseWebChannelHandler<
         .json({ err: 'Poll rejected ... already requested' });
     }
 
-    req.session.offline.polling = true;
+    req.session.web.polling = true;
 
     const fetchMessages = async (req: Request, res: Response, retrials = 1) => {
       try {
@@ -540,8 +537,8 @@ export default class BaseWebChannelHandler<
           setTimeout(async () => {
             await fetchMessages(req, res, retrials * 2);
           }, retrials * 1000);
-        } else if (req.session.offline) {
-          req.session.offline.polling = false;
+        } else if (req.session.web) {
+          req.session.web.polling = false;
           return res.status(200).json(messages.map((msg) => ['message', msg]));
         } else {
           this.logger.error(
@@ -550,8 +547,8 @@ export default class BaseWebChannelHandler<
           return res.status(500).json({ err: 'No session data' });
         }
       } catch (err) {
-        if (req.session.offline) {
-          req.session.offline.polling = false;
+        if (req.session.web) {
+          req.session.web.polling = false;
         }
         this.logger.error('Web Channel Handler : Polling failed', err);
         return res.status(500).json({ err: 'Polling failed' });
@@ -561,7 +558,7 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Allow the subscription to a offline's webhook after verification
+   * Allow the subscription to a web's webhook after verification
    *
    * @param req
    * @param res
@@ -609,7 +606,7 @@ export default class BaseWebChannelHandler<
    * @param filename
    */
   private async storeAttachment(
-    upload: Omit<Offline.IncomingAttachmentMessageData, 'url' | 'file'>,
+    upload: Omit<Web.IncomingAttachmentMessageData, 'url' | 'file'>,
     filename: string,
     next: (
       err: Error | null,
@@ -624,7 +621,7 @@ export default class BaseWebChannelHandler<
         type: upload.type || 'text/txt',
         size: upload.size || 0,
         location: filename,
-        channel: { offline: {} },
+        channel: { web: {} },
       });
 
       this.logger.debug(
@@ -658,9 +655,9 @@ export default class BaseWebChannelHandler<
       result: { type: string; url: string } | false,
     ) => void,
   ): Promise<void> {
-    const data: Offline.IncomingMessage = req.body;
+    const data: Web.IncomingMessage = req.body;
     // Check if any file is provided
-    if (!req.session.offline) {
+    if (!req.session.web) {
       this.logger.debug('Web Channel Handler : No session provided');
       return next(null, false);
     }
@@ -683,7 +680,7 @@ export default class BaseWebChannelHandler<
     // Store file as attachment
     const dirPath = path.join(config.parameters.uploadDir);
     const sanitizedFilename = sanitize(
-      `${req.session.offline.profile.id}_${+new Date()}_${upload.name}`,
+      `${req.session.web.profile.id}_${+new Date()}_${upload.name}`,
     );
     const filePath = path.resolve(dirPath, sanitizedFilename);
 
@@ -764,7 +761,7 @@ export default class BaseWebChannelHandler<
    *
    * @returns The channel's data
    */
-  protected getChannelData(req: Request | SocketRequest): Offline.ChannelData {
+  protected getChannelData(req: Request | SocketRequest): Web.ChannelData {
     return {
       isSocket: 'isSocket' in req && !!req.isSocket,
       ipAddress: this.getIpAddress(req),
@@ -782,13 +779,13 @@ export default class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ): void {
-    const data: Offline.IncomingMessage = req.body;
+    const data: Web.IncomingMessage = req.body;
     this.validateSession(req, res, (profile) => {
       this.handleFilesUpload(
         req,
         res,
         // @ts-expect-error @TODO : This needs to be fixed at a later point @TODO
-        (err: Error, upload: Offline.IncomingMessageData) => {
+        (err: Error, upload: Web.IncomingMessageData) => {
           if (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',
@@ -803,7 +800,7 @@ export default class BaseWebChannelHandler<
             data.data = upload;
           }
           const channelData = this.getChannelData(req);
-          const event: OfflineEventWrapper = new OfflineEventWrapper(
+          const event: WebEventWrapper = new WebEventWrapper(
             this,
             data,
             channelData,
@@ -845,14 +842,14 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Process incoming Offline data (finding out its type and assigning it to its proper handler)
+   * Process incoming Web Channel data (finding out its type and assigning it to its proper handler)
    *
    * @param req
    * @param res
    */
   async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
     const settings = await this.getSettings();
-    // Offline messaging can be done through websockets or long-polling
+    // Web Channel messaging can be done through websockets or long-polling
     try {
       await this.checkRequest(req, res);
       if (req.method === 'GET') {
@@ -888,7 +885,7 @@ export default class BaseWebChannelHandler<
                 .json({ err: 'Webhook received unknown command' });
           }
         } else if (req.query._disconnect) {
-          req.session.offline = undefined;
+          req.session.web = undefined;
           return res.status(200).json({ _disconnect: true });
         } else {
           // Handle webhook subscribe requests
@@ -912,7 +909,7 @@ export default class BaseWebChannelHandler<
    * @returns UUID
    */
   generateId(): string {
-    return 'offline-' + uuidv4();
+    return 'web-' + uuidv4();
   }
 
   /**
@@ -926,9 +923,9 @@ export default class BaseWebChannelHandler<
   _textFormat(
     message: StdOutgoingTextMessage,
     _options?: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     return {
-      type: Offline.OutgoingMessageType.text,
+      type: Web.OutgoingMessageType.text,
       data: message,
     };
   }
@@ -944,9 +941,9 @@ export default class BaseWebChannelHandler<
   _quickRepliesFormat(
     message: StdOutgoingQuickRepliesMessage,
     _options?: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     return {
-      type: Offline.OutgoingMessageType.quick_replies,
+      type: Web.OutgoingMessageType.quick_replies,
       data: {
         text: message.text,
         quick_replies: message.quickReplies,
@@ -965,9 +962,9 @@ export default class BaseWebChannelHandler<
   _buttonsFormat(
     message: StdOutgoingButtonsMessage,
     _options?: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     return {
-      type: Offline.OutgoingMessageType.buttons,
+      type: Web.OutgoingMessageType.buttons,
       data: {
         text: message.text,
         buttons: message.buttons,
@@ -986,9 +983,9 @@ export default class BaseWebChannelHandler<
   _attachmentFormat(
     message: StdOutgoingAttachmentMessage<WithUrl<Attachment>>,
     _options?: BlockOptions,
-  ): Offline.OutgoingMessageBase {
-    const payload: Offline.OutgoingMessageBase = {
-      type: Offline.OutgoingMessageType.file,
+  ): Web.OutgoingMessageBase {
+    const payload: Web.OutgoingMessageBase = {
+      type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
         url: message.attachment.payload.url,
@@ -1008,10 +1005,7 @@ export default class BaseWebChannelHandler<
    *
    * @returns An array of elements object
    */
-  _formatElements(
-    data: any[],
-    options: BlockOptions,
-  ): Offline.MessageElement[] {
+  _formatElements(data: any[], options: BlockOptions): Web.MessageElement[] {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
     }
@@ -1019,7 +1013,7 @@ export default class BaseWebChannelHandler<
     const fields = options.content.fields;
     const buttons: Button[] = options.content.buttons;
     return data.map((item) => {
-      const element: Offline.MessageElement = {
+      const element: Web.MessageElement = {
         title: item[fields.title],
         buttons: item.buttons || [],
       };
@@ -1032,7 +1026,7 @@ export default class BaseWebChannelHandler<
           if (!attachmentPayload.id) {
             // @deprecated
             this.logger.warn(
-              'Offline Channel Handler: Attachment remote url has been deprecated',
+              'Web Channel Handler: Attachment remote url has been deprecated',
               item,
             );
           }
@@ -1091,11 +1085,11 @@ export default class BaseWebChannelHandler<
   _listFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     const data = message.elements || [];
     const pagination = message.pagination;
     let buttons: Button[] = [],
-      elements: Offline.MessageElement[] = [];
+      elements: Web.MessageElement[] = [];
 
     // Items count min check
     if (!data.length) {
@@ -1124,7 +1118,7 @@ export default class BaseWebChannelHandler<
         }
       : {};
     return {
-      type: Offline.OutgoingMessageType.list,
+      type: Web.OutgoingMessageType.list,
       data: {
         elements,
         buttons,
@@ -1144,7 +1138,7 @@ export default class BaseWebChannelHandler<
   _carouselFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     const data = message.elements || [];
     // Items count min check
     if (data.length === 0) {
@@ -1157,7 +1151,7 @@ export default class BaseWebChannelHandler<
     // Populate items (elements/cards) with content
     const elements = this._formatElements(data, options);
     return {
-      type: Offline.OutgoingMessageType.carousel,
+      type: Web.OutgoingMessageType.carousel,
       data: {
         elements,
       },
@@ -1175,7 +1169,7 @@ export default class BaseWebChannelHandler<
   _formatMessage(
     envelope: StdOutgoingEnvelope,
     options: BlockOptions,
-  ): Offline.OutgoingMessageBase {
+  ): Web.OutgoingMessageBase {
     switch (envelope.format) {
       case OutgoingMessageFormat.attachment:
         return this._attachmentFormat(envelope.message, options);
@@ -1215,14 +1209,14 @@ export default class BaseWebChannelHandler<
   }
 
   /**
-   * Send a Offline Message to the end-user
+   * Send a Web Channel Message to the end-user
    *
    * @param event - Incoming event/message being responded to
    * @param envelope - The message to be sent {format, message}
    * @param options - Might contain additional settings
    * @param _context - Contextual data
    *
-   * @returns The offline's response, otherwise an error
+   * @returns The web's response, otherwise an error
    */
   async sendMessage(
     event: EventWrapper<any, any>,
@@ -1230,13 +1224,13 @@ export default class BaseWebChannelHandler<
     options: BlockOptions,
     _context?: any,
   ): Promise<{ mid: string }> {
-    const messageBase: Offline.OutgoingMessageBase = this._formatMessage(
+    const messageBase: Web.OutgoingMessageBase = this._formatMessage(
       envelope,
       options,
     );
     const subscriber = event.getSender();
 
-    const message: Offline.OutgoingMessage = {
+    const message: Web.OutgoingMessage = {
       ...messageBase,
       mid: this.generateId(),
       author: 'chatbot',
@@ -1297,9 +1291,9 @@ export default class BaseWebChannelHandler<
    *
    * @param event - The message event received
    *
-   * @returns The offline's response, otherwise an error
+   * @returns The web's response, otherwise an error
    */
-  async getUserData(event: OfflineEventWrapper): Promise<SubscriberCreateDto> {
+  async getUserData(event: WebEventWrapper): Promise<SubscriberCreateDto> {
     return event.getSender() as SubscriberCreateDto;
   }
 }

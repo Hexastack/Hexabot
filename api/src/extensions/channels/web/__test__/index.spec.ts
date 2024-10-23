@@ -48,21 +48,21 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import OfflineHandler from '../index.channel';
+import WebChannelHandler from '../index.channel';
 
 import {
-  offlineAttachment,
-  offlineButtons,
-  offlineCarousel,
-  offlineList,
-  offlineQuickReplies,
-  offlineText,
+  webAttachment,
+  webButtons,
+  webCarousel,
+  webList,
+  webQuickReplies,
+  webText,
 } from './data.mock';
 
-describe('Offline Handler', () => {
+describe('WebChannelHandler', () => {
   let subscriberService: SubscriberService;
-  let handler: OfflineHandler;
-  const offlineSettings = {};
+  let handler: WebChannelHandler;
+  const webSettings = {};
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -87,7 +87,7 @@ describe('Offline Handler', () => {
               chatbot: { lang: { default: 'fr' } },
             })),
             getSettings: jest.fn(() => ({
-              offline: offlineSettings,
+              web: webSettings,
             })),
           },
         },
@@ -102,7 +102,7 @@ describe('Offline Handler', () => {
         MessageRepository,
         MenuService,
         MenuRepository,
-        OfflineHandler,
+        WebChannelHandler,
         EventEmitter2,
         LoggerService,
         {
@@ -122,7 +122,7 @@ describe('Offline Handler', () => {
       ],
     }).compile();
     subscriberService = module.get<SubscriberService>(SubscriberService);
-    handler = module.get<OfflineHandler>(OfflineHandler);
+    handler = module.get<WebChannelHandler>(WebChannelHandler);
   });
 
   afterAll(async () => {
@@ -131,29 +131,29 @@ describe('Offline Handler', () => {
 
   it('should have correct name', () => {
     expect(handler).toBeDefined();
-    expect(handler.getChannel()).toEqual('offline');
+    expect(handler.getName()).toEqual('web-channel');
   });
 
   it('should format text properly', () => {
     const formatted = handler._textFormat(textMessage, {});
-    expect(formatted).toEqual(offlineText);
+    expect(formatted).toEqual(webText);
   });
 
   it('should format quick replies properly', () => {
     const formatted = handler._quickRepliesFormat(quickRepliesMessage, {});
-    expect(formatted).toEqual(offlineQuickReplies);
+    expect(formatted).toEqual(webQuickReplies);
   });
 
   it('should format buttons properly', () => {
     const formatted = handler._buttonsFormat(buttonsMessage, {});
-    expect(formatted).toEqual(offlineButtons);
+    expect(formatted).toEqual(webButtons);
   });
 
   it('should format list properly', () => {
     const formatted = handler._listFormat(contentMessage, {
       content: contentMessage.options,
     });
-    expect(formatted).toEqual(offlineList);
+    expect(formatted).toEqual(webList);
   });
 
   it('should format carousel properly', () => {
@@ -163,12 +163,12 @@ describe('Offline Handler', () => {
         display: OutgoingMessageFormat.carousel,
       },
     });
-    expect(formatted).toEqual(offlineCarousel);
+    expect(formatted).toEqual(webCarousel);
   });
 
   it('should format attachment properly', () => {
     const formatted = handler._attachmentFormat(attachmentMessage, {});
-    expect(formatted).toEqual(offlineAttachment);
+    expect(formatted).toEqual(webAttachment);
   });
 
   it('creates a new subscriber if needed + set a new session', async () => {
@@ -180,7 +180,7 @@ describe('Offline Handler', () => {
       user: {},
     } as any as Request;
 
-    const generatedId = 'offline-test';
+    const generatedId = 'web-test';
     const clearMock = jest
       .spyOn(handler, 'generateId')
       .mockImplementation(() => generatedId);
@@ -192,7 +192,7 @@ describe('Offline Handler', () => {
         agent: req.headers['user-agent'],
         ipAddress: '0.0.0.0',
         isSocket: false,
-        name: 'offline',
+        name: 'web-channel',
       },
       country: '',
       first_name: req.query.first_name,
@@ -209,7 +209,7 @@ describe('Offline Handler', () => {
     }, {});
     expect(subscriberAttrs).toEqual(expectedAttrs);
     expect(req.session).toEqual({
-      offline: {
+      web: {
         isSocket: false,
         messageQueue: [],
         polling: false,
@@ -222,7 +222,7 @@ describe('Offline Handler', () => {
     const subscriber2nd = await handler['getOrCreateSession'](req);
     expect(subscriber2nd.id).toBe(subscriber.id);
     expect(req.session).toEqual({
-      offline: {
+      web: {
         isSocket: false,
         messageQueue: [],
         polling: false,
@@ -232,9 +232,8 @@ describe('Offline Handler', () => {
   });
 
   it('subscribes and returns the message history', async () => {
-    const subscriber = await subscriberService.findOneByForeignIdAndPopulate(
-      'foreign-id-offline-1',
-    );
+    const subscriber =
+      await subscriberService.findOneByForeignIdAndPopulate('foreign-id-web-1');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const req = {
@@ -257,7 +256,7 @@ describe('Offline Handler', () => {
     } as any as SocketResponse;
     req.session = {
       cookie: { originalMaxAge: 0 },
-      offline: {
+      web: {
         isSocket: true,
         messageQueue: [],
         polling: false,

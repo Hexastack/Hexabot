@@ -19,16 +19,13 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import BaseWebChannelHandler from '../offline/base-web-channel';
+import BaseWebChannelHandler from '../web/base-web-channel';
 
-import {
-  DEFAULT_LIVE_CHAT_TEST_SETTINGS,
-  LIVE_CHAT_TEST_CHANNEL_NAME,
-} from './settings';
+import { CONSOLE_CHANNEL_NAME } from './settings';
 
 @Injectable()
-export default class LiveChatTesterHandler extends BaseWebChannelHandler<
-  typeof LIVE_CHAT_TEST_CHANNEL_NAME
+export default class ConsoleChannelHandler extends BaseWebChannelHandler<
+  typeof CONSOLE_CHANNEL_NAME
 > {
   constructor(
     settingService: SettingService,
@@ -43,8 +40,7 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
     websocketGateway: WebsocketGateway,
   ) {
     super(
-      LIVE_CHAT_TEST_CHANNEL_NAME,
-      DEFAULT_LIVE_CHAT_TEST_SETTINGS,
+      CONSOLE_CHANNEL_NAME,
       settingService,
       channelService,
       logger,
@@ -56,5 +52,9 @@ export default class LiveChatTesterHandler extends BaseWebChannelHandler<
       menuService,
       websocketGateway,
     );
+  }
+
+  getPath(): string {
+    return __dirname;
   }
 }

@@ -1,0 +1,7 @@
+{
+  "name": "hexabot-channel-web",
+  "version": "2.0.0",
+  "description": "The Web Channel Extension for Hexabot Chatbot / Agent Builder for website integration",
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

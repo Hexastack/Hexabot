@@ -20,7 +20,7 @@ import { NlpValue } from '@/nlp/schemas/nlp-value.schema';
 import { SettingService } from '@/setting/services/setting.service';
 import { buildURL } from '@/utils/helpers/URL';
 
-import { CORE_NLU_HELPER_NAME, CORE_NLU_HELPER_SETTINGS } from './settings';
+import { CORE_NLU_HELPER_NAME } from './settings';
 import { NlpParseResultType, RasaNlu } from './types';
 
 @Injectable()
@@ -34,13 +34,11 @@ export default class CoreNluHelper extends BaseNlpHelper<
     private readonly httpService: HttpService,
     private readonly languageService: LanguageService,
   ) {
-    super(
-      CORE_NLU_HELPER_NAME,
-      CORE_NLU_HELPER_SETTINGS,
-      settingService,
-      helperService,
-      logger,
-    );
+    super(CORE_NLU_HELPER_NAME, settingService, helperService, logger);
+  }
+
+  getPath() {
+    return __dirname;
   }
 
   /**

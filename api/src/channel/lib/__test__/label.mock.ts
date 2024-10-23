@@ -16,7 +16,7 @@ const baseLabel: Label = {
   name: '',
   label_id: {
     messenger: '',
-    offline: '',
+    web: '',
     dimelo: '',
     twitter: '',
   },
@@ -30,7 +30,7 @@ export const labelMock: Label = {
   name: 'label',
   label_id: {
     messenger: 'none',
-    offline: 'none',
+    web: 'none',
     dimelo: 'none',
     twitter: 'none',
   },
@@ -43,7 +43,7 @@ export const customerLabelsMock: Label[] = [
     name: 'client',
     label_id: {
       messenger: 'none',
-      offline: 'none',
+      web: 'none',
       dimelo: 'none',
       twitter: 'none',
     },
@@ -54,7 +54,7 @@ export const customerLabelsMock: Label[] = [
     name: 'profressional',
     label_id: {
       messenger: 'none',
-      offline: 'none',
+      web: 'none',
       dimelo: 'none',
       twitter: 'none',
     },

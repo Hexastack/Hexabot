@@ -23,7 +23,7 @@ describe('PluginsService', () => {
       imports: [LoggerModule],
     }).compile();
     pluginsService = module.get<PluginService>(PluginService);
-    module.get<DummyPlugin>(DummyPlugin).onModuleInit();
+    await module.get<DummyPlugin>(DummyPlugin).onModuleInit();
   });
   afterAll(async () => {
     jest.clearAllMocks();
@@ -37,7 +37,7 @@ describe('PluginsService', () => {
 
   describe('getPlugin', () => {
     it('should return the required plugin', () => {
-      const result = pluginsService.getPlugin(PluginType.block, 'dummy');
+      const result = pluginsService.getPlugin(PluginType.block, 'dummy-plugin');
       expect(result).toBeInstanceOf(DummyPlugin);
     });
   });

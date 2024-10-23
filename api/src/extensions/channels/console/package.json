@@ -1,0 +1,7 @@
+{
+  "name": "hexabot-channel-console",
+  "version": "2.0.0",
+  "description": "The Admin Chat Console Channel Extension for Hexabot Chatbot / Agent Builder.",
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

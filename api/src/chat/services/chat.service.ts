@@ -246,7 +246,7 @@ export class ChatService {
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = {
           ...event.getChannelData(),
-          name: handler.getChannel(),
+          name: handler.getName(),
         };
         subscriber = await this.subscriberService.create(subscriberData);
       } else {

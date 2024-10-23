@@ -58,7 +58,7 @@ describe('Core NLU Helper', () => {
           provide: SettingService,
           useValue: {
             getSettings: jest.fn(() => ({
-              core_nlu: {
+              core_nlu_helper: {
                 endpoint: 'path',
                 token: 'token',
                 threshold: '0.5',
@@ -121,7 +121,7 @@ describe('Core NLU Helper', () => {
       true,
     );
     const settings = await settingService.getSettings();
-    const threshold = settings.core_nlu.threshold;
+    const threshold = settings.core_nlu_helper.threshold;
     const thresholdGuess = {
       entities: nlpBestGuess.entities.filter(
         (g) =>

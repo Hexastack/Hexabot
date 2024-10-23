@@ -1,3 +1,11 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
 import { Injectable } from '@nestjs/common';
 
 import { Block } from '@/chat/schemas/block.schema';
@@ -14,14 +22,13 @@ import { HelperType } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
+import { PluginBlockTemplate } from '@/plugins/types';
 
-import { OLLAMA_PLUGIN_SETTINGS } from './settings';
+import SETTINGS from './settings';
 
 @Injectable()
-export class OllamaPlugin extends BaseBlockPlugin<
-  typeof OLLAMA_PLUGIN_SETTINGS
-> {
-  public readonly settings = OLLAMA_PLUGIN_SETTINGS;
+export class OllamaPlugin extends BaseBlockPlugin<typeof SETTINGS> {
+  template: PluginBlockTemplate = { name: 'Ollama Plugin' };
 
   constructor(
     pluginService: PluginService,
@@ -30,12 +37,11 @@ export class OllamaPlugin extends BaseBlockPlugin<
     private contentService: ContentService,
     private messageService: MessageService,
   ) {
-    super('ollama', OLLAMA_PLUGIN_SETTINGS, pluginService);
+    super('ollama-plugin', pluginService);
+  }
 
-    this.template = { name: 'Ollama Plugin' };
-    this.effects = {
-      onStoreContextData: () => {},
-    };
+  getPath(): string {
+    return __dirname;
   }
 
   async process(block: Block, context: Context, _convId: string) {

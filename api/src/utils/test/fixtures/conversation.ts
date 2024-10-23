@@ -10,8 +10,8 @@ import mongoose from 'mongoose';
 
 import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
 import {
-  ConversationModel,
   Conversation,
+  ConversationModel,
 } from '@/chat/schemas/conversation.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -25,7 +25,7 @@ const conversations: ConversationCreateDto[] = [
     sender: '0',
     active: true,
     context: {
-      channel: 'messenger',
+      channel: 'messenger-channel',
       text: 'Hi',
       payload: '',
       nlp: {
@@ -60,7 +60,7 @@ const conversations: ConversationCreateDto[] = [
         foreign_id: '',
         labels: [],
         assignedTo: null,
-        channel: { name: 'messenger' },
+        channel: { name: 'messenger-channel' },
       },
       skip: {},
       attempt: 0,
@@ -71,7 +71,7 @@ const conversations: ConversationCreateDto[] = [
   {
     sender: '1',
     context: {
-      channel: 'offline',
+      channel: 'web-channel',
       text: 'Hello',
       payload: '',
       nlp: {
@@ -106,7 +106,7 @@ const conversations: ConversationCreateDto[] = [
         foreign_id: '',
         labels: [],
         assignedTo: null,
-        channel: { name: 'offline' },
+        channel: { name: 'web-channel' },
       },
       skip: {},
       attempt: 0,

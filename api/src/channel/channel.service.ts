@@ -10,8 +10,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { LIVE_CHAT_TEST_CHANNEL_NAME } from '@/extensions/channels/live-chat-tester/settings';
-import { OFFLINE_CHANNEL_NAME } from '@/extensions/channels/offline/settings';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
 import {
   SocketGet,
@@ -23,10 +23,11 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import ChannelHandler from './lib/Handler';
+import { ChannelName } from './types';
 
 @Injectable()
 export class ChannelService {
-  private registry: Map<string, ChannelHandler<string>> = new Map();
+  private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
 
   constructor(
     private readonly logger: LoggerService,
@@ -40,7 +41,7 @@ export class ChannelService {
    * @param channel - The channel handler associated with the channel name.
    * @typeParam C The channel handler's type that extends `ChannelHandler`.
    */
-  public setChannel<T extends string, C extends ChannelHandler<T>>(
+  public setChannel<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
     channel: C,
   ) {
@@ -62,19 +63,19 @@ export class ChannelService {
    * @param name - The name of the channel to find.
    * @returns The channel handler associated with the specified name, or undefined if the channel is not found.
    */
-  public findChannel(name: string) {
+  public findChannel(name: ChannelName) {
     return this.getAll().find((c) => {
-      return c.getChannel() === name;
+      return c.getName() === name;
     });
   }
 
   /**
    * Retrieves the appropriate channel handler based on the channel name.
    *
-   * @param channelName - The name of the channel (messenger, offline, ...).
+   * @param channelName - The name of the channel (messenger, web, ...).
    * @returns The handler for the specified channel.
    */
-  public getChannelHandler<T extends string, C extends ChannelHandler<T>>(
+  public getChannelHandler<T extends ChannelName, C extends ChannelHandler<T>>(
     name: T,
   ): C {
     const handler = this.registry.get(name);
@@ -93,42 +94,42 @@ export class ChannelService {
    * @returns A promise that resolves when the handler has processed the request.
    */
   async handle(channel: string, req: Request, res: Response): Promise<void> {
-    const handler = this.getChannelHandler(channel);
+    const handler = this.getChannelHandler(`${channel}-channel`);
     handler.handle(req, res);
   }
 
   /**
-   * Handles a websocket request for the offline channel.
+   * Handles a websocket request for the web channel.
    *
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${OFFLINE_CHANNEL_NAME}/`)
-  handleWebsocketForOffline(
+  @SocketGet(`/webhook/${WEB_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${WEB_CHANNEL_NAME}/`)
+  handleWebsocketForWebChannel(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
-    this.logger.log('Channel notification (Offline Socket) : ', req.method);
-    const handler = this.getChannelHandler(OFFLINE_CHANNEL_NAME);
+    this.logger.log('Channel notification (Web Socket) : ', req.method);
+    const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
     return handler.handle(req, res);
   }
 
   /**
-   * Handles a websocket request for the live chat tester channel.
+   * Handles a websocket request for the admin chat console channel.
    * It considers the user as a subscriber.
    *
    * @param req - The websocket request object.
    * @param res - The websocket response object.
    */
-  @SocketGet(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
-  @SocketPost(`/webhook/${LIVE_CHAT_TEST_CHANNEL_NAME}/`)
-  async handleWebsocketForLiveChatTester(
+  @SocketGet(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
+  @SocketPost(`/webhook/${CONSOLE_CHANNEL_NAME}/`)
+  async handleWebsocketForAdminChatConsole(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
     this.logger.log(
-      'Channel notification (Live Chat Tester Socket) : ',
+      'Channel notification (Admin Chat Console Socket) : ',
       req.method,
     );
 
@@ -157,21 +158,21 @@ export class ChannelService {
         country: '',
         labels: [],
         channel: {
-          name: LIVE_CHAT_TEST_CHANNEL_NAME,
+          name: CONSOLE_CHANNEL_NAME,
           isSocket: true,
         },
       },
     );
 
     // Update session (end user is both a user + subscriber)
-    req.session.offline = {
+    req.session.web = {
       profile: testSubscriber,
       isSocket: true,
       messageQueue: [],
       polling: false,
     };
 
-    const handler = this.getChannelHandler(LIVE_CHAT_TEST_CHANNEL_NAME);
+    const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
     return handler.handle(req, res);
   }
 }

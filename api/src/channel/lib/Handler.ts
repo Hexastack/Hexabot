@@ -6,7 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import path from 'path';
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
@@ -17,35 +19,39 @@ import {
 } from '@/chat/schemas/types/message';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
-import { hyphenToUnderscore } from '@/utils/helpers/misc';
+import { Extension } from '@/utils/generics/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import { ChannelService } from '../channel.service';
-import { ChannelSetting } from '../types';
+import { ChannelName, ChannelSetting } from '../types';
 
 import EventWrapper from './EventWrapper';
 
 @Injectable()
-export default abstract class ChannelHandler<N extends string = string> {
-  private readonly name: N;
-
+export default abstract class ChannelHandler<
+    N extends ChannelName = ChannelName,
+  >
+  extends Extension
+  implements OnModuleInit
+{
   private readonly settings: ChannelSetting<N>[];
 
   constructor(
     name: N,
-    settings: ChannelSetting<N>[],
     protected readonly settingService: SettingService,
     private readonly channelService: ChannelService,
     protected readonly logger: LoggerService,
   ) {
-    this.name = name;
-    this.settings = settings;
+    super(name);
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
-  onModuleInit() {
+  async onModuleInit() {
+    await super.onModuleInit();
     this.channelService.setChannel(
-      this.getChannel(),
+      this.getName() as ChannelName,
       this as unknown as ChannelHandler<N>,
     );
     this.setup();
@@ -53,7 +59,7 @@ export default abstract class ChannelHandler<N extends string = string> {
 
   async setup() {
     await this.settingService.seedIfNotExist(
-      this.getChannel(),
+      this.getName(),
       this.settings.map((s, i) => ({
         ...s,
         weight: i + 1,
@@ -63,29 +69,13 @@ export default abstract class ChannelHandler<N extends string = string> {
   }
 
   /**
-   * Returns the channel's name
-   * @returns Channel's name
-   */
-  getChannel() {
-    return this.name;
-  }
-
-  /**
-   * Returns the channel's group
-   * @returns Channel's group
-   */
-  protected getGroup() {
-    return hyphenToUnderscore(this.getChannel()) as ChannelSetting<N>['group'];
-  }
-
-  /**
    * Returns the channel's settings
    * @returns Channel's settings
    */
   async getSettings<S extends string = HyphenToUnderscore<N>>() {
     const settings = await this.settingService.getSettings();
     // @ts-expect-error workaround typing
-    return settings[this.getGroup() as keyof Settings] as Settings[S];
+    return settings[this.getNamespace() as keyof Settings] as Settings[S];
   }
 
   /**
