@@ -59,12 +59,21 @@ export default class OllamaLlmHelper
    *
    * @param prompt - The input text from the user
    * @param model - The model to be used
+   * @param systemPrompt - The input text from the system
    * @returns {Promise<string>} - The generated response from the LLM
    */
-  async generateResponse(prompt: string, model: string): Promise<string> {
+  async generateResponse(
+    prompt: string,
+    model: string,
+    system: string,
+    { keepAlive = '5m', options = {} },
+  ): Promise<string> {
     const response = await this.client.generate({
       model,
       prompt,
+      system: system,
+      keep_alive: keepAlive,
+      options,
     });
 
     return response.response ? response.response : '';

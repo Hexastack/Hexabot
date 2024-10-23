@@ -75,7 +75,10 @@ export class OllamaPlugin extends BaseBlockPlugin<typeof SETTINGS> {
 
       const options = this.settings
         .filter(
-          (setting) => 'subgroup' in setting && setting.subgroup === 'options',
+          (setting) =>
+            'subgroup' in setting &&
+            setting.subgroup === 'options' &&
+            setting.value !== null,
         )
         .reduce((acc, { label }) => {
           acc[label] = args[label];

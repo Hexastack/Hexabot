@@ -18,7 +18,7 @@ import { HelperService } from './helper.service';
   // Core & under dev helpers
   'dist/extensions/**/*.helper.js',
   // Installed helpers via npm
-  'dist/.hexabot/helpers/**/*.helper.js',
+  'dist/.hexabot/extensions/helpers/**/*.helper.js',
 )
 @Module({
   imports: [HttpModule],
