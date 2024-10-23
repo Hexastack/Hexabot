@@ -106,12 +106,19 @@ export class SettingService extends BaseService<Setting> {
   }
 
   /**
+   * Clears the settings cache
+   */
+  async clearCache() {
+    this.cacheManager.del(SETTING_CACHE_KEY);
+  }
+
+  /**
    * Event handler for setting updates. Listens to 'hook:setting:*' events
    * and invalidates the cache for settings when triggered.
    */
   @OnEvent('hook:setting:*')
   async handleSettingUpdateEvent() {
-    this.cacheManager.del(SETTING_CACHE_KEY);
+    this.clearCache();
   }
 
   /**

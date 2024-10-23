@@ -6,8 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 
+import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
@@ -16,7 +19,10 @@ import { Setting } from '../schemas/setting.schema';
 
 @Injectable()
 export class SettingSeeder extends BaseSeeder<Setting> {
-  constructor(private readonly settingRepository: SettingRepository) {
+  constructor(
+    private readonly settingRepository: SettingRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {
     super(settingRepository);
   }
 
@@ -35,6 +41,9 @@ export class SettingSeeder extends BaseSeeder<Setting> {
       if ((await this.repository.count({ group })) === 0)
         await this.repository.createMany(models);
     });
+
+    await this.cacheManager.del(SETTING_CACHE_KEY);
+
     return true;
   }
 }
