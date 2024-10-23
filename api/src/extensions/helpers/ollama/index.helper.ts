@@ -71,7 +71,7 @@ export default class OllamaLlmHelper
     const response = await this.client.generate({
       model,
       prompt,
-      system: system,
+      system,
       keep_alive: keepAlive,
       options,
     });

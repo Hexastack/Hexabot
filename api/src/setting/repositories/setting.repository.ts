@@ -71,7 +71,6 @@ export class SettingRepository extends BaseRepository<Setting> {
       typeof setting.value !== 'number' &&
       setting.value !== null
     ) {
-      console.log(setting);
       throw new Error('Setting Model : Value must be a number!');
     }
   }
