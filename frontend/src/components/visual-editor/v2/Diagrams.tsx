@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import MoveIcon from "@mui/icons-material/Swipe";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
@@ -38,6 +39,7 @@ import {
 } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
@@ -67,6 +69,13 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string>(false);
+  const { refetch: refetchBlocks } = useFind(
+    { entity: EntityType.BLOCK, format: Format.FULL },
+    {
+      hasCount: false,
+    },
+  );
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const {
     buildDiagram,
@@ -174,10 +183,13 @@ const Diagrams = () => {
   }, []);
 
   useEffect(() => {
+    const filteredBlocks = blocks.filter(
+      (block) => block.category === selectedCategoryId,
+    );
     const { canvas, model, engine } = buildDiagram({
       zoom: currentCategory?.zoom || 100,
       offset: currentCategory?.offset || [0, 0],
-      data: blocks,
+      data: filteredBlocks,
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
@@ -291,11 +303,15 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
+    refetchBlocks();
   }, [
+    selectedCategoryId,
     JSON.stringify(
-      blocks.map((b) => {
-        return { ...b, position: undefined, updatedAt: undefined };
-      }),
+      blocks
+        .filter((b) => b.category === selectedCategoryId)
+        .map((b) => {
+          return { ...b, position: undefined, updatedAt: undefined };
+        }),
     ),
   ]);
 
@@ -314,6 +330,14 @@ const Diagrams = () => {
         }
       };
       deleteDialogCtl.openDialog(ids);
+    }
+  };
+  const handleMoveButton = () => {
+    const selectedEntities = engine?.getModel().getSelectedEntities();
+    const ids = selectedEntities?.map((model) => model.getID()).join(",");
+
+    if (ids && selectedEntities) {
+      moveDialogCtl.openDialog(ids);
     }
   };
   const onDelete = async () => {
@@ -429,6 +453,45 @@ const Diagrams = () => {
       deleteDialogCtl.closeDialog();
     }
   };
+  const onMove = async (newCategoryId?: string) => {
+    if (!newCategoryId) {
+      return;
+    }
+
+    const id = moveDialogCtl?.data;
+
+    if (id) {
+      const ids = id.includes(",") ? id.split(",") : [id];
+
+      for (const blockId of ids) {
+        const block = getBlockFromCache(blockId);
+
+        await updateBlock(
+          {
+            id: blockId,
+            params: {
+              category: newCategoryId,
+            },
+          },
+          {
+            onSuccess() {
+              updateCachedBlock({
+                id: blockId,
+                payload: {
+                  ...block,
+                  category: newCategoryId,
+                },
+                strategy: "overwrite",
+              });
+            },
+          },
+        );
+      }
+      setSelectedCategoryId(newCategoryId);
+      setSelectedBlockId(undefined);
+      moveDialogCtl.closeDialog();
+    }
+  };
 
   return (
     <div
@@ -462,6 +525,13 @@ const Diagrams = () => {
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
         <DeleteDialog {...deleteDialogCtl} callback={onDelete} />
+        <MoveDialog
+          open={moveDialogCtl.open}
+          openDialog={moveDialogCtl.openDialog}
+          callback={onMove}
+          closeDialog={moveDialogCtl.closeDialog}
+          categories={categories}
+        />
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>
           <Grid
             sx={{
@@ -579,6 +649,15 @@ const Diagrams = () => {
                 disabled={!selectedBlockId}
               >
                 {t("button.remove")}
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<MoveIcon />}
+                onClick={handleMoveButton}
+                disabled={!selectedBlockId || selectedBlockId.length !== 24}
+              >
+                {t("button.move")}
               </Button>
             </Grid>
             <Grid container item justifyContent="right" xs alignSelf="center">
