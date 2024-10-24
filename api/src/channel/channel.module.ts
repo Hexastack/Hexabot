@@ -33,7 +33,7 @@ export interface ChannelModuleOptions {
   // Core & under dev channels
   'dist/extensions/**/*.channel.js',
   // Installed channels via npm
-  'dist/.hexabot/channels/**/*.channel.js',
+  'dist/.hexabot/extensions/channels/**/*.channel.js',
 )
 @Module({
   controllers: [WebhookController, ChannelController],

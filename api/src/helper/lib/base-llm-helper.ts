@@ -34,9 +34,16 @@ export default abstract class BaseLlmHelper<
    *
    * @param prompt - The input text from the user
    * @param model - The model to be used
+   * @param systemPrompt - The input text from the system
+   * @param extra - Extra options
    * @returns {Promise<string>} - The generated response from the LLM
    */
-  abstract generateResponse(prompt: string, model: string): Promise<string>;
+  abstract generateResponse(
+    prompt: string,
+    model: string,
+    systemPrompt: string,
+    extra?: any,
+  ): Promise<string>;
 
   /**
    * Send a chat completion request with the conversation history.
@@ -46,6 +53,7 @@ export default abstract class BaseLlmHelper<
    * @param prompt - The input text from the user
    * @param model - The model to be used
    * @param history - Array of messages
+   * @param extra - Extra options
    * @returns {Promise<string>} - The generated response from the LLM
    */
   abstract generateChatCompletion(

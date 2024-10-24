@@ -24,7 +24,7 @@ import { PluginService } from './plugins.service';
   // Core & under dev plugins
   'dist/extensions/**/*.plugin.js',
   // Installed plugins via npm
-  'dist/.hexabot/plugins/**/*.plugin.js',
+  'dist/.hexabot/extensions/plugins/**/*.plugin.js',
 )
 @Global()
 @Module({

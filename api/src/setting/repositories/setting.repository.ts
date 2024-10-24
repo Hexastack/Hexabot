@@ -18,6 +18,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
+import { SettingType } from '../schemas/types';
 
 @Injectable()
 export class SettingRepository extends BaseRepository<Setting> {
@@ -43,9 +44,14 @@ export class SettingRepository extends BaseRepository<Setting> {
     setting: Document<unknown, unknown, Setting> &
       Setting & { _id: Types.ObjectId },
   ) {
-    if (setting.type === 'text' && typeof setting.value !== 'string') {
+    if (
+      (setting.type === SettingType.text ||
+        setting.type === SettingType.textarea) &&
+      typeof setting.value !== 'string' &&
+      setting.value !== null
+    ) {
       throw new Error('Setting Model : Value must be a string!');
-    } else if (setting.type === 'multiple_text') {
+    } else if (setting.type === SettingType.multiple_text) {
       const isStringArray =
         Array.isArray(setting.value) &&
         setting.value.every((v) => {
@@ -55,10 +61,17 @@ export class SettingRepository extends BaseRepository<Setting> {
         throw new Error('Setting Model : Value must be a string array!');
       }
     } else if (
-      setting.type === 'checkbox' &&
-      typeof setting.value !== 'boolean'
+      setting.type === SettingType.checkbox &&
+      typeof setting.value !== 'boolean' &&
+      setting.value !== null
     ) {
       throw new Error('Setting Model : Value must be a boolean!');
+    } else if (
+      setting.type === SettingType.number &&
+      typeof setting.value !== 'number' &&
+      setting.value !== null
+    ) {
+      throw new Error('Setting Model : Value must be a number!');
     }
   }
 
