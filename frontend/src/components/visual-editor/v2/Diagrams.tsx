@@ -399,48 +399,52 @@ const Diagrams = () => {
       } else {
         // Block Delete Case
         const ids = id.includes(",") ? id.split(",") : [id];
-        const deletePromises = ids.map((id) => {
-          const block = getBlockFromCache(id);
 
-          return deleteBlock(id, {
+        for (const blockId of ids) {
+          const block = getBlockFromCache(blockId);
+
+          await deleteBlock(blockId, {
             onSuccess() {
               // Update all linked blocks to remove any reference to the deleted block
-              [
+              const linkedBlockIds = [
                 ...(block?.nextBlocks || []),
                 ...(block?.previousBlocks || []),
                 ...(block?.attachedBlock ? [block.attachedBlock] : []),
                 ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-              ]
-                .map((bid) => getBlockFromCache(bid))
-                .filter((b) => !!b)
-                .forEach((b) => {
+              ];
+
+              for (const linkedBlockId of linkedBlockIds) {
+                const linkedBlock = getBlockFromCache(linkedBlockId);
+
+                if (linkedBlock) {
                   updateCachedBlock({
-                    id: b.id,
+                    id: linkedBlock.id,
                     payload: {
-                      ...b,
-                      nextBlocks: b.nextBlocks?.filter(
-                        (nextBlockId) => nextBlockId !== id,
+                      ...linkedBlock,
+                      nextBlocks: linkedBlock.nextBlocks?.filter(
+                        (nextBlockId) => nextBlockId !== blockId,
                       ),
-                      previousBlocks: b.previousBlocks?.filter(
-                        (previousBlockId) => previousBlockId !== id,
+                      previousBlocks: linkedBlock.previousBlocks?.filter(
+                        (previousBlockId) => previousBlockId !== blockId,
                       ),
                       attachedBlock:
-                        b.attachedBlock === id ? undefined : b.attachedBlock,
-                      attachedToBlock:
-                        b.attachedToBlock === id
+                        linkedBlock.attachedBlock === blockId
                           ? undefined
-                          : b.attachedToBlock,
+                          : linkedBlock.attachedBlock,
+                      attachedToBlock:
+                        linkedBlock.attachedToBlock === blockId
+                          ? undefined
+                          : linkedBlock.attachedToBlock,
                     },
                     strategy: "overwrite",
                   });
-                });
+                }
+              }
 
-              deleteCachedBlock(id);
+              deleteCachedBlock(blockId);
             },
           });
-        });
-
-        await Promise.all(deletePromises);
+        }
       }
 
       deleteCallbackRef.current?.();
