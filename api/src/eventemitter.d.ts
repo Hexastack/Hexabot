@@ -177,7 +177,7 @@ declare module '@nestjs/event-emitter' {
     user: TDefinition<User, { lastvisit: Subscriber }>;
   }
 
-  /* entities hooks that has schema */
+  /* entities hooks having schemas */
   type IHookEntities = keyof Omit<
     IHookEntityOperationMap,
     keyof IHookOperationMap
