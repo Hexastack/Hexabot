@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookEntities,
+  TNormalizedEvents,
+} from '@nestjs/event-emitter';
 import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
@@ -66,8 +70,9 @@ export abstract class BaseRepository<
     return this.populate;
   }
 
-  getEventName(suffix: EHook): any {
-    return `hook:${this.cls.name.toLocaleLowerCase()}:${suffix}`;
+  getEventName(suffix: EHook) {
+    const entity = this.cls.name.toLocaleLowerCase();
+    return `hook:${entity}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
   private registerLifeCycleHooks() {
@@ -108,7 +113,7 @@ export abstract class BaseRepository<
       await repository.preDelete(query, criteria);
       repository.emitter.emit(
         repository.getEventName(EHook.preDelete),
-        query as any,
+        query,
         criteria,
       );
     });
@@ -118,7 +123,7 @@ export abstract class BaseRepository<
       await repository.postDelete(query, result);
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
-        query as any,
+        query,
         result,
       );
     });
@@ -132,7 +137,7 @@ export abstract class BaseRepository<
     hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
-        result as any,
+        result,
       );
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       await repository.postDelete(query, result);
@@ -146,7 +151,7 @@ export abstract class BaseRepository<
       await repository.preUpdate(query, criteria, updates);
       repository.emitter.emit(
         repository.getEventName(EHook.preUpdate),
-        criteria as any,
+        criteria,
         updates?.['$set'],
       );
     });
