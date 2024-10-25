@@ -132,7 +132,7 @@ declare module '@nestjs/event-emitter' {
     >;
   }
 
-  /* entities hooks */
+  /* hooks */
   interface IHookEntityOperationMap extends IHookOperationMap {
     stats: TDefinition<BotStats, { entry: string }>;
     attachment: TDefinition<Attachment>;
@@ -176,6 +176,12 @@ declare module '@nestjs/event-emitter' {
     role: TDefinition<Role>;
     user: TDefinition<User, { lastvisit: Subscriber }>;
   }
+
+  /* entities hooks having schemas */
+  type IHookEntities = keyof Omit<
+    IHookEntityOperationMap,
+    keyof IHookOperationMap
+  >;
 
   /**
    * @description A constrained string type that allows specific string values while preserving type safety.
