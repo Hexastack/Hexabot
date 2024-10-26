@@ -135,7 +135,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             label={t("label.default_nlu_helper")}
             helperText={t("help.default_nlu_helper")}
             multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.name || null)}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
             {...rest}
           />
         );
@@ -152,7 +152,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             label={t("label.default_llm_helper")}
             helperText={t("help.default_llm_helper")}
             multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.name || null)}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
             {...rest}
           />
         );
