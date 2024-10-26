@@ -5,6 +5,7 @@
   "label": {
     "global_fallback": "Enable Global Fallback?",
     "fallback_message": "Fallback Message",
+    "fallback_block": "Fallback Block",
     "default_nlu_helper": "Default NLU Helper",
     "default_llm_helper": "Default LLM Helper"
   },

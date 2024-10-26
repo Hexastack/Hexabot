@@ -279,7 +279,6 @@
     "effects": "Appliquer les effets des plugins",
     "enable_fallback": "Activer le message de secours?",
     "max_fallback_attempts": "Nombre maximum de tentatives de secours",
-    "fallback_block": "Bloc de secours",
     "fallback_message": "Message de secours",
     "labeled_with": "Cibler les utilisateurs",
     "assign_labels": "Affecter des étiquettes",

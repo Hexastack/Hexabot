@@ -5,6 +5,7 @@
   "label": {
     "global_fallback": "Activer la réponse de secours globale ?",
     "fallback_message": "Message de secours",
+    "fallback_block": "Bloc de secours",
     "default_nlu_helper": "Utilitaire NLU par défaut",
     "default_llm_helper": "Utilitaire LLM par défaut"
   },
