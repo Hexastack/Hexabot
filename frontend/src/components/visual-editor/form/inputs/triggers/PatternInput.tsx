@@ -32,12 +32,7 @@ import { ContentPostbackInput } from "./ContentPostbackInput";
 import { PostbackInput } from "./PostbackInput";
 
 const isRegex = (str: Pattern) => {
-  return (
-    typeof str === "string" &&
-    str.startsWith("/") &&
-    str.endsWith("/") &&
-    str.length > 1
-  );
+  return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
 };
 const getType = (pattern: Pattern): PatternType => {
   if (isRegex(pattern)) {
@@ -270,10 +265,14 @@ const PatternInput: FC<PatternInputProps> = ({
         ) : null}
         {typeof value === "string" && patternType === "regex" ? (
           <RegexInput
-            {...registerInput(t("message.regex_is_invalid"), idx, {
+            {...registerInput(t("message.regex_is_empty"), idx, {
               validate: (pattern) => {
                 try {
-                  new RegExp(pattern.slice(1, -1));
+                  const parsedPattern = new RegExp(pattern.slice(1, -1));
+
+                  if (String(parsedPattern) !== pattern) {
+                    throw t("message.regex_is_invalid");
+                  }
 
                   return true;
                 } catch (_e) {
@@ -285,6 +284,7 @@ const PatternInput: FC<PatternInputProps> = ({
             label={t("label.regex")}
             value={value.slice(1, -1)}
             onChange={(v) => onChange(v)}
+            required
           />
         ) : null}
         {typeof value === "string" && patternType === "text" ? (
