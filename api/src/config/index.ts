@@ -134,12 +134,12 @@ export const config: Config = {
     max: 100, // Maximum number of items in cache (defaults to 100)
   },
   mongo: {
-    user: process.env.MONGO_USER,
-    password: process.env.MONGO_PASSWORD,
-    uri: process.env.MONGO_URI,
-    dbName: process.env.MONGO_DB,
+    user: process.env.MONGO_USER || 'dev_only',
+    password: process.env.MONGO_PASSWORD || 'dev_only',
+    uri: process.env.MONGO_URI || 'mongodb://dev_only:dev_only@mongo:27017/',
+    dbName: process.env.MONGO_DB || 'hexabot',
   },
-  env: process.env.NODE_ENV,
+  env: process.env.NODE_ENV || 'development',
   authentication: {
     jwtOptions: {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
