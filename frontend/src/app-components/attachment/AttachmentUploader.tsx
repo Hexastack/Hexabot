@@ -18,6 +18,8 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IAttachment } from "@/types/attachment.types";
 
+import LoadingIcon from "../icons/LoadingIcon";
+
 import { AttachmentDialog } from "./AttachmentDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
 
@@ -78,12 +80,15 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   );
   const { t } = useTranslate();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const { toast } = useToast();
   const { mutateAsync: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
     onError: () => {
+      setIsUploading(false);
       toast.error(t("message.upload_failed"));
     },
     onSuccess: (data) => {
+      setIsUploading(false);
       toast.success(t("message.success_save"));
       setAttachment(data);
       onChange && onChange(data);
@@ -95,6 +100,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
     e.preventDefault();
   };
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setIsUploading(true);
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files.item(0);
 
@@ -120,11 +126,13 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.dataTransfer.files.item(0);
 
       if (file) {
+        setIsUploading(true);
         uploadAttachment(file);
       }
     }
   };
 
+  // Add a newline before the return statement
   return (
     <Grid>
       <AttachmentDialog
@@ -161,7 +169,12 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               alignItems="center"
               sx={{ padding: "20px" }}
             >
-              {attachment ? (
+              {isUploading ? (
+                <>
+                  <LoadingIcon size={50} color="#1AA089" />
+                  <Typography>{t("label.uploading_file")}</Typography>
+                </>
+              ) : attachment ? (
                 <AttachmentThumbnail
                   id={attachment.id}
                   format="full"
