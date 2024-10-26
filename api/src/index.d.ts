@@ -8,14 +8,7 @@
 
 import 'mongoose';
 import { SubscriberStub } from './chat/schemas/subscriber.schema';
-import {
-  ObjectWithNestedKeys,
-  RecursivePartial,
-  WithoutGenericAny,
-} from './utils/types/filter.types';
 
-type TOmitId<T> = Omit<T, 'id'>;
-type TReplaceId<T> = TOmitId<T> & { _id?: string };
 declare module 'express-session' {
   interface SessionUser {
     id?: string;
@@ -47,21 +40,6 @@ declare module 'express-session' {
       polling: boolean;
     };
   }
-}
-
-declare module 'mongoose' {
-  // Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
-  type TFilterQuery<T, S = TReplaceId<T>> = (
-    | RecursivePartial<{
-        [P in keyof S]?:
-          | (S[P] extends string ? S[P] | RegExp : S[P])
-          | QuerySelector<S[P]>;
-      }>
-    | Partial<ObjectWithNestedKeys<S>>
-  ) &
-    WithoutGenericAny<RootQuerySelector<S>>;
-
-  type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
 }
 
 declare global {

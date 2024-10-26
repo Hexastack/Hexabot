@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "typeRoots": ["./node_modules/@types", "./types"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
@@ -25,6 +26,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "types/**/*.d.ts",
     "src/**/*.json",
     "test/**/*.ts",
     "src/.hexabot/**/*.ts",
