@@ -268,7 +268,7 @@ const PatternInput: FC<PatternInputProps> = ({
             {...registerInput(t("message.regex_is_invalid"), idx, {
               validate: (pattern) => {
                 try {
-                  if (isRegex(pattern)) new RegExp(pattern.slice(1, -1));
+                  new RegExp(pattern.slice(1, -1));
 
                   return true;
                 } catch (_e) {
