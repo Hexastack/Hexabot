@@ -11,3 +11,6 @@ declare global {
     ? `${P}_${HyphenToUnderscore<Q>}`
     : S;
 }
+
+// eslint-disable-next-line prettier/prettier
+export { };
