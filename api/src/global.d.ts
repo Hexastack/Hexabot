@@ -6,14 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
-import { HyphenToUnderscore } from '@/utils/types/extension';
-
-export type ChannelName = `${string}-channel`;
-
-export type ChannelSetting<N extends string = string> = Omit<
-  SettingCreateDto,
-  'group' | 'weight'
-> & {
-  group: HyphenToUnderscore<N>;
-};
+declare global {
+  type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
+    ? `${P}_${HyphenToUnderscore<Q>}`
+    : S;
+}

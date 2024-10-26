@@ -7,6 +7,7 @@
  */
 
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
+import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseHelper from './lib/base-helper';
 import BaseLlmHelper from './lib/base-llm-helper';

@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import 'mongoose';
 import { SubscriberStub } from './chat/schemas/subscriber.schema';
 
 declare module 'express-session' {
@@ -40,10 +39,4 @@ declare module 'express-session' {
       polling: boolean;
     };
   }
-}
-
-declare global {
-  type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
-    ? `${P}_${HyphenToUnderscore<Q>}`
-    : S;
 }

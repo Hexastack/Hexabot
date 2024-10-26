@@ -20,6 +20,7 @@ import {
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
+import { HyphenToUnderscore } from '@/utils/types/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 

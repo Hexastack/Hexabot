@@ -13,7 +13,7 @@ import { OnModuleInit } from '@nestjs/common';
 import { I18nJsonLoader, I18nTranslation } from 'nestjs-i18n';
 import { Observable } from 'rxjs';
 
-import { ExtensionName } from '../types/extension';
+import { ExtensionName, HyphenToUnderscore } from '../types/extension';
 
 export abstract class Extension implements OnModuleInit {
   private translations: I18nTranslation | Observable<I18nTranslation>;
