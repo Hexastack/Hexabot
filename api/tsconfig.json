@@ -25,9 +25,9 @@
     }
   },
   "include": [
-    "src/**/*.ts",
-    "src/global.d.ts",
     "types/**/*.d.ts",
+    "src/global.d.ts",
+    "src/**/*.ts",
     "src/**/*.json",
     "test/**/*.ts",
     "src/.hexabot/**/*.ts",

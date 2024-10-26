@@ -19,6 +19,7 @@ import { type Socket } from 'socket.io';
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
 import { type Attachment } from '@/attachment/schemas/attachment.schema';
 import type EventWrapper from '@/channel/lib/EventWrapper';
+import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import type { Block, BlockFull } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
@@ -49,21 +50,19 @@ import { type Role } from '@/user/schemas/role.schema';
 import { type User } from '@/user/schemas/user.schema';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
 
-import { type SubscriberUpdateDto } from './chat/dto/subscriber.dto';
-
 import '@nestjs/event-emitter';
 /**
  * @description Module declaration that extends the NestJS EventEmitter with custom event types and methods.
  */
 declare module '@nestjs/event-emitter' {
-  interface TDefinition<S, O = object> {
+  export interface TDefinition<S, O = object> {
     schema: S;
     operations: O;
   }
 
-  interface IHookExtensionsOperationMap {}
+  export interface IHookExtensionsOperationMap {}
 
-  interface IHookSettingsGroupLabelOperationMap {
+  export interface IHookSettingsGroupLabelOperationMap {
     chatbot_settings: TDefinition<
       object,
       {
@@ -99,7 +98,7 @@ declare module '@nestjs/event-emitter' {
   }
 
   /* custom hooks */
-  interface IHookOperationMap
+  export interface IHookOperationMap
     extends IHookSettingsGroupLabelOperationMap,
       IHookExtensionsOperationMap {
     analytics: TDefinition<
@@ -133,7 +132,7 @@ declare module '@nestjs/event-emitter' {
   }
 
   /* hooks */
-  interface IHookEntityOperationMap extends IHookOperationMap {
+  export interface IHookEntityOperationMap extends IHookOperationMap {
     stats: TDefinition<BotStats, { entry: string }>;
     attachment: TDefinition<Attachment>;
     block: TDefinition<Block>;
@@ -178,7 +177,7 @@ declare module '@nestjs/event-emitter' {
   }
 
   /* entities hooks having schemas */
-  type IHookEntities = keyof Omit<
+  export type IHookEntities = keyof Omit<
     IHookEntityOperationMap,
     keyof IHookOperationMap
   >;
@@ -186,14 +185,18 @@ declare module '@nestjs/event-emitter' {
   /**
    * @description A constrained string type that allows specific string values while preserving type safety.
    */
-  type ConstrainedString = string & Record<never, never>;
-  type EventNamespaces = keyof IHookEntityOperationMap;
+  export type ConstrainedString = string & Record<never, never>;
+
+  export type EventNamespaces = keyof IHookEntityOperationMap;
 
   /* pre hooks */
-  type TPreValidate<T> = THydratedDocument<T>;
-  type TPreCreate<T> = THydratedDocument<T>;
-  type TPreUpdate<T> = TFilterQuery<T> & object;
-  type TPreDelete<T> = Query<
+  export type TPreValidate<T> = THydratedDocument<T>;
+
+  export type TPreCreate<T> = THydratedDocument<T>;
+
+  export type TPreUpdate<T> = TFilterQuery<T> & object;
+
+  export type TPreDelete<T> = Query<
     DeleteResult,
     Document<T>,
     unknown,
@@ -201,50 +204,56 @@ declare module '@nestjs/event-emitter' {
     'deleteOne',
     Record<string, never>
   >;
-  type TPreUnion<T> =
+
+  export type TPreUnion<T> =
     | TPreValidate<T>
     | TPreCreate<T>
     | TPreUpdate<T>
     | TPreDelete<T>;
 
   /* post hooks */
-  type TPostValidate<T> = THydratedDocument<T>;
-  type TPostCreate<T> = THydratedDocument<T>;
-  type TPostUpdate<T> = THydratedDocument<T>;
-  type TPostDelete = DeleteResult;
-  type TPostUnion<T> =
+  export type TPostValidate<T> = THydratedDocument<T>;
+
+  export type TPostCreate<T> = THydratedDocument<T>;
+
+  export type TPostUpdate<T> = THydratedDocument<T>;
+
+  export type TPostDelete = DeleteResult;
+
+  export type TPostUnion<T> =
     | TPostValidate<T>
     | TPostCreate<T>
     | TPostUpdate<T>
     | TPostDelete;
 
-  type TCustomOperations<E extends keyof IHookEntityOperationMap> =
+  export type TCustomOperations<E extends keyof IHookEntityOperationMap> =
     IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']];
 
   /* union hooks */
-  type TUnion<G, E> = E extends keyof IHookEntityOperationMap
+  export type TUnion<G, E> = E extends keyof IHookEntityOperationMap
     ? E extends keyof IHookOperationMap
       ? TCustomOperations<E>
       : TPreUnion<G> | TPostUnion<G> | TCustomOperations<E>
     : never;
 
   /* Normalized hook */
-  enum EHookPrefix {
+  export enum EHookPrefix {
     pre = 'pre',
     post = 'post',
   }
 
-  type TCompatibleHook<
+  export type TCompatibleHook<
     P extends `${EHookPrefix}`,
     T = `${EHook}`,
   > = T extends `${P}${infer I}` ? `${P}${I}` : never;
 
-  type TPreHook = TCompatibleHook<EHookPrefix.pre>;
-  type TPostHook = TCompatibleHook<EHookPrefix.post>;
+  export type TPreHook = TCompatibleHook<EHookPrefix.pre>;
 
-  type TNormalizedEvents = '*' | TPreHook | TPostHook;
+  export type TPostHook = TCompatibleHook<EHookPrefix.post>;
 
-  type TNormalizedHooks<
+  export type TNormalizedEvents = '*' | TPreHook | TPostHook;
+
+  export type TNormalizedHooks<
     E extends keyof IHookEntityOperationMap,
     T = IHookEntityOperationMap[E]['schema'],
   > =
@@ -273,18 +282,18 @@ declare module '@nestjs/event-emitter' {
         [EHook.postDelete]: TPostDelete;
       };
 
-  type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<
-    TNormalizedHooks<E>,
-    { [key in O]: unknown }
-  >[O];
+  export type TNormalizedHook<
+    E extends keyof IHookEntityOperationMap,
+    O,
+  > = Extract<TNormalizedHooks<E>, { [key in O]: unknown }>[O];
 
   /* Extended hook */
-  type TExtendedHook<
+  export type TExtendedHook<
     E extends keyof IHookEntityOperationMap,
     O extends keyof IHookEntityOperationMap[E]['operations'],
   > = IHookEntityOperationMap[E]['operations'][O];
 
-  type EventValueOf<G> = G extends `hook:${infer E}:${infer O}`
+  export type EventValueOf<G> = G extends `hook:${infer E}:${infer O}`
     ? O extends '*'
       ? TUnion<G, E>
       : E extends keyof IHookEntityOperationMap
@@ -294,7 +303,7 @@ declare module '@nestjs/event-emitter' {
         : never
     : never;
 
-  type IsHookEvent<G extends EventNamespaces | ConstrainedString> =
+  export type IsHookEvent<G extends EventNamespaces | ConstrainedString> =
     G extends EventNamespaces
       ? true
       : G extends `hook:${infer N}:${string}`
@@ -303,10 +312,10 @@ declare module '@nestjs/event-emitter' {
           : false
         : false;
 
-  type TCustomEvents<G extends keyof IHookEntityOperationMap> =
+  export type TCustomEvents<G extends keyof IHookEntityOperationMap> =
     keyof IHookEntityOperationMap[G]['operations'] & string;
 
-  type customEvent<G extends EventNamespaces | ConstrainedString> =
+  export type customEvent<G extends EventNamespaces | ConstrainedString> =
     G extends EventNamespaces
       ? G extends `hook:${string}`
         ? G

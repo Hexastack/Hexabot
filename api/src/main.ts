@@ -18,7 +18,7 @@ moduleAlias.addAliases({
   '@': __dirname,
 });
 
-import { AppModule } from './app.module';
+import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
@@ -30,7 +30,7 @@ async function bootstrap() {
   const isProduction = config.env.toLowerCase().includes('prod');
 
   await resolveDynamicProviders();
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(HexabotModule, {
     bodyParser: false,
   });
 

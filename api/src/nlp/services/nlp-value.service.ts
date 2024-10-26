@@ -8,6 +8,7 @@
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
+import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
@@ -43,7 +44,7 @@ export class NlpValueService extends BaseService<
    *
    * @returns A promise that resolves when the deletion is complete.
    */
-  async deleteCascadeOne(id: string) {
+  async deleteCascadeOne(id: string): Promise<DeleteResult> {
     return await this.repository.deleteOne(id);
   }
 

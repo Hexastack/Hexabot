@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import 'mongoose';
 import {
   ObjectWithNestedKeys,
   RecursivePartial,
   WithoutGenericAny,
-} from '../src/utils/types/filter.types';
+} from '@/utils/types/filter.types';
+import 'mongoose';
 
 declare module 'mongoose' {
   type TOmitId<T> = Omit<T, 'id'>;
   type TReplaceId<T> = TOmitId<T> & { _id?: string };
 
   // Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
-  export type TFilterQuery<T, S = TReplaceId<T>> = (
+  type TFilterQuery<T, S = TReplaceId<T>> = (
     | RecursivePartial<{
         [P in keyof S]?:
           | (S[P] extends string ? S[P] | RegExp : S[P])
@@ -28,5 +28,5 @@ declare module 'mongoose' {
   ) &
     WithoutGenericAny<RootQuerySelector<S>>;
 
-  export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
+  type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
 }

@@ -11,7 +11,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { Permission } from '../schemas/permission.schema';
 import {
@@ -43,7 +43,7 @@ export class RoleRepository extends BaseRepository<
    *
    * @returns The result of the delete operation.
    */
-  async deleteOne(id: string) {
+  async deleteOne(id: string): Promise<DeleteResult> {
     const result = await this.model.deleteOne({ _id: id }).exec();
     if (result.deletedCount > 0) {
       await this.permissionModel.deleteMany({ role: id });
