@@ -32,7 +32,12 @@ import { ContentPostbackInput } from "./ContentPostbackInput";
 import { PostbackInput } from "./PostbackInput";
 
 const isRegex = (str: Pattern) => {
-  return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
+  return (
+    typeof str === "string" &&
+    str.startsWith("/") &&
+    str.endsWith("/") &&
+    str.length > 1
+  );
 };
 const getType = (pattern: Pattern): PatternType => {
   if (isRegex(pattern)) {
