@@ -409,6 +409,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     if (
       block.message &&
       'attachment' in block.message &&
+      block.message.attachment.payload &&
       'url' in block.message.attachment.payload
     ) {
       this.logger.error(
