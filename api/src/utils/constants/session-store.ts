@@ -10,8 +10,15 @@ import MongoStore from 'connect-mongo';
 
 import { config } from '@/config';
 
-export const sessionStore = MongoStore.create({
-  mongoUrl: config.mongo.uri,
-  dbName: config.mongo.dbName,
-  collectionName: 'sessions',
-});
+let sessionStore: MongoStore = null;
+
+export const getSessionStore = () => {
+  if (!sessionStore) {
+    sessionStore = MongoStore.create({
+      mongoUrl: config.mongo.uri,
+      dbName: config.mongo.dbName,
+      collectionName: 'sessions',
+    });
+  }
+  return sessionStore;
+};

@@ -19,6 +19,7 @@ import { type Socket } from 'socket.io';
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
 import { type Attachment } from '@/attachment/schemas/attachment.schema';
 import type EventWrapper from '@/channel/lib/EventWrapper';
+import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import type { Block, BlockFull } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
@@ -48,8 +49,6 @@ import { type Permission } from '@/user/schemas/permission.schema';
 import { type Role } from '@/user/schemas/role.schema';
 import { type User } from '@/user/schemas/user.schema';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
-
-import { type SubscriberUpdateDto } from './chat/dto/subscriber.dto';
 
 import '@nestjs/event-emitter';
 /**
@@ -85,15 +84,6 @@ declare module '@nestjs/event-emitter' {
         company_zipcode: Setting;
         company_state: Setting;
         company_country: Setting;
-      }
-    >;
-    nlp_settings: TDefinition<
-      object,
-      {
-        provider: Setting;
-        endpoint: Setting;
-        token: Setting;
-        threshold: Setting;
       }
     >;
   }
@@ -187,12 +177,16 @@ declare module '@nestjs/event-emitter' {
    * @description A constrained string type that allows specific string values while preserving type safety.
    */
   type ConstrainedString = string & Record<never, never>;
+
   type EventNamespaces = keyof IHookEntityOperationMap;
 
   /* pre hooks */
   type TPreValidate<T> = THydratedDocument<T>;
+
   type TPreCreate<T> = THydratedDocument<T>;
+
   type TPreUpdate<T> = TFilterQuery<T> & object;
+
   type TPreDelete<T> = Query<
     DeleteResult,
     Document<T>,
@@ -201,6 +195,7 @@ declare module '@nestjs/event-emitter' {
     'deleteOne',
     Record<string, never>
   >;
+
   type TPreUnion<T> =
     | TPreValidate<T>
     | TPreCreate<T>
@@ -209,9 +204,13 @@ declare module '@nestjs/event-emitter' {
 
   /* post hooks */
   type TPostValidate<T> = THydratedDocument<T>;
+
   type TPostCreate<T> = THydratedDocument<T>;
+
   type TPostUpdate<T> = THydratedDocument<T>;
+
   type TPostDelete = DeleteResult;
+
   type TPostUnion<T> =
     | TPostValidate<T>
     | TPostCreate<T>
@@ -240,6 +239,7 @@ declare module '@nestjs/event-emitter' {
   > = T extends `${P}${infer I}` ? `${P}${I}` : never;
 
   type TPreHook = TCompatibleHook<EHookPrefix.pre>;
+
   type TPostHook = TCompatibleHook<EHookPrefix.post>;
 
   type TNormalizedEvents = '*' | TPreHook | TPostHook;
@@ -313,11 +313,11 @@ declare module '@nestjs/event-emitter' {
         : `hook:${G}:${TNormalizedEvents | TCustomEvents<G>}`
       : never;
 
-  export interface ListenerFn<G extends EventNamespaces | ConstrainedString> {
+  interface ListenerFn<G extends EventNamespaces | ConstrainedString> {
     (value: EventValueOf<G>, ...values: any[]): void;
   }
 
-  export class EventEmitter2 {
+  class EventEmitter2 {
     emit<G extends EventNamespaces | ConstrainedString, H extends G>(
       customEvent: customEvent<G>,
       value: EventValueOf<H>,
@@ -392,7 +392,7 @@ declare module '@nestjs/event-emitter' {
     propertyKey: K,
   ) => void;
 
-  export declare function OnEvent<
+  declare function OnEvent<
     G extends EventNamespaces | ConstrainedString,
     H extends G,
   >(

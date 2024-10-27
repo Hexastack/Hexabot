@@ -340,13 +340,13 @@ export abstract class BaseRepository<
     });
   }
 
-  async deleteOne(criteria: string | TFilterQuery<T>) {
+  async deleteOne(criteria: string | TFilterQuery<T>): Promise<DeleteResult> {
     return await this.model
       .deleteOne(typeof criteria === 'string' ? { _id: criteria } : criteria)
       .exec();
   }
 
-  async deleteMany(criteria: TFilterQuery<T>) {
+  async deleteMany(criteria: TFilterQuery<T>): Promise<DeleteResult> {
     return await this.model.deleteMany(criteria);
   }
 

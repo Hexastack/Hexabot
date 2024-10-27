@@ -18,19 +18,19 @@ moduleAlias.addAliases({
   '@': __dirname,
 });
 
-import { AppModule } from './app.module';
+import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
 import { swagger } from './swagger';
-import { sessionStore } from './utils/constants/session-store';
+import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
 
 async function bootstrap() {
   const isProduction = config.env.toLowerCase().includes('prod');
 
   await resolveDynamicProviders();
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create(HexabotModule, {
     bodyParser: false,
   });
 
@@ -63,7 +63,7 @@ async function bootstrap() {
       proxy: config.security.trustProxy,
       resave: true,
       saveUninitialized: false,
-      store: sessionStore,
+      store: getSessionStore(),
       cookie: {
         httpOnly: true,
         secure: config.security.httpsEnabled,

@@ -33,7 +33,7 @@ import {
 import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
-import { sessionStore } from '@/utils/constants/session-store';
+import { getSessionStore } from '@/utils/constants/session-store';
 
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
@@ -134,7 +134,7 @@ export class WebsocketGateway
       },
       passport: { user: {} },
     }; // Initialize your session object as needed
-    sessionStore.set(sid, newSession, (err) => {
+    getSessionStore().set(sid, newSession, (err) => {
       if (err) {
         this.logger.error('Error saving session:', err);
         return next(new Error('Unable to establish a new socket session'));
@@ -179,7 +179,7 @@ export class WebsocketGateway
         );
         return;
       }
-      sessionStore.set(sessionID, session, (err) => {
+      getSessionStore().set(sessionID, session, (err) => {
         if (err) {
           this.logger.error(
             'Error saving session in `config.sockets.afterDisconnect`:',
@@ -195,7 +195,7 @@ export class WebsocketGateway
     sessionID: string,
     next: (err: Error, session: any) => void,
   ): void {
-    sessionStore.get(sessionID, (err, session) => {
+    getSessionStore().get(sessionID, (err, session) => {
       this.logger.verbose('Retrieved socket session', err || session);
       return next(err, session);
     });

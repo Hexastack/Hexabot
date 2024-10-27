@@ -18,15 +18,4 @@ export class ModelService extends BaseService<Model, ModelPopulate, ModelFull> {
   constructor(readonly repository: ModelRepository) {
     super(repository);
   }
-
-  /**
-   * Deletes a Model entity by its unique identifier.
-   *
-   * @param id - The unique identifier of the Model entity to delete.
-   *
-   * @returns A promise that resolves to the result of the deletion operation.
-   */
-  async deleteOne(id: string) {
-    return await this.repository.deleteOne(id);
-  }
 }

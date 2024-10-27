@@ -136,4 +136,4 @@ const i18nOptions: I18nOptions = {
     AppService,
   ],
 })
-export class AppModule {}
+export class HexabotModule {}

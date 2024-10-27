@@ -6,50 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import 'mongoose';
-import { SubscriberStub } from './chat/schemas/subscriber.schema';
 import {
   ObjectWithNestedKeys,
   RecursivePartial,
   WithoutGenericAny,
-} from './utils/types/filter.types';
-
-type TOmitId<T> = Omit<T, 'id'>;
-type TReplaceId<T> = TOmitId<T> & { _id?: string };
-declare module 'express-session' {
-  interface SessionUser {
-    id?: string;
-    first_name?: string;
-    last_name?: string;
-  }
-
-  interface SessionData<T extends SubscriberStub> {
-    passport?: {
-      user?: SessionUser;
-    };
-    web?: {
-      profile?: T;
-      isSocket: boolean;
-      messageQueue: any[];
-      polling: boolean;
-    };
-  }
-
-  interface Session {
-    csrfSecret?: string;
-    passport?: {
-      user?: SessionUser;
-    };
-    web?: {
-      profile?: SubscriberStub;
-      isSocket: boolean;
-      messageQueue: any[];
-      polling: boolean;
-    };
-  }
-}
+} from '@/utils/types/filter.types';
+import 'mongoose';
 
 declare module 'mongoose' {
+  type TOmitId<T> = Omit<T, 'id'>;
+  type TReplaceId<T> = TOmitId<T> & { _id?: string };
+
   // Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
   type TFilterQuery<T, S = TReplaceId<T>> = (
     | RecursivePartial<{
@@ -62,10 +29,4 @@ declare module 'mongoose' {
     WithoutGenericAny<RootQuerySelector<S>>;
 
   type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
-}
-
-declare global {
-  type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
-    ? `${P}_${HyphenToUnderscore<Q>}`
-    : S;
 }

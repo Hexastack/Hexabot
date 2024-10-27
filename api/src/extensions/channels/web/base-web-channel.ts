@@ -299,7 +299,7 @@ export default abstract class BaseWebChannelHandler<
    */
   private async verifyToken(verificationToken: string) {
     const settings =
-      (await this.getSettings()) as Settings[typeof WEB_CHANNEL_NAMESPACE];
+      (await this.getSettings()) as unknown as Settings[typeof WEB_CHANNEL_NAMESPACE];
     const verifyToken = settings.verification_token;
 
     if (!verifyToken) {

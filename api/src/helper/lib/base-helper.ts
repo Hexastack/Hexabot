@@ -12,6 +12,7 @@ import { LoggerService, OnModuleInit } from '@nestjs/common';
 
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
+import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import { HelperService } from '../helper.service';
 import { HelperName, HelperSetting, HelperType } from '../types';

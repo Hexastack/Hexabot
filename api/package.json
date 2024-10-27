@@ -5,6 +5,11 @@
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "postinstall": "patch-package",
     "build:clean": "rm -rf src/.hexabot",
@@ -13,7 +18,8 @@
     "build:plugins": "mkdir -p src/.hexabot/extensions/plugins && find node_modules/ -name 'hexabot-plugin-*' -exec cp -R {} src/.hexabot/extensions/plugins/ \\;",
     "build:extensions": "npm run build:channels && npm run build:helpers && npm run build:plugins",
     "build:prepare": "npm run build:clean && npm run build:extensions",
-    "build": "npm run build:prepare && nest build",
+    "build": "npm run build:prepare && nest build && npm run copy-types",
+    "copy-types": "cp -R types dist/types",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "doc": "npx @compodoc/compodoc --hideGenerator -p tsconfig.doc.json -s -r 9003 -w",
