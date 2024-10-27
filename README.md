@@ -58,14 +58,88 @@
 - **nlu:** The NLU Engine built with Python, enabling intent recognition and language detection through machine learning models.
 - **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
 
-## Prerequisites
+## Getting Started
 
-To ensure Hexabot runs smoothly, you'll need the following:
+### Prerequisites
 
-- **Docker:** We recommend using Docker to start the app since multiple services are required (MongoDB, Redis, Prometheus, etc.). All the necessary Docker Compose files are located in the docker folder.
-- **Node.js:** For development purposes, ensure you have Node.js >= v18.17.0 installed. We recommend using nvm (Node Version Manager) to easily manage and update your Node.js versions.
+- Node.js >= 18.17.0
+- npm (Node Package Manager)
+- Docker installed
 
-## Installation
+### Installation
+
+Install Hexabot CLI globally to have easy access to its commands:
+
+```sh
+npm install -g hexabot-cli
+```
+
+### Usage
+
+1. **Create a new project**:
+
+   ```sh
+   hexabot create my-chatbot
+   ```
+
+   This will create a new folder `my-chatbot` with all necessary files to get started.
+
+2. **Navigate to your project folder**:
+
+   ```sh
+   cd my-chatbot
+   ```
+
+3. **Install dependencies**:
+
+   ```sh
+   npm install
+   ```
+
+4. **Initialize environment**:
+
+   ```sh
+   hexabot init
+   ```
+
+   This command copies the `.env.example` file to `.env`, which you can edit to customize your configuration.
+
+5. **Run in development mode**:
+
+   ```sh
+   hexabot dev --services nlu,ollama
+   ```
+
+   This starts the required services in development mode.
+
+
+UI Admin Panel is accessible via http://localhost:8080, the default credentials are :
+
+- **Username:** admin@admin.admin
+- **Password:** adminadmin
+
+## Documentation
+
+For detailed information on how to get started, as well as in-depth user and developer guides, please refer to our full documentation available in the docs folder or visit the [Documentation](https://docs.hexabot.ai).
+
+You can also find specific documentation for different components of the project in the following locations:
+
+- [CLI Documentation](https://github.com/Hexastack/hexabot-cli/)
+- [API Documentation](api/README.md)
+- [UI Documentation](frontend/README.md)
+- [Live Chat Widget Documentation](widget/README.md)
+- [NLU Engine Documentation](nlu/README.md)
+
+## Contributing
+
+We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
+
+Please refer to our contribution policy first : [How to contribute to Hexabot](./CONTRIBUTING.md)
+
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
+
+Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 1. **Clone the Repository:**
 
@@ -82,75 +156,32 @@ $ npm install
 3. **Environment Setup:** To configure the environment variables, use the following command at the root folder for initialization:
 
 ```bash
-$ npx hexabot init
+$ hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
 4. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
 
+
+For development mode:
+
 ```bash
-$ npx hexabot start
+$ hexabot dev
 ```
 
-or for development mode:
-
+Otherwise, you can choose to download docker images rather than building them:
 ```bash
-$ npx hexabot dev
+$ hexabot start 
 ```
 
 You can also enable services such as the NLU engine and Ollama (The services are declared under the `./docker` folder) :
 
 ```bash
-$ npx hexabot dev --enable=ollama,nlu
+$ hexabot dev --enable=ollama,nlu
 ```
 
 **Note:** The first time you run the app, Docker will take some time to download all the required images.
-
-## Usage
-
-UI Admin Panel is accessible via http://localhost:8080, the default credentials are :
-
-- **Username:** admin@admin.admin
-- **Password:** adminadmin
-
-Live Chat Widget is accessible via http://localhost:5173
-
-## Commands
-
-- `npx hexabot init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-- `npx hexabot dev` : Starts all configured Docker services in development mode. It first checks the .env file for completeness against .env.example and builds the docker images locally.
-- `npx hexabot start` : Starts all configured Docker services by loading all images from Docker Hub. This target also checks the .env file for required variables.
-- `npx hexabot stop` : Stops all running Docker services defined in the compose files.
-- `npx hexabot destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
-
-Example on how to start the stack by adding the Nginx service :
-
-```sh
-npx hexabot start --enable=nginx
-```
-
-## Documentation
-
-For detailed information on how to get started, as well as in-depth user and developer guides, please refer to our full documentation available in the docs folder or visit the [Documentation](https://docs.hexabot.ai).
-
-You can also find specific documentation for different components of the project in the following locations:
-
-- [API Documentation](api/README.md)
-- [UI Documentation](frontend/README.md)
-- [Live Chat Widget Documentation](widget/README.md)
-- [NLU Engine Documentation](nlu/README.md)
-
-## Contributing
-
-We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.
-
-Please refer to our contribution policy first : [How to contribute to Hexabot](./CONTRIBUTING.md)
-
-
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](./CODE_OF_CONDUCT.md)
-
-Feel free to join us on [Discord](https://discord.gg/rNb9t2MFkG)
 
 ## License
 
