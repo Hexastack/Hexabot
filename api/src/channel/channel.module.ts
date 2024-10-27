@@ -32,8 +32,10 @@ export interface ChannelModuleOptions {
 @InjectDynamicProviders(
   // Core & under dev channels
   'dist/extensions/**/*.channel.js',
-  // Installed channels via npm
-  'dist/.hexabot/extensions/channels/**/*.channel.js',
+  // Community extensions installed via npm
+  'dist/.hexabot/contrib/extensions/channels/**/*.channel.js',
+  // Custom extensions under dev
+  'dist/.hexabot/custom/extensions/channels/**/*.channel.js',
 )
 @Module({
   controllers: [WebhookController, ChannelController],

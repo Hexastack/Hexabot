@@ -8,11 +8,11 @@
 
 import path from 'path';
 
+import { CacheModule } from '@nestjs/cache-manager';
 // eslint-disable-next-line import/order
 import { MailerModule } from '@nestjs-modules/mailer';
 // eslint-disable-next-line import/order
 import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
-import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -33,6 +33,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
+import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
@@ -128,6 +129,7 @@ const i18nOptions: I18nOptions = {
       ttl: config.cache.ttl,
       max: config.cache.max,
     }),
+    ...extraModules,
   ],
   controllers: [AppController],
   providers: [

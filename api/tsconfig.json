@@ -21,7 +21,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["src/*", "src/.hexabot/*"]
+      "@/*": ["src/*", "src/.hexabot/*"],
+      "hexabot/src/*": ["src/*", "src/.hexabot/*"]
     }
   },
   "include": [
