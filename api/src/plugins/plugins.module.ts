@@ -23,8 +23,10 @@ import { PluginService } from './plugins.service';
 @InjectDynamicProviders(
   // Core & under dev plugins
   'dist/extensions/**/*.plugin.js',
-  // Installed plugins via npm
-  'dist/.hexabot/extensions/plugins/**/*.plugin.js',
+  // Community extensions installed via npm
+  'dist/.hexabot/contrib/extensions/plugins/**/*.plugin.js',
+  // Custom extensions under dev
+  'dist/.hexabot/custom/extensions/plugins/**/*.plugin.js',
 )
 @Global()
 @Module({

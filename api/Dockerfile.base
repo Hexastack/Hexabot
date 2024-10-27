@@ -1,0 +1,9 @@
+FROM scratch AS base
+
+WORKDIR /app
+
+COPY package*.json ./
+
+COPY patches ./patches
+
+COPY . .

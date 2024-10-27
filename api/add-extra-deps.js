@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const excludingPackages = ['hexabot', 'typescript'];
+const excludingPackages = ['hexabot'];
 
 // File paths for package.json and package.extra.json
 const packageJsonPath = path.join(__dirname, 'package.json');
@@ -36,8 +36,8 @@ try {
 
   // Merge the filtered dependencies into the package.json dependencies
   packageJson.dependencies = {
-    ...packageJson.dependencies,
     ...filteredDeps,
+    ...packageJson.dependencies,
   };
 
   // Write the updated package.json back to the file

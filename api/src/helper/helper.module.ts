@@ -17,8 +17,10 @@ import { HelperService } from './helper.service';
 @InjectDynamicProviders(
   // Core & under dev helpers
   'dist/extensions/**/*.helper.js',
-  // Installed helpers via npm
-  'dist/.hexabot/extensions/helpers/**/*.helper.js',
+  // Community extensions installed via npm
+  'dist/.hexabot/contrib/extensions/helpers/**/*.helper.js',
+  // Custom extensions under dev
+  'dist/.hexabot/custom/extensions/helpers/**/*.helper.js',
 )
 @Module({
   imports: [HttpModule],
