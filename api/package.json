@@ -60,7 +60,6 @@
     "@tekuconcept/nestjs-csrf": "^1.1.0",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^5.3.2",
-    "class-transformer": "^0.5.1",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
