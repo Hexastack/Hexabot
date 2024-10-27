@@ -3,7 +3,7 @@ version: "3.9"
 services:
   api:
     networks:
-      - nlp-network
+      - nlu-network
     depends_on:
       nlu-api:
         condition: service_healthy
@@ -13,7 +13,9 @@ services:
     image: hexastack/hexabot-nlu:latest
     env_file: .env
     networks:
-      - nlp-network
+      - nlu-network
+    volumes:
+      - nlu-data:/app/repos
     healthcheck:
       test: curl --fail http://localhost:5000/health || exit 1
       interval: 10s
@@ -21,5 +23,8 @@ services:
       retries: 5
       start_period: 10s
 
+volumes:
+  nlu-data:
+
 networks:
-  nlp-network:
+  nlu-network:
