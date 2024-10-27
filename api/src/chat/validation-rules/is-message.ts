@@ -71,7 +71,7 @@ export function isValidMessage(msg: any) {
             .required(),
           payload: Joi.object().keys({
             url: Joi.string().uri(),
-            attachment_id: Joi.string(),
+            attachment_id: Joi.string().allow(null),
           }),
         }),
         elements: Joi.boolean(),
