@@ -69,7 +69,7 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string>(false);
-  const moveDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string[] | string>(false);
   const { refetch: refetchBlocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
     {
@@ -334,7 +334,7 @@ const Diagrams = () => {
   };
   const handleMoveButton = () => {
     const selectedEntities = engine?.getModel().getSelectedEntities();
-    const ids = selectedEntities?.map((model) => model.getID()).join(",");
+    const ids = selectedEntities?.map((model) => model.getID());
 
     if (ids && selectedEntities) {
       moveDialogCtl.openDialog(ids);
@@ -458,11 +458,9 @@ const Diagrams = () => {
       return;
     }
 
-    const id = moveDialogCtl?.data;
+    const ids = moveDialogCtl?.data;
 
-    if (id) {
-      const ids = id.includes(",") ? id.split(",") : [id];
-
+    if (ids) {
       for (const blockId of ids) {
         const block = getBlockFromCache(blockId);
 
@@ -487,6 +485,8 @@ const Diagrams = () => {
           },
         );
       }
+      refetchBlocks();
+
       setSelectedCategoryId(newCategoryId);
       setSelectedBlockId(undefined);
       moveDialogCtl.closeDialog();
