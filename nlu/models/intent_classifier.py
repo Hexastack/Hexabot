@@ -36,8 +36,7 @@ BERT_MODEL_BY_LANGUAGE = {
     'fr': "dbmdz/bert-base-french-europeana-cased",
 }
 
-mlflow.set_tracking_uri("http://0.0.0.0:5002")
-
+mlflow.set_tracking_uri("http://mlflow_server:5002") # 0.0.0.0 for local development
 @tfbp.default_export
 class IntentClassifier(tfbp.Model):
     default_hparams = {
