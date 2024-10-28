@@ -43,7 +43,9 @@
     "docker:build-base": "docker build --pull --rm -f Dockerfile.base -t hexabot-base:latest .",
     "docker:tag-base": "docker tag hexabot-base:latest hexastack/hexabot-base:latest",
     "docker:push-base": "docker push hexastack/hexabot-base:latest",
-    "docker:release-base": "npm run docker:build-base && npm run docker:tag-base && npm run docker:push-base"
+    "docker:release-base": "npm run docker:build-base && npm run docker:tag-base && npm run docker:push-base",
+    "npm:release": "npm version patch && git push origin --tags && npm publish",
+    "release": "npm run build && npm run npm:release && npm run docker:release-base"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.11.2",
@@ -79,7 +81,6 @@
     "nestjs-dynamic-providers": "^0.3.4",
     "nestjs-i18n": "^10.4.0",
     "nodemailer": "^6.9.13",
-    "ollama": "^0.5.9",
     "papaparse": "^5.4.1",
     "passport": "^0.6.0",
     "passport-anonymous": "^1.0.1",
