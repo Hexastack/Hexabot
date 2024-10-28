@@ -178,7 +178,7 @@ $ hexabot start
 You can also enable services such as the NLU engine and Ollama (The services are declared under the `./docker` folder) :
 
 ```bash
-$ hexabot dev --enable=ollama,nlu
+$ hexabot dev --services ollama,nlu
 ```
 
 **Note:** The first time you run the app, Docker will take some time to download all the required images.
