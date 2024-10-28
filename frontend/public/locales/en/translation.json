@@ -100,6 +100,7 @@
     "no_content_type": "No content type available, please create one first",
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
     "regex_is_invalid": "Regex is invalid",
+    "regex_is_empty": "Regex cannot be empty",
     "attachment_not_found": "Attachment is not found",
     "title_length_exceeded": "You have reached the maximum length",
     "no_label_found": "No label found",
