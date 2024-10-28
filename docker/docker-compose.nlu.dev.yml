@@ -8,3 +8,22 @@ services:
     pull_policy: build
     ports:
       - ${NLU_ENGINE_PORT}:5000
+  mlflow-server:
+    build:
+      context: ../nlu/docker
+      dockerfile: Dockerfile
+    pull_policy: build
+    ports:
+      - ${MLFLOW_SERVER_PORT}:5000
+
+  mlflow_postgres:
+    image: bitnami/postgresql
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_DB_PORT}:${POSTGRES_DB_PORT}
