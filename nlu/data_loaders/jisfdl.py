@@ -47,10 +47,10 @@ class JISFDL(tfbp.DataLoader):
     def get_slot_from_token(self, token: str, slot_dict: Dict[str, str]):
         """ this function maps a token to its slot label"""
         # each token either belongs to a slot or has a null slot
-        for slot_label, value in slot_dict.items():
-            if token in value:
-                return slot_label
-        return None
+        # for slot_label, value in slot_dict.items():
+        #     if token in value:
+        #         return slot_label
+        # return None
 
     def encode_slots(self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
                      all_slots: List[Dict[str, str]], all_texts: List[str],
@@ -60,11 +60,11 @@ class JISFDL(tfbp.DataLoader):
             shape=(len(all_texts), max_len), dtype=np.int32)
         # each slot is assigned to the tokenized sentence instead of the raw text
         # so that mapping a token to its slots is easier since we can use our bert tokenizer.
-        for idx, slot_names in enumerate(all_slots):
-            for slot_name, slot_text in slot_names.items():
-                slot_names[slot_name] = tokenizer.tokenize(slot_text)
-            # we now assign the sentence's slot dictionary to its index in all_slots .
-            all_slots[idx] = slot_names
+        # for idx, slot_names in enumerate(all_slots):
+        #     for slot_name, slot_text in slot_names.items():
+        #         slot_names[slot_name] = tokenizer.tokenize(slot_text)
+        #     # we now assign the sentence's slot dictionary to its index in all_slots .
+        #     all_slots[idx] = slot_names
 
         for idx, text in enumerate(all_texts):
             enc = []  # for this idx, to be added at the end to encoded_slots
@@ -100,27 +100,27 @@ class JISFDL(tfbp.DataLoader):
 
         # Filter examples by language
         lang = self.hparams.language
-        all_examples = data["common_examples"]
+        # all_examples = data["common_examples"]
 
-        if not bool(lang):
-            examples = all_examples
-        else:
-            examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
+        # if not bool(lang):
+        #     examples = all_examples
+        # else:
+        #     examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
 
         # Parse raw data
-        for exp in examples:
+        for exp in data:
             text = exp["text"]
             intent = exp["intent"]
-            entities = exp["entities"]
+            # entities = exp["entities"]
 
-            # Filter out language entities
-            slot_entities = filter(
-                lambda e: e["entity"] != "language", entities)
-            slots = {e["entity"]: e["value"] for e in slot_entities}
-            positions = [[e.get("start", -1), e.get("end", -1)]
-                         for e in slot_entities]
+            # # Filter out language entities
+            # slot_entities = filter(
+            #     lambda e: e["entity"] != "language", entities)
+            # slots = {e["entity"]: e["value"] for e in slot_entities}
+            # positions = [[e.get("start", -1), e.get("end", -1)]
+            #              for e in slot_entities]
 
-            temp = JointRawData(k, intent, positions, slots, text)
+            temp = JointRawData(k, intent,  [], [], text)
             k += 1
             intents.append(temp)
 
@@ -133,7 +133,7 @@ class JISFDL(tfbp.DataLoader):
         helper = JsonHelper()
 
         if self.method in ["fit", "train"]:
-            dataset = helper.read_dataset_json_file('train.json')
+            dataset = helper.read_dataset_json_file('english.json')
             train_data = self.parse_dataset_intents(dataset)
             return self._transform_dataset(train_data, tokenizer)
         elif self.method in ["evaluate"]:

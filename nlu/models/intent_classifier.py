@@ -19,7 +19,9 @@ import numpy as np
 from data_loaders.jisfdl import JISFDL
 
 import boilerplate as tfbp
-
+import mlflow
+import time
+import pickle
 ##
 # Intent Classification with BERT
 # This code is based on the paper BERT for Joint Intent Classification and Slot Filling by Chen et al. (2019),
@@ -34,6 +36,7 @@ BERT_MODEL_BY_LANGUAGE = {
     'fr': "dbmdz/bert-base-french-europeana-cased",
 }
 
+mlflow.set_tracking_uri("http://0.0.0.0:5002")
 
 @tfbp.default_export
 class IntentClassifier(tfbp.Model):
@@ -42,7 +45,7 @@ class IntentClassifier(tfbp.Model):
         "num_epochs": 2,
         "dropout_prob": 0.1,
         "intent_num_labels": 7,
-        "gamma": 2,
+        "gamma": 2.0,
         "k": 3
     }
     data_loader: JISFDL
@@ -119,35 +122,72 @@ class IntentClassifier(tfbp.Model):
     @tfbp.runnable
     def fit(self):
         """Training"""
-        encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names = self.data_loader(
-            self.tokenizer)
+        # Start MLflow run
+        with mlflow.start_run() as run:
+            # Log hyperparameters
+            mlflow.log_param("language", self.hparams.language)
+            mlflow.log_param("num_epochs", self.hparams.num_epochs)
+            mlflow.log_param("dropout_prob", self.hparams.dropout_prob)
+            mlflow.log_param("intent_num_labels", self.hparams.intent_num_labels)
 
-        if self.hparams.intent_num_labels != len(intent_names):
-            raise ValueError(
-                f"Hyperparam intent_num_labels mismatch, should be : {len(intent_names)}"
-            )
+            encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names = self.data_loader(
+                self.tokenizer)
 
-        # Hyperparams, Optimizer and Loss function
-        opt = Adam(learning_rate=3e-5, epsilon=1e-08)
+            if self.hparams.intent_num_labels != len(intent_names):
+                raise ValueError(
+                    f"Hyperparam intent_num_labels mismatch, should be : {len(intent_names)}"
+                )
 
-        losses = SparseCategoricalFocalLoss(gamma=self.hparams.gamma)
+            # Hyperparams, Optimizer and Loss function
+            opt = Adam(learning_rate=3e-5, epsilon=1e-08)
 
-        metrics = [SparseCategoricalAccuracy("accuracy")]
+            losses = SparseCategoricalFocalLoss(gamma=self.hparams.gamma)
 
-        # Compile model
-        self.compile(optimizer=opt, loss=losses, metrics=metrics)
+            metrics = [SparseCategoricalAccuracy("accuracy")]
 
-        x = {"input_ids": encoded_texts["input_ids"], "token_type_ids": encoded_texts["token_type_ids"],
-             "attention_mask": encoded_texts["attention_mask"]}
+            # Compile model
+            self.compile(optimizer=opt, loss=losses, metrics=metrics)
 
-        super().fit(
-            x, encoded_intents, epochs=self.hparams.num_epochs, batch_size=32, shuffle=True)
+            x = {"input_ids": encoded_texts["input_ids"], "token_type_ids": encoded_texts["token_type_ids"],
+                 "attention_mask": encoded_texts["attention_mask"]}
 
-        # Persist the model
-        self.extra_params["intent_names"] = intent_names
+            start_time = time.time()
+            history = super().fit(
+                x, encoded_intents, epochs=self.hparams.num_epochs, batch_size=32, shuffle=True)
+            end_time = time.time()
 
-        self.save()
+            # Log training time
+            mlflow.log_metric("training_time", end_time - start_time)
 
+            # Log training metrics
+            for epoch in range(len(history.history['loss'])):
+                mlflow.log_metric("loss", history.history["loss"][epoch], step=epoch)
+                mlflow.log_metric("accuracy", history.history["accuracy"][epoch], step=epoch)
+
+            # Persist the model and log the model in MLflow
+            self.extra_params["intent_names"] = intent_names
+            mlflow.log_params(self.extra_params)
+            model_instance = self.save_model()  # Save the model using the internal method
+
+            print(type(model_instance))  # Check if it's the expected Keras model type
+            # Log the model in MLflow
+            mlflow.keras.log_model(model_instance, "intent_classifier_model")
+            # Register the model in MLflow's Model Registry
+            model_uri = f"runs:/{run.info.run_id}/intent_classifier_model"
+            mlflow.register_model(model_uri, "IntentClassifierModel")
+
+    def get_model(self):
+        # Define input layers
+        input_ids = tf.keras.Input(shape=(None,), dtype=tf.int32, name='input_ids')
+        attention_mask = tf.keras.Input(shape=(None,), dtype=tf.int32, name='attention_mask')
+        token_type_ids = tf.keras.Input(shape=(None,), dtype=tf.int32, name='token_type_ids')
+
+        # Call the model on the inputs
+        outputs = self.call(
+            {'input_ids': input_ids, 'attention_mask': attention_mask, 'token_type_ids': token_type_ids})
+
+        # Return a Keras Model
+        return tf.keras.Model(inputs=[input_ids, attention_mask, token_type_ids], outputs=outputs)
     @tfbp.runnable
     def evaluate(self):
         encoded_texts, encoded_intents, _, _, _ = self.data_loader(
@@ -168,9 +208,16 @@ class IntentClassifier(tfbp.Model):
         scores["Overall Scores"] = overall_score
         scores = self.format_scores(scores)
 
+        # Log evaluation results to MLflow
+        with mlflow.start_run():
+            mlflow.log_metrics({
+                "intent_confidence": overall_score["intent_confidence"],
+                "loss": overall_score["loss"]
+            })
+
         print("\nScores per intent:")
         for intent, score in scores.items():
-            print("{}: {}".format(intent, score))
+            print(f"{intent}: {score}")
 
         return scores
 
@@ -209,6 +256,27 @@ class IntentClassifier(tfbp.Model):
         normalized_margin = highest_proba / sum_of_probas
         return normalized_margin
 
+    @tfbp.runnable
+    def predict_predict(self):  # Default version is set to "1"
+        # Load the registered MLflow model
+        model_path = f"models:/{model_name}/{model_version}"
+        model = mlflow.pyfunc.load_model(model_path)
+
+        while True:
+            text = input("Provide text: ")
+
+            # Prepare the input data as needed by your model
+            input_data = pd.DataFrame({"text_column": [text]})  # Adjust the column name
+
+            # Make predictions
+            output = model.predict(input_data)
+
+            # Print the output
+            print("Prediction:", output)
+
+            # Optionally, provide a way to exit the loop
+            if input("Try again? (y/n): ").lower() != 'y':
+                break
     @tfbp.runnable
     def predict(self):
         while True:

@@ -1,0 +1,60 @@
+#version: '3.9'
+#services:
+#  mlflow_postgres:
+#    image: bitnami/postgresql
+#    container_name: postgres_db
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=postgres
+#      - POSTGRES_DB=mlflow_db
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#  minio:
+#    image: minio/minio
+#    ports:
+#      - "3000:9000"
+#      - "3001:9001"
+#    volumes:
+#      - minio_data:/data
+#    environment:
+#      MINIO_ROOT_USER: masoud
+#      MINIO_ROOT_PASSWORD: Strong#Pass#2022
+#    command: server --console-address ":9001" /data
+#volumes:
+#  postgres_data: { }
+#  minio_data: { }
+
+version: '3.9'
+services:
+  mlflow_postgres:
+    image: bitnami/postgresql
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mlflow_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  mlflow_server:
+    restart: always
+    build:
+      context: ./docker
+      dockerfile: Dockerfile  # Specify the Dockerfile explicitly
+    image: mlflow
+    container_name: mlflow_server
+    environment:
+      - BACKEND_STORE_URI=postgresql://postgres:postgres@mlflow_postgres:5432/mlflow_db  # Connection string to Postgres
+      - ARTIFACT_STORE_URI=./mlruns  # Local directory for storing artifacts
+    ports:
+      - "5002:5000"  # Expose MLflow UI
+    volumes:
+      - ./mlruns:/mlruns  # Mount local directory for MLflow artifacts
+    command: mlflow server --backend-store-uri postgresql://postgres:postgres@mlflow_postgres:5432/mlflow_db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
+
+volumes:
+  postgres_data: {}

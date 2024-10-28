@@ -138,7 +138,7 @@ class Model(tf.keras.Model):
     def save_dir(self):
         return self._save_dir
 
-    def save(self):
+    def save_model(self):
         """Save the model's weights."""
         if self._ckpt is None:
             self._ckpt = tf.train.Checkpoint(model=self)
@@ -153,6 +153,7 @@ class Model(tf.keras.Model):
                 self.save_dir, "extra_params.json")
             with open(extra_params_path, "w") as f:
                 json.dump(self.extra_params, f, indent=4, sort_keys=True)
+        return self
 
     def restore(self):
         """Restore the model's latest saved weights."""
