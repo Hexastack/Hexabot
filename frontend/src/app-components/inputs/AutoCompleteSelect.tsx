@@ -11,7 +11,7 @@ import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
 } from "@mui/material/Autocomplete";
-import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useMemo } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
 
@@ -60,12 +60,9 @@ const AutoCompleteSelect = <
     onSearch,
     error,
     helperText,
-    isOptionEqualToValue = (option, value) => {
-      return option[idKey] === value[idKey];
-    },
-    getOptionLabel = (option) => {
-      return (option[labelKey as string] as string) || option[idKey];
-    },
+    isOptionEqualToValue = (option, value) =>
+      option?.[idKey] === value?.[idKey],
+    getOptionLabel = (option) => option?.[String(labelKey)] || option?.[idKey],
     freeSolo,
     limitTags,
     loading,
@@ -82,14 +79,11 @@ const AutoCompleteSelect = <
 ) => {
   const handleSearch = useCallback(
     (keywords: string) => {
-      if (onSearch) {
-        onSearch(keywords);
-      }
+      onSearch?.(keywords);
     },
     [onSearch],
   );
   const availableOptions = options;
-  const [key, setKey] = useState(0);
   const selected = useMemo(() => {
     return freeSolo
       ? (value as AutocompleteValue<
@@ -99,7 +93,7 @@ const AutoCompleteSelect = <
           FreeSolo
         >)
       : ((multiple
-          ? options.filter((o) => value?.includes(o[idKey] as string))
+          ? options.filter((o) => value?.includes(o[idKey]))
           : options.find((o) => o[idKey] === value) ||
             (multiple ? [] : null)) as AutocompleteValue<
           Value,
@@ -112,27 +106,15 @@ const AutoCompleteSelect = <
     () => !freeSolo && options.length === 0,
     [freeSolo, options.length],
   );
-  const [defaultValue, setDefaultValue] = useState(selected);
-
-  useEffect(() => {
-    if (
-      key === 0 &&
-      (Array.isArray(selected) ? selected.length > 0 : selected)
-    ) {
-      setKey(1);
-      setDefaultValue(selected);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
 
   return (
     <Autocomplete<Value, Multiple, DisableClearable, FreeSolo>
       {...rest}
       ref={ref}
       size="small"
-      key={key}
+      key={JSON.stringify(value)}
       disabled={isDisabled}
-      defaultValue={defaultValue}
+      defaultValue={selected}
       multiple={multiple}
       options={availableOptions || []}
       getOptionLabel={getOptionLabel}
