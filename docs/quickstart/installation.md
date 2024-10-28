@@ -24,38 +24,6 @@ _curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 Check NVM official documentation for more details :[https://github.com/nvm-sh/nvm?tab=readme-ov-file#node-version-manager---](https://github.com/nvm-sh/nvm?tab=readme-ov-file#node-version-manager---)&#x20;
 {% endhint %}
 
-### # Installation
-
-1. **Clone the Repository:**
-
-```
-$ git clone https://github.com/hexastack/hexabot.git
-```
-
-2. **Installation:**
-
-Install node dependencies using:
-
-```
-$ npm install
-```
-
-2. **Environment Setup:**&#x20;
-
-To configure the environment variables, use the Makefile at the root folder for initialization:
-
-```
-$ npx hexabot init
-```
-
-This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
-
-3. **Running the Application:** Once your environment is set up, you can start the app. Use either of the following commands:
-
-{% hint style="info" %}
-**Note:** The first time you run the app, Docker will take some time to download all the required images
-{% endhint %}
-
 <details>
 
 <summary>Do you want to install Hexabot on a Windows machine?</summary>
@@ -70,21 +38,51 @@ Learn more : [https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-contai
 
 </details>
 
-```
-$ npx hexabot start
-```
+### Installation
 
-Or for development mode:
+1. **Install Hexabot CLI globally to have easy access to its commands:**
 
 ```
-$ npx hexabot dev
+$ npm install -g hexabot-cli
 ```
 
-You can enable specific services like the NLU engine, nginx or smtp4dev (coma seperated) :
+2. **Create a new project**:
 
 ```
-$ npx hexabot dev --enable=nlu
+$ hexabot create my-chatbot
 ```
+
+3. **Navigate to your project folder**
+
+```
+$ cd my-chatbot/
+```
+
+4. **Install dependencies**:
+
+```
+$ npm i
+```
+
+5. **Environment Setup:**&#x20;
+
+To configure the environment variables, use the following command:
+
+```
+$ hexabot init
+```
+
+This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
+
+6. **Run in development mode:** Once your environment is set up, you can start the app. Use the following command:
+
+```
+$ hexabot dev --services nlu,ollama
+```
+
+{% hint style="info" %}
+**Note:** The first time you run the app, Docker will take some time to download all the required images
+{% endhint %}
 
 ### Usage
 
@@ -102,12 +100,6 @@ adminadmin
 ```
 {% endcode %}
 
-Live Chat Widget demo is accessible via [http://localhost:5173](http://localhost:5173)
-
-### Useful Commands
-
-* `npx hexabot init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-* `npx hexabot dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
-* `npx hexabot start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
-* `npx hexabot stop` : Stops all running Docker services defined in the compose files.
-* `npx hexabot destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
+{% hint style="info" %}
+You can find more about the Hexabot CLI command [here](../developer-guide/cli-command-reference.md).
+{% endhint %}

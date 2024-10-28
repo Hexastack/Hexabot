@@ -52,6 +52,7 @@
 
 ## Developer Guide
 
+* [CLI Command Reference](developer-guide/cli-command-reference.md)
 * [Developers Installation Guide](developer-guide/developers-installation-guide.md)
 * [Hexabot UI Admin Panel](developer-guide/hexabot-ui-admin-panel.md)
 * [Hexabot Live Chat Widget](developer-guide/hexabot-live-chat-widget.md)
