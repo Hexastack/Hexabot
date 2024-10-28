@@ -1,4 +1,4 @@
-# Developers Installation Guide
+# Contributers Installation Guide
 
 ## Prerequisites
 
@@ -17,10 +17,12 @@ $ git clone https://github.com/hexastack/hexabot.git
 
 2. **Installation:**
 
-Install node dependencies:
+Install Hexabot CLI and node dependencies:
 
 ```
-$ git clone https://github.com/hexastack/hexabot.git
+$ npm i -g hexabot-cli
+$ cd hexabot/
+$ npm i
 ```
 
 2. **Environment Setup:**&#x20;
@@ -28,15 +30,15 @@ $ git clone https://github.com/hexastack/hexabot.git
 To configure the environment variables, use the Makefile at the root folder for initialization:
 
 ```
-$ npx hexabot init
+$ hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
-3. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use either of the following commands:
+3. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
 ```
-$ npx hexabot dev
+$ hexabot dev --enable nlu,widget
 ```
 
 **Note:** The first time you run the app, Docker will take some time to build all the required Docker images cache the layers.
@@ -49,19 +51,3 @@ UI Admin Panel is accessible via [http://localhost:8080](http://localhost:8080),
 * **Password:** adminadmin
 
 Live Chat Widget is accessible via [http://localhost:5173](http://localhost:5173)
-
-
-
-### Useful Commands
-
-* `npx hexabot init` : Copies the .env.example file to .env in the ./docker directory if .env does not exist. This is usually used for initial setup.
-* `npx hexabot dev` : Builds the Docker images locally before starting the services in development mode. It first checks the .env file for completeness against .env.example.
-* `npx hexabot start` : Starts the app by pulling the Docker images from Docker Hub. This target also checks the .env file for required variables.
-* `npx hexabot stop` : Stops all running Docker services defined in the compose files.
-* `npx hexabot destroy` : Stops all services and removes all volumes associated with the Docker compose setup, ensuring a clean state.
-
-Example on how to start the stack by adding the Nginx service :
-
-```
-npx hexabot start --enable=nginx
-```
