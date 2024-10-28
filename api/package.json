@@ -1,6 +1,6 @@
 {
   "name": "hexabot",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
@@ -44,7 +44,7 @@
     "docker:tag-base": "docker tag hexabot-base:latest hexastack/hexabot-base:latest",
     "docker:push-base": "docker push hexastack/hexabot-base:latest",
     "docker:release-base": "npm run docker:build-base && npm run docker:tag-base && npm run docker:push-base",
-    "npm:release": "npm version patch && git push origin --tags && npm publish",
+    "npm:release": "npm version patch && npm publish",
     "release": "npm run build && npm run npm:release && npm run docker:release-base"
   },
   "dependencies": {
