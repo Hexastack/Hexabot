@@ -257,27 +257,6 @@ class IntentClassifier(tfbp.Model):
         return normalized_margin
 
     @tfbp.runnable
-    def predict_predict(self):  # Default version is set to "1"
-        # Load the registered MLflow model
-        model_path = f"models:/{model_name}/{model_version}"
-        model = mlflow.pyfunc.load_model(model_path)
-
-        while True:
-            text = input("Provide text: ")
-
-            # Prepare the input data as needed by your model
-            input_data = pd.DataFrame({"text_column": [text]})  # Adjust the column name
-
-            # Make predictions
-            output = model.predict(input_data)
-
-            # Print the output
-            print("Prediction:", output)
-
-            # Optionally, provide a way to exit the loop
-            if input("Try again? (y/n): ").lower() != 'y':
-                break
-    @tfbp.runnable
     def predict(self):
         while True:
 

@@ -72,8 +72,8 @@ class TFLCDL(tfbp.DataLoader):
     def preprocess_train_dataset(self) -> Tuple[np.ndarray, np.ndarray]:
         """Preprocessing the training set and fitting the proprocess steps in the process"""
 
-        json = self.json_helper.read_dataset_json_file("english.json")
-        dataset = json
+        json = self.json_helper.read_dataset_json_file("train.json")
+        dataset = json["common_examples"]
 
         # If a sentence has a language label, we include it in our dataset
         # Otherwise, we discard it.
