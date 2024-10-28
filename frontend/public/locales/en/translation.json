@@ -280,7 +280,6 @@
     "effects": "Apply plugin effects",
     "enable_fallback": "Enable Fallback?",
     "max_fallback_attempts": "Max Fallback Attempts",
-    "fallback_block": "Fallback Block",
     "fallback_message": "Fallback Message",
     "labeled_with": "Target users with labels?",
     "assign_labels": "Assign labels",
