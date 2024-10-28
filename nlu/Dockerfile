@@ -15,5 +15,7 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # Copy source code
 COPY . .
 
+EXPOSE 5000
+
 # Entrypoint
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
