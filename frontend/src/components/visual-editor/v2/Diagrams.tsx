@@ -640,6 +640,15 @@ const Diagrams = () => {
                 {t("button.edit")}
               </Button>
               <Button
+                size="small"
+                variant="contained"
+                startIcon={<MoveIcon />}
+                onClick={handleMoveButton}
+                disabled={!selectedBlockId || selectedBlockId.length !== 24}
+              >
+                {t("button.move")}
+              </Button>
+              <Button
                 sx={{}}
                 size="small"
                 variant="contained"
@@ -649,15 +658,6 @@ const Diagrams = () => {
                 disabled={!selectedBlockId}
               >
                 {t("button.remove")}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<MoveIcon />}
-                onClick={handleMoveButton}
-                disabled={!selectedBlockId || selectedBlockId.length !== 24}
-              >
-                {t("button.move")}
               </Button>
             </Grid>
             <Grid container item justifyContent="right" xs alignSelf="center">
