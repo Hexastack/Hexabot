@@ -168,8 +168,6 @@ class IntentClassifier(tfbp.Model):
             self.extra_params["intent_names"] = intent_names
             mlflow.log_params(self.extra_params)
             model_instance = self.save_model()  # Save the model using the internal method
-
-            print(type(model_instance))  # Check if it's the expected Keras model type
             # Log the model in MLflow
             mlflow.keras.log_model(model_instance, "intent_classifier_model")
             # Register the model in MLflow's Model Registry
