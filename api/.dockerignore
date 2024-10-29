@@ -1,8 +1,8 @@
 dist
 node_modules
 .dockerignore
-.Dockerfile
-.Dockerfile.base
+Dockerfile
+Dockerfile.base
 .env
 .eslintrc.js
 .git
