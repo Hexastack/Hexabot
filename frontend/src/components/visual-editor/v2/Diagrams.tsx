@@ -43,6 +43,7 @@ import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
@@ -119,6 +120,12 @@ const Diagrams = () => {
       setSelectedBlockId(undefined);
     },
     invalidate: false,
+  });
+  const { mutateAsync: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
+    onSuccess: () => {
+      deleteDialogCtl.closeDialog();
+      setSelectedBlockId(undefined);
+    },
   });
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
@@ -312,19 +319,17 @@ const Diagrams = () => {
 
   const handleDeleteButton = () => {
     const selectedEntities = engine?.getModel().getSelectedEntities();
-    const ids = selectedEntities?.map((model) => model.getID()).join(",");
+    const ids = selectedEntities?.map((model) => model.getID());
 
-    if (ids && selectedEntities) {
+    if (ids && selectedEntities && ids.length > 0) {
       deleteCallbackRef.current = () => {
-        if (selectedEntities.length > 0) {
-          selectedEntities.forEach((model) => {
-            model.setLocked(false);
-            model.remove();
-          });
-          engine?.repaintCanvas();
-        }
+        selectedEntities.forEach((model) => {
+          model.setLocked(false);
+          model.remove();
+        });
+        engine?.repaintCanvas();
       };
-      deleteDialogCtl.openDialog(ids);
+      deleteDialogCtl.openDialog(ids.join(","));
     }
   };
   const handleMoveButton = () => {
@@ -339,112 +344,100 @@ const Diagrams = () => {
     const id = deleteDialogCtl?.data;
 
     if (id) {
-      // Check if it's a link id
-      if (id.length === 36) {
-        // Remove link + update nextBlocks + TODO update port state
-        const link = model?.getLink(id) as any;
-        const sourceId = link?.sourcePort.parent.options.id;
-        const targetId = link?.targetPort.parent.options.id;
+      const ids = id.split(",");
 
-        if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
-          // Next/previous Link Delete
-          const previousData = getBlockFromCache(sourceId);
-          const nextBlocks = [...(previousData?.nextBlocks || [])];
+      if (ids.length > 1) {
+        await deleteBlocks(ids, {
+          onSuccess: () => {
+            ids.forEach((blockId) => {
+              const block = getBlockFromCache(blockId);
 
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                nextBlocks: nextBlocks.filter((block) => block !== targetId),
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: ({ previousBlocks = [], ...rest }) => ({
-                    ...rest,
-                    previousBlocks: previousBlocks.filter(
-                      (previousBlock) => previousBlock !== sourceId,
-                    ),
-                  }),
-                });
-              },
-            },
-          );
-        } else if (
-          link?.sourcePort.options.label === BlockPorts.attachmentOutPort
-        ) {
-          // Attached / AttachedTo Link Delete
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                attachedBlock: null,
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: (oldData) => ({
-                    ...oldData,
-                    attachedToBlock: null,
-                  }),
-                });
-              },
-            },
-          );
-        }
-      } else {
-        // Block Delete Case
-        const ids = id.includes(",") ? id.split(",") : [id];
+              if (block) {
+                // Update all linked blocks to remove references to deleted blocks
+                const linkedBlockIds = [
+                  ...(block?.nextBlocks || []),
+                  ...(block?.previousBlocks || []),
+                  ...(block?.attachedBlock ? [block.attachedBlock] : []),
+                  ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
+                ];
 
-        for (const blockId of ids) {
-          const block = getBlockFromCache(blockId);
+                linkedBlockIds.forEach((linkedBlockId) => {
+                  const linkedBlock = getBlockFromCache(linkedBlockId);
 
-          await deleteBlock(blockId, {
-            onSuccess() {
-              // Update all linked blocks to remove any reference to the deleted block
-              const linkedBlockIds = [
-                ...(block?.nextBlocks || []),
-                ...(block?.previousBlocks || []),
-                ...(block?.attachedBlock ? [block.attachedBlock] : []),
-                ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-              ];
-
-              for (const linkedBlockId of linkedBlockIds) {
-                const linkedBlock = getBlockFromCache(linkedBlockId);
-
-                if (linkedBlock) {
-                  updateCachedBlock({
-                    id: linkedBlock.id,
-                    payload: {
-                      ...linkedBlock,
-                      nextBlocks: linkedBlock.nextBlocks?.filter(
-                        (nextBlockId) => nextBlockId !== blockId,
-                      ),
-                      previousBlocks: linkedBlock.previousBlocks?.filter(
-                        (previousBlockId) => previousBlockId !== blockId,
-                      ),
-                      attachedBlock:
-                        linkedBlock.attachedBlock === blockId
+                  if (linkedBlock) {
+                    updateCachedBlock({
+                      id: linkedBlock.id,
+                      payload: {
+                        ...linkedBlock,
+                        nextBlocks: linkedBlock.nextBlocks?.filter(
+                          (nextBlockId) => !ids.includes(nextBlockId),
+                        ),
+                        previousBlocks: linkedBlock.previousBlocks?.filter(
+                          (previousBlockId) => !ids.includes(previousBlockId),
+                        ),
+                        attachedBlock: ids.includes(
+                          linkedBlock.attachedBlock || "",
+                        )
                           ? undefined
                           : linkedBlock.attachedBlock,
-                      attachedToBlock:
-                        linkedBlock.attachedToBlock === blockId
+                        attachedToBlock: ids.includes(
+                          linkedBlock.attachedToBlock || "",
+                        )
                           ? undefined
                           : linkedBlock.attachedToBlock,
-                    },
-                    strategy: "overwrite",
-                  });
-                }
+                      },
+                      strategy: "overwrite",
+                    });
+                  }
+                });
+                deleteCachedBlock(blockId);
               }
+            });
+          },
+        });
+      } else {
+        const blockId = ids[0];
+        const block = getBlockFromCache(blockId);
 
-              deleteCachedBlock(blockId);
-            },
-          });
-        }
+        await deleteBlock(blockId, {
+          onSuccess() {
+            const linkedBlockIds = [
+              ...(block?.nextBlocks || []),
+              ...(block?.previousBlocks || []),
+              ...(block?.attachedBlock ? [block.attachedBlock] : []),
+              ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
+            ];
+
+            linkedBlockIds.forEach((linkedBlockId) => {
+              const linkedBlock = getBlockFromCache(linkedBlockId);
+
+              if (linkedBlock) {
+                updateCachedBlock({
+                  id: linkedBlock.id,
+                  payload: {
+                    ...linkedBlock,
+                    nextBlocks: linkedBlock.nextBlocks?.filter(
+                      (nextBlockId) => nextBlockId !== blockId,
+                    ),
+                    previousBlocks: linkedBlock.previousBlocks?.filter(
+                      (previousBlockId) => previousBlockId !== blockId,
+                    ),
+                    attachedBlock:
+                      linkedBlock.attachedBlock === blockId
+                        ? undefined
+                        : linkedBlock.attachedBlock,
+                    attachedToBlock:
+                      linkedBlock.attachedToBlock === blockId
+                        ? undefined
+                        : linkedBlock.attachedToBlock,
+                  },
+                  strategy: "overwrite",
+                });
+              }
+            });
+            deleteCachedBlock(blockId);
+          },
+        });
       }
 
       deleteCallbackRef.current?.();
