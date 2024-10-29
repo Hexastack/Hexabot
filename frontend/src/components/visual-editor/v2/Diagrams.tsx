@@ -37,10 +37,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -49,7 +51,7 @@ import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format, QueryType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
@@ -70,12 +72,6 @@ const Diagrams = () => {
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
-  const { refetch: refetchBlocks } = useFind(
-    { entity: EntityType.BLOCK, format: Format.FULL },
-    {
-      hasCount: false,
-    },
-  );
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const {
     buildDiagram,
@@ -153,6 +149,7 @@ const Diagrams = () => {
     },
     [selectedCategoryId, debouncedUpdateCategory],
   );
+  const queryClient = useQueryClient();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
@@ -183,13 +180,10 @@ const Diagrams = () => {
   }, []);
 
   useEffect(() => {
-    const filteredBlocks = blocks.filter(
-      (block) => block.category === selectedCategoryId,
-    );
     const { canvas, model, engine } = buildDiagram({
       zoom: currentCategory?.zoom || 100,
       offset: currentCategory?.offset || [0, 0],
-      data: filteredBlocks,
+      data: blocks,
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
@@ -303,15 +297,12 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
-    refetchBlocks();
   }, [
     selectedCategoryId,
     JSON.stringify(
-      blocks
-        .filter((b) => b.category === selectedCategoryId)
-        .map((b) => {
-          return { ...b, position: undefined, updatedAt: undefined };
-        }),
+      blocks.map((b) => {
+        return { ...b, position: undefined, updatedAt: undefined };
+      }),
     ),
   ]);
 
@@ -485,7 +476,18 @@ const Diagrams = () => {
           },
         );
       }
-      refetchBlocks();
+
+      queryClient.removeQueries({
+        predicate: ({ queryKey }) => {
+          const [qType, qEntity] = queryKey;
+
+          return (
+            (qType === QueryType.collection &&
+              isSameEntity(qEntity, EntityType.BLOCK)) ||
+            isSameEntity(qEntity, EntityType.CATEGORY)
+          );
+        },
+      });
 
       setSelectedCategoryId(newCategoryId);
       setSelectedBlockId(undefined);
