@@ -7,13 +7,13 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { THydratedDocument } from 'mongoose';
 
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { buildURL } from '@/utils/helpers/URL';
+import { THydratedDocument } from '@/utils/types/filter.types';
 
 import { MIME_REGEX } from '../utilities';
 

@@ -14,12 +14,12 @@ import {
   HydratedDocument,
   Model,
   Query,
-  TFilterQuery,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Content,

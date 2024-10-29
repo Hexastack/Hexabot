@@ -8,9 +8,10 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, TFilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Invitation,

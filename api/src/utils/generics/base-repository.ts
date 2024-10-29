@@ -19,10 +19,11 @@ import {
   Model,
   Query,
   SortOrder,
-  TFilterQuery,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
+
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 

@@ -13,7 +13,6 @@ import {
   Document,
   Model,
   Query,
-  TFilterQuery,
   Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
@@ -21,6 +20,7 @@ import {
 
 import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import {

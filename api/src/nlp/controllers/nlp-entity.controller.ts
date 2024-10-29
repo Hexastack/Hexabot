@@ -23,7 +23,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
@@ -33,6 +32,7 @@ import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
 import {

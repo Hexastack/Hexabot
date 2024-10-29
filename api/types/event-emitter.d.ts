@@ -8,12 +8,7 @@
 
 import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import type { Listener, OnOptions } from 'eventemitter2';
-import type {
-  Document,
-  Query,
-  TFilterQuery,
-  THydratedDocument,
-} from 'mongoose';
+import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
@@ -49,6 +44,7 @@ import { type Permission } from '@/user/schemas/permission.schema';
 import { type Role } from '@/user/schemas/role.schema';
 import { type User } from '@/user/schemas/user.schema';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
+import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
 
 import '@nestjs/event-emitter';
 /**

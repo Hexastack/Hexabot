@@ -24,7 +24,6 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { TFilterQuery } from 'mongoose';
 import { diskStorage, memoryStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,6 +36,7 @@ import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { AttachmentDownloadDto } from '../dto/attachment.dto';
 import { Attachment } from '../schemas/attachment.schema';

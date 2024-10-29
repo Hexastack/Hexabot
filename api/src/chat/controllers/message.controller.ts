@@ -21,7 +21,6 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express'; // Import the Express request and response types
-import { TFilterQuery } from 'mongoose';
 
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
@@ -33,6 +32,7 @@ import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { MessageCreateDto } from '../dto/message.dto';
 import {

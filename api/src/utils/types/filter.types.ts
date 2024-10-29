@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { HydratedDocument, QuerySelector, RootQuerySelector } from 'mongoose';
+
 export type TFilterKeysOfType<T, U> = {
   [K in keyof T]: T[K] extends U ? K : never;
 }[keyof T];
@@ -105,3 +107,20 @@ export type TTransformFieldProps = {
   context?: TContext;
   operator?: TOperator;
 };
+
+/* mongoose */
+type TOmitId<T> = Omit<T, 'id'>;
+type TReplaceId<T> = TOmitId<T> & { _id?: string };
+
+// Enforce the typing with an alternative type to FilterQuery compatible with mongoose: version 8.0.0
+export type TFilterQuery<T, S = TReplaceId<T>> = (
+  | RecursivePartial<{
+      [P in keyof S]?:
+        | (S[P] extends string ? S[P] | RegExp : S[P])
+        | QuerySelector<S[P]>;
+    }>
+  | Partial<ObjectWithNestedKeys<S>>
+) &
+  WithoutGenericAny<RootQuerySelector<S>>;
+
+export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;

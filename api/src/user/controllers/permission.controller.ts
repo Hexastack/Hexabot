@@ -19,13 +19,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { TFilterQuery } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PermissionCreateDto } from '../dto/permission.dto';
 import {
