@@ -9,7 +9,8 @@
 import { ConflictException } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
-import { TFilterQuery } from 'mongoose';
+
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 

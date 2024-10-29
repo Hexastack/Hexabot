@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
-import { THydratedDocument } from 'mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { THydratedDocument } from '@/utils/types/filter.types';
 
 @Schema({ timestamps: true })
 export class ContextVar extends BaseSchema {

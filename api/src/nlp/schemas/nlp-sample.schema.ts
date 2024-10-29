@@ -8,12 +8,15 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Transform, Type } from 'class-transformer';
-import { THydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { Schema as MongooseSchema } from 'mongoose';
 
 import { Language } from '@/i18n/schemas/language.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
-import { TFilterPopulateFields } from '@/utils/types/filter.types';
+import {
+  TFilterPopulateFields,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
 import { NlpSampleEntity } from './nlp-sample-entity.schema';
 import { NlpSampleState } from './types';

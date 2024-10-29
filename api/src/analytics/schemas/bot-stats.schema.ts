@@ -7,9 +7,9 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { THydratedDocument } from '@/utils/types/filter.types';
 
 export enum BotStatsType {
   outgoing = 'outgoing',

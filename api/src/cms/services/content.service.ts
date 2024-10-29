@@ -7,7 +7,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -16,6 +15,7 @@ import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { ContentRepository } from '../repositories/content.repository';
 import {

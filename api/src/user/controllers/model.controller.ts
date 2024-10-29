@@ -7,10 +7,10 @@
  */
 
 import { Controller, Get, Query } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
 
 import { BaseController } from '@/utils/generics/base-controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   Model,

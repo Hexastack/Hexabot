@@ -7,13 +7,15 @@
  */
 
 import {
-  Injectable,
-  PipeTransform,
   ArgumentMetadata,
+  Injectable,
   Logger,
+  PipeTransform,
 } from '@nestjs/common';
 import escapeRegExp from 'lodash/escapeRegExp';
-import { TFilterQuery, Types } from 'mongoose';
+import { Types } from 'mongoose';
+
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
   TFilterNestedKeysOfType,

@@ -9,10 +9,11 @@
 import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, TFilterQuery } from 'mongoose';
+import { Document, Model, Query } from 'mongoose';
 
 import { BlockService } from '@/chat/services/block.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { ContentType } from '../schemas/content-type.schema';
 import { Content } from '../schemas/content.schema';

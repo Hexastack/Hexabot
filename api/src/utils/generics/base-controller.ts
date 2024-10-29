@@ -7,7 +7,8 @@
  */
 
 import { NotFoundException } from '@nestjs/common';
-import { TFilterQuery } from 'mongoose';
+
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { TValidateProps } from '../types/filter.types';
 
