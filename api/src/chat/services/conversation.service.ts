@@ -183,8 +183,10 @@ export class ConversationService extends BaseService<
       }
 
       //TODO: add check if nothing changed don't update
+      const criteria =
+        typeof convo.sender === 'object' ? convo.sender.id : convo.sender;
 
-      await this.subscriberService.updateOne(convo.sender, {
+      await this.subscriberService.updateOne(criteria, {
         context: profile.context,
       });
 
