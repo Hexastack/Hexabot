@@ -251,7 +251,7 @@ declare module '@nestjs/event-emitter' {
         [EHook.preCreate]: TPreCreate<T>;
       }
     | {
-        [EHook.preUpdate]: TPostUpdate<T>;
+        [EHook.preUpdate]: TPreUpdate<T>;
       }
     | {
         [EHook.preDelete]: TPreDelete<T>;
