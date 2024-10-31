@@ -8,7 +8,7 @@
 
 import { EntityType, Format } from "@/services/types";
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { IBaseSchema, IFormat } from "./base.types";
 
 export type ILanguages = Record<string, string>;
 
@@ -19,8 +19,6 @@ export interface ILanguageAttributes {
   isRTL: boolean;
 }
 
-export interface ILanguageStub
-  extends IBaseSchema,
-    OmitPopulate<ILanguageAttributes, EntityType.TRANSLATION> {}
+export interface ILanguageStub extends IBaseSchema, ILanguageAttributes {}
 
 export interface ILanguage extends ILanguageStub, IFormat<Format.BASIC> {}
