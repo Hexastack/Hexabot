@@ -66,12 +66,14 @@ export type FileUploadProps = {
   accept: string;
   enableMediaLibrary?: boolean;
   onChange?: (data?: IAttachment | null) => void;
+  onUploadComplete?: () => void;
 };
 
 const AttachmentUploader: FC<FileUploadProps> = ({
   accept,
   enableMediaLibrary,
   onChange,
+  onUploadComplete,
 }) => {
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
@@ -87,6 +89,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       toast.success(t("message.success_save"));
       setAttachment(data);
       onChange && onChange(data);
+      onUploadComplete && onUploadComplete();
     },
   });
   const libraryDialogCtl = useDialog<never>(false);
