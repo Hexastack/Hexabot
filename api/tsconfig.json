@@ -26,7 +26,6 @@
     }
   },
   "include": [
-    "types/**/*.d.ts",
     "src/global.d.ts",
     "src/**/*.ts",
     "src/**/*.json",
