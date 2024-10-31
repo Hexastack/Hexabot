@@ -453,28 +453,12 @@ const Diagrams = () => {
 
     if (ids) {
       for (const blockId of ids) {
-        const block = getBlockFromCache(blockId);
-
-        await updateBlock(
-          {
-            id: blockId,
-            params: {
-              category: newCategoryId,
-            },
+        await updateBlock({
+          id: blockId,
+          params: {
+            category: newCategoryId,
           },
-          {
-            onSuccess() {
-              updateCachedBlock({
-                id: blockId,
-                payload: {
-                  ...block,
-                  category: newCategoryId,
-                },
-                strategy: "overwrite",
-              });
-            },
-          },
-        );
+        });
       }
 
       queryClient.removeQueries({
