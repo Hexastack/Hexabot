@@ -51,25 +51,24 @@ const MultipleAttachmentInput = forwardRef<
     const [uploadKey, setUploadKey] = useState(Date.now());
     const hasPermission = useHasPermission();
     const handleChange = (attachment?: IAttachment | null, index?: number) => {
-      if (attachment) {
-        const updatedAttachments = [...attachments];
+      const updatedAttachments = [...attachments];
 
+      if (attachment) {
         if (index !== undefined) {
           updatedAttachments[index] = attachment.id;
         } else {
           updatedAttachments.push(attachment.id);
         }
-        setAttachments(updatedAttachments);
-        onChange && onChange(updatedAttachments);
-        setUploadKey(Date.now());
+      } else if (index !== undefined) {
+        updatedAttachments.splice(index, 1);
       }
-    };
-    const handleRemove = (index: number) => {
-      const updatedAttachments = attachments.filter((_, i) => i !== index);
 
       setAttachments(updatedAttachments);
       onChange && onChange(updatedAttachments);
       setUploadKey(Date.now());
+    };
+    const handleRemove = (index: number) => {
+      handleChange(null, index);
     };
 
     return (
