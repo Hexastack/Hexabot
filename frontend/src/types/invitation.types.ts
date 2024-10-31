@@ -10,11 +10,6 @@ import { Format } from "@/services/types";
 
 import { IBaseSchema, IFormat } from "./base.types";
 
-export interface IInvitationAttributes {
-  email: string;
-  roles: string[];
-}
-
 export interface IInvitationStub extends IBaseSchema, IInvitationAttributes {
   token: string;
 }

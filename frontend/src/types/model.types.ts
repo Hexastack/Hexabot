@@ -11,15 +11,6 @@ import { EntityType, Format } from "@/services/types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IPermission } from "./permission.types";
 
-export type TRelation = "role" | "owner";
-
-export interface IModelAttributes {
-  name: string;
-  identity: string;
-  attributes: object;
-  relation: TRelation;
-}
-
 export interface IModelStub
   extends IBaseSchema,
     OmitPopulate<IModelAttributes, EntityType.MODEL> {}

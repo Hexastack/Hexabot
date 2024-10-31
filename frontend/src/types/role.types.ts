@@ -12,10 +12,6 @@ import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IPermission } from "./permission.types";
 import { IUser } from "./user.types";
 
-export interface IRoleAttributes {
-  name: string;
-}
-
 export interface IRoleStub
   extends IBaseSchema,
     OmitPopulate<IRoleAttributes, EntityType.ROLE> {

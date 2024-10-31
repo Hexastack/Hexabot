@@ -12,17 +12,6 @@ import { IAttachment } from "./attachment.types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { IRole } from "./role.types";
 
-export interface IUserAttributes {
-  first_name: string;
-  last_name: string;
-  email: string;
-  language: string;
-  password?: string;
-  state: boolean;
-  roles: string[];
-  avatar: string | null;
-}
-
 export interface IUserStub
   extends IBaseSchema,
     OmitPopulate<IUserAttributes, EntityType.USER> {}
