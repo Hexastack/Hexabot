@@ -89,12 +89,26 @@ export class BlockRepository extends BaseRepository<
       Block,
       'findOneAndUpdate'
     >,
-    _criteria: TFilterQuery<Block>,
+    criteria: TFilterQuery<Block>,
     _updates:
       | UpdateWithAggregationPipeline
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
     const updates: BlockUpdateDto = _updates?.['$set'];
+    if (updates?.category) {
+      const movedBlockId = criteria._id;
+
+      // Find and update blocks that reference the moved block
+      await this.model.updateMany(
+        { nextBlocks: movedBlockId },
+        { $pull: { nextBlocks: movedBlockId } },
+      );
+
+      await this.model.updateMany(
+        { attachedBlock: movedBlockId },
+        { $set: { attachedBlock: null } },
+      );
+    }
 
     this.checkDeprecatedAttachmentUrl(updates);
   }

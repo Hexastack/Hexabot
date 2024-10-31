@@ -324,7 +324,7 @@ const Diagrams = () => {
     }
   };
   const handleMoveButton = () => {
-    const selectedEntities = engine?.getModel().getSelectedEntities();
+    const selectedEntities = engine?.getModel().getSelectedEntities().reverse();
     const ids = selectedEntities?.map((model) => model.getID());
 
     if (ids && selectedEntities) {
@@ -453,10 +453,22 @@ const Diagrams = () => {
 
     if (ids) {
       for (const blockId of ids) {
+        const block = getBlockFromCache(blockId);
+        const updatedNextBlocks = block?.nextBlocks?.filter((nextBlockId) =>
+          ids.includes(nextBlockId),
+        );
+        const updatedAttachedBlock = ids.includes(
+          block?.attachedBlock as string,
+        )
+          ? block?.attachedBlock
+          : null;
+
         await updateBlock({
           id: blockId,
           params: {
             category: newCategoryId,
+            nextBlocks: updatedNextBlocks,
+            attachedBlock: updatedAttachedBlock,
           },
         });
       }
