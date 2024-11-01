@@ -475,12 +475,14 @@ const Diagrams = () => {
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {
-          const [qType, qEntity] = queryKey;
+          const [qType, qEntity, qId] = queryKey;
 
           return (
             (qType === QueryType.collection &&
-              isSameEntity(qEntity, EntityType.BLOCK)) ||
-            isSameEntity(qEntity, EntityType.CATEGORY)
+              isSameEntity(qEntity, EntityType.BLOCK) &&
+              qId === selectedCategoryId) ||
+            (isSameEntity(qEntity, EntityType.CATEGORY) &&
+              qId === selectedCategoryId)
           );
         },
       });
