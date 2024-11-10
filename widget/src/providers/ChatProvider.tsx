@@ -289,7 +289,7 @@ const ChatProvider: React.FC<{
     );
     setMessage('');
     const sentMessage = await socketCtx.socket.post<TMessage>(
-      `/webhook/${config.channel}/?verification_token=${config.token}`,
+      `/webhook/${config.channel}/`,
       {
         data: {
           ...data,
@@ -308,7 +308,7 @@ const ChatProvider: React.FC<{
           messages: TMessage[];
           profile: ISubscriber;
         }>(
-          `/webhook/${config.channel}/?verification_token=${config.token}&first_name=${firstName}&last_name=${lastName}`,
+          `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
         );
 
         localStorage.setItem('profile', JSON.stringify(body.profile));

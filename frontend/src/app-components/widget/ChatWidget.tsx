@@ -34,7 +34,6 @@ export const ChatWidget = () => {
         config={{
           apiUrl,
           channel: "console-channel",
-          token: "test",
           language: i18n.language,
         }}
         CustomHeader={ChatWidgetHeader}
