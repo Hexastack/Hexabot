@@ -25,4 +25,16 @@ export default class ChaUiWebEventWrapper<
   constructor(handler: T, event: Web.Event, channelData: any) {
     super(handler, event, channelData);
   }
+
+  /**
+   * Retrieves the thread id to which the message belongs to
+   *
+   * @returns Thread id
+   */
+  getThreadId(): string {
+    if ('thread' in this._adapter.raw) {
+      return this._adapter.raw.thread;
+    }
+    return undefined;
+  }
 }
