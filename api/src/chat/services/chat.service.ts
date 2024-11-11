@@ -106,8 +106,10 @@ export class ChatService {
       this.logger.warn('Failed to get the event id', messageId);
     }
     const subscriber = event.getSender();
+
     const received: MessageCreateDto = {
       mid: messageId,
+      thread: event.getThreadId(),
       sender: subscriber.id,
       message: event.getMessage(),
       delivery: true,

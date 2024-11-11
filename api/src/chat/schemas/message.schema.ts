@@ -15,6 +15,7 @@ import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
 import { Subscriber } from './subscriber.schema';
+import { Thread } from './thread.schema';
 import { StdIncomingMessage, StdOutgoingMessage } from './types/message';
 
 @Schema({ timestamps: true })
@@ -46,6 +47,13 @@ export class MessageStub extends BaseSchema {
     ref: 'User',
   })
   sentBy?: unknown;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    required: false,
+    ref: 'Thread',
+  })
+  thread?: unknown;
 
   @Prop({
     type: Object,
@@ -82,6 +90,9 @@ export class Message extends MessageStub {
 
   @Transform(({ obj }) => obj.sentBy?.toString())
   sentBy?: string;
+
+  @Transform(({ obj }) => obj.thread?.toString())
+  thread?: string;
 }
 
 @Schema({ timestamps: true })
@@ -94,6 +105,9 @@ export class MessageFull extends MessageStub {
 
   @Transform(({ obj }) => obj.sentBy?.toString())
   sentBy?: string; // sendBy is never populate
+
+  @Transform(() => Thread)
+  thread?: Thread;
 }
 
 export const MessageModel: ModelDefinition = LifecycleHookManager.attach({

@@ -11,8 +11,8 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsObject,
-  IsString,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
@@ -57,6 +57,11 @@ export class MessageCreateDto {
   @IsNotEmpty()
   @IsValidMessageText({ message: 'Message should have text property' })
   message: StdOutgoingMessage | StdIncomingMessage;
+
+  @ApiProperty({ description: 'Thread', type: String })
+  @IsString()
+  @IsOptional()
+  thread?: string;
 
   @ApiPropertyOptional({ description: 'Message is read', type: Boolean })
   @IsBoolean()

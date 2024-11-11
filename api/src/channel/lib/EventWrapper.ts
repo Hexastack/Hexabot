@@ -23,11 +23,8 @@ import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
 
-export default abstract class EventWrapper<
-  A,
-  E,
-  C extends ChannelHandler = ChannelHandler,
-> {
+// eslint-disable-next-line prettier/prettier
+export default abstract class EventWrapper<A, E, C extends ChannelHandler = ChannelHandler> {
   _adapter: A = {} as A;
 
   _handler: C;
@@ -202,6 +199,16 @@ export default abstract class EventWrapper<
    * @returns The payload content
    */
   abstract getPayload(): Payload | string | undefined;
+
+  /**
+   * Retrieves the thread id to which the message belongs to
+   *
+   * @returns Thread id
+   */
+  getThreadId(): string {
+    // To be implemented in child class when needed
+    return undefined;
+  }
 
   /**
    * Returns the message in a standardized format

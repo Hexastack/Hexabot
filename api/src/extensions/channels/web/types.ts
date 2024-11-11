@@ -151,6 +151,7 @@ export namespace Web {
       | IncomingAttachmentMessage,
   > = T & {
     mid?: string;
+    thread?: string;
     author?: string;
     read?: boolean;
     delivery?: boolean;
@@ -231,6 +232,7 @@ export namespace Web {
 
   export type OutgoingMessage = OutgoingMessageBase & {
     mid: string;
+    thread?: string;
     author: string;
     read?: boolean;
     createdAt: Date;
