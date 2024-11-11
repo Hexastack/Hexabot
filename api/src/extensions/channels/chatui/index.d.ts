@@ -6,14 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ChannelName } from '@/channel/types';
+import CHATUI_CHANNEL_SETTINGS, { CHATUI_CHANNEL_NAMESPACE } from './settings';
 
-interface BaseChannelData {
-  name: ChannelName; // channel name
-  isSocket?: boolean;
-  type?: any; //TODO: type has to be checked
-  email?: string;
-  passwordHash?: string;
+declare global {
+  interface Settings extends SettingTree<typeof CHATUI_CHANNEL_SETTINGS> {}
 }
 
-export type ChannelData = BaseChannelData;
+declare module '@nestjs/event-emitter' {
+  interface IHookExtensionsOperationMap {
+    [CHATUI_CHANNEL_NAMESPACE]: TDefinition<
+      object,
+      SettingMapByType<typeof CHATUI_CHANNEL_SETTINGS>
+    >;
+  }
+}

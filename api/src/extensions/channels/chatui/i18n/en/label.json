@@ -1,0 +1,12 @@
+{
+  "display_name": "Display Name",
+  "avatar": "Avatar",
+  "allowed_domains": "Allowed Domains",
+  "persistent_menu": "Display Persistent Menu",
+  "greeting_message": "Greeting Message",
+  "show_emoji": "Enable Emoji Picker",
+  "show_file": "Enable Attachment Uploader",
+  "show_location": "Enable Geolocation Share",
+  "allowed_upload_size": "Max Upload Size (in bytes)",
+  "allowed_upload_types": "Allowed Upload Mime Types (comma separated)"
+}

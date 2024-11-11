@@ -13,3 +13,10 @@ export const isEmpty = (value: string): boolean => {
 export const hyphenToUnderscore = (str: string) => {
   return str.replaceAll('-', '_');
 };
+
+export const truncate = (str: string, length = 32) => {
+  if (str.length <= length) {
+    return str;
+  }
+  return str.slice(0, length) + '...';
+};
