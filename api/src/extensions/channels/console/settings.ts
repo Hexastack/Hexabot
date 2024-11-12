@@ -19,12 +19,6 @@ export const CONSOLE_CHANNEL_NAMESPACE = 'console_channel';
 export default [
   {
     group: CONSOLE_CHANNEL_NAMESPACE,
-    label: Web.SettingLabel.verification_token,
-    value: 'test',
-    type: SettingType.text,
-  },
-  {
-    group: CONSOLE_CHANNEL_NAMESPACE,
     label: Web.SettingLabel.allowed_domains,
     value: config.frontendPath,
     type: SettingType.text,

@@ -20,7 +20,6 @@ import { useColors } from '../providers/ColorProvider';
 import { useConfig } from '../providers/ConfigProvider';
 import { useSettings } from '../providers/SettingsProvider';
 import { useSocket } from '../providers/SocketProvider';
-import './UserSubscription.scss';
 import { useWidget } from '../providers/WidgetProvider';
 import {
   Direction,
@@ -28,6 +27,7 @@ import {
   TMessage,
   TOutgoingMessageType,
 } from '../types/message.types';
+import './UserSubscription.scss';
 
 const UserSubscription: React.FC = () => {
   const config = useConfig();
@@ -55,7 +55,7 @@ const UserSubscription: React.FC = () => {
           messages: TMessage[];
           profile: ISubscriber;
         }>(
-          `/webhook/${config.channel}/?verification_token=${config.token}&first_name=${firstName}&last_name=${lastName}`,
+          `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
         );
         const { messages, profile } = body;
 

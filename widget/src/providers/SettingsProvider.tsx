@@ -23,7 +23,6 @@ import { useSubscribe } from './SocketProvider';
 type ChannelSettings = {
   menu: IMenuNode[];
   secret: string;
-  verification_token: string;
   allowed_domains: string;
   start_button: boolean;
   input_disabled: boolean;
