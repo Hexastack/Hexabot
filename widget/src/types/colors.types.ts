@@ -7,7 +7,7 @@
  */
 
 export type ColorState = {
-  header: { bg?: string; text?: string };
+  header: { bg: string; text: string };
   launcher: { bg?: string };
   messageList: { bg?: string };
   sent: { bg?: string; text?: string };

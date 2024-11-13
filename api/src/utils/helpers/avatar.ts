@@ -39,8 +39,8 @@ export const generateInitialsAvatar = async (name: {
   return await generateAvatarSvg(svg);
 };
 
-export const getBotAvatar = async () => {
-  const svg = generateBotAvatarSvg({});
+export const getBotAvatar = async (color: string) => {
+  const svg = generateBotAvatarSvg({ bgColor: color });
   return await generateAvatarSvg(svg);
 };
 

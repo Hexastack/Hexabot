@@ -9,46 +9,52 @@
 import { FC, SVGProps } from 'react';
 
 const ChatIcon: FC<SVGProps<SVGSVGElement>> = ({
-  viewBox = '-4749.48 -5020 35.036 35.036',
+  width = '18',
+  height = '18',
   ...rest
 }) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} {...rest}>
-      <defs>
-        <clipPath id="a">
-          <path
-            className="a"
-            style={{ fill: 'none' }}
-            d="M0-399.479H17.555v17.555H0Z"
-            transform="translate(0 399.479)"
-          />
-        </clipPath>
-      </defs>
-      <g transform="translate(-4886 -5075)">
-        <circle
-          style={{ fill: '#4e8cff' }}
-          cx="17.518"
-          cy="17.518"
-          r="17.518"
-          transform="translate(136.52 55)"
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 42.555282 47.2949"
+      width={width}
+      height={height}
+      {...rest}
+    >
+      <g fillOpacity={1} strokeDasharray="none">
+        <path
+          d="M32.756 170.872l-4.26 7.482-2.786-7.494-8.211-.017a4.405 4.405 0 01-3.8-2.191l-6.443-11.087a4.215 4.215 0 01-.011-4.216l6.213-10.833a4.96 4.96 0 014.288-2.492l12.2-.034a4.715 4.715 0 014.09 2.347l6.16 10.602a4.864 4.864 0 01.02 4.855z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeOpacity={1}
+          strokeWidth={4.4649702399999995}
+          paintOrder="normal"
+          style={{
+            mixBlendMode: 'normal',
+          }}
+          transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427)"
         />
-        <g transform="translate(145.13 64)">
-          <g style={{ clipPath: "url('#a')" }}>
-            <g transform="translate(0 0)">
-              <path
-                style={{ fill: '#fff' }}
-                d="M-381.924-190.962a8.778,8.778,0,0,0-8.778-8.778,8.778,8.778,0,0,0-8.778,8.778,8.745,8.745,0,0,0,2.26,5.879v1.442c0,.8.492,1.457,1.1,1.457h5.83a.843.843,0,0,0,.183-.02,8.778,8.778,0,0,0,8.184-8.757"
-                transform="translate(399.479 199.74)"
-              />
-            </g>
-            <g transform="translate(0 0)">
-              <path
-                style={{ fill: '#eff4f9' }}
-                d="M-68.763-194.079a9.292,9.292,0,0,1,6.38-8.888c-.252-.022-.506-.033-.763-.033a8.774,8.774,0,0,0-8.778,8.778A9.508,9.508,0,0,0-69.7-188.3c.005,0,0,.009,0,.01-.311.352-1.924,2.849.021,2.849h2.25c-1.23-.022,1.263-2.107.269-3.494a8.225,8.225,0,0,1-1.6-5.141"
-                transform="translate(71.924 203)"
-              />
-            </g>
-          </g>
+        <g
+          fill="currentColor"
+          fillRule="nonzero"
+          stroke="none"
+          strokeWidth={0.662}
+          fillOpacity={1}
+        >
+          <path
+            d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
+            transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 1044.41 -860.854)"
+          />
+          <path
+            d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
+            transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 992.8 -860.854)"
+          />
+          <path
+            d="M-532.348 630.303a6.253 6.253 0 11-12.506.023 6.253 6.253 0 0112.506-.023"
+            transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427) matrix(.25113 0 0 .25263 -27.6 133.42) matrix(1.51171 0 0 1.50275 1018.605 -860.854)"
+          />
         </g>
       </g>
     </svg>
