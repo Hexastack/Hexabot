@@ -6,33 +6,47 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { z } from 'zod';
+
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 
-export enum FileType {
-  image = 'image',
-  video = 'video',
-  audio = 'audio',
-  file = 'file',
-  unknown = 'unknown',
-}
+// Enum for FileType
+export const fileTypeSchema = z.enum([
+  'image',
+  'video',
+  'audio',
+  'file',
+  'unknown',
+]);
 
-export type AttachmentForeignKey = {
-  url?: string;
-  attachment_id: string;
-};
+export type FileType = z.infer<typeof fileTypeSchema>;
 
+// AttachmentForeignKey type schema
+export const attachmentForeignKeySchema = z.object({
+  url: z.string().url().optional(),
+  attachment_id: z.string().nullable(),
+});
+
+export type AttachmentForeignKey = z.infer<typeof attachmentForeignKeySchema>;
+
+// WithUrl helper type
 export type WithUrl<A> = A & { url?: string };
 
-export interface AttachmentPayload<
+// Generic AttachmentPayload type schema
+export const attachmentPayloadSchema = <
   A extends WithUrl<Attachment> | AttachmentForeignKey,
-> {
-  type: FileType;
-  payload: A;
-}
+>(
+  payloadSchema: z.ZodType<A>,
+) =>
+  z.object({
+    type: fileTypeSchema,
+    payload: payloadSchema,
+  });
 
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: {
-    url: string;
-  };
-}
+export type AttachmentPayload<
+  A extends WithUrl<Attachment> | AttachmentForeignKey,
+> = z.infer<ReturnType<typeof attachmentPayloadSchema<A>>>;
+
+export type IncomingAttachmentPayload = z.infer<
+  ReturnType<typeof attachmentPayloadSchema<AttachmentForeignKey>>
+>;

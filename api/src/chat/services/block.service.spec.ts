@@ -62,9 +62,8 @@ import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
-import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
-import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
+import { StdOutgoingListMessage } from '../schemas/types/message';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { CategoryRepository } from './../repositories/category.repository';
@@ -360,7 +359,7 @@ describe('BlockService', () => {
     it("should match payload when it's an attachment location", () => {
       const result = blockService.matchPayload(
         {
-          type: PayloadType.location,
+          type: 'location',
           coordinates: {
             lat: 15,
             lon: 23,
@@ -374,9 +373,9 @@ describe('BlockService', () => {
     it("should match payload when it's an attachment file", () => {
       const result = blockService.matchPayload(
         {
-          type: PayloadType.attachments,
+          type: 'attachments',
           attachments: {
-            type: FileType.file,
+            type: 'file',
             payload: {
               url: 'http://link.to/the/file',
             },

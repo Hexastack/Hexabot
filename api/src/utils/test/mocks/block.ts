@@ -11,16 +11,12 @@ import {
   labelMock,
 } from '@/channel/lib/__test__/label.mock';
 import { BlockFull } from '@/chat/schemas/block.schema';
-import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
-import {
-  OutgoingMessageFormat,
-  PayloadType,
-} from '@/chat/schemas/types/message';
+import { CaptureVar } from '@/chat/schemas/types/capture-var';
+import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
 import { Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
-import { CaptureVar } from '@/chat/validation-rules/is-valid-capture';
 
 import { modelInstance } from './misc';
 
@@ -186,7 +182,7 @@ export const attachmentBlock: BlockFull = {
   patterns: ['image'],
   message: {
     attachment: {
-      type: FileType.image,
+      type: 'image',
       payload: {
         url: 'https://fr.facebookbrand.com/wp-content/uploads/2016/09/messenger_icon2.png',
         attachment_id: '1234',
@@ -224,12 +220,12 @@ export const blockGetStarted: BlockFull = {
     {
       label: 'Tounes',
       value: 'Tounes',
-      type: PayloadType.location,
+      type: 'location',
     },
     {
       label: 'Livre',
       value: 'Livre',
-      type: PayloadType.attachments,
+      type: 'attachments',
     },
     [
       {

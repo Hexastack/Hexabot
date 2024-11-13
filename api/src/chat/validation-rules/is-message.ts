@@ -12,103 +12,61 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import Joi from 'joi';
+import { z } from 'zod';
 
+import attachmentSchema from '@/attachment/schemas/attachment.schema';
+
+import { buttonsSchema } from '../schemas/types/button';
 import { BlockMessage } from '../schemas/types/message';
+import { quickRepliesArraySchema } from '../schemas/types/quick-reply';
 
-export function isValidMessage(msg: any) {
-  if (typeof msg === 'string' && msg !== '') {
-    // Custom code
-    const MESSAGE_REGEX = /^function \(context\) \{[^]+\}/;
-    if (!MESSAGE_REGEX.test(msg)) {
-      // eslint-disable-next-line
-      console.error('Block Model : Invalid custom code.', msg);
-      return false;
-    } else {
-      return true;
-    }
-  } else if (Array.isArray(msg)) {
-    // Simple text message
-    const textSchema = Joi.array().items(Joi.string().max(1000).required());
-    const textCheck = textSchema.validate(msg);
-    return !textCheck.error;
-  } else if (typeof msg === 'object') {
-    if ('plugin' in msg) {
-      return true;
-    } else {
-      const buttonsSchema = Joi.array().items(
-        Joi.object().keys({
-          type: Joi.string().valid('postback', 'web_url').required(),
-          title: Joi.string().max(20),
-          payload: Joi.alternatives().conditional('type', {
-            is: 'postback',
-            then: Joi.string().max(1000).required(),
-            otherwise: Joi.forbidden(),
-          }),
-          url: Joi.alternatives().conditional('type', {
-            is: 'web_url',
-            then: Joi.string().uri(),
-            otherwise: Joi.forbidden(),
-          }),
-          messenger_extensions: Joi.alternatives().conditional('type', {
-            is: 'web_url',
-            then: Joi.boolean(),
-            otherwise: Joi.forbidden(),
-          }),
-          webview_height_ratio: Joi.alternatives().conditional('type', {
-            is: 'web_url',
-            then: Joi.string().valid('compact', 'tall', 'full'),
-            otherwise: Joi.forbidden(),
-          }),
-        }),
-      );
-      // Attachment message
-      const objectSchema = Joi.object().keys({
-        text: Joi.string().max(1000),
-        attachment: Joi.object().keys({
-          type: Joi.string()
-            .valid('image', 'audio', 'video', 'file', 'unknown')
-            .required(),
-          payload: Joi.object().keys({
-            url: Joi.string().uri(),
-            attachment_id: Joi.string().allow(null),
-          }),
-        }),
-        elements: Joi.boolean(),
-        cards: Joi.object().keys({
-          default_action: buttonsSchema.max(1),
-          buttons: buttonsSchema.max(3),
-        }),
-        buttons: buttonsSchema.max(3),
-        quickReplies: Joi.array()
-          .items(
-            Joi.object().keys({
-              content_type: Joi.string()
-                .valid('text', 'location', 'user_phone_number', 'user_email')
-                .required(),
-              title: Joi.alternatives().conditional('content_type', {
-                is: 'text',
-                then: Joi.string().max(20).required(),
-              }),
-              payload: Joi.alternatives().conditional('content_type', {
-                is: 'text',
-                then: Joi.string().max(1000).required(),
-              }),
-            }),
-          )
-          .max(11),
-      });
-      const objectCheck = objectSchema.validate(msg);
-      if (objectCheck.error) {
-        // eslint-disable-next-line
-        console.log('Message validation failed! ', objectCheck);
-      }
-      return !objectCheck.error;
-    }
-  } else {
-    return false;
-  }
-}
+// Schemas for different components
+const textSchema = z.array(z.string().max(1000));
+
+const pluginSchema = z.object({
+  plugin: z.string(),
+  args: z.record(z.any()), // Plugin-specific settings
+});
+
+// Message schema variations
+const baseTextMessageSchema = z.object({
+  text: z.string().max(1000).optional(),
+});
+
+const messageWithButtonsSchema = baseTextMessageSchema.extend({
+  buttons: buttonsSchema,
+});
+
+const messageWithQuickRepliesSchema = baseTextMessageSchema.extend({
+  quickReplies: quickRepliesArraySchema,
+});
+
+const messageWithAttachmentSchema = z.object({
+  attachment: attachmentSchema,
+  quickReplies: quickRepliesArraySchema.optional(),
+});
+
+const messageWithElementsSchema = z.object({
+  elements: z.array(z.record(z.any())), // Array of generic elements
+});
+
+const messageWithPluginSchema = z.object({
+  plugin: pluginSchema,
+});
+
+// Union of all possible message types
+const messageSchema = z.union([
+  textSchema,
+  messageWithButtonsSchema,
+  messageWithQuickRepliesSchema,
+  messageWithAttachmentSchema,
+  messageWithElementsSchema,
+  messageWithPluginSchema,
+]);
+
+export const isValidMessage = (msg: unknown): boolean => {
+  return messageSchema.safeParse(msg).success;
+};
 
 @ValidatorConstraint({ async: false })
 export class MessageValidator implements ValidatorConstraintInterface {

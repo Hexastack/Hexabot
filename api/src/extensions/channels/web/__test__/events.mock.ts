@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FileType } from '@/chat/schemas/types/attachment';
 import {
   IncomingMessageType,
   StdEventType,
@@ -55,7 +54,7 @@ const webEventLocation: Web.IncomingMessage = {
 const webEventFile: Web.Event = {
   type: Web.IncomingMessageType.file,
   data: {
-    type: FileType.image,
+    type: 'image',
     url: img_url,
     size: 500,
   },
@@ -149,7 +148,7 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
       payload: {
         type: IncomingMessageType.attachments,
         attachments: {
-          type: FileType.image,
+          type: 'image',
           payload: {
             url: img_url,
           },
@@ -160,7 +159,7 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
           payload: {
             url: img_url,
           },
-          type: FileType.image,
+          type: 'image',
         },
         serialized_text: `attachment:image:${img_url}`,
         type: IncomingMessageType.attachments,
