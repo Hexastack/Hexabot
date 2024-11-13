@@ -28,6 +28,7 @@ import { ConversationRepository } from './repositories/conversation.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
+import { ThreadRepository } from './repositories/thread.repository';
 import { BlockModel } from './schemas/block.schema';
 import { CategoryModel } from './schemas/category.schema';
 import { ContextVarModel } from './schemas/context-var.schema';
@@ -35,6 +36,7 @@ import { ConversationModel } from './schemas/conversation.schema';
 import { LabelModel } from './schemas/label.schema';
 import { MessageModel } from './schemas/message.schema';
 import { SubscriberModel } from './schemas/subscriber.schema';
+import { ThreadModel } from './schemas/thread.schema';
 import { CategorySeeder } from './seeds/category.seed';
 import { ContextVarSeeder } from './seeds/context-var.seed';
 import { BlockService } from './services/block.service';
@@ -46,6 +48,7 @@ import { ConversationService } from './services/conversation.service';
 import { LabelService } from './services/label.service';
 import { MessageService } from './services/message.service';
 import { SubscriberService } from './services/subscriber.service';
+import { ThreadService } from './services/thread.service';
 
 @Module({
   imports: [
@@ -58,6 +61,7 @@ import { SubscriberService } from './services/subscriber.service';
       SubscriberModel,
       ConversationModel,
       SubscriberModel,
+      ThreadModel,
     ]),
     forwardRef(() => ChannelModule),
     CmsModule,
@@ -81,6 +85,7 @@ import { SubscriberService } from './services/subscriber.service';
     MessageRepository,
     SubscriberRepository,
     ConversationRepository,
+    ThreadRepository,
     CategoryService,
     ContextVarService,
     LabelService,
@@ -92,6 +97,7 @@ import { SubscriberService } from './services/subscriber.service';
     ConversationService,
     ChatService,
     BotService,
+    ThreadService,
   ],
   exports: [
     SubscriberService,
@@ -99,6 +105,7 @@ import { SubscriberService } from './services/subscriber.service';
     LabelService,
     BlockService,
     ConversationService,
+    ThreadService,
   ],
 })
 export class ChatModule {}

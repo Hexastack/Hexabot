@@ -28,6 +28,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { MessageRepository } from '../repositories/message.repository';
 import { MessageFull, MessagePopulate } from '../schemas/message.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
+import { ThreadStub } from '../schemas/thread.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 @Injectable()
@@ -134,5 +135,22 @@ export class MessageService extends BaseService<
     );
 
     return lastMessages.reverse();
+  }
+
+  /**
+   * Retrieves all the messages of a given thread
+   *
+   * @param subscriber The subscriber whose messages is being retrieved.
+   * @param threadId Thread ID
+   *
+   * @returns All messages.
+   */
+  async findByThread<T extends ThreadStub>(thread: T) {
+    return await this.find(
+      {
+        thread: thread.id,
+      },
+      ['createdAt', 'asc'],
+    );
   }
 }

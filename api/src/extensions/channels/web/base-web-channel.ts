@@ -762,11 +762,12 @@ export default abstract class BaseWebChannelHandler<
             channelData,
           );
           if (event.getEventType() === 'message') {
-            // Handler sync message sent by chabbot
+            // Handle sync message sent by the bot
             if (data.sync && data.author === 'chatbot') {
               const sentMessage: MessageCreateDto = {
                 mid: event.getId(),
                 message: event.getMessage() as StdOutgoingMessage,
+                thread: event.getThreadId(),
                 recipient: profile.id,
                 read: true,
                 delivery: true,
