@@ -62,7 +62,7 @@ export default [
   {
     group: WEB_CHANNEL_NAMESPACE,
     label: Web.SettingLabel.avatar_url,
-    value: 'https://eu.ui-avatars.com/api/?name=Hexa+Bot&size=64',
+    value: '',
     type: SettingType.text,
   },
   {

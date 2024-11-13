@@ -21,17 +21,17 @@
     .user-subscription-form {
       .user-subscription-form-input {
         border: 0;
-        background-color: #eeeeee;
+        border: 1px solid #dfe5e8;
         outline: 0;
         padding: 1rem;
-        border-radius: 10px;
+        border-radius: 2rem;
         margin: 1rem;
         width: 70%;
       }
 
       .user-subscription-form-button-submit {
         display: block;
-        border-radius: 10px;
+        border-radius: 2rem;
         border: 0;
         width: 50%;
         margin: 2rem auto;
