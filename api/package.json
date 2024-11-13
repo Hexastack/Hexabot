@@ -71,7 +71,6 @@
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express-session": "^1.17.3",
-    "joi": "^17.11.0",
     "module-alias": "^2.2.3",
     "mongoose": "^8.0.0",
     "mongoose-lean-defaults": "^2.2.1",
@@ -92,7 +91,8 @@
     "sanitize-filename": "^1.6.3",
     "slug": "^8.2.2",
     "ts-migrate-mongoose": "^3.8.4",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.24",

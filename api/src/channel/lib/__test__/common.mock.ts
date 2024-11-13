@@ -10,7 +10,6 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { WithUrl } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
 import {
-  FileType,
   OutgoingMessageFormat,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,
@@ -160,7 +159,7 @@ export const attachmentMessage: StdOutgoingAttachmentMessage<
   WithUrl<Attachment>
 > = {
   attachment: {
-    type: FileType.image,
+    type: 'image',
     payload: attachmentWithUrl,
   },
   quickReplies: [

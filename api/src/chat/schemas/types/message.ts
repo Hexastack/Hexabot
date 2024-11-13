@@ -56,22 +56,6 @@ export enum OutgoingMessageFormat {
   carousel = 'carousel',
 }
 
-/**
- * FileType enum is declared, and currently not used
- **/
-export enum FileType {
-  image = 'image',
-  video = 'video',
-  audio = 'audio',
-  file = 'file',
-  unknown = 'unknown',
-}
-
-export enum PayloadType {
-  location = 'location',
-  attachments = 'attachments',
-}
-
 export type StdOutgoingTextMessage = { text: string };
 
 export type StdOutgoingQuickRepliesMessage = {
@@ -130,7 +114,7 @@ export type StdIncomingPostBackMessage = StdIncomingTextMessage & {
 };
 
 export type StdIncomingLocationMessage = {
-  type: PayloadType.location;
+  type: 'location';
   coordinates: {
     lat: number;
     lon: number;
@@ -138,7 +122,7 @@ export type StdIncomingLocationMessage = {
 };
 
 export type StdIncomingAttachmentMessage = {
-  type: PayloadType.attachments;
+  type: 'attachments';
   serialized_text: string;
   attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
 };

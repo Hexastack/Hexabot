@@ -9,7 +9,6 @@
 import { textMessage } from '@/channel/lib/__test__/common.mock';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { ButtonType } from '@/chat/schemas/types/button';
-import { FileType } from '@/chat/schemas/types/message';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
 import { Web } from '../types';
@@ -139,7 +138,7 @@ export const webAttachment: Web.OutgoingMessageBase = {
         title: 'Next >',
       },
     ],
-    type: FileType.image,
+    type: 'image',
     url: 'http://localhost:4000/attachment/download/1/attachment.jpg',
   },
   type: Web.OutgoingMessageType.file,

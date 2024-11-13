@@ -31,11 +31,9 @@ import { WithUrl } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
-  FileType,
   IncomingMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
-  PayloadType,
   StdEventType,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,
@@ -138,7 +136,7 @@ export default abstract class BaseWebChannelHandler<
   ): Web.IncomingMessageBase {
     // Format incoming message
     if ('type' in incoming.message) {
-      if (incoming.message.type === PayloadType.location) {
+      if (incoming.message.type === 'location') {
         const coordinates = incoming.message.coordinates;
         return {
           type: Web.IncomingMessageType.location,
@@ -682,7 +680,7 @@ export default abstract class BaseWebChannelHandler<
         this.storeAttachment(
           {
             name: file.filename,
-            type: file.mimetype as FileType, // @Todo : test this
+            type: Attachment.getTypeByMime(file.mimetype), // @Todo : test this
             size: file.size,
           },
           file.path.replace(dirPath, ''),

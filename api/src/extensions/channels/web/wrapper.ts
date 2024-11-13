@@ -14,7 +14,6 @@ import {
 } from '@/chat/schemas/types/attachment';
 import {
   IncomingMessageType,
-  PayloadType,
   StdEventType,
   StdIncomingMessage,
 } from '@/chat/schemas/types/message';
@@ -215,7 +214,7 @@ export default class WebEventWrapper<
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
         return {
-          type: PayloadType.location,
+          type: 'location',
           coordinates: {
             lat: coordinates.lat,
             lon: coordinates.lng,
@@ -224,7 +223,7 @@ export default class WebEventWrapper<
       }
       case IncomingMessageType.attachments:
         return {
-          type: PayloadType.attachments,
+          type: 'attachments',
           attachments: {
             type: this._adapter.raw.data.type,
             payload: {
@@ -260,7 +259,7 @@ export default class WebEventWrapper<
       case IncomingMessageType.location: {
         const coordinates = this._adapter.raw.data.coordinates;
         return {
-          type: PayloadType.location,
+          type: 'location',
           coordinates: {
             lat: coordinates.lat,
             lon: coordinates.lng,
@@ -271,7 +270,7 @@ export default class WebEventWrapper<
       case IncomingMessageType.attachments: {
         const attachment = this._adapter.raw.data;
         return {
-          type: PayloadType.attachments,
+          type: 'attachments',
           serialized_text: `attachment:${attachment.type}:${attachment.url}`,
           attachment: {
             type: attachment.type,
