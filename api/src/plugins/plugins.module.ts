@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
@@ -40,6 +41,7 @@ import { PluginService } from './plugins.service';
     CmsModule,
     AttachmentModule,
     ChatModule,
+    HttpModule,
   ],
   providers: [PluginService],
   exports: [PluginService],

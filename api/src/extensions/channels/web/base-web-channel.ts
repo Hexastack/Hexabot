@@ -77,7 +77,7 @@ export default abstract class BaseWebChannelHandler<
     protected readonly attachmentService: AttachmentService,
     protected readonly messageService: MessageService,
     protected readonly menuService: MenuService,
-    private readonly websocketGateway: WebsocketGateway,
+    protected readonly websocketGateway: WebsocketGateway,
   ) {
     super(name, settingService, channelService, logger);
   }
@@ -98,42 +98,32 @@ export default abstract class BaseWebChannelHandler<
    */
   @OnEvent('hook:websocket:connection', { async: true })
   async onWebSocketConnection(client: Socket) {
-    const settings = await this.getSettings();
-    const handshake = client.handshake;
-    const { channel } = handshake.query;
-    if (channel !== this.getName()) {
-      return;
-    }
     try {
-      const { verification_token } = client.handshake.query;
-      await this.verifyToken(verification_token.toString());
-      try {
-        this.logger.debug(
-          'Web Channel Handler : WS connected .. sending settings',
-        );
-        try {
-          const menu = await this.menuService.getTree();
-          return client.emit('settings', { menu, ...settings });
-        } catch (err) {
-          this.logger.warn(
-            'Web Channel Handler : Unable to retrieve menu ',
-            err,
-          );
-          return client.emit('settings', settings);
-        }
-      } catch (err) {
-        this.logger.warn(
-          'Web Channel Handler : Unable to verify token, disconnecting ...',
-          err,
-        );
-        client.disconnect();
+      const settings = await this.getSettings();
+      const handshake = client.handshake;
+      const { channel } = handshake.query;
+
+      if (channel !== this.getName()) {
         return;
+      }
+
+      this.logger.debug(
+        'Web Channel Handler : WS connected .. sending settings',
+      );
+
+      try {
+        const menu = await this.menuService.getTree();
+        return client.emit('settings', { menu, ...settings });
+      } catch (err) {
+        this.logger.warn('Web Channel Handler : Unable to retrieve menu ', err);
+        return client.emit('settings', settings);
       }
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to initiate websocket connection',
         err,
       );
+      client.disconnect();
     }
   }
 
@@ -218,7 +208,7 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns Formatted message
    */
-  private formatHistoryMessages(messages: AnyMessage[]): Web.Message[] {
+  protected formatMessages(messages: AnyMessage[]): Web.Message[] {
     return messages.map((anyMessage: AnyMessage) => {
       if ('sender' in anyMessage && anyMessage.sender) {
         return {
@@ -262,7 +252,7 @@ export default abstract class BaseWebChannelHandler<
         until,
         n,
       );
-      return this.formatHistoryMessages(messages.reverse());
+      return this.formatMessages(messages.reverse());
     }
     return [];
   }
@@ -287,33 +277,9 @@ export default abstract class BaseWebChannelHandler<
         since,
         n,
       );
-      return this.formatHistoryMessages(messages);
+      return this.formatMessages(messages);
     }
     return [];
-  }
-
-  /**
-   * Verify the received token.
-   *
-   * @param verificationToken - Verification Token
-   */
-  private async verifyToken(verificationToken: string) {
-    const settings =
-      (await this.getSettings()) as unknown as Settings[typeof WEB_CHANNEL_NAMESPACE];
-    const verifyToken = settings.verification_token;
-
-    if (!verifyToken) {
-      throw new Error('You need to specify a verifyToken in your config.');
-    }
-    if (!verificationToken) {
-      throw new Error('Did not recieve any verification token.');
-    }
-    if (verificationToken !== verifyToken) {
-      throw new Error('Make sure the validation tokens match.');
-    }
-    this.logger.log(
-      'Web Channel Handler : Token has been verified successfully!',
-    );
   }
 
   /**
@@ -405,20 +371,12 @@ export default abstract class BaseWebChannelHandler<
    * @param req
    * @param res
    */
-  private async checkRequest(
+  protected async checkRequest(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
     try {
       await this.validateCors(req, res);
-      try {
-        const { verification_token } =
-          'verification_token' in req.query ? req.query : req.body;
-        await this.verifyToken(verification_token);
-      } catch (err) {
-        this.logger.warn('Web Channel Handler : Unable to verify token ', err);
-        throw new Error('Unauthorized, invalid token!');
-      }
     } catch (err) {
       this.logger.warn(
         'Web Channel Handler : Attempt to access from an unauthorized origin',
@@ -741,7 +699,7 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns IP Address
    */
-  private getIpAddress(req: Request | SocketRequest): string {
+  protected getIpAddress(req: Request | SocketRequest): string {
     if ('isSocket' in req && req.isSocket) {
       return req.socket.handshake.address;
     } else if (Array.isArray(req.ips) && req.ips.length > 0) {

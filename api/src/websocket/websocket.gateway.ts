@@ -224,7 +224,7 @@ export class WebsocketGateway
                     'Unable to load session, creating a new one ...',
                     err,
                   );
-                  if (searchParams.get('channel') === 'web-channel') {
+                  if (searchParams.get('channel') !== 'console-channel') {
                     return this.createAndStoreSession(client, next);
                   } else {
                     return next(new Error('Unauthorized: Unknown session ID'));

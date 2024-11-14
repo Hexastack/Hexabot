@@ -23,7 +23,6 @@ import { useSubscribe } from './SocketProvider';
 type ChannelSettings = {
   menu: IMenuNode[];
   secret: string;
-  verification_token: string;
   allowed_domains: string;
   start_button: boolean;
   input_disabled: boolean;
@@ -110,7 +109,7 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
       allowedUploadSize: settings.allowed_upload_size,
       inputDisabled: settings.input_disabled,
       color: settings.theme_color,
-      greetingMessage: t('settings.greeting'),
+      greetingMessage: settings.greeting_message,
       placeholder: t('settings.placeholder'),
       avatarUrl: settings.avatar_url,
     });

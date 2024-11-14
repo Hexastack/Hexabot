@@ -13,8 +13,6 @@ import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
 
 export namespace Web {
   export enum SettingLabel {
-    secret = 'secret',
-    verification_token = 'verification_token',
     allowed_domains = 'allowed_domains',
     start_button = 'start_button',
     input_disabled = 'input_disabled',

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client';
+import { io, ManagerOptions, Socket, SocketOptions } from 'socket.io-client';
 
 import { Config } from '../providers/ConfigProvider';
 import {
@@ -195,14 +195,16 @@ let socketIoClient: SocketIoClient;
  * @param handlers Event handlers
  * @returns Socket io client instance
  */
-export const getSocketIoClient = (config: Config, handlers: SocketIoEventHandlers) => {
+export const getSocketIoClient = (
+  config: Config,
+  handlers: SocketIoEventHandlers,
+) => {
   if (!socketIoClient) {
     socketIoClient = new SocketIoClient(
       config.apiUrl,
       {
         query: {
           channel: config.channel,
-          verification_token: config.token,
         },
       },
       handlers,

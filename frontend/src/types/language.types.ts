@@ -21,6 +21,6 @@ export interface ILanguageAttributes {
 
 export interface ILanguageStub
   extends IBaseSchema,
-    OmitPopulate<ILanguageAttributes, EntityType.TRANSLATION> {}
+    OmitPopulate<ILanguageAttributes, EntityType.LANGUAGE> {}
 
 export interface ILanguage extends ILanguageStub, IFormat<Format.BASIC> {}

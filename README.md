@@ -16,7 +16,9 @@
 
 <p align="center">
   <br />
-  <a href="https://docs.hexabot.ai" rel="dofollow"><strong>Explore the docs »</strong></a>
+  <a href="https://hexabot.ai/extensions" rel="dofollow"><strong>Extensions Library</strong></a>
+  .
+  <a href="https://docs.hexabot.ai" rel="dofollow"><strong>Documentation</strong></a>
   <br />
 
   <br/>
@@ -31,9 +33,7 @@
 
 ## Description
 
-[Hexabot](https://hexabot.ai/) is an open-source AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with extensions.
-
-**NOTE:** We are currently working to package it in a way that it would be easy to install and use, hence there's no version release just yet.
+[Hexabot](https://hexabot.ai/) is an open-source AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with [extensions](https://hexabot.ai/extensions).
 
 <a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 ## Features
@@ -41,7 +41,7 @@
 - **LLMs & NLU Support:** Integrate with your favorite LLM model whether it's by using Ollama, ChatGPT, Mistral or Gemini ... Manage training datasets for machine learning models that detect user intent and language, providing intelligent responses.
 - **Multi-Channel Support:** Create consistent chatbot experiences across multiple channels like web, mobile, and social media platforms.
 - **Visual Editor:** Design and manage chatbot flows with an intuitive drag-and-drop interface. Supports text messages, quick replies, carousels, and more.
-- **Plugin System:** Extend Hexabot's functionality by developing custom plugins. Enable features like text-to-action responses, 3rd party system integrations, and more.
+- **Plugin System:** Extend Hexabot's functionality by developing and installing extensions from the [Extension Library](https://hexabot.ai/extensions). Enable features like text-to-action responses, 3rd party system integrations, and more.
 - **Multi-lingual Support:** Define multiple languages, allowing the chatbot to interact with users in their preferred language.
 - **Knowledge Base:** Seamlessly integrate and manage dynamic content such as product catalogs and store lists for more engaging conversations.
 - **User Roles & Permissions:** Granular access control to manage user roles and permissions for different parts of the system.

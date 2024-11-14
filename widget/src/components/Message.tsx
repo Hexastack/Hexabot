@@ -17,6 +17,7 @@ import { useColors } from '../providers/ColorProvider';
 import { TMessage } from '../types/message.types';
 
 import ChatIcon from './icons/ChatIcon';
+import './Message.scss';
 import ButtonsMessage from './messages/ButtonMessage';
 import CarouselMessage from './messages/CarouselMessage';
 import FileMessage from './messages/FileMessage';
@@ -24,7 +25,6 @@ import GeolocationMessage from './messages/GeolocationMessage';
 import ListMessage from './messages/ListMessage';
 import TextMessage from './messages/TextMessage';
 import MessageStatus from './MessageStatus';
-import './Message.scss';
 
 dayjs.extend(relativeTime);
 
@@ -58,7 +58,11 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           className="sc-message--avatar"
           style={
             user.imageUrl
-              ? { backgroundImage: `url(${user.imageUrl})` }
+              ? {
+                  backgroundImage: `url(${
+                    user.imageUrl
+                  }?color=${encodeURIComponent(colors.header.bg)})`,
+                }
               : undefined
           }
         >

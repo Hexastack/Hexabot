@@ -38,7 +38,7 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: calc(100% - 60px);
+    max-width: calc(100% - 2rem);
     width: auto;
 
     .sc-message--avatar {
@@ -49,7 +49,7 @@
       background-position: 0 0;
       flex-shrink: 0;
       background-size: cover;
-      border-radius: 999px;
+      border-radius: 100%;
     }
 
     .sc-message--wrapper {
@@ -59,11 +59,10 @@
 
       .sc-message--text {
         padding: 10px 20px;
-        border-radius: 6px;
-        font-weight: 300;
-        font-size: .85rem;
-        max-width: 190px;
-        line-height: 1.2;
+        border-radius: .5rem;
+        font-weight: 400;
+        font-size: .9rem;
+        line-height: 1.5;
         position: relative;
         -webkit-font-smoothing: subpixel-antialiased;
         color: #263238;
@@ -73,10 +72,6 @@
           .sc-message--text-content {
             white-space: pre-wrap;
           }
-        }
-
-        code {
-          font-family: "Courier New", Courier, monospace !important;
         }
       }
 

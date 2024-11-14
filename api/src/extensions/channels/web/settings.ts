@@ -18,12 +18,6 @@ export const WEB_CHANNEL_NAMESPACE = 'web_channel';
 export default [
   {
     group: WEB_CHANNEL_NAMESPACE,
-    label: Web.SettingLabel.verification_token,
-    value: 'token123',
-    type: SettingType.secret,
-  },
-  {
-    group: WEB_CHANNEL_NAMESPACE,
     label: Web.SettingLabel.allowed_domains,
     value: 'http://localhost:8080,http://localhost:4000',
     type: SettingType.text,
@@ -68,7 +62,7 @@ export default [
   {
     group: WEB_CHANNEL_NAMESPACE,
     label: Web.SettingLabel.avatar_url,
-    value: 'https://eu.ui-avatars.com/api/?name=Hexa+Bot&size=64',
+    value: '',
     type: SettingType.text,
   },
   {

@@ -5,10 +5,10 @@
   bottom: 0;
   display: flex;
   background-color: #f4f7f9;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: .5rem;
+  border-bottom-right-radius: .5rem;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid #eaeaea;
+  border-top: 1px solid #eef2f4;
 }
 
 .sc-user-input--text {
@@ -16,7 +16,7 @@
   resize: none;
   border: none;
   outline: none;
-  border-bottom-left-radius: 10px;
+  border-bottom-left-radius: .5rem;
   box-sizing: border-box;
   padding: 18px 8px;
   font-size: 15px;

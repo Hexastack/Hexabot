@@ -13,7 +13,6 @@ import { DEFAULT_CONFIG } from '../constants/defaultConfig';
 // Define the type for your config, including all possible properties
 export type Config = {
   apiUrl: string;
-  token: string;
   channel: string;
   language: string;
 };
@@ -23,7 +22,6 @@ const ConfigContext = createContext<Config>(DEFAULT_CONFIG);
 
 export const ConfigProvider: React.FC<{
   apiUrl?: string;
-  token?: string;
   channel?: string;
   language?: string;
   children: ReactNode;

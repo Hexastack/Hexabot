@@ -18,7 +18,13 @@ const Aside = dynamic(() => import("./Aside"), { ssr: false });
 export const VisualEditor = () => {
   return (
     <VisualEditorProvider>
-      <Grid container gap={2} flexDirection="column" height="100%" width="100%">
+      <Grid
+        container
+        gap={2}
+        flexDirection="column"
+        height="calc(100vh - 64px)"
+        width="100%"
+      >
         <Grid container height="100%" margin="auto">
           <Aside />
           <Grid

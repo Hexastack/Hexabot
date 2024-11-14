@@ -181,10 +181,20 @@ const UserInput: React.FC = () => {
           onBlur={() => setInputActive(false)}
           onKeyDown={handleKey}
           onInput={handleInput}
-          onPaste={(e) => {
+          onPaste={async (e) => {
             e.preventDefault();
-            (e.target as HTMLInputElement).innerText =
-              e.clipboardData.getData('text/plain');
+
+            const text = await navigator.clipboard.readText();
+            const range = window.getSelection()?.getRangeAt(0);
+
+            if (range && text) {
+              const node = document.createTextNode(text);
+
+              range.deleteContents();
+              range.insertNode(node);
+              range.collapse(false);
+            }
+
             handleInput();
           }}
           contentEditable

@@ -25,11 +25,11 @@ const colors: Record<string, ColorState> = {
       text: '#fff',
     },
     received: {
-      bg: '#eaeaea',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#fbfbfb',
+      bg: '#fff',
       text: '#000',
     },
     button: {
@@ -60,11 +60,11 @@ const colors: Record<string, ColorState> = {
       text: '#fff',
     },
     received: {
-      bg: '#eaeaea',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#fbfbfb',
+      bg: '#fff',
       text: '#000',
     },
     button: {
@@ -95,11 +95,11 @@ const colors: Record<string, ColorState> = {
       text: '#fff',
     },
     received: {
-      bg: '#eaeaea',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#fbfbfb',
+      bg: '#fff',
       text: '#000',
     },
     button: {
@@ -130,11 +130,11 @@ const colors: Record<string, ColorState> = {
       text: '#fff',
     },
     received: {
-      bg: '#eaeaea',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#fbfbfb',
+      bg: '#fff',
       text: '#000',
     },
     button: {
@@ -165,11 +165,11 @@ const colors: Record<string, ColorState> = {
       text: '#fff',
     },
     received: {
-      bg: '#eaeaea',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#fbfbfb',
+      bg: '#fff',
       text: '#000',
     },
     button: {
@@ -200,15 +200,15 @@ const colors: Record<string, ColorState> = {
       text: '#FFF',
     },
     received: {
-      bg: '#F0F0F0',
+      bg: '#f6f8f9',
       text: '#000',
     },
     userInput: {
-      bg: '#FFF',
+      bg: '#fff',
       text: '#000',
     },
     button: {
-      bg: '#2c3e50',
+      bg: '#000',
       text: '#ecf0f1',
       border: '#34495e',
     },

@@ -83,8 +83,8 @@ export class ReadOnlyUserController extends BaseController<
    */
   @Roles('public')
   @Get('bot/profile_pic')
-  async botProfilePic() {
-    return getBotAvatar();
+  async botProfilePic(@Query('color') color: string) {
+    return getBotAvatar(color);
   }
 
   /**

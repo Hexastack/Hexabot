@@ -6,6 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import '../types/event-emitter';
+import '../types/express-session';
+
 declare global {
   type HyphenToUnderscore<S extends string> = S extends `${infer P}-${infer Q}`
     ? `${P}_${HyphenToUnderscore<Q>}`
@@ -13,4 +16,4 @@ declare global {
 }
 
 // eslint-disable-next-line prettier/prettier
-export { };
+export {};

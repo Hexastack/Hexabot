@@ -34,14 +34,15 @@ export const ChatWidget = () => {
         config={{
           apiUrl,
           channel: "console-channel",
-          token: "test",
           language: i18n.language,
         }}
         CustomHeader={ChatWidgetHeader}
         CustomAvatar={() => (
           <Avatar
-            sx={{ width: "32px", height: "32px", fontSize: ".75rem" }}
-            src={getAvatarSrc(apiUrl, EntityType.USER, "bot")}
+            sx={{ width: "32px", height: "32px" }}
+            src={
+              getAvatarSrc(apiUrl, EntityType.USER, "bot") + "?color=%231ba089"
+            }
           />
         )}
       />
