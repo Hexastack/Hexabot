@@ -25,6 +25,7 @@ import { seedDatabase } from './seeder';
 import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
+import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {
   const isProduction = config.env.toLowerCase().includes('prod');
@@ -76,6 +77,12 @@ async function bootstrap() {
   );
   app.use(passport.initialize());
   app.use(passport.session());
+
+  if (config.cache.type === 'redis') {
+    const redisIoAdapter = new RedisIoAdapter(app);
+    await redisIoAdapter.connectToRedis();
+    app.useWebSocketAdapter(redisIoAdapter);
+  }
 
   process.on('uncaughtException', (error) => {
     if (error.stack.toLowerCase().includes('smtp'))

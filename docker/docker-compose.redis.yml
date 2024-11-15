@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  api:
+    networks:
+      - cache-network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    container_name: redis
+    image: redis/redis-stack-server:7.2.0-v6
+    networks:
+      - cache-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+
+networks:
+  cache-network:

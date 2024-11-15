@@ -129,9 +129,11 @@ export const config: Config = {
     level: 'verbose',
   },
   cache: {
-    type: 'memory',
+    type: process.env.REDIS_ENABLED === 'true' ? 'redis' : 'memory',
     ttl: 60 * 1000, // Milliseconds
     max: 100, // Maximum number of items in cache (defaults to 100)
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT || '6379'),
   },
   mongo: {
     user: process.env.MONGO_USER || 'dev_only',
