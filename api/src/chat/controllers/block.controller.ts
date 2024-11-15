@@ -256,6 +256,28 @@ export class BlockController extends BaseController<
   }
 
   /**
+   * Updates multiple blocks by their IDs.
+   * @param ids - IDs of blocks to be updated.
+   * @param payload - The data to update blocks with.
+   * @returns A Promise that resolves to the updates if successful.
+   */
+  @CsrfCheck(true)
+  @Patch('bulk')
+  async updateMany(@Body() body: { ids: string[]; payload: BlockUpdateDto }) {
+    if (!body.ids || body.ids.length === 0) {
+      throw new BadRequestException('No IDs provided for ...');
+    }
+    const updates = await this.blockService.updateMany(
+      {
+        _id: { $in: body.ids },
+      },
+      body.payload,
+    );
+
+    return updates;
+  }
+
+  /**
    * Updates a specific block by ID.
    *
    * @param id - The ID of the block to update.

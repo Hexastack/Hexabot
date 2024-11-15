@@ -47,6 +47,7 @@ import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
+import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
@@ -73,6 +74,7 @@ const Diagrams = () => {
   const deleteDialogCtl = useDialog<string>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
   const addCategoryDialogCtl = useDialog<ICategory>(false);
+  const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
     setViewerZoom,
@@ -451,38 +453,16 @@ const Diagrams = () => {
 
     const ids = moveDialogCtl?.data;
 
-    if (ids) {
-      for (const blockId of ids) {
-        const block = getBlockFromCache(blockId);
-        const updatedNextBlocks = block?.nextBlocks?.filter((nextBlockId) =>
-          ids.includes(nextBlockId),
-        );
-        const updatedAttachedBlock = ids.includes(
-          block?.attachedBlock as string,
-        )
-          ? block?.attachedBlock
-          : null;
+    if (ids?.length && Array.isArray(ids)) {
+      await updateBlocks({ ids, payload: { category: newCategoryId } });
 
-        await updateBlock({
-          id: blockId,
-          params: {
-            category: newCategoryId,
-            nextBlocks: updatedNextBlocks,
-            attachedBlock: updatedAttachedBlock,
-          },
-        });
-      }
-
-      queryClient.removeQueries({
+      queryClient.invalidateQueries({
         predicate: ({ queryKey }) => {
-          const [qType, qEntity, qId] = queryKey;
+          const [qType, qEntity] = queryKey;
 
           return (
-            (qType === QueryType.collection &&
-              isSameEntity(qEntity, EntityType.BLOCK) &&
-              qId === selectedCategoryId) ||
-            (isSameEntity(qEntity, EntityType.CATEGORY) &&
-              qId === selectedCategoryId)
+            qType === QueryType.collection &&
+            isSameEntity(qEntity, EntityType.BLOCK)
           );
         },
       });

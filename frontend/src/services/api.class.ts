@@ -343,6 +343,23 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
   }
 
   /**
+   * Bulk Update entries.
+   */
+  async UpdateMany(ids: string[], payload: Partial<TAttr>) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.patch<string>(
+      `${ROUTES[this.type]}/bulk`,
+      {
+        _csrf,
+        ids,
+        payload,
+      },
+    );
+
+    return data;
+  }
+
+  /**
    * Delete an entry.
    */
   async delete(id: string) {

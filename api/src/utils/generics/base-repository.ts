@@ -38,10 +38,12 @@ export type DeleteResult = {
 export enum EHook {
   preCreate = 'preCreate',
   preUpdate = 'preUpdate',
+  preUpdateMany = 'preUpdateMany',
   preDelete = 'preDelete',
   preValidate = 'preValidate',
   postCreate = 'postCreate',
   postUpdate = 'postUpdate',
+  postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
   postValidate = 'postValidate',
 }
@@ -152,6 +154,19 @@ export abstract class BaseRepository<
       await repository.preUpdate(query, criteria, updates);
       repository.emitter.emit(
         repository.getEventName(EHook.preUpdate),
+        criteria,
+        updates?.['$set'],
+      );
+    });
+
+    hooks?.updateMany.pre.execute(async function () {
+      const query = this as Query<D, D, unknown, T, 'updateMany'>;
+      const criteria = query.getFilter();
+      const updates = query.getUpdate();
+
+      await repository.preUpdateMany(query, criteria, updates);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preUpdateMany),
         criteria,
         updates?.['$set'],
       );
@@ -369,6 +384,14 @@ export abstract class BaseRepository<
 
   async preUpdate(
     _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
+    _criteria: TFilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
+  ) {
+    // Nothing ...
+  }
+
+  async preUpdateMany(
+    _query: Query<D, D, unknown, T, 'updateMany'>,
     _criteria: TFilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
   ) {

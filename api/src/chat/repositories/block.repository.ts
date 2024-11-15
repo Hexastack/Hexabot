@@ -9,7 +9,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import {
+import mongoose, {
   Document,
   Model,
   Query,
@@ -111,6 +111,88 @@ export class BlockRepository extends BaseRepository<
     }
 
     this.checkDeprecatedAttachmentUrl(updates);
+  }
+
+  /**
+   * Pre-processing logic for updating blocks.
+   *
+   * @param query - The query to update blocks.
+   * @param criteria - The filter criteria for the update query.
+   * @param updates - The update data.
+   */
+  async preUpdateMany(
+    _query: Query<
+      Document<Block, any, any>,
+      Document<Block, any, any>,
+      unknown,
+      Block,
+      'updateMany',
+      Record<string, never>
+    >,
+    _criteria: TFilterQuery<Block>,
+    _updates: UpdateQuery<Document<Block, any, any>>,
+  ): Promise<void> {
+    const ids: string[] = _criteria._id?.$in || [];
+    const objIds = ids.map((b) => {
+      return new mongoose.Types.ObjectId(b);
+    });
+    const category: string = _updates.$set.category;
+    const objCategory = new mongoose.Types.ObjectId(category);
+    const otherBlocks = await this.model.find({
+      _id: { $nin: objIds },
+      category: { $ne: objCategory },
+      $or: [
+        { attachedBlock: { $in: objIds } },
+        { nextBlocks: { $in: objIds } },
+      ],
+    });
+
+    for (const id of ids) {
+      const oldState = await this.model.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
+      if (oldState.category.toString() !== category) {
+        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+          ids.includes(nextBlock.toString()),
+        );
+
+        const updatedAttachedBlock = ids.includes(
+          oldState.attachedBlock?.toString() || '',
+        )
+          ? oldState.attachedBlock
+          : null;
+
+        await this.model.updateOne(
+          { _id: new mongoose.Types.ObjectId(id) },
+          {
+            nextBlocks: updatedNextBlocks,
+            attachedBlock: updatedAttachedBlock,
+          },
+        );
+      }
+    }
+
+    for (const block of otherBlocks) {
+      if (ids.includes(block.attachedBlock?.toString())) {
+        await this.model.updateOne(
+          { _id: block.id },
+          {
+            attachedBlock: null,
+          },
+        );
+      }
+      if (block.nextBlocks.some((item) => ids.includes(item.toString()))) {
+        const updatedNextBlocks = block.nextBlocks.filter(
+          (nextBlock) => !ids.includes(nextBlock.toString()),
+        );
+        await this.model.updateOne(
+          { _id: block.id },
+          {
+            nextBlocks: updatedNextBlocks,
+          },
+        );
+      }
+    }
   }
 
   /**
