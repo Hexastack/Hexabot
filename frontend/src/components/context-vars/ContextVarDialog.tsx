@@ -69,7 +69,7 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     defaultValues: {
       name: data?.name || "",
       label: data?.label || "",
-      permanent: data?.permanent,
+      permanent: data?.permanent || false,
     },
   });
   const validationRules = {
