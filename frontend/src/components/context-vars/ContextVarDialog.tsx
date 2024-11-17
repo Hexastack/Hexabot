@@ -66,7 +66,11 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     formState: { errors },
     control,
   } = useForm<IContextVarAttributes>({
-    defaultValues: { name: data?.name || "", label: data?.label || "" },
+    defaultValues: {
+      name: data?.name || "",
+      label: data?.label || "",
+      permanent: data?.permanent || false,
+    },
   });
   const validationRules = {
     label: {
@@ -96,6 +100,7 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
       reset({
         label: data.label,
         name: data.name,
+        permanent: data.permanent,
       });
     } else {
       reset();
