@@ -11,19 +11,21 @@ import path from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 // eslint-disable-next-line import/order
 import { MailerModule } from '@nestjs-modules/mailer';
-// eslint-disable-next-line import/order
-import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+// eslint-disable-next-line import/order
+import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { CsrfGuard, CsrfModule } from '@tekuconcept/nestjs-csrf';
+import { redisStore } from 'cache-manager-redis-yet';
 import {
   AcceptLanguageResolver,
   I18nOptions,
   QueryResolver,
 } from 'nestjs-i18n';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { RedisClientOptions } from 'redis';
 
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
@@ -124,11 +126,23 @@ const i18nOptions: I18nOptions = {
     }),
     CsrfModule,
     I18nModule.forRoot(i18nOptions),
-    CacheModule.register({
-      isGlobal: true,
-      ttl: config.cache.ttl,
-      max: config.cache.max,
-    }),
+    config.cache.type === 'redis'
+      ? CacheModule.register<RedisClientOptions>({
+          isGlobal: true,
+          store: redisStore,
+          socket: {
+            host: config.cache.host,
+            port: config.cache.port,
+          },
+          ttl: config.cache.ttl,
+          max: config.cache.max,
+        })
+      : CacheModule.register({
+          isGlobal: true,
+          ttl: config.cache.ttl,
+          max: config.cache.max,
+        }),
+
     ...extraModules,
   ],
   controllers: [AppController],

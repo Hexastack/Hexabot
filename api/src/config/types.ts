@@ -19,7 +19,10 @@ type TLogLevel = 'log' | 'fatal' | 'error' | 'warn' | 'debug' | 'verbose';
 type TCacheConfig = {
   ttl: number;
   max: number;
-} & { type: 'memory' };
+  host: string;
+  port: number;
+  type: 'memory' | 'redis';
+};
 
 export type Config = {
   i18n: { translationFilename: string };
