@@ -21,7 +21,8 @@ type TCacheConfig = {
   max: number;
   host: string;
   port: number;
-} & { type: 'memory' | 'redis' };
+  type: 'memory' | 'redis';
+};
 
 export type Config = {
   i18n: { translationFilename: string };

@@ -132,7 +132,7 @@ export const config: Config = {
     type: process.env.REDIS_ENABLED === 'true' ? 'redis' : 'memory',
     ttl: 60 * 1000, // Milliseconds
     max: 100, // Maximum number of items in cache (defaults to 100)
-    host: process.env.REDIS_HOST,
+    host: process.env.REDIS_HOST || 'redis',
     port: parseInt(process.env.REDIS_PORT || '6379'),
   },
   mongo: {
