@@ -172,6 +172,15 @@ export abstract class BaseRepository<
       );
     });
 
+    hooks?.updateMany.post.execute(async function (updated: any) {
+      const query = this as Query<D, D, unknown, T, 'updateMany'>;
+      await repository.postUpdateMany(query, updated);
+      repository.emitter.emit(
+        repository.getEventName(EHook.postUpdateMany),
+        updated,
+      );
+    });
+
     hooks?.findOneAndUpdate.post.execute(async function (
       updated: HydratedDocument<T>,
     ) {
@@ -394,6 +403,13 @@ export abstract class BaseRepository<
     _query: Query<D, D, unknown, T, 'updateMany'>,
     _criteria: TFilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
+  ) {
+    // Nothing ...
+  }
+
+  async postUpdateMany(
+    _query: Query<D, D, unknown, T, 'updateMany'>,
+    _updated: any,
   ) {
     // Nothing ...
   }

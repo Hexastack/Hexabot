@@ -49,7 +49,7 @@ export const useUpdateMany = <
       ids: string[];
       payload: Partial<TAttr>;
     }) => {
-      const result = await api.UpdateMany(ids, payload);
+      const result = await api.updateMany(ids, payload);
 
       queryClient.removeQueries({
         predicate: ({ queryKey }) => {

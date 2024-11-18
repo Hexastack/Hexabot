@@ -90,27 +90,24 @@ export class BlockRepository extends BaseRepository<
       'findOneAndUpdate'
     >,
     criteria: TFilterQuery<Block>,
-    _updates:
+    updates:
       | UpdateWithAggregationPipeline
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const updates: BlockUpdateDto = _updates?.['$set'];
-    if (updates?.category) {
+    const update: BlockUpdateDto = updates?.['$set'];
+    if (update?.category && criteria._id) {
       const movedBlockId = criteria._id;
 
       // Find and update blocks that reference the moved block
       await this.model.updateMany(
-        { nextBlocks: movedBlockId },
-        { $pull: { nextBlocks: movedBlockId } },
-      );
-
-      await this.model.updateMany(
         { attachedBlock: movedBlockId },
-        { $set: { attachedBlock: null } },
+        { $set: { attachedBlock: null }, $pull: { nextBlocks: movedBlockId } },
       );
+    } else if (update?.category && !criteria._id) {
+      throw new Error('Criteria must include a valid id to update category.');
     }
 
-    this.checkDeprecatedAttachmentUrl(updates);
+    this.checkDeprecatedAttachmentUrl(update);
   }
 
   /**
@@ -129,68 +126,70 @@ export class BlockRepository extends BaseRepository<
       'updateMany',
       Record<string, never>
     >,
-    _criteria: TFilterQuery<Block>,
-    _updates: UpdateQuery<Document<Block, any, any>>,
+    criteria: TFilterQuery<Block>,
+    updates: UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const ids: string[] = _criteria._id?.$in || [];
-    const objIds = ids.map((b) => {
-      return new mongoose.Types.ObjectId(b);
-    });
-    const category: string = _updates.$set.category;
-    const objCategory = new mongoose.Types.ObjectId(category);
-    const otherBlocks = await this.model.find({
-      _id: { $nin: objIds },
-      category: { $ne: objCategory },
-      $or: [
-        { attachedBlock: { $in: objIds } },
-        { nextBlocks: { $in: objIds } },
-      ],
-    });
-
-    for (const id of ids) {
-      const oldState = await this.model.findOne({
-        _id: new mongoose.Types.ObjectId(id),
+    if (criteria._id?.$in && updates?.$set?.category) {
+      const ids: string[] = criteria._id?.$in || [];
+      const objIds = ids.map((b) => {
+        return new mongoose.Types.ObjectId(b);
       });
-      if (oldState.category.toString() !== category) {
-        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
-          ids.includes(nextBlock.toString()),
-        );
+      const category: string = updates.$set.category;
+      const objCategory = new mongoose.Types.ObjectId(category);
+      const otherBlocks = await this.model.find({
+        _id: { $nin: objIds },
+        category: { $ne: objCategory },
+        $or: [
+          { attachedBlock: { $in: objIds } },
+          { nextBlocks: { $in: objIds } },
+        ],
+      });
 
-        const updatedAttachedBlock = ids.includes(
-          oldState.attachedBlock?.toString() || '',
-        )
-          ? oldState.attachedBlock
-          : null;
+      for (const id of ids) {
+        const oldState = await this.model.findOne({
+          _id: new mongoose.Types.ObjectId(id),
+        });
+        if (oldState.category.toString() !== category) {
+          const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+            ids.includes(nextBlock.toString()),
+          );
 
-        await this.model.updateOne(
-          { _id: new mongoose.Types.ObjectId(id) },
-          {
-            nextBlocks: updatedNextBlocks,
-            attachedBlock: updatedAttachedBlock,
-          },
-        );
+          const updatedAttachedBlock = ids.includes(
+            oldState.attachedBlock?.toString() || '',
+          )
+            ? oldState.attachedBlock
+            : null;
+
+          await this.model.updateOne(
+            { _id: new mongoose.Types.ObjectId(id) },
+            {
+              nextBlocks: updatedNextBlocks,
+              attachedBlock: updatedAttachedBlock,
+            },
+          );
+        }
       }
-    }
 
-    for (const block of otherBlocks) {
-      if (ids.includes(block.attachedBlock?.toString())) {
-        await this.model.updateOne(
-          { _id: block.id },
-          {
-            attachedBlock: null,
-          },
-        );
-      }
-      if (block.nextBlocks.some((item) => ids.includes(item.toString()))) {
-        const updatedNextBlocks = block.nextBlocks.filter(
-          (nextBlock) => !ids.includes(nextBlock.toString()),
-        );
-        await this.model.updateOne(
-          { _id: block.id },
-          {
-            nextBlocks: updatedNextBlocks,
-          },
-        );
+      for (const block of otherBlocks) {
+        if (ids.includes(block.attachedBlock?.toString())) {
+          await this.model.updateOne(
+            { _id: block.id },
+            {
+              attachedBlock: null,
+            },
+          );
+        }
+        if (block.nextBlocks.some((item) => ids.includes(item.toString()))) {
+          const updatedNextBlocks = block.nextBlocks.filter(
+            (nextBlock) => !ids.includes(nextBlock.toString()),
+          );
+          await this.model.updateOne(
+            { _id: block.id },
+            {
+              nextBlocks: updatedNextBlocks,
+            },
+          );
+        }
       }
     }
   }
