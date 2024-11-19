@@ -11,7 +11,10 @@ import { Injectable } from '@nestjs/common';
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { WithUrl } from '@/chat/schemas/types/attachment';
-import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
+import {
+  ContentElement,
+  StdOutgoingListMessage,
+} from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
@@ -57,10 +60,10 @@ export class ContentService extends BaseService<
    *
    * @return A list of attachment IDs.
    */
-  getAttachmentIds(contents: Content[], attachmentFieldName: string) {
+  getAttachmentIds(contents: ContentElement[], attachmentFieldName: string) {
     return contents.reduce((acc, content) => {
-      if (attachmentFieldName in content.dynamicFields) {
-        const attachment = content.dynamicFields[attachmentFieldName];
+      if (attachmentFieldName in content) {
+        const attachment = content[attachmentFieldName];
 
         if (
           typeof attachment === 'object' &&
@@ -84,16 +87,16 @@ export class ContentService extends BaseService<
   /**
    * Populates attachment fields within content entities with detailed attachment information.
    *
-   * @param contents - An array of content entities.
+   * @param elements - An array of content entities.
    * @param attachmentFieldName - The name of the attachment field to populate.
    *
    * @return A list of content with populated attachment data.
    */
   async populateAttachments(
-    contents: Content[],
+    elements: ContentElement[],
     attachmentFieldName: string,
-  ): Promise<Content[]> {
-    const attachmentIds = this.getAttachmentIds(contents, attachmentFieldName);
+  ): Promise<ContentElement[]> {
+    const attachmentIds = this.getAttachmentIds(elements, attachmentFieldName);
 
     if (attachmentIds.length > 0) {
       const attachments = await this.attachmentService.find({
@@ -107,8 +110,8 @@ export class ContentService extends BaseService<
         },
         {} as { [key: string]: WithUrl<Attachment> },
       );
-      const populatedContents = contents.map((content) => {
-        const attachmentField = content.dynamicFields[attachmentFieldName];
+      const populatedContents = elements.map((content) => {
+        const attachmentField = content[attachmentFieldName];
         if (
           typeof attachmentField === 'object' &&
           'attachment_id' in attachmentField.payload
@@ -116,17 +119,14 @@ export class ContentService extends BaseService<
           const attachmentId = attachmentField?.payload?.attachment_id;
           return {
             ...content,
-            dynamicFields: {
-              ...content.dynamicFields,
-              [attachmentFieldName]: {
-                type: attachmentField.type,
-                payload: {
-                  ...(attachmentsById[attachmentId] || attachmentField.payload),
-                  url: Attachment.getAttachmentUrl(
-                    attachmentId,
-                    attachmentsById[attachmentId].name,
-                  ),
-                },
+            [attachmentFieldName]: {
+              type: attachmentField.type,
+              payload: {
+                ...(attachmentsById[attachmentId] || attachmentField.payload),
+                url: Attachment.getAttachmentUrl(
+                  attachmentId,
+                  attachmentsById[attachmentId].name,
+                ),
               },
             },
           };
@@ -136,7 +136,7 @@ export class ContentService extends BaseService<
       });
       return populatedContents;
     }
-    return contents;
+    return elements;
   }
 
   /**
@@ -175,21 +175,15 @@ export class ContentService extends BaseService<
           limit,
           sort: ['createdAt', 'desc'],
         });
+        const elements = contents.map(Content.toElement);
         const attachmentFieldName = options.fields.image_url;
         if (attachmentFieldName) {
           // Populate attachment when there's an image field
-          const populatedContents = await this.populateAttachments(
-            contents,
-            attachmentFieldName,
-          );
-          const flatContent = populatedContents.map((content) => ({
-            ...content,
-            ...content.dynamicFields,
-            dynamicFields: undefined,
-          }));
-
           return {
-            elements: flatContent,
+            elements: await this.populateAttachments(
+              elements,
+              attachmentFieldName,
+            ),
             pagination: {
               total,
               skip,
@@ -198,7 +192,7 @@ export class ContentService extends BaseService<
           };
         }
         return {
-          elements: contents,
+          elements,
           pagination: {
             total,
             skip,

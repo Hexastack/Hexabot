@@ -31,6 +31,7 @@ import { WithUrl } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
+  ContentElement,
   FileType,
   IncomingMessage,
   OutgoingMessage,
@@ -963,7 +964,10 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns An array of elements object
    */
-  _formatElements(data: any[], options: BlockOptions): Web.MessageElement[] {
+  _formatElements(
+    data: ContentElement[],
+    options: BlockOptions,
+  ): Web.MessageElement[] {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
     }

@@ -442,9 +442,7 @@ describe('BlockService', () => {
         { status: true, entity: contentType.id },
         { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = elements.map((element) =>
-        Content.flatDynamicFields(element),
-      );
+      const flattenedElements = elements.map(Content.toElement);
       expect(result.format).toEqualPayload(
         blockProductListMock.options.content?.display,
       );
@@ -476,9 +474,7 @@ describe('BlockService', () => {
         { status: true, entity: contentType.id },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = elements.map((element) =>
-        Content.flatDynamicFields(element),
-      );
+      const flattenedElements = elements.map(Content.toElement);
       expect(result.format).toEqual(
         blockProductListMock.options.content?.display,
       );
