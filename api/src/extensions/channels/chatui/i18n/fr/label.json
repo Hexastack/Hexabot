@@ -1,0 +1,12 @@
+{
+  "display_name": "Nom d'affichage",
+  "avatar": "Avatar",
+  "allowed_domains": "Domaines autorisés",
+  "persistent_menu": "Afficher le menu persistent",
+  "greeting_message": "Message de bienvenue",
+  "show_emoji": "Activer le sélecteur d'Emojis",
+  "show_file": "Activer l'upload de fichiers",
+  "show_location": "Activer le partage de géolocalisation",
+  "allowed_upload_size": "Taille maximale de téléchargement (en octets)",
+  "allowed_upload_types": "Types MIME autorisés pour le téléchargement (séparés par des virgules)"
+}
