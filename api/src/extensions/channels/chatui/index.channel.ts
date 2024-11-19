@@ -10,7 +10,6 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { compareSync } from 'bcryptjs';
 import { Request, Response } from 'express';
-import Joi from 'joi';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
@@ -40,34 +39,6 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { CHATUI_CHANNEL_NAME } from './settings';
 import { ChatUiWeb } from './types';
-
-// Joi schema for validation
-const signUpSchema = Joi.object({
-  type: Joi.string().equal('sign_up'),
-  data: Joi.object({
-    email: Joi.string().email().required().messages({
-      'string.email': 'Invalid email address',
-      'any.required': 'Email is required',
-    }),
-    password: Joi.string().min(8).required().messages({
-      'string.min': 'Password must be at least 8 characters long',
-      'any.required': 'Password is required',
-    }),
-  }),
-});
-
-const signInSchema = Joi.object({
-  type: Joi.string().equal('sign_in'),
-  data: Joi.object({
-    email: Joi.string().email().required().messages({
-      'string.email': 'Invalid email address',
-      'any.required': 'Email is required',
-    }),
-    password: Joi.string().required().messages({
-      'any.required': 'Password is required',
-    }),
-  }),
-});
 
 @Injectable()
 export default class ChatUiChannelHandler extends BaseWebChannelHandler<
@@ -119,11 +90,11 @@ export default class ChatUiChannelHandler extends BaseWebChannelHandler<
   private async signUp(req: SocketRequest, res: SocketResponse) {
     const payload = req.body as ChatUiWeb.SignUpRequest;
     // Validate the request body
-    const { error } = signUpSchema.validate(payload, { abortEarly: false });
-    if (error) {
+    const { error, success } = ChatUiWeb.signUpRequestSchema.safeParse(payload);
+    if (!success) {
       return res
         .status(400)
-        .json({ errors: error.details.map((detail) => detail.message) });
+        .json({ errors: error.errors.map((detail) => detail.message) });
     }
 
     try {
@@ -170,11 +141,11 @@ export default class ChatUiChannelHandler extends BaseWebChannelHandler<
   private async signIn(req: SocketRequest, res: SocketResponse) {
     const payload = req.body as ChatUiWeb.SignInRequest;
     // Validate the request body
-    const { error } = signInSchema.validate(payload, { abortEarly: false });
+    const { error } = ChatUiWeb.signInSchema.safeParse(payload);
     if (error) {
       return res
         .status(400)
-        .json({ errors: error.details.map((detail) => detail.message) });
+        .json({ errors: error.errors.map((detail) => detail.message) });
     }
     const { email, password } = payload.data;
     try {
@@ -256,9 +227,9 @@ export default class ChatUiChannelHandler extends BaseWebChannelHandler<
       if (req.method === 'POST') {
         const payload = req.body as ChatUiWeb.Event;
         if (!profile) {
-          if (payload.type === ChatUiWeb.RequestType.sign_up) {
+          if (payload.type === 'sign_up') {
             return this.signUp(req, res);
-          } else if (payload.type === ChatUiWeb.RequestType.sign_in) {
+          } else if (payload.type === 'sign_in') {
             return this.signIn(req, res);
           }
         } else {

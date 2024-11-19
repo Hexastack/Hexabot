@@ -6,29 +6,35 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { z } from 'zod';
+
 import { Web } from '@/extensions/channels/web/types';
 
 export namespace ChatUiWeb {
-  export enum RequestType {
-    sign_up = 'sign_up',
-    sign_in = 'sign_in',
-  }
+  export const requestTypeSchema = z.enum(['sign_up', 'sign_in']);
 
-  export type SignUpRequest = {
-    type: RequestType.sign_up;
-    data: {
-      email: string;
-      password: string;
-    };
-  };
+  // Zod schema for sign-up validation
+  export const signUpRequestSchema = z.object({
+    type: z.literal('sign_up'),
+    data: z.object({
+      email: z.string().email({ message: 'Invalid email address' }),
+      password: z
+        .string()
+        .min(8, { message: 'Password must be at least 8 characters long' }),
+    }),
+  });
 
-  export type SignInRequest = {
-    type: RequestType.sign_in;
-    data: {
-      email: string;
-      password: string;
-    };
-  };
+  export type SignUpRequest = z.infer<typeof signUpRequestSchema>;
+
+  export const signInSchema = z.object({
+    type: z.literal('sign_in'),
+    data: z.object({
+      email: z.string().email({ message: 'Invalid email address' }),
+      password: z.string().min(1, { message: 'Password is required' }),
+    }),
+  });
+
+  export type SignInRequest = z.infer<typeof signInSchema>;
 
   export type Request = SignUpRequest | SignInRequest;
 
