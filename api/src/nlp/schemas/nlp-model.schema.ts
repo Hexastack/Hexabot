@@ -8,7 +8,7 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Type } from 'class-transformer';
-import { Schema as MongooseSchema, THydratedDocument } from 'mongoose';
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -87,7 +87,7 @@ export class NlpModelFull extends NlpModelStub {
   experiments: NlpExperiment[];
 }
 
-export type NlpModelDocument = THydratedDocument<NlpModel>;
+export type NlpModelDocument = HydratedDocument<NlpModel>;
 
 export const NlpModelModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpModel.name,

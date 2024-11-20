@@ -9,7 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, TFilterQuery } from 'mongoose';
+import { Document, FilterQuery, Model, Query } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
@@ -56,7 +56,7 @@ export class NlpParametersRepository extends BaseRepository<
       NlpParameters,
       'deleteOne' | 'deleteMany'
     >,
-    criteria: TFilterQuery<NlpParameters>,
+    criteria: FilterQuery<NlpParameters>,
   ): Promise<void> {
     {
       if (criteria._id) {
