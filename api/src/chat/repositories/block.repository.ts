@@ -131,11 +131,12 @@ export class BlockRepository extends BaseRepository<
   ): Promise<void> {
     if (criteria._id?.$in && updates?.$set?.category) {
       const ids: string[] = criteria._id?.$in || [];
-      const objIds = ids.map((b) => {
-        return new mongoose.Types.ObjectId(b);
-      });
       const category: string = updates.$set.category;
-      const objCategory = new mongoose.Types.ObjectId(category);
+
+      // Step 1: Map IDs and Category
+      const { objIds, objCategory } = this.mapIdsAndCategory(ids, category);
+
+      // Step 2: Find other blocks
       const otherBlocks = await this.model.find({
         _id: { $nin: objIds },
         category: { $ne: objCategory },
@@ -145,51 +146,77 @@ export class BlockRepository extends BaseRepository<
         ],
       });
 
-      for (const id of ids) {
-        const oldState = await this.model.findOne({
-          _id: new mongoose.Types.ObjectId(id),
-        });
-        if (oldState.category.toString() !== category) {
-          const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
-            ids.includes(nextBlock.toString()),
-          );
+      // Step 3: Update blocks in the provided scope
+      await this.updateBlocksInScope(objCategory, ids);
 
-          const updatedAttachedBlock = ids.includes(
-            oldState.attachedBlock?.toString() || '',
-          )
-            ? oldState.attachedBlock
-            : null;
+      // Step 4: Update external blocks
+      await this.updateExternalBlocks(otherBlocks, objIds);
+    }
+  }
 
-          await this.model.updateOne(
-            { _id: new mongoose.Types.ObjectId(id) },
-            {
-              nextBlocks: updatedNextBlocks,
-              attachedBlock: updatedAttachedBlock,
-            },
-          );
-        }
+  private mapIdsAndCategory(
+    ids: string[],
+    category: string,
+  ): {
+    objIds: mongoose.Types.ObjectId[];
+    objCategory: mongoose.Types.ObjectId;
+  } {
+    const objIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+    const objCategory = new mongoose.Types.ObjectId(category);
+    return { objIds, objCategory };
+  }
+
+  private async updateBlocksInScope(
+    objCategory: mongoose.Types.ObjectId,
+    ids: string[],
+  ): Promise<void> {
+    for (const id of ids) {
+      const oldState = await this.model.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
+      if (oldState.category.toString() !== objCategory.toString()) {
+        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+          ids.includes(nextBlock.toString()),
+        );
+
+        const updatedAttachedBlock = ids.includes(
+          oldState.attachedBlock?.toString() || '',
+        )
+          ? oldState.attachedBlock
+          : null;
+
+        await this.model.updateOne(
+          { _id: new mongoose.Types.ObjectId(id) },
+          {
+            nextBlocks: updatedNextBlocks,
+            attachedBlock: updatedAttachedBlock,
+          },
+        );
+      }
+    }
+  }
+
+  private async updateExternalBlocks(
+    otherBlocks,
+    objIds: Types.ObjectId[],
+  ): Promise<void> {
+    for (const block of otherBlocks) {
+      if (
+        objIds.some((id) => id.toString() === block.attachedBlock?.toString())
+      ) {
+        await this.model.updateOne({ _id: block.id }, { attachedBlock: null });
       }
 
-      for (const block of otherBlocks) {
-        if (ids.includes(block.attachedBlock?.toString())) {
-          await this.model.updateOne(
-            { _id: block.id },
-            {
-              attachedBlock: null,
-            },
-          );
-        }
-        if (block.nextBlocks.some((item) => ids.includes(item.toString()))) {
-          const updatedNextBlocks = block.nextBlocks.filter(
-            (nextBlock) => !ids.includes(nextBlock.toString()),
-          );
-          await this.model.updateOne(
-            { _id: block.id },
-            {
-              nextBlocks: updatedNextBlocks,
-            },
-          );
-        }
+      const updatedNextBlocks = block.nextBlocks.filter(
+        (nextBlock) =>
+          !objIds.some((id) => id.toString() === nextBlock.toString()),
+      );
+
+      if (updatedNextBlocks.length !== block.nextBlocks.length) {
+        await this.model.updateOne(
+          { _id: block.id },
+          { nextBlocks: updatedNextBlocks },
+        );
       }
     }
   }

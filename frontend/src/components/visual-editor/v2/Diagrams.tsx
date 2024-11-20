@@ -6,12 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Add } from "@mui/icons-material";
+import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import MoveIcon from "@mui/icons-material/Swipe";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
@@ -622,7 +621,7 @@ const Diagrams = () => {
               <Button
                 size="small"
                 variant="contained"
-                startIcon={<MoveIcon />}
+                startIcon={<MoveUp />}
                 onClick={handleMoveButton}
                 disabled={!selectedBlockId || selectedBlockId.length !== 24}
               >
