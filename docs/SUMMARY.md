@@ -48,10 +48,13 @@
 
 ## FAQ
 
+* [How can I deploy my Hexabot Project?](faq/how-can-i-deploy-my-hexabot-project.md)
 * [How can I add the Chatbot Widget to my Website?](faq/how-can-i-add-the-chatbot-widget-to-my-website.md)
 
 ## Developer Guide
 
+* [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
+* [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
 * [Contributers Installation Guide](developer-guide/contributers-installation-guide.md)
 * [Hexabot UI Admin Panel](developer-guide/hexabot-ui-admin-panel.md)

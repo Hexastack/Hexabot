@@ -8,21 +8,17 @@ icon: laptop-arrow-down
 
 To ensure Hexabot runs smoothly, you'll need the following:
 
-* **Docker:** We recommend using Docker to start the app since multiple services are required (MongoDB, Nginx, etc.). All the necessary Docker Compose files are located in the docker folder.
+* **Docker:** We recommend using Docker to start the app since multiple services are required (MongoDB, Nginx, etc.). All the necessary Docker Compose files are located in the **docker** folder.
 
-{% hint style="info" %}
-Check Docker official guide on how to install Docker on your system [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)&#x20;
-{% endhint %}
+{% content-ref url="../developer-guide/setting-up-docker-for-development-and-production.md" %}
+[setting-up-docker-for-development-and-production.md](../developer-guide/setting-up-docker-for-development-and-production.md)
+{% endcontent-ref %}
 
-* **Node.js:** For development purposes, ensure you have Node.js >= v18.17.0 installed. We recommend using nvm (Node Version Manager) to easily manage and update your Node.js versions.
+* **Node.js:** For development purposes, ensure you have Node.js >= v18.17.0 installed. We recommend using nvm (Node Version Manager) to easily manage and update your Node.js versions.&#x20;
 
-{% hint style="info" %}
-To **install** or **update** nvm, you should run the [install script](https://github.com/nvm-sh/nvm/blob/v0.40.1/install.sh). To do that, you may either download and run the script manually, or use the following cURL or Wget command:
-
-_curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash_&#x20;
-
-Check NVM official documentation for more details :[https://github.com/nvm-sh/nvm?tab=readme-ov-file#node-version-manager---](https://github.com/nvm-sh/nvm?tab=readme-ov-file#node-version-manager---)&#x20;
-{% endhint %}
+{% content-ref url="../developer-guide/setup-node.js-with-nvm.md" %}
+[setup-node.js-with-nvm.md](../developer-guide/setup-node.js-with-nvm.md)
+{% endcontent-ref %}
 
 <details>
 
@@ -43,25 +39,25 @@ Learn more : [https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-contai
 1. **Install Hexabot CLI globally to have easy access to its commands:**
 
 ```
-$ npm install -g hexabot-cli
+npm install -g hexabot-cli
 ```
 
 2. **Create a new project**:
 
 ```
-$ hexabot create my-chatbot
+hexabot create my-chatbot
 ```
 
 3. **Navigate to your project folder**
 
 ```
-$ cd my-chatbot/
+cd my-chatbot/
 ```
 
 4. **Install dependencies**:
 
 ```
-$ npm i
+npm i
 ```
 
 5. **Environment Setup:**&#x20;
@@ -69,7 +65,7 @@ $ npm i
 To configure the environment variables, use the following command:
 
 ```
-$ hexabot init
+hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
@@ -77,7 +73,7 @@ This will copy the `.env.example` file to `.env` in the `./docker` directory if 
 6. **Run in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
 ```
-$ hexabot dev --services nlu,ollama
+hexabot dev --services nlu,ollama
 ```
 
 {% hint style="info" %}
