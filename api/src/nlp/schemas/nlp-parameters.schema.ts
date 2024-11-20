@@ -8,11 +8,14 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
-import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
-import { TFilterPopulateFields } from '@/utils/types/filter.types';
+import {
+  TFilterPopulateFields,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
 import { NlpExperiment } from './nlp-experiment.schema';
 
@@ -47,7 +50,7 @@ export class NlpParametersFull extends NlpParametersStub {
   experiment: NlpExperiment;
 }
 
-export type NlpParametersDocument = HydratedDocument<NlpParameters>;
+export type NlpParametersDocument = THydratedDocument<NlpParameters>;
 
 export const NlpParametersModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpParameters.name,
