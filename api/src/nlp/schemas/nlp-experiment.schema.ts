@@ -14,7 +14,9 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
+import { NlpMetrics } from './nlp-metrics.schema';
 import { NlpModel } from './nlp-model.schema';
+import { NlpParameters } from './nlp-parameters.schema';
 
 @Schema({ timestamps: true })
 export class NlpExperimentStub extends BaseSchema {
@@ -59,6 +61,20 @@ export class NlpExperimentStub extends BaseSchema {
   })
   model: unknown;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'NlpMetrics',
+    required: true,
+  })
+  metrics: unknown;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'NlpParameters',
+    required: true,
+  })
+  parameters: unknown;
+
   /**
    * Retrieves all completed experiments from the provided array.
    * @param experiments - Array of experiments
@@ -92,12 +108,24 @@ export class NlpExperimentStub extends BaseSchema {
 export class NlpExperiment extends NlpExperimentStub {
   @Transform(({ obj }) => obj.model.toString())
   model: string;
+
+  @Transform(({ obj }) => obj.metrics.toString())
+  metrics: string;
+
+  @Transform(({ obj }) => obj.parameters.toString())
+  parameters: string;
 }
 
 @Schema({ timestamps: true })
 export class NlpExperimentFull extends NlpExperimentStub {
   @Type(() => NlpModel)
   model: NlpModel;
+
+  @Type(() => NlpMetrics)
+  metrics: NlpMetrics;
+
+  @Type(() => NlpParameters)
+  parameters: NlpParameters;
 }
 
 export type NlpExperimentDocument = THydratedDocument<NlpExperiment>;
@@ -114,4 +142,8 @@ export type NlpExperimentPopulate = keyof TFilterPopulateFields<
   NlpExperimentStub
 >;
 
-export const NLP_EXPERIMENT_POPULATE: NlpExperimentPopulate[] = ['model'];
+export const NLP_EXPERIMENT_POPULATE: NlpExperimentPopulate[] = [
+  'model',
+  'parameters',
+  'metrics',
+];

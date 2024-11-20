@@ -7,14 +7,14 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { Schema as MongooseSchema, THydratedDocument } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { TFilterPopulateFields } from '@/utils/types/filter.types';
 
-import { NlpExperiment, NlpExperimentModel } from './nlp-experiment.schema';
+import { NlpExperiment } from './nlp-experiment.schema';
 
 @Schema({ timestamps: true })
 export class NlpModelStub extends BaseSchema {
@@ -79,10 +79,7 @@ export class NlpModelStub extends BaseSchema {
 }
 
 @Schema({ timestamps: true })
-export class NlpModel extends NlpModelStub {
-  @Transform(({ obj }) => obj.experiments.toArray())
-  experiments: string[];
-}
+export class NlpModel extends NlpModelStub {}
 
 @Schema({ timestamps: true })
 export class NlpModelFull extends NlpModelStub {
@@ -97,7 +94,7 @@ export const NlpModelModel: ModelDefinition = LifecycleHookManager.attach({
   schema: SchemaFactory.createForClass(NlpModelStub),
 });
 
-NlpExperimentModel.schema.virtual('experiments', {
+NlpModelModel.schema.virtual('experiments', {
   ref: 'NlpExperiment',
   localField: '_id',
   foreignField: 'model',
@@ -110,4 +107,4 @@ export type NlpModelPopulate = keyof TFilterPopulateFields<
   NlpModelStub
 >;
 
-// export const NLP_MODEL_POPULATE: NlpModelPopulate[] = ['experiments'];
+export const NLP_MODEL_POPULATE: NlpModelPopulate[] = []['experiments'];

@@ -91,6 +91,12 @@ export const NlpMetricsModel: ModelDefinition = {
   schema: SchemaFactory.createForClass(NlpMetricsStub),
 };
 
+NlpMetricsModel.schema.virtual('experiment', {
+  ref: 'NlpMetrics',
+  localField: '_id',
+  foreignField: 'metrics',
+});
+
 export default NlpMetricsModel.schema;
 
 export type NlpMetricsPopulate = keyof TFilterPopulateFields<
@@ -98,7 +104,7 @@ export type NlpMetricsPopulate = keyof TFilterPopulateFields<
   NlpMetricsStub
 >;
 
-export const NLP_SAMPLE_ENTITY_POPULATE: NlpMetricsPopulate[] = [
+export const NLP_METRICS_POPULATE: NlpMetricsPopulate[] = [
   'model',
   'experiment',
 ];

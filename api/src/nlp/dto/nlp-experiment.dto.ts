@@ -10,7 +10,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
-  IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
@@ -25,18 +24,18 @@ export class NlpExperimentCreateDto {
 
   @ApiPropertyOptional({ type: String })
   @IsString()
-  @IsOptional() // Optional since it is not required in the schema
+  @IsOptional()
   run_name?: string;
 
   @ApiProperty({ type: Number })
   @IsNumber()
-  @IsNotEmpty()
-  current_version: number;
+  @IsOptional()
+  current_version?: number;
 
   @ApiProperty({ type: Number })
   @IsNumber()
-  @IsNotEmpty()
-  duration: number;
+  @IsOptional()
+  duration?: number;
 
   @ApiPropertyOptional({ type: Object, default: {} })
   @IsObject()
@@ -45,8 +44,8 @@ export class NlpExperimentCreateDto {
 
   @ApiProperty({ type: Boolean, default: false })
   @IsBoolean()
-  @IsNotEmpty()
-  isCompleted: boolean;
+  @IsOptional()
+  isCompleted?: boolean;
 
   @ApiPropertyOptional({ type: [String], default: [] })
   @IsArray()
