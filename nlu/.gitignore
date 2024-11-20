@@ -21,3 +21,5 @@ Icon?
 # IDEs
 *.swp
 .env
+*.pkl
+mlruns

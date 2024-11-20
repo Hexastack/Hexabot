@@ -23,8 +23,35 @@ services:
       retries: 5
       start_period: 10s
 
+  mlflow_postgres:
+    image: bitnami/postgresql
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mlflow_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_DB_PORT}:${POSTGRES_DB_PORT}
+
+  mlflow_server:
+    restart: always
+    image: hexastack/hexabot-mlflow-server:latest
+    container_name: mlflow_server
+    environment:
+      - BACKEND_STORE_URI=${BACKEND_STORE_URI}  # Connection string to Postgres
+      - ARTIFACT_STORE_URI=${ARTIFACT_STORE_URI}  # Local directory for storing artifacts
+    ports:
+      - ${MLFLOW_SERVER_PORT}:5000  # Expose MLflow UI
+    volumes:
+      - mlruns:/mlruns  # Mount local directory for MLflow artifacts
+    command: mlflow server --backend-store-uri postgresql://postgres:postgres@mlflow_postgres:5432/mlflow_db --default-artifact-root ./mlruns --host 0.0.0.0 --port 5000
+
 volumes:
   nlu-data:
+  postgres_data:
+  mlruns:
 
 networks:
   nlu-network:

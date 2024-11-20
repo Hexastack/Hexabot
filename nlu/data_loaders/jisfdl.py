@@ -4,7 +4,6 @@ import json
 import numpy as np
 from transformers import PreTrainedTokenizerFast, PreTrainedTokenizer
 
-
 import boilerplate as tfbp
 from utils.json_helper import JsonHelper
 
@@ -25,6 +24,8 @@ class JointRawData(object):
 
     def __repr__(self):
         return str(json.dumps(self.__dict__, indent=2))  # type: ignore
+
+
 ##
 # JISFDL : Joint Intent and Slot Filling Model Data Loader
 ##
@@ -54,7 +55,7 @@ class JISFDL(tfbp.DataLoader):
 
     def encode_slots(self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast],
                      all_slots: List[Dict[str, str]], all_texts: List[str],
-                     slot_map: Dict[str, int],  max_len: int):
+                     slot_map: Dict[str, int], max_len: int):
 
         encoded_slots = np.zeros(
             shape=(len(all_texts), max_len), dtype=np.int32)
@@ -89,7 +90,7 @@ class JISFDL(tfbp.DataLoader):
             # now add to encoded_slots
             # the first and the last elements
             # in encoded text are special characters
-            encoded_slots[idx, 1:len(enc)+1] = enc
+            encoded_slots[idx, 1:len(enc) + 1] = enc
 
         return encoded_slots
 
@@ -105,7 +106,9 @@ class JISFDL(tfbp.DataLoader):
         if not bool(lang):
             examples = all_examples
         else:
-            examples = filter(lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']), all_examples)
+            examples = filter(
+                lambda exp: any(e['entity'] == 'language' and e['value'] == lang for e in exp['entities']),
+                all_examples)
 
         # Parse raw data
         for exp in examples:
@@ -126,7 +129,7 @@ class JISFDL(tfbp.DataLoader):
 
         return intents
 
-    def __call__(self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], model_params = None):
+    def __call__(self, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], model_params=None):
         # I have already transformed the train and test datasets to the new format using
         # the transform to new hidden method.
 
@@ -143,7 +146,8 @@ class JISFDL(tfbp.DataLoader):
         else:
             raise ValueError("Unknown method!")
 
-    def _transform_dataset(self, dataset: List[JointRawData], tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], model_params = None):
+    def _transform_dataset(self, dataset: List[JointRawData],
+                           tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast], model_params=None):
         # We have to encode the texts using the tokenizer to create tensors for training
         # the classifier.
         texts = [d.text for d in dataset]
@@ -167,7 +171,7 @@ class JISFDL(tfbp.DataLoader):
                 intent_names = model_params["intent_names"]
             else:
                 intent_names = None
-            
+
             if "slot_names" in model_params:
                 slot_names = model_params["slot_names"]
             else:
@@ -201,15 +205,14 @@ class JISFDL(tfbp.DataLoader):
         max_len = len(encoded_texts["input_ids"][0])  # type: ignore
         all_slots = [td.slots for td in dataset]
         all_texts = [td.text for td in dataset]
-        
+
         if slot_map:
             encoded_slots = self.encode_slots(tokenizer,
-                                          all_slots, all_texts, slot_map, max_len)
+                                              all_slots, all_texts, slot_map, max_len)
         else:
             encoded_slots = None
 
         return encoded_texts, encoded_intents, encoded_slots, intent_names, slot_names
-
 
     def encode_text(self, text: str, tokenizer: Union[PreTrainedTokenizer, PreTrainedTokenizerFast]):
         return self.encode_texts([text], tokenizer)

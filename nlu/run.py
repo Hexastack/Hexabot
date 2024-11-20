@@ -96,7 +96,7 @@ if __name__ == "__main__":
     if os.path.isfile(os.path.join(model.save_dir, "checkpoint")):
         model.restore()
     else:
-        model.save()
+        model.save_model()
 
     # Run the specified model method.
     if FLAGS.method not in Model._methods:
