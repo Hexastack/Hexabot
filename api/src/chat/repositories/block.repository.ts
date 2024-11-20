@@ -94,22 +94,24 @@ export class BlockRepository extends BaseRepository<
       | UpdateWithAggregationPipeline
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
+    const movedBlock = await this.findOne(criteria);
+    if (!movedBlock) {
+      return;
+    }
     const update: BlockUpdateDto = updates?.['$set'];
-    if (update?.category && criteria._id) {
+    if (update?.category) {
       const movedBlockId = criteria._id;
 
       // Find and update blocks that reference the moved block
-      await this.model.updateMany(
+      await this.updateMany(
         { nextBlocks: movedBlockId },
         { $pull: { nextBlocks: movedBlockId } },
       );
 
-      await this.model.updateMany(
+      await this.updateMany(
         { attachedBlock: movedBlockId },
         { $set: { attachedBlock: null } },
       );
-    } else if (update?.category && !criteria._id) {
-      throw new Error('Criteria must include a valid id to update category.');
     }
 
     this.checkDeprecatedAttachmentUrl(update);
@@ -139,10 +141,11 @@ export class BlockRepository extends BaseRepository<
       const category: string = updates.$set.category;
 
       // Step 1: Map IDs and Category
-      const { objIds, objCategory } = this.mapIdsAndCategory(ids, category);
+      const objIds = ids.map((id) => new mongoose.Types.ObjectId(id));
+      const objCategory = new mongoose.Types.ObjectId(category);
 
       // Step 2: Find other blocks
-      const otherBlocks = await this.model.find({
+      const otherBlocks = await this.find({
         _id: { $nin: objIds },
         category: { $ne: objCategory },
         $or: [
@@ -152,76 +155,66 @@ export class BlockRepository extends BaseRepository<
       });
 
       // Step 3: Update blocks in the provided scope
-      await this.updateBlocksInScope(objCategory, ids);
+      await this.updateBlocksInScope(category, ids);
 
       // Step 4: Update external blocks
-      await this.updateExternalBlocks(otherBlocks, objIds);
+      await this.updateExternalBlocks(otherBlocks, ids);
     }
   }
 
-  mapIdsAndCategory(
-    ids: string[],
-    category: string,
-  ): {
-    objIds: mongoose.Types.ObjectId[];
-    objCategory: mongoose.Types.ObjectId;
-  } {
-    const objIds = ids.map((id) => new mongoose.Types.ObjectId(id));
-    const objCategory = new mongoose.Types.ObjectId(category);
-    return { objIds, objCategory };
-  }
-
-  async updateBlocksInScope(
-    objCategory: mongoose.Types.ObjectId,
-    ids: string[],
-  ): Promise<void> {
+  /**
+   * Updates blocks within a specified category scope.
+   * Ensures nextBlocks and attachedBlock are consistent with the provided IDs and category.
+   *
+   * @param category - The category
+   * @param ids - IDs representing the blocks to update.
+   * @returns A promise that resolves once all updates within the scope are complete.
+   */
+  async updateBlocksInScope(category: string, ids: string[]): Promise<void> {
     for (const id of ids) {
-      const oldState = await this.model.findOne({
-        _id: new mongoose.Types.ObjectId(id),
-      });
-      if (oldState.category.toString() !== objCategory.toString()) {
+      const oldState = await this.findOne(id);
+      if (oldState.category !== category) {
         const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
-          ids.includes(nextBlock.toString()),
+          ids.includes(nextBlock),
         );
 
-        const updatedAttachedBlock = ids.includes(
-          oldState.attachedBlock?.toString() || '',
-        )
+        const updatedAttachedBlock = ids.includes(oldState.attachedBlock || '')
           ? oldState.attachedBlock
           : null;
 
-        await this.model.updateOne(
-          { _id: new mongoose.Types.ObjectId(id) },
-          {
-            nextBlocks: updatedNextBlocks,
-            attachedBlock: updatedAttachedBlock,
-          },
-        );
+        await this.updateOne(id, {
+          nextBlocks: updatedNextBlocks,
+          attachedBlock: updatedAttachedBlock,
+        });
       }
     }
   }
 
+  /**
+   * Updates blocks outside the specified category scope by removing references to the provided IDs.
+   * Handles updates to both attachedBlock and nextBlocks.
+   *
+   * @param otherBlocks - An array of blocks outside the provided category scope.
+   * @param ids - An array of the Ids to disassociate.
+   * @returns A promise that resolves once all external block updates are complete.
+   */
   async updateExternalBlocks(
-    otherBlocks,
-    objIds: Types.ObjectId[],
+    otherBlocks: Block[],
+    ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      if (
-        objIds.some((id) => id.toString() === block.attachedBlock?.toString())
-      ) {
-        await this.model.updateOne({ _id: block.id }, { attachedBlock: null });
+      if (ids.includes(block.attachedBlock)) {
+        await this.updateOne(block.id, { attachedBlock: null });
       }
 
       const updatedNextBlocks = block.nextBlocks.filter(
-        (nextBlock) =>
-          !objIds.some((id) => id.toString() === nextBlock.toString()),
+        (nextBlock) => !ids.includes(nextBlock),
       );
 
-      if (updatedNextBlocks.length !== block.nextBlocks.length) {
-        await this.model.updateOne(
-          { _id: block.id },
-          { nextBlocks: updatedNextBlocks },
-        );
+      if (updatedNextBlocks.length > 0) {
+        await this.updateOne(block.id, {
+          $pull: { nextBlocks: updatedNextBlocks },
+        });
       }
     }
   }

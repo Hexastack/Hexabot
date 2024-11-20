@@ -343,7 +343,7 @@ export abstract class BaseRepository<
 
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
-    dto: D,
+    dto: UpdateQuery<D>,
   ): Promise<T> {
     const query = this.model.findOneAndUpdate<T>(
       {
@@ -359,7 +359,10 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.cls);
   }
 
-  async updateMany<D extends Partial<U>>(filter: TFilterQuery<T>, dto: D) {
+  async updateMany<D extends Partial<U>>(
+    filter: TFilterQuery<T>,
+    dto: UpdateQuery<D>,
+  ) {
     return await this.model.updateMany<T>(filter, {
       $set: dto,
     });
