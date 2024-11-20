@@ -265,7 +265,7 @@ export class BlockController extends BaseController<
   @Patch('bulk')
   async updateMany(@Body() body: { ids: string[]; payload: BlockUpdateDto }) {
     if (!body.ids || body.ids.length === 0) {
-      throw new BadRequestException('No IDs provided for ...');
+      throw new BadRequestException('No IDs provided  to perform the update');
     }
     const updates = await this.blockService.updateMany(
       {

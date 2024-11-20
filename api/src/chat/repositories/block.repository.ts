@@ -100,8 +100,13 @@ export class BlockRepository extends BaseRepository<
 
       // Find and update blocks that reference the moved block
       await this.model.updateMany(
+        { nextBlocks: movedBlockId },
+        { $pull: { nextBlocks: movedBlockId } },
+      );
+
+      await this.model.updateMany(
         { attachedBlock: movedBlockId },
-        { $set: { attachedBlock: null }, $pull: { nextBlocks: movedBlockId } },
+        { $set: { attachedBlock: null } },
       );
     } else if (update?.category && !criteria._id) {
       throw new Error('Criteria must include a valid id to update category.');
@@ -154,7 +159,7 @@ export class BlockRepository extends BaseRepository<
     }
   }
 
-  private mapIdsAndCategory(
+  mapIdsAndCategory(
     ids: string[],
     category: string,
   ): {
@@ -166,7 +171,7 @@ export class BlockRepository extends BaseRepository<
     return { objIds, objCategory };
   }
 
-  private async updateBlocksInScope(
+  async updateBlocksInScope(
     objCategory: mongoose.Types.ObjectId,
     ids: string[],
   ): Promise<void> {
@@ -196,7 +201,7 @@ export class BlockRepository extends BaseRepository<
     }
   }
 
-  private async updateExternalBlocks(
+  async updateExternalBlocks(
     otherBlocks,
     objIds: Types.ObjectId[],
   ): Promise<void> {
