@@ -6,10 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
 import mongoose, { Document } from 'mongoose';
 
+import { ContentElement } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -51,14 +52,14 @@ export class ContentStub extends BaseSchema {
   /**
    * Helper to return the internal url of this content.
    */
-  static getUrl(item: Content): string {
+  static getUrl(item: ContentElement): string {
     return new URL('/content/view/' + item.id, config.apiPath).toString();
   }
 
   /**
    * Helper that returns the relative chatbot payload for this content.
    */
-  static getPayload(item: Content): string {
+  static getPayload(item: ContentElement): string {
     return 'postback' in item ? (item.postback as string) : item.title;
   }
 }
@@ -68,12 +69,18 @@ export class Content extends ContentStub {
   @Transform(({ obj }) => obj.entity.toString())
   entity: string;
 
-  static flatDynamicFields(element: Content) {
-    Object.entries(element.dynamicFields).forEach(([key, value]) => {
-      element[key] = value;
-    });
-    element.dynamicFields = undefined;
-    return element;
+  /**
+   * Converts a content object to an element (A flat representation of a content)
+   *
+   * @param content
+   * @returns An object that has all dynamic fields accessible at top level
+   */
+  static toElement(content: Content): ContentElement {
+    return {
+      id: content.id,
+      title: content.title,
+      ...content.dynamicFields,
+    };
   }
 }
 

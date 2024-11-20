@@ -14,7 +14,10 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { FileType } from '@/chat/schemas/types/attachment';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
+import {
+  ContentElement,
+  OutgoingMessageFormat,
+} from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -159,7 +162,10 @@ describe('ContentService', () => {
       },
     ];
     it('should return all content attachment ids', () => {
-      const result = contentService.getAttachmentIds(contents, 'image');
+      const result = contentService.getAttachmentIds(
+        contents.map(Content.toElement),
+        'image',
+      );
       expect(result).toEqual(['123', '456']);
     });
 
@@ -172,22 +178,19 @@ describe('ContentService', () => {
   describe('populateAttachments', () => {
     it('should return populated content', async () => {
       const storeContents = await contentService.find({ title: /^store/ });
-      const populatedStoreContents: Content[] = await Promise.all(
-        storeContents.map(async (store) => {
-          const attachmentId = store.dynamicFields.image.payload.attachment_id;
+      const elements: ContentElement[] = await Promise.all(
+        storeContents.map(Content.toElement).map(async (store) => {
+          const attachmentId = store.image.payload.attachment_id;
           if (attachmentId) {
             const attachment = await attachmentService.findOne(attachmentId);
             if (attachment) {
               return {
                 ...store,
-                dynamicFields: {
-                  ...store.dynamicFields,
-                  image: {
-                    type: 'image',
-                    payload: {
-                      ...attachment,
-                      url: `http://localhost:4000/attachment/download/${attachment.id}/${attachment.name}`,
-                    },
+                image: {
+                  type: 'image',
+                  payload: {
+                    ...attachment,
+                    url: `http://localhost:4000/attachment/download/${attachment.id}/${attachment.name}`,
                   },
                 },
               };
@@ -197,10 +200,10 @@ describe('ContentService', () => {
         }),
       );
       const result = await contentService.populateAttachments(
-        storeContents,
+        storeContents.map(Content.toElement),
         'image',
       );
-      expect(result).toEqualPayload(populatedStoreContents);
+      expect(result).toEqualPayload(elements);
     });
   });
 
@@ -221,9 +224,7 @@ describe('ContentService', () => {
         { status: true },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = actualData.map((content) =>
-        Content.flatDynamicFields(content),
-      );
+      const flattenedElements = actualData.map(Content.toElement);
       const content = await contentService.getContent(contentOptions, 0);
       expect(content?.elements).toEqualPayload(flattenedElements, [
         ...IGNORED_TEST_FIELDS,
@@ -237,9 +238,7 @@ describe('ContentService', () => {
         { status: true, entity: contentType.id },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = actualData.map((content) =>
-        Content.flatDynamicFields(content),
-      );
+      const flattenedElements = actualData.map(Content.toElement);
       const content = await contentService.getContent(
         {
           ...contentOptions,
@@ -257,9 +256,7 @@ describe('ContentService', () => {
         { status: true, entity: contentType.id, title: /^Jean/ },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = actualData.map((content) =>
-        Content.flatDynamicFields(content),
-      );
+      const flattenedElements = actualData.map(Content.toElement);
       const content = await contentService.getContent(
         {
           ...contentOptions,
@@ -276,9 +273,7 @@ describe('ContentService', () => {
         { status: true },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = actualData.map((content) =>
-        Content.flatDynamicFields(content),
-      );
+      const flattenedElements = actualData.map(Content.toElement);
       const content = await contentService.getContent(
         {
           ...contentOptions,

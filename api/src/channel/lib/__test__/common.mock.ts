@@ -120,7 +120,6 @@ export const contentMessage: StdOutgoingListMessage = {
       id: '1',
       entity: 'rank',
       title: 'First',
-      // @ts-expect-error Necessary workaround
       desc: 'About being first',
       thumbnail: {
         payload: attachmentWithUrl,
@@ -136,7 +135,6 @@ export const contentMessage: StdOutgoingListMessage = {
       id: '2',
       entity: 'rank',
       title: 'Second',
-      // @ts-expect-error Necessary workaround
       desc: 'About being second',
       thumbnail: {
         payload: attachmentWithUrl,

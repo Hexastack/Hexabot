@@ -7,7 +7,6 @@
  */
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
-import { Content } from '@/cms/schemas/content.schema';
 
 import { Message } from '../message.schema';
 
@@ -84,9 +83,14 @@ export type StdOutgoingButtonsMessage = {
   buttons: Button[];
 };
 
+export type ContentElement = { id: string; title: string } & Record<
+  string,
+  any
+>;
+
 export type StdOutgoingListMessage = {
   options: ContentOptions;
-  elements: Content[];
+  elements: ContentElement[];
   pagination: {
     total: number;
     skip: number;
