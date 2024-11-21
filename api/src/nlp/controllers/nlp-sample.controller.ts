@@ -97,7 +97,7 @@ export class NlpSampleController extends BaseController<
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
     const helper = await this.helperService.getDefaultNluHelper();
-    const result = helper.format(samples, entities);
+    const result = await helper.format(samples, entities);
 
     // Sending the JSON data as a file
     const buffer = Buffer.from(JSON.stringify(result));
