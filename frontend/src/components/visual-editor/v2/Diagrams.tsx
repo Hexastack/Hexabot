@@ -89,7 +89,10 @@ const Diagrams = () => {
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
-      hasCount: false,
+      initialPaginationState: {
+        page: 0,
+        pageSize: 999, // @TODO: We need to display all categories
+      },
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
@@ -532,7 +535,23 @@ const Diagrams = () => {
                 [`& .${tabsClasses.indicator}`]: {
                   display: "none",
                 },
+                "& .MuiTabs-scrollButtons": {
+                  opacity: 0.8,
+                  backgroundColor: "#1ca089",
+                  borderTop: "1px solid #137261",
+                  marginTop: "7px",
+                  color: "#FFF",
+                  overflow: "visible",
+                  boxShadow:
+                    "-20px 0px 20px -20px rgba(0, 0, 0, 0.5), 0px 2px 9px 0px rgba(0, 0, 0, 0.5)",
+                  zIndex: 10,
+                  "&:hover": {
+                    opacity: 1,
+                  },
+                },
               }}
+              variant="scrollable"
+              allowScrollButtonsMobile
             >
               {categories?.map(({ id, label }) => (
                 <Tab
