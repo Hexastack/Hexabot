@@ -8,7 +8,7 @@
 
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import mongoose, { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
 import { closeInMongodConnection } from '@/utils/test/test';
@@ -150,7 +150,7 @@ describe('BaseRepository', () => {
       expect(spyBeforeUpdate).toHaveBeenCalledWith(
         expect.objectContaining({ $useProjection: true }),
         {
-          _id: new mongoose.Types.ObjectId(created.id),
+          _id: new Types.ObjectId(created.id),
         },
         expect.objectContaining({ $set: expect.objectContaining(mockUpdate) }),
       );
@@ -202,7 +202,7 @@ describe('BaseRepository', () => {
       expect(spyBeforeDelete).toHaveBeenCalledWith(
         expect.objectContaining({ $useProjection: true }),
         {
-          _id: new mongoose.Types.ObjectId(createdId),
+          _id: new Types.ObjectId(createdId),
         },
       );
       expect(spyAfterDelete).toHaveBeenCalledWith(

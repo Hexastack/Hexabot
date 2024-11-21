@@ -9,7 +9,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, {
+import {
   Document,
   Model,
   Query,
@@ -94,27 +94,27 @@ export class BlockRepository extends BaseRepository<
       | UpdateWithAggregationPipeline
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const movedBlock = await this.findOne(criteria);
-    if (!movedBlock) {
-      return;
-    }
     const update: BlockUpdateDto = updates?.['$set'];
+
     if (update?.category) {
-      const movedBlockId = criteria._id;
+      const movedBlock: Block = await this.findOne(criteria);
+
+      if (!movedBlock) {
+        return;
+      }
 
       // Find and update blocks that reference the moved block
       await this.updateMany(
-        { nextBlocks: movedBlockId },
-        { $pull: { nextBlocks: movedBlockId } },
+        { nextBlocks: movedBlock.id },
+        { $pull: { nextBlocks: movedBlock.id } },
       );
 
       await this.updateMany(
-        { attachedBlock: movedBlockId },
+        { attachedBlock: movedBlock.id },
         { $set: { attachedBlock: null } },
       );
+      this.checkDeprecatedAttachmentUrl(update);
     }
-
-    this.checkDeprecatedAttachmentUrl(update);
   }
 
   /**
@@ -136,29 +136,32 @@ export class BlockRepository extends BaseRepository<
     criteria: TFilterQuery<Block>,
     updates: UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    if (criteria._id?.$in && updates?.$set?.category) {
-      const ids: string[] = criteria._id?.$in || [];
-      const category: string = updates.$set.category;
+    const categoryId: string = updates.$set.category;
+    if (categoryId) {
+      const movedBlocks = await this.find(criteria);
 
-      // Step 1: Map IDs and Category
-      const objIds = ids.map((id) => new mongoose.Types.ObjectId(id));
-      const objCategory = new mongoose.Types.ObjectId(category);
+      if (movedBlocks.length) {
+        const ids: string[] = movedBlocks.map(({ id }) => id);
 
-      // Step 2: Find other blocks
-      const otherBlocks = await this.find({
-        _id: { $nin: objIds },
-        category: { $ne: objCategory },
-        $or: [
-          { attachedBlock: { $in: objIds } },
-          { nextBlocks: { $in: objIds } },
-        ],
-      });
+        // Step 1: Map IDs and Category
+        const objIds = ids.map((id) => new Types.ObjectId(id));
+        const objCategoryId = new Types.ObjectId(categoryId);
 
-      // Step 3: Update blocks in the provided scope
-      await this.updateBlocksInScope(category, ids);
+        // Step 2: Find other blocks
+        const otherBlocks = await this.find({
+          _id: { $nin: objIds },
+          category: { $ne: objCategoryId },
+          $or: [
+            { attachedBlock: { $in: objIds } },
+            { nextBlocks: { $in: objIds } },
+          ],
+        });
+        // Step 3: Update blocks in the provided scope
+        await this.prepareBlocksInCategoryUpdateScope(categoryId, ids);
 
-      // Step 4: Update external blocks
-      await this.updateExternalBlocks(otherBlocks, ids);
+        // Step 4: Update external blocks
+        await this.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, ids);
+      }
     }
   }
 
@@ -170,9 +173,12 @@ export class BlockRepository extends BaseRepository<
    * @param ids - IDs representing the blocks to update.
    * @returns A promise that resolves once all updates within the scope are complete.
    */
-  async updateBlocksInScope(category: string, ids: string[]): Promise<void> {
+  async prepareBlocksInCategoryUpdateScope(
+    category: string,
+    ids: string[],
+  ): Promise<void> {
     for (const id of ids) {
-      const oldState = await this.findOne(id);
+      const oldState: Block = await this.findOne(id);
       if (oldState.category !== category) {
         const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
           ids.includes(nextBlock),
@@ -198,7 +204,7 @@ export class BlockRepository extends BaseRepository<
    * @param ids - An array of the Ids to disassociate.
    * @returns A promise that resolves once all external block updates are complete.
    */
-  async updateExternalBlocks(
+  async prepareBlocksOutOfCategoryUpdateScope(
     otherBlocks: Block[],
     ids: string[],
   ): Promise<void> {
@@ -207,14 +213,12 @@ export class BlockRepository extends BaseRepository<
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const updatedNextBlocks = block.nextBlocks.filter(
-        (nextBlock) => !ids.includes(nextBlock),
-      );
+      const nextBlocks = block.nextBlocks
+        .filter((nextBlock) => !ids.includes(nextBlock))
+        .map((id) => new Types.ObjectId(id));
 
-      if (updatedNextBlocks.length > 0) {
-        await this.updateOne(block.id, {
-          $pull: { nextBlocks: updatedNextBlocks },
-        });
+      if (nextBlocks.length > 0) {
+        await this.updateOne(block.id, { nextBlocks });
       }
     }
   }
