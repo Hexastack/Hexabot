@@ -372,23 +372,21 @@ const Diagrams = () => {
       },
     );
   };
-  const handleBlockDeletion = async (id: string) => {
-    const ids = id.split(",");
-
-    if (ids.length > 1) {
-      await deleteMultipleBlocks(ids);
+  const handleBlockDeletion = async (blockIds: string[]) => {
+    if (blockIds.length > 1) {
+      await deleteMultipleBlocks(blockIds);
     } else {
-      await deleteSingleBlock(ids[0]);
+      await deleteSingleBlock(blockIds[0]);
     }
   };
-  const deleteMultipleBlocks = async (ids: string[]) => {
-    await deleteBlocks(ids, {
+  const deleteMultipleBlocks = async (blockIds: string[]) => {
+    await deleteBlocks(blockIds, {
       onSuccess: () => {
-        ids.forEach((blockId) => {
+        blockIds.forEach((blockId) => {
           const block = getBlockFromCache(blockId);
 
           if (block) {
-            updateLinkedBlocks(block, ids);
+            updateLinkedBlocks(block, blockIds);
             deleteCachedBlock(blockId);
           }
         });
@@ -407,13 +405,14 @@ const Diagrams = () => {
       },
     });
   };
+  const getLinkedBlockIds = (block: IBlock): string[] => [
+    ...(block?.nextBlocks || []),
+    ...(block?.previousBlocks || []),
+    ...(block?.attachedBlock ? [block.attachedBlock] : []),
+    ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
+  ];
   const updateLinkedBlocks = (block: IBlock, deletedIds: string[]) => {
-    const linkedBlockIds = [
-      ...(block?.nextBlocks || []),
-      ...(block?.previousBlocks || []),
-      ...(block?.attachedBlock ? [block.attachedBlock] : []),
-      ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-    ];
+    const linkedBlockIds = getLinkedBlockIds(block);
 
     linkedBlockIds.forEach((linkedBlockId) => {
       const linkedBlock = getBlockFromCache(linkedBlockId);
@@ -478,11 +477,12 @@ const Diagrams = () => {
       return;
     }
     const isLink = id.length === 36;
+    const listIds = id.split(",");
 
     if (isLink) {
-      await handleLinkDeletion(id);
+      await handleLinkDeletion(listIds[0]);
     } else {
-      await handleBlockDeletion(id);
+      await handleBlockDeletion(listIds);
     }
 
     cleanupAfterDeletion();
