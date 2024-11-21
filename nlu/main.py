@@ -7,6 +7,7 @@ import boilerplate as tfbp
 from fastapi import Depends, FastAPI, HTTPException, status
 from pydantic import BaseModel
 import logging
+from huggingface_hub import login
 
 # Set up logging configuration
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,6 +18,11 @@ AVAILABLE_LANGUAGES = os.getenv("AVAILABLE_LANGUAGES", "en,fr").split(',')
 TFLC_REPO_ID = os.getenv("TFLC_REPO_ID")
 INTENT_CLASSIFIER_REPO_ID = os.getenv("INTENT_CLASSIFIER_REPO_ID")
 SLOT_FILLER_REPO_ID = os.getenv("SLOT_FILLER_REPO_ID")
+HF_AUTH_TOKEN = os.getenv("HF_AUTH_TOKEN")
+
+# Log in to HuggingFace using the provided access token
+if HF_AUTH_TOKEN:
+    login(token=HF_AUTH_TOKEN)
 
 def load_language_classifier():
     # Init language classifier model
