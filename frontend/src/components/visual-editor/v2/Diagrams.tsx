@@ -71,7 +71,7 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
@@ -198,7 +198,7 @@ const Diagrams = () => {
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
-        deleteDialogCtl.openDialog(ids.join(","));
+        deleteDialogCtl.openDialog(ids);
         deleteCallbackRef.current = next;
       },
       onDbClickNode: (event, id) => {
@@ -459,7 +459,7 @@ const Diagrams = () => {
         });
         engine?.repaintCanvas();
       };
-      deleteDialogCtl.openDialog(ids.join(","));
+      deleteDialogCtl.openDialog(ids);
     }
   };
   const handleMoveButton = () => {
@@ -471,18 +471,17 @@ const Diagrams = () => {
     }
   };
   const onDelete = async () => {
-    const id = deleteDialogCtl?.data;
+    const ids = deleteDialogCtl?.data;
 
-    if (!id) {
+    if (!ids || ids?.length === 0) {
       return;
     }
-    const isLink = id.length === 36;
-    const listIds = id.split(",");
+    const isLink = ids[0].length === 36;
 
     if (isLink) {
-      await handleLinkDeletion(listIds[0]);
+      await handleLinkDeletion(ids[0]);
     } else {
-      await handleBlockDeletion(listIds);
+      await handleBlockDeletion(ids);
     }
 
     cleanupAfterDeletion();
