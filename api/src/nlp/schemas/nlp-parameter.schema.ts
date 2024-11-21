@@ -20,54 +20,49 @@ import {
 import { NlpExperiment } from './nlp-experiment.schema';
 
 @Schema({ timestamps: true })
-export class NlpParametersStub extends BaseSchema {
+export class NlpParameterStub extends BaseSchema {
   @Prop({ type: String, required: false, unique: false })
   foreign_id?: string;
 
-  @Prop({ type: JSON, default: {} })
-  parameters?: Record<string, any>;
+  @Prop({ type: String, required: true, unique: true, index: true })
+  name: string;
 
   /**
    * A list of experiments associated with this model.
    */
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpExperiment',
-    required: true,
-  })
-  experiment: unknown;
+  @Prop([
+    {
+      type: MongooseSchema.Types.ObjectId,
+      ref: 'NlpExperiment',
+    },
+  ])
+  experiments: unknown;
 }
 
 @Schema({ timestamps: true })
-export class NlpParameters extends NlpParametersStub {
-  @Transform(({ obj }) => obj.experiment.toString())
-  experiment: string;
+export class NlpParameter extends NlpParameterStub {
+  @Transform(({ obj }) => obj.experiments.map((elem) => elem.toString()))
+  experiments: string[];
 }
 
 @Schema({ timestamps: true })
-export class NlpParametersFull extends NlpParametersStub {
+export class NlpParameterFull extends NlpParameterStub {
   @Type(() => NlpExperiment)
-  experiment: NlpExperiment;
+  experiment: NlpExperiment[];
 }
 
-export type NlpParametersDocument = THydratedDocument<NlpParameters>;
+export type NlpParameterDocument = THydratedDocument<NlpParameter>;
 
-export const NlpParametersModel: ModelDefinition = LifecycleHookManager.attach({
-  name: NlpParameters.name,
-  schema: SchemaFactory.createForClass(NlpParametersStub),
+export const NlpParameterModel: ModelDefinition = LifecycleHookManager.attach({
+  name: NlpParameter.name,
+  schema: SchemaFactory.createForClass(NlpParameterStub),
 });
 
-NlpParametersModel.schema.virtual('experiment', {
-  ref: 'NlpParameters',
-  localField: '_id',
-  foreignField: 'parameters',
-});
+export default NlpParameterModel.schema;
 
-export default NlpParametersModel.schema;
-
-export type NlpParametersPopulate = keyof TFilterPopulateFields<
-  NlpParameters,
-  NlpParametersStub
+export type NlpParameterPopulate = keyof TFilterPopulateFields<
+  NlpParameter,
+  NlpParameterStub
 >;
 
-export const NLP_PARAMETERS_POPULATE: NlpParametersPopulate[] = ['experiment'];
+export const NLP_PARAMETERS_POPULATE: NlpParameterPopulate[] = ['experiments'];

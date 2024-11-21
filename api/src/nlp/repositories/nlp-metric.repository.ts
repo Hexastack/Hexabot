@@ -15,36 +15,34 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
-  NLP_PARAMETERS_POPULATE,
-  NlpParameters,
-  NlpParametersFull,
-  NlpParametersPopulate,
-} from '../schemas/nlp-parameters.schema';
+  NLP_METRICS_POPULATE,
+  NlpMetric,
+  NlpMetricFull,
+  NlpMetricPopulate,
+} from '../schemas/nlp-metric.schema';
 
 import { NlpExperimentRepository } from './nlp-experiment.repository';
+import { NlpMetricValueRepository } from './nlp-metric-value.repository';
+import { NlpModelRepository } from './nlp-model.repository';
 
 @Injectable()
-export class NlpParametersRepository extends BaseRepository<
-  NlpParameters,
-  NlpParametersPopulate,
-  NlpParametersFull
+export class NlpMetricRepository extends BaseRepository<
+  NlpMetric,
+  NlpMetricPopulate,
+  NlpMetricFull
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
-    @InjectModel(NlpParameters.name) readonly model: Model<NlpParameters>,
+    @InjectModel(NlpMetric.name) readonly model: Model<NlpMetric>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
+    private readonly nlpMetricValueRepository: NlpMetricValueRepository,
+    private readonly nlpModelRepository: NlpModelRepository,
   ) {
-    super(
-      eventEmitter,
-      model,
-      NlpParameters,
-      NLP_PARAMETERS_POPULATE,
-      NlpParametersFull,
-    );
+    super(eventEmitter, model, NlpMetric, NLP_METRICS_POPULATE, NlpMetricFull);
   }
 
   /**
-   * Deletes NLP experiment associated with the provided criteria before deleting the parameters themselves.
+   * Deletes NLP experiment associated with the provided criteria before deleting the metrics themselves.
    *
    * @param query - The query object used for deletion.
    * @param criteria - Criteria to identify the sample(s) to delete.
@@ -52,21 +50,21 @@ export class NlpParametersRepository extends BaseRepository<
   async preDelete(
     _query: Query<
       DeleteResult,
-      Document<NlpParameters, any, any>,
+      Document<NlpMetric, any, any>,
       unknown,
-      NlpParameters,
+      NlpMetric,
       'deleteOne' | 'deleteMany'
     >,
-    criteria: TFilterQuery<NlpParameters>,
+    criteria: TFilterQuery<NlpMetric>,
   ): Promise<void> {
     {
-      if (criteria._id) {
-        await this.nlpExperimentRepository.deleteMany({
-          parameters: criteria._id,
+      if (criteria._id || criteria.name) {
+        await this.nlpMetricValueRepository.deleteMany({
+          metric: criteria.name,
         });
       } else {
         throw new Error(
-          'Attempted to delete NLP parameters using unknown criteria',
+          'Attempted to delete NLP metrics using unknown criteria',
         );
       }
     }

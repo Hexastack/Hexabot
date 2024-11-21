@@ -17,9 +17,11 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
-import { NlpMetrics } from './nlp-metrics.schema';
+import { NlpMetricValue } from './nlp-metric-value.schema';
+import { NlpMetric } from './nlp-metric.schema';
 import { NlpModel } from './nlp-model.schema';
-import { NlpParameters } from './nlp-parameters.schema';
+import { NlpParameterValue } from './nlp-parameter-value.schema';
+import { NlpParameter } from './nlp-parameter.schema';
 
 @Schema({ timestamps: true })
 export class NlpExperimentStub extends BaseSchema {
@@ -65,15 +67,23 @@ export class NlpExperimentStub extends BaseSchema {
   model: unknown;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpMetrics',
+    type: [
+      {
+        metric: { type: String, required: true }, // Metric name
+        value: { type: Number, required: true }, // Metric value
+      },
+    ],
     required: true,
   })
   metrics: unknown;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpParameters',
+    type: [
+      {
+        parameter: { type: String, required: true }, // Parameter name
+        value: { type: Number, required: true }, // Parameter value
+      },
+    ],
     required: true,
   })
   parameters: unknown;
@@ -112,11 +122,11 @@ export class NlpExperiment extends NlpExperimentStub {
   @Transform(({ obj }) => obj.model.toString())
   model: string;
 
-  @Transform(({ obj }) => obj.metrics.toString())
-  metrics: string;
+  @Transform(({ obj }) => obj.metrics.map((elem) => JSON.stringify(elem)))
+  metrics: string[];
 
-  @Transform(({ obj }) => obj.parameters.toString())
-  parameters: string;
+  @Transform(({ obj }) => obj.parameters.map((elem) => JSON.stringify(elem)))
+  parameters: string[];
 }
 
 @Schema({ timestamps: true })
@@ -124,11 +134,11 @@ export class NlpExperimentFull extends NlpExperimentStub {
   @Type(() => NlpModel)
   model: NlpModel;
 
-  @Type(() => NlpMetrics)
-  metrics: NlpMetrics;
+  @Type(() => NlpMetric)
+  metrics: NlpMetricValue[];
 
-  @Type(() => NlpParameters)
-  parameters: NlpParameters;
+  @Type(() => NlpParameter)
+  parameters: NlpParameterValue[];
 }
 
 export type NlpExperimentDocument = THydratedDocument<NlpExperiment>;

@@ -45,7 +45,9 @@ export class NlpModelCreateDto {
   @IsBoolean()
   @IsNotEmpty()
   isActive?: boolean;
+}
 
+export class NlpModelDto extends NlpModelCreateDto {
   @ApiProperty({ type: [String] })
   @IsArray()
   @ArrayNotEmpty()

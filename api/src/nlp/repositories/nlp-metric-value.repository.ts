@@ -15,33 +15,31 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
-  NLP_EXPERIMENT_POPULATE,
-  NlpExperiment,
-  NlpExperimentFull,
-  NlpExperimentPopulate,
-} from '../schemas/nlp-experiment.schema';
+  NLP_METRIC_VALUE_POPULATE,
+  NlpMetricValue,
+  NlpMetricValueFull,
+  NlpMetricValuePopulate,
+} from '../schemas/nlp-metric-value.schema';
 
-import { NlpMetricValueRepository } from './nlp-metric-value.repository';
-import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
+import { NlpExperimentRepository } from './nlp-experiment.repository';
 
 @Injectable()
-export class NlpExperimentRepository extends BaseRepository<
-  NlpExperiment,
-  NlpExperimentPopulate,
-  NlpExperimentFull
+export class NlpMetricValueRepository extends BaseRepository<
+  NlpMetricValue,
+  NlpMetricValuePopulate,
+  NlpMetricValueFull
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
-    @InjectModel(NlpExperiment.name) readonly model: Model<NlpExperiment>,
-    private readonly nlpMetricValueRepository: NlpMetricValueRepository,
-    private readonly nlpParameterValueRepository: NlpParameterValueRepository,
+    @InjectModel(NlpMetricValue.name) readonly model: Model<NlpMetricValue>,
+    private readonly nlpExperimentRepository: NlpExperimentRepository,
   ) {
     super(
       eventEmitter,
       model,
-      NlpExperiment,
-      NLP_EXPERIMENT_POPULATE,
-      NlpExperimentFull,
+      NlpMetricValue,
+      NLP_METRIC_VALUE_POPULATE,
+      NlpMetricValueFull,
     );
   }
 
@@ -54,21 +52,19 @@ export class NlpExperimentRepository extends BaseRepository<
   async preDelete(
     _query: Query<
       DeleteResult,
-      Document<NlpExperiment, any, any>,
+      Document<NlpMetricValue, any, any>,
       unknown,
-      NlpExperiment,
+      NlpMetricValue,
       'deleteOne' | 'deleteMany'
     >,
-    criteria: TFilterQuery<NlpExperiment>,
+    criteria: TFilterQuery<NlpMetricValue>,
   ): Promise<void> {
     {
       if (criteria._id) {
-        await this.nlpParameterValueRepository.deleteMany({
-          experiment: criteria._id,
-        });
-
-        await this.nlpMetricValueRepository.deleteMany({
-          experiment: criteria._id,
+        await this.nlpExperimentRepository.deleteMany({
+          metrics: {
+            $elemMatch: { metric: criteria.metric, value: criteria.value },
+          },
         });
       } else {
         throw new Error(

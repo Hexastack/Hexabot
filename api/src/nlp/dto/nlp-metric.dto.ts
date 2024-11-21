@@ -7,16 +7,31 @@
  */
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class NlpMParametersCreateDto {
+import { NlpExperiment } from '../schemas/nlp-experiment.schema';
+import { NlpModel } from '../schemas/nlp-model.schema';
+
+export class NlpMetricCreateDto {
   @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional() // Optional since it is not required in the schema
   foreign_id?: string;
 
-  @ApiPropertyOptional({ type: JSON })
-  @IsObject()
+  @ApiPropertyOptional({ type: String })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
+
+export class NlpMetricDto extends NlpMetricCreateDto {
+  @ApiPropertyOptional({
+    description: 'nlp models',
+  })
   @IsOptional()
-  parameters?: Record<string, any>;
+  models?: NlpModel[];
+
+  @ApiPropertyOptional({ description: 'NLP experiments' })
+  @IsOptional()
+  experiments?: NlpExperiment[];
 }

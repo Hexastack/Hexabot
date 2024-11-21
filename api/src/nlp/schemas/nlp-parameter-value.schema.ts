@@ -11,6 +11,7 @@ import { Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import {
   TFilterPopulateFields,
   THydratedDocument,
@@ -18,96 +19,89 @@ import {
 
 import { NlpExperiment } from './nlp-experiment.schema';
 import { NlpModel } from './nlp-model.schema';
+import { NlpParameter } from './nlp-parameter.schema';
 
 @Schema({ timestamps: true })
-export class NlpMetricsStub extends BaseSchema {
+export class NlpParameterValueStub extends BaseSchema {
   @Prop({ type: String, required: false, unique: false })
   foreign_id?: string;
 
-  @Prop({ type: Number, required: false })
-  accuracy: number;
+  @Prop({ type: Number, required: true })
+  value: number;
 
-  @Prop({ type: Number, required: false })
-  val_accuracy: number;
-
-  @Prop({ type: Number, required: false })
-  precision: number;
-
-  @Prop({ type: Number, required: false })
-  val_precision: number;
-
-  @Prop({ type: Number, required: false })
-  recall: number;
-
-  @Prop({ type: Number, required: false })
-  val_recall: number;
-
-  @Prop({ type: Number, required: false })
-  f1score: number;
-
-  @Prop({ type: Number, required: false })
-  val_f1score: number;
+  @Prop({ type: Number, required: true })
+  version: number;
 
   /**
-   * The associated Experiment
+   * Parameter associated with the Parameter Value
+   */
+  @Prop({
+    type: String,
+    ref: 'NlpParameter',
+    required: true,
+  })
+  parameter: unknown;
+
+  /**
+   * Experiment associated with the Parameter Value
    */
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'NlpExperiment',
-    required: true,
   })
   experiment: unknown;
 
-  /**
-   * The associated Model
-   */
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'NlpModel',
-    required: true,
   })
   model: unknown;
 }
 
 @Schema({ timestamps: true })
-export class NlpMetrics extends NlpMetricsStub {
+export class NlpParameterValue extends NlpParameterValueStub {
   @Transform(({ obj }) => obj.model.toString())
   model: string;
 
   @Transform(({ obj }) => obj.experiment.toString())
   experiment: string;
+
+  @Transform(({ obj }) => obj.parameter.toString())
+  parameter: string;
 }
 
 @Schema({ timestamps: true })
-export class NlpMetricsFull extends NlpMetricsStub {
+export class NlpParameterValueFull extends NlpParameterValueStub {
   @Type(() => NlpModel)
   model: NlpModel;
 
   @Type(() => NlpExperiment)
   experiment: NlpExperiment;
+
+  @Type(() => NlpParameter)
+  parameter: NlpParameter;
 }
 
-export type NlpMetricsDocument = THydratedDocument<NlpMetrics>;
+export type NlpParameterValueDocument = THydratedDocument<NlpParameterValue>;
 
-export const NlpMetricsModel: ModelDefinition = {
-  name: NlpMetrics.name,
-  schema: SchemaFactory.createForClass(NlpMetricsStub),
-};
+export const NlpParameterValueModel: ModelDefinition =
+  LifecycleHookManager.attach({
+    name: NlpParameterValue.name,
+    schema: SchemaFactory.createForClass(NlpParameterValueStub),
+  });
+NlpParameterValueModel.schema.index(
+  { parameter: 1, value: 1 },
+  { unique: false },
+);
 
-NlpMetricsModel.schema.virtual('experiment', {
-  ref: 'NlpMetrics',
-  localField: '_id',
-  foreignField: 'metrics',
-});
+export default NlpParameterValueModel.schema;
 
-export default NlpMetricsModel.schema;
-
-export type NlpMetricsPopulate = keyof TFilterPopulateFields<
-  NlpMetrics,
-  NlpMetricsStub
+export type NlpParameterValuePopulate = keyof TFilterPopulateFields<
+  NlpParameterValue,
+  NlpParameterValueStub
 >;
 
-export const NLP_METRICS_POPULATE: NlpMetricsPopulate[] = [
-  'model',
+export const NLP_PARAMETER_VALUE_POPULATE: NlpParameterValuePopulate[] = [
   'experiment',
+  'parameter',
 ];

@@ -15,38 +15,36 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
-  NLP_EXPERIMENT_POPULATE,
-  NlpExperiment,
-  NlpExperimentFull,
-  NlpExperimentPopulate,
-} from '../schemas/nlp-experiment.schema';
+  NLP_PARAMETERS_POPULATE,
+  NlpParameter,
+  NlpParameterFull,
+  NlpParameterPopulate,
+} from '../schemas/nlp-parameter.schema';
 
-import { NlpMetricValueRepository } from './nlp-metric-value.repository';
-import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
+import { NlpExperimentRepository } from './nlp-experiment.repository';
 
 @Injectable()
-export class NlpExperimentRepository extends BaseRepository<
-  NlpExperiment,
-  NlpExperimentPopulate,
-  NlpExperimentFull
+export class NlpParameterRepository extends BaseRepository<
+  NlpParameter,
+  NlpParameterPopulate,
+  NlpParameterFull
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
-    @InjectModel(NlpExperiment.name) readonly model: Model<NlpExperiment>,
-    private readonly nlpMetricValueRepository: NlpMetricValueRepository,
-    private readonly nlpParameterValueRepository: NlpParameterValueRepository,
+    @InjectModel(NlpParameter.name) readonly model: Model<NlpParameter>,
+    private readonly nlpExperimentRepository: NlpExperimentRepository,
   ) {
     super(
       eventEmitter,
       model,
-      NlpExperiment,
-      NLP_EXPERIMENT_POPULATE,
-      NlpExperimentFull,
+      NlpParameter,
+      NLP_PARAMETERS_POPULATE,
+      NlpParameterFull,
     );
   }
 
   /**
-   * Deletes NLP experiment associated with the provided criteria before deleting the metrics themselves.
+   * Deletes NLP experiment associated with the provided criteria before deleting the parameters themselves.
    *
    * @param query - The query object used for deletion.
    * @param criteria - Criteria to identify the sample(s) to delete.
@@ -54,25 +52,21 @@ export class NlpExperimentRepository extends BaseRepository<
   async preDelete(
     _query: Query<
       DeleteResult,
-      Document<NlpExperiment, any, any>,
+      Document<NlpParameter, any, any>,
       unknown,
-      NlpExperiment,
+      NlpParameter,
       'deleteOne' | 'deleteMany'
     >,
-    criteria: TFilterQuery<NlpExperiment>,
+    criteria: TFilterQuery<NlpParameter>,
   ): Promise<void> {
     {
       if (criteria._id) {
-        await this.nlpParameterValueRepository.deleteMany({
-          experiment: criteria._id,
-        });
-
-        await this.nlpMetricValueRepository.deleteMany({
-          experiment: criteria._id,
+        await this.nlpExperimentRepository.deleteMany({
+          parameters: criteria._id,
         });
       } else {
         throw new Error(
-          'Attempted to delete NLP experiment using unknown criteria',
+          'Attempted to delete NLP parameters using unknown criteria',
         );
       }
     }
