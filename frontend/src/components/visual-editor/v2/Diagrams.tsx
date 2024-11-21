@@ -317,6 +317,137 @@ const Diagrams = () => {
     ),
   ]);
 
+  const handleLinkDeletion = async (linkId: string) => {
+    const link = model?.getLink(linkId) as any;
+    const sourceId = link?.sourcePort.parent.options.id;
+    const targetId = link?.targetPort.parent.options.id;
+
+    if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
+      await removeNextBlockLink(sourceId, targetId);
+    } else if (
+      link?.sourcePort.options.label === BlockPorts.attachmentOutPort
+    ) {
+      await removeAttachmentLink(sourceId, targetId);
+    }
+  };
+  const removeNextBlockLink = async (sourceId: string, targetId: string) => {
+    const previousData = getBlockFromCache(sourceId);
+    const nextBlocks = [...(previousData?.nextBlocks || [])];
+
+    await updateBlock(
+      {
+        id: sourceId,
+        params: {
+          nextBlocks: nextBlocks.filter((block) => block !== targetId),
+        },
+      },
+      {
+        onSuccess() {
+          updateCachedBlock({
+            id: targetId,
+            preprocess: ({ previousBlocks = [], ...rest }) => ({
+              ...rest,
+              previousBlocks: previousBlocks.filter(
+                (block) => block !== sourceId,
+              ),
+            }),
+          });
+        },
+      },
+    );
+  };
+  const removeAttachmentLink = async (sourceId: string, targetId: string) => {
+    await updateBlock(
+      {
+        id: sourceId,
+        params: { attachedBlock: null },
+      },
+      {
+        onSuccess() {
+          updateCachedBlock({
+            id: targetId,
+            preprocess: (oldData) => ({ ...oldData, attachedToBlock: null }),
+          });
+        },
+      },
+    );
+  };
+  const handleBlockDeletion = async (id: string) => {
+    const ids = id.split(",");
+
+    if (ids.length > 1) {
+      await deleteMultipleBlocks(ids);
+    } else {
+      await deleteSingleBlock(ids[0]);
+    }
+  };
+  const deleteMultipleBlocks = async (ids: string[]) => {
+    await deleteBlocks(ids, {
+      onSuccess: () => {
+        ids.forEach((blockId) => {
+          const block = getBlockFromCache(blockId);
+
+          if (block) {
+            updateLinkedBlocks(block, ids);
+            deleteCachedBlock(blockId);
+          }
+        });
+      },
+    });
+  };
+  const deleteSingleBlock = async (blockId: string) => {
+    const block = getBlockFromCache(blockId);
+
+    await deleteBlock(blockId, {
+      onSuccess() {
+        if (block) {
+          updateLinkedBlocks(block, [blockId]);
+          deleteCachedBlock(blockId);
+        }
+      },
+    });
+  };
+  const updateLinkedBlocks = (block: IBlock, deletedIds: string[]) => {
+    const linkedBlockIds = [
+      ...(block?.nextBlocks || []),
+      ...(block?.previousBlocks || []),
+      ...(block?.attachedBlock ? [block.attachedBlock] : []),
+      ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
+    ];
+
+    linkedBlockIds.forEach((linkedBlockId) => {
+      const linkedBlock = getBlockFromCache(linkedBlockId);
+
+      if (linkedBlock) {
+        updateCachedBlock({
+          id: linkedBlock.id,
+          payload: {
+            ...linkedBlock,
+            nextBlocks: linkedBlock.nextBlocks?.filter(
+              (nextBlockId) => !deletedIds.includes(nextBlockId),
+            ),
+            previousBlocks: linkedBlock.previousBlocks?.filter(
+              (previousBlockId) => !deletedIds.includes(previousBlockId),
+            ),
+            attachedBlock: deletedIds.includes(linkedBlock.attachedBlock || "")
+              ? undefined
+              : linkedBlock.attachedBlock,
+            attachedToBlock: deletedIds.includes(
+              linkedBlock.attachedToBlock || "",
+            )
+              ? undefined
+              : linkedBlock.attachedToBlock,
+          },
+          strategy: "overwrite",
+        });
+      }
+    });
+  };
+  const cleanupAfterDeletion = () => {
+    deleteCallbackRef.current?.();
+    deleteCallbackRef.current = () => {};
+    deleteDialogCtl.closeDialog();
+  };
   const handleDeleteButton = () => {
     const selectedEntities = engine?.getModel().getSelectedEntities();
     const ids = selectedEntities?.map((model) => model.getID());
@@ -343,163 +474,18 @@ const Diagrams = () => {
   const onDelete = async () => {
     const id = deleteDialogCtl?.data;
 
-    if (id) {
-      // Handle link deletion
-      if (id.length === 36) {
-        const link = model?.getLink(id) as any;
-        const sourceId = link?.sourcePort.parent.options.id;
-        const targetId = link?.targetPort.parent.options.id;
-
-        if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
-          const previousData = getBlockFromCache(sourceId);
-          const nextBlocks = [...(previousData?.nextBlocks || [])];
-
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                nextBlocks: nextBlocks.filter((block) => block !== targetId),
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: ({ previousBlocks = [], ...rest }) => ({
-                    ...rest,
-                    previousBlocks: previousBlocks.filter(
-                      (previousBlock) => previousBlock !== sourceId,
-                    ),
-                  }),
-                });
-              },
-            },
-          );
-        } else if (
-          link?.sourcePort.options.label === BlockPorts.attachmentOutPort
-        ) {
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                attachedBlock: null,
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: (oldData) => ({
-                    ...oldData,
-                    attachedToBlock: null,
-                  }),
-                });
-              },
-            },
-          );
-        }
-      } else {
-        const ids = id.split(",");
-
-        if (ids.length > 1) {
-          await deleteBlocks(ids, {
-            onSuccess: () => {
-              ids.forEach((blockId) => {
-                const block = getBlockFromCache(blockId);
-
-                if (block) {
-                  // Update all linked blocks to remove references to deleted blocks
-                  const linkedBlockIds = [
-                    ...(block?.nextBlocks || []),
-                    ...(block?.previousBlocks || []),
-                    ...(block?.attachedBlock ? [block.attachedBlock] : []),
-                    ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-                  ];
-
-                  linkedBlockIds.forEach((linkedBlockId) => {
-                    const linkedBlock = getBlockFromCache(linkedBlockId);
-
-                    if (linkedBlock) {
-                      updateCachedBlock({
-                        id: linkedBlock.id,
-                        payload: {
-                          ...linkedBlock,
-                          nextBlocks: linkedBlock.nextBlocks?.filter(
-                            (nextBlockId) => !ids.includes(nextBlockId),
-                          ),
-                          previousBlocks: linkedBlock.previousBlocks?.filter(
-                            (previousBlockId) => !ids.includes(previousBlockId),
-                          ),
-                          attachedBlock: ids.includes(
-                            linkedBlock.attachedBlock || "",
-                          )
-                            ? undefined
-                            : linkedBlock.attachedBlock,
-                          attachedToBlock: ids.includes(
-                            linkedBlock.attachedToBlock || "",
-                          )
-                            ? undefined
-                            : linkedBlock.attachedToBlock,
-                        },
-                        strategy: "overwrite",
-                      });
-                    }
-                  });
-                  deleteCachedBlock(blockId);
-                }
-              });
-            },
-          });
-        } else {
-          const blockId = ids[0];
-          const block = getBlockFromCache(blockId);
-
-          await deleteBlock(blockId, {
-            onSuccess() {
-              const linkedBlockIds = [
-                ...(block?.nextBlocks || []),
-                ...(block?.previousBlocks || []),
-                ...(block?.attachedBlock ? [block.attachedBlock] : []),
-                ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-              ];
-
-              linkedBlockIds.forEach((linkedBlockId) => {
-                const linkedBlock = getBlockFromCache(linkedBlockId);
-
-                if (linkedBlock) {
-                  updateCachedBlock({
-                    id: linkedBlock.id,
-                    payload: {
-                      ...linkedBlock,
-                      nextBlocks: linkedBlock.nextBlocks?.filter(
-                        (nextBlockId) => nextBlockId !== blockId,
-                      ),
-                      previousBlocks: linkedBlock.previousBlocks?.filter(
-                        (previousBlockId) => previousBlockId !== blockId,
-                      ),
-                      attachedBlock:
-                        linkedBlock.attachedBlock === blockId
-                          ? undefined
-                          : linkedBlock.attachedBlock,
-                      attachedToBlock:
-                        linkedBlock.attachedToBlock === blockId
-                          ? undefined
-                          : linkedBlock.attachedToBlock,
-                    },
-                    strategy: "overwrite",
-                  });
-                }
-              });
-              deleteCachedBlock(blockId);
-            },
-          });
-        }
-      }
-
-      deleteCallbackRef.current?.();
-      deleteCallbackRef.current = () => {};
-      deleteDialogCtl.closeDialog();
+    if (!id) {
+      return;
     }
+    const isLink = id.length === 36;
+
+    if (isLink) {
+      await handleLinkDeletion(id);
+    } else {
+      await handleBlockDeletion(id);
+    }
+
+    cleanupAfterDeletion();
   };
   const onMove = async (newCategoryId?: string) => {
     if (!newCategoryId) {
