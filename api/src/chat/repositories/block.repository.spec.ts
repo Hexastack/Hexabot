@@ -9,7 +9,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 
 import {
   blockFixtures,
@@ -144,11 +144,18 @@ describe('BlockRepository', () => {
     });
 
     it('should do nothing if no block is found for the criteria', async () => {
-      jest.spyOn(blockRepository, 'findOne').mockResolvedValue(null);
+      const mockFindOne = jest
+        .spyOn(blockRepository, 'findOne')
+        .mockResolvedValue(null);
       const mockUpdateMany = jest.spyOn(blockRepository, 'updateMany');
 
-      await blockRepository.preUpdate({} as any, { _id: 'nonexistent' }, {});
+      await blockRepository.preUpdate(
+        {} as any,
+        { _id: 'nonexistent' },
+        { $set: { category: 'newCategory' } },
+      );
 
+      expect(mockFindOne).toHaveBeenCalledWith({ _id: 'nonexistent' });
       expect(mockUpdateMany).not.toHaveBeenCalled();
     });
   });
@@ -232,7 +239,7 @@ describe('BlockRepository', () => {
       ]);
 
       expect(mockUpdateOne).toHaveBeenCalledWith('64abc1234def567890fedcab', {
-        nextBlocks: [new Types.ObjectId(validIds[1])],
+        nextBlocks: [validIds[1]],
       });
     });
   });

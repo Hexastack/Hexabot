@@ -113,8 +113,8 @@ export class BlockRepository extends BaseRepository<
         { attachedBlock: movedBlock.id },
         { $set: { attachedBlock: null } },
       );
-      this.checkDeprecatedAttachmentUrl(update);
     }
+    this.checkDeprecatedAttachmentUrl(update);
   }
 
   /**
@@ -213,9 +213,9 @@ export class BlockRepository extends BaseRepository<
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const nextBlocks = block.nextBlocks
-        .filter((nextBlock) => !ids.includes(nextBlock))
-        .map((id) => new Types.ObjectId(id));
+      const nextBlocks = block.nextBlocks.filter(
+        (nextBlock) => !ids.includes(nextBlock),
+      );
 
       if (nextBlocks.length > 0) {
         await this.updateOne(block.id, { nextBlocks });
