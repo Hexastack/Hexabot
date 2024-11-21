@@ -15,7 +15,7 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
-  NLP_METRICS_POPULATE,
+  NLP_METRIC_POPULATE,
   NlpMetric,
   NlpMetricFull,
   NlpMetricPopulate,
@@ -38,7 +38,7 @@ export class NlpMetricRepository extends BaseRepository<
     private readonly nlpMetricValueRepository: NlpMetricValueRepository,
     private readonly nlpModelRepository: NlpModelRepository,
   ) {
-    super(eventEmitter, model, NlpMetric, NLP_METRICS_POPULATE, NlpMetricFull);
+    super(eventEmitter, model, NlpMetric, NLP_METRIC_POPULATE, NlpMetricFull);
   }
 
   /**

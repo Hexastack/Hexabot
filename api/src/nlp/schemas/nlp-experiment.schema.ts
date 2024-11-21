@@ -18,10 +18,8 @@ import {
 } from '@/utils/types/filter.types';
 
 import { NlpMetricValue } from './nlp-metric-value.schema';
-import { NlpMetric } from './nlp-metric.schema';
 import { NlpModel } from './nlp-model.schema';
 import { NlpParameterValue } from './nlp-parameter-value.schema';
-import { NlpParameter } from './nlp-parameter.schema';
 
 @Schema({ timestamps: true })
 export class NlpExperimentStub extends BaseSchema {
@@ -134,10 +132,10 @@ export class NlpExperimentFull extends NlpExperimentStub {
   @Type(() => NlpModel)
   model: NlpModel;
 
-  @Type(() => NlpMetric)
+  @Type(() => NlpMetricValue)
   metrics: NlpMetricValue[];
 
-  @Type(() => NlpParameter)
+  @Type(() => NlpParameterValue)
   parameters: NlpParameterValue[];
 }
 

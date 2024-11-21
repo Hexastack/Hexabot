@@ -102,6 +102,7 @@ export type NlpParameterValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_PARAMETER_VALUE_POPULATE: NlpParameterValuePopulate[] = [
+  'model',
   'experiment',
   'parameter',
 ];

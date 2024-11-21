@@ -15,7 +15,7 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
-  NLP_PARAMETERS_POPULATE,
+  NLP_PARAMETER_POPULATE,
   NlpParameter,
   NlpParameterFull,
   NlpParameterPopulate,
@@ -38,7 +38,7 @@ export class NlpParameterRepository extends BaseRepository<
       eventEmitter,
       model,
       NlpParameter,
-      NLP_PARAMETERS_POPULATE,
+      NLP_PARAMETER_POPULATE,
       NlpParameterFull,
     );
   }

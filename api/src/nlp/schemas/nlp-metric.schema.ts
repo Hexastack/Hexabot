@@ -82,7 +82,7 @@ export type NlpMetricPopulate = keyof TFilterPopulateFields<
   NlpMetricStub
 >;
 
-export const NLP_METRICS_POPULATE: NlpMetricPopulate[] = [
+export const NLP_METRIC_POPULATE: NlpMetricPopulate[] = [
   'models',
   'experiments',
 ];

@@ -65,4 +65,4 @@ export type NlpParameterPopulate = keyof TFilterPopulateFields<
   NlpParameterStub
 >;
 
-export const NLP_PARAMETERS_POPULATE: NlpParameterPopulate[] = ['experiments'];
+export const NLP_PARAMETER_POPULATE: NlpParameterPopulate[] = ['experiments'];

@@ -101,7 +101,8 @@ export type NlpMetricValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_METRIC_VALUE_POPULATE: NlpMetricValuePopulate[] = [
+  'model',
+
   'experiment',
   'metric',
-  'model',
 ];
