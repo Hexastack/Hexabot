@@ -38,10 +38,12 @@ export type DeleteResult = {
 export enum EHook {
   preCreate = 'preCreate',
   preUpdate = 'preUpdate',
+  preUpdateMany = 'preUpdateMany',
   preDelete = 'preDelete',
   preValidate = 'preValidate',
   postCreate = 'postCreate',
   postUpdate = 'postUpdate',
+  postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
   postValidate = 'postValidate',
 }
@@ -154,6 +156,28 @@ export abstract class BaseRepository<
         repository.getEventName(EHook.preUpdate),
         criteria,
         updates?.['$set'],
+      );
+    });
+
+    hooks?.updateMany.pre.execute(async function () {
+      const query = this as Query<D, D, unknown, T, 'updateMany'>;
+      const criteria = query.getFilter();
+      const updates = query.getUpdate();
+
+      await repository.preUpdateMany(query, criteria, updates);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preUpdateMany),
+        criteria,
+        updates?.['$set'],
+      );
+    });
+
+    hooks?.updateMany.post.execute(async function (updated: any) {
+      const query = this as Query<D, D, unknown, T, 'updateMany'>;
+      await repository.postUpdateMany(query, updated);
+      repository.emitter.emit(
+        repository.getEventName(EHook.postUpdateMany),
+        updated,
       );
     });
 
@@ -319,7 +343,7 @@ export abstract class BaseRepository<
 
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
-    dto: D,
+    dto: UpdateQuery<D>,
   ): Promise<T> {
     const query = this.model.findOneAndUpdate<T>(
       {
@@ -335,7 +359,10 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.cls);
   }
 
-  async updateMany<D extends Partial<U>>(filter: TFilterQuery<T>, dto: D) {
+  async updateMany<D extends Partial<U>>(
+    filter: TFilterQuery<T>,
+    dto: UpdateQuery<D>,
+  ) {
     return await this.model.updateMany<T>(filter, {
       $set: dto,
     });
@@ -371,6 +398,21 @@ export abstract class BaseRepository<
     _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
     _criteria: TFilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
+  ) {
+    // Nothing ...
+  }
+
+  async preUpdateMany(
+    _query: Query<D, D, unknown, T, 'updateMany'>,
+    _criteria: TFilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
+  ) {
+    // Nothing ...
+  }
+
+  async postUpdateMany(
+    _query: Query<D, D, unknown, T, 'updateMany'>,
+    _updated: any,
   ) {
     // Nothing ...
   }

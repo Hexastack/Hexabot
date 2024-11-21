@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Add } from "@mui/icons-material";
+import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
@@ -36,18 +36,22 @@ import {
   useRef,
   useState,
 } from "react";
+import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
+import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format, QueryType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
@@ -67,7 +71,9 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string[] | string>(false);
   const addCategoryDialogCtl = useDialog<ICategory>(false);
+  const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
     setViewerZoom,
@@ -144,6 +150,7 @@ const Diagrams = () => {
     },
     [selectedCategoryId, debouncedUpdateCategory],
   );
+  const queryClient = useQueryClient();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
@@ -292,6 +299,7 @@ const Diagrams = () => {
       offsetUpdated: debouncedOffsetEvent,
     });
   }, [
+    selectedCategoryId,
     JSON.stringify(
       blocks.map((b) => {
         return { ...b, position: undefined, updatedAt: undefined };
@@ -314,6 +322,14 @@ const Diagrams = () => {
         }
       };
       deleteDialogCtl.openDialog(ids);
+    }
+  };
+  const handleMoveButton = () => {
+    const selectedEntities = engine?.getModel().getSelectedEntities().reverse();
+    const ids = selectedEntities?.map((model) => model.getID());
+
+    if (ids && selectedEntities) {
+      moveDialogCtl.openDialog(ids);
     }
   };
   const onDelete = async () => {
@@ -429,6 +445,32 @@ const Diagrams = () => {
       deleteDialogCtl.closeDialog();
     }
   };
+  const onMove = async (newCategoryId?: string) => {
+    if (!newCategoryId) {
+      return;
+    }
+
+    const ids = moveDialogCtl?.data;
+
+    if (ids?.length && Array.isArray(ids)) {
+      await updateBlocks({ ids, payload: { category: newCategoryId } });
+
+      queryClient.invalidateQueries({
+        predicate: ({ queryKey }) => {
+          const [qType, qEntity] = queryKey;
+
+          return (
+            qType === QueryType.collection &&
+            isSameEntity(qEntity, EntityType.BLOCK)
+          );
+        },
+      });
+
+      setSelectedCategoryId(newCategoryId);
+      setSelectedBlockId(undefined);
+      moveDialogCtl.closeDialog();
+    }
+  };
 
   return (
     <div
@@ -462,6 +504,13 @@ const Diagrams = () => {
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
         <DeleteDialog {...deleteDialogCtl} callback={onDelete} />
+        <MoveDialog
+          open={moveDialogCtl.open}
+          openDialog={moveDialogCtl.openDialog}
+          callback={onMove}
+          closeDialog={moveDialogCtl.closeDialog}
+          categories={categories}
+        />
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>
           <Grid
             sx={{
@@ -568,6 +617,15 @@ const Diagrams = () => {
                 disabled={!selectedBlockId || selectedBlockId.length !== 24}
               >
                 {t("button.edit")}
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<MoveUp />}
+                onClick={handleMoveButton}
+                disabled={!selectedBlockId || selectedBlockId.length !== 24}
+              >
+                {t("button.move")}
               </Button>
               <Button
                 sx={{}}

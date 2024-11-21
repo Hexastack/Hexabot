@@ -106,7 +106,8 @@
     "no_label_found": "Aucune étiquette trouvée",
     "code_is_required": "Le code est requis",
     "text_is_required": "Texte requis",
-    "invalid_file_type": "Type de fichier invalide"
+    "invalid_file_type": "Type de fichier invalide",
+    "select_category": "Sélectionner une catégorie"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
@@ -506,6 +507,7 @@
     "rename": "Renommer",
     "duplicate": "Dupliquer",
     "remove": "Supprimer",
+    "move": "Déplacer",
     "remove_permanently": "Supprimer de façon permanente",
     "restore": "Restaurer",
     "edit": "Modifier",

@@ -89,14 +89,138 @@ export class BlockRepository extends BaseRepository<
       Block,
       'findOneAndUpdate'
     >,
-    _criteria: TFilterQuery<Block>,
-    _updates:
+    criteria: TFilterQuery<Block>,
+    updates:
       | UpdateWithAggregationPipeline
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const updates: BlockUpdateDto = _updates?.['$set'];
+    const update: BlockUpdateDto = updates?.['$set'];
 
-    this.checkDeprecatedAttachmentUrl(updates);
+    if (update?.category) {
+      const movedBlock: Block = await this.findOne(criteria);
+
+      if (!movedBlock) {
+        return;
+      }
+
+      // Find and update blocks that reference the moved block
+      await this.updateMany(
+        { nextBlocks: movedBlock.id },
+        { $pull: { nextBlocks: movedBlock.id } },
+      );
+
+      await this.updateMany(
+        { attachedBlock: movedBlock.id },
+        { $set: { attachedBlock: null } },
+      );
+    }
+    this.checkDeprecatedAttachmentUrl(update);
+  }
+
+  /**
+   * Pre-processing logic for updating blocks.
+   *
+   * @param query - The query to update blocks.
+   * @param criteria - The filter criteria for the update query.
+   * @param updates - The update data.
+   */
+  async preUpdateMany(
+    _query: Query<
+      Document<Block, any, any>,
+      Document<Block, any, any>,
+      unknown,
+      Block,
+      'updateMany',
+      Record<string, never>
+    >,
+    criteria: TFilterQuery<Block>,
+    updates: UpdateQuery<Document<Block, any, any>>,
+  ): Promise<void> {
+    const categoryId: string = updates.$set.category;
+    if (categoryId) {
+      const movedBlocks = await this.find(criteria);
+
+      if (movedBlocks.length) {
+        const ids: string[] = movedBlocks.map(({ id }) => id);
+
+        // Step 1: Map IDs and Category
+        const objIds = ids.map((id) => new Types.ObjectId(id));
+        const objCategoryId = new Types.ObjectId(categoryId);
+
+        // Step 2: Find other blocks
+        const otherBlocks = await this.find({
+          _id: { $nin: objIds },
+          category: { $ne: objCategoryId },
+          $or: [
+            { attachedBlock: { $in: objIds } },
+            { nextBlocks: { $in: objIds } },
+          ],
+        });
+        // Step 3: Update blocks in the provided scope
+        await this.prepareBlocksInCategoryUpdateScope(categoryId, ids);
+
+        // Step 4: Update external blocks
+        await this.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, ids);
+      }
+    }
+  }
+
+  /**
+   * Updates blocks within a specified category scope.
+   * Ensures nextBlocks and attachedBlock are consistent with the provided IDs and category.
+   *
+   * @param category - The category
+   * @param ids - IDs representing the blocks to update.
+   * @returns A promise that resolves once all updates within the scope are complete.
+   */
+  async prepareBlocksInCategoryUpdateScope(
+    category: string,
+    ids: string[],
+  ): Promise<void> {
+    for (const id of ids) {
+      const oldState: Block = await this.findOne(id);
+      if (oldState.category !== category) {
+        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+          ids.includes(nextBlock),
+        );
+
+        const updatedAttachedBlock = ids.includes(oldState.attachedBlock || '')
+          ? oldState.attachedBlock
+          : null;
+
+        await this.updateOne(id, {
+          nextBlocks: updatedNextBlocks,
+          attachedBlock: updatedAttachedBlock,
+        });
+      }
+    }
+  }
+
+  /**
+   * Updates blocks outside the specified category scope by removing references to the provided IDs.
+   * Handles updates to both attachedBlock and nextBlocks.
+   *
+   * @param otherBlocks - An array of blocks outside the provided category scope.
+   * @param ids - An array of the Ids to disassociate.
+   * @returns A promise that resolves once all external block updates are complete.
+   */
+  async prepareBlocksOutOfCategoryUpdateScope(
+    otherBlocks: Block[],
+    ids: string[],
+  ): Promise<void> {
+    for (const block of otherBlocks) {
+      if (ids.includes(block.attachedBlock)) {
+        await this.updateOne(block.id, { attachedBlock: null });
+      }
+
+      const nextBlocks = block.nextBlocks.filter(
+        (nextBlock) => !ids.includes(nextBlock),
+      );
+
+      if (nextBlocks.length > 0) {
+        await this.updateOne(block.id, { nextBlocks });
+      }
+    }
   }
 
   /**

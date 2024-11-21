@@ -17,7 +17,7 @@ enum LifecycleOperation {
   //   InsertMany = 'insertMany',
   //   Update = 'update',
   //   UpdateOne = 'updateOne',
-  //   UpdateMany = 'updateMany',
+  UpdateMany = 'updateMany',
 }
 
 type PreHook = (...args: any[]) => void;
@@ -69,7 +69,7 @@ export class LifecycleHookManager {
       //   insertMany: ['pre'],
       //   update: ['pre', 'post'],
       //   updateOne: ['pre', 'post'],
-      //   updateMany: ['pre', 'post'],
+      updateMany: ['pre', 'post'],
     };
 
     const lifecycleHooks: LifecycleHooks = {} as LifecycleHooks;
