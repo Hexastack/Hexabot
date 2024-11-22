@@ -45,6 +45,7 @@ export default [
     label: Web.SettingLabel.greeting_message,
     value: 'Welcome! Ready to start a conversation with our chatbot?',
     type: SettingType.textarea,
+    translatable: true,
   },
   {
     group: WEB_CHANNEL_NAMESPACE,
@@ -58,6 +59,7 @@ export default [
     label: Web.SettingLabel.window_title,
     value: 'Widget Title',
     type: SettingType.text,
+    translatable: true,
   },
   {
     group: WEB_CHANNEL_NAMESPACE,

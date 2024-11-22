@@ -10,6 +10,8 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { PluginService } from '@/plugins/plugins.service';
+import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -24,6 +26,7 @@ export class TranslationService extends BaseService<Translation> {
     readonly repository: TranslationRepository,
     private readonly blockService: BlockService,
     private readonly settingService: SettingService,
+    private readonly pluginService: PluginService,
     private readonly i18n: I18nService,
   ) {
     super(repository);
@@ -49,14 +52,22 @@ export class TranslationService extends BaseService<Translation> {
       strings = strings.concat(block.message);
     } else if (typeof block.message === 'object') {
       if ('plugin' in block.message) {
+        const plugin = this.pluginService.getPlugin(
+          PluginType.block,
+          block.message.plugin,
+        );
+
         // plugin
-        Object.values(block.message.args).forEach((arg) => {
-          if (Array.isArray(arg)) {
-            // array of text
-            strings = strings.concat(arg);
-          } else if (typeof arg === 'string') {
-            // text
-            strings.push(arg);
+        Object.entries(block.message.args).forEach(([l, arg]) => {
+          const setting = plugin.settings.find(({ label }) => label === l);
+          if (setting?.translatable) {
+            if (Array.isArray(arg)) {
+              // array of text
+              strings = strings.concat(arg);
+            } else if (typeof arg === 'string') {
+              // text
+              strings.push(arg);
+            }
           }
         });
       } else if ('text' in block.message && Array.isArray(block.message.text)) {
@@ -121,12 +132,18 @@ export class TranslationService extends BaseService<Translation> {
    * @returns A promise of all strings available in a array
    */
   async getSettingStrings(): Promise<string[]> {
-    let strings: string[] = [];
+    const translatableSettings = await this.settingService.find({
+      translatable: true,
+    });
     const settings = await this.settingService.getSettings();
-    if (settings.chatbot_settings.global_fallback) {
-      strings = strings.concat(settings.chatbot_settings.fallback_message);
-    }
-    return strings;
+    return Object.values(settings)
+      .map((group: Record<string, string | string[]>) => Object.entries(group))
+      .flat()
+      .filter(([l]) => {
+        return translatableSettings.find(({ label }) => label === l);
+      })
+      .map(([, v]) => v)
+      .flat();
   }
 
   /**

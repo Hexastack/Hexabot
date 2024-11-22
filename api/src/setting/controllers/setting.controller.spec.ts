@@ -82,7 +82,13 @@ describe('SettingController', () => {
       );
 
       expect(settingService.find).toHaveBeenCalled();
-      expect(result).toEqualPayload(settingFixtures);
+      expect(result).toEqualPayload(settingFixtures, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'subgroup',
+        'translatable',
+      ]);
     });
   });
 
@@ -97,12 +103,15 @@ describe('SettingController', () => {
       const result = await settingController.updateOne(id, payload);
 
       expect(settingService.updateOne).toHaveBeenCalledWith(id, payload);
-      expect(result).toEqualPayload({
-        ...settingFixtures.find(
-          (settingFixture) => settingFixture.value === 'admin@example.com',
-        ),
-        value: payload.value,
-      });
+      expect(result).toEqualPayload(
+        {
+          ...settingFixtures.find(
+            (settingFixture) => settingFixture.value === 'admin@example.com',
+          ),
+          value: payload.value,
+        },
+        ['id', 'createdAt', 'updatedAt', 'subgroup', 'translatable'],
+      );
     });
   });
 });

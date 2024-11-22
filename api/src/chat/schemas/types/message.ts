@@ -7,6 +7,7 @@
  */
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { PluginName } from '@/plugins/types';
 
 import { Message } from '../message.schema';
 
@@ -107,7 +108,7 @@ export type StdOutgoingAttachmentMessage<
 };
 
 export type StdPluginMessage = {
-  plugin: string;
+  plugin: PluginName;
   args: { [key: string]: any };
 };
 

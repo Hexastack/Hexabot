@@ -84,6 +84,7 @@ describe('SettingService', () => {
       expect(settingRepository.findAll).toHaveBeenCalled();
       expect(result).toEqualPayload(
         settingService.group(settingFixtures as Setting[]),
+        ['id', 'createdAt', 'updatedAt', 'subgroup', 'translatable'],
       );
     });
   });
