@@ -51,6 +51,24 @@ export class NlpExperimentRepository extends BaseRepository<
     );
   }
 
+  async preCreate(experiment: Partial<NlpExperiment>): Promise<void> {
+    if (!experiment.model) {
+      throw new Error('Experiment must be associated with a model.');
+    }
+
+    const updatedModel = await this.nlpModelRepository.updateOne(
+      { _id: experiment.model },
+      { $inc: { version: 1 } },
+    );
+
+    if (!updatedModel) {
+      throw new Error(`Model with ID ${experiment.model} not found.`);
+    } else {
+      // Set the experiment's version to the updated model version
+      experiment.current_version = updatedModel.version;
+    }
+  }
+
   /**
    * Deletes NLP experiment associated with the provided criteria before deleting the metrics themselves.
    *

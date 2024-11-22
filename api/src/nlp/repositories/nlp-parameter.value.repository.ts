@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import assert from 'assert';
+
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
@@ -43,6 +45,42 @@ export class NlpParameterValueRepository extends BaseRepository<
       NlpParameterValue,
       NLP_PARAMETER_VALUE_POPULATE,
       NlpParameterValueFull,
+    );
+  }
+
+  async preCreate(parameterValue: Partial<NlpParameterValue>): Promise<void> {
+    const experiment = await this.nlpExperimentRepository.findOne({
+      _id: parameterValue.experiment,
+    });
+
+    if (!experiment) {
+      throw new Error(
+        `Experiment with ID ${parameterValue.experiment} not found.`,
+      );
+    }
+    // Check if the associated model exists
+    const model = await this.nlpModelRepository.findOne({
+      _id: parameterValue.model,
+    });
+
+    if (!model) {
+      throw new Error(`Experiment with ID ${parameterValue.model} not found.`);
+    }
+    const updatedModel = await this.nlpModelRepository.updateOne(
+      { _id: model.id },
+      { $inc: { version: 1 } },
+    );
+
+    if (!updatedModel) {
+      throw new Error(`Failed to update model version for ID ${model.id}.`);
+    }
+
+    // Set the metric value's model and version
+    parameterValue.model = updatedModel.id;
+    parameterValue.version = updatedModel.version;
+    assert(
+      parameterValue.version === experiment.current_version,
+      `Parameter Value version (${parameterValue.version}) does not match the experiment's current version (${experiment.current_version}).`,
     );
   }
 

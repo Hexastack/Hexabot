@@ -30,7 +30,7 @@ export class NlpExperimentStub extends BaseSchema {
   run_name?: string;
 
   @Prop({ type: Number, required: true })
-  current_version: string;
+  current_version: number;
 
   /**
    * The duration of the experiment in seconds, stored as a floating-point number.
