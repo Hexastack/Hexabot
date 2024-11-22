@@ -59,7 +59,7 @@ export class TranslationService extends BaseService<Translation> {
 
         // plugin
         Object.entries(block.message.args).forEach(([l, arg]) => {
-          const setting = plugin.settings.find(({ label }) => label === l);
+          const setting = plugin?.settings.find(({ label }) => label === l);
           if (setting?.translatable) {
             if (Array.isArray(arg)) {
               // array of text
