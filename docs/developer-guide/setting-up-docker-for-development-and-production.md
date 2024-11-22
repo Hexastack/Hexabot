@@ -17,12 +17,12 @@ The following is an example on how to install Docker on a Ubuntu machine. If you
  sudo chmod a+r /etc/apt/keyrings/docker.asc
 
  # Add the repository to Apt sources:
- echo 
- \"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
- $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
- sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
- 
- sudo apt-get update
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Update the system:
+sudo apt-get update
 ```
 
 2. Install Docker Community Edition:
