@@ -75,7 +75,11 @@ export class ContentTypeController extends BaseController<ContentType> {
     @Query(new SearchFilterPipe<ContentType>({ allowedFields: ['name'] }))
     filters: TFilterQuery<ContentType>,
   ) {
-    return await this.contentTypeService.findPage(filters, pageQuery);
+    if (pageQuery.limit) {
+      return await this.contentTypeService.findPage(filters, pageQuery);
+    }
+
+    return await this.contentTypeService.find(filters, pageQuery.sort);
   }
 
   /**

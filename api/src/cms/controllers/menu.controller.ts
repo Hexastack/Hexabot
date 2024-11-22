@@ -76,7 +76,11 @@ export class MenuController extends BaseController<
     @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
     filters: TFilterQuery<Menu>,
   ) {
-    return await this.menuService.findPage(filters, pageQuery);
+    if (pageQuery.limit) {
+      return await this.menuService.findPage(filters, pageQuery);
+    }
+
+    return await this.menuService.find(filters, pageQuery.sort);
   }
 
   /**

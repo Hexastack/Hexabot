@@ -194,9 +194,14 @@ export class ContentController extends BaseController<
     )
     filters: TFilterQuery<Content>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.contentService.findPageAndPopulate(filters, pageQuery)
+        : await this.contentService.findPage(filters, pageQuery);
+    }
     return this.canPopulate(populate)
-      ? await this.contentService.findPageAndPopulate(filters, pageQuery)
-      : await this.contentService.findPage(filters, pageQuery);
+      ? await this.contentService.findAndPopulate(filters, pageQuery.sort)
+      : await this.contentService.find(filters, pageQuery.sort);
   }
 
   /**

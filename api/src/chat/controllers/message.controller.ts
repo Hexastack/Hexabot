@@ -42,6 +42,7 @@ import {
   MessageStub,
 } from '../schemas/message.schema';
 import {
+  AnyMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
@@ -71,7 +72,7 @@ export class MessageController extends BaseController<
 
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Message>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<AnyMessage>,
     @Query(PopulatePipe)
     populate: string[],
     @Query(
@@ -79,9 +80,15 @@ export class MessageController extends BaseController<
     )
     filters: TFilterQuery<Message>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.messageService.findPageAndPopulate(filters, pageQuery)
+        : await this.messageService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.messageService.findPageAndPopulate(filters, pageQuery)
-      : await this.messageService.findPage(filters, pageQuery);
+      ? await this.messageService.findAndPopulate(filters, pageQuery.sort)
+      : await this.messageService.find(filters, pageQuery.sort);
   }
 
   /**
