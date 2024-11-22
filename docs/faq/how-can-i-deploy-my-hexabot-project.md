@@ -119,8 +119,7 @@ sudo systemctl status nginx
 
 1. Replace Nginx server configuration with the following : **/etc/nginx/sites-available/default**.
 
-````bash
-```
+```bash
 server {
     listen 80;
     server_name mychatbot.ai; # You will need to update this to use your own domain 
@@ -168,7 +167,6 @@ server {
     }
 }
 ```
-````
 
 #### Step6: Generate SSL certificate using Certbot
 
