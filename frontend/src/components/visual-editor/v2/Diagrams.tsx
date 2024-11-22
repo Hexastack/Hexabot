@@ -42,7 +42,7 @@ import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
+import { useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -90,10 +90,7 @@ const Diagrams = () => {
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
-      initialPaginationState: {
-        page: 0,
-        pageSize: 999, // @TODO: We need to display all categories
-      },
+      hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
@@ -112,13 +109,6 @@ const Diagrams = () => {
     ({ id }) => id === selectedCategoryId,
   );
   const { mutateAsync: updateCategory } = useUpdate(EntityType.CATEGORY, {
-    invalidate: false,
-  });
-  const { mutateAsync: deleteBlock } = useDelete(EntityType.BLOCK, {
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      setSelectedBlockId(undefined);
-    },
     invalidate: false,
   });
   const { mutateAsync: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
@@ -188,6 +178,7 @@ const Diagrams = () => {
     if (categories?.length > 0 && !selectedCategoryId) {
       setSelectedCategoryId(categories[0].id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -525,7 +516,7 @@ const Diagrams = () => {
       <Box sx={{ width: "100%" }}>
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
-        <DeleteDialog {...deleteDialogCtl} callback={onDelete} />
+        <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
         <MoveDialog
           open={moveDialogCtl.open}
           openDialog={moveDialogCtl.openDialog}
