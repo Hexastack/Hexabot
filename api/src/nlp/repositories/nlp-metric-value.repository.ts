@@ -22,6 +22,7 @@ import {
 } from '../schemas/nlp-metric-value.schema';
 
 import { NlpExperimentRepository } from './nlp-experiment.repository';
+import { NlpModelRepository } from './nlp-model.repository';
 
 @Injectable()
 export class NlpMetricValueRepository extends BaseRepository<
@@ -33,6 +34,7 @@ export class NlpMetricValueRepository extends BaseRepository<
     readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpMetricValue.name) readonly model: Model<NlpMetricValue>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
+    private readonly nlpModelRepository: NlpModelRepository,
   ) {
     super(
       eventEmitter,
@@ -60,12 +62,37 @@ export class NlpMetricValueRepository extends BaseRepository<
     criteria: TFilterQuery<NlpMetricValue>,
   ): Promise<void> {
     {
-      if (criteria._id) {
-        await this.nlpExperimentRepository.deleteMany({
-          metrics: {
-            $elemMatch: { metric: criteria.metric, value: criteria.value },
-          },
-        });
+      if (criteria) {
+        const relatedExperimentIds = await this.nlpExperimentRepository
+          .find({
+            metrics: {
+              $elemMatch: { metric: criteria.metric, value: criteria.value },
+            },
+          })
+          .then((results) => results.map((doc) => doc.id));
+
+        if (relatedExperimentIds.length > 0) {
+          for (const experimentId of relatedExperimentIds) {
+            const updatedModel = await this.nlpModelRepository.updateOne(
+              { experiments: experimentId }, // Valid for single ObjectId
+              {
+                $pull: { experiments: experimentId },
+                $inc: { version: -1 },
+              },
+            );
+
+            if (
+              updatedModel &&
+              updatedModel.version <= 0 &&
+              updatedModel.experiments.length === 0
+            ) {
+              // Delete the model if conditions are met
+              await this.nlpModelRepository.deleteOne({
+                _id: updatedModel.id,
+              });
+            }
+          }
+        }
       } else {
         throw new Error(
           'Attempted to delete NLP experiment using unknown criteria',

@@ -22,6 +22,8 @@ import {
 } from '../schemas/nlp-model.schema';
 
 import { NlpExperimentRepository } from './nlp-experiment.repository';
+import { NlpMetricValueRepository } from './nlp-metric-value.repository';
+import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
 @Injectable()
 export class NlpModelRepository extends BaseRepository<
@@ -33,6 +35,8 @@ export class NlpModelRepository extends BaseRepository<
     readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpModel.name) readonly model: Model<NlpModel>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
+    private readonly nlpMetricValueRepository: NlpMetricValueRepository,
+    private readonly nlpParameterValueRepository: NlpParameterValueRepository,
   ) {
     super(eventEmitter, model, NlpModel, NLP_MODEL_POPULATE, NlpModelFull);
   }
@@ -56,6 +60,12 @@ export class NlpModelRepository extends BaseRepository<
     {
       if (criteria._id) {
         await this.nlpExperimentRepository.deleteMany({
+          model: criteria._id,
+        });
+        await this.nlpMetricValueRepository.deleteMany({
+          model: criteria._id,
+        });
+        await this.nlpParameterValueRepository.deleteMany({
           model: criteria._id,
         });
       } else {

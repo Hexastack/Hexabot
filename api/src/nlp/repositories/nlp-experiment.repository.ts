@@ -22,6 +22,9 @@ import {
 } from '../schemas/nlp-experiment.schema';
 
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
+import { NlpMetricRepository } from './nlp-metric.repository';
+import { NlpModelRepository } from './nlp-model.repository';
+import { NlpParameterRepository } from './nlp-parameter.repository';
 import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
 @Injectable()
@@ -35,6 +38,9 @@ export class NlpExperimentRepository extends BaseRepository<
     @InjectModel(NlpExperiment.name) readonly model: Model<NlpExperiment>,
     private readonly nlpMetricValueRepository: NlpMetricValueRepository,
     private readonly nlpParameterValueRepository: NlpParameterValueRepository,
+    private readonly nlpMetricRepository: NlpMetricRepository,
+    private readonly nlpParameterRepository: NlpParameterRepository,
+    private readonly nlpModelRepository: NlpModelRepository,
   ) {
     super(
       eventEmitter,
@@ -70,6 +76,42 @@ export class NlpExperimentRepository extends BaseRepository<
         await this.nlpMetricValueRepository.deleteMany({
           experiment: criteria._id,
         });
+        this.nlpMetricRepository.updateOne(
+          { experiments: criteria._id },
+          {
+            $pull: { experiments: criteria._id },
+          },
+        );
+        this.nlpParameterRepository.updateOne(
+          { experiments: criteria._id },
+          {
+            $pull: { experiments: criteria._id },
+          },
+        );
+        const updatedModel = await this.nlpModelRepository.updateOne(
+          { experiments: criteria._id }, // Valid for single ObjectId
+          {
+            $pull: { experiments: criteria._id },
+            $inc: { version: -1 },
+          },
+        );
+        if (
+          updatedModel &&
+          updatedModel.version <= 0 &&
+          updatedModel.experiments.length === 0
+        ) {
+          await this.nlpMetricRepository.updateOne(
+            { models: updatedModel.id },
+            {
+              $pull: { experiments: updatedModel.id },
+            },
+          );
+
+          // Delete the model if conditions are met
+          await this.nlpModelRepository.deleteOne({
+            _id: updatedModel.id,
+          });
+        }
       } else {
         throw new Error(
           'Attempted to delete NLP experiment using unknown criteria',
