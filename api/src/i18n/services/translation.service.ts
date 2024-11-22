@@ -60,7 +60,6 @@ export class TranslationService extends BaseService<Translation> {
         // plugin
         Object.entries(block.message.args).forEach(([l, arg]) => {
           const setting = plugin.settings.find(({ label }) => label === l);
-
           if (setting?.translatable) {
             if (Array.isArray(arg)) {
               // array of text
@@ -140,9 +139,8 @@ export class TranslationService extends BaseService<Translation> {
     return Object.values(settings)
       .map((group: Record<string, string | string[]>) => Object.entries(group))
       .flat()
-      .filter(([l, value]) => {
-        const found = translatableSettings.find(({ label }) => label === l);
-        return found && !!value;
+      .filter(([l]) => {
+        return translatableSettings.find(({ label }) => label === l);
       })
       .map(([, v]) => v)
       .flat();

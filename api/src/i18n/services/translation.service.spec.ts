@@ -22,7 +22,6 @@ import { TranslationService } from '../services/translation.service';
 
 describe('TranslationService', () => {
   let service: TranslationService;
-  let settingService: SettingService;
   let i18nService: I18nService;
   let pluginService: PluginService;
 
@@ -67,16 +66,36 @@ describe('TranslationService', () => {
         {
           provide: SettingService,
           useValue: {
-            getSettings: jest
-              .fn()
-              .mockResolvedValue(['Global fallback message']),
-            find: jest.fn().mockResolvedValue([
-              {
-                translatable: false,
-                label: 'global_fallback',
+            getSettings: jest.fn().mockResolvedValue({
+              chatbot_settings: {
+                global_fallback: true,
                 fallback_message: ['Global fallback message'],
               },
-            ]),
+            }),
+            find: jest
+              .fn()
+              .mockImplementation((criteria: { translatable?: boolean }) =>
+                [
+                  {
+                    translatable: false,
+                    group: 'default',
+                    value: 'Global fallback',
+                    label: 'global_fallback',
+                    type: SettingType.checkbox,
+                  },
+                  {
+                    translatable: true,
+                    group: 'default',
+                    value: 'Global fallback message',
+                    label: 'fallback_message',
+                    type: SettingType.text,
+                  },
+                ].filter((s) =>
+                  criteria && 'translatable' in criteria
+                    ? s.translatable === criteria.translatable
+                    : true,
+                ),
+              ),
           },
         },
         {
@@ -90,7 +109,6 @@ describe('TranslationService', () => {
     }).compile();
 
     service = module.get<TranslationService>(TranslationService);
-    settingService = module.get<SettingService>(SettingService);
     i18nService = module.get<I18nService>(I18nService);
     pluginService = module.get<PluginService>(PluginService);
   });
@@ -168,15 +186,9 @@ describe('TranslationService', () => {
     expect(result).toEqual(['String 2', 'String 3']);
   });
 
-  it('should return an empty array from the settings when global fallback is disabled', async () => {
-    jest.spyOn(settingService, 'getSettings').mockResolvedValueOnce({
-      chatbot_settings: {
-        global_fallback: false,
-        fallback_message: ['Global fallback message'],
-      },
-    } as Settings);
+  it('should return the settings translation strings', async () => {
     const strings = await service.getSettingStrings();
-    expect(strings).toEqual([]);
+    expect(strings).toEqual(['Global fallback message']);
   });
 
   it('should return an array of strings from a block with a quick reply message', () => {
