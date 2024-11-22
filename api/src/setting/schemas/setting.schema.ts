@@ -58,6 +58,12 @@ export class Setting extends BaseSchema {
     default: 0,
   })
   weight?: number;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  translatable?: boolean;
 }
 
 export const SettingModel: ModelDefinition = LifecycleHookManager.attach({

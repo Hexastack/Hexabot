@@ -9,6 +9,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsIn,
   IsNotEmpty,
   IsOptional,
@@ -65,8 +66,20 @@ export class SettingCreateDto {
   //TODO: adding swagger decorators
   config?: Record<string, any>;
 
-  //TODO: adding swagger decorators
+  @ApiPropertyOptional({
+    description:
+      'Defines the display order of the setting in the user interface',
+    type: Number,
+  })
   weight: number;
+
+  @ApiPropertyOptional({
+    description: 'Indicates whether this setting supports translation',
+    type: Boolean,
+  })
+  @IsBoolean()
+  @IsOptional()
+  translatable?: boolean;
 }
 
 export class SettingUpdateDto {

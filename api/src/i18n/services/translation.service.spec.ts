@@ -10,6 +10,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { PluginService } from '@/plugins/plugins.service';
+import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { Block } from '../../chat/schemas/block.schema';
@@ -22,6 +24,7 @@ describe('TranslationService', () => {
   let service: TranslationService;
   let settingService: SettingService;
   let i18nService: I18nService;
+  let pluginService: PluginService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,6 +40,12 @@ describe('TranslationService', () => {
                 lang: 'en',
               },
             ]),
+          },
+        },
+        {
+          provide: PluginService,
+          useValue: {
+            getPlugin: jest.fn(),
           },
         },
         {
@@ -58,12 +67,16 @@ describe('TranslationService', () => {
         {
           provide: SettingService,
           useValue: {
-            getSettings: jest.fn().mockResolvedValue({
-              chatbot_settings: {
-                global_fallback: true,
-                fallback_message: ['Global fallback message'],
+            getSettings: jest
+              .fn()
+              .mockResolvedValue(['Global fallback message']),
+            find: jest.fn().mockResolvedValue([
+              {
+                translatable: true,
+                key: 'global_fallback',
+                value: 'Global fallback message',
               },
-            }),
+            ]),
           },
         },
         {
@@ -79,6 +92,7 @@ describe('TranslationService', () => {
     service = module.get<TranslationService>(TranslationService);
     settingService = module.get<SettingService>(SettingService);
     i18nService = module.get<I18nService>(I18nService);
+    pluginService = module.get<PluginService>(PluginService);
   });
 
   it('should call refreshDynamicTranslations with translations from findAll', async () => {
@@ -98,9 +112,60 @@ describe('TranslationService', () => {
     expect(strings).toEqual(['Test message', 'Fallback message']);
   });
 
-  it('should return an array of strings from the settings when global fallback is enabled', async () => {
-    const strings = await service.getSettingStrings();
-    expect(strings).toEqual(['Global fallback message']);
+  it('should return plugin-related strings from block message with translatable args', () => {
+    const block: Block = {
+      name: 'Ollama Plugin',
+      patterns: [],
+      assign_labels: [],
+      trigger_channels: [],
+      trigger_labels: [],
+      nextBlocks: [],
+      category: '673f82f4bafd1e2a00e7e53e',
+      starts_conversation: false,
+      builtin: false,
+      capture_vars: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: '673f8724007f1087c96d30d0',
+      position: { x: 702, y: 321.8333282470703 },
+      message: {
+        plugin: 'ollama-plugin',
+        args: {
+          model: 'String 1',
+          context: ['String 2', 'String 3'],
+        },
+      },
+      options: {},
+    };
+
+    const mockedPlugin: any = {
+      name: 'ollama-plugin',
+      type: 'block',
+      settings: [
+        {
+          label: 'model',
+          group: 'default',
+          type: SettingType.text,
+          value: 'llama3.2',
+          translatable: false,
+        },
+        {
+          label: 'context',
+          group: 'default',
+          type: SettingType.multiple_text,
+          value: ['Answer the user QUESTION using the DOCUMENTS text above.'],
+          translatable: true,
+        },
+      ],
+    };
+
+    jest
+      .spyOn(pluginService, 'getPlugin')
+      .mockImplementation(() => mockedPlugin);
+
+    const result = service.getBlockStrings(block);
+
+    expect(result).toEqual(['String 2', 'String 3']);
   });
 
   it('should return an empty array from the settings when global fallback is disabled', async () => {

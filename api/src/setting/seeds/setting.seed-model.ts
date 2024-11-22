@@ -69,6 +69,7 @@ export const DEFAULT_SETTINGS = [
     ] as string[],
     type: SettingType.multiple_text,
     weight: 5,
+    translatable: true,
   },
   {
     group: 'contact',
