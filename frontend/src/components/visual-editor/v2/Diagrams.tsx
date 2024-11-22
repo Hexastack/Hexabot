@@ -372,14 +372,7 @@ const Diagrams = () => {
       },
     );
   };
-  const handleBlockDeletion = async (blockIds: string[]) => {
-    if (blockIds.length > 1) {
-      await deleteMultipleBlocks(blockIds);
-    } else {
-      await deleteSingleBlock(blockIds[0]);
-    }
-  };
-  const deleteMultipleBlocks = async (blockIds: string[]) => {
+  const handleBlocksDeletion = async (blockIds: string[]) => {
     await deleteBlocks(blockIds, {
       onSuccess: () => {
         blockIds.forEach((blockId) => {
@@ -390,18 +383,6 @@ const Diagrams = () => {
             deleteCachedBlock(blockId);
           }
         });
-      },
-    });
-  };
-  const deleteSingleBlock = async (blockId: string) => {
-    const block = getBlockFromCache(blockId);
-
-    await deleteBlock(blockId, {
-      onSuccess() {
-        if (block) {
-          updateLinkedBlocks(block, [blockId]);
-          deleteCachedBlock(blockId);
-        }
       },
     });
   };
@@ -481,7 +462,7 @@ const Diagrams = () => {
     if (isLink) {
       await handleLinkDeletion(ids[0]);
     } else {
-      await handleBlockDeletion(ids);
+      await handleBlocksDeletion(ids);
     }
 
     cleanupAfterDeletion();
