@@ -19,7 +19,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'admin@example.com',
     type: SettingType.text,
     weight: 1,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -35,7 +34,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'Your company name',
     type: SettingType.text,
     weight: 2,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -43,7 +41,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '(+999) 9999 9999 999',
     type: SettingType.text,
     weight: 3,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -51,7 +48,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'contact[at]mycompany.com',
     type: SettingType.text,
     weight: 4,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -59,7 +55,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '71 Pilgrim Avenue',
     type: SettingType.text,
     weight: 5,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -67,7 +62,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '',
     type: SettingType.text,
     weight: 6,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -75,7 +69,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'Chevy Chase',
     type: SettingType.text,
     weight: 7,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -83,7 +76,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: '85705',
     type: SettingType.text,
     weight: 8,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -91,7 +83,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'Orlando',
     type: SettingType.text,
     weight: 9,
-    translatable: false,
   },
   {
     group: 'contact',
@@ -99,7 +90,6 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'US',
     type: SettingType.text,
     weight: 10,
-    translatable: false,
   },
 ];
 

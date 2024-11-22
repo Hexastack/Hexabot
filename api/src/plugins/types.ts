@@ -24,9 +24,7 @@ export interface CustomBlocks {}
 
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = Omit<SettingCreateDto, 'weight'> & {
-  translatable?: boolean;
-};
+export type PluginSetting = Omit<SettingCreateDto, 'weight'>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,

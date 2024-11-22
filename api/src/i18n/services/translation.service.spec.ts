@@ -72,9 +72,9 @@ describe('TranslationService', () => {
               .mockResolvedValue(['Global fallback message']),
             find: jest.fn().mockResolvedValue([
               {
-                translatable: true,
-                key: 'global_fallback',
-                value: 'Global fallback message',
+                translatable: false,
+                global_fallback: 'global_fallback',
+                fallback_message: ['Global fallback message'],
               },
             ]),
           },
