@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
+import { useQuery, useQueryClient, UseQueryOptions } from "react-query";
 
 import {
   EntityType,
@@ -17,6 +17,7 @@ import {
 import {
   IBaseSchema,
   IDynamicProps,
+  IEntityMapTypes,
   IFindConfigProps,
   POPULATE_BY_TYPE,
   TAllowedFormat,
@@ -26,7 +27,7 @@ import {
 import { useEntityApiClient } from "../useApiClient";
 import { usePagination } from "../usePagination";
 
-import { useNormalizeAndCache } from "./helpers";
+import { isSameEntity, useNormalizeAndCache } from "./helpers";
 import { useCount } from "./useCount";
 import { useGetFromCache } from "./useGet";
 
@@ -101,5 +102,30 @@ export const useFind = <
       rows: data || [],
       loading: normalizedQuery.isLoading,
     },
+  };
+};
+
+export const useFindFromCache = <
+  E extends keyof IEntityMapTypes,
+  TData extends IBaseSchema = TType<E>["basic"],
+>(
+  entity: E,
+) => {
+  const queryClient = useQueryClient();
+
+  return (criteria: Partial<TData>) => {
+    const queriesData = queryClient.getQueriesData<TData>({
+      predicate: ({ queryKey }) => {
+        const [qType, qEntity] = queryKey;
+
+        return qType === QueryType.item && isSameEntity(qEntity, entity);
+      },
+    });
+
+    return queriesData
+      .reduce((acc, [, itemData]) => [...acc, itemData], [] as TData[])
+      .filter((obj) =>
+        Object.keys(criteria).every((key) => obj[key] === criteria[key]),
+      );
   };
 };

@@ -1,0 +1,159 @@
+/*
+ * Copyright © 2024 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
+import { ChipTypeMap } from "@mui/material";
+import { AutocompleteProps } from "@mui/material/Autocomplete";
+import { forwardRef, useEffect, useRef } from "react";
+
+import { useFind, useFindFromCache } from "@/hooks/crud/useFind";
+import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
+import { useSearch } from "@/hooks/useSearch";
+import { EntityType, Format, QueryType } from "@/services/types";
+import { IEntityMapTypes } from "@/types/base.types";
+import { TFilterStringFields } from "@/types/search.types";
+import { generateId } from "@/utils/generateId";
+
+import AutoCompleteSelect from "./AutoCompleteSelect";
+
+type AutoCompleteEntitySelectProps<
+  Value,
+  Label extends keyof Value = keyof Value,
+  Multiple extends boolean | undefined = true,
+> = Omit<
+  AutocompleteProps<
+    Value,
+    Multiple,
+    false,
+    false,
+    ChipTypeMap["defaultComponent"]
+  >,
+  "renderInput" | "options" | "value" | "defaultValue"
+> & {
+  value?: Multiple extends true ? string[] : string | null;
+  label: string;
+  idKey?: string;
+  labelKey: Label;
+  entity: keyof IEntityMapTypes;
+  format: Format;
+  searchFields: string[];
+  error?: boolean;
+  helperText?: string | null | undefined;
+  preprocess?: (data: Value[]) => Value[];
+  noOptionsWarning?: string;
+  type: "entity" | "value";
+};
+
+const AutoCompleteNlpPatternSelect = <
+  Value,
+  Label extends keyof Value = keyof Value,
+  Multiple extends boolean | undefined = true,
+>(
+  {
+    label,
+    value,
+    entity,
+    format,
+    searchFields,
+    multiple,
+    onChange,
+    error,
+    helperText,
+    preprocess,
+    idKey = "id",
+    labelKey,
+    type,
+    ...rest
+  }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
+  ref,
+) => {
+  useFind(
+    { entity: EntityType.NLP_ENTITY, format: Format.FULL },
+    { hasCount: false },
+  );
+  const findNlpEntityFromCache = useFindFromCache(EntityType.NLP_ENTITY);
+  const { onSearch, searchPayload } = useSearch<Value>({
+    $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
+  });
+  const idRef = useRef(generateId());
+  const params = {
+    where: {
+      or: [
+        ...(searchPayload.where.or || []),
+        ...(value
+          ? Array.isArray(value)
+            ? value.map((v) => {
+                return type === "entity"
+                  ? { [type]: findNlpEntityFromCache({ name: v })?.[0]?.id }
+                  : { [idKey]: v };
+              })
+            : [
+                type === "entity"
+                  ? { [type]: findNlpEntityFromCache({ name: value })?.[0]?.id }
+                  : { [idKey]: value },
+              ]
+          : []),
+      ],
+    },
+  };
+  const { data, isFetching, fetchNextPage } = useInfiniteFind(
+    { entity, format },
+    {
+      params,
+      hasCount: false,
+    },
+    {
+      keepPreviousData: true,
+      queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
+    },
+  );
+  // flatten & filter unique
+  const flattenedData = data?.pages
+    ?.flat()
+    .filter(
+      (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
+    );
+  const options =
+    preprocess && flattenedData
+      ? preprocess((flattenedData || []) as unknown as Value[])
+      : ((flattenedData || []) as Value[]);
+
+  useEffect(() => {
+    fetchNextPage({ pageParam: params });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(searchPayload)]);
+
+  return (
+    <AutoCompleteSelect<Value, Label, Multiple>
+      {...(options.length && { value })}
+      onChange={onChange}
+      label={label}
+      multiple={multiple}
+      ref={ref}
+      idKey={idKey}
+      labelKey={labelKey}
+      options={options || []}
+      onSearch={onSearch}
+      error={error}
+      helperText={helperText}
+      loading={isFetching}
+      {...rest}
+    />
+  );
+};
+
+AutoCompleteNlpPatternSelect.displayName = "AutoCompleteNlpPatternSelect";
+
+export default forwardRef(AutoCompleteNlpPatternSelect) as unknown as <
+  Value,
+  Label extends keyof Value = keyof Value,
+  Multiple extends boolean | undefined = true,
+>(
+  props: AutoCompleteEntitySelectProps<Value, Label, Multiple> & {
+    ref?: React.ForwardedRef<HTMLDivElement>;
+  },
+) => ReturnType<typeof AutoCompleteNlpPatternSelect>;

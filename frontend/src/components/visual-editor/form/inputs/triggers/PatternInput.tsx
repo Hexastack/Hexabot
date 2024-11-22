@@ -11,6 +11,7 @@ import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import AutoCompleteNlpPatternSelect from "@/app-components/inputs/AutoCompleteNlpPatternSelect";
 import { Input } from "@/app-components/inputs/Input";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useGetFromCache } from "@/hooks/crud/useGet";
@@ -148,10 +149,11 @@ const PatternInput: FC<PatternInputProps> = ({
       </Grid>
       <Grid item xs={9}>
         {patternType === "nlp" ? (
-          <AutoCompleteEntitySelect<INlpValue, "value">
+          <AutoCompleteNlpPatternSelect<INlpValue, "value">
             value={(pattern as NlpPattern[]).map((v) =>
               "value" in v && v.value ? v.value : v.entity,
             )}
+            type={(pattern as NlpPattern[]).map((v) => v.match)[0]}
             searchFields={["value", "label"]}
             entity={EntityType.NLP_VALUE}
             format={Format.FULL}
@@ -164,7 +166,7 @@ const PatternInput: FC<PatternInputProps> = ({
                 data.map((d) => {
                   const entity = getNlpEntityFromCache(d.entity) as INlpEntity;
 
-                  return d.value === "any"
+                  return d.value === d.entity
                     ? {
                         match: "entity",
                         entity: entity.name,
@@ -180,7 +182,9 @@ const PatternInput: FC<PatternInputProps> = ({
             getOptionLabel={(option) => {
               const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
 
-              return `${entity.name}=${option.value}`;
+              if (entity.name === option.value) {
+                return `${entity.name}=any`;
+              } else return `${entity.name}=${option.value}`;
             }}
             groupBy={(option) => {
               const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
@@ -206,14 +210,15 @@ const PatternInput: FC<PatternInputProps> = ({
 
                 if (entity.lookups.includes("keywords")) {
                   const exists = acc.find(
-                    ({ value, id }) => value === "any" && id === entity.id,
+                    ({ value, id }) =>
+                      value === entity.name && id === entity.id,
                   );
 
                   if (!exists) {
                     acc.push({
                       entity: entity.id,
                       id: entity.id,
-                      value: "any",
+                      value: entity.name,
                     } as INlpValue);
                   }
                 }
