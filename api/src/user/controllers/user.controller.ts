@@ -168,9 +168,15 @@ export class ReadOnlyUserController extends BaseController<
     )
     filters: TFilterQuery<User>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.userService.findPageAndPopulate(filters, pageQuery)
+        : await this.userService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.userService.findPageAndPopulate(filters, pageQuery)
-      : await this.userService.find(filters);
+      ? await this.userService.findAndPopulate(filters, pageQuery.sort)
+      : await this.userService.find(filters, pageQuery.sort);
   }
 
   /**

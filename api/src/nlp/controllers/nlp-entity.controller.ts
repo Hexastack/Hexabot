@@ -135,9 +135,15 @@ export class NlpEntityController extends BaseController<
     @Query(new SearchFilterPipe<NlpEntity>({ allowedFields: ['name', 'doc'] }))
     filters: TFilterQuery<NlpEntity>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.nlpEntityService.findPageAndPopulate(filters, pageQuery)
+        : await this.nlpEntityService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.nlpEntityService.findPageAndPopulate(filters, pageQuery)
-      : await this.nlpEntityService.findPage(filters, pageQuery);
+      ? await this.nlpEntityService.findAndPopulate(filters)
+      : await this.nlpEntityService.find(filters, pageQuery.sort);
   }
 
   /**

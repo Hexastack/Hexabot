@@ -146,9 +146,15 @@ export class NlpValueController extends BaseController<
     )
     filters: TFilterQuery<NlpValue>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.nlpValueService.findPageAndPopulate(filters, pageQuery)
+        : await this.nlpValueService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.nlpValueService.findPageAndPopulate(filters, pageQuery)
-      : await this.nlpValueService.findPage(filters, pageQuery);
+      ? await this.nlpValueService.findAndPopulate(filters, pageQuery.sort)
+      : await this.nlpValueService.find(filters, pageQuery.sort);
   }
 
   /**

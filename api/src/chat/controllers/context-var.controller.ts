@@ -60,7 +60,11 @@ export class ContextVarController extends BaseController<ContextVar> {
     @Query(new SearchFilterPipe<ContextVar>({ allowedFields: ['label'] }))
     filters: TFilterQuery<ContextVar>,
   ): Promise<ContextVar[]> {
-    return await this.contextVarService.findPage(filters, pageQuery);
+    if (pageQuery.limit) {
+      return await this.contextVarService.findPage(filters, pageQuery);
+    }
+
+    return await this.contextVarService.find(filters, pageQuery.sort);
   }
 
   /**

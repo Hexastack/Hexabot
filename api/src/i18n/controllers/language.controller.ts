@@ -57,7 +57,11 @@ export class LanguageController extends BaseController<Language> {
     @Query(new SearchFilterPipe<Language>({ allowedFields: ['title', 'code'] }))
     filters: TFilterQuery<Language>,
   ) {
-    return await this.languageService.findPage(filters, pageQuery);
+    if (pageQuery.limit) {
+      return await this.languageService.findPage(filters, pageQuery);
+    }
+
+    return await this.languageService.find(filters, pageQuery.sort);
   }
 
   /**

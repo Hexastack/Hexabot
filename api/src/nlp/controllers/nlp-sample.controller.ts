@@ -280,9 +280,15 @@ export class NlpSampleController extends BaseController<
     )
     filters: TFilterQuery<NlpSample>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.nlpSampleService.findPageAndPopulate(filters, pageQuery)
+        : await this.nlpSampleService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.nlpSampleService.findPageAndPopulate(filters, pageQuery)
-      : await this.nlpSampleService.findPage(filters, pageQuery);
+      ? await this.nlpSampleService.findAndPopulate(filters, pageQuery.sort)
+      : await this.nlpSampleService.find(filters, pageQuery.sort);
   }
 
   /**

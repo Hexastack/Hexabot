@@ -48,13 +48,13 @@ import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { CategoryRepository } from '../repositories/category.repository';
 import { LabelRepository } from '../repositories/label.repository';
-import { BlockModel, Block } from '../schemas/block.schema';
+import { Block, BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
 
-import { CategoryModel, Category } from './../schemas/category.schema';
+import { Category, CategoryModel } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
 
 describe('BlockController', () => {
@@ -167,7 +167,7 @@ describe('BlockController', () => {
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks.id] : [],
       }));
 
-      expect(blockService.find).toHaveBeenCalledWith({});
+      expect(blockService.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(blocksWithCategory, [
         ...IGNORED_TEST_FIELDS,
         'attachedToBlock',
@@ -187,7 +187,7 @@ describe('BlockController', () => {
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
       }));
 
-      expect(blockService.findAndPopulate).toHaveBeenCalledWith({});
+      expect(blockService.findAndPopulate).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(blocksWithCategory);
     });
   });

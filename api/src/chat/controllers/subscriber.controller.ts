@@ -73,9 +73,15 @@ export class SubscriberController extends BaseController<
     )
     filters: TFilterQuery<Subscriber>,
   ) {
+    if (pageQuery.limit) {
+      return this.canPopulate(populate)
+        ? await this.subscriberService.findPageAndPopulate(filters, pageQuery)
+        : await this.subscriberService.findPage(filters, pageQuery);
+    }
+
     return this.canPopulate(populate)
-      ? await this.subscriberService.findPageAndPopulate(filters, pageQuery)
-      : await this.subscriberService.findPage(filters, pageQuery);
+      ? await this.subscriberService.findAndPopulate(filters, pageQuery.sort)
+      : await this.subscriberService.find(filters, pageQuery.sort);
   }
 
   /**

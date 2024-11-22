@@ -30,6 +30,8 @@ import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
@@ -63,23 +65,29 @@ export class BlockController extends BaseController<
   ) {
     super(blockService);
   }
+
   /**
    * Finds blocks based on the provided query parameters.
    * @param populate - An array of fields to populate in the returned blocks.
    * @param filters - Query filters to apply to the block search.
    * @returns A Promise that resolves to an array of found blocks.
    */
-
   @Get()
   async find(
     @Query(PopulatePipe)
     populate: string[],
     @Query(new SearchFilterPipe<Block>({ allowedFields: ['category'] }))
     filters: TFilterQuery<Block>,
+    @Query(PageQueryPipe) pageQuery?: PageQueryDto<Block>,
   ): Promise<Block[] | BlockFull[]> {
+    if (pageQuery?.limit) {
+      return this.canPopulate(populate)
+        ? await this.blockService.findPageAndPopulate(filters, pageQuery)
+        : await this.blockService.findPage(filters, pageQuery);
+    }
     return this.canPopulate(populate)
-      ? await this.blockService.findAndPopulate(filters)
-      : await this.blockService.find(filters);
+      ? await this.blockService.findAndPopulate(filters, pageQuery?.sort)
+      : await this.blockService.find(filters, pageQuery?.sort);
   }
 
   /**

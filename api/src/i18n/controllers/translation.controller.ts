@@ -55,7 +55,10 @@ export class TranslationController extends BaseController<Translation> {
     @Query(new SearchFilterPipe<Translation>({ allowedFields: ['str'] }))
     filters: TFilterQuery<Translation>,
   ) {
-    return await this.translationService.findPage(filters, pageQuery);
+    if (pageQuery.limit) {
+      return await this.translationService.findPage(filters, pageQuery);
+    }
+    return await this.translationService.find(filters, pageQuery.sort);
   }
 
   /**
