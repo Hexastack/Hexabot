@@ -140,8 +140,9 @@ export class TranslationService extends BaseService<Translation> {
     return Object.values(settings)
       .map((group: Record<string, string | string[]>) => Object.entries(group))
       .flat()
-      .filter(([l]) => {
-        return translatableSettings.find(({ label }) => label === l);
+      .filter(([l, value]) => {
+        const found = translatableSettings.find(({ label }) => label === l);
+        return found && !!value;
       })
       .map(([, v]) => v)
       .flat();

@@ -22,14 +22,6 @@ export const settingFixtures: SettingCreateDto[] = [
   },
   {
     group: 'contact',
-    label: 'greeting',
-    value: 'hello',
-    type: SettingType.text,
-    weight: 10,
-    translatable: true,
-  },
-  {
-    group: 'contact',
     label: 'company_name',
     value: 'Your company name',
     type: SettingType.text,

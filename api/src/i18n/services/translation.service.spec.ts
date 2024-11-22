@@ -73,7 +73,7 @@ describe('TranslationService', () => {
             find: jest.fn().mockResolvedValue([
               {
                 translatable: false,
-                global_fallback: 'global_fallback',
+                label: 'global_fallback',
                 fallback_message: ['Global fallback message'],
               },
             ]),
@@ -175,7 +175,6 @@ describe('TranslationService', () => {
         fallback_message: ['Global fallback message'],
       },
     } as Settings);
-
     const strings = await service.getSettingStrings();
     expect(strings).toEqual([]);
   });
