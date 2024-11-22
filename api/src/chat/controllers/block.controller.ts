@@ -323,4 +323,29 @@ export class BlockController extends BaseController<
     }
     return result;
   }
+
+  /**
+   * Deletes multiple blocks by their IDs.
+   * @param ids - IDs of blocks to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+  @CsrfCheck(true)
+  @Delete('')
+  @HttpCode(204)
+  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('No IDs provided for deletion.');
+    }
+    const deleteResult = await this.blockService.deleteMany({
+      _id: { $in: ids },
+    });
+
+    if (deleteResult.deletedCount === 0) {
+      this.logger.warn(`Unable to delete blocks with provided IDs: ${ids}`);
+      throw new NotFoundException('Blocks with provided IDs not found');
+    }
+
+    this.logger.log(`Successfully deleted blocks with IDs: ${ids}`);
+    return deleteResult;
+  }
 }

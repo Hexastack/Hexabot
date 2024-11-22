@@ -42,7 +42,8 @@ import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete, useDeleteFromCache } from "@/hooks/crud/useDelete";
+import { useDeleteFromCache } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
@@ -70,7 +71,7 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
@@ -89,10 +90,7 @@ const Diagrams = () => {
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
-      initialPaginationState: {
-        page: 0,
-        pageSize: 999, // @TODO: We need to display all categories
-      },
+      hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
@@ -113,12 +111,11 @@ const Diagrams = () => {
   const { mutateAsync: updateCategory } = useUpdate(EntityType.CATEGORY, {
     invalidate: false,
   });
-  const { mutateAsync: deleteBlock } = useDelete(EntityType.BLOCK, {
-    onSuccess() {
+  const { mutateAsync: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
+    onSuccess: () => {
       deleteDialogCtl.closeDialog();
       setSelectedBlockId(undefined);
     },
-    invalidate: false,
   });
   const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
@@ -181,6 +178,7 @@ const Diagrams = () => {
     if (categories?.length > 0 && !selectedCategoryId) {
       setSelectedCategoryId(categories[0].id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -191,7 +189,7 @@ const Diagrams = () => {
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
-        deleteDialogCtl.openDialog(ids.join(","));
+        deleteDialogCtl.openDialog(ids);
         deleteCallbackRef.current = next;
       },
       onDbClickNode: (event, id) => {
@@ -310,19 +308,128 @@ const Diagrams = () => {
     ),
   ]);
 
+  const handleLinkDeletion = async (linkId: string) => {
+    const link = model?.getLink(linkId) as any;
+    const sourceId = link?.sourcePort.parent.options.id;
+    const targetId = link?.targetPort.parent.options.id;
+
+    if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
+      await removeNextBlockLink(sourceId, targetId);
+    } else if (
+      link?.sourcePort.options.label === BlockPorts.attachmentOutPort
+    ) {
+      await removeAttachmentLink(sourceId, targetId);
+    }
+  };
+  const removeNextBlockLink = async (sourceId: string, targetId: string) => {
+    const previousData = getBlockFromCache(sourceId);
+    const nextBlocks = [...(previousData?.nextBlocks || [])];
+
+    await updateBlock(
+      {
+        id: sourceId,
+        params: {
+          nextBlocks: nextBlocks.filter((block) => block !== targetId),
+        },
+      },
+      {
+        onSuccess() {
+          updateCachedBlock({
+            id: targetId,
+            preprocess: ({ previousBlocks = [], ...rest }) => ({
+              ...rest,
+              previousBlocks: previousBlocks.filter(
+                (block) => block !== sourceId,
+              ),
+            }),
+          });
+        },
+      },
+    );
+  };
+  const removeAttachmentLink = async (sourceId: string, targetId: string) => {
+    await updateBlock(
+      {
+        id: sourceId,
+        params: { attachedBlock: null },
+      },
+      {
+        onSuccess() {
+          updateCachedBlock({
+            id: targetId,
+            preprocess: (oldData) => ({ ...oldData, attachedToBlock: null }),
+          });
+        },
+      },
+    );
+  };
+  const handleBlocksDeletion = async (blockIds: string[]) => {
+    await deleteBlocks(blockIds, {
+      onSuccess: () => {
+        blockIds.forEach((blockId) => {
+          const block = getBlockFromCache(blockId);
+
+          if (block) {
+            updateLinkedBlocks(block, blockIds);
+            deleteCachedBlock(blockId);
+          }
+        });
+      },
+    });
+  };
+  const getLinkedBlockIds = (block: IBlock): string[] => [
+    ...(block?.nextBlocks || []),
+    ...(block?.previousBlocks || []),
+    ...(block?.attachedBlock ? [block.attachedBlock] : []),
+    ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
+  ];
+  const updateLinkedBlocks = (block: IBlock, deletedIds: string[]) => {
+    const linkedBlockIds = getLinkedBlockIds(block);
+
+    linkedBlockIds.forEach((linkedBlockId) => {
+      const linkedBlock = getBlockFromCache(linkedBlockId);
+
+      if (linkedBlock) {
+        updateCachedBlock({
+          id: linkedBlock.id,
+          payload: {
+            ...linkedBlock,
+            nextBlocks: linkedBlock.nextBlocks?.filter(
+              (nextBlockId) => !deletedIds.includes(nextBlockId),
+            ),
+            previousBlocks: linkedBlock.previousBlocks?.filter(
+              (previousBlockId) => !deletedIds.includes(previousBlockId),
+            ),
+            attachedBlock: deletedIds.includes(linkedBlock.attachedBlock || "")
+              ? undefined
+              : linkedBlock.attachedBlock,
+            attachedToBlock: deletedIds.includes(
+              linkedBlock.attachedToBlock || "",
+            )
+              ? undefined
+              : linkedBlock.attachedToBlock,
+          },
+          strategy: "overwrite",
+        });
+      }
+    });
+  };
+  const cleanupAfterDeletion = () => {
+    deleteCallbackRef.current?.();
+    deleteCallbackRef.current = () => {};
+    deleteDialogCtl.closeDialog();
+  };
   const handleDeleteButton = () => {
     const selectedEntities = engine?.getModel().getSelectedEntities();
-    const ids = selectedEntities?.map((model) => model.getID()).join(",");
+    const ids = selectedEntities?.map((model) => model.getID());
 
-    if (ids && selectedEntities) {
+    if (ids && selectedEntities && ids.length > 0) {
       deleteCallbackRef.current = () => {
-        if (selectedEntities.length > 0) {
-          selectedEntities.forEach((model) => {
-            model.setLocked(false);
-            model.remove();
-          });
-          engine?.repaintCanvas();
-        }
+        selectedEntities.forEach((model) => {
+          model.setLocked(false);
+          model.remove();
+        });
+        engine?.repaintCanvas();
       };
       deleteDialogCtl.openDialog(ids);
     }
@@ -336,117 +443,20 @@ const Diagrams = () => {
     }
   };
   const onDelete = async () => {
-    const id = deleteDialogCtl?.data;
+    const ids = deleteDialogCtl?.data;
 
-    if (id) {
-      // Check if it's a link id
-      if (id.length === 36) {
-        // Remove link + update nextBlocks + TODO update port state
-        const link = model?.getLink(id) as any;
-        const sourceId = link?.sourcePort.parent.options.id;
-        const targetId = link?.targetPort.parent.options.id;
-
-        if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
-          // Next/previous Link Delete
-          const previousData = getBlockFromCache(sourceId);
-          const nextBlocks = [...(previousData?.nextBlocks || [])];
-
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                nextBlocks: nextBlocks.filter((block) => block !== targetId),
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: ({ previousBlocks = [], ...rest }) => ({
-                    ...rest,
-                    previousBlocks: previousBlocks.filter(
-                      (previousBlock) => previousBlock !== sourceId,
-                    ),
-                  }),
-                });
-              },
-            },
-          );
-        } else if (
-          link?.sourcePort.options.label === BlockPorts.attachmentOutPort
-        ) {
-          // Attached / AttachedTo Link Delete
-          await updateBlock(
-            {
-              id: sourceId,
-              params: {
-                attachedBlock: null,
-              },
-            },
-            {
-              onSuccess() {
-                updateCachedBlock({
-                  id: targetId,
-                  preprocess: (oldData) => ({
-                    ...oldData,
-                    attachedToBlock: null,
-                  }),
-                });
-              },
-            },
-          );
-        }
-      } else {
-        // Block Delete Case
-        const ids = id.includes(",") ? id.split(",") : [id];
-        const deletePromises = ids.map((id) => {
-          const block = getBlockFromCache(id);
-
-          return deleteBlock(id, {
-            onSuccess() {
-              // Update all linked blocks to remove any reference to the deleted block
-              [
-                ...(block?.nextBlocks || []),
-                ...(block?.previousBlocks || []),
-                ...(block?.attachedBlock ? [block.attachedBlock] : []),
-                ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-              ]
-                .map((bid) => getBlockFromCache(bid))
-                .filter((b) => !!b)
-                .forEach((b) => {
-                  updateCachedBlock({
-                    id: b.id,
-                    payload: {
-                      ...b,
-                      nextBlocks: b.nextBlocks?.filter(
-                        (nextBlockId) => nextBlockId !== id,
-                      ),
-                      previousBlocks: b.previousBlocks?.filter(
-                        (previousBlockId) => previousBlockId !== id,
-                      ),
-                      attachedBlock:
-                        b.attachedBlock === id ? undefined : b.attachedBlock,
-                      attachedToBlock:
-                        b.attachedToBlock === id
-                          ? undefined
-                          : b.attachedToBlock,
-                    },
-                    strategy: "overwrite",
-                  });
-                });
-
-              deleteCachedBlock(id);
-            },
-          });
-        });
-
-        await Promise.all(deletePromises);
-      }
-
-      deleteCallbackRef.current?.();
-      deleteCallbackRef.current = () => {};
-      deleteDialogCtl.closeDialog();
+    if (!ids || ids?.length === 0) {
+      return;
     }
+    const isLink = ids[0].length === 36;
+
+    if (isLink) {
+      await handleLinkDeletion(ids[0]);
+    } else {
+      await handleBlocksDeletion(ids);
+    }
+
+    cleanupAfterDeletion();
   };
   const onMove = async (newCategoryId?: string) => {
     if (!newCategoryId) {
@@ -506,7 +516,7 @@ const Diagrams = () => {
       <Box sx={{ width: "100%" }}>
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
-        <DeleteDialog {...deleteDialogCtl} callback={onDelete} />
+        <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
         <MoveDialog
           open={moveDialogCtl.open}
           openDialog={moveDialogCtl.openDialog}

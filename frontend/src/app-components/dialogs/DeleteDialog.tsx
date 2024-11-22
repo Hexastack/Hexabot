@@ -8,25 +8,24 @@
 
 import ErrorIcon from "@mui/icons-material/Error";
 import {
+  Button,
   Dialog,
   DialogActions,
+  DialogContent,
   Grid,
   Typography,
-  DialogContent,
-  Button,
 } from "@mui/material";
-import { FC } from "react";
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { DialogControl } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 
-export type DeleteDialogProps = DialogControl<string>;
-export const DeleteDialog: FC<DeleteDialogProps> = ({
+export type DeleteDialogProps<T = string> = DialogControl<T>;
+export const DeleteDialog = <T extends any = string>({
   open,
   callback,
   closeDialog: closeFunction,
-}: DeleteDialogProps) => {
+}: DeleteDialogProps<T>) => {
   const { t } = useTranslate();
 
   return (
