@@ -21,6 +21,7 @@ import {
   NlpExperimentPopulate,
 } from '../schemas/nlp-experiment.schema';
 
+import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
 import { NlpMetricRepository } from './nlp-metric.repository';
 import { NlpParameterRepository } from './nlp-parameter.repository';
@@ -39,6 +40,7 @@ export class NlpExperimentRepository extends BaseRepository<
     private readonly nlpParameterValueRepository: NlpParameterValueRepository,
     private readonly nlpMetricRepository: NlpMetricRepository,
     private readonly nlpParameterRepository: NlpParameterRepository,
+    private readonly nlpDatasetRepository: NlpDatasetRepository,
   ) {
     super(
       eventEmitter,
@@ -74,13 +76,19 @@ export class NlpExperimentRepository extends BaseRepository<
         await this.nlpMetricValueRepository.deleteMany({
           experiment: criteria._id,
         });
-        this.nlpMetricRepository.updateOne(
+        await this.nlpMetricRepository.updateOne(
           { experiments: criteria._id },
           {
             $pull: { experiments: criteria._id },
           },
         );
-        this.nlpParameterRepository.updateOne(
+        await this.nlpParameterRepository.updateOne(
+          { experiments: criteria._id },
+          {
+            $pull: { experiments: criteria._id },
+          },
+        );
+        await this.nlpDatasetRepository.updateOne(
           { experiments: criteria._id },
           {
             $pull: { experiments: criteria._id },

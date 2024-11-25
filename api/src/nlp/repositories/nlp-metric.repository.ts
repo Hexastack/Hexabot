@@ -75,7 +75,6 @@ export class NlpMetricRepository extends BaseRepository<
           ).map((doc) => doc.id);
           if (experimentsIds.length > 0) {
             // Remove the processed experiments
-
             await this.nlpExperimentRepository.deleteMany({
               _id: { $in: experimentsIds },
             });

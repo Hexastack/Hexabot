@@ -89,4 +89,4 @@ export type NlpDatasetPopulate = keyof TFilterPopulateFields<
   NlpDatasetStub
 >;
 
-export const NLP_Dataset_POPULATE: NlpDatasetPopulate[] = ['experiments'];
+export const NLP_DATASET_POPULATE: NlpDatasetPopulate[] = ['experiments'];
