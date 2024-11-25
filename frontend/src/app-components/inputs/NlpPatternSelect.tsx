@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { RemoveOutlined } from "@mui/icons-material";
+import { Cancel } from "@mui/icons-material";
 import {
   Box,
   CircularProgress,
@@ -27,10 +27,13 @@ import { EntityType, Format } from "@/services/types";
 import { NlpPattern } from "@/types/block.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 
-type NlpPatternSelectProps = {};
+type NlpPatternSelectProps = { patterns: NlpPattern[]; onChange: any };
 
-const NlpPatternSelect = ({}: NlpPatternSelectProps, ref) => {
-  const [selected, setSelected] = useState<NlpPattern[]>([]);
+const NlpPatternSelect = (
+  { patterns, onChange }: NlpPatternSelectProps,
+  ref,
+) => {
+  const [selected, setSelected] = useState<NlpPattern[]>(patterns);
   const theme = useTheme();
   const { t } = useTranslate();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
@@ -69,12 +72,6 @@ const NlpPatternSelect = ({}: NlpPatternSelectProps, ref) => {
   }
 
   const handleNlpValueChange = (entity: INlpEntity, valueId: string) => {
-    const value = getNlpValueFromCache(valueId);
-
-    if (!value) {
-      throw new Error("Unable to find nlp value in cache");
-    }
-
     const newSelection = [...selected];
     const update = newSelection.find(({ entity: e }) => e === entity.name);
 
@@ -82,23 +79,32 @@ const NlpPatternSelect = ({}: NlpPatternSelectProps, ref) => {
       throw new Error("Unable to find nlp entity");
     }
 
-    if (value.id === entity.id) {
+    if (valueId === entity.id) {
       update.match = "entity";
       update.value = entity.name;
     } else {
+      const value = getNlpValueFromCache(valueId);
+
+      if (!value) {
+        throw new Error("Unable to find nlp value in cache");
+      }
       update.match = "value";
       update.value = value.value;
     }
+
+    onChange(undefined, newSelection);
   };
+  const defaultValue =
+    options.filter(({ name }) =>
+      selected.find(({ entity: entityName }) => entityName === name),
+    ) || {};
 
   return (
     <Autocomplete
       ref={ref}
       size="medium"
       disabled={options.length === 0}
-      defaultValue={options.filter(({ name }) =>
-        selected.find(({ entity: entityName }) => entityName === name),
-      )}
+      defaultValue={defaultValue}
       multiple={true}
       options={options}
       onChange={handleNlpEntityChange}
@@ -136,92 +142,121 @@ const NlpPatternSelect = ({}: NlpPatternSelectProps, ref) => {
       isOptionEqualToValue={(option, value) => option.id === value.id}
       freeSolo={false}
       loading={isLoading}
-      renderTags={(entities, getTagProps) => (
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 0.5,
-          }}
-        >
-          {entities.map((entity, index) => {
-            const { key, onDelete } = getTagProps({ index });
-            const handleChange = (
-              event: SyntheticEvent<Element, Event>,
-              valueId: string,
-            ) => {
-              handleNlpValueChange(entity, valueId);
-            };
+      renderTags={(entities, getTagProps) => {
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 0.5,
+            }}
+          >
+            {entities.map((entity, index) => {
+              const { key, onDelete } = getTagProps({ index });
+              const handleChange = (
+                event: SyntheticEvent<Element, Event>,
+                valueId: string,
+              ) => {
+                handleNlpValueChange(entity, valueId);
+              };
+              const selected = (
+                Array.isArray(patterns)
+                  ? patterns?.find((e) => e.entity === entity.name)
+                  : {}
+              ) as NlpPattern;
 
-            return (
-              <Autocomplete
-                size="small"
-                options={[entity.id].concat(entity.values)}
-                multiple={false}
-                key={key}
-                getOptionLabel={(option) =>
-                  option
-                    ? getNlpValueFromCache(option)?.value || "-"
-                    : t("label.any")
-                }
-                disableClearable
-                popupIcon={false}
-                onChange={handleChange}
-                sx={{
-                  minWidth: 50,
-                  padding: 0,
-                  ".MuiAutocomplete-input": {
-                    minWidth: "100px !important",
-                  },
-                  "& .MuiOutlinedInput-root": {
-                    paddingRight: "2rem !important",
-                    "&.MuiInputBase-sizeSmall": {
-                      padding: "0 !important",
+              return (
+                <Autocomplete
+                  size="small"
+                  defaultValue={selected?.value || ""}
+                  options={[entity.id].concat(entity.values)}
+                  multiple={false}
+                  key={key}
+                  getOptionLabel={(option) => {
+                    const nlpValueCache = getNlpValueFromCache(option);
+
+                    if (nlpValueCache) {
+                      return nlpValueCache?.value;
+                    }
+
+                    if (selected?.entity === option || option === entity.id) {
+                      return t("label.any");
+                    }
+
+                    return option;
+                  }}
+                  disableClearable
+                  popupIcon={false}
+                  onChange={handleChange}
+                  sx={{
+                    minWidth: 50,
+                    padding: 0,
+                    ".MuiAutocomplete-input": {
+                      minWidth: "100px !important",
                     },
-                  },
-                }}
-                renderInput={(props) => (
-                  <Input
-                    {...props}
-                    sx={{ padding: 0, overflow: "hidden" }}
-                    // onChange={(e) => onSearch(e.target.value)}
-                    InputProps={{
-                      ...props.InputProps,
-                      startAdornment: (
-                        <InputAdornment
-                          position="start"
-                          sx={{
-                            padding: "0 1rem",
-                            height: "100%",
-                            backgroundColor: theme.palette.grey[200],
-                          }}
-                        >
-                          {entity.name}
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          {isLoading ? (
-                            <CircularProgress color="inherit" size={20} />
-                          ) : (
-                            <IconButton
-                              onClick={onDelete}
-                              edge="end"
-                              size="small"
+                    "& .MuiOutlinedInput-root": {
+                      paddingRight: "2rem !important",
+                      "&.MuiInputBase-sizeSmall": {
+                        padding: "0 6px 0 0 !important",
+                      },
+                    },
+                  }}
+                  renderInput={(props) => (
+                    <Input
+                      {...props}
+                      InputProps={{
+                        ...props.InputProps,
+                        readOnly: true,
+                        sx: {
+                          overflow: "hidden",
+                        },
+                        startAdornment: (
+                          <IconButton>
+                            <InputAdornment
+                              position="start"
+                              sx={{
+                                padding: "0 1rem",
+                                height: "100%",
+                                backgroundColor: theme.palette.grey[200],
+                              }}
                             >
-                              <RemoveOutlined />
-                            </IconButton>
-                          )}
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            );
-          })}
-        </Box>
-      )}
+                              {entity.name}
+                            </InputAdornment>
+                          </IconButton>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {isLoading ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : (
+                              <IconButton
+                                onClick={(e) => {
+                                  onDelete(e);
+
+                                  onChange(
+                                    undefined,
+                                    patterns.filter(
+                                      (p) => p.entity !== entity.name,
+                                    ),
+                                  );
+                                }}
+                                edge="end"
+                                size="small"
+                              >
+                                <Cancel htmlColor={theme.palette.grey[500]} />
+                              </IconButton>
+                            )}
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              );
+            })}
+          </Box>
+        );
+      }}
       renderInput={(props) => (
         <Input
           {...props}

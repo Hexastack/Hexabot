@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Grid, MenuItem, TextFieldProps, Typography } from "@mui/material";
+import { Grid, MenuItem, TextFieldProps } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
@@ -14,7 +14,6 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import {
@@ -26,8 +25,6 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 import { IMenuItem } from "@/types/menu.types";
-import { INlpEntity } from "@/types/nlp-entity.types";
-import { INlpValue } from "@/types/nlp-value.types";
 
 import { ContentPostbackInput } from "./ContentPostbackInput";
 import { PostbackInput } from "./PostbackInput";
@@ -72,7 +69,7 @@ const PatternInput: FC<PatternInputProps> = ({
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
+  // const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const [pattern, setPattern] = useState<Pattern>(value);
   const [patternType, setPatternType] = useState<PatternType>(getType(value));
   const types = [
@@ -148,8 +145,15 @@ const PatternInput: FC<PatternInputProps> = ({
         </Input>
       </Grid>
       <Grid item xs={9}>
-        {patternType === "nlp" && <NlpPatternSelect />}
-        {patternType === "nlp" ? (
+        {patternType === "nlp" && (
+          <NlpPatternSelect
+            patterns={pattern as NlpPattern[]}
+            onChange={(_e, data) => {
+              setPattern(data);
+            }}
+          />
+        )}
+        {/* {patternType === "nlp" ? (
           <AutoCompleteEntitySelect<INlpValue, "value">
             value={(pattern as NlpPattern[]).map((v) =>
               "value" in v && v.value ? v.value : v.entity,
@@ -225,7 +229,7 @@ const PatternInput: FC<PatternInputProps> = ({
               }, [] as INlpValue[]);
             }}
           />
-        ) : null}
+        ) : null} */}
         {patternType === "menu" ? (
           <AutoCompleteEntitySelect<IMenuItem, "title", false>
             value={pattern ? (pattern as PayloadPattern).value : null}
