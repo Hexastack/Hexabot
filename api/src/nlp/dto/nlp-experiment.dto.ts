@@ -17,11 +17,6 @@ import {
   IsString,
 } from 'class-validator';
 
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
-
-import { NlpMetricValue } from '../schemas/nlp-metric-value.schema';
-import { NlpParameterValue } from '../schemas/nlp-parameter-value.schema';
-
 export class NlpExperimentCreateDto {
   @ApiPropertyOptional({ type: String })
   @IsString()
@@ -41,7 +36,6 @@ export class NlpExperimentCreateDto {
   @ApiProperty({ type: String })
   @IsString()
   @IsNotEmpty()
-  @IsObjectId({ message: 'Model must be a valid ObjectId' })
   model: string;
 
   @ApiProperty({ type: Number })
@@ -68,11 +62,15 @@ export class NlpExperimentCreateDto {
 export class NlpExperimentDto extends NlpExperimentCreateDto {
   @ApiProperty({ description: 'Nlp Parameters Value' })
   @IsNotEmpty()
-  parameters: NlpParameterValue[];
+  @IsArray()
+  @IsObject({ each: true, message: 'parameter must be a valid object' })
+  parameters: string[];
 }
 
 export class NlpExperimentUpdateDto extends NlpExperimentCreateDto {
   @ApiProperty({ description: ' Nlp Metrics Values' })
   @IsNotEmpty()
-  metrics: NlpMetricValue[];
+  @IsArray()
+  @IsObject({ each: true, message: 'metric must be a valid object' })
+  metrics: string[];
 }

@@ -24,7 +24,6 @@ import {
 } from '../schemas/nlp-parameter-value.schema';
 
 import { NlpExperimentRepository } from './nlp-experiment.repository';
-import { NlpModelRepository } from './nlp-model.repository';
 
 @Injectable()
 export class NlpParameterValueRepository extends BaseRepository<
@@ -37,7 +36,6 @@ export class NlpParameterValueRepository extends BaseRepository<
     @InjectModel(NlpParameterValue.name)
     readonly model: Model<NlpParameterValue>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
-    private readonly nlpModelRepository: NlpModelRepository,
   ) {
     super(
       eventEmitter,
@@ -58,26 +56,7 @@ export class NlpParameterValueRepository extends BaseRepository<
         `Experiment with ID ${parameterValue.experiment} not found.`,
       );
     }
-    // Check if the associated model exists
-    const model = await this.nlpModelRepository.findOne({
-      _id: parameterValue.model,
-    });
 
-    if (!model) {
-      throw new Error(`Experiment with ID ${parameterValue.model} not found.`);
-    }
-    const updatedModel = await this.nlpModelRepository.updateOne(
-      { _id: model.id },
-      { $inc: { version: 1 } },
-    );
-
-    if (!updatedModel) {
-      throw new Error(`Failed to update model version for ID ${model.id}.`);
-    }
-
-    // Set the metric value's model and version
-    parameterValue.model = updatedModel.id;
-    parameterValue.version = updatedModel.version;
     assert(
       parameterValue.version === experiment.current_version,
       `Parameter Value version (${parameterValue.version}) does not match the experiment's current version (${experiment.current_version}).`,
@@ -111,26 +90,9 @@ export class NlpParameterValueRepository extends BaseRepository<
           .then((results) => results.map((doc) => doc.id));
 
         if (relatedExperimentIds.length > 0) {
-          for (const experimentId of relatedExperimentIds) {
-            const updatedModel = await this.nlpModelRepository.updateOne(
-              { experiments: experimentId }, // Valid for single ObjectId
-              {
-                $pull: { experiments: experimentId },
-                $inc: { version: -1 },
-              },
-            );
-
-            if (
-              updatedModel &&
-              updatedModel.version <= 0 &&
-              updatedModel.experiments.length === 0
-            ) {
-              // Delete the model if conditions are met
-              await this.nlpModelRepository.deleteOne({
-                _id: updatedModel.id,
-              });
-            }
-          }
+          await this.nlpExperimentRepository.deleteMany({
+            _id: { $in: relatedExperimentIds },
+          });
         }
       } else {
         throw new Error(

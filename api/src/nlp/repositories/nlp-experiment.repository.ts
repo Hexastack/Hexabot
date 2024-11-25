@@ -23,7 +23,6 @@ import {
 
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
 import { NlpMetricRepository } from './nlp-metric.repository';
-import { NlpModelRepository } from './nlp-model.repository';
 import { NlpParameterRepository } from './nlp-parameter.repository';
 import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
@@ -40,7 +39,6 @@ export class NlpExperimentRepository extends BaseRepository<
     private readonly nlpParameterValueRepository: NlpParameterValueRepository,
     private readonly nlpMetricRepository: NlpMetricRepository,
     private readonly nlpParameterRepository: NlpParameterRepository,
-    private readonly nlpModelRepository: NlpModelRepository,
   ) {
     super(
       eventEmitter,
@@ -49,24 +47,6 @@ export class NlpExperimentRepository extends BaseRepository<
       NLP_EXPERIMENT_POPULATE,
       NlpExperimentFull,
     );
-  }
-
-  async preCreate(experiment: Partial<NlpExperiment>): Promise<void> {
-    if (!experiment.model) {
-      throw new Error('Experiment must be associated with a model.');
-    }
-
-    const updatedModel = await this.nlpModelRepository.updateOne(
-      { _id: experiment.model },
-      { $inc: { version: 1 } },
-    );
-
-    if (!updatedModel) {
-      throw new Error(`Model with ID ${experiment.model} not found.`);
-    } else {
-      // Set the experiment's version to the updated model version
-      experiment.current_version = updatedModel.version;
-    }
   }
 
   /**
@@ -106,30 +86,6 @@ export class NlpExperimentRepository extends BaseRepository<
             $pull: { experiments: criteria._id },
           },
         );
-        const updatedModel = await this.nlpModelRepository.updateOne(
-          { experiments: criteria._id }, // Valid for single ObjectId
-          {
-            $pull: { experiments: criteria._id },
-            $inc: { version: -1 },
-          },
-        );
-        if (
-          updatedModel &&
-          updatedModel.version <= 0 &&
-          updatedModel.experiments.length === 0
-        ) {
-          await this.nlpMetricRepository.updateOne(
-            { models: updatedModel.id },
-            {
-              $pull: { experiments: updatedModel.id },
-            },
-          );
-
-          // Delete the model if conditions are met
-          await this.nlpModelRepository.deleteOne({
-            _id: updatedModel.id,
-          });
-        }
       } else {
         throw new Error(
           'Attempted to delete NLP experiment using unknown criteria',

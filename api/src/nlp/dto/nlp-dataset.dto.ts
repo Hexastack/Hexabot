@@ -7,39 +7,49 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
-
-export class NlpParameterValueCreateDto {
+export class NlpDatasetCreateDto {
   @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional() // Optional since it is not required in the schema
   foreign_id?: string;
 
-  @ApiProperty({ description: 'Parameter Name' })
+  @ApiProperty({ type: String })
+  @IsString()
   @IsNotEmpty()
-  parameter: string;
+  name: string;
 
   @ApiProperty({ type: Number })
+  @IsNumber()
   @IsNotEmpty()
-  version: number;
+  current_version: number;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: String })
+  @IsString()
   @IsNotEmpty()
-  value: number;
-}
+  model: string;
 
-export class NlpParameterValueDto extends NlpParameterValueCreateDto {
-  @ApiProperty({
-    description: 'nlp models',
-  })
-  @IsNotEmpty()
-  models?: string[];
-
-  @ApiPropertyOptional({ description: 'NLP experiments' })
+  @ApiPropertyOptional({ type: Object, default: {} })
+  @IsObject()
   @IsOptional()
+  metadata?: Record<string, any>;
+
+  @ApiPropertyOptional({ type: [String], default: [] })
   @IsArray()
-  @IsObjectId({ each: true, message: 'Experiment must be a valid ObjectId' })
-  experiments?: string[];
+  @IsOptional()
+  tags?: string[];
+
+  @ApiProperty({ description: 'Nlp Parameters Value' })
+  @IsNotEmpty()
+  @IsArray()
+  @IsObject({ each: true, message: 'parameter must be a valid object' })
+  experiments: string[];
 }

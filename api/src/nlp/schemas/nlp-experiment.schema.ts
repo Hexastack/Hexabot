@@ -8,7 +8,6 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
-import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -18,7 +17,6 @@ import {
 } from '@/utils/types/filter.types';
 
 import { NlpMetricValue } from './nlp-metric-value.schema';
-import { NlpModel } from './nlp-model.schema';
 import { NlpParameterValue } from './nlp-parameter-value.schema';
 
 @Schema({ timestamps: true })
@@ -58,11 +56,12 @@ export class NlpExperimentStub extends BaseSchema {
   tags?: string[];
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpModel',
+    type: String,
+    unique: false,
     required: true,
+    index: true,
   })
-  model: unknown;
+  model: string;
 
   @Prop({
     type: [
@@ -117,9 +116,6 @@ export class NlpExperimentStub extends BaseSchema {
 
 @Schema({ timestamps: true })
 export class NlpExperiment extends NlpExperimentStub {
-  @Transform(({ obj }) => obj.model.toString())
-  model: string;
-
   @Transform(({ obj }) => obj.metrics.map((elem) => JSON.stringify(elem)))
   metrics: string[];
 
@@ -129,9 +125,6 @@ export class NlpExperiment extends NlpExperimentStub {
 
 @Schema({ timestamps: true })
 export class NlpExperimentFull extends NlpExperimentStub {
-  @Type(() => NlpModel)
-  model: NlpModel;
-
   @Type(() => NlpMetricValue)
   metrics: NlpMetricValue[];
 
@@ -154,7 +147,6 @@ export type NlpExperimentPopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_EXPERIMENT_POPULATE: NlpExperimentPopulate[] = [
-  'model',
   'parameters',
   'metrics',
 ];

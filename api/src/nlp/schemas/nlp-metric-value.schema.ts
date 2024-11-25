@@ -19,7 +19,6 @@ import {
 
 import { NlpExperiment } from './nlp-experiment.schema';
 import { NlpMetric } from './nlp-metric.schema';
-import { NlpModel } from './nlp-model.schema';
 
 @Schema({ timestamps: true })
 export class NlpMetricValueStub extends BaseSchema {
@@ -52,19 +51,18 @@ export class NlpMetricValueStub extends BaseSchema {
   experiment: unknown;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpModel',
+    type: String,
+    unique: false,
+    required: true,
+    index: true,
   })
-  model: unknown;
+  model: string;
 }
 
 @Schema({ timestamps: true })
 export class NlpMetricValue extends NlpMetricValueStub {
   @Transform(({ obj }) => obj.experiment.toString())
   experiment: string;
-
-  @Transform(({ obj }) => obj.model.toString())
-  model: string;
 
   @Transform(({ obj }) => obj.metric.toString())
   metric: string;
@@ -77,9 +75,6 @@ export class NlpMetricValueFull extends NlpMetricValueStub {
 
   @Type(() => NlpMetric)
   metric: NlpMetric;
-
-  @Type(() => NlpModel)
-  model: NlpModel;
 }
 
 export type NlpMetricValueDocument = THydratedDocument<NlpMetricValue>;
@@ -101,8 +96,6 @@ export type NlpMetricValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_METRIC_VALUE_POPULATE: NlpMetricValuePopulate[] = [
-  'model',
-
   'experiment',
   'metric',
 ];

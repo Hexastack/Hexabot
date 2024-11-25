@@ -18,7 +18,6 @@ import {
 } from '@/utils/types/filter.types';
 
 import { NlpExperiment } from './nlp-experiment.schema';
-import { NlpModel } from './nlp-model.schema';
 import { NlpParameter } from './nlp-parameter.schema';
 
 @Schema({ timestamps: true })
@@ -52,17 +51,16 @@ export class NlpParameterValueStub extends BaseSchema {
   experiment: unknown;
 
   @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'NlpModel',
+    type: String,
+    unique: false,
+    required: true,
+    index: true,
   })
-  model: unknown;
+  model: string;
 }
 
 @Schema({ timestamps: true })
 export class NlpParameterValue extends NlpParameterValueStub {
-  @Transform(({ obj }) => obj.model.toString())
-  model: string;
-
   @Transform(({ obj }) => obj.experiment.toString())
   experiment: string;
 
@@ -72,9 +70,6 @@ export class NlpParameterValue extends NlpParameterValueStub {
 
 @Schema({ timestamps: true })
 export class NlpParameterValueFull extends NlpParameterValueStub {
-  @Type(() => NlpModel)
-  model: NlpModel;
-
   @Type(() => NlpExperiment)
   experiment: NlpExperiment;
 
@@ -102,7 +97,6 @@ export type NlpParameterValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_PARAMETER_VALUE_POPULATE: NlpParameterValuePopulate[] = [
-  'model',
   'experiment',
   'parameter',
 ];

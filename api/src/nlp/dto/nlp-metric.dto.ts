@@ -7,10 +7,9 @@
  */
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { NlpExperiment } from '../schemas/nlp-experiment.schema';
-import { NlpModel } from '../schemas/nlp-model.schema';
+import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class NlpMetricCreateDto {
   @ApiPropertyOptional({ type: String })
@@ -29,9 +28,11 @@ export class NlpMetricDto extends NlpMetricCreateDto {
     description: 'nlp models',
   })
   @IsOptional()
-  models?: NlpModel[];
+  models?: string[];
 
   @ApiPropertyOptional({ description: 'NLP experiments' })
   @IsOptional()
-  experiments?: NlpExperiment[];
+  @IsArray()
+  @IsObjectId({ each: true, message: 'Experiment must be a valid ObjectId' })
+  experiments?: string[];
 }

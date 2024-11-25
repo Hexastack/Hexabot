@@ -17,7 +17,6 @@ import {
 } from '@/utils/types/filter.types';
 
 import { NlpExperiment } from './nlp-experiment.schema';
-import { NlpModel } from './nlp-model.schema';
 
 @Schema({ timestamps: true })
 export class NlpMetricStub extends BaseSchema {
@@ -43,27 +42,23 @@ export class NlpMetricStub extends BaseSchema {
    */
   @Prop([
     {
-      type: MongooseSchema.Types.ObjectId,
-      ref: 'NlpModel',
+      type: String,
+      required: true,
+      unique: false,
+      index: true,
     },
   ])
-  models: unknown;
+  models: string[];
 }
 
 @Schema({ timestamps: true })
 export class NlpMetric extends NlpMetricStub {
-  @Transform(({ obj }) => obj.models.map((elem) => elem.toString()))
-  models: string[];
-
   @Transform(({ obj }) => obj.experiments.map((elem) => elem.toString()))
   experiments: string[];
 }
 
 @Schema({ timestamps: true })
 export class NlpMetricFull extends NlpMetricStub {
-  @Type(() => NlpModel)
-  models: NlpModel[];
-
   @Type(() => NlpExperiment)
   experiments: NlpExperiment[];
 }
@@ -82,7 +77,4 @@ export type NlpMetricPopulate = keyof TFilterPopulateFields<
   NlpMetricStub
 >;
 
-export const NLP_METRIC_POPULATE: NlpMetricPopulate[] = [
-  'models',
-  'experiments',
-];
+export const NLP_METRIC_POPULATE: NlpMetricPopulate[] = ['experiments'];

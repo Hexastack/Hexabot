@@ -97,11 +97,11 @@ export const NlpModelModel: ModelDefinition = LifecycleHookManager.attach({
   schema: SchemaFactory.createForClass(NlpModelStub),
 });
 
-NlpModelModel.schema.virtual('experiments', {
-  ref: 'NlpExperiment',
-  localField: '_id',
-  foreignField: 'model',
-});
+// NlpModelModel.schema.virtual('experiments', {
+//   ref: 'NlpExperiment',
+//   localField: '_id',
+//   foreignField: 'model',
+// });
 
 export default NlpModelModel.schema;
 

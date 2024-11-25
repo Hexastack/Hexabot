@@ -22,7 +22,6 @@ import {
 } from '../schemas/nlp-parameter.schema';
 
 import { NlpExperimentRepository } from './nlp-experiment.repository';
-import { NlpModelRepository } from './nlp-model.repository';
 import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
 @Injectable()
@@ -35,7 +34,6 @@ export class NlpParameterRepository extends BaseRepository<
     readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpParameter.name) readonly model: Model<NlpParameter>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
-    private readonly nlpModelRepository: NlpModelRepository,
     private readonly nlpParameterValueRepository: NlpParameterValueRepository,
   ) {
     super(
@@ -45,20 +43,6 @@ export class NlpParameterRepository extends BaseRepository<
       NLP_PARAMETER_POPULATE,
       NlpParameterFull,
     );
-  }
-
-  private async updateOrDeleteModel(theId: string): Promise<void> {
-    const updatedModel = await this.nlpModelRepository.updateOne(
-      { experiments: theId },
-      {
-        $pull: { experiments: theId },
-        $inc: { version: -1 },
-      },
-    );
-
-    if (updatedModel?.version <= 0 && updatedModel?.experiments.length === 0) {
-      await this.nlpModelRepository.deleteOne({ _id: updatedModel.id });
-    }
   }
 
   /**
@@ -99,12 +83,6 @@ export class NlpParameterRepository extends BaseRepository<
           ).map((doc) => doc.id);
           if (experimentsIds.length > 0) {
             // Update or delete model associated with the experiments
-            await Promise.all(
-              experimentsIds.map(async (theId) => {
-                await this.updateOrDeleteModel(theId);
-              }),
-            );
-            // Remove the processed experiments
 
             await this.nlpExperimentRepository.deleteMany({
               _id: { $in: experimentsIds },
