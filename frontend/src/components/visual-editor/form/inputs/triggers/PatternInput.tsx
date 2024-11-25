@@ -12,6 +12,7 @@ import { RegisterOptions, useFormContext } from "react-hook-form";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
+import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -147,6 +148,7 @@ const PatternInput: FC<PatternInputProps> = ({
         </Input>
       </Grid>
       <Grid item xs={9}>
+        {patternType === "nlp" && <NlpPatternSelect />}
         {patternType === "nlp" ? (
           <AutoCompleteEntitySelect<INlpValue, "value">
             value={(pattern as NlpPattern[]).map((v) =>

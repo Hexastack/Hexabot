@@ -457,7 +457,8 @@
     "is_rtl": "RTL",
     "original_text": "Texte par défaut",
     "inputs": "Port d'entré",
-    "outputs": "Port de sorti"
+    "outputs": "Port de sorti",
+    "any": "- Toutes -"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

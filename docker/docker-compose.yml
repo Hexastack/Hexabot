@@ -11,7 +11,7 @@ services:
       - db-network
       - app-network
     volumes:
-      - api-data:/app/uploads
+      - ../api/uploads:/app/uploads
     depends_on:
       mongo:
         condition: service_healthy

@@ -456,7 +456,8 @@
     "is_rtl": "RTL",
     "original_text": "Original Text",
     "inputs": "Inputs",
-    "outputs": "Outputs"
+    "outputs": "Outputs",
+    "any": "- Any -"
   },
   "placeholder": {
     "your_username": "Your username",
