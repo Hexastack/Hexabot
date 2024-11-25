@@ -21,6 +21,7 @@ import {
   NlpParameterPopulate,
 } from '../schemas/nlp-parameter.schema';
 
+import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpExperimentRepository } from './nlp-experiment.repository';
 import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
@@ -35,6 +36,7 @@ export class NlpParameterRepository extends BaseRepository<
     @InjectModel(NlpParameter.name) readonly model: Model<NlpParameter>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
     private readonly nlpParameterValueRepository: NlpParameterValueRepository,
+    private readonly nlpDatasetRepository: NlpDatasetRepository,
   ) {
     super(
       eventEmitter,
@@ -82,6 +84,14 @@ export class NlpParameterRepository extends BaseRepository<
             })
           ).map((doc) => doc.id);
           if (experimentsIds.length > 0) {
+            for (const relatedId of experimentsIds) {
+              await this.nlpDatasetRepository.updateMany(
+                { experiments: relatedId },
+                {
+                  $pull: { experiments: relatedId },
+                },
+              );
+            }
             // Update or delete model associated with the experiments
 
             await this.nlpExperimentRepository.deleteMany({

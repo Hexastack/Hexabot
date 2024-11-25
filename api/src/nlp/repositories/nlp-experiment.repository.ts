@@ -20,6 +20,7 @@ import {
   NlpExperimentFull,
   NlpExperimentPopulate,
 } from '../schemas/nlp-experiment.schema';
+import { NlpModelService } from '../services/nlp-model.service';
 
 import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
@@ -41,6 +42,7 @@ export class NlpExperimentRepository extends BaseRepository<
     private readonly nlpMetricRepository: NlpMetricRepository,
     private readonly nlpParameterRepository: NlpParameterRepository,
     private readonly nlpDatasetRepository: NlpDatasetRepository,
+    private readonly nlpModelService: NlpModelService,
   ) {
     super(
       eventEmitter,
@@ -49,6 +51,54 @@ export class NlpExperimentRepository extends BaseRepository<
       NLP_EXPERIMENT_POPULATE,
       NlpExperimentFull,
     );
+  }
+
+  /**
+   * Pre-processing logic for updating a dataset.
+   *
+   * @param query - The query to update a dataset.
+   * @param criteria - The filter criteria for the update query.
+   * @param updates - The update data.
+   */
+  async preUpdate(
+    _query: Query<
+      Document<NlpExperiment, any, any>,
+      Document<NlpExperiment, any, any>,
+      unknown,
+      NlpExperiment,
+      'findOneAndUpdate'
+    >,
+    criteria: TFilterQuery<NlpExperiment>,
+  ): Promise<void> {
+    const experiment: NlpExperiment = await this.findOne(criteria);
+
+    if (!experiment) {
+      return;
+    } else {
+      await this.updateOne(
+        { _id: experiment.id },
+        { $inc: { current_version: 1 } },
+      );
+    }
+  }
+
+  /**
+   * Pre-create hook to ensure the version is updated based on the cached NLP model.
+   * @param experiment - The NLP experiment to be created.
+   */
+  async preCreate(experiment: NlpExperiment): Promise<void> {
+    const modelName = experiment.model;
+
+    // Retrieve the cached NLP model by name
+    const cachedModel = await this.nlpModelService.getModel(modelName);
+
+    if (cachedModel) {
+      // If the model is found in the cache, increment the version
+      experiment.current_version = cachedModel.version + 1;
+    } else {
+      // If no model is found in the cache, you could set a default version or handle the case
+      experiment.current_version = 1; // or handle it as per your business logic
+    }
   }
 
   /**

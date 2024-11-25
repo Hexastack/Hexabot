@@ -9,12 +9,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
+
+import { StorageModeEnum } from '../schemas/storage-mode.enum';
 
 export class NlpDatasetCreateDto {
   @ApiPropertyOptional({ type: String })
@@ -31,6 +34,20 @@ export class NlpDatasetCreateDto {
   @IsNumber()
   @IsNotEmpty()
   current_version: number;
+
+  @ApiProperty({
+    description: 'Storage Mode',
+    enum: StorageModeEnum,
+    type: StorageModeEnum,
+  })
+  @IsEnum(StorageModeEnum)
+  @IsNotEmpty()
+  storage_mode: StorageModeEnum;
+
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+  uri: string;
 
   @ApiProperty({ type: String })
   @IsString()

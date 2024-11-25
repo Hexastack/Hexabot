@@ -8,6 +8,7 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
+import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -16,6 +17,7 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { NlpDataset } from './nlp-dataset.schema';
 import { NlpMetricValue } from './nlp-metric-value.schema';
 import { NlpParameterValue } from './nlp-parameter-value.schema';
 
@@ -86,6 +88,17 @@ export class NlpExperimentStub extends BaseSchema {
   parameters: unknown;
 
   /**
+   * A list of datasets associated with this experiment.
+   */
+  @Prop({
+    type: [MongooseSchema.Types.ObjectId],
+    ref: 'NlpDataset',
+    default: [],
+    required: true,
+  })
+  datasets: unknown;
+
+  /**
    * Retrieves all completed experiments from the provided array.
    * @param experiments - Array of experiments
    * @returns {NlpExperimentStub[]} - Array containing completed experiments
@@ -121,6 +134,9 @@ export class NlpExperiment extends NlpExperimentStub {
 
   @Transform(({ obj }) => obj.parameters.map((elem) => JSON.stringify(elem)))
   parameters: string[];
+
+  @Transform(({ obj }) => obj.datasets.map((elem) => elem.toString()))
+  datasets: string[];
 }
 
 @Schema({ timestamps: true })
@@ -130,6 +146,9 @@ export class NlpExperimentFull extends NlpExperimentStub {
 
   @Type(() => NlpParameterValue)
   parameters: NlpParameterValue[];
+
+  @Type(() => NlpDataset)
+  datasets: NlpDataset[];
 }
 
 export type NlpExperimentDocument = THydratedDocument<NlpExperiment>;
@@ -149,4 +168,5 @@ export type NlpExperimentPopulate = keyof TFilterPopulateFields<
 export const NLP_EXPERIMENT_POPULATE: NlpExperimentPopulate[] = [
   'parameters',
   'metrics',
+  'datasets',
 ];

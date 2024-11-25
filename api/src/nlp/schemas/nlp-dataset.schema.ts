@@ -18,6 +18,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { NlpExperiment } from './nlp-experiment.schema';
+import { StorageModeEnum } from './storage-mode.enum';
 
 @Schema({ timestamps: true })
 export class NlpDatasetStub extends BaseSchema {
@@ -27,8 +28,14 @@ export class NlpDatasetStub extends BaseSchema {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true, unique: false, index: true })
   current_version: number;
+
+  @Prop({ type: String, enum: Object.values(StorageModeEnum), required: true })
+  storage_mode: StorageModeEnum;
+
+  @Prop({ type: String, required: true })
+  uri: string;
 
   /**
    * Metadata associated with this Dataset, which may include additional information

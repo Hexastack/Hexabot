@@ -23,6 +23,7 @@ import {
   NlpMetricValuePopulate,
 } from '../schemas/nlp-metric-value.schema';
 
+import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpExperimentRepository } from './nlp-experiment.repository';
 
 @Injectable()
@@ -35,6 +36,7 @@ export class NlpMetricValueRepository extends BaseRepository<
     readonly eventEmitter: EventEmitter2,
     @InjectModel(NlpMetricValue.name) readonly model: Model<NlpMetricValue>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
+    private readonly nlpDatasetRepository: NlpDatasetRepository,
   ) {
     super(
       eventEmitter,
@@ -63,7 +65,7 @@ export class NlpMetricValueRepository extends BaseRepository<
   }
 
   /**
-   * Deletes NLP experiment associated with the provided criteria before deleting the metrics themselves.
+   * Deletes NLP experiment associated with the provided criteria before deleting the metric values themselves.
    *
    * @param query - The query object used for deletion.
    * @param criteria - Criteria to identify the sample(s) to delete.
@@ -89,6 +91,14 @@ export class NlpMetricValueRepository extends BaseRepository<
           .then((results) => results.map((doc) => doc.id));
 
         if (relatedExperimentIds.length > 0) {
+          for (const relatedId of relatedExperimentIds) {
+            await this.nlpDatasetRepository.updateMany(
+              { experiments: relatedId },
+              {
+                $pull: { experiments: relatedId },
+              },
+            );
+          }
           await this.nlpExperimentRepository.deleteMany({
             _id: { $in: relatedExperimentIds },
           });

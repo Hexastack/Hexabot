@@ -21,6 +21,7 @@ import {
   NlpMetricPopulate,
 } from '../schemas/nlp-metric.schema';
 
+import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpExperimentRepository } from './nlp-experiment.repository';
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
 
@@ -35,6 +36,7 @@ export class NlpMetricRepository extends BaseRepository<
     @InjectModel(NlpMetric.name) readonly model: Model<NlpMetric>,
     private readonly nlpExperimentRepository: NlpExperimentRepository,
     private readonly nlpMetricValueRepository: NlpMetricValueRepository,
+    private readonly nlpDatasetRepository: NlpDatasetRepository,
   ) {
     super(eventEmitter, model, NlpMetric, NLP_METRIC_POPULATE, NlpMetricFull);
   }
@@ -74,6 +76,14 @@ export class NlpMetricRepository extends BaseRepository<
             })
           ).map((doc) => doc.id);
           if (experimentsIds.length > 0) {
+            for (const relatedId of experimentsIds) {
+              await this.nlpDatasetRepository.updateMany(
+                { experiments: relatedId },
+                {
+                  $pull: { experiments: relatedId },
+                },
+              );
+            }
             // Remove the processed experiments
             await this.nlpExperimentRepository.deleteMany({
               _id: { $in: experimentsIds },
