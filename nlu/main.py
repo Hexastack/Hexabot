@@ -57,7 +57,7 @@ def load_slot_classifiers():
 def load_models():
     app.language_classifier = load_language_classifier()  # type: ignore
     app.intent_classifiers = load_intent_classifiers()  # type: ignore
-    app.slot_fillers = load_intent_classifiers()  # type: ignore
+    app.slot_fillers = load_slot_classifiers()  # type: ignore
 
 app = FastAPI()
 
