@@ -43,8 +43,8 @@ def load_intent_classifiers():
         logging.info(f'Successfully loaded the intent classifier {language} model')
     return intent_classifiers
 
-def load_slot_classifiers():
-    Model = tfbp.get_model("slot_classifier")
+def load_slot_fillers():
+    Model = tfbp.get_model("slot_filler")
     slot_fillers = {}
     for language in AVAILABLE_LANGUAGES:
         kwargs = {}
@@ -57,7 +57,7 @@ def load_slot_classifiers():
 def load_models():
     app.language_classifier = load_language_classifier()  # type: ignore
     app.intent_classifiers = load_intent_classifiers()  # type: ignore
-    app.slot_fillers = load_slot_classifiers()  # type: ignore
+    app.slot_fillers = load_slot_fillers()  # type: ignore
 
 app = FastAPI()
 
