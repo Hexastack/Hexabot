@@ -27,7 +27,7 @@ export class NlpMetricStub extends BaseSchema {
   name: string;
 
   /**
-   * The associated Experiment
+   * The associated Experiments
    */
   @Prop([
     {

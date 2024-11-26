@@ -25,8 +25,8 @@ import { NlpModelService } from '../services/nlp-model.service';
 import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpMetricValueRepository } from './nlp-metric-value.repository';
 import { NlpMetricRepository } from './nlp-metric.repository';
+import { NlpParameterValueRepository } from './nlp-parameter-value.repository';
 import { NlpParameterRepository } from './nlp-parameter.repository';
-import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
 
 @Injectable()
 export class NlpExperimentRepository extends BaseRepository<

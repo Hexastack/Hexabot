@@ -9,48 +9,57 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { BaseService } from '@/utils/generics/base-service';
+
 import { NlpExperimentDto } from '../dto/nlp-experiment.dto';
 import { NlpExperimentRepository } from '../repositories/nlp-experiment.repository';
 import {
   NlpExperiment,
   NlpExperimentFull,
+  NlpExperimentPopulate,
 } from '../schemas/nlp-experiment.schema';
 
 import { NlpModelService } from './nlp-model.service';
 
 @Injectable()
-export class NlpExperimentService {
+export class NlpExperimentService extends BaseService<
+  NlpExperiment,
+  NlpExperimentPopulate,
+  NlpExperimentFull
+> {
   constructor(
-    private readonly nlpExperimentRepository: NlpExperimentRepository,
+    readonly repository: NlpExperimentRepository,
     private readonly eventEmitter: EventEmitter2,
     private readonly nlpModelService: NlpModelService,
-  ) {}
+  ) {
+    super(repository);
+  }
 
   /**
    * Create a new NLP experiment.
    * @param nlpExperimentDto - Data transfer object for creating an experiment
-   * @returns {Promise<NlpExperimentFull>} - Created experiment details
+   * @returns {Promise<void>} - Created experiment details
    */
   async createExperiment(nlpExperimentDto: NlpExperimentDto): Promise<void> {
     const experiment = new NlpExperiment();
     Object.assign(experiment, nlpExperimentDto);
 
     // Create the experiment in the repository
-    await this.nlpExperimentRepository.create(experiment);
+    await this.repository.create(experiment);
   }
 
   /**
    * Update an existing NLP experiment.
    * @param id - The ID of the experiment to update
    * @param nlpExperimentDto - The data to update the experiment with
-   * @returns {Promise<NlpExperimentFull>} - Updated experiment details
+   * @returns {Promise<void>} - Updated experiment details
    */
   async updateExperiment(
     id: string,
     nlpExperimentDto: NlpExperimentDto,
   ): Promise<void> {
     // Perform the update in the repository
-    await this.nlpExperimentRepository.updateOne(id, nlpExperimentDto);
+    await this.repository.updateOne(id, nlpExperimentDto);
   }
 
   /**
@@ -60,15 +69,15 @@ export class NlpExperimentService {
    */
   async deleteCascadeExperiment(id: string): Promise<void> {
     // Perform the delete operation in the repository
-    await this.nlpExperimentRepository.deleteOne(id);
+    await this.repository.deleteOne(id);
   }
 
   /**
    * Get all completed NLP experiments.
-   * @returns {Promise<NlpExperimentFull[]>} - List of completed experiments
+   * @returns {Promise<NlpExperiment[]>} - List of completed experiments
    */
   async getCompletedExperiments(): Promise<NlpExperiment[]> {
-    const experiments = await this.nlpExperimentRepository.find({
+    const experiments = await this.repository.find({
       isCompleted: true,
     });
 
@@ -81,7 +90,7 @@ export class NlpExperimentService {
    * @returns {Promise<NlpExperimentFull | null>} - The experiment, or null if not found
    */
   async getExperimentById(id: string): Promise<NlpExperimentFull | null> {
-    const experiment = await this.nlpExperimentRepository.findOne(id);
+    const experiment = await this.repository.findOne(id);
     return experiment;
   }
 

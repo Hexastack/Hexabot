@@ -23,7 +23,7 @@ import {
 
 import { NlpDatasetRepository } from './nlp-dataset.repository';
 import { NlpExperimentRepository } from './nlp-experiment.repository';
-import { NlpParameterValueRepository } from './nlp-parameter.value.repository';
+import { NlpParameterValueRepository } from './nlp-parameter-value.repository';
 
 @Injectable()
 export class NlpParameterRepository extends BaseRepository<
