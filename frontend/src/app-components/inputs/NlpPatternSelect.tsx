@@ -9,6 +9,7 @@
 import { Cancel } from "@mui/icons-material";
 import {
   Box,
+  Chip,
   CircularProgress,
   IconButton,
   InputAdornment,
@@ -17,7 +18,7 @@ import {
   useTheme,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { forwardRef, SyntheticEvent, useRef, useState } from "react";
+import { forwardRef, SyntheticEvent, useRef } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
@@ -29,17 +30,22 @@ import { NlpPattern } from "@/types/block.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { INlpValue } from "@/types/nlp-value.types";
 
-type NlpPatternSelectProps = { patterns: NlpPattern[]; onChange: any };
+type NlpPatternSelectProps = {
+  patterns: NlpPattern[];
+  onChange: (
+    _event: SyntheticEvent<Element, Event> | undefined,
+    patterns: NlpPattern[],
+  ) => void;
+};
 
 const NlpPatternSelect = (
   { patterns, onChange }: NlpPatternSelectProps,
   ref,
 ) => {
   const inputRef = useRef(null);
-  const [selected, setSelected] = useState<NlpPattern[]>(patterns);
   const theme = useTheme();
   const { t } = useTranslate();
-  const { onSearch, searchPayload } = useSearch<INlpEntity>({
+  const { searchPayload } = useSearch<INlpEntity>({
     $iLike: ["name"],
   });
   const { data: options, isLoading } = useFind(
@@ -47,19 +53,18 @@ const NlpPatternSelect = (
     { hasCount: false, params: searchPayload },
   );
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
-
-  function handleNlpEntityChange(
+  const handleNlpEntityChange = (
     _event: SyntheticEvent<Element, Event>,
     entities: INlpEntity[],
-  ): void {
-    const intersection = selected.filter(({ entity: entityName }) =>
+  ): void => {
+    const intersection = patterns.filter(({ entity: entityName }) =>
       entities.find(({ name }) => name === entityName),
     );
     const additions = entities.filter(
       ({ name }) =>
-        !selected.find(({ entity: entityName }) => name === entityName),
+        !patterns.find(({ entity: entityName }) => name === entityName),
     );
-    const newSelection: NlpPattern[] = [
+    const newSelection = [
       ...intersection,
       ...additions.map(
         ({ name }) =>
@@ -71,20 +76,22 @@ const NlpPatternSelect = (
       ),
     ];
 
-    setSelected(newSelection);
-  }
-
-  const handleNlpValueChange = (entity: INlpEntity, valueId: string) => {
-    const newSelection = [...selected];
-    const update = newSelection.find(({ entity: e }) => e === entity.name);
+    onChange(undefined, newSelection);
+  };
+  const handleNlpValueChange = (
+    { id, name }: Pick<INlpEntity, "id" | "name">,
+    valueId: string,
+  ): void => {
+    const newSelection = patterns.slice(0);
+    const update = newSelection.find(({ entity: e }) => e === name);
 
     if (!update) {
       throw new Error("Unable to find nlp entity");
     }
 
-    if (valueId === entity.id) {
+    if (valueId === id) {
       update.match = "entity";
-      update.value = entity.name;
+      update.value = name;
     } else {
       const value = getNlpValueFromCache(valueId);
 
@@ -106,7 +113,7 @@ const NlpPatternSelect = (
 
   const defaultValue =
     options.filter(({ name }) =>
-      selected.find(({ entity: entityName }) => entityName === name),
+      patterns.find(({ entity: entityName }) => entityName === name),
     ) || {};
 
   return (
@@ -159,29 +166,25 @@ const NlpPatternSelect = (
               display: "flex",
               flexWrap: "wrap",
               gap: 0.5,
+              mx: "0.5rem",
             }}
           >
-            {entities.map((entity, index) => {
+            {entities.map(({ id, name, values }, index) => {
               const { key, onDelete } = getTagProps({ index });
-              const handleChange = (
-                _event: SyntheticEvent<Element, Event>,
-                valueId: string,
-              ) => {
-                handleNlpValueChange(entity, valueId);
-              };
-              const values = entity.values.map((vId) =>
+              const nlpValues = values.map((vId) =>
                 getNlpValueFromCache(vId),
               ) as INlpValue[];
-              const selectedValue = patterns?.find(
-                (e) => e.entity === entity.name,
+              const selectedValue = patterns.find(
+                (e) => e.entity === name,
               )?.value;
-              const value = values.find(({ value }) => value === selectedValue);
+              const { id: selectedId = id } =
+                nlpValues.find(({ value }) => value === selectedValue) || {};
 
               return (
                 <Autocomplete
                   size="small"
-                  defaultValue={value?.id || entity.id}
-                  options={[entity.id].concat(entity.values)}
+                  defaultValue={selectedId}
+                  options={[id].concat(values)}
                   multiple={false}
                   key={key}
                   getOptionLabel={(option) => {
@@ -191,7 +194,7 @@ const NlpPatternSelect = (
                       return nlpValueCache?.value;
                     }
 
-                    if (option === entity.id) {
+                    if (option === id) {
                       return t("label.any");
                     }
 
@@ -200,10 +203,11 @@ const NlpPatternSelect = (
                   freeSolo={false}
                   disableClearable
                   popupIcon={false}
-                  onChange={handleChange}
+                  onChange={(e, valueId) =>
+                    handleNlpValueChange({ id, name }, valueId)
+                  }
                   sx={{
                     minWidth: 50,
-                    padding: 0,
                     ".MuiAutocomplete-input": {
                       minWidth: "100px !important",
                     },
@@ -214,59 +218,67 @@ const NlpPatternSelect = (
                       },
                     },
                   }}
-                  renderInput={(props) => {
-                    return (
-                      <Input
-                        {...props}
-                        InputProps={{
-                          ...props.InputProps,
-                          readOnly: true,
-                          sx: {
-                            padding: 0,
-                            overflow: "hidden",
-                            cursor: "pointer",
-                          },
-                          startAdornment: (
-                            <InputAdornment
-                              position="start"
+                  renderInput={(props) => (
+                    <Input
+                      {...props}
+                      InputProps={{
+                        ...props.InputProps,
+                        readOnly: true,
+                        sx: {
+                          padding: 0,
+                          overflow: "hidden",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                        },
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Chip
                               sx={{
-                                padding: "0 1rem",
-                                height: "100%",
-                                backgroundColor: theme.palette.grey[200],
+                                p: "0 0.3rem",
+                                border: "none",
+                                borderRadius: 0,
                               }}
-                            >
-                              {entity.name}
-                            </InputAdornment>
-                          ),
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              {isLoading ? (
-                                <CircularProgress color="inherit" size={20} />
-                              ) : (
-                                <IconButton
-                                  sx={{ padding: 0 }}
-                                  onClick={(e) => {
-                                    onDelete(e);
+                              color="primary"
+                              label={name}
+                              variant="role"
+                            />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            {isLoading ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : (
+                              <IconButton
+                                sx={{ p: 0, pr: "2px" }}
+                                onClick={(e) => {
+                                  onDelete(e);
 
-                                    onChange(
-                                      undefined,
-                                      patterns.filter(
-                                        (p) => p.entity !== entity.name,
-                                      ),
-                                    );
+                                  onChange(
+                                    undefined,
+                                    patterns.filter((p) => p.entity !== name),
+                                  );
+                                }}
+                                edge="end"
+                                size="small"
+                              >
+                                <Cancel
+                                  sx={{
+                                    fontSize: "16px",
+                                    transition: ".05s",
+                                    "&:hover": {
+                                      color: theme.palette.grey[700],
+                                    },
                                   }}
-                                  edge="end"
-                                  size="small"
-                                >
-                                  <Cancel htmlColor={theme.palette.grey[500]} />
-                                </IconButton>
-                              )}
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    );
-                  }}
+                                  htmlColor={theme.palette.grey[500]}
+                                />
+                              </IconButton>
+                            )}
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  )}
                 />
               );
             })}
@@ -276,8 +288,13 @@ const NlpPatternSelect = (
       renderInput={(props) => (
         <Input
           {...props}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              paddingRight: "6px !important",
+            },
+          }}
+          size="small"
           label={t("label.nlp")}
-          onChange={(e) => onSearch(e.target.value)}
           InputProps={{
             ...props.InputProps,
             inputRef,
