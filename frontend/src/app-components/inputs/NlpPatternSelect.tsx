@@ -121,7 +121,7 @@ const NlpPatternSelect = (
       ref={ref}
       size="medium"
       disabled={options.length === 0}
-      defaultValue={defaultValue}
+      value={defaultValue}
       multiple={true}
       options={options}
       onChange={handleNlpEntityChange}
@@ -183,7 +183,7 @@ const NlpPatternSelect = (
               return (
                 <Autocomplete
                   size="small"
-                  defaultValue={selectedId}
+                  value={selectedId}
                   options={[id].concat(values)}
                   multiple={false}
                   key={key}
