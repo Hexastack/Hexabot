@@ -130,8 +130,6 @@ $ npm run migrate -h
 
 ### Documentation
 
-Access the Swagger API documentation by visiting the API url `/docs` once run it in development mode.
+For detailed information about the API routes and usage, refer to the Swagger API documentation by visiting the API url `/docs` once run it in development mode.
 
 It's also possible to access the API reference documentation by running `npm run doc`.
-
-For detailed information about the API routes and usage, refer to the API documentation or visit [https://docs.hexabot.ai](https://docs.hexabot.ai).
