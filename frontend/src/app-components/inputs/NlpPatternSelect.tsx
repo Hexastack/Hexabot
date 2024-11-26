@@ -12,11 +12,12 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
+  Skeleton,
   Typography,
   useTheme,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { forwardRef, SyntheticEvent, useState } from "react";
+import { forwardRef, SyntheticEvent, useRef, useState } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
@@ -26,6 +27,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { NlpPattern } from "@/types/block.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
+import { INlpValue } from "@/types/nlp-value.types";
 
 type NlpPatternSelectProps = { patterns: NlpPattern[]; onChange: any };
 
@@ -33,6 +35,7 @@ const NlpPatternSelect = (
   { patterns, onChange }: NlpPatternSelectProps,
   ref,
 ) => {
+  const inputRef = useRef(null);
   const [selected, setSelected] = useState<NlpPattern[]>(patterns);
   const theme = useTheme();
   const { t } = useTranslate();
@@ -94,6 +97,13 @@ const NlpPatternSelect = (
 
     onChange(undefined, newSelection);
   };
+
+  if (!options.length) {
+    return (
+      <Skeleton animation="wave" variant="rounded" width="100%" height={56} />
+    );
+  }
+
   const defaultValue =
     options.filter(({ name }) =>
       selected.find(({ entity: entityName }) => entityName === name),
@@ -154,21 +164,23 @@ const NlpPatternSelect = (
             {entities.map((entity, index) => {
               const { key, onDelete } = getTagProps({ index });
               const handleChange = (
-                event: SyntheticEvent<Element, Event>,
+                _event: SyntheticEvent<Element, Event>,
                 valueId: string,
               ) => {
                 handleNlpValueChange(entity, valueId);
               };
-              const selected = (
-                Array.isArray(patterns)
-                  ? patterns?.find((e) => e.entity === entity.name)
-                  : {}
-              ) as NlpPattern;
+              const values = entity.values.map((vId) =>
+                getNlpValueFromCache(vId),
+              ) as INlpValue[];
+              const selectedValue = patterns?.find(
+                (e) => e.entity === entity.name,
+              )?.value;
+              const value = values.find(({ value }) => value === selectedValue);
 
               return (
                 <Autocomplete
                   size="small"
-                  defaultValue={selected?.value || ""}
+                  defaultValue={value?.id || entity.id}
                   options={[entity.id].concat(entity.values)}
                   multiple={false}
                   key={key}
@@ -179,12 +191,13 @@ const NlpPatternSelect = (
                       return nlpValueCache?.value;
                     }
 
-                    if (selected?.entity === option || option === entity.id) {
+                    if (option === entity.id) {
                       return t("label.any");
                     }
 
                     return option;
                   }}
+                  freeSolo={false}
                   disableClearable
                   popupIcon={false}
                   onChange={handleChange}
@@ -201,17 +214,19 @@ const NlpPatternSelect = (
                       },
                     },
                   }}
-                  renderInput={(props) => (
-                    <Input
-                      {...props}
-                      InputProps={{
-                        ...props.InputProps,
-                        readOnly: true,
-                        sx: {
-                          overflow: "hidden",
-                        },
-                        startAdornment: (
-                          <IconButton>
+                  renderInput={(props) => {
+                    return (
+                      <Input
+                        {...props}
+                        InputProps={{
+                          ...props.InputProps,
+                          readOnly: true,
+                          sx: {
+                            padding: 0,
+                            overflow: "hidden",
+                            cursor: "pointer",
+                          },
+                          startAdornment: (
                             <InputAdornment
                               position="start"
                               sx={{
@@ -222,35 +237,36 @@ const NlpPatternSelect = (
                             >
                               {entity.name}
                             </InputAdornment>
-                          </IconButton>
-                        ),
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            {isLoading ? (
-                              <CircularProgress color="inherit" size={20} />
-                            ) : (
-                              <IconButton
-                                onClick={(e) => {
-                                  onDelete(e);
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              {isLoading ? (
+                                <CircularProgress color="inherit" size={20} />
+                              ) : (
+                                <IconButton
+                                  sx={{ padding: 0 }}
+                                  onClick={(e) => {
+                                    onDelete(e);
 
-                                  onChange(
-                                    undefined,
-                                    patterns.filter(
-                                      (p) => p.entity !== entity.name,
-                                    ),
-                                  );
-                                }}
-                                edge="end"
-                                size="small"
-                              >
-                                <Cancel htmlColor={theme.palette.grey[500]} />
-                              </IconButton>
-                            )}
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  )}
+                                    onChange(
+                                      undefined,
+                                      patterns.filter(
+                                        (p) => p.entity !== entity.name,
+                                      ),
+                                    );
+                                  }}
+                                  edge="end"
+                                  size="small"
+                                >
+                                  <Cancel htmlColor={theme.palette.grey[500]} />
+                                </IconButton>
+                              )}
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    );
+                  }}
                 />
               );
             })}
@@ -264,6 +280,13 @@ const NlpPatternSelect = (
           onChange={(e) => onSearch(e.target.value)}
           InputProps={{
             ...props.InputProps,
+            inputRef,
+            onClick: (event) => {
+              if (event.target !== inputRef.current) {
+                event.stopPropagation();
+                event.preventDefault();
+              }
+            },
             endAdornment: isLoading ? (
               <CircularProgress color="inherit" size={20} />
             ) : null,
