@@ -243,8 +243,6 @@ export const PostbackInput = ({
               <InputAdornment position="start">
                 <Chip
                   sx={{
-                    p: "0",
-                    m: "0 ",
                     fontSize: "12px",
                     minWidth: "75px",
                     maxHeight: "30px",
