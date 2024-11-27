@@ -14,7 +14,7 @@ import {
   RemoveCircleOutline,
   Spellcheck,
 } from "@mui/icons-material";
-import { Box, IconButton, styled } from "@mui/material";
+import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -49,6 +49,7 @@ type PatternsInputProps = {
 
 const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   const { t } = useTranslate();
+  const theme = useTheme();
   const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
     value.map((pattern) => createValueWithId(pattern)),
   );
@@ -73,7 +74,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
 
   useEffect(() => {
     onChange(patterns.map(({ value }) => value));
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns]);
 
   const actions: DropdownButtonAction[] = useMemo(
@@ -103,7 +104,15 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
           <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
         ) : (
           patterns.map(({ value, id }, idx) => (
-            <Box display="flex" mt={2} key={id}>
+            <Box display="flex" alignItems="center" mt={2} key={id}>
+              {idx > 0 && (
+                <Chip
+                  sx={{ m: 1, color: theme.palette.grey[600] }}
+                  label={t("label.or")}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
               <PatternInput
                 idx={idx}
                 value={value}
