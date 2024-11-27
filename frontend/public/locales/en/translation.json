@@ -232,7 +232,7 @@
     "capture_context_vars": "Capture context variables?",
     "block_event_type": "Type of event",
     "patterns": "Patterns",
-    "no_patterns": "- No patterns -",
+    "no_patterns": "- No triggers -",
     "text_patterns": " Text Patterns",
     "triggers": "Triggers",
     "payloads": "Payloads",
@@ -558,7 +558,7 @@
     "media_library": "Media Library",
     "manage_roles": "Manage Roles",
     "connect_with_sso": "Connect with SSO",
-    "add_pattern": "Add pattern",
+    "add_pattern": "New Trigger",
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle button"
   },

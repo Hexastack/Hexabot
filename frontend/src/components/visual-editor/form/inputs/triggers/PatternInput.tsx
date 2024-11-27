@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, MenuItem, TextFieldProps } from "@mui/material";
+import { Box, TextFieldProps } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
@@ -25,6 +25,7 @@ import {
 
 import { PostbackInput } from "./PostbackInput";
 
+
 const isRegex = (str: Pattern) => {
   return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
 };
@@ -33,10 +34,10 @@ const getType = (pattern: Pattern): PatternType => {
     return "regex";
   } else if (Array.isArray(pattern)) {
     return "nlp";
-  } else if (typeof pattern === "object" && pattern !== null) {
-    if (pattern.type === "menu") {
+  } else if (typeof pattern === "object") {
+    if (pattern?.type === "menu") {
       return "menu";
-    } else if (pattern.type === "content") {
+    } else if (pattern?.type === "content") {
       return "content";
     } else {
       return "payload";
@@ -65,16 +66,9 @@ const PatternInput: FC<PatternInputProps> = ({
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  // const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const [pattern, setPattern] = useState<Pattern>(value);
-  const [patternType, setPatternType] = useState<PatternType>(getType(value));
+  const patternType = getType(value);
   const isPostbackType = ["payload", "content", "menu"].includes(patternType);
-  const types = [
-    { value: "text", label: t("label.match_sound") },
-    { value: "regex", label: t("label.regex") },
-    { value: "payload", label: t("label.postback") },
-    { value: "nlp", label: t("label.nlp") },
-  ];
   const registerInput = (
     errorMessage: string,
     idx: number,
@@ -100,53 +94,15 @@ const PatternInput: FC<PatternInputProps> = ({
   }, [pattern]);
 
   return (
-    <>
-      <Grid item xs={2}>
-        <Input
-          select
-          label={t("label.type")}
-          value={isPostbackType ? "payload" : patternType}
-          onChange={(e) => {
-            const selected = e.target.value as PatternType;
-
-            switch (selected) {
-              case "regex": {
-                setPattern("//");
-                break;
-              }
-              case "nlp": {
-                setPattern([]);
-                break;
-              }
-              case "menu":
-              case "content":
-              case "payload": {
-                setPattern(null);
-                break;
-              }
-              default: {
-                setPattern("");
-              }
-            }
-
-            setPatternType(selected);
-          }}
-        >
-          {types.map((item) => (
-            <MenuItem key={item.value} value={item.value}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </Input>
-      </Grid>
-      <Grid item xs={9}>
-        {patternType === "nlp" && (
-          <NlpPatternSelect
-            patterns={pattern as NlpPattern[]}
-            onChange={setPattern}
-          />
-        )}
-        {isPostbackType ? (
+    <Box display="flex" flexGrow={1}>
+      {patternType === "nlp" && (
+        <NlpPatternSelect
+          patterns={pattern as NlpPattern[]}
+          onChange={setPattern}
+        />
+      )}
+      
+      {isPostbackType ? (
           <PostbackInput
             onChange={(payload) => {
               payload && setPattern(payload);
@@ -154,40 +110,39 @@ const PatternInput: FC<PatternInputProps> = ({
             defaultValue={pattern as PayloadPattern}
           />
         ) : null}
-        {typeof value === "string" && patternType === "regex" ? (
-          <RegexInput
-            {...registerInput(t("message.regex_is_empty"), idx, {
-              validate: (pattern) => {
-                try {
-                  const parsedPattern = new RegExp(pattern.slice(1, -1));
+      {typeof value === "string" && patternType === "regex" ? (
+        <RegexInput
+          {...registerInput(t("message.regex_is_empty"), idx, {
+            validate: (pattern) => {
+              try {
+                const parsedPattern = new RegExp(pattern.slice(1, -1));
 
-                  if (String(parsedPattern) !== pattern) {
-                    throw t("message.regex_is_invalid");
-                  }
-
-                  return true;
-                } catch (_e) {
-                  return t("message.regex_is_invalid");
+                if (String(parsedPattern) !== pattern) {
+                  throw t("message.regex_is_invalid");
                 }
-              },
-              setValueAs: (v) => (isRegex(v) ? v : `/${v}/`),
-            })}
-            label={t("label.regex")}
-            value={value.slice(1, -1)}
-            onChange={(v) => onChange(v)}
-            required
-          />
-        ) : null}
-        {typeof value === "string" && patternType === "text" ? (
-          <Input
-            {...(getInputProps ? getInputProps(idx) : null)}
-            label={t("label.text")}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-          />
-        ) : null}
-      </Grid>
-    </>
+
+                return true;
+              } catch (_e) {
+                return t("message.regex_is_invalid");
+              }
+            },
+            setValueAs: (v) => (isRegex(v) ? v : `/${v}/`),
+          })}
+          label={t("label.regex")}
+          value={value.slice(1, -1)}
+          onChange={(v) => onChange(v)}
+          required
+        />
+      ) : null}
+      {typeof value === "string" && patternType === "text" ? (
+        <Input
+          {...(getInputProps ? getInputProps(idx) : null)}
+          label={t("label.text")}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : null}
+    </Box>
   );
 };
 

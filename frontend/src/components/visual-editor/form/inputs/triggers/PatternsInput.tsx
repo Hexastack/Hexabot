@@ -6,14 +6,24 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton, styled } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import {
+  Abc,
+  Add,
+  Mouse,
+  PsychologyAlt,
+  RemoveCircleOutline,
+  Spellcheck,
+} from "@mui/icons-material";
+import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
+import DropdownButton, {
+  DropdownButtonAction,
+} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
+import { PayloadType } from "@/types/message.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
 
@@ -21,11 +31,6 @@ import { getInputControls } from "../../utils/inputControls";
 
 import PatternInput from "./PatternInput";
 
-type PatternsInputProps = {
-  value: Pattern[];
-  onChange: (patterns: Pattern[]) => void;
-  minInput: number;
-};
 const StyledNoPatternsDiv = styled("div")(
   SXStyleOptions({
     color: "grey.500",
@@ -35,8 +40,16 @@ const StyledNoPatternsDiv = styled("div")(
     width: "100%",
   }),
 );
+
+type PatternsInputProps = {
+  value: Pattern[];
+  onChange: (patterns: Pattern[]) => void;
+  minInput: number;
+};
+
 const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   const { t } = useTranslate();
+  const theme = useTheme();
   const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
     value.map((pattern) => createValueWithId(pattern)),
   );
@@ -44,8 +57,8 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
     register,
     formState: { errors },
   } = useFormContext<any>();
-  const addInput = () => {
-    setPatterns([...patterns, createValueWithId<Pattern>("")]);
+  const addInput = (defaultValue: Pattern) => {
+    setPatterns([...patterns, createValueWithId<Pattern>(defaultValue)]);
   };
   const removeInput = (index: number) => {
     const updatedPatterns = [...patterns];
@@ -61,21 +74,45 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
 
   useEffect(() => {
     onChange(patterns.map(({ value }) => value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns]);
 
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      { icon: <Spellcheck />, name: "Exact Match", defaultValue: "" },
+      { icon: <Abc />, name: "Pattern Match", defaultValue: "//" },
+      { icon: <PsychologyAlt />, name: "Intent Match", defaultValue: [] },
+      {
+        icon: <Mouse />,
+        name: "Interaction",
+        defaultValue: {
+          label: t("label.get_started"),
+          value: "GET_STARTED",
+          type: PayloadType.button,
+          group: "general",
+        },
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   return (
-    <Box>
-      <Grid container spacing={2}>
+    <Box display="flex" flexDirection="column">
+      <Box display="flex" flexDirection="column">
         {patterns.length == 0 ? (
           <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
         ) : (
           patterns.map(({ value, id }, idx) => (
-            <Fragment key={id}>
-              <Grid item xs={1}>
-                <IconButton onClick={() => removeInput(idx)}>
-                  <DeleteIcon />
-                </IconButton>
-              </Grid>
+            <Box display="flex" alignItems="center" mt={2} key={id}>
+              {idx > 0 && (
+                <Chip
+                  sx={{ m: 1, color: theme.palette.grey[600] }}
+                  label={t("label.or")}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
               <PatternInput
                 idx={idx}
                 value={value}
@@ -87,19 +124,24 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                   t("message.text_is_required"),
                 )}
               />
-            </Fragment>
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => removeInput(idx)}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
+            </Box>
           ))
         )}
-      </Grid>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={addInput}
-        startIcon={<AddIcon />}
-        sx={{ marginTop: 2, float: "right" }}
-      >
-        {t("button.add_pattern")}
-      </Button>
+      </Box>
+      <DropdownButton
+        sx={{ alignSelf: "end", marginTop: 2 }}
+        label={t("button.add_pattern")}
+        actions={actions}
+        onClick={(action) => addInput(action.defaultValue as Pattern)}
+        icon={<Add />}
+      />
     </Box>
   );
 };

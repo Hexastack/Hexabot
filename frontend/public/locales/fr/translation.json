@@ -559,7 +559,7 @@
     "media_library": "Bibliothéque Media",
     "manage_roles": "Gérer les rôles",
     "connect_with_sso": "Se connecter avec SSO",
-    "add_pattern": "Ajouter un motif",
+    "add_pattern": "Ajouter un déclencheur",
     "mark_as_default": "Par Défaut",
     "toggle": "Bouton de bascule"
   },
