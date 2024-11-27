@@ -28,6 +28,8 @@ export enum PayloadType {
   attachments = "attachments",
   menu = "menu",
   content = "content",
+  quick_reply = "quick_reply",
+  button = "button",
 }
 
 export enum FileType {

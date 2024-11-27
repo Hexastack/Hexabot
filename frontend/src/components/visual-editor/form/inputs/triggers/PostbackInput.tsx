@@ -6,10 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Skeleton, Typography } from "@mui/material";
-import { useMemo } from "react";
+import {
+  Autocomplete,
+  Box,
+  CircularProgress,
+  InputAdornment,
+  Skeleton,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 
-import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
+import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -26,25 +33,31 @@ import {
 
 import { useBlock } from "../../BlockFormProvider";
 
-type PayloadOption = {
-  id: string;
-  label: string;
-  group?: string;
+type PayloadOption = PayloadPattern & {
+  group: string;
+};
+
+const isSamePostback = <T extends PayloadPattern>(a: T, b: T) => {
+  return a.label === b.label && a.value === b.value;
 };
 
 type PostbackInputProps = {
-  value?: string | null;
-  onChange: (pattern: PayloadPattern) => void;
+  defaultValue?: PayloadPattern;
+  onChange: (pattern: PayloadPattern | null) => void;
 };
 
-export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
+export const PostbackInput = ({
+  defaultValue,
+  onChange,
+}: PostbackInputProps) => {
   const block = useBlock();
+  const [selectedValue, setSelectedValue] = useState(defaultValue || null);
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
-  const { data: menu } = useFind(
+  const { data: menu, isLoading: isLoadingMenu } = useFind(
     { entity: EntityType.MENU, format: Format.FULL },
     { hasCount: false },
   );
-  const { data: contents } = useFind(
+  const { data: contents, isLoading: isLoadingContent } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
     {
       hasCount: false,
@@ -54,20 +67,21 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
   //  General options
   const generalOptions = [
     {
-      id: "GET_STARTED",
       label: t("label.get_started"),
-      group: t("label.general"),
+      value: "GET_STARTED",
+      group: "general",
     },
 
     {
-      id: "VIEW_MORE",
       label: t("label.view_more"),
-      group: t("label.general"),
+      value: "VIEW_MORE",
+      group: "general",
     },
     {
-      id: "LOCATION",
       label: t("label.location"),
-      group: t("label.general"),
+      value: "LOCATION",
+      type: PayloadType.location,
+      group: "general",
     },
   ];
   //  Gather previous blocks buttons
@@ -92,8 +106,8 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
         }, [] as (PostBackButton & { group: string })[])
         .map((btn) => {
           return {
-            id: btn.payload,
             label: btn.title,
+            value: btn.payload,
             group: btn.group,
           };
         }),
@@ -125,6 +139,8 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
           return {
             id: btn.payload as string,
             label: btn.title as string,
+            value: btn.payload as string,
+            type: PayloadType.menu,
             group: btn.group,
           };
         }),
@@ -132,9 +148,11 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
   );
   const menuOptions = menu
     .filter(({ payload }) => payload)
-    .map(({ title }) => ({
+    .map(({ title, payload }) => ({
       id: title,
       label: title,
+      value: payload as string,
+      type: PayloadType.menu,
       group: "menu",
     }));
   const contentOptions = useMemo(
@@ -158,15 +176,17 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
           return (b.options?.content?.buttons || []).reduce((payloads, btn) => {
             // Return a payload for each node/button combination
             payloads.push({
-              id: btn.title,
               label: btn.title,
+              value: btn.title,
+              type: PayloadType.content,
               group: "content",
             });
 
             return availableContents.reduce((acc, n) => {
               acc.push({
-                id: n.title,
                 label: n.title,
+                value: n.title,
+                type: PayloadType.content,
                 group: "content",
               });
 
@@ -178,52 +198,76 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
     [block?.previousBlocks, contents, getBlockFromCache],
   );
   // Concat all previous blocks
-  const options = [
+  const options: PayloadOption[] = [
     ...generalOptions,
     ...btnOptions,
     ...qrOptions,
     ...menuOptions,
     ...contentOptions,
   ];
-  const isOptionsReady = !value || options.find((e) => e.id === value);
+  const isOptionsReady =
+    !defaultValue || options.find((o) => isSamePostback(o, defaultValue));
 
   if (!isOptionsReady) {
     return (
       <Skeleton animation="wave" variant="rounded" width="100%" height={40} />
     );
   }
+  const selected = defaultValue
+    ? options.find((o) => {
+        return isSamePostback(o, defaultValue);
+      })
+    : undefined;
 
   return (
-    <>
-      <AutoCompleteSelect<PayloadOption, "label", false>
-        value={value}
-        options={options}
-        labelKey="label"
-        label={t("label.postback")}
-        multiple={false}
-        onChange={(_e, content) => {
-          content &&
-            onChange({
-              label: content.label,
-              value: content.id,
-              type: ["content", "menu"].includes(content.group || "")
-                ? PayloadType[content?.group || ""]
-                : undefined,
-            });
-        }}
-        groupBy={(option) => {
-          return option.group ?? t("label.other");
-        }}
-        getOptionLabel={({ group, label }) => `${group}:${label}`}
-        renderGroup={(params) => (
-          <li key={params.key}>
-            <Typography component="h4" p={2} fontWeight={700} color="primary">
-              {params.group}
-            </Typography>
-            <Box>{params.children}</Box>
-          </li>
-        )}
-      />
-    </>
+    <Autocomplete<PayloadOption>
+      size="small"
+      defaultValue={selected}
+      options={options}
+      // label={t("label.postback")}
+      multiple={false}
+      onChange={(_e, value) => {
+        setSelectedValue(value);
+        if (value) {
+          const {  group: _g, ...payloadPattern } = value;
+
+          onChange(payloadPattern);
+        } else {
+          onChange(null);
+        }
+      }}
+      groupBy={(option) => {
+        return option.group ?? t("label.other");
+      }}
+      getOptionLabel={({ label }) => label}
+      renderGroup={(params) => (
+        <li key={params.key}>
+          <Typography component="h4" p={2} fontWeight={700} color="primary">
+            {t(`label.${params.group}`)}
+          </Typography>
+          <Box>{params.children}</Box>
+        </li>
+      )}
+      renderInput={(props) => {
+        return (
+          <Input
+            {...props}
+            label={t("label.postback")}
+            InputProps={{
+              ...props.InputProps,
+              startAdornment: (
+                <InputAdornment position="start">
+                  {selectedValue?.type || t("label.postback")}
+                </InputAdornment>
+              ),
+              endAdornment:
+                isLoadingMenu || isLoadingContent ? (
+                  <CircularProgress color="inherit" size={20} />
+                ) : null,
+            }}
+          />
+        );
+      }}
+    />
   );
 };

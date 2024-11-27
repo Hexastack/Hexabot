@@ -151,7 +151,7 @@ const PatternInput: FC<PatternInputProps> = ({
             onChange={(payload) => {
               payload && setPattern(payload);
             }}
-            value={pattern ? (pattern as PayloadPattern).value : null}
+            defaultValue={pattern as PayloadPattern}
           />
         ) : null}
         {typeof value === "string" && patternType === "regex" ? (

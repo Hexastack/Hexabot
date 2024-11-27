@@ -70,6 +70,8 @@ export enum FileType {
 export enum PayloadType {
   location = 'location',
   attachments = 'attachments',
+  quick_reply = 'quick_reply',
+  button = 'button',
 }
 
 export type StdOutgoingTextMessage = { text: string };
