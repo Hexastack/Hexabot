@@ -183,7 +183,7 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
     ...menuOptions,
     ...contentOptions,
   ];
-  const isOptionsReady = options.find((e) => e.id === value);
+  const isOptionsReady = !value || options.find((e) => e.id === value);
 
   if (!isOptionsReady) {
     return (
