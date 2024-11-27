@@ -82,9 +82,15 @@ const BlockDialog: FC<BlockDialogProps> = ({
         limit: 2,
       },
       assignTo: block?.options?.assignTo,
+      fallback: block?.options?.fallback || {
+        active: true,
+        message: [],
+        max_attempts: 1,
+      },
     },
     assign_labels: block?.assign_labels || [],
     message: block?.message || [""],
+    capture_vars: block?.capture_vars || [],
   } as IBlockAttributes;
   const methods = useForm<IBlockAttributes>({
     defaultValues: DEFAULT_VALUES,
