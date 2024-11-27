@@ -17,7 +17,7 @@
       justify-content: center;
 
       .sc-message--carousel-element {
-        padding: 1rem;
+        padding: 2rem;
         width: 100%;
 
         .sc-message--carousel-element-image {
@@ -56,10 +56,14 @@
 
     &.prev {
       left: 10px;
+      width: 2rem;
+      height: 3rem;
     }
 
     &.next {
       right: 10px;
+      width: 2rem;
+      height: 3rem;
     }
   }
 }
