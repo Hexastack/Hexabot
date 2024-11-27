@@ -9,6 +9,7 @@
 import {
   Autocomplete,
   Box,
+  Chip,
   CircularProgress,
   InputAdornment,
   Skeleton,
@@ -26,6 +27,7 @@ import {
   ButtonType,
   PayloadType,
   PostBackButton,
+  QuickReplyType,
   StdOutgoingButtonsMessage,
   StdOutgoingQuickRepliesMessage,
   StdQuickReply,
@@ -37,9 +39,8 @@ type PayloadOption = PayloadPattern & {
   group: string;
 };
 
-const isSamePostback = <T extends PayloadPattern>(a: T, b: T) => {
-  return a.label === b.label && a.value === b.value;
-};
+const isSamePostback = <T extends PayloadPattern>(a: T, b: T) =>
+  a.label === b.label && a.value === b.value;
 
 type PostbackInputProps = {
   defaultValue?: PayloadPattern;
@@ -89,28 +90,24 @@ export const PostbackInput = ({
     () =>
       (block?.previousBlocks || [])
         .map((b) => getBlockFromCache(b))
-        .filter((b) => {
-          return b && typeof b.message === "object" && "buttons" in b.message;
-        })
+        .filter(
+          (b) => b && typeof b.message === "object" && "buttons" in b.message,
+        )
         .map((b) => b as IBlock)
         .reduce((acc, b) => {
           const postbackButtons = (
             (b.message as StdOutgoingButtonsMessage)?.buttons || []
           )
             .filter((btn) => btn.type === ButtonType.postback)
-            .map((btn) => {
-              return { ...btn, group: b.name };
-            });
+            .map((btn) => ({ ...btn, group: b.name }));
 
           return acc.concat(postbackButtons);
         }, [] as (PostBackButton & { group: string })[])
-        .map((btn) => {
-          return {
-            label: btn.title,
-            value: btn.payload,
-            group: btn.group,
-          };
-        }),
+        .map((btn) => ({
+          label: btn.title,
+          value: btn.payload,
+          group: "buttons",
+        })),
     [block?.previousBlocks, getBlockFromCache],
   );
   //  Gather previous blocks quick replies
@@ -118,32 +115,27 @@ export const PostbackInput = ({
     () =>
       (block?.previousBlocks || [])
         .map((b) => getBlockFromCache(b))
-        .filter((b) => {
-          return (
-            b && typeof b.message === "object" && "quickReplies" in b.message
-          );
-        })
+        .filter(
+          (b) =>
+            b && typeof b.message === "object" && "quickReplies" in b.message,
+        )
         .map((b) => b as IBlock)
         .reduce((acc, b) => {
           const postbackQuickReplies = (
             (b.message as StdOutgoingQuickRepliesMessage)?.quickReplies || []
           )
-            .filter((btn) => btn.content_type === "text")
-            .map((btn) => {
-              return { ...btn, group: b.name };
-            });
+            .filter(({ content_type }) => content_type === QuickReplyType.text)
+            .map((btn) => ({ ...btn, group: b.name }));
 
           return acc.concat(postbackQuickReplies);
         }, [] as (StdQuickReply & { group: string })[])
-        .map((btn) => {
-          return {
-            id: btn.payload as string,
-            label: btn.title as string,
-            value: btn.payload as string,
-            type: PayloadType.menu,
-            group: btn.group,
-          };
-        }),
+        .map((btn) => ({
+          id: btn.payload as string,
+          label: btn.title as string,
+          value: btn.payload as string,
+          type: PayloadType.menu,
+          group: "quick_replies",
+        })),
     [block?.previousBlocks],
   );
   const menuOptions = menu
@@ -158,15 +150,13 @@ export const PostbackInput = ({
   const contentOptions = useMemo(
     () =>
       (block?.previousBlocks || [])
-        .map((bId) => getBlockFromCache(bId))
-        .filter((b) => {
-          return (
+        .map((bId) => getBlockFromCache(bId) as IBlock)
+        .filter(
+          (b) =>
             b &&
             b.options?.content?.entity &&
-            b.options.content.buttons.length > 0
-          );
-        })
-        .map((b) => b as IBlock)
+            b.options.content.buttons.length > 0,
+        )
         .map((b) => {
           const availableContents = (contents || []).filter(
             ({ entity, status }) =>
@@ -214,60 +204,66 @@ export const PostbackInput = ({
     );
   }
   const selected = defaultValue
-    ? options.find((o) => {
-        return isSamePostback(o, defaultValue);
-      })
+    ? options.find((o) => isSamePostback(o, defaultValue))
     : undefined;
 
   return (
-    <Autocomplete<PayloadOption>
+    <Autocomplete
       size="small"
       defaultValue={selected}
       options={options}
-      // label={t("label.postback")}
       multiple={false}
       onChange={(_e, value) => {
         setSelectedValue(value);
         if (value) {
-          const {  group: _g, ...payloadPattern } = value;
+          const { group: _g, ...payloadPattern } = value;
 
           onChange(payloadPattern);
         } else {
           onChange(null);
         }
       }}
-      groupBy={(option) => {
-        return option.group ?? t("label.other");
-      }}
+      groupBy={({ group }) => group ?? t("label.other")}
       getOptionLabel={({ label }) => label}
-      renderGroup={(params) => (
-        <li key={params.key}>
+      renderGroup={({ key, group, children }) => (
+        <li key={key}>
           <Typography component="h4" p={2} fontWeight={700} color="primary">
-            {t(`label.${params.group}`)}
+            {t(`label.${group}`)}
           </Typography>
-          <Box>{params.children}</Box>
+          <Box>{children}</Box>
         </li>
       )}
-      renderInput={(props) => {
-        return (
-          <Input
-            {...props}
-            label={t("label.postback")}
-            InputProps={{
-              ...props.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  {selectedValue?.type || t("label.postback")}
-                </InputAdornment>
-              ),
-              endAdornment:
-                isLoadingMenu || isLoadingContent ? (
-                  <CircularProgress color="inherit" size={20} />
-                ) : null,
-            }}
-          />
-        );
-      }}
+      renderInput={(props) => (
+        <Input
+          {...props}
+          label={t("label.postback")}
+          InputProps={{
+            ...props.InputProps,
+            startAdornment: (
+              <InputAdornment position="start">
+                <Chip
+                  sx={{
+                    p: "0",
+                    m: "0 ",
+                    fontSize: "12px",
+                    minWidth: "75px",
+                    maxHeight: "30px",
+                    borderRadius: "16px 0 0 16px",
+                  }}
+                  style={{ padding: 0, margin: 0 }}
+                  color="primary"
+                  label={selectedValue?.type || t("label.postback")}
+                  variant="role"
+                />
+              </InputAdornment>
+            ),
+            endAdornment:
+              isLoadingMenu || isLoadingContent ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : null,
+          }}
+        />
+      )}
     />
   );
 };
