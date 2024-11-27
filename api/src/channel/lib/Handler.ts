@@ -11,7 +11,6 @@ import path from 'path';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import {
   StdOutgoingEnvelope,
@@ -136,15 +135,6 @@ export default abstract class ChannelHandler<
   abstract _attachmentFormat(message: StdOutgoingMessage, options?: any): any;
 
   /**
-   * Format a collection of items to be sent to the channel in carousel/list format
-   *
-   * @param data - A list of data items to be sent to the end user
-   * @param options - Might contain additional settings
-   * @returns {Object[]} - An array of element objects
-   */
-  abstract _formatElements(data: any[], options: any, ...args: any): any[];
-
-  /**
    * Format a list of elements
    *
    * @param message - Contains elements to be sent to the end user
@@ -195,16 +185,6 @@ export default abstract class ChannelHandler<
   abstract getUserData(
     event: EventWrapper<any, any>,
   ): Promise<SubscriberCreateDto>;
-
-  /**
-   * @param _attachment - The attachment that needs to be uploaded to the channel
-   * @returns {Promise<Attachment>}
-   * Uploads an attachment to the channel as some require file to be uploaded so
-   *                that they could be used in messaging (dimelo, twitter, ...)
-   */
-  async uploadAttachment(_attachment: Attachment): Promise<Attachment> {
-    return _attachment;
-  }
 
   /**
    * Custom channel middleware
