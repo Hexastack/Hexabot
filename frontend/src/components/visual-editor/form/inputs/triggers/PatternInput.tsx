@@ -148,9 +148,7 @@ const PatternInput: FC<PatternInputProps> = ({
         {patternType === "nlp" && (
           <NlpPatternSelect
             patterns={pattern as NlpPattern[]}
-            onChange={(_e, data) => {
-              setPattern(data);
-            }}
+            onChange={setPattern}
           />
         )}
         {patternType === "menu" ? (

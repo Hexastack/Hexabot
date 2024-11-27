@@ -32,10 +32,7 @@ import { INlpValue } from "@/types/nlp-value.types";
 
 type NlpPatternSelectProps = {
   patterns: NlpPattern[];
-  onChange: (
-    _event: SyntheticEvent<Element, Event> | undefined,
-    patterns: NlpPattern[],
-  ) => void;
+  onChange: (patterns: NlpPattern[]) => void;
 };
 
 const NlpPatternSelect = (
@@ -76,7 +73,7 @@ const NlpPatternSelect = (
       ),
     ];
 
-    onChange(undefined, newSelection);
+    onChange(newSelection);
   };
   const handleNlpValueChange = (
     { id, name }: Pick<INlpEntity, "id" | "name">,
@@ -102,7 +99,7 @@ const NlpPatternSelect = (
       update.value = value.value;
     }
 
-    onChange(undefined, newSelection);
+    onChange(newSelection);
   };
 
   if (!options.length) {
@@ -255,7 +252,6 @@ const NlpPatternSelect = (
                                   onDelete(e);
 
                                   onChange(
-                                    undefined,
                                     patterns.filter((p) => p.entity !== name),
                                   );
                                 }}
