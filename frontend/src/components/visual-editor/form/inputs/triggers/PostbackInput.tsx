@@ -21,6 +21,7 @@ import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
+import { theme } from "@/layout/themes/theme";
 import { EntityType, Format } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
 import {
@@ -243,12 +244,16 @@ export const PostbackInput = ({
               <InputAdornment position="start">
                 <Chip
                   sx={{
+                    position: "relative",
+                    left: "8px",
+                    height: "25px",
                     fontSize: "12px",
                     minWidth: "75px",
                     maxHeight: "30px",
                     borderRadius: "16px 0 0 16px",
+                    borderRight: "none",
+                    borderColor: theme.palette.grey[400],
                   }}
-                  style={{ padding: 0, margin: 0 }}
                   color="primary"
                   label={selectedValue?.type || t("label.postback")}
                   variant="role"
