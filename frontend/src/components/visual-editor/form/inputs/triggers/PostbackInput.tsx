@@ -131,10 +131,10 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
     [block?.previousBlocks],
   );
   const menuOptions = menu
-    .filter((menu) => menu.payload)
-    .map(({ payload, title }) => ({
-      id: payload as string,
-      label: title as string,
+    .filter(({ payload }) => payload)
+    .map(({ title }) => ({
+      id: title,
+      label: title,
       group: "menu",
     }));
   const contentOptions = useMemo(
