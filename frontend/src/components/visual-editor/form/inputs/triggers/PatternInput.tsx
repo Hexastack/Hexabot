@@ -23,7 +23,7 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 
-import { PostbackInputV2 } from "./PostbackInputV2";
+import { PostbackInput } from "./PostbackInput";
 
 const isRegex = (str: Pattern) => {
   return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
@@ -150,7 +150,7 @@ const PatternInput: FC<PatternInputProps> = ({
           />
         )}
         {["payload", "content", "menu"].includes(patternType) ? (
-          <PostbackInputV2
+          <PostbackInput
             onChange={(payload) => {
               payload && setPattern(payload);
             }}

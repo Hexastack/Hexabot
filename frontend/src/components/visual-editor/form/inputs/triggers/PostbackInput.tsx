@@ -30,18 +30,12 @@ type PayloadOption = {
   group?: string;
 };
 
-type ContentPayloadOption = {
-  id: string;
-  label: string;
-  group?: string;
-};
-
 type PostbackInputProps = {
   value?: string | null;
   onChange: (pattern: PayloadPattern) => void;
 };
 
-export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
+export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
   const block = useBlock();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { data: menu } = useFind(
@@ -176,7 +170,7 @@ export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
 
               return acc;
             }, payloads);
-          }, [] as ContentPayloadOption[]);
+          }, [] as PayloadOption[]);
         })
         .flat(),
     [block?.previousBlocks, contents, getBlockFromCache],
@@ -189,9 +183,9 @@ export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
     ...menuOptions,
     ...contentOptions,
   ];
-  const existOption = options.find((e) => e.id === value);
+  const isOptionsReady = options.find((e) => e.id === value);
 
-  if (!existOption) {
+  if (!isOptionsReady) {
     return (
       <Skeleton animation="wave" variant="rounded" width="100%" height={40} />
     );
@@ -206,7 +200,7 @@ export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
         label={t("label.postback")}
         multiple={false}
         onChange={(_e, content) => {
-          if (content) {
+          content &&
             onChange({
               label: content.label,
               value: content.id,
@@ -214,7 +208,6 @@ export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
                 ? content.group
                 : undefined,
             } as PayloadPattern);
-          }
         }}
         groupBy={(option) => {
           return option.group ?? t("label.other");
