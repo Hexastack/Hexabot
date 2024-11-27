@@ -608,8 +608,4 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       throw new Error('Invalid message format.');
     }
   }
-
-  getCategoryBlocks(categoryId: string) {
-    return this.repository.model.find({ category: categoryId });
-  }
 }
