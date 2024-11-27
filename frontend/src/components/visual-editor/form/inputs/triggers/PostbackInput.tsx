@@ -145,7 +145,6 @@ export const PostbackInput = ({
   const menuOptions = menu
     .filter(({ payload }) => payload)
     .map(({ title, payload }) => ({
-      id: title,
       label: title,
       value: payload as string,
       type: PayloadType.menu,
