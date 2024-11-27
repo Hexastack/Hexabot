@@ -71,12 +71,14 @@ export const PostbackInput = ({
     {
       label: t("label.get_started"),
       value: "GET_STARTED",
+      type: PayloadType.button,
       group: "general",
     },
 
     {
       label: t("label.view_more"),
       value: "VIEW_MORE",
+      type: PayloadType.button,
       group: "general",
     },
     {
@@ -107,7 +109,8 @@ export const PostbackInput = ({
         .map((btn) => ({
           label: btn.title,
           value: btn.payload,
-          group: "buttons",
+          type: PayloadType.button,
+          group: "button",
         })),
     [block?.previousBlocks, getBlockFromCache],
   );
@@ -134,8 +137,8 @@ export const PostbackInput = ({
           id: btn.payload as string,
           label: btn.title as string,
           value: btn.payload as string,
-          type: PayloadType.menu,
-          group: "quick_replies",
+          type: PayloadType.quick_reply,
+          group: "quick_reply",
         })),
     [block?.previousBlocks],
   );
@@ -199,7 +202,7 @@ export const PostbackInput = ({
   const isOptionsReady =
     !defaultValue || options.find((o) => isSamePostback(o, defaultValue));
 
-  if (!isOptionsReady) {
+  if (!isOptionsReady || isLoadingContent || isLoadingMenu) {
     return (
       <Skeleton animation="wave" variant="rounded" width="100%" height={40} />
     );
@@ -212,6 +215,7 @@ export const PostbackInput = ({
     <Autocomplete
       size="small"
       defaultValue={selected}
+      value={selected}
       options={options}
       multiple={false}
       onChange={(_e, value) => {
@@ -244,18 +248,19 @@ export const PostbackInput = ({
               <InputAdornment position="start">
                 <Chip
                   sx={{
-                    position: "relative",
                     left: "8px",
                     height: "25px",
                     fontSize: "12px",
                     minWidth: "75px",
+                    position: "relative",
                     maxHeight: "30px",
-                    borderRadius: "16px 0 0 16px",
-                    borderRight: "none",
+                    borderRadius: "16px",
                     borderColor: theme.palette.grey[400],
                   }}
                   color="primary"
-                  label={selectedValue?.type || t("label.postback")}
+                  label={t(
+                    `label.${selectedValue?.type || "postback"}`,
+                  ).toLocaleLowerCase()}
                   variant="role"
                 />
               </InputAdornment>
