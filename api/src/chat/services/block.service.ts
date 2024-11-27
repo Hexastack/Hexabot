@@ -12,6 +12,7 @@ import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
+import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { Nlp } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
@@ -76,7 +77,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       return (
         !b.trigger_channels ||
         b.trigger_channels.length === 0 ||
-        b.trigger_channels.includes(channel)
+        [...b.trigger_channels, CONSOLE_CHANNEL_NAME].includes(channel)
       );
     });
 
@@ -606,5 +607,9 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     } else {
       throw new Error('Invalid message format.');
     }
+  }
+
+  getCategoryBlocks(categoryId: string) {
+    return this.repository.model.find({ category: categoryId });
   }
 }
