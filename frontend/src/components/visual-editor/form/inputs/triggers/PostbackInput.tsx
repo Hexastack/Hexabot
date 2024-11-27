@@ -134,7 +134,6 @@ export const PostbackInput = ({
           return acc.concat(postbackQuickReplies);
         }, [] as (StdQuickReply & { group: string })[])
         .map((btn) => ({
-          id: btn.payload as string,
           label: btn.title as string,
           value: btn.payload as string,
           type: PayloadType.quick_reply,
