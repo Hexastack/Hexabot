@@ -95,6 +95,7 @@ declare module '@nestjs/event-emitter' {
         passation: Subscriber;
         'fallback-local': BlockFull;
         'fallback-global': EventWrapper<any, any>;
+        intervention: Subscriber;
       }
     >;
     chatbot: TDefinition<
