@@ -10,12 +10,10 @@ import { Grid, MenuItem, TextFieldProps } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
 import {
   IBlockAttributes,
   IBlockFull,
@@ -24,10 +22,8 @@ import {
   PatternType,
   PayloadPattern,
 } from "@/types/block.types";
-import { IMenuItem } from "@/types/menu.types";
 
-import { ContentPostbackInput } from "./ContentPostbackInput";
-import { PostbackInput } from "./PostbackInput";
+import { PostbackInputV2 } from "./PostbackInputV2";
 
 const isRegex = (str: Pattern) => {
   return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
@@ -77,8 +73,6 @@ const PatternInput: FC<PatternInputProps> = ({
     { value: "regex", label: t("label.regex") },
     { value: "payload", label: t("label.postback") },
     { value: "nlp", label: t("label.nlp") },
-    { value: "menu", label: t("label.menu") },
-    { value: "content", label: t("label.content") },
   ];
   const registerInput = (
     errorMessage: string,
@@ -110,7 +104,11 @@ const PatternInput: FC<PatternInputProps> = ({
         <Input
           select
           label={t("label.type")}
-          value={patternType}
+          value={
+            ["menu", "content", "payload"].includes(patternType)
+              ? "payload"
+              : patternType
+          }
           onChange={(e) => {
             const selected = e.target.value as PatternType;
 
@@ -151,39 +149,8 @@ const PatternInput: FC<PatternInputProps> = ({
             onChange={setPattern}
           />
         )}
-        {patternType === "menu" ? (
-          <AutoCompleteEntitySelect<IMenuItem, "title", false>
-            value={pattern ? (pattern as PayloadPattern).value : null}
-            searchFields={["title"]}
-            entity={EntityType.MENU}
-            format={Format.BASIC}
-            idKey="payload"
-            labelKey="title"
-            label={t("label.menu")}
-            multiple={false}
-            onChange={(_e, menuItem) => {
-              menuItem &&
-                setPattern({
-                  label: menuItem?.title,
-                  value: menuItem?.payload,
-                  type: "menu",
-                } as PayloadPattern);
-            }}
-            preprocess={(items) => {
-              return items.filter((item) => "payload" in item);
-            }}
-          />
-        ) : null}
-        {patternType === "content" ? (
-          <ContentPostbackInput
-            onChange={(payload) => {
-              payload && setPattern(payload);
-            }}
-            value={pattern ? (pattern as PayloadPattern).value : null}
-          />
-        ) : null}
-        {patternType === "payload" ? (
-          <PostbackInput
+        {["payload", "content", "menu"].includes(patternType) ? (
+          <PostbackInputV2
             onChange={(payload) => {
               payload && setPattern(payload);
             }}
