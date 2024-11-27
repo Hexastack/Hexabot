@@ -68,6 +68,7 @@ const PatternInput: FC<PatternInputProps> = ({
   // const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const [pattern, setPattern] = useState<Pattern>(value);
   const [patternType, setPatternType] = useState<PatternType>(getType(value));
+  const isPostbackType = ["payload", "content", "menu"].includes(patternType);
   const types = [
     { value: "text", label: t("label.match_sound") },
     { value: "regex", label: t("label.regex") },
@@ -104,11 +105,7 @@ const PatternInput: FC<PatternInputProps> = ({
         <Input
           select
           label={t("label.type")}
-          value={
-            ["menu", "content", "payload"].includes(patternType)
-              ? "payload"
-              : patternType
-          }
+          value={isPostbackType ? "payload" : patternType}
           onChange={(e) => {
             const selected = e.target.value as PatternType;
 
@@ -149,7 +146,7 @@ const PatternInput: FC<PatternInputProps> = ({
             onChange={setPattern}
           />
         )}
-        {["payload", "content", "menu"].includes(patternType) ? (
+        {isPostbackType ? (
           <PostbackInput
             onChange={(payload) => {
               payload && setPattern(payload);

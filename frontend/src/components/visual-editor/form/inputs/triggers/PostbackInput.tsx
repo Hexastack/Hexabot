@@ -16,6 +16,8 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
 import {
+  ButtonType,
+  PayloadType,
   PostBackButton,
   StdOutgoingButtonsMessage,
   StdOutgoingQuickRepliesMessage,
@@ -81,7 +83,7 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
           const postbackButtons = (
             (b.message as StdOutgoingButtonsMessage)?.buttons || []
           )
-            .filter((btn) => btn.type === "postback")
+            .filter((btn) => btn.type === ButtonType.postback)
             .map((btn) => {
               return { ...btn, group: b.name };
             });
@@ -205,9 +207,9 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
               label: content.label,
               value: content.id,
               type: ["content", "menu"].includes(content.group || "")
-                ? content.group
+                ? PayloadType[content?.group || ""]
                 : undefined,
-            } as PayloadPattern);
+            });
         }}
         groupBy={(option) => {
           return option.group ?? t("label.other");
