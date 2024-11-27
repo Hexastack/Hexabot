@@ -193,7 +193,7 @@ export const PostbackInputV2 = ({ value, onChange }: PostbackInputProps) => {
 
   if (!existOption) {
     return (
-      <Skeleton animation="wave" variant="rounded" width="100%" height={56} />
+      <Skeleton animation="wave" variant="rounded" width="100%" height={40} />
     );
   }
 
