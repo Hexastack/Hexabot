@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Grid, MenuItem, TextFieldProps, Typography } from "@mui/material";
+import { Grid, MenuItem, TextFieldProps } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { RegisterOptions, useFormContext } from "react-hook-form";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
+import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import {
@@ -25,8 +25,6 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 import { IMenuItem } from "@/types/menu.types";
-import { INlpEntity } from "@/types/nlp-entity.types";
-import { INlpValue } from "@/types/nlp-value.types";
 
 import { ContentPostbackInput } from "./ContentPostbackInput";
 import { PostbackInput } from "./PostbackInput";
@@ -71,7 +69,7 @@ const PatternInput: FC<PatternInputProps> = ({
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
+  // const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const [pattern, setPattern] = useState<Pattern>(value);
   const [patternType, setPatternType] = useState<PatternType>(getType(value));
   const types = [
@@ -147,83 +145,12 @@ const PatternInput: FC<PatternInputProps> = ({
         </Input>
       </Grid>
       <Grid item xs={9}>
-        {patternType === "nlp" ? (
-          <AutoCompleteEntitySelect<INlpValue, "value">
-            value={(pattern as NlpPattern[]).map((v) =>
-              "value" in v && v.value ? v.value : v.entity,
-            )}
-            searchFields={["value", "label"]}
-            entity={EntityType.NLP_VALUE}
-            format={Format.FULL}
-            idKey="value"
-            labelKey="value"
-            label={t("label.nlp")}
-            multiple={true}
-            onChange={(_e, data) => {
-              setPattern(
-                data.map((d) => {
-                  const entity = getNlpEntityFromCache(d.entity) as INlpEntity;
-
-                  return d.value === "any"
-                    ? {
-                        match: "entity",
-                        entity: entity.name,
-                      }
-                    : {
-                        match: "value",
-                        entity: entity.name,
-                        value: d.value,
-                      };
-                }),
-              );
-            }}
-            getOptionLabel={(option) => {
-              const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
-
-              return `${entity.name}=${option.value}`;
-            }}
-            groupBy={(option) => {
-              const entity = getNlpEntityFromCache(option.entity) as INlpEntity;
-
-              return entity.name;
-            }}
-            renderGroup={(params) => (
-              <li key={params.key}>
-                <Typography
-                  component="h4"
-                  p={2}
-                  fontWeight={700}
-                  color="primary"
-                >
-                  {params.group}
-                </Typography>
-                <Box>{params.children}</Box>
-              </li>
-            )}
-            preprocess={(options) => {
-              return options.reduce((acc, curr) => {
-                const entity = getNlpEntityFromCache(curr.entity) as INlpEntity;
-
-                if (entity.lookups.includes("keywords")) {
-                  const exists = acc.find(
-                    ({ value, id }) => value === "any" && id === entity.id,
-                  );
-
-                  if (!exists) {
-                    acc.push({
-                      entity: entity.id,
-                      id: entity.id,
-                      value: "any",
-                    } as INlpValue);
-                  }
-                }
-                acc.push(curr);
-
-                return acc;
-              }, [] as INlpValue[]);
-            }}
+        {patternType === "nlp" && (
+          <NlpPatternSelect
+            patterns={pattern as NlpPattern[]}
+            onChange={setPattern}
           />
-        ) : null}
+        )}
         {patternType === "menu" ? (
           <AutoCompleteEntitySelect<IMenuItem, "title", false>
             value={pattern ? (pattern as PayloadPattern).value : null}

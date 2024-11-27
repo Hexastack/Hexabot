@@ -69,16 +69,11 @@ export interface PayloadPattern {
   type?: PayloadType;
 }
 
-export type NlpPattern =
-  | {
-      entity: string;
-      match: "entity";
-    }
-  | {
-      entity: string;
-      match: "value";
-      value: string;
-    };
+export type NlpPattern = {
+  entity: string;
+  match: "value" | "entity";
+  value: string;
+};
 
 export type Pattern = null | string | PayloadPattern | NlpPattern[];
 

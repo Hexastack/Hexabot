@@ -456,8 +456,9 @@
     "is_default": "Par Défaut",
     "is_rtl": "RTL",
     "original_text": "Texte par défaut",
-    "inputs": "Port d'entré",
-    "outputs": "Port de sorti"
+    "inputs": "Ports d'entrée",
+    "outputs": "Ports de sortie",
+    "any": "- Toutes -"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

@@ -35,7 +35,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { OutgoingMessageFormat } from "@/types/message.types";
 
-import { IBlockAttributes, IBlock } from "../../types/block.types";
+import { IBlock, IBlockAttributes } from "../../types/block.types";
 
 import BlockFormProvider from "./form/BlockFormProvider";
 import { MessageForm } from "./form/MessageForm";
@@ -69,24 +69,31 @@ const BlockDialog: FC<BlockDialogProps> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const methods = useForm<IBlockAttributes>({
-    defaultValues: {
-      name: block?.name || "",
-      patterns: block?.patterns || [],
-      trigger_labels: block?.trigger_labels || [],
-      trigger_channels: block?.trigger_channels || [],
-      options: block?.options || {
-        typing: 0,
-        content: {
-          display: OutgoingMessageFormat.list,
-          top_element_style: "compact",
-          limit: 2,
-        },
-        assignTo: block?.options?.assignTo,
+  const DEFAULT_VALUES = {
+    name: block?.name || "",
+    patterns: block?.patterns || [],
+    trigger_labels: block?.trigger_labels || [],
+    trigger_channels: block?.trigger_channels || [],
+    options: block?.options || {
+      typing: 0,
+      content: {
+        display: OutgoingMessageFormat.list,
+        top_element_style: "compact",
+        limit: 2,
       },
-      assign_labels: block?.assign_labels || [],
-      message: block?.message || [""],
+      assignTo: block?.options?.assignTo,
+      fallback: block?.options?.fallback || {
+        active: true,
+        message: [],
+        max_attempts: 1,
+      },
     },
+    assign_labels: block?.assign_labels || [],
+    message: block?.message || [""],
+    capture_vars: block?.capture_vars || [],
+  } as IBlockAttributes;
+  const methods = useForm<IBlockAttributes>({
+    defaultValues: DEFAULT_VALUES,
   });
   const {
     reset,
@@ -114,10 +121,8 @@ const BlockDialog: FC<BlockDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (block) {
-      reset({
-        name: block.name,
-      });
+    if (block && open) {
+      reset(DEFAULT_VALUES);
     } else {
       reset();
     }
