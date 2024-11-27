@@ -13,10 +13,13 @@ import {
 import { BlockFull } from '@/chat/schemas/block.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
-import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
+import {
+  OutgoingMessageFormat,
+  PayloadType,
+} from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
 import { Pattern } from '@/chat/schemas/types/pattern';
-import { PayloadType, QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 import { CaptureVar } from '@/chat/validation-rules/is-valid-capture';
 
 import { modelInstance } from './misc';

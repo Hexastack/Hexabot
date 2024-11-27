@@ -300,6 +300,7 @@
     "from_channels": "Target channels",
     "simple_text": "Simple Text",
     "quick_replies": "Quick Replies",
+    "button": "Button",
     "buttons": "Buttons",
     "web_url": "Web URL",
     "payload": "Payload",

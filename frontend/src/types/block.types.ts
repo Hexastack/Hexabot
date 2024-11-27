@@ -66,6 +66,8 @@ export interface PayloadPattern {
   label: string;
   value: string;
   // @todo : rename 'attachment' to 'attachments'
+  // @todo: If undefined, that means the payload could be either quick_reply or button
+  // We will move soon so that it will be a required attribute
   type?: PayloadType;
 }
 

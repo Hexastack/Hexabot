@@ -7,11 +7,7 @@
  */
 
 import { IncomingAttachmentPayload } from './attachment';
-
-export enum PayloadType {
-  location = 'location',
-  attachments = 'attachments',
-}
+import { PayloadType } from './message';
 
 export type Payload =
   | {
