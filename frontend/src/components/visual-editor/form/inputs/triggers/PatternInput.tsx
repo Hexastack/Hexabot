@@ -34,10 +34,10 @@ const getType = (pattern: Pattern): PatternType => {
     return "regex";
   } else if (Array.isArray(pattern)) {
     return "nlp";
-  } else if (typeof pattern === "object" && pattern !== null) {
-    if (pattern.type === "menu") {
+  } else if (typeof pattern === "object") {
+    if (pattern?.type === "menu") {
       return "menu";
-    } else if (pattern.type === "content") {
+    } else if (pattern?.type === "content") {
       return "content";
     } else {
       return "payload";

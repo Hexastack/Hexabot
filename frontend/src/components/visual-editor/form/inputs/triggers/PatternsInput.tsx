@@ -15,7 +15,7 @@ import {
   Spellcheck,
 } from "@mui/icons-material";
 import { Box, IconButton, styled } from "@mui/material";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 import DropdownButton, {
@@ -23,6 +23,7 @@ import DropdownButton, {
 } from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
+import { PayloadType } from "@/types/message.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
 
@@ -39,12 +40,6 @@ const StyledNoPatternsDiv = styled("div")(
     width: "100%",
   }),
 );
-const actions: DropdownButtonAction[] = [
-  { icon: <Spellcheck />, name: "Exact Match", defaultValue: "" },
-  { icon: <Abc />, name: "Pattern Match", defaultValue: "//" },
-  { icon: <PsychologyAlt />, name: "Intent Match", defaultValue: [] },
-  { icon: <Mouse />, name: "Interaction", defaultValue: {} },
-];
 
 type PatternsInputProps = {
   value: Pattern[];
@@ -78,7 +73,28 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
 
   useEffect(() => {
     onChange(patterns.map(({ value }) => value));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patterns]);
+
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      { icon: <Spellcheck />, name: "Exact Match", defaultValue: "" },
+      { icon: <Abc />, name: "Pattern Match", defaultValue: "//" },
+      { icon: <PsychologyAlt />, name: "Intent Match", defaultValue: [] },
+      {
+        icon: <Mouse />,
+        name: "Interaction",
+        defaultValue: {
+          label: t("label.get_started"),
+          value: "GET_STARTED",
+          type: PayloadType.button,
+          group: "general",
+        },
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   return (
     <Box display="flex" flexDirection="column">
@@ -99,7 +115,11 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                   t("message.text_is_required"),
                 )}
               />
-              <IconButton size="small" color="error" onClick={() => removeInput(idx)}>
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => removeInput(idx)}
+              >
                 <RemoveCircleOutline />
               </IconButton>
             </Box>

@@ -44,8 +44,8 @@ const isSamePostback = <T extends PayloadPattern>(a: T, b: T) =>
   a.label === b.label && a.value === b.value;
 
 type PostbackInputProps = {
-  defaultValue?: PayloadPattern;
-  onChange: (pattern: PayloadPattern | null) => void;
+  defaultValue: PayloadPattern;
+  onChange: (pattern: PayloadPattern) => void;
 };
 
 export const PostbackInput = ({
@@ -53,7 +53,7 @@ export const PostbackInput = ({
   onChange,
 }: PostbackInputProps) => {
   const block = useBlock();
-  const [selectedValue, setSelectedValue] = useState(defaultValue || null);
+  const [selectedValue, setSelectedValue] = useState(defaultValue);
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { data: menu, isLoading: isLoadingMenu } = useFind(
     { entity: EntityType.MENU, format: Format.FULL },
@@ -74,7 +74,6 @@ export const PostbackInput = ({
       type: PayloadType.button,
       group: "general",
     },
-
     {
       label: t("label.view_more"),
       value: "VIEW_MORE",
@@ -212,19 +211,17 @@ export const PostbackInput = ({
   return (
     <Autocomplete
       size="small"
-      defaultValue={selected}
+      fullWidth
+      defaultValue={selected || undefined}
       value={selected}
       options={options}
       multiple={false}
+      disableClearable
       onChange={(_e, value) => {
         setSelectedValue(value);
-        if (value) {
-          const { group: _g, ...payloadPattern } = value;
+        const { group: _g, ...payloadPattern } = value;
 
-          onChange(payloadPattern);
-        } else {
-          onChange(null);
-        }
+        onChange(payloadPattern);
       }}
       groupBy={({ group }) => group ?? t("label.other")}
       getOptionLabel={({ label }) => label}
