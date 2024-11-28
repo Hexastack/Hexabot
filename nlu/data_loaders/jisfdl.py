@@ -116,7 +116,17 @@ class JISFDL(tfbp.DataLoader):
             # Filter out language entities
             slot_entities = filter(
                 lambda e: e["entity"] != "language", entities)
-            slots = {e["entity"]: e["value"] for e in slot_entities}
+            slots = {}
+            for e in slot_entities: 
+            # Create slots with entity values and resolve synonyms
+                if "start" in e and "end" in e and isinstance(e["start"], int) and isinstance(e["end"], int):
+                    original_value = text[e["start"]:e["end"]]
+                    entity_value = e["value"]
+                    if entity_value != original_value:
+                        entity_value = original_value.lower()
+                    slots[e["entity"]] = entity_value
+                else:
+                    continue
             positions = [[e.get("start", -1), e.get("end", -1)]
                          for e in slot_entities]
 
