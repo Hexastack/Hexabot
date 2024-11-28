@@ -35,7 +35,6 @@
           padding: 0.5rem 0;
           margin-top: 8px;
         }
-
         .sc-message--carousel-element-description {
           width: 100%;
         }
@@ -51,7 +50,6 @@
     color: white;
     border: none;
     cursor: pointer;
-    // padding: 10px;
     z-index: 2;
     font-size: 0.75rem;
 
@@ -64,7 +62,6 @@
     &.next {
       right: 0px;
       width: 1.5rem;
-      // width: 22px;
       height: 2rem;
     }
   }
