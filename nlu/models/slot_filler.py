@@ -125,6 +125,7 @@ class SlotFiller(tfbp.Model):
         # Persist the model
         self.extra_params["slot_names"] = slot_names
         self.extra_params["synonym_map"] = self.data_loader.get_synonym_map()
+        self.save()
 
     @tfbp.runnable
     def evaluate(self):
