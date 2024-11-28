@@ -202,10 +202,6 @@ class SlotFiller(tfbp.Model):
             token = tokens[idx]
             slot_id = slot_ids[idx]
 
-            # Skip special tokens
-            if token in special_tokens:
-                idx += 1
-                continue
 
             # Get slot name
             slot_name = self.extra_params["slot_names"][slot_id]
