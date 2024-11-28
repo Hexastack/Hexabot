@@ -17,7 +17,7 @@
       justify-content: center;
 
       .sc-message--carousel-element {
-        padding: 2rem;
+        padding: 1rem 2rem;
         width: 100%;
 
         .sc-message--carousel-element-image {
@@ -51,19 +51,21 @@
     color: white;
     border: none;
     cursor: pointer;
-    padding: 10px;
+    // padding: 10px;
     z-index: 2;
+    font-size: 0.75rem;
 
     &.prev {
-      left: 10px;
-      width: 2rem;
-      height: 3rem;
+      left: 0px;
+      width: 1.5rem;
+      height: 2rem;
     }
 
     &.next {
-      right: 10px;
-      width: 2rem;
-      height: 3rem;
+      right: 0px;
+      width: 1.5rem;
+      // width: 22px;
+      height: 2rem;
     }
   }
 }
