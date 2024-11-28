@@ -109,7 +109,7 @@ class JISFDL(tfbp.DataLoader):
 
         # Parse raw data
         for exp in examples:
-            text = exp["text"]
+            text = exp["text"].lower()
             intent = exp["intent"]
             entities = exp["entities"]
 
