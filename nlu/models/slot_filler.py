@@ -172,7 +172,7 @@ class SlotFiller(tfbp.Model):
     def predict(self):
         while True:
             text = input("Provide text: ")
-            info = self.get_prediction(text)
+            info = self.get_prediction(text.lower())
 
             print(self.summary())
             print("Text : " + text)
