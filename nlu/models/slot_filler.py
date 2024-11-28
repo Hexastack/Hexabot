@@ -215,11 +215,6 @@ class SlotFiller(tfbp.Model):
             token = tokens[idx]
             slot_id = slot_ids[idx]
 
-            # Skip special tokens
-            # if token in special_tokens:
-            #     idx += 1
-            #     continue
-
             # Get slot name
             slot_name = self.extra_params["slot_names"][slot_id]
             if slot_name == "<PAD>":
@@ -260,7 +255,7 @@ class SlotFiller(tfbp.Model):
 
             # Convert tokens to string
             slot_value = self.tokenizer.convert_tokens_to_string(slot_tokens).strip()
-            # slot_value = re.sub(r'\s+', '', slot_value)            
+            slot_value = re.sub(r'\s+', '', slot_value)            
 
             # Ensure the slot value exists in the text (avoid -1 for start index)
             start_idx = text.find(slot_value)
