@@ -266,6 +266,8 @@ class SlotFiller(tfbp.Model):
             #Post Processing 
             synonym_map = self.get_synonym_map()
             final_slot_value = synonym_map.get(slot_value)
+            if final_slot_value is None: 
+                final_slot_value = slot_value
 
             # Calculate entity start and end indices
             entity = {
