@@ -187,7 +187,7 @@ class SlotFiller(tfbp.Model):
         data = helper.read_dataset_json_file('train.json')
         synonyms = data["entity_synonyms"]
         synonym_map = {}
-        for entry in data["entity_synonyms"]:
+        for entry in synonyms:
             value = entry["value"]
             for synonym in entry["synonyms"]:
                 synonym_map[synonym] = value    
