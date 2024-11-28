@@ -2,7 +2,6 @@ import os
 import functools
 import json
 import re
-from utils.json_helper import JsonHelper
 from transformers import TFBertModel, AutoTokenizer
 from keras.layers import Dropout, Dense
 from sys import platform
@@ -125,8 +124,7 @@ class SlotFiller(tfbp.Model):
 
         # Persist the model
         self.extra_params["slot_names"] = slot_names
-
-        self.save()
+        self.extra_params["synonym_map"] = self.data_loader.get_synonym_map()
 
     @tfbp.runnable
     def evaluate(self):
@@ -181,18 +179,6 @@ class SlotFiller(tfbp.Model):
             # Optionally, provide a way to exit the loop
             if input("Try again? (y/n): ").lower() != 'y':
                 break
-    
-    def get_synonym_map(self):
-        helper = JsonHelper()
-        data = helper.read_dataset_json_file('train.json')
-        synonyms = data["entity_synonyms"]
-        synonym_map = {}
-        for entry in synonyms:
-            value = entry["value"]
-            for synonym in entry["synonyms"]:
-                synonym_map[synonym] = value    
-        return synonym_map 
-
 
     def get_slots_prediction(self, text: str, inputs, slot_probas):
         slot_probas_np = slot_probas.numpy()
@@ -264,7 +250,7 @@ class SlotFiller(tfbp.Model):
                 continue  # Skip this entity if not found in text
 
             # Post Processing 
-            synonym_map = self.get_synonym_map()
+            synonym_map = self.extra_params["synonym_map"]
             final_slot_value = synonym_map.get(slot_value)
             if final_slot_value is None: 
                 final_slot_value = slot_value

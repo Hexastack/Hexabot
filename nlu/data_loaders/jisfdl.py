@@ -93,6 +93,18 @@ class JISFDL(tfbp.DataLoader):
 
         return encoded_slots
 
+    def get_synonym_map(self):
+        helper = JsonHelper()
+        helper.read_dataset_json_file('train.json')
+        data = helper.read_dataset_json_file('train.json')
+        synonyms = data["entity_synonyms"]
+        synonym_map = {}
+        for entry in synonyms:
+            value = entry["value"]
+            for synonym in entry["synonyms"]:
+                synonym_map[synonym] = value    
+        return synonym_map 
+    
     def parse_dataset_intents(self, data):
 
         intents = []
