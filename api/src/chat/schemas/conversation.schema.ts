@@ -11,6 +11,7 @@ import { Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import {
   TFilterPopulateFields,
   THydratedDocument,
@@ -100,10 +101,10 @@ export class ConversationFull extends ConversationStub {
 
 export type ConversationDocument = THydratedDocument<Conversation>;
 
-export const ConversationModel: ModelDefinition = {
+export const ConversationModel: ModelDefinition = LifecycleHookManager.attach({
   name: Conversation.name,
   schema: SchemaFactory.createForClass(ConversationStub),
-};
+});
 
 export default ConversationModel.schema;
 
