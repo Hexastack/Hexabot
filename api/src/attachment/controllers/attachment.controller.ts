@@ -10,6 +10,7 @@ import { extname } from 'path';
 
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -172,5 +173,31 @@ export class AttachmentController extends BaseController<Attachment> {
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
     return result;
+  } /**
+   * Deletes multiple attachements by their IDs.
+   * @param ids - IDs attachements to be deleted.
+   * @returns A Promise that resolves to the deletion result.
+   */
+
+  @CsrfCheck(true)
+  @Delete('')
+  @HttpCode(204)
+  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
+    if (!ids || ids.length === 0) {
+      throw new BadRequestException('No IDs provided for deletion.');
+    }
+    const deleteResult = await this.attachmentService.deleteMany({
+      _id: { $in: ids },
+    });
+
+    if (deleteResult.deletedCount === 0) {
+      this.logger.warn(
+        `Unable to delete Attachements with provided IDs: ${ids}`,
+      );
+      throw new NotFoundException('Attachements with provided IDs not found');
+    }
+
+    this.logger.log(`Successfully deleted Attachements with IDs: ${ids}`);
+    return deleteResult;
   }
 }
