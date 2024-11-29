@@ -1,6 +1,7 @@
 import os
 import functools
 import json
+import re
 from transformers import TFBertModel, AutoTokenizer
 from keras.layers import Dropout, Dense
 from sys import platform
@@ -123,7 +124,7 @@ class SlotFiller(tfbp.Model):
 
         # Persist the model
         self.extra_params["slot_names"] = slot_names
-
+        self.extra_params["synonym_map"] = self.data_loader.get_synonym_map()
         self.save()
 
     @tfbp.runnable
@@ -170,7 +171,7 @@ class SlotFiller(tfbp.Model):
     def predict(self):
         while True:
             text = input("Provide text: ")
-            info = self.get_prediction(text)
+            info = self.get_prediction(text.lower())
 
             print(self.summary())
             print("Text : " + text)
@@ -179,7 +180,6 @@ class SlotFiller(tfbp.Model):
             # Optionally, provide a way to exit the loop
             if input("Try again? (y/n): ").lower() != 'y':
                 break
-
 
     def get_slots_prediction(self, text: str, inputs, slot_probas):
         slot_probas_np = slot_probas.numpy()
@@ -201,7 +201,6 @@ class SlotFiller(tfbp.Model):
         while idx < len(tokens):
             token = tokens[idx]
             slot_id = slot_ids[idx]
-
 
             # Get slot name
             slot_name = self.extra_params["slot_names"][slot_id]
@@ -243,13 +242,26 @@ class SlotFiller(tfbp.Model):
 
             # Convert tokens to string
             slot_value = self.tokenizer.convert_tokens_to_string(slot_tokens).strip()
+            slot_value = re.sub(r'\s+', '', slot_value)            
+
+            # Ensure the slot value exists in the text (avoid -1 for start index)
+            start_idx = text.find(slot_value)
+            if start_idx == -1:
+                print(f"Skipping entity for '{slot_name}' because '{slot_value}' was not found in text.")
+                continue  # Skip this entity if not found in text
+
+            # Post Processing 
+            synonym_map = self.extra_params["synonym_map"]
+            final_slot_value = synonym_map.get(slot_value)
+            if final_slot_value is None: 
+                final_slot_value = slot_value
 
             # Calculate entity start and end indices
             entity = {
                 "entity": slot_name,
-                "value": slot_value,
-                "start": text.find(slot_value),
-                "end": text.find(slot_value) + len(slot_value),
+                "value": final_slot_value,
+                "start": start_idx,
+                "end": start_idx + len(slot_value),
                 "confidence": 0,
             }
 

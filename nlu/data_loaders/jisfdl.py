@@ -93,6 +93,18 @@ class JISFDL(tfbp.DataLoader):
 
         return encoded_slots
 
+    def get_synonym_map(self):
+        helper = JsonHelper()
+        helper.read_dataset_json_file('train.json')
+        data = helper.read_dataset_json_file('train.json')
+        synonyms = data["entity_synonyms"]
+        synonym_map = {}
+        for entry in synonyms:
+            value = entry["value"]
+            for synonym in entry["synonyms"]:
+                synonym_map[synonym] = value    
+        return synonym_map 
+    
     def parse_dataset_intents(self, data):
 
         intents = []
@@ -109,14 +121,24 @@ class JISFDL(tfbp.DataLoader):
 
         # Parse raw data
         for exp in examples:
-            text = exp["text"]
+            text = exp["text"].lower()
             intent = exp["intent"]
             entities = exp["entities"]
 
             # Filter out language entities
             slot_entities = filter(
                 lambda e: e["entity"] != "language", entities)
-            slots = {e["entity"]: e["value"] for e in slot_entities}
+            slots = {}
+            for e in slot_entities: 
+            # Create slots with entity values and resolve synonyms
+                if "start" in e and "end" in e and isinstance(e["start"], int) and isinstance(e["end"], int):
+                    original_value = text[e["start"]:e["end"]]
+                    entity_value = e["value"]
+                    if entity_value != original_value:
+                        entity_value = original_value.lower()
+                    slots[e["entity"]] = entity_value
+                else:
+                    continue
             positions = [[e.get("start", -1), e.get("end", -1)]
                          for e in slot_entities]
 
