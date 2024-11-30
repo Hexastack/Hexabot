@@ -112,7 +112,6 @@ export const config: Config = {
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
       : 2000000,
     appName: 'Hexabot.ai',
-    apiUrl: 'http://localhost:4000',
     appUrl: 'http://localhost:8081',
   },
   pagination: {

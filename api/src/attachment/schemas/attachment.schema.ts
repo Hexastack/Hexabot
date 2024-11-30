@@ -91,7 +91,7 @@ export class Attachment extends BaseSchema {
     attachmentName: string = '',
   ): string {
     return buildURL(
-      config.parameters.apiUrl,
+      config.apiPath,
       `/attachment/download/${attachmentId}/${attachmentName}`,
     );
   }
