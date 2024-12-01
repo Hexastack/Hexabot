@@ -317,10 +317,10 @@ export default abstract class BaseWebChannelHandler<
         .some((origin: string) => {
           // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
           // to greenlight the request.
-          return origin === req.headers.origin || origin === '*';
+          return origin === req.headers.origin;
         });
 
-      if (!foundOrigin) {
+      if (!foundOrigin && !origins.includes('*')) {
         // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
         // interpret as, 'no way Jose.'
         res.set('Access-Control-Allow-Origin', '');
