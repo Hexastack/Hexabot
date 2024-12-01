@@ -298,12 +298,27 @@ export default abstract class BaseWebChannelHandler<
     if (req.headers && req.headers.origin) {
       // Get the allowed origins
       const origins: string[] = settings.allowed_domains.split(',');
-      const foundOrigin = origins.some((origin: string) => {
-        origin = origin.trim();
-        // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
-        // to greenlight the request.
-        return origin == req.headers.origin || origin == '*';
-      });
+      const foundOrigin = origins
+        .map((origin) => {
+          try {
+            return new URL(origin.trim()).origin;
+          } catch (error) {
+            this.logger.error(
+              `Invalid URL in allowed domains: ${origin}`,
+              error,
+            );
+            return null;
+          }
+        })
+        .filter(
+          (normalizedOrigin): normalizedOrigin is string =>
+            normalizedOrigin !== null,
+        )
+        .some((origin: string) => {
+          // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
+          // to greenlight the request.
+          return origin === req.headers.origin || origin === '*';
+        });
 
       if (!foundOrigin) {
         // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
