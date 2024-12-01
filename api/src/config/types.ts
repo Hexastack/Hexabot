@@ -81,7 +81,6 @@ export type Config = {
     storageMode: 'disk' | 'memory';
     maxUploadSize: number;
     appName: string;
-    appUrl: string;
   };
   pagination: {
     limit: number;
