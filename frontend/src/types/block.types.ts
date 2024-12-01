@@ -49,7 +49,6 @@ export interface BlockOptions {
   // Only if the block has next blocks
   fallback?: BlockFallbackOptions;
   assignTo?: string;
-  // plugins effects
 }
 
 export type BlockMessage =
