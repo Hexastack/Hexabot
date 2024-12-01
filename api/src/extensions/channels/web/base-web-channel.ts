@@ -304,7 +304,7 @@ export default abstract class BaseWebChannelHandler<
             return new URL(origin.trim()).origin;
           } catch (error) {
             this.logger.error(
-              `Invalid URL in allowed domains: ${origin}`,
+              `Web Channel Handler : Invalid URL in allowed domains: ${origin}`,
               error,
             );
             return null;
