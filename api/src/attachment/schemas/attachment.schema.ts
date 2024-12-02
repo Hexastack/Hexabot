@@ -91,7 +91,7 @@ export class Attachment extends BaseSchema {
     attachmentName: string = '',
   ): string {
     return buildURL(
-      config.parameters.apiUrl,
+      config.apiBaseUrl,
       `/attachment/download/${attachmentId}/${attachmentName}`,
     );
   }
@@ -124,7 +124,7 @@ export const AttachmentModel: ModelDefinition = LifecycleHookManager.attach({
 AttachmentModel.schema.virtual('url').get(function () {
   if (this._id && this.name)
     return buildURL(
-      config.apiPath,
+      config.apiBaseUrl,
       `/attachment/download/${this._id}/${this.name}`,
     );
 

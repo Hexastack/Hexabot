@@ -53,7 +53,7 @@ export class ContentStub extends BaseSchema {
    * Helper to return the internal url of this content.
    */
   static getUrl(item: ContentElement): string {
-    return new URL('/content/view/' + item.id, config.apiPath).toString();
+    return new URL('/content/view/' + item.id, config.apiBaseUrl).toString();
   }
 
   /**

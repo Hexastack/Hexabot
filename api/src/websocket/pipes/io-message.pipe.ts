@@ -49,7 +49,7 @@ export class IOMessagePipe implements PipeTransform<string, IOIncomingMessage> {
 
     const url = message.url.startsWith('http')
       ? message.url
-      : `${config.parameters.apiUrl}${message.url}`;
+      : `${config.apiBaseUrl}${message.url}`;
 
     if (!URL.canParse(url)) {
       throw new BadRequestException('Cannot parse url');
