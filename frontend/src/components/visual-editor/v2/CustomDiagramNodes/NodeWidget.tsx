@@ -30,6 +30,7 @@ import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { IBlockFull, Pattern } from "@/types/block.types";
 import { BlockPorts, BlockTypes, TBlock } from "@/types/visual-editor.types";
+import { truncate } from "@/utils/text";
 
 import { NodeModel } from "./NodeModel";
 
@@ -360,7 +361,7 @@ class NodeWidget extends React.Component<
                 color={this.config.color}
                 size="21px"
               />
-              {this.props.node.message[0]}
+              {truncate(this.props.node.message[0])}
             </div>
           ) : null}
           {[BlockTypes.quickReplies, BlockTypes.buttons].includes(
@@ -375,7 +376,7 @@ class NodeWidget extends React.Component<
               {
                 //TODO: need to be updated
                 // @ts-ignore
-                this.props.node.message.text
+                truncate(this.props.node.message.text)
               }
             </div>
           ) : null}
