@@ -7,5 +7,5 @@
  */
 
 export const truncate = (text: string, length = 300) => {
-  return text.length > length ? text.substring(0, length) : text;
+  return text.length > length ? text.substring(0, length) + "..." : text;
 };
