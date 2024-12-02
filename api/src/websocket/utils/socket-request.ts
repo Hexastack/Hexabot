@@ -90,7 +90,9 @@ export class SocketRequest {
 
     // Resolve the URL and path
     const urlObj = new URL(
-      this.url.startsWith('http') ? this.url : `${config.apiPath}${this.url}`,
+      this.url.startsWith('http')
+        ? this.url
+        : `${config.apiBaseUrl}${this.url}`,
     );
     this.path = urlObj.pathname || '/';
 

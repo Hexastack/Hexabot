@@ -75,7 +75,7 @@ const i18nOptions: I18nOptions = {
               options: {
                 context: {
                   appName: config.parameters.appName,
-                  appUrl: config.frontendPath,
+                  appUrl: config.uiBaseUrl,
                 },
               },
             },
