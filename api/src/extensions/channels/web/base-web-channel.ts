@@ -294,57 +294,64 @@ export default abstract class BaseWebChannelHandler<
     res: Response | SocketResponse,
   ) {
     const settings = await this.getSettings<typeof WEB_CHANNEL_NAMESPACE>();
-    // If we have an origin header...
-    if (req.headers && req.headers.origin) {
-      // Get the allowed origins
-      const origins: string[] = settings.allowed_domains.split(',');
-      const foundOrigin = origins
-        .map((origin) => {
-          try {
-            return new URL(origin.trim()).origin;
-          } catch (error) {
-            this.logger.error(
-              `Web Channel Handler : Invalid URL in allowed domains: ${origin}`,
-              error,
-            );
-            return null;
-          }
-        })
-        .filter(
-          (normalizedOrigin): normalizedOrigin is string =>
-            normalizedOrigin !== null,
-        )
-        .some((origin: string) => {
-          // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
-          // to greenlight the request.
-          return origin === req.headers.origin;
-        });
 
-      if (!foundOrigin && !origins.includes('*')) {
-        // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
-        // interpret as, 'no way Jose.'
-        res.set('Access-Control-Allow-Origin', '');
-        this.logger.debug(
-          'Web Channel Handler : No origin found ',
-          req.headers.origin,
-        );
-        throw new Error('CORS - Domain not allowed!');
-      } else {
-        res.set('Access-Control-Allow-Origin', req.headers.origin);
-      }
-      // Determine whether or not to allow cookies to be passed cross-origin
-      res.set('Access-Control-Allow-Credentials', 'true');
-      // This header lets a server whitelist headers that browsers are allowed to access
-      res.set('Access-Control-Expose-Headers', '');
-      // Handle preflight requests
-      if (req.method == 'OPTIONS') {
-        res.set('Access-Control-Allow-Methods', 'GET, POST');
-        res.set('Access-Control-Allow-Headers', 'content-type');
-      }
-      return;
+    // Check if we have an origin header...
+    if (!req.headers?.origin) {
+      this.logger.debug('Web Channel Handler : No origin ', req.headers);
+      throw new Error('CORS - No origin provided!');
     }
-    this.logger.debug('Web Channel Handler : No origin ', req.headers);
-    throw new Error('CORS - No origin provided!');
+
+    const originUrl = new URL(req.headers.origin);
+    const allowedProtocols = new Set(['http:', 'https:']);
+    if (!allowedProtocols.has(originUrl.protocol)) {
+      throw new Error('CORS - Invalid origin!');
+    }
+
+    // Get the allowed origins
+    const origins: string[] = settings.allowed_domains.split(',');
+    const foundOrigin = origins
+      .map((origin) => {
+        try {
+          return new URL(origin.trim()).origin;
+        } catch (error) {
+          this.logger.error(
+            `Web Channel Handler : Invalid URL in allowed domains: ${origin}`,
+            error,
+          );
+          return null;
+        }
+      })
+      .filter(
+        (normalizedOrigin): normalizedOrigin is string =>
+          normalizedOrigin !== null,
+      )
+      .some((origin: string) => {
+        // If we find a whitelisted origin, send the Access-Control-Allow-Origin header
+        // to greenlight the request.
+        return origin === originUrl.origin;
+      });
+
+    if (!foundOrigin && !origins.includes('*')) {
+      // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
+      // interpret as, 'no way Jose.'
+      res.set('Access-Control-Allow-Origin', '');
+      this.logger.debug(
+        'Web Channel Handler : No origin found ',
+        req.headers.origin,
+      );
+      throw new Error('CORS - Domain not allowed!');
+    } else {
+      res.set('Access-Control-Allow-Origin', originUrl.origin);
+    }
+    // Determine whether or not to allow cookies to be passed cross-origin
+    res.set('Access-Control-Allow-Credentials', 'true');
+    // This header lets a server whitelist headers that browsers are allowed to access
+    res.set('Access-Control-Expose-Headers', '');
+    // Handle preflight requests
+    if (req.method == 'OPTIONS') {
+      res.set('Access-Control-Allow-Methods', 'GET, POST');
+      res.set('Access-Control-Allow-Headers', 'content-type');
+    }
   }
 
   /**
