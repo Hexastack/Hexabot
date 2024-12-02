@@ -278,7 +278,6 @@
     "options": "Options",
     "seconds": "Seconds",
     "typing_indicator": "Typing indicator",
-    "effects": "Apply plugin effects",
     "enable_fallback": "Enable Fallback?",
     "max_fallback_attempts": "Max Fallback Attempts",
     "fallback_message": "Fallback Message",

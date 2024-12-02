@@ -278,7 +278,6 @@
     "options": "Options",
     "seconds": "Secondes",
     "typing_indicator": "Indicateur de frappe",
-    "effects": "Appliquer les effets des plugins",
     "enable_fallback": "Activer le message de secours?",
     "max_fallback_attempts": "Nombre maximum de tentatives de secours",
     "fallback_message": "Message de secours",
