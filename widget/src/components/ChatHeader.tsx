@@ -36,7 +36,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
             href="https://hexabot.ai"
             target="_blank"
             title="Powered By Hexabot.ai"
-            className="sc-header--img"
+            className="sc-header--img" rel="noreferrer"
           >
             <OpenIcon width={32} height={32} />
           </a>
