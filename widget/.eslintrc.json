@@ -1,6 +1,6 @@
 {
   "root": true,
-  "plugins": ["@typescript-eslint", "import", "license-header"],
+  "plugins": ["@typescript-eslint", "import", "license-header", "react"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
