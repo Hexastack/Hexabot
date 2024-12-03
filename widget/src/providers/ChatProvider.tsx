@@ -249,7 +249,10 @@ const ChatProvider: React.FC<{
         newIOMessage.delivery = true;
       }
 
-      setMessages([...messages, newIOMessage as TMessage]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        newIOMessage as TMessage,
+      ]);
       setScroll(0);
     }
 
@@ -271,7 +274,8 @@ const ChatProvider: React.FC<{
     } else {
       setSuggestions([]);
     }
-    isOpen || updateNewMessagesCount(newMessagesCount + 1);
+    isOpen ||
+      updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
     settings.alwaysScrollToBottom && setScroll(101); // @hack
     setOutgoingMessageState(OutgoingMessageState.sent);
   };
