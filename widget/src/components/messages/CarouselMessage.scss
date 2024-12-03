@@ -19,6 +19,8 @@
       .sc-message--carousel-element {
         padding: 1rem 2rem;
         width: 100%;
+        min-width: 307px;
+        min-height: 172px;
 
         .sc-message--carousel-element-image {
           background-position: center;
