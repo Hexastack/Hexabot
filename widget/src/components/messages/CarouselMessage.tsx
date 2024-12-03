@@ -101,15 +101,18 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
       </div>
       {shouldDisplayNavigationButtons && (
         <>
-        <button
-          className="sc-message--carousel-control prev"
-          onClick={goToPrevious}
+          <button
+            className="sc-message--carousel-control prev"
+            onClick={goToPrevious}
           >
-          &#10094;
-        </button>
-        <button className="sc-message--carousel-control next" onClick={goToNext}>
-          &#10095;
-        </button>
+            &#10094;
+          </button>
+          <button
+            className="sc-message--carousel-control next"
+            onClick={goToNext}
+          >
+            &#10095;
+          </button>
         </>
       )}
     </div>
