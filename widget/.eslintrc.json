@@ -1,16 +1,14 @@
 {
-  "plugins": [
-    "@typescript-eslint/eslint-plugin",
-    "import",
-    "react",
-    "license-header"
-  ],
+  "root": true,
+  "plugins": ["@typescript-eslint", "import", "license-header"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
     "plugin:react-hooks/recommended"
   ],
   "rules": {
+    "react/react-in-jsx-scope": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -24,19 +22,17 @@
       "error",
       {
         "groups": [
-          "builtin", // Built-in imports (come from NodeJS native) go first
-          "external", // <- External imports
-          "unknown", // <- unknown
-          "index", // <- index imports
-          "internal", // <- Absolute imports
-          "parent", // <- Relative imports, the sibling and parent types they can be mingled together
+          "builtin",
+          "external",
+          "unknown",
+          "index",
+          "internal",
+          "parent",
           "sibling"
         ],
         "newlines-between": "always",
         "alphabetize": {
-          /* sort in ascending order. Options: ["ignore", "asc", "desc"] */
           "order": "asc",
-          /* ignore case. Options: [true, false] */
           "caseInsensitive": true
         }
       }
@@ -50,8 +46,8 @@
       "error",
       { "blankLine": "never", "prev": ["const"], "next": "const" }
     ],
-    "react/jsx-curly-brace-presence": "warn",
-    "react/self-closing-comp": "error",
+    "react/jsx-curly-brace-presence": ["warn"],
+    "react/self-closing-comp": ["error"],
     "license-header/header": [
       "error",
       [
