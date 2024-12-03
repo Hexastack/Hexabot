@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useChat } from '../../providers/ChatProvider';
-import { useColors } from '../../providers/ColorProvider';
-import { useSettings } from '../../providers/SettingsProvider';
+import { useChat } from "../../providers/ChatProvider";
+import { useColors } from "../../providers/ColorProvider";
+import { useSettings } from "../../providers/SettingsProvider";
 import {
   TButton,
   TMessage,
   TOutgoingMessageType,
-} from '../../types/message.types';
+} from "../../types/message.types";
 
-import './ButtonMessage.scss';
+import "./ButtonMessage.scss";
 
 interface ButtonsMessageProps {
   message: TMessage;
@@ -31,17 +31,17 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
     event: React.MouseEvent<HTMLButtonElement>,
     button: TButton,
   ) => {
-    if (button.type === 'web_url' && button.url) {
+    if (button.type === "web_url" && button.url) {
       if (button.messenger_extensions) {
         setWebviewUrl(button.url);
       } else {
-        window.open(button.url, '_blank');
+        window.open(button.url, "_blank");
       }
-    } else if (button.type === 'postback') {
+    } else if (button.type === "postback") {
       setPayload({ text: button.title, payload: button.payload });
       send({
         event,
-        source: 'post-back',
+        source: "post-back",
         data: {
           type: TOutgoingMessageType.postback,
           data: {
@@ -56,8 +56,8 @@ const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
     }
   };
 
-  if (!('buttons' in message.data)) {
-    throw new Error('Unable to find buttons');
+  if (!("buttons" in message.data)) {
+    throw new Error("Unable to find buttons");
   }
 
   return (

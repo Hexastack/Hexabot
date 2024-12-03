@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-import { useColors } from '../../providers/ColorProvider';
-import { useWidget } from '../../providers/WidgetProvider';
-import { TMessage } from '../../types/message.types';
+import { useColors } from "../../providers/ColorProvider";
+import { useWidget } from "../../providers/WidgetProvider";
+import { TMessage } from "../../types/message.types";
 
-import './GeolocationMessage.scss';
+import "./GeolocationMessage.scss";
 
 interface GeolocationMessageProps {
   message: TMessage;
@@ -49,8 +49,8 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
     }
   }, [isSeen, widget]);
 
-  if (!('coordinates' in message.data)) {
-    throw new Error('Unable to find coordinates');
+  if (!("coordinates" in message.data)) {
+    throw new Error("Unable to find coordinates");
   }
   const coordinates = message.data?.coordinates || { lat: 0.0, lng: 0.0 };
   const openStreetMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
@@ -58,7 +58,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   },${coordinates.lat - 0.1},${coordinates.lng + 0.1},${
     coordinates.lat + 0.1
   }&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`;
-  const colors = allColors[message.direction || 'received'];
+  const colors = allColors[message.direction || "received"];
 
   return (
     <div

@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { createContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useEffect, useState } from "react";
 
-import { useConfig } from './ConfigProvider';
+import { useConfig } from "./ConfigProvider";
 
 const CookieContext = createContext({});
 
@@ -20,12 +20,12 @@ export const CookieProvider: React.FC<{ children: ReactNode }> = ({
   const getCookie = async () => {
     try {
       await fetch(`${config.apiUrl}/__getcookie`, {
-        credentials: 'include',
+        credentials: "include",
       });
       setInitialized(true);
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.warn('Unable to get cookies ...');
+      console.warn("Unable to get cookies ...");
     }
   };
 

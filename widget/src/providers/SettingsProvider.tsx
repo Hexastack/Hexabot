@@ -12,13 +12,13 @@ import React, {
   useCallback,
   useContext,
   useState,
-} from 'react';
+} from "react";
 
-import { useTranslation } from '../hooks/useTranslation';
-import { IMenuNode } from '../types/menu.type';
-import { SessionStorage } from '../utils/sessionStorage';
+import { useTranslation } from "../hooks/useTranslation";
+import { IMenuNode } from "../types/menu.type";
+import { SessionStorage } from "../utils/sessionStorage";
 
-import { useSubscribe } from './SocketProvider';
+import { useSubscribe } from "./SocketProvider";
 
 type ChannelSettings = {
   menu: IMenuNode[];
@@ -65,17 +65,17 @@ const defaultSettings: ChatSettings = {
   showTypingIndicator: true,
   alwaysScrollToBottom: true,
   focusOnOpen: true,
-  title: 'Hexabot :)',
-  titleImageUrl: '',
+  title: "Hexabot :)",
+  titleImageUrl: "",
   inputDisabled: false,
-  placeholder: 'Write something...',
+  placeholder: "Write something...",
   menu: [],
   autoFlush: true,
-  allowedUploadTypes: ['image/gif', 'image/png', 'image/jpeg'],
+  allowedUploadTypes: ["image/gif", "image/png", "image/jpeg"],
   allowedUploadSize: 2500000,
-  color: 'blue',
-  greetingMessage: 'Welcome !',
-  avatarUrl: '',
+  color: "blue",
+  greetingMessage: "Welcome !",
+  avatarUrl: "",
 };
 const SettingsContext = createContext<ChatSettings>(defaultSettings);
 
@@ -87,16 +87,16 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
 }) => {
   const { t } = useTranslation();
   const defaultOrSavedSettings =
-    SessionStorage.getItem<ChatSettings>('settings');
+    SessionStorage.getItem<ChatSettings>("settings");
   const [settings, setSettingsState] = useState(
     defaultOrSavedSettings || defaultSettings,
   );
   const setSettings = useCallback((settings: ChatSettings) => {
-    SessionStorage.setItem('settings', settings);
+    SessionStorage.setItem("settings", settings);
     setSettingsState(settings);
   }, []);
 
-  useSubscribe('settings', (settings: ChannelSettings) => {
+  useSubscribe("settings", (settings: ChannelSettings) => {
     setSettings({
       ...defaultSettings,
       showEmoji: settings.show_emoji,
@@ -105,12 +105,12 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
       title: settings.window_title,
       titleImageUrl: settings.avatar_url,
       menu: settings.menu,
-      allowedUploadTypes: settings.allowed_upload_types.split(','),
+      allowedUploadTypes: settings.allowed_upload_types.split(","),
       allowedUploadSize: settings.allowed_upload_size,
       inputDisabled: settings.input_disabled,
       color: settings.theme_color,
       greetingMessage: settings.greeting_message,
-      placeholder: t('settings.placeholder'),
+      placeholder: t("settings.placeholder"),
       avatarUrl: settings.avatar_url,
     });
   });

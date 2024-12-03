@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { createContext, ReactNode, useContext, useRef } from 'react';
+import React, { createContext, ReactNode, useContext, useRef } from "react";
 
-import { DEFAULT_CONFIG } from '../constants/defaultConfig';
+import { DEFAULT_CONFIG } from "../constants/defaultConfig";
 
 // Define the type for your config, including all possible properties
 export type Config = {
@@ -42,7 +42,7 @@ export const useConfig = () => {
   const context = useContext(ConfigContext);
 
   if (!context) {
-    throw new Error('useConfig must be used within a ConfigProvider');
+    throw new Error("useConfig must be used within a ConfigProvider");
   }
 
   return context;

@@ -21,10 +21,10 @@ export enum ConnectionState {
 
 export type ChatScreen =
   // Screen that shows up before the chat (user subscription)
-  | 'prechat'
+  | "prechat"
   // Screen that shows up after the chat is closed (not in use yet)
-  | 'postchat'
+  | "postchat"
   // Screen shows up when user clicks on a url button where there is a webview
-  | 'webview'
+  | "webview"
   // Screen that shows the messages and text input
-  | 'chat';
+  | "chat";

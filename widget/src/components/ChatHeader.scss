@@ -1,7 +1,7 @@
 .sc-header {
   min-height: 64px;
-  border-top-left-radius: .5rem;
-  border-top-right-radius: .5rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
   padding: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   position: relative;
@@ -54,7 +54,7 @@
   height: 100%;
   padding: 5px;
   box-sizing: border-box;
-  fill: #FFF;
+  fill: #fff;
 }
 
 @media (max-width: 450px) {

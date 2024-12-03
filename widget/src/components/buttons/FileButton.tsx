@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent } from "react";
 
-import { useChat } from '../../providers/ChatProvider';
-import FileInputIcon from '../icons/FileInputIcon';
+import { useChat } from "../../providers/ChatProvider";
+import FileInputIcon from "../icons/FileInputIcon";
 
-import './FileButton.scss';
+import "./FileButton.scss";
 
 const FileButton: React.FC = () => {
   const { setFile } = useChat();
   const handleClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    (e.target as HTMLInputElement).value = '';
+    (e.target as HTMLInputElement).value = "";
   };
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

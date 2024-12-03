@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, PropsWithChildren } from 'react';
+import { FC, PropsWithChildren } from "react";
 
-import { useColors } from '../providers/ColorProvider';
-import { useSettings } from '../providers/SettingsProvider';
-import { useWidget } from '../providers/WidgetProvider';
+import { useColors } from "../providers/ColorProvider";
+import { useSettings } from "../providers/SettingsProvider";
+import { useWidget } from "../providers/WidgetProvider";
 
-import './ChatHeader.scss';
-import CloseIcon from './icons/CloseIcon';
-import OpenIcon from './icons/OpenIcon';
+import "./ChatHeader.scss";
+import CloseIcon from "./icons/CloseIcon";
+import OpenIcon from "./icons/OpenIcon";
 
 type ChatHeaderProps = PropsWithChildren;
 
@@ -36,7 +36,8 @@ const ChatHeader: FC<ChatHeaderProps> = ({ children }) => {
             href="https://hexabot.ai"
             target="_blank"
             title="Powered By Hexabot.ai"
-            className="sc-header--img" rel="noreferrer"
+            className="sc-header--img"
+            rel="noreferrer"
           >
             <OpenIcon width={32} height={32} />
           </a>

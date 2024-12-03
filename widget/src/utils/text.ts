@@ -7,11 +7,11 @@
  */
 
 export const truncate = (s: string, length = 100) => {
-  return s.length > length ? s.substr(0, length) + '...' : s;
+  return s.length > length ? s.substr(0, length) + "..." : s;
 };
 
 export const linebreak = (s: string) => {
-  return s.replace(/\n/g, '<br />');
+  return s.replace(/\n/g, "<br />");
 };
 
 export const processContent = (s: string) => {
