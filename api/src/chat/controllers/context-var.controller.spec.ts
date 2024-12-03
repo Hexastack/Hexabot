@@ -28,7 +28,7 @@ import {
   ContextVarUpdateDto,
 } from '../dto/context-var.dto';
 import { ContextVarRepository } from '../repositories/context-var.repository';
-import { ContextVarModel, ContextVar } from '../schemas/context-var.schema';
+import { ContextVar, ContextVarModel } from '../schemas/context-var.schema';
 import { ContextVarService } from '../services/context-var.service';
 
 import { ContextVarController } from './context-var.controller';
@@ -80,10 +80,10 @@ describe('ContextVarController', () => {
   describe('findPage', () => {
     it('should return an array of contextVars', async () => {
       const pageQuery = getPageQuery<ContextVar>();
-      jest.spyOn(contextVarService, 'findPage');
+      jest.spyOn(contextVarService, 'find');
       const result = await contextVarController.findPage(pageQuery, {});
 
-      expect(contextVarService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(contextVarService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(contextVarFixtures.sort(sortRowsBy));
     });
   });

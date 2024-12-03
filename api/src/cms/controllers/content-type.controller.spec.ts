@@ -88,9 +88,9 @@ describe('ContentTypeController', () => {
   describe('findPage', () => {
     it('should return all contentTypes', async () => {
       const pageQuery = getPageQuery<ContentType>({ sort: ['_id', 'asc'] });
-      jest.spyOn(contentTypeService, 'findPage');
+      jest.spyOn(contentTypeService, 'find');
       const result = await contentTypeController.findPage(pageQuery, {});
-      expect(contentTypeService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(contentTypeService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toHaveLength(contentTypeFixtures.length);
       expect(result).toEqualPayload(contentTypeFixtures);
     });

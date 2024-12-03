@@ -62,15 +62,9 @@ export class LabelController extends BaseController<
     @Query(new SearchFilterPipe<Label>({ allowedFields: ['name', 'title'] }))
     filters: TFilterQuery<Label>,
   ) {
-    if (pageQuery.limit) {
-      return this.canPopulate(populate)
-        ? await this.labelService.findPageAndPopulate(filters, pageQuery)
-        : await this.labelService.findPage(filters, pageQuery);
-    }
-
     return this.canPopulate(populate)
-      ? await this.labelService.findAndPopulate(filters, pageQuery.sort)
-      : await this.labelService.find(filters, pageQuery.sort);
+      ? await this.labelService.findAndPopulate(filters, pageQuery)
+      : await this.labelService.find(filters, pageQuery);
   }
 
   /**

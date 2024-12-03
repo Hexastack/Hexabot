@@ -247,16 +247,17 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.clsPopulate);
   }
 
-  protected findQuery(filter: TFilterQuery<T>, sort?: QuerySortDto<T>) {
+  protected findQuery(filter: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
+    const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
     const query = this.model.find<T>(filter);
-    if (sort) {
-      return query.sort([sort] as [string, SortOrder][]);
-    }
-    return query;
+    return query
+      .skip(skip)
+      .limit(limit)
+      .sort([sort] as [string, SortOrder][]);
   }
 
-  async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>) {
-    const query = this.findQuery(filter, sort);
+  async find(filter: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
+    const query = this.findQuery(filter, pageQuery);
     return await this.execute(query, this.cls);
   }
 
@@ -266,18 +267,18 @@ export abstract class BaseRepository<
     }
   }
 
-  async findAndPopulate(filters: TFilterQuery<T>, sort?: QuerySortDto<T>) {
+  async findAndPopulate(filters: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
     this.ensureCanPopulate();
-    const query = this.findQuery(filters, sort).populate(this.populate);
+    const query = this.findQuery(filters, pageQuery).populate(this.populate);
     return await this.execute(query, this.clsPopulate);
   }
 
   protected findAllQuery(sort?: QuerySortDto<T>) {
-    return this.findQuery({}, sort);
+    return this.findQuery({}, { limit: undefined, skip: undefined, sort });
   }
 
   async findAll(sort?: QuerySortDto<T>) {
-    return await this.find({}, sort);
+    return await this.find({}, { limit: undefined, skip: undefined, sort });
   }
 
   async findAllAndPopulate(sort?: QuerySortDto<T>) {

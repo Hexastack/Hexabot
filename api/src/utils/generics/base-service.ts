@@ -39,12 +39,15 @@ export abstract class BaseService<
     return await this.repository.findOneAndPopulate(criteria);
   }
 
-  async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>): Promise<T[]> {
-    return await this.repository.find(filter, sort);
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+  ): Promise<T[]> {
+    return await this.repository.find(filter, pageQuery);
   }
 
-  async findAndPopulate(filters: TFilterQuery<T>, sort?: QuerySortDto<T>) {
-    return await this.repository.findAndPopulate(filters, sort);
+  async findAndPopulate(filters: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
+    return await this.repository.findAndPopulate(filters, pageQuery);
   }
 
   async findAll(sort?: QuerySortDto<T>): Promise<T[]> {

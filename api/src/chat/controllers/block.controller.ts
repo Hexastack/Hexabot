@@ -80,14 +80,9 @@ export class BlockController extends BaseController<
     filters: TFilterQuery<Block>,
     @Query(PageQueryPipe) pageQuery?: PageQueryDto<Block>,
   ): Promise<Block[] | BlockFull[]> {
-    if (pageQuery?.limit) {
-      return this.canPopulate(populate)
-        ? await this.blockService.findPageAndPopulate(filters, pageQuery)
-        : await this.blockService.findPage(filters, pageQuery);
-    }
     return this.canPopulate(populate)
-      ? await this.blockService.findAndPopulate(filters, pageQuery?.sort)
-      : await this.blockService.find(filters, pageQuery?.sort);
+      ? await this.blockService.findAndPopulate(filters, pageQuery)
+      : await this.blockService.find(filters, pageQuery);
   }
 
   /**
