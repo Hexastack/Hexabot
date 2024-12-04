@@ -11,7 +11,7 @@ import {
   FieldErrors,
   FieldValues,
   UseFormRegister,
-} from "react-hook-form";
+} from 'react-hook-form';
 
 export const getInputControls =
   <T extends FieldValues = FieldValues>(

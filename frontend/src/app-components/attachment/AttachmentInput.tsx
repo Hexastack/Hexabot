@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, FormHelperText, FormLabel } from "@mui/material";
-import { forwardRef } from "react";
+import { Box, FormHelperText, FormLabel } from '@mui/material';
+import { forwardRef } from 'react';
 
-import { useGet } from "@/hooks/crud/useGet";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
-import { PermissionAction } from "@/types/permission.types";
+import { useGet } from '@/hooks/crud/useGet';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { EntityType } from '@/services/types';
+import { IAttachment } from '@/types/attachment.types';
+import { PermissionAction } from '@/types/permission.types';
 
-import AttachmentThumbnail from "./AttachmentThumbnail";
-import AttachmentUploader from "./AttachmentUploader";
+import AttachmentThumbnail from './AttachmentThumbnail';
+import AttachmentUploader from './AttachmentUploader';
 
 type AttachmentThumbnailProps = {
   label: string;
   value: string | undefined | null;
-  format: "small" | "basic" | "full";
+  format: 'small' | 'basic' | 'full';
   accept: string;
   enableMediaLibrary?: boolean;
   size?: number;
@@ -52,7 +52,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
 
     // Ensure load the attachment if not fetched yet
     useGet(
-      value || "",
+      value || '',
       {
         entity: EntityType.ATTACHMENT,
       },
@@ -65,7 +65,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
       <Box ref={ref}>
         <FormLabel
           component="label"
-          style={{ display: "inline-block", marginBottom: 1 }}
+          style={{ display: 'inline-block', marginBottom: 1 }}
         >
           {label}
         </FormLabel>
@@ -91,6 +91,6 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
   },
 );
 
-AttachmentInput.displayName = "AttachmentInput";
+AttachmentInput.displayName = 'AttachmentInput';
 
 export default AttachmentInput;

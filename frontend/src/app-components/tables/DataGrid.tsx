@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useTheme } from "@mui/material";
+import { useTheme } from '@mui/material';
 import {
   DataGridProps,
   gridClasses,
   GridColDef,
   GridValidRowModel,
   DataGrid as MuiDataGrid,
-} from "@mui/x-data-grid";
+} from '@mui/x-data-grid';
 
-import { renderHeader } from "./columns/renderHeader";
-import { styledPaginationSlots } from "./DataGridStyledPagination";
-import { NoDataOverlay } from "./NoDataOverlay";
+import { renderHeader } from './columns/renderHeader';
+import { styledPaginationSlots } from './DataGridStyledPagination';
+import { NoDataOverlay } from './NoDataOverlay';
 
 export const StyledDataGrid = <T extends GridValidRowModel = any>(
   props: DataGridProps<T>,
@@ -29,13 +29,13 @@ export const StyledDataGrid = <T extends GridValidRowModel = any>(
     <MuiDataGrid
       {...otherProps}
       sx={{
-        "& .MuiDataGrid-overlayWrapper": {
-          height: "fit-content",
+        '& .MuiDataGrid-overlayWrapper': {
+          height: 'fit-content',
         },
         [`& .${gridClasses.row}`]: {
-          "&:hover": {
+          '&:hover': {
             backgroundColor: theme.palette.background.default,
-            "@media (hover: none)": {
+            '@media (hover: none)': {
               backgroundColor: theme.palette.background.default,
             },
           },
@@ -57,13 +57,13 @@ export const DataGrid = <T extends GridValidRowModel = any>({
   },
   showCellVerticalBorder = false,
   showColumnVerticalBorder = false,
-  sx = { border: "none" },
+  sx = { border: 'none' },
   ...rest
 }: DataGridProps<T>) => {
   const styledColumns: GridColDef<T>[] = columns.map((col) => ({
     disableColumnMenu: true,
     renderHeader,
-    headerAlign: "left",
+    headerAlign: 'left',
     flex: 1,
     ...col,
   }));

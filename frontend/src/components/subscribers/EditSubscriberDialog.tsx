@@ -12,24 +12,24 @@ import {
   DialogActions,
   DialogContent,
   Grid,
-} from "@mui/material";
-import Link from "next/link";
-import { useEffect, FC, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import Link from 'next/link';
+import { useEffect, FC, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { ILabel } from "@/types/label.types";
-import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { Input } from '@/app-components/inputs/Input';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { ILabel } from '@/types/label.types';
+import { ISubscriber, ISubscriberAttributes } from '@/types/subscriber.types';
 
 const getFullName = (val: ISubscriber) => `${val.first_name} ${val.last_name}`;
 
@@ -45,14 +45,14 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const [fullName, setFullName] = useState<string>("");
+  const [fullName, setFullName] = useState<string>('');
   const { mutateAsync: updateSubscriber } = useUpdate(EntityType.SUBSCRIBER, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -81,13 +81,13 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {t("title.manage_labels")}
+          {t('title.manage_labels')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("label.auth_user")}
+                label={t('label.auth_user')}
                 disabled
                 InputProps={{
                   readOnly: true,
@@ -108,11 +108,11 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
                       return (
                         <AutoCompleteEntitySelect<ILabel>
                           autoFocus
-                          searchFields={["name"]}
+                          searchFields={['name']}
                           entity={EntityType.LABEL}
                           format={Format.BASIC}
                           labelKey="name"
-                          label={t("label.labels")}
+                          label={t('label.labels')}
                           multiple
                           {...field}
                           error={!!errors.labels}
@@ -130,7 +130,7 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
                 </Grid>
                 <Grid alignContent="center">
                   <Link href="/subscribers/labels">
-                    <Button variant="contained">{t("button.manage")}</Button>
+                    <Button variant="contained">{t('button.manage')}</Button>
                   </Link>
                 </Grid>
               </Grid>

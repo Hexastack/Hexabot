@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FormControl } from "@mui/material";
-import { Controller, useFormContext } from "react-hook-form";
+import { FormControl } from '@mui/material';
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
-import SettingInput from "@/components/settings/SettingInput";
-import { useFind } from "@/hooks/crud/useFind";
-import { EntityType } from "@/services/types";
-import { IBlockAttributes } from "@/types/block.types";
-import { StdPluginMessage } from "@/types/message.types";
+import { ContentItem } from '@/app-components/dialogs';
+import { Input } from '@/app-components/inputs/Input';
+import SettingInput from '@/components/settings/SettingInput';
+import { useFind } from '@/hooks/crud/useFind';
+import { EntityType } from '@/services/types';
+import { IBlockAttributes } from '@/types/block.types';
+import { StdPluginMessage } from '@/types/message.types';
 
-import { useBlock } from "./BlockFormProvider";
+import { useBlock } from './BlockFormProvider';
 
 const PluginMessageForm = () => {
   const block = useBlock();
@@ -29,15 +29,15 @@ const PluginMessageForm = () => {
     {
       params: {
         plugin:
-          block?.message && "plugin" in block?.message
+          block?.message && 'plugin' in block?.message
             ? block.message.plugin
-            : "",
+            : '',
       },
       hasCount: false,
     },
   );
 
-  if (!(block?.message && "plugin" in block.message)) {
+  if (!(block?.message && 'plugin' in block.message)) {
     return null;
   }
 
@@ -47,10 +47,10 @@ const PluginMessageForm = () => {
     <>
       <Input
         value={message.plugin}
-        {...register("message.plugin")}
+        {...register('message.plugin')}
         type="hidden"
         // MUI TextField doesn't support 'hidden', so we make it invisible like this
-        sx={{ display: "none" }}
+        sx={{ display: 'none' }}
       />
       {(settings || []).map((setting) => (
         <ContentItem key={setting.label}>
@@ -59,12 +59,12 @@ const PluginMessageForm = () => {
             control={control}
             defaultValue={message.args?.[setting.label] || setting.value}
             render={({ field }) => (
-              <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
+              <FormControl fullWidth sx={{ paddingTop: '.75rem' }}>
                 <SettingInput
                   setting={setting}
                   field={field}
                   // @TODO : clean this later
-                  ns={message.plugin.replaceAll("-", "_")}
+                  ns={message.plugin.replaceAll('-', '_')}
                 />
               </FormControl>
             )}
@@ -75,6 +75,6 @@ const PluginMessageForm = () => {
   );
 };
 
-PluginMessageForm.displayName = "TextMessageForm";
+PluginMessageForm.displayName = 'TextMessageForm';
 
 export default PluginMessageForm;

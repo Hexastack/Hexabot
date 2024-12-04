@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
-import i18n from "@/i18n/config";
+import i18n from '@/i18n/config';
 
-import { useApiClient } from "./useApiClient";
-import { useAuth } from "./useAuth";
+import { useApiClient } from './useApiClient';
+import { useAuth } from './useAuth';
 
 export const useRemoteI18n = () => {
   const { isAuthenticated } = useAuth();
@@ -36,7 +36,7 @@ export const useRemoteI18n = () => {
         });
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error("Failed to fetch remote i18n translations:", error);
+        console.error('Failed to fetch remote i18n translations:', error);
       }
     };
 

@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from 'react-query';
 
-import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
+import { QueryType, TMutationOptions } from '@/services/types';
+import { IBaseSchema, IDynamicProps, TType } from '@/types/base.types';
 
-import { useEntityApiClient } from "../useApiClient";
+import { useEntityApiClient } from '../useApiClient';
 
-import { isSameEntity, useNormalizeAndCache } from "./helpers";
+import { isSameEntity, useNormalizeAndCache } from './helpers';
 
 export const useUpload = <
-  TEntity extends IDynamicProps["entity"],
-  TAttr = TType<TEntity>["attributes"],
-  TBasic extends IBaseSchema = TType<TEntity>["basic"],
-  TFull extends IBaseSchema = TType<TEntity>["full"],
+  TEntity extends IDynamicProps['entity'],
+  TAttr = TType<TEntity>['attributes'],
+  TBasic extends IBaseSchema = TType<TEntity>['basic'],
+  TFull extends IBaseSchema = TType<TEntity>['full'],
 >(
   entity: TEntity,
   options?: Omit<
     TMutationOptions<TBasic, Error, File, TBasic>,
-    "mutationFn" | "mutationKey"
+    'mutationFn' | 'mutationKey'
   > & {
     invalidate?: boolean;
   },

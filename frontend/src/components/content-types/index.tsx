@@ -6,34 +6,34 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
-import { useRouter } from "next/router";
+import { faAlignLeft } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, Grid, Paper } from '@mui/material';
+import { useRouter } from 'next/router';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { IContentType } from "@/types/content-type.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { IContentType } from '@/types/content-type.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { ContentTypeDialog } from "./ContentTypeDialog";
-import { EditContentTypeFieldsDialog } from "./EditContentTypeFieldsDialog";
+import { ContentTypeDialog } from './ContentTypeDialog';
+import { EditContentTypeFieldsDialog } from './EditContentTypeFieldsDialog';
 
 export const ContentTypes = () => {
   const { t } = useTranslate();
@@ -45,7 +45,7 @@ export const ContentTypes = () => {
   const fieldsDialogCtl = useDialog<IContentType>(false);
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContentType>({
-    $iLike: ["name"],
+    $iLike: ['name'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT_TYPE },
@@ -58,10 +58,10 @@ export const ContentTypes = () => {
     {
       onSuccess: () => {
         deleteDialogCtl.closeDialog();
-        toast.success(t("message.item_delete_success"));
+        toast.success(t('message.item_delete_success'));
       },
       onError: (error) => {
-        toast.error(error.message || t("message.internal_server_error"));
+        toast.error(error.message || t('message.internal_server_error'));
       },
     },
   );
@@ -84,12 +84,12 @@ export const ContentTypes = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
 
   return (
     <Grid container flexDirection="column" gap={3}>
-      <PageHeader icon={faAlignLeft} title={t("title.entities")}>
+      <PageHeader icon={faAlignLeft} title={t('title.entities')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -107,9 +107,9 @@ export const ContentTypes = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 onClick={() => addDialogCtl.openDialog()}
-                sx={{ float: "right" }}
+                sx={{ float: 'right' }}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </Grid>
           ) : null}
@@ -132,28 +132,28 @@ export const ContentTypes = () => {
                 {...dataGridProps}
                 disableColumnFilter
                 columns={[
-                  { flex: 1, field: "name", headerName: t("label.name") },
+                  { flex: 1, field: 'name', headerName: t('label.name') },
                   {
                     maxWidth: 140,
-                    field: "createdAt",
-                    headerName: t("label.createdAt"),
+                    field: 'createdAt',
+                    headerName: t('label.createdAt'),
                     disableColumnMenu: true,
                     renderHeader,
                     resizable: false,
-                    headerAlign: "left",
+                    headerAlign: 'left',
                     valueGetter: (params) =>
-                      t("datetime.created_at", getDateTimeFormatter(params)),
+                      t('datetime.created_at', getDateTimeFormatter(params)),
                   },
                   {
                     maxWidth: 140,
-                    field: "updatedAt",
-                    headerName: t("label.updatedAt"),
+                    field: 'updatedAt',
+                    headerName: t('label.updatedAt'),
                     disableColumnMenu: true,
                     renderHeader,
                     resizable: false,
-                    headerAlign: "left",
+                    headerAlign: 'left',
                     valueGetter: (params) =>
-                      t("datetime.updated_at", getDateTimeFormatter(params)),
+                      t('datetime.updated_at', getDateTimeFormatter(params)),
                   },
 
                   actionColumns,

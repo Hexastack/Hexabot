@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, TextFieldProps } from "@mui/material";
-import { FC, useEffect, useState } from "react";
-import { RegisterOptions, useFormContext } from "react-hook-form";
+import { Box, TextFieldProps } from '@mui/material';
+import { FC, useEffect, useState } from 'react';
+import { RegisterOptions, useFormContext } from 'react-hook-form';
 
-import { Input } from "@/app-components/inputs/Input";
-import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
-import { RegexInput } from "@/app-components/inputs/RegexInput";
-import { useTranslate } from "@/hooks/useTranslate";
+import { Input } from '@/app-components/inputs/Input';
+import NlpPatternSelect from '@/app-components/inputs/NlpPatternSelect';
+import { RegexInput } from '@/app-components/inputs/RegexInput';
+import { useTranslate } from '@/hooks/useTranslate';
 import {
   IBlockAttributes,
   IBlockFull,
@@ -21,29 +21,28 @@ import {
   Pattern,
   PatternType,
   PayloadPattern,
-} from "@/types/block.types";
+} from '@/types/block.types';
 
-import { PostbackInput } from "./PostbackInput";
-
+import { PostbackInput } from './PostbackInput';
 
 const isRegex = (str: Pattern) => {
-  return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
+  return typeof str === 'string' && str.startsWith('/') && str.endsWith('/');
 };
 const getType = (pattern: Pattern): PatternType => {
   if (isRegex(pattern)) {
-    return "regex";
+    return 'regex';
   } else if (Array.isArray(pattern)) {
-    return "nlp";
-  } else if (typeof pattern === "object") {
-    if (pattern?.type === "menu") {
-      return "menu";
-    } else if (pattern?.type === "content") {
-      return "content";
+    return 'nlp';
+  } else if (typeof pattern === 'object') {
+    if (pattern?.type === 'menu') {
+      return 'menu';
+    } else if (pattern?.type === 'content') {
+      return 'content';
     } else {
-      return "payload";
+      return 'payload';
     }
   } else {
-    return "text";
+    return 'text';
   }
 };
 
@@ -68,7 +67,7 @@ const PatternInput: FC<PatternInputProps> = ({
   } = useFormContext<IBlockAttributes>();
   const [pattern, setPattern] = useState<Pattern>(value);
   const patternType = getType(value);
-  const isPostbackType = ["payload", "content", "menu"].includes(patternType);
+  const isPostbackType = ['payload', 'content', 'menu'].includes(patternType);
   const registerInput = (
     errorMessage: string,
     idx: number,
@@ -87,7 +86,7 @@ const PatternInput: FC<PatternInputProps> = ({
   };
 
   useEffect(() => {
-    if (pattern || pattern === "") {
+    if (pattern || pattern === '') {
       onChange(pattern);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,49 +94,49 @@ const PatternInput: FC<PatternInputProps> = ({
 
   return (
     <Box display="flex" flexGrow={1}>
-      {patternType === "nlp" && (
+      {patternType === 'nlp' && (
         <NlpPatternSelect
           patterns={pattern as NlpPattern[]}
           onChange={setPattern}
         />
       )}
-      
+
       {isPostbackType ? (
-          <PostbackInput
-            onChange={(payload) => {
-              payload && setPattern(payload);
-            }}
-            defaultValue={pattern as PayloadPattern}
-          />
-        ) : null}
-      {typeof value === "string" && patternType === "regex" ? (
+        <PostbackInput
+          onChange={(payload) => {
+            payload && setPattern(payload);
+          }}
+          defaultValue={pattern as PayloadPattern}
+        />
+      ) : null}
+      {typeof value === 'string' && patternType === 'regex' ? (
         <RegexInput
-          {...registerInput(t("message.regex_is_empty"), idx, {
+          {...registerInput(t('message.regex_is_empty'), idx, {
             validate: (pattern) => {
               try {
                 const parsedPattern = new RegExp(pattern.slice(1, -1));
 
                 if (String(parsedPattern) !== pattern) {
-                  throw t("message.regex_is_invalid");
+                  throw t('message.regex_is_invalid');
                 }
 
                 return true;
               } catch (_e) {
-                return t("message.regex_is_invalid");
+                return t('message.regex_is_invalid');
               }
             },
             setValueAs: (v) => (isRegex(v) ? v : `/${v}/`),
           })}
-          label={t("label.regex")}
+          label={t('label.regex')}
           value={value.slice(1, -1)}
           onChange={(v) => onChange(v)}
           required
         />
       ) : null}
-      {typeof value === "string" && patternType === "text" ? (
+      {typeof value === 'string' && patternType === 'text' ? (
         <Input
           {...(getInputProps ? getInputProps(idx) : null)}
-          label={t("label.text")}
+          label={t('label.text')}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

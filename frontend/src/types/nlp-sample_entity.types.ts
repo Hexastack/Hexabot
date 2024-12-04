@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format } from '@/services/types';
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { INlpEntity } from "./nlp-entity.types";
-import { INlpSample } from "./nlp-sample.types";
-import { INlpValue } from "./nlp-value.types";
+import { IBaseSchema, IFormat, OmitPopulate } from './base.types';
+import { INlpEntity } from './nlp-entity.types';
+import { INlpSample } from './nlp-sample.types';
+import { INlpValue } from './nlp-value.types';
 
 export interface INlpSampleEntityAttributes {
   entity: string;

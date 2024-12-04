@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BoxProps, Grid } from "@mui/material";
-import { useState } from "react";
+import { BoxProps, Grid } from '@mui/material';
+import { useState } from 'react';
 
-import { ChatWidget } from "@/app-components/widget/ChatWidget";
+import { ChatWidget } from '@/app-components/widget/ChatWidget';
 
-import { Content } from "./content";
-import { Header } from "./Header";
-import { VerticalMenu } from "./VerticalMenu";
+import { Content } from './content';
+import { Header } from './Header';
+import { VerticalMenu } from './VerticalMenu';
 
 export interface IContentPaddingProps {
   hasNoPadding?: boolean;

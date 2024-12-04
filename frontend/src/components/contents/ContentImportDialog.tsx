@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CloseIcon from "@mui/icons-material/Close";
-import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useState } from "react";
-import { useQuery } from "react-query";
+import CloseIcon from '@mui/icons-material/Close';
+import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useState } from 'react';
+import { useQuery } from 'react-query';
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { useApiClient } from "@/hooks/useApiClient";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IContentType } from "@/types/content-type.types";
+import AttachmentInput from '@/app-components/attachment/AttachmentInput';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { useApiClient } from '@/hooks/useApiClient';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IContentType } from '@/types/content-type.types';
 
 export type ContentImportDialogProps = DialogControlProps<{
   contentType?: IContentType;
@@ -36,7 +36,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   const { toast } = useToast();
   const { apiClient } = useApiClient();
   const { refetch, isFetching } = useQuery(
-    ["importContent", data?.contentType?.id, attachmentId],
+    ['importContent', data?.contentType?.id, attachmentId],
     async () => {
       if (data?.contentType?.id && attachmentId) {
         await apiClient.importContent(data.contentType.id, attachmentId);
@@ -46,13 +46,13 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
       enabled: false,
       onSuccess: () => {
         handleCloseDialog();
-        toast.success(t("message.success_save"));
+        toast.success(t('message.success_save'));
         if (rest.callback) {
           rest.callback();
         }
       },
       onError: () => {
-        toast.error(t("message.internal_server_error"));
+        toast.error(t('message.internal_server_error'));
       },
     },
   );
@@ -68,7 +68,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
 
   return (
     <Dialog open={open} fullWidth onClose={handleCloseDialog} {...rest}>
-      <DialogTitle onClose={handleCloseDialog}>{t("title.import")}</DialogTitle>
+      <DialogTitle onClose={handleCloseDialog}>{t('title.import')}</DialogTitle>
       <DialogContent>
         <ContentContainer>
           <ContentItem>
@@ -89,7 +89,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
           disabled={!attachmentId || isFetching}
           onClick={handleImportClick}
         >
-          {t("button.import")}
+          {t('button.import')}
         </Button>
         <Button
           startIcon={<CloseIcon />}
@@ -97,7 +97,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
           onClick={handleCloseDialog}
           disabled={isFetching}
         >
-          {t("button.cancel")}
+          {t('button.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

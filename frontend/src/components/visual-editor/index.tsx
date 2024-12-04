@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid } from "@mui/material";
-import dynamic from "next/dynamic";
+import { Grid } from '@mui/material';
+import dynamic from 'next/dynamic';
 
-const Diagrams = dynamic(() => import("./v2/Diagrams"), { ssr: false });
-const VisualEditorProvider = dynamic(() => import("./hooks/useVisualEditor"), {
+const Diagrams = dynamic(() => import('./v2/Diagrams'), { ssr: false });
+const VisualEditorProvider = dynamic(() => import('./hooks/useVisualEditor'), {
   ssr: false,
 });
-const Aside = dynamic(() => import("./Aside"), { ssr: false });
+const Aside = dynamic(() => import('./Aside'), { ssr: false });
 
 export const VisualEditor = () => {
   return (
@@ -32,8 +32,8 @@ export const VisualEditor = () => {
             xs
             overflow="hidden"
             sx={{
-              display: "flex",
-              flexDirection: "column",
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <Diagrams />

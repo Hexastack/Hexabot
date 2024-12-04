@@ -6,26 +6,26 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faBars } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Grid, Paper, Button, Box, debounce } from "@mui/material";
-import React, { useRef, useState } from "react";
+import { faBars } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import { Grid, Paper, Button, Box, debounce } from '@mui/material';
+import React, { useRef, useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { IMenuItem } from "@/types/menu.types";
-import { PermissionAction } from "@/types/permission.types";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { NoDataOverlay } from '@/app-components/tables/NoDataOverlay';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { IMenuItem } from '@/types/menu.types';
+import { PermissionAction } from '@/types/permission.types';
 
-import MenuAccordion from "./MenuAccordion";
-import { MenuDialog } from "./MenuDialog";
+import MenuAccordion from './MenuAccordion';
+import { MenuDialog } from './MenuDialog';
 
 export const Menu = () => {
   const { t } = useTranslate();
@@ -82,7 +82,7 @@ export const Menu = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faBars} title={t("title.manage_persistent_menu")}>
+      <PageHeader icon={faBars} title={t('title.manage_persistent_menu')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -102,7 +102,7 @@ export const Menu = () => {
                 disabled={menus?.length === 10}
                 startIcon={<AddIcon />}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             ) : null}
           </Grid>
@@ -133,7 +133,7 @@ export const Menu = () => {
           }
           setPosition(step * boxHeight + padding);
         }, 0)}
-        sx={{ padding: 2, position: "relative", overFlow: "hidden" }}
+        sx={{ padding: 2, position: 'relative', overFlow: 'hidden' }}
         onMouseLeave={() => setShadowVisible(false)}
         onMouseEnter={() => setShadowVisible(true)}
       >
@@ -175,16 +175,16 @@ export const Menu = () => {
         {menus?.length > 0 && (
           <Box
             sx={{
-              height: "56px",
-              position: "absolute",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "calc(100% - 20px)",
-              borderRadius: "9px",
-              backgroundColor: "background.default",
+              height: '56px',
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 'calc(100% - 20px)',
+              borderRadius: '9px',
+              backgroundColor: 'background.default',
               zIndex: 0,
               opacity: shadowVisible ? 1 : 0,
-              transition: "all 0.2s",
+              transition: 'all 0.2s',
               top: `${position}px`,
             }}
           />

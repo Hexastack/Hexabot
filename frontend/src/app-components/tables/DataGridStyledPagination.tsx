@@ -14,7 +14,7 @@ import {
   Pagination as MuiPagination,
   PaginationItemProps,
   PaginationItem,
-} from "@mui/material";
+} from '@mui/material';
 import {
   useGridApiContext,
   useGridSelector,
@@ -22,15 +22,15 @@ import {
   GridPagination,
   DataGridProps,
   GridFooter,
-} from "@mui/x-data-grid";
+} from '@mui/x-data-grid';
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from '@/layout/themes/theme';
 
 function Pagination({
   page,
   onPageChange,
   className,
-}: Pick<TablePaginationProps, "page" | "onPageChange" | "className">) {
+}: Pick<TablePaginationProps, 'page' | 'onPageChange' | 'className'>) {
   const apiRef = useGridApiContext();
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
 
@@ -45,12 +45,12 @@ function Pagination({
         <PaginationItem
           {...props}
           sx={{
-            ":is(.Mui-selected)": {
-              fontWeight: "bold",
+            ':is(.Mui-selected)': {
+              fontWeight: 'bold',
               color: theme.palette.primary.main,
             },
 
-            ":hover": {
+            ':hover': {
               color: theme.palette.primary.dark,
             },
           }}
@@ -71,9 +71,9 @@ function StyledPagination(props: any) {
   );
 }
 
-export const styledPaginationSlots: DataGridProps["slots"] = {
+export const styledPaginationSlots: DataGridProps['slots'] = {
   pagination: StyledPagination,
   footer: (props: any) => {
-    return <GridFooter sx={{ justifyContent: "start" }} {...props} />;
+    return <GridFooter sx={{ justifyContent: 'start' }} {...props} />;
   },
 };

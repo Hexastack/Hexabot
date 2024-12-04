@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Divider } from "@mui/material";
-import { Controller, useFormContext } from "react-hook-form";
+import { Divider } from '@mui/material';
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { IBlockAttributes } from "@/types/block.types";
-import { IChannel } from "@/types/channel.types";
-import { ILabelFull } from "@/types/label.types";
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { IBlockAttributes } from '@/types/block.types';
+import { IChannel } from '@/types/channel.types';
+import { ILabelFull } from '@/types/label.types';
 
-import { useBlock } from "./BlockFormProvider";
-import PatternsInput from "./inputs/triggers/PatternsInput";
+import { useBlock } from './BlockFormProvider';
+import PatternsInput from './inputs/triggers/PatternsInput';
 
 export const TriggersForm = () => {
   const block = useBlock();
@@ -52,12 +52,12 @@ export const TriggersForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<ILabelFull, "title">
-                searchFields={["title", "name"]}
+              <AutoCompleteEntitySelect<ILabelFull, 'title'>
+                searchFields={['title', 'name']}
                 entity={EntityType.LABEL}
                 format={Format.BASIC}
                 labelKey="title"
-                label={t("label.labeled_with")}
+                label={t('label.labeled_with')}
                 multiple={true}
                 onChange={(_e, selected, ..._) =>
                   onChange(selected.map(({ id }) => id))
@@ -77,8 +77,8 @@ export const TriggersForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<IChannel, "name">
-                searchFields={["name"]}
+              <AutoCompleteEntitySelect<IChannel, 'name'>
+                searchFields={['name']}
                 entity={EntityType.CHANNEL}
                 format={Format.BASIC}
                 idKey="name"
@@ -87,7 +87,7 @@ export const TriggersForm = () => {
                 onChange={(_e, selected, ..._) => {
                   onChange((selected || [])?.map(({ name }) => name));
                 }}
-                label={t("label.from_channels")}
+                label={t('label.from_channels')}
                 {...rest}
               />
             );
@@ -98,4 +98,4 @@ export const TriggersForm = () => {
   );
 };
 
-TriggersForm.displayName = "TriggersForm";
+TriggersForm.displayName = 'TriggersForm';

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { TOptionsBase } from "i18next";
+import { TOptionsBase } from 'i18next';
 
 /*
  * Copyright © 2024 Hexastack. All rights reserved.
@@ -16,23 +16,23 @@ import { TOptionsBase } from "i18next";
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { TFilterNestedKeysOfType } from "@/types/common/object.types";
+import { TFilterNestedKeysOfType } from '@/types/common/object.types';
 
 export type TTranslation = string;
 
 export type TTranslationPrefix =
-  | "message"
-  | "menu"
-  | "title"
-  | "label"
-  | "placeholder"
-  | "button"
-  | "input"
-  | "link"
-  | "help"
-  | "charts"
-  | "datetime"
-  | "visual_editor";
+  | 'message'
+  | 'menu'
+  | 'title'
+  | 'label'
+  | 'placeholder'
+  | 'button'
+  | 'input'
+  | 'link'
+  | 'help'
+  | 'charts'
+  | 'datetime'
+  | 'visual_editor';
 
 export type TTranslationKeys =
   | `${TTranslationPrefix}`

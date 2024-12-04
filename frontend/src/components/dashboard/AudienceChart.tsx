@@ -6,27 +6,27 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Card, CardContent, Divider } from "@mui/material";
-import { MultiLineChart, ResponsiveChartContainer } from "eazychart-react";
+import { Card, CardContent, Divider } from '@mui/material';
+import { MultiLineChart, ResponsiveChartContainer } from 'eazychart-react';
 
-import { StyledCardHeader } from "@/app-components/card/StyledCardHeader";
-import { useFindStats } from "@/hooks/entities/bot-stat-hooks";
-import { useTranslate } from "@/hooks/useTranslate";
-import { LineChartStats } from "@/types/bot-stat.types";
-import { buildMultiLineChartConfig, transformToLine } from "@/utils/chart";
+import { StyledCardHeader } from '@/app-components/card/StyledCardHeader';
+import { useFindStats } from '@/hooks/entities/bot-stat-hooks';
+import { useTranslate } from '@/hooks/useTranslate';
+import { LineChartStats } from '@/types/bot-stat.types';
+import { buildMultiLineChartConfig, transformToLine } from '@/utils/chart';
 
-import { NoDataChart } from "./NoDataChart";
+import { NoDataChart } from './NoDataChart';
 
 const AudienceChart = () => {
   const { t, i18n } = useTranslate();
-  const { data: stats } = useFindStats<LineChartStats>("audiance");
+  const { data: stats } = useFindStats<LineChartStats>('audiance');
   const { data, domainKeys } = transformToLine(stats);
 
   return (
     <Card>
       <StyledCardHeader
-        title={t("charts.audience")}
-        description={t("charts.desc.audience")}
+        title={t('charts.audience')}
+        description={t('charts.desc.audience')}
       />
       <Divider />
       <CardContent>
@@ -47,6 +47,6 @@ const AudienceChart = () => {
   );
 };
 
-AudienceChart.displayName = "AudienceChart";
+AudienceChart.displayName = 'AudienceChart';
 
 export default AudienceChart;

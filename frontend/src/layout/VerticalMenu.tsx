@@ -19,83 +19,83 @@ import {
   faUserCircle,
   faUsers,
   IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
-import { Flag, Language } from "@mui/icons-material";
-import AppsIcon from "@mui/icons-material/Apps";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import FolderIcon from "@mui/icons-material/Folder";
-import HomeIcon from "@mui/icons-material/Home";
-import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
-import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccessibilityRounded";
-import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
-import MuiDrawer from "@mui/material/Drawer";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
-import { useRouter } from "next/router";
-import { FC, useMemo } from "react";
+} from '@fortawesome/free-solid-svg-icons';
+import { Flag, Language } from '@mui/icons-material';
+import AppsIcon from '@mui/icons-material/Apps';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import FolderIcon from '@mui/icons-material/Folder';
+import HomeIcon from '@mui/icons-material/Home';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import SettingsAccessibilityRoundedIcon from '@mui/icons-material/SettingsAccessibilityRounded';
+import { CSSObject, Grid, IconButton, styled, Theme } from '@mui/material';
+import MuiDrawer from '@mui/material/Drawer';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+import { useRouter } from 'next/router';
+import { FC, useMemo } from 'react';
 
-import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
-import { Sidebar } from "@/app-components/menus/Sidebar";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { getLayout } from "@/utils/laylout";
+import { HexabotLogo } from '@/app-components/logos/HexabotLogo';
+import { Sidebar } from '@/app-components/menus/Sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
+import { getLayout } from '@/utils/laylout';
 
 const drawerWidth = 280;
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
-  transition: theme.transitions.create("width", {
+  transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
   }),
-  overflowX: "hidden",
+  overflowX: 'hidden',
 });
 const closedMixin = (theme: Theme, isFloated: boolean): CSSObject => ({
-  ...(isFloated && { position: "absolute" }),
-  transition: theme.transitions.create("width", {
+  ...(isFloated && { position: 'absolute' }),
+  transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  overflowX: "hidden",
+  overflowX: 'hidden',
   width: `calc(${theme.spacing(7)} + 1px)`,
-  [theme.breakpoints.up("sm")]: {
+  [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
   },
 });
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
   padding: theme.spacing(0, 1),
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
 }));
 const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== "isToggled",
+  shouldForwardProp: (prop) => prop !== 'isToggled',
 })(({ theme, open, ModalProps }) => ({
   width: drawerWidth,
   flexShrink: 0,
-  whiteSpace: "nowrap",
-  boxSizing: "border-box",
-  borderRadius: "0px",
+  whiteSpace: 'nowrap',
+  boxSizing: 'border-box',
+  borderRadius: '0px',
   ...(open && {
     ...openedMixin(theme),
-    "& .MuiDrawer-paper": openedMixin(theme),
+    '& .MuiDrawer-paper': openedMixin(theme),
   }),
   ...(!open && {
     ...closedMixin(theme, !!ModalProps?.open),
-    "& .MuiDrawer-paper": closedMixin(theme, !!ModalProps?.open),
+    '& .MuiDrawer-paper': closedMixin(theme, !!ModalProps?.open),
   }),
 }));
 const StyledDrawerHeader = styled(DrawerHeader)(() => ({
   top: 0,
   zIndex: 1,
-  position: "sticky",
-  maxHeight: "60px",
-  background: "#fffe",
+  position: 'sticky',
+  maxHeight: '60px',
+  background: '#fffe',
 }));
 
 export type MenuItem = {
@@ -108,76 +108,76 @@ export type MenuItem = {
 
 const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   {
-    text: "menu.dashboard",
-    href: "/",
+    text: 'menu.dashboard',
+    href: '/',
     Icon: HomeIcon,
     requires: {
       [EntityType.BOTSTATS]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.visual_editor",
-    href: "/visual-editor",
+    text: 'menu.visual_editor',
+    href: '/visual-editor',
     Icon: AppsIcon,
     requires: {
       [EntityType.BLOCK]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.nlp",
-    href: "/nlp",
+    text: 'menu.nlp',
+    href: '/nlp',
     Icon: faGraduationCap,
     requires: {
       [EntityType.NLP_SAMPLE]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.inbox",
-    href: "/inbox",
+    text: 'menu.inbox',
+    href: '/inbox',
     Icon: faComments,
     requires: {
       [EntityType.MESSAGE]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.categories",
-    href: "/categories",
+    text: 'menu.categories',
+    href: '/categories',
     Icon: FolderIcon,
     requires: {
       [EntityType.CATEGORY]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.context_vars",
-    href: "/context-vars",
+    text: 'menu.context_vars',
+    href: '/context-vars',
     Icon: faAsterisk,
     requires: {
       [EntityType.CONTEXT_VAR]: [PermissionAction.READ],
     },
   },
   {
-    text: "menu.manage_content",
+    text: 'menu.manage_content',
     Icon: faDatabase,
     submenuItems: [
       {
-        text: "menu.persistent_menu",
-        href: "/content/persistent-menu",
+        text: 'menu.persistent_menu',
+        href: '/content/persistent-menu',
         Icon: faBars,
         requires: {
           [EntityType.MENU]: [PermissionAction.READ],
         },
       },
       {
-        text: "menu.cms",
-        href: "/content/types",
+        text: 'menu.cms',
+        href: '/content/types',
         Icon: faAlignLeft,
         requires: {
           [EntityType.CONTENT_TYPE]: [PermissionAction.READ],
         },
       },
       {
-        text: "menu.media_library",
-        href: "/content/media-library",
+        text: 'menu.media_library',
+        href: '/content/media-library',
         Icon: DriveFolderUploadIcon,
         requires: {
           [EntityType.ATTACHMENT]: [PermissionAction.READ],
@@ -186,20 +186,20 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     ],
   },
   {
-    text: "menu.manage_subscribers",
+    text: 'menu.manage_subscribers',
     Icon: faUserCircle,
     submenuItems: [
       {
-        text: "menu.subscribers",
-        href: "/subscribers",
+        text: 'menu.subscribers',
+        href: '/subscribers',
         Icon: faUserCircle,
         requires: {
           [EntityType.SUBSCRIBER]: [PermissionAction.READ],
         },
       },
       {
-        text: "menu.labels",
-        href: "/subscribers/labels",
+        text: 'menu.labels',
+        href: '/subscribers/labels',
         Icon: faTags,
         requires: {
           [EntityType.LABEL]: [PermissionAction.READ],
@@ -213,15 +213,15 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     ],
   },
   {
-    text: "menu.admin",
+    text: 'menu.admin',
   },
   {
-    text: "menu.manage_users",
+    text: 'menu.manage_users',
     Icon: faUsers,
     submenuItems: [
       {
-        text: "menu.users",
-        href: "/users",
+        text: 'menu.users',
+        href: '/users',
         Icon: PeopleAltRoundedIcon,
         requires: {
           [EntityType.USER]: [PermissionAction.READ],
@@ -230,8 +230,8 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
       ...(!ssoEnabled
         ? [
             {
-              text: "menu.roles",
-              href: "/roles",
+              text: 'menu.roles',
+              href: '/roles',
               Icon: SettingsAccessibilityRoundedIcon,
               requires: {
                 [EntityType.ROLE]: [PermissionAction.READ],
@@ -242,20 +242,20 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     ],
   },
   {
-    text: "menu.manage_localization",
+    text: 'menu.manage_localization',
     Icon: Language,
     submenuItems: [
       {
-        text: "menu.languages",
-        href: "/localization/languages",
+        text: 'menu.languages',
+        href: '/localization/languages',
         Icon: Flag,
         requires: {
           [EntityType.LANGUAGE]: [PermissionAction.READ],
         },
       },
       {
-        text: "menu.translations",
-        href: "/localization/translations",
+        text: 'menu.translations',
+        href: '/localization/translations',
         Icon: faLanguage,
         requires: {
           [EntityType.TRANSLATION]: [PermissionAction.READ],
@@ -264,8 +264,8 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
     ],
   },
   {
-    text: "menu.settings",
-    href: "/settings",
+    text: 'menu.settings',
+    href: '/settings',
     Icon: faCogs,
     requires: {
       [EntityType.SETTING]: [PermissionAction.READ, PermissionAction.UPDATE],
@@ -305,7 +305,7 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
     });
   }, [t, hasPermission]);
   const hasTemporaryDrawer =
-    getLayout(router.pathname.slice(1)) === "full_width";
+    getLayout(router.pathname.slice(1)) === 'full_width';
 
   return isAuthenticated ? (
     <Drawer
@@ -314,12 +314,12 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
         open: isSideBarOpen && hasTemporaryDrawer,
         keepMounted: true,
       }}
-      variant={hasTemporaryDrawer ? "temporary" : "permanent"}
+      variant={hasTemporaryDrawer ? 'temporary' : 'permanent'}
       onClose={(_, reason) => {
-        reason === "backdropClick" && onToggleOut();
+        reason === 'backdropClick' && onToggleOut();
       }}
       PaperProps={{
-        sx: { borderRadius: "0px" },
+        sx: { borderRadius: '0px' },
       }}
     >
       <StyledDrawerHeader>

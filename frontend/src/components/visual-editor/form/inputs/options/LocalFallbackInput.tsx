@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
-import { FC, useEffect, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Accordion, AccordionDetails, AccordionSummary } from '@mui/material';
+import { FC, useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
-import MultipleInput from "@/app-components/inputs/MultipleInput";
-import { useTranslate } from "@/hooks/useTranslate";
-import { BlockFallbackOptions, IBlockAttributes } from "@/types/block.types";
+import { ContentContainer, ContentItem } from '@/app-components/dialogs';
+import { Input } from '@/app-components/inputs/Input';
+import MultipleInput from '@/app-components/inputs/MultipleInput';
+import { useTranslate } from '@/hooks/useTranslate';
+import { BlockFallbackOptions, IBlockAttributes } from '@/types/block.types';
 
 type LocalFallbackProps = {
   value?: BlockFallbackOptions;
@@ -28,7 +28,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
     value || {
       active: false,
       max_attempts: 0,
-      message: [""],
+      message: [''],
     },
   );
   const { t } = useTranslate();
@@ -46,29 +46,29 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
     <Accordion defaultExpanded={fallback?.max_attempts > 0}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <CheckCircleIcon
-          color={fallback?.max_attempts > 0 ? "success" : "disabled"}
-          sx={{ marginRight: ".5rem" }}
+          color={fallback?.max_attempts > 0 ? 'success' : 'disabled'}
+          sx={{ marginRight: '.5rem' }}
         />
-        {t("label.enable_fallback")}
+        {t('label.enable_fallback')}
       </AccordionSummary>
-      <AccordionDetails sx={{ display: "flex", flexDirection: "column" }}>
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
         <ContentContainer>
           <ContentItem>
             <Input
               fullWidth={false}
               defaultValue={fallback?.max_attempts || 0}
-              label={t("label.max_fallback_attempts")}
+              label={t('label.max_fallback_attempts')}
               type="number"
               inputProps={{
                 min: 0,
                 maxLength: 13,
-                step: "1",
+                step: '1',
               }}
-              {...register("options.fallback.max_attempts", {
+              {...register('options.fallback.max_attempts', {
                 validate: {
                   min: (value) =>
                     value >= 0 ||
-                    t("message.invalid_max_fallback_attempt_limit"),
+                    t('message.invalid_max_fallback_attempt_limit'),
                 },
               })}
               helperText={
@@ -88,7 +88,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
           </ContentItem>
           <ContentItem>
             <MultipleInput
-              label={t("label.message")}
+              label={t('label.message')}
               disabled={fallback.max_attempts === 0}
               value={fallback.message}
               multiline={true}

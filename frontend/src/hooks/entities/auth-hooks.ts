@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 
-import { EntityType, TMutationOptions } from "@/services/types";
-import { ILoginAttributes } from "@/types/auth/login.types";
-import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
-import { useSocket } from "@/websocket/socket-hooks";
+import { EntityType, TMutationOptions } from '@/services/types';
+import { ILoginAttributes } from '@/types/auth/login.types';
+import { IUser, IUserAttributes, IUserStub } from '@/types/user.types';
+import { useSocket } from '@/websocket/socket-hooks';
 
-import { useFind } from "../crud/useFind";
-import { useApiClient } from "../useApiClient";
-import { useAuth } from "../useAuth";
+import { useFind } from '../crud/useFind';
+import { useApiClient } from '../useApiClient';
+import { useAuth } from '../useAuth';
 
 export const useLogin = (
   options?: Omit<
     TMutationOptions<IUser, Error, ILoginAttributes>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -38,11 +38,11 @@ export const useLogout = (
   options?: Omit<
     TMutationOptions<
       {
-        status: "ok";
+        status: 'ok';
       },
       Error
     >,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -59,7 +59,7 @@ export const useLogout = (
   });
 };
 
-export const PERMISSIONS_STORAGE_KEY = "current-permissions";
+export const PERMISSIONS_STORAGE_KEY = 'current-permissions';
 
 export const useUserPermissions = () => {
   const { apiClient } = useApiClient();
@@ -98,7 +98,7 @@ export const useAcceptInvite = (
       Error,
       Partial<IUserAttributes> & { token: string }
     >,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -114,7 +114,7 @@ export const useAcceptInvite = (
 export const useConfirmAccount = (
   options?: Omit<
     TMutationOptions<never, Error, { token: string }>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -133,7 +133,7 @@ export const useLoadSettings = () => {
     { entity: EntityType.SETTING },
     {
       hasCount: false,
-      initialSortState: [{ field: "weight", sort: "desc" }],
+      initialSortState: [{ field: 'weight', sort: 'desc' }],
     },
     {
       enabled: isAuthenticated,
@@ -157,7 +157,7 @@ export const useLoadSettings = () => {
 export const useUpdateProfile = (
   options?: Omit<
     TMutationOptions<IUserStub, Error, Partial<IUserAttributes>>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();

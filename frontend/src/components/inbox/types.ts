@@ -6,40 +6,40 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { IMessage } from "@/types/message.types";
-import { ISubscriber } from "@/types/subscriber.types";
+import { IMessage } from '@/types/message.types';
+import { ISubscriber } from '@/types/subscriber.types';
 
 export interface MessageSentEvent {
-  op: "messageSent";
+  op: 'messageSent';
   speakerId: string;
   msg: IMessage;
 }
 
 export interface MessageReceivedEvent {
-  op: "messageReceived";
+  op: 'messageReceived';
   speakerId: string;
   msg: IMessage;
 }
 
 export interface messageDeliveredEvent {
-  op: "messageDelivered";
+  op: 'messageDelivered';
   speakerId: string;
   msg: IMessage;
 }
 
 export interface messageReadEvent {
-  op: "messageRead";
+  op: 'messageRead';
   speakerId: string;
   msg: IMessage;
 }
 
 export interface newSubscriberEvent {
-  op: "newSubscriber";
+  op: 'newSubscriber';
   profile: ISubscriber;
 }
 
 export interface subscriberUpdateEvent {
-  op: "updateSubscriber";
+  op: 'updateSubscriber';
   profile: ISubscriber;
 }
 
@@ -60,7 +60,7 @@ export type SocketMessageEvents =
 export type SocketSubscriberEvents = newSubscriberEvent | subscriberUpdateEvent;
 
 export enum AssignedTo {
-  ALL = "title.all_messages",
-  ME = "title.handled_by_me",
-  OTHERS = "title.handled_by_chatbot",
+  ALL = 'title.all_messages',
+  ME = 'title.handled_by_me',
+  OTHERS = 'title.handled_by_chatbot',
 }

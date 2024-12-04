@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { schema } from "normalizr";
+import { schema } from 'normalizr';
 
-import { IBaseSchema } from "@/types/base.types";
-import { ISubscriberStub } from "@/types/subscriber.types";
+import { IBaseSchema } from '@/types/base.types';
+import { ISubscriberStub } from '@/types/subscriber.types';
 
-import { EntityType } from "./types";
+import { EntityType } from './types';
 
 const processCommonStrategy = <T extends IBaseSchema>(entity: T) => ({
   ...entity,

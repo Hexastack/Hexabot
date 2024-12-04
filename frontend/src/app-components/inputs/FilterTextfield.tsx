@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import SearchIcon from "@mui/icons-material/Search";
-import { TextFieldProps } from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
+import { TextFieldProps } from '@mui/material';
 
-import { useTranslate } from "@/hooks/useTranslate";
+import { useTranslate } from '@/hooks/useTranslate';
 
-import { Adornment } from "./Adornment";
-import { Input } from "./Input";
+import { Adornment } from './Adornment';
+import { Input } from './Input';
 
 export const FilterTextfield = (props: TextFieldProps) => {
   const { t } = useTranslate();
@@ -24,7 +24,7 @@ export const FilterTextfield = (props: TextFieldProps) => {
       InputProps={{
         startAdornment: <Adornment Icon={SearchIcon} />,
       }}
-      placeholder={t("placeholder.keywords")}
+      placeholder={t('placeholder.keywords')}
       {...props}
     />
   );

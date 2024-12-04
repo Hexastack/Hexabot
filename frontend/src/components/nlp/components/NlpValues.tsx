@@ -6,43 +6,43 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, ButtonGroup, Chip, Grid, Slide } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, ButtonGroup, Chip, Grid, Slide } from '@mui/material';
+import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGet } from "@/hooks/crud/useGet";
-import { useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
-import { NlpLookups } from "@/types/nlp-entity.types";
-import { INlpValue } from "@/types/nlp-value.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGet } from '@/hooks/crud/useGet';
+import { useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType, Format } from '@/services/types';
+import { NlpLookups } from '@/types/nlp-entity.types';
+import { INlpValue } from '@/types/nlp-value.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { NlpValueDialog } from "../NlpValueDialog";
+import { NlpValueDialog } from '../NlpValueDialog';
 
 export const NlpValues = ({ entityId }: { entityId: string }) => {
-  const [direction, setDirection] = useState<"up" | "down">("up");
+  const [direction, setDirection] = useState<'up' | 'down'>('up');
   const deleteEntityDialogCtl = useDialog<string>(false);
   const editValueDialogCtl = useDialog<INlpValue>(false);
   const addNlpValueDialogCtl = useDialog<INlpValue>(false);
@@ -56,7 +56,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   });
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $iLike: ["value"],
+    $iLike: ['value'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE },
@@ -66,11 +66,11 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   );
   const { mutateAsync: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       deleteEntityDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
       refetchEntity();
     },
   });
@@ -81,7 +81,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     onSuccess: () => {
       deleteEntityDialogCtl.closeDialog();
       setSelectedNlpValues([]);
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const [selectedNlpValues, setSelectedNlpValues] = useState<string[]>([]);
@@ -97,21 +97,21 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
         action: (row) => deleteEntityDialogCtl.openDialog(row.id),
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<INlpValue>[] = [
     {
       flex: 3,
-      field: "value",
-      headerName: t("label.value"),
+      field: 'value',
+      headerName: t('label.value'),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       flex: 3,
-      field: "synonyms",
-      headerName: t("label.synonyms"),
+      field: 'synonyms',
+      headerName: t('label.synonyms'),
       sortable: true,
       renderCell: (params) => {
         return params.row?.expressions?.map((exp, index) => (
@@ -124,30 +124,30 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
 
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
 
   useEffect(() => {
     //TODO: need to be enhanced in a separate issue (for the content page as well)
-    return setDirection("down");
+    return setDirection('down');
   }, []);
 
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
@@ -162,7 +162,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
           <Box sx={{ padding: 1 }}>
             <Button
               onClick={() => {
-                router.push("/nlp/nlp-entities", undefined, {
+                router.push('/nlp/nlp-entities', undefined, {
                   shallow: true,
                   scroll: false,
                 });
@@ -171,10 +171,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
               variant="text"
               startIcon={<ArrowBackIcon />}
             >
-              {t("button.back")}
+              {t('button.back')}
             </Button>
             <PageHeader
-              title={t("title.nlp_entity_values")}
+              title={t('title.nlp_entity_values')}
               icon={faGraduationCap}
               chip={
                 <Grid>
@@ -185,12 +185,12 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
               <Grid
                 container
                 alignItems="center"
-                sx={{ width: "max-content", gap: 1 }}
+                sx={{ width: 'max-content', gap: 1 }}
               >
                 <Grid item>
                   <FilterTextfield onChange={onSearch} />
                 </Grid>
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ marginLeft: 'auto' }}>
                   {hasPermission(
                     EntityType.NLP_VALUE,
                     PermissionAction.CREATE,
@@ -199,9 +199,9 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       startIcon={<AddIcon />}
                       variant="contained"
                       onClick={() => addNlpValueDialogCtl.openDialog()}
-                      sx={{ float: "right" }}
+                      sx={{ float: 'right' }}
                     >
-                      {t("button.add")}
+                      {t('button.add')}
                     </Button>
                   ) : null}
                   {selectedNlpValues.length > 0 && (
@@ -214,7 +214,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                           deleteEntityDialogCtl.openDialog(undefined)
                         }
                       >
-                        {t("button.delete")}
+                        {t('button.delete')}
                       </Button>
                     </Grid>
                   )}

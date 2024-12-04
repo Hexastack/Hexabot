@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from 'react';
 
 export const ConfigContext = createContext<IConfig | null>(null);
 
@@ -21,13 +21,13 @@ export const ConfigProvider = ({ children }) => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch("/config");
+        const res = await fetch('/config');
         const data = (await res.json()) as IConfig;
 
         setConfig(data);
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error("Failed to fetch configuration:", error);
+        console.error('Failed to fetch configuration:', error);
       }
     };
 

@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
-import { FieldPath } from "react-hook-form";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, Grid, IconButton } from '@mui/material';
+import { FC, Fragment, useEffect, useState } from 'react';
+import { FieldPath } from 'react-hook-form';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { IBlockAttributes } from "@/types/block.types";
-import { AnyButton, ButtonType } from "@/types/message.types";
-import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
+import { useTranslate } from '@/hooks/useTranslate';
+import { IBlockAttributes } from '@/types/block.types';
+import { AnyButton, ButtonType } from '@/types/message.types';
+import { ValueWithId, createValueWithId } from '@/utils/valueWithId';
 
-import ButtonInput from "./ButtonInput";
+import ButtonInput from './ButtonInput';
 
 type ButtonsInput = {
   value: AnyButton[];
@@ -43,7 +43,7 @@ const ButtonsInput: FC<ButtonsInput> = ({
   const addInput = () => {
     setButtons([
       ...buttons,
-      createValueWithId({ type: ButtonType.postback, title: "", payload: "" }),
+      createValueWithId({ type: ButtonType.postback, title: '', payload: '' }),
     ]);
   };
   const removeInput = (index: number) => {
@@ -56,8 +56,8 @@ const ButtonsInput: FC<ButtonsInput> = ({
         : [
             createValueWithId({
               type: ButtonType.postback,
-              title: "",
-              payload: "",
+              title: '',
+              payload: '',
             }),
           ],
     );
@@ -79,16 +79,16 @@ const ButtonsInput: FC<ButtonsInput> = ({
           &nbsp;
         </Grid>
         <Grid item xs={2}>
-          {t("label.type")}
+          {t('label.type')}
         </Grid>
         <Grid item xs={3}>
-          {t("label.title")}
+          {t('label.title')}
         </Grid>
         <Grid item xs={4}>
-          {t("label.payload")} / {t("label.url")}
+          {t('label.payload')} / {t('label.url')}
         </Grid>
         <Grid item xs={2}>
-          {t("label.webview")}
+          {t('label.webview')}
         </Grid>
         {buttons.map(({ value, id }, idx) => (
           <Fragment key={id}>
@@ -115,10 +115,10 @@ const ButtonsInput: FC<ButtonsInput> = ({
         color="primary"
         onClick={addInput}
         startIcon={<AddIcon />}
-        sx={{ m: 1, float: "right" }}
+        sx={{ m: 1, float: 'right' }}
         disabled={buttons.length >= maxInput}
       >
-        {t("button.add")}
+        {t('button.add')}
       </Button>
     </Box>
   );

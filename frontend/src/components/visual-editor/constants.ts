@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { IBlockAttributes } from "@/types/block.types";
+import { IBlockAttributes } from '@/types/block.types';
 import {
   ButtonType,
   FileType,
@@ -14,20 +14,20 @@ import {
   PayloadType,
   QuickReplyType,
   StdOutgoingListMessage,
-} from "@/types/message.types";
+} from '@/types/message.types';
 
 export const SIMPLE_TEXT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: ["Hi"],
+  patterns: ['Hi'],
   options: {
     typing: 0,
     fallback: { active: false, max_attempts: 1, message: [] },
   },
-  message: ["Hi back !"],
+  message: ['Hi back !'],
   starts_conversation: false,
 };
 
 export const ATTACHMENT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: ["image"],
+  patterns: ['image'],
   options: {
     typing: 0,
     fallback: { active: false, max_attempts: 1, message: [] },
@@ -43,45 +43,45 @@ export const ATTACHMENT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
 };
 
 export const QUICK_REPLIES_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: ["colors"],
+  patterns: ['colors'],
   options: {
     typing: 0,
     fallback: { active: false, max_attempts: 1, message: [] },
   },
   message: {
-    text: "What's your favorite color?",
+    text: `What's your favorite color?`,
     quickReplies: [
       {
         content_type: QuickReplyType.text,
-        title: "Green",
-        payload: "Green",
+        title: 'Green',
+        payload: 'Green',
       },
       {
         content_type: QuickReplyType.text,
-        title: "Yellow",
-        payload: "Yellow",
+        title: 'Yellow',
+        payload: 'Yellow',
       },
-      { content_type: QuickReplyType.text, title: "Red", payload: "Red" },
+      { content_type: QuickReplyType.text, title: 'Red', payload: 'Red' },
     ],
   },
   starts_conversation: false,
 };
 
 export const BUTTONS_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: ["about"],
+  patterns: ['about'],
   options: {
     typing: 0,
     fallback: { active: false, max_attempts: 1, message: [] },
   },
   message: {
-    text: "What would you like to know about us?",
+    text: 'What would you like to know about us?',
     buttons: [
-      { type: ButtonType.postback, title: "Vision", payload: "Vision" },
-      { type: ButtonType.postback, title: "Values", payload: "Values" },
+      { type: ButtonType.postback, title: 'Vision', payload: 'Vision' },
+      { type: ButtonType.postback, title: 'Values', payload: 'Values' },
       {
         type: ButtonType.postback,
-        title: "Approach",
-        payload: "Approach",
+        title: 'Approach',
+        payload: 'Approach',
       },
     ],
   },
@@ -89,7 +89,7 @@ export const BUTTONS_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
 };
 
 export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: ["coffee"],
+  patterns: ['coffee'],
   options: {
     typing: 0,
     fallback: { active: false, max_attempts: 1, message: [] },
@@ -98,20 +98,20 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
       limit: 2,
       entity: null,
       fields: {
-        title: "title",
-        subtitle: "",
-        image_url: "",
-        url: "",
-        action_title: "",
+        title: 'title',
+        subtitle: '',
+        image_url: '',
+        url: '',
+        action_title: '',
       },
-      top_element_style: "compact",
+      top_element_style: 'compact',
       buttons: [
         {
-          title: "View",
+          title: 'View',
           type: ButtonType.web_url,
           messenger_extensions: true,
-          webview_height_ratio: "tall",
-          url: "",
+          webview_height_ratio: 'tall',
+          url: '',
         },
       ],
     },
@@ -123,8 +123,8 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
 export const CUSTOM_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: [
     {
-      label: "User location",
-      value: "",
+      label: 'User location',
+      value: '',
       type: PayloadType.location,
     },
   ],
@@ -135,11 +135,11 @@ export const CUSTOM_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   },
   starts_conversation: false,
   message: {
-    plugin: "storelocator",
+    plugin: 'storelocator',
     args: {
-      fallback_msg: ["Sorry but no data is available for the moment :("],
+      fallback_msg: ['Sorry but no data is available for the moment :('],
       max_results: 3,
-      btn_title: "Go !",
+      btn_title: 'Go !',
     },
   },
 };

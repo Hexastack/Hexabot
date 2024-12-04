@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Format } from "@/services/types";
+import { Format } from '@/services/types';
 
-import { IBaseSchema, IFormat } from "./base.types";
+import { IBaseSchema, IFormat } from './base.types';
 
 export enum MenuType {
-  web_url = "web_url",
-  postback = "postback",
-  nested = "nested",
+  web_url = 'web_url',
+  postback = 'postback',
+  nested = 'nested',
 }
 
 export interface IMenuNodeAttributes {

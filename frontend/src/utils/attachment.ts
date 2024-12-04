@@ -6,29 +6,29 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FileType } from "@/types/message.types";
+import { FileType } from '@/types/message.types';
 
 export const MIME_TYPES = {
-  images: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-  videos: ["video/mp4", "video/webm", "video/ogg"],
-  audios: ["audio/mpeg", "audio/ogg", "audio/wav"],
+  images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  videos: ['video/mp4', 'video/webm', 'video/ogg'],
+  audios: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
   documents: [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.ms-powerpoint",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   ],
 };
 
 export function getFileType(mimeType: string): FileType {
-  if (mimeType.startsWith("image/")) {
+  if (mimeType.startsWith('image/')) {
     return FileType.image;
-  } else if (mimeType.startsWith("video/")) {
+  } else if (mimeType.startsWith('video/')) {
     return FileType.video;
-  } else if (mimeType.startsWith("audio/")) {
+  } else if (mimeType.startsWith('audio/')) {
     return FileType.audio;
   } else {
     return FileType.file;

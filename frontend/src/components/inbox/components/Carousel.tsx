@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {
   Button,
   Card,
@@ -17,62 +17,62 @@ import {
   IconButton,
   styled,
   Typography,
-} from "@mui/material";
-import { forwardRef, useEffect, useRef, useState, useCallback } from "react";
+} from '@mui/material';
+import { forwardRef, useEffect, useRef, useState, useCallback } from 'react';
 
 import {
   AnyButton as ButtonType,
   OutgoingPopulatedListMessage,
   StdOutgoingListMessage,
-} from "@/types/message.types";
+} from '@/types/message.types';
 
 const CARD_WIDTH = 300;
 const StyledIconButton = styled(IconButton)({
   opacity: 0.1,
   zIndex: 9999,
-  position: "absolute",
-  top: "50%",
-  transform: "translateY(-50%)",
-  transition: "all 0.1s",
-  ".carousel-wrapper:hover &": {
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  transition: 'all 0.1s',
+  '.carousel-wrapper:hover &': {
     opacity: 1,
   },
 });
-const StyledCarouselDiv = styled("div")({
-  display: "flex",
-  flexDirection: "row",
-  scrollSnapType: "x mandatory",
-  overflowX: "scroll",
+const StyledCarouselDiv = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  scrollSnapType: 'x mandatory',
+  overflowX: 'scroll',
   width: `${CARD_WIDTH}px`,
-  justifyContent: "start",
-  gap: "10px",
-  padding: "2px 0px",
-  position: "relative",
+  justifyContent: 'start',
+  gap: '10px',
+  padding: '2px 0px',
+  position: 'relative',
 
-  "-ms-overflow-style": "none",
-  "scrollbar-width": "none",
-  "&::-webkit-scrollbar": {
-    display: "none",
+  '-ms-overflow-style': 'none',
+  'scrollbar-width': 'none',
+  '&::-webkit-scrollbar': {
+    display: 'none',
   },
-  ".shadow-left": {
-    transform: "translate(-10px)",
+  '.shadow-left': {
+    transform: 'translate(-10px)',
   },
-  ".shadow-right": {
-    transform: "translate(10px)",
+  '.shadow-right': {
+    transform: 'translate(10px)',
   },
-  ".carousel-wrapper:hover .shadow": {
-    transform: "translate(0px)",
+  '.carousel-wrapper:hover .shadow': {
+    transform: 'translate(0px)',
   },
 });
-const ShadowDiv = styled("div")({
-  position: "absolute",
-  top: "0",
-  height: "100%",
-  width: "10px",
+const ShadowDiv = styled('div')({
+  position: 'absolute',
+  top: '0',
+  height: '100%',
+  width: '10px',
   zIndex: 9998,
-  transition: "all 0.5s",
-  ".carousel-wrapper:hover &": {
-    transform: "translate(0px)",
+  transition: 'all 0.5s',
+  '.carousel-wrapper:hover &': {
+    transform: 'translate(0px)',
   },
 });
 const Shadow = (
@@ -80,13 +80,13 @@ const Shadow = (
 ) => (
   <ShadowDiv
     sx={{
-      left: props.left ? "0" : "auto",
-      right: props.left ? "auto" : "0",
+      left: props.left ? '0' : 'auto',
+      right: props.left ? 'auto' : '0',
       background: `radial-gradient(ellipse at ${
-        props.left ? "0%" : "100%"
+        props.left ? '0%' : '100%'
       } 50%, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 80%)`,
       opacity: props.visible ? 1 : 0,
-      transform: `translate(${props.left ? "-10px" : "10px"})`,
+      transform: `translate(${props.left ? '-10px' : '10px'})`,
     }}
   />
 );
@@ -111,18 +111,17 @@ export const Carousel = (props: StdOutgoingListMessage) => {
     _: Event,
   ) {
     setScrollTo(Math.floor(this.scrollLeft / CARD_WIDTH));
-  },
-  []);
+  }, []);
 
   useEffect(() => {
-    ref.current?.addEventListener("scrollend", handleScrollEnd, {
+    ref.current?.addEventListener('scrollend', handleScrollEnd, {
       passive: true,
     });
   }, [handleScrollEnd]);
 
   useEffect(() => {
     ref.current?.scrollTo({
-      behavior: "smooth",
+      behavior: 'smooth',
       left: CARD_WIDTH * scrollTo + Math.max(10 * (scrollTo - 1), 0),
       top: 0,
     });
@@ -132,8 +131,8 @@ export const Carousel = (props: StdOutgoingListMessage) => {
     <div
       style={{
         width: `${CARD_WIDTH}px`,
-        overflow: "hidden",
-        position: "relative",
+        overflow: 'hidden',
+        position: 'relative',
       }}
       className="carousel-wrapper"
     >
@@ -155,8 +154,8 @@ export const Carousel = (props: StdOutgoingListMessage) => {
       </StyledCarouselDiv>
       <StyledIconButton
         sx={{
-          left: "5px",
-          visibility: scrollTo === 0 ? "hidden" : "visible",
+          left: '5px',
+          visibility: scrollTo === 0 ? 'hidden' : 'visible',
         }}
         onClick={decrementScroll}
       >
@@ -165,9 +164,9 @@ export const Carousel = (props: StdOutgoingListMessage) => {
 
       <StyledIconButton
         sx={{
-          right: "5px",
+          right: '5px',
           visibility:
-            scrollTo === props.elements.length - 1 ? "hidden" : "visible",
+            scrollTo === props.elements.length - 1 ? 'hidden' : 'visible',
         }}
         onClick={incrementScroll}
       >
@@ -192,27 +191,27 @@ const ListCard = forwardRef<
     <Card
       style={{
         width: 225,
-        flexShrink: "0",
+        flexShrink: '0',
         flexBasis: CARD_WIDTH,
-        scrollSnapAlign: "start",
+        scrollSnapAlign: 'start',
         borderRadius: 5,
-        backgroundColor: "white",
+        backgroundColor: 'white',
       }}
       ref={ref}
-      id={"A" + props.id}
+      id={'A' + props.id}
     >
       {props.content.image_url ? (
         <CardMedia
           image={props.content.image_url?.payload?.url as string}
-          sx={{ height: "185px" }}
+          sx={{ height: '185px' }}
           title={props.content.title}
         />
       ) : null}
 
       <CardContent
         sx={{
-          flexDirection: "column",
-          marginBottom: "0px",
+          flexDirection: 'column',
+          marginBottom: '0px',
         }}
       >
         <Typography gutterBottom variant="h5" component="div">
@@ -221,11 +220,11 @@ const ListCard = forwardRef<
         <Typography
           sx={{
             // height: "10ex",
-            textOverflow: "ellipsis",
-            overflow: "hidden",
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
             WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            display: "-webkit-box",
+            WebkitBoxOrient: 'vertical',
+            display: '-webkit-box',
           }}
           variant="body2"
           color="text.secondary"
@@ -236,16 +235,16 @@ const ListCard = forwardRef<
       <CardActions>
         <div
           style={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            gap: "5px",
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '5px',
           }}
         >
           {props.buttons.map((b) => (
             <Button
               variant="contained"
-              sx={{ width: "100%" }}
+              sx={{ width: '100%' }}
               disabled
               key={b.title}
             >

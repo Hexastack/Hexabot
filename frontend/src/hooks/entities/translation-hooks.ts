@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useMutation } from "react-query";
+import { useMutation } from 'react-query';
 
-import { TMutationOptions } from "@/services/types";
+import { TMutationOptions } from '@/services/types';
 
-import { useApiClient } from "../useApiClient";
+import { useApiClient } from '../useApiClient';
 
 export const useRefreshTranslations = (
   options?: Omit<
@@ -22,7 +22,7 @@ export const useRefreshTranslations = (
       Error,
       unknown
     >,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { DATE_TIME_FORMAT } from "../constants";
+import { DATE_TIME_FORMAT } from '../constants';
 
 export const getDateTimeFormatter = (date: Date) => ({
   date,

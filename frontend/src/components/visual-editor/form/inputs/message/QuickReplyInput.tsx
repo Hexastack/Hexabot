@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, MenuItem } from "@mui/material";
-import { FC, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { Grid, MenuItem } from '@mui/material';
+import { FC, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-import { Input } from "@/app-components/inputs/Input";
-import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IBlockAttributes } from "@/types/block.types";
-import { QuickReplyType, StdQuickReply } from "@/types/message.types";
+import { Input } from '@/app-components/inputs/Input';
+import { ToggleableInput } from '@/app-components/inputs/ToggleableInput';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IBlockAttributes } from '@/types/block.types';
+import { QuickReplyType, StdQuickReply } from '@/types/message.types';
 
 type QuickReplyInputProps = {
   value: StdQuickReply;
@@ -58,8 +58,8 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
                   }
                 : {
                     content_type: selected,
-                    title: "",
-                    payload: "",
+                    title: '',
+                    payload: '',
                   },
             );
           }}
@@ -80,7 +80,7 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
               maxLength: 20,
             }}
             {...register(`message.quickReplies.${idx}.title`, {
-              required: t("message.title_is_required"),
+              required: t('message.title_is_required'),
             })}
             onChange={(e) => {
               onChange({
@@ -89,11 +89,11 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
                 payload: value.payload,
               });
             }}
-            error={!!errors?.message?.["quickReplies"]?.[idx]?.title}
+            error={!!errors?.message?.['quickReplies']?.[idx]?.title}
             helperText={
-              errors?.message?.["quickReplies"]?.[idx]?.title?.message ||
+              errors?.message?.['quickReplies']?.[idx]?.title?.message ||
               (value?.title?.length === 20
-                ? t("message.title_length_exceeded")
+                ? t('message.title_length_exceeded')
                 : null)
             }
           />
@@ -103,13 +103,13 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
         {quickReplyType !== QuickReplyType.location ? (
           <ToggleableInput
             defaultValue={value.payload}
-            readOnlyValue={value.title || ""}
-            error={!!errors?.message?.["quickReplies"]?.[idx]?.payload}
+            readOnlyValue={value.title || ''}
+            error={!!errors?.message?.['quickReplies']?.[idx]?.payload}
             helperText={
-              errors?.message?.["quickReplies"]?.[idx]?.payload?.message
+              errors?.message?.['quickReplies']?.[idx]?.payload?.message
             }
             {...register(`message.quickReplies.${idx}.payload`, {
-              required: t("message.payload_is_required"),
+              required: t('message.payload_is_required'),
             })}
             onChange={(payload) => {
               onChange({

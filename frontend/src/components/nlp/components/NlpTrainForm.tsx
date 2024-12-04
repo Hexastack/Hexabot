@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import Check from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from '@mui/icons-material/Add';
+import Check from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,
   Button,
@@ -21,30 +21,30 @@ import {
   Radio,
   RadioGroup,
   Typography,
-} from "@mui/material";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useQuery } from "react-query";
+} from '@mui/material';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useQuery } from 'react-query';
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
-import Selectable from "@/app-components/inputs/Selectable";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useApiClient } from "@/hooks/useApiClient";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
-import { INlpEntity } from "@/types/nlp-entity.types";
+import { ContentContainer, ContentItem } from '@/app-components/dialogs';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import AutoCompleteSelect from '@/app-components/inputs/AutoCompleteSelect';
+import Selectable from '@/app-components/inputs/Selectable';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useApiClient } from '@/hooks/useApiClient';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { ILanguage } from '@/types/language.types';
+import { INlpEntity } from '@/types/nlp-entity.types';
 import {
   INlpDatasetKeywordEntity,
   INlpDatasetSample,
   INlpDatasetTraitEntity,
   INlpSampleFormAttributes,
   NlpSampleType,
-} from "@/types/nlp-sample.types";
-import { INlpValue } from "@/types/nlp-value.types";
+} from '@/types/nlp-sample.types';
+import { INlpValue } from '@/types/nlp-value.types';
 
 type NlpDatasetSampleProps = {
   sample?: INlpDatasetSample;
@@ -70,22 +70,22 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   const defaultValues: INlpSampleFormAttributes = useMemo(
     () => ({
       type: sample?.type || NlpSampleType.train,
-      text: sample?.text || "",
+      text: sample?.text || '',
       language: sample?.language || null,
       traitEntities: (entities || [])
         .filter(({ lookups }) => {
-          return lookups.includes("trait");
+          return lookups.includes('trait');
         })
         .map((e) => {
           return {
             entity: e.name,
             value: sample
               ? sample.entities.find(({ entity }) => entity === e.name)?.value
-              : "",
+              : '',
           } as INlpDatasetTraitEntity;
         }),
       keywordEntities: (sample?.entities || []).filter(
-        (e) => "start" in e && typeof e.start === "number",
+        (e) => 'start' in e && typeof e.start === 'number',
       ) as INlpDatasetKeywordEntity[],
     }),
     [sample, entities],
@@ -94,12 +94,12 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     useForm<INlpSampleFormAttributes>({
       defaultValues,
     });
-  const currentText = watch("text");
-  const currentType = watch("type");
+  const currentText = watch('text');
+  const currentType = watch('type');
   const { apiClient } = useApiClient();
   const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
-    name: "traitEntities",
+    name: 'traitEntities',
   });
   const {
     fields: keywordEntities,
@@ -108,35 +108,35 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     remove: removeKeywordEntity,
   } = useFieldArray({
     control,
-    name: "keywordEntities",
+    name: 'keywordEntities',
   });
   // Auto-predict on text change
   const debounceSetText = useCallback(
     debounce((text: string) => {
-      setValue("text", text);
+      setValue('text', text);
     }, 400),
     [setValue],
   );
 
   useQuery({
-    queryKey: ["nlp-prediction", currentText],
+    queryKey: ['nlp-prediction', currentText],
     queryFn: async () => {
       return await apiClient.predictNlp(currentText);
     },
     onSuccess: (result) => {
       const traitEntities: INlpDatasetTraitEntity[] = result.entities.filter(
-        (e) => !("start" in e && "end" in e) && e.entity !== "language",
+        (e) => !('start' in e && 'end' in e) && e.entity !== 'language',
       );
       const keywordEntities = result.entities.filter(
-        (e) => "start" in e && "end" in e,
+        (e) => 'start' in e && 'end' in e,
       ) as INlpDatasetKeywordEntity[];
       const language = result.entities.find(
-        ({ entity }) => entity === "language",
+        ({ entity }) => entity === 'language',
       );
 
-      setValue("language", language?.value || "");
-      setValue("traitEntities", traitEntities);
-      setValue("keywordEntities", keywordEntities);
+      setValue('language', language?.value || '');
+      setValue('traitEntities', traitEntities);
+      setValue('keywordEntities', keywordEntities);
     },
     enabled: !sample && !!currentText,
   });
@@ -158,7 +158,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     refetchEntities();
     reset({
       ...defaultValues,
-      text: "",
+      text: '',
     });
   };
 
@@ -168,7 +168,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   }, [JSON.stringify(defaultValues)]);
 
   return (
-    <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
+    <Box className="nlp-train" sx={{ position: 'relative', p: 2 }}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem
@@ -177,10 +177,10 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             justifyContent="space-between"
           >
             <Typography variant="h6" display="inline-block">
-              {t("title.nlp_train")}
+              {t('title.nlp_train')}
             </Typography>
             <FormControl>
-              <FormLabel>{t("label.type")}</FormLabel>
+              <FormLabel>{t('label.type')}</FormLabel>
               <RadioGroup
                 row
                 defaultValue={
@@ -190,12 +190,12 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                 }
               >
                 {Object.values(NlpSampleType)
-                  .filter((type) => type !== "inbox")
+                  .filter((type) => type !== 'inbox')
                   .map((type, index) => (
                     <FormControlLabel
                       key={index}
                       value={type}
-                      control={<Radio {...register("type")} />}
+                      control={<Radio {...register('type')} />}
                       label={t(`label.${type}`)}
                     />
                   ))}
@@ -206,7 +206,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             <Selectable
               defaultValue={currentText}
               entities={keywordEntities}
-              placeholder={t("placeholder.nlp_sample_text")}
+              placeholder={t('placeholder.nlp_sample_text')}
               onSelect={(selection, start, end) => {
                 setSelection({
                   value: selection,
@@ -217,7 +217,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               onChange={({ text, entities }) => {
                 debounceSetText(text);
                 setValue(
-                  "keywordEntities",
+                  'keywordEntities',
                   entities.map(({ entity, value, start, end }) => ({
                     entity,
                     value,
@@ -242,15 +242,15 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                   const { onChange, ...rest } = field;
 
                   return (
-                    <AutoCompleteEntitySelect<ILanguage, "title", false>
+                    <AutoCompleteEntitySelect<ILanguage, 'title', false>
                       fullWidth={true}
                       autoFocus
-                      searchFields={["title", "code"]}
+                      searchFields={['title', 'code']}
                       entity={EntityType.LANGUAGE}
                       format={Format.BASIC}
                       labelKey="title"
                       idKey="code"
-                      label={t("label.language")}
+                      label={t('label.language')}
                       multiple={false}
                       {...field}
                       onChange={(_e, selected) => {
@@ -286,7 +286,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
 
                     return (
                       <>
-                        <AutoCompleteSelect<INlpValue, "value", false>
+                        <AutoCompleteSelect<INlpValue, 'value', false>
                           fullWidth={true}
                           options={options}
                           idKey="value"
@@ -297,19 +297,19 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                           onChange={(_e, selected, ..._) => {
                             updateTraitEntity(index, {
                               entity: value.entity,
-                              value: selected?.value || "",
+                              value: selected?.value || '',
                             });
                           }}
                           {...rest}
                         />
                         {value?.confidence &&
-                          typeof value?.confidence === "number" && (
+                          typeof value?.confidence === 'number' && (
                             <Chip
                               sx={{ marginTop: 0.5 }}
                               variant="available"
                               label={`${(value?.confidence * 100).toFixed(
                                 2,
-                              )}% ${t("label.confidence")}`}
+                              )}% ${t('label.confidence')}`}
                             />
                           )}
                       </>
@@ -338,24 +338,24 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                     const { onChange: _, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<INlpEntity, "name", false>
+                      <AutoCompleteEntitySelect<INlpEntity, 'name', false>
                         fullWidth={true}
-                        searchFields={["name"]}
+                        searchFields={['name']}
                         entity={EntityType.NLP_ENTITY}
                         format={Format.FULL}
                         idKey="name"
                         labelKey="name"
-                        label={t("label.nlp_entity")}
+                        label={t('label.nlp_entity')}
                         multiple={false}
                         preprocess={(options) => {
                           return options.filter(({ lookups }) =>
-                            lookups.includes("keywords"),
+                            lookups.includes('keywords'),
                           );
                         }}
                         onChange={(_e, selected, ..._) => {
                           updateKeywordEntity(index, {
                             ...keywordEntities[index],
-                            entity: selected?.name || "",
+                            entity: selected?.name || '',
                           });
                         }}
                         {...rest}
@@ -379,21 +379,21 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                     return (
                       <AutoCompleteSelect<
                         INlpValue,
-                        "value",
+                        'value',
                         false,
                         false,
                         true
                       >
-                        sx={{ width: "50%" }}
+                        sx={{ width: '50%' }}
                         idKey="value"
                         labelKey="value"
-                        label={t("label.value")}
+                        label={t('label.value')}
                         multiple={false}
                         options={options}
                         value={value}
                         freeSolo={true}
                         getOptionLabel={(option) => {
-                          return typeof option === "string"
+                          return typeof option === 'string'
                             ? option
                             : option.value;
                         }}
@@ -402,7 +402,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                             updateKeywordEntity(index, {
                               ...keywordEntity,
                               value:
-                                typeof selected === "string"
+                                typeof selected === 'string'
                                   ? selected
                                   : selected.value,
                             });
@@ -425,7 +425,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             onClick={() => {
               const newKeywordEntity = {
                 ...selection,
-                entity: "",
+                entity: '',
               } as INlpDatasetKeywordEntity;
               const newIndex = findInsertIndex(newKeywordEntity);
 
@@ -434,8 +434,8 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             }}
           >
             {!selection?.value
-              ? t("button.select_some_text")
-              : t("button.add_nlp_entity", { 0: selection.value })}
+              ? t('button.select_some_text')
+              : t('button.add_nlp_entity', { 0: selection.value })}
           </Button>
 
           <Button
@@ -444,15 +444,15 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             onClick={handleSubmit(onSubmitForm)}
             disabled={
               !(
-                currentText !== "" &&
+                currentText !== '' &&
                 currentType !== NlpSampleType.inbox &&
-                traitEntities.every((e) => e.value !== "") &&
-                keywordEntities.every((e) => e.value !== "")
+                traitEntities.every((e) => e.value !== '') &&
+                keywordEntities.every((e) => e.value !== '')
               )
             }
             type="submit"
           >
-            {t("button.validate")}
+            {t('button.validate')}
           </Button>
         </ContentItem>
       </form>
@@ -460,6 +460,6 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   );
 };
 
-NlpDatasetSample.displayName = "NlpTrain";
+NlpDatasetSample.displayName = 'NlpTrain';
 
 export default NlpDatasetSample;

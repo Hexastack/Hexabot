@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faChartLine } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { styled, Typography } from "@mui/material";
+import { faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { styled, Typography } from '@mui/material';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { useTranslate } from '@/hooks/useTranslate';
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
 export const StyledMessage = styled(Typography)(
   SXStyleOptions({
-    color: "grey.400",
-    fontSize: "body1.fontSize",
-    fontWeight: "700",
-    display: "block",
+    color: 'grey.400',
+    fontSize: 'body1.fontSize',
+    fontWeight: '700',
+    display: 'block',
     margin: 0,
   }),
 );
@@ -29,7 +29,7 @@ export const NoDataChart = () => {
   return (
     <StyledMessage>
       <FontAwesomeIcon icon={faChartLine} />
-      {t("charts.no_data")}
+      {t('charts.no_data')}
     </StyledMessage>
   );
 };

@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ContentFieldType } from "@/types/content-type.types";
+import { ContentFieldType } from '@/types/content-type.types';
 
-export const FIELDS_FORM_NAME = "fields";
-export const READ_ONLY_FIELDS = ["Title", "Status"] as const;
+export const FIELDS_FORM_NAME = 'fields';
+export const READ_ONLY_FIELDS = ['Title', 'Status'] as const;
 export const FIELDS_FORM_DEFAULT_VALUES = [
   {
-    label: "Title",
-    name: "title",
+    label: 'Title',
+    name: 'title',
     type: ContentFieldType.TEXT,
   },
   {
-    label: "Status",
-    name: "status",
+    label: 'Status',
+    name: 'status',
     type: ContentFieldType.CHECKBOX,
   },
 ];

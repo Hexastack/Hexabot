@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format } from '@/services/types';
 
-import { IAttachment } from "./attachment.types";
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { IRole } from "./role.types";
+import { IAttachment } from './attachment.types';
+import { IBaseSchema, IFormat, OmitPopulate } from './base.types';
+import { IRole } from './role.types';
 
 export interface IUserAttributes {
   first_name: string;

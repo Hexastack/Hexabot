@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { AbstractReactFactory } from "@projectstorm/react-canvas-core";
-import { DiagramEngine } from "@projectstorm/react-diagrams-core";
-import * as React from "react";
+import { AbstractReactFactory } from '@projectstorm/react-canvas-core';
+import { DiagramEngine } from '@projectstorm/react-diagrams-core';
+import * as React from 'react';
 
-import { NodeModel } from "./NodeModel";
-import NodeWidget from "./NodeWidget";
+import { NodeModel } from './NodeModel';
+import NodeWidget from './NodeWidget';
 
 export class NodeFactory extends AbstractReactFactory<
   NodeModel,
   DiagramEngine
 > {
   constructor() {
-    super("ts-custom-node");
+    super('ts-custom-node');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

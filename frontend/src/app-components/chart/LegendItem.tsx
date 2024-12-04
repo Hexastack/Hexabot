@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { LegendClickEventHandler } from "eazychart-core/src/types";
-import React, { DOMAttributes, useState } from "react";
+import { LegendClickEventHandler } from 'eazychart-core/src/types';
+import React, { DOMAttributes, useState } from 'react';
 
 export interface LegendItemProps extends DOMAttributes<HTMLDivElement> {
   label: string;
@@ -33,20 +33,20 @@ export const LegendItem: React.FC<LegendItemProps> = ({
     <div
       onClick={handleClick}
       role="button"
-      className={`ez-legend-key${!isActive ? " ez-legend-disable" : ""}`}
+      className={`ez-legend-key${!isActive ? ' ez-legend-disable' : ''}`}
       style={{
-        verticalAlign: "middle",
+        verticalAlign: 'middle',
       }}
       {...rest}
     >
       <div
         className="ez-legend-box"
         style={{
-          backgroundColor: isActive ? color : "rgba(255, 255, 255, 0)",
+          backgroundColor: isActive ? color : 'rgba(255, 255, 255, 0)',
           border: `${color} 2px solid`,
-          marginRight: "5px",
-          height: "18px",
-          display: "inline-block",
+          marginRight: '5px',
+          height: '18px',
+          display: 'inline-block',
         }}
       />
       <span className="ez-legend-text">{label}</span>

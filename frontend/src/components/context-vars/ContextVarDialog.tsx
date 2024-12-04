@@ -13,23 +13,23 @@ import {
   FormControlLabel,
   FormHelperText,
   Switch,
-} from "@mui/material";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { IContextVar, IContextVarAttributes } from "@/types/context-var.types";
-import { slugify } from "@/utils/string";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { IContextVar, IContextVarAttributes } from '@/types/context-var.types';
+import { slugify } from '@/utils/string';
 
 export type ContextVarDialogProps = DialogControlProps<IContextVar>;
 export const ContextVarDialog: FC<ContextVarDialogProps> = ({
@@ -46,16 +46,16 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -67,19 +67,19 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     control,
   } = useForm<IContextVarAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      label: data?.label || "",
+      name: data?.name || '',
+      label: data?.label || '',
       permanent: data?.permanent || false,
     },
   });
   const validationRules = {
     label: {
-      required: t("message.label_is_required"),
+      required: t('message.label_is_required'),
     },
     name: {
       pattern: {
         value: /^[a-z_0-9]+$/,
-        message: t("message.context_vars_name_is_invalid"),
+        message: t('message.context_vars_name_is_invalid'),
       },
     },
   };
@@ -111,21 +111,21 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_context_var") : t("title.new_context_var")}
+          {data ? t('title.edit_context_var') : t('title.new_context_var')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("label.label")}
+                label={t('label.label')}
                 error={!!errors.label}
                 required
                 autoFocus
-                {...register("label", validationRules.label)}
+                {...register('label', validationRules.label)}
                 InputProps={{
                   onChange: ({ target: { value } }) => {
-                    setValue("label", value);
-                    setValue("name", slugify(value));
+                    setValue('label', value);
+                    setValue('name', slugify(value));
                   },
                 }}
                 helperText={errors.label ? errors.label.message : null}
@@ -133,10 +133,10 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("label.name")}
+                label={t('label.name')}
                 error={!!errors.name}
                 disabled
-                {...register("name", validationRules.name)}
+                {...register('name', validationRules.name)}
                 helperText={errors.name ? errors.name.message : null}
                 InputLabelProps={{ shrink: true }}
               />
@@ -148,11 +148,11 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
                 render={({ field }) => (
                   <FormControlLabel
                     control={<Switch {...field} checked={field.value} />}
-                    label={t("label.permanent")}
+                    label={t('label.permanent')}
                   />
                 )}
               />
-              <FormHelperText>{t("help.permanent")}</FormHelperText>
+              <FormHelperText>{t('help.permanent')}</FormHelperText>
             </ContentItem>
           </ContentContainer>
         </DialogContent>

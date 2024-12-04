@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Add, MoveUp } from "@mui/icons-material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import FitScreenIcon from "@mui/icons-material/FitScreen";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import ZoomInIcon from "@mui/icons-material/ZoomIn";
-import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import { Add, MoveUp } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import FitScreenIcon from '@mui/icons-material/FitScreen';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import {
   Box,
   Button,
@@ -22,46 +22,46 @@ import {
   Tabs,
   Tooltip,
   tabsClasses,
-} from "@mui/material";
+} from '@mui/material';
 import {
   DefaultPortModel,
   DiagramEngine,
   DiagramModel,
   DiagramModelGenerics,
-} from "@projectstorm/react-diagrams";
+} from '@projectstorm/react-diagrams';
 import {
   SyntheticEvent,
   useCallback,
   useEffect,
   useRef,
   useState,
-} from "react";
-import { useQueryClient } from "react-query";
+} from 'react';
+import { useQueryClient } from 'react-query';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
-import { CategoryDialog } from "@/components/categories/CategoryDialog";
-import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDeleteFromCache } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
-import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
-import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useSearch } from "@/hooks/useSearch";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format, QueryType } from "@/services/types";
-import { IBlock } from "@/types/block.types";
-import { ICategory } from "@/types/category.types";
-import { BlockPorts } from "@/types/visual-editor.types";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { MoveDialog } from '@/app-components/dialogs/MoveDialog';
+import { CategoryDialog } from '@/components/categories/CategoryDialog';
+import { isSameEntity } from '@/hooks/crud/helpers';
+import { useDeleteFromCache } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useUpdate, useUpdateCache } from '@/hooks/crud/useUpdate';
+import { useUpdateMany } from '@/hooks/crud/useUpdateMany';
+import useDebouncedUpdate from '@/hooks/useDebouncedUpdate';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useSearch } from '@/hooks/useSearch';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format, QueryType } from '@/services/types';
+import { IBlock } from '@/types/block.types';
+import { ICategory } from '@/types/category.types';
+import { BlockPorts } from '@/types/visual-editor.types';
 
-import BlockDialog from "../BlockDialog";
-import { ZOOM_LEVEL } from "../constants";
-import { useVisualEditor } from "../hooks/useVisualEditor";
+import BlockDialog from '../BlockDialog';
+import { ZOOM_LEVEL } from '../constants';
+import { useVisualEditor } from '../hooks/useVisualEditor';
 
-import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
+import { AdvancedLinkModel } from './AdvancedLink/AdvancedLinkModel';
 
 const Diagrams = () => {
   const { t } = useTranslate();
@@ -91,7 +91,7 @@ const Diagrams = () => {
     { entity: EntityType.CATEGORY },
     {
       hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
+      initialSortState: [{ field: 'createdAt', sort: 'asc' }],
     },
     {
       onSuccess([{ id, zoom, offset }]) {
@@ -216,7 +216,7 @@ const Diagrams = () => {
             // @ts-expect-error protected attr
             entity.targetPort.getOptions().label,
           ) ||
-          (link.getSourcePort().getType() === "attached" &&
+          (link.getSourcePort().getType() === 'attached' &&
             link.getSourcePort().getParent().getOptions().id ===
               link.getTargetPort().getParent().getOptions().id)
         ) {
@@ -400,16 +400,16 @@ const Diagrams = () => {
             previousBlocks: linkedBlock.previousBlocks?.filter(
               (previousBlockId) => !deletedIds.includes(previousBlockId),
             ),
-            attachedBlock: deletedIds.includes(linkedBlock.attachedBlock || "")
+            attachedBlock: deletedIds.includes(linkedBlock.attachedBlock || '')
               ? undefined
               : linkedBlock.attachedBlock,
             attachedToBlock: deletedIds.includes(
-              linkedBlock.attachedToBlock || "",
+              linkedBlock.attachedToBlock || '',
             )
               ? undefined
               : linkedBlock.attachedToBlock,
           },
-          strategy: "overwrite",
+          strategy: 'overwrite',
         });
       }
     });
@@ -491,19 +491,19 @@ const Diagrams = () => {
       id="visual-editor"
       onDrop={(event) => {
         const data = JSON.parse(
-          event.dataTransfer.getData("storm-diagram-node"),
+          event.dataTransfer.getData('storm-diagram-node'),
         );
 
         if (!data) {
           // eslint-disable-next-line no-console
-          console.warn("Unable to handle the drop event");
+          console.warn('Unable to handle the drop event');
 
           return;
         }
 
         const payload = {
           ...data,
-          category: selectedCategoryId || "",
+          category: selectedCategoryId || '',
           position: engine?.getRelativeMousePoint(event),
         };
 
@@ -513,7 +513,7 @@ const Diagrams = () => {
         event.preventDefault();
       }}
     >
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: '100%' }}>
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
         <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
@@ -524,13 +524,13 @@ const Diagrams = () => {
           closeDialog={moveDialogCtl.closeDialog}
           categories={categories}
         />
-        <Grid sx={{ bgcolor: "#fff", padding: "0" }}>
+        <Grid sx={{ bgcolor: '#fff', padding: '0' }}>
           <Grid
             sx={{
-              display: "flex",
-              position: "relative",
-              flexDirection: "row",
-              borderBottom: "1.5px solid #DDDDDD",
+              display: 'flex',
+              position: 'relative',
+              flexDirection: 'row',
+              borderBottom: '1.5px solid #DDDDDD',
             }}
           >
             <Tabs
@@ -541,21 +541,21 @@ const Diagrams = () => {
               }
               onChange={handleChange}
               sx={{
-                backgroundColor: "#fff",
+                backgroundColor: '#fff',
                 [`& .${tabsClasses.indicator}`]: {
-                  display: "none",
+                  display: 'none',
                 },
-                "& .MuiTabs-scrollButtons": {
+                '& .MuiTabs-scrollButtons': {
                   opacity: 0.8,
-                  backgroundColor: "#1ca089",
-                  borderTop: "1px solid #137261",
-                  marginTop: "7px",
-                  color: "#FFF",
-                  overflow: "visible",
+                  backgroundColor: '#1ca089',
+                  borderTop: '1px solid #137261',
+                  marginTop: '7px',
+                  color: '#FFF',
+                  overflow: 'visible',
                   boxShadow:
-                    "-20px 0px 20px -20px rgba(0, 0, 0, 0.5), 0px 2px 9px 0px rgba(0, 0, 0, 0.5)",
+                    '-20px 0px 20px -20px rgba(0, 0, 0, 0.5), 0px 2px 9px 0px rgba(0, 0, 0, 0.5)',
                   zIndex: 10,
-                  "&:hover": {
+                  '&:hover': {
                     opacity: 1,
                   },
                 },
@@ -566,30 +566,30 @@ const Diagrams = () => {
               {categories?.map(({ id, label }) => (
                 <Tab
                   sx={{
-                    mt: "7px",
-                    ml: "5px",
-                    border: "1px solid #DDDDDD",
-                    backgroundColor: "#F8F8F8",
-                    borderBottom: "none",
-                    minHeight: "30px",
+                    mt: '7px',
+                    ml: '5px',
+                    border: '1px solid #DDDDDD',
+                    backgroundColor: '#F8F8F8',
+                    borderBottom: 'none',
+                    minHeight: '30px',
 
-                    "&.Mui-selected": {
-                      backgroundColor: "#EAF1F1",
+                    '&.Mui-selected': {
+                      backgroundColor: '#EAF1F1',
                       zIndex: 1,
-                      color: "#000",
+                      color: '#000',
 
-                      backgroundSize: "20px 20px",
-                      backgroundAttachment: "fixed",
-                      backgroundPosition: "-1px -1px",
+                      backgroundSize: '20px 20px',
+                      backgroundAttachment: 'fixed',
+                      backgroundPosition: '-1px -1px',
                     },
                   }}
                   key={id}
                   label={
                     <Grid
                       sx={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                        display: "flex",
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        display: 'flex',
                       }}
                     >
                       {label}
@@ -600,16 +600,16 @@ const Diagrams = () => {
             </Tabs>
             <Button
               sx={{
-                mt: "7px",
-                ml: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
+                mt: '7px',
+                ml: '5px',
+                borderRadius: '0',
+                minHeight: '30px',
 
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
+                border: '1px solid #DDDDDD',
+                backgroundColor: '#F8F8F8',
+                borderBottom: 'none',
+                width: '42px',
+                minWidth: '42px',
               }}
               onClick={(e) => {
                 addCategoryDialogCtl.openDialog();
@@ -625,10 +625,10 @@ const Diagrams = () => {
                 left: 240,
                 top: 140,
                 zIndex: 6,
-                position: "absolute",
-                display: "flex",
-                flexDirection: "row",
-                gap: "8px",
+                position: 'absolute',
+                display: 'flex',
+                flexDirection: 'row',
+                gap: '8px',
               }}
             >
               <Button
@@ -645,7 +645,7 @@ const Diagrams = () => {
                 }}
                 disabled={!selectedBlockId || selectedBlockId.length !== 24}
               >
-                {t("button.edit")}
+                {t('button.edit')}
               </Button>
               <Button
                 size="small"
@@ -654,7 +654,7 @@ const Diagrams = () => {
                 onClick={handleMoveButton}
                 disabled={!selectedBlockId || selectedBlockId.length !== 24}
               >
-                {t("button.move")}
+                {t('button.move')}
               </Button>
               <Button
                 sx={{}}
@@ -665,7 +665,7 @@ const Diagrams = () => {
                 onClick={handleDeleteButton}
                 disabled={!selectedBlockId}
               >
-                {t("button.remove")}
+                {t('button.remove')}
               </Button>
             </Grid>
             <Grid container item justifyContent="right" xs alignSelf="center">
@@ -677,28 +677,28 @@ const Diagrams = () => {
                   left: 240,
                   bottom: 20,
                   zIndex: 6,
-                  position: "absolute",
-                  transition: "all 0.3s",
-                  boxShadow: "0 0 8px #0003",
-                  borderRadius: "20px",
-                  backgroundColor: "#fffc",
-                  "&.MuiButtonGroup-contained:hover": {
-                    boxShadow: "0 0 8px #0005",
+                  position: 'absolute',
+                  transition: 'all 0.3s',
+                  boxShadow: '0 0 8px #0003',
+                  borderRadius: '20px',
+                  backgroundColor: '#fffc',
+                  '&.MuiButtonGroup-contained:hover': {
+                    boxShadow: '0 0 8px #0005',
                   },
 
-                  "& .MuiButton-root": {
-                    backgroundColor: "background.paper",
+                  '& .MuiButton-root': {
+                    backgroundColor: 'background.paper',
                   },
                 }}
               >
                 <Tooltip
-                  title={t("visual_editor.zoom.reset")}
+                  title={t('visual_editor.zoom.reset')}
                   arrow
                   placement="left"
                 >
                   <span>
                     <Button
-                      sx={{ p: "8px 2px 6px 2px" }}
+                      sx={{ p: '8px 2px 6px 2px' }}
                       disabled={
                         !!currentCategory?.zoom && currentCategory?.zoom === 100
                       }
@@ -711,13 +711,13 @@ const Diagrams = () => {
                   </span>
                 </Tooltip>
                 <Tooltip
-                  title={t("visual_editor.zoom.in")}
+                  title={t('visual_editor.zoom.in')}
                   arrow
                   placement="left"
                 >
                   <span>
                     <Button
-                      sx={{ p: "6px 2px" }}
+                      sx={{ p: '6px 2px' }}
                       disabled={
                         !!currentCategory?.zoom &&
                         currentCategory.zoom >= ZOOM_LEVEL.maximum
@@ -735,13 +735,13 @@ const Diagrams = () => {
                   </span>
                 </Tooltip>
                 <Tooltip
-                  title={t("visual_editor.zoom.out")}
+                  title={t('visual_editor.zoom.out')}
                   arrow
                   placement="left"
                 >
                   <span>
                     <Button
-                      sx={{ p: "6px 2px" }}
+                      sx={{ p: '6px 2px' }}
                       disabled={
                         !!currentCategory?.zoom &&
                         currentCategory?.zoom <= ZOOM_LEVEL.minimum
@@ -759,13 +759,13 @@ const Diagrams = () => {
                   </span>
                 </Tooltip>
                 <Tooltip
-                  title={t("visual_editor.zoom.fitScreen")}
+                  title={t('visual_editor.zoom.fitScreen')}
                   arrow
                   placement="left"
                 >
                   <span>
                     <Button
-                      sx={{ p: "6px 2px 8px 2px" }}
+                      sx={{ p: '6px 2px 8px 2px' }}
                       onClick={() => {
                         engine?.zoomToFitSelectedNodes({ margin: 0 });
                       }}

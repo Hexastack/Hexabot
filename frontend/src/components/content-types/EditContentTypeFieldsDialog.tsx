@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
+import AddIcon from '@mui/icons-material/Add';
 import {
   Button,
   CircularProgress,
@@ -14,27 +14,27 @@ import {
   DialogActions,
   DialogContent,
   Stack,
-} from "@mui/material";
-import { useEffect } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+} from '@mui/material';
+import { useEffect } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
 import {
   DialogTitle,
   ContentContainer,
   ContentItem,
-} from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
-import { useGet } from "@/hooks/crud/useGet";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { ContentFieldType, IContentType } from "@/types/content-type.types";
+} from '@/app-components/dialogs';
+import { Input } from '@/app-components/inputs/Input';
+import { useGet } from '@/hooks/crud/useGet';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { ContentFieldType, IContentType } from '@/types/content-type.types';
 
-import { FieldInput } from "./components/FieldInput";
-import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
+import { FieldInput } from './components/FieldInput';
+import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from './constants';
 
 export type EditContentTypeDialogFieldsProps = DialogControlProps<IContentType>;
 
@@ -44,7 +44,7 @@ export const EditContentTypeFieldsDialog = ({
   open,
 }: EditContentTypeDialogFieldsProps) => {
   const { t } = useTranslate();
-  const { isLoading, data, refetch } = useGet(contentType?.id || "", {
+  const { isLoading, data, refetch } = useGet(contentType?.id || '', {
     entity: EntityType.CONTENT_TYPE,
   });
   const { toast } = useToast();
@@ -56,7 +56,7 @@ export const EditContentTypeFieldsDialog = ({
     register,
     formState: { errors },
   } = useForm<Partial<IContentType>>({
-    mode: "onChange",
+    mode: 'onChange',
     values: {
       fields: data?.fields,
       name: data?.name,
@@ -67,24 +67,24 @@ export const EditContentTypeFieldsDialog = ({
     },
   });
   const { append, fields, replace, remove } = useFieldArray<
-    Pick<IContentType, "fields">,
-    "fields"
+    Pick<IContentType, 'fields'>,
+    'fields'
   >({
-    name: "fields",
+    name: 'fields',
     control,
-    keyName: "id",
+    keyName: 'id',
     rules: {
       required: true,
     },
   });
   const validationRules = {
     name: {
-      required: t("message.name_is_required"),
+      required: t('message.name_is_required'),
     },
   };
 
   useEffect(() => {
-    register("fields");
+    register('fields');
   }, [register]);
 
   useEffect(() => {
@@ -121,10 +121,10 @@ export const EditContentTypeFieldsDialog = ({
     EntityType.CONTENT_TYPE,
     {
       onError: (error) => {
-        toast.error(`${t("message.internal_server_error")}: ${error}`);
+        toast.error(`${t('message.internal_server_error')}: ${error}`);
       },
       onSuccess: () => {
-        toast.success(t("message.success_save"));
+        toast.success(t('message.success_save'));
       },
     },
   );
@@ -134,11 +134,11 @@ export const EditContentTypeFieldsDialog = ({
       open={open}
       fullWidth
       maxWidth="xl"
-      sx={{ width: "fit-content", mx: "auto", minWidth: "600px" }}
+      sx={{ width: 'fit-content', mx: 'auto', minWidth: '600px' }}
       onClose={handleClose}
     >
       <DialogTitle onClose={handleClose}>
-        {t("title.manage_fields")}
+        {t('title.manage_fields')}
       </DialogTitle>
       <form
         onSubmit={handleSubmit(async ({ name, fields }) => {
@@ -157,9 +157,9 @@ export const EditContentTypeFieldsDialog = ({
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("label.name")}
+                label={t('label.name')}
                 error={!!errors.name}
-                {...register("name", validationRules.name)}
+                {...register('name', validationRules.name)}
                 helperText={errors.name ? errors.name.message : null}
                 required
                 autoFocus
@@ -186,8 +186,8 @@ export const EditContentTypeFieldsDialog = ({
               : null}
             {isLoading ? (
               <ContentItem>
-                <Stack sx={{ alignItems: "center", placeContent: "center" }}>
-                  <CircularProgress sx={{ color: "primary.main" }} />
+                <Stack sx={{ alignItems: 'center', placeContent: 'center' }}>
+                  <CircularProgress sx={{ color: 'primary.main' }} />
                 </Stack>
               </ContentItem>
             ) : null}
@@ -197,15 +197,15 @@ export const EditContentTypeFieldsDialog = ({
                 variant="contained"
                 onClick={() =>
                   append({
-                    label: "",
-                    name: "",
+                    label: '',
+                    name: '',
                     type: ContentFieldType.TEXT,
                   })
                 }
                 disabled={isLoading}
-                sx={{ mx: "auto" }}
+                sx={{ mx: 'auto' }}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </ContentItem>
           </ContentContainer>

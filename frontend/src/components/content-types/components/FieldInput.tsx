@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { MenuItem } from "@mui/material";
-import { useEffect } from "react";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import { MenuItem } from '@mui/material';
+import { useEffect } from 'react';
 import {
   Control,
   Controller,
   UseFieldArrayRemove,
   UseFormSetValue,
   useWatch,
-} from "react-hook-form";
+} from 'react-hook-form';
 
-import { IconButton } from "@/app-components/buttons/IconButton";
-import { Input } from "@/app-components/inputs/Input";
-import { useTranslate } from "@/hooks/useTranslate";
-import { ContentFieldType, IContentType } from "@/types/content-type.types";
-import { slugify } from "@/utils/string";
+import { IconButton } from '@/app-components/buttons/IconButton';
+import { Input } from '@/app-components/inputs/Input';
+import { useTranslate } from '@/hooks/useTranslate';
+import { ContentFieldType, IContentType } from '@/types/content-type.types';
+import { slugify } from '@/utils/string';
 
 export const FieldInput = ({
   setValue,
@@ -41,7 +41,7 @@ export const FieldInput = ({
   });
 
   useEffect(() => {
-    setValue(`fields.${index}.name`, label ? slugify(label) : "");
+    setValue(`fields.${index}.name`, label ? slugify(label) : '');
   }, [label, setValue, index]);
 
   return (
@@ -63,14 +63,14 @@ export const FieldInput = ({
           <Input
             disabled={props.disabled}
             {...field}
-            label={t("label.label")}
+            label={t('label.label')}
           />
         )}
       />
       <Controller
         name={`fields.${index}.name`}
         render={({ field }) => (
-          <Input disabled {...field} label={t("label.name")} />
+          <Input disabled {...field} label={t('label.name')} />
         )}
         control={props.control}
       />
@@ -81,7 +81,7 @@ export const FieldInput = ({
         render={({ field }) => (
           <Input
             disabled={props.disabled}
-            label={t("label.type")}
+            label={t('label.type')}
             {...field}
             select
           >

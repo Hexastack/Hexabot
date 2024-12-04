@@ -14,13 +14,13 @@ import {
   Grid,
   MenuItem,
   Select,
-} from "@mui/material";
-import { FC, useState } from "react";
+} from '@mui/material';
+import { FC, useState } from 'react';
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { DialogControl } from "@/hooks/useDialog";
-import { useTranslate } from "@/hooks/useTranslate";
-import { ICategory } from "@/types/category.types";
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { DialogControl } from '@/hooks/useDialog';
+import { useTranslate } from '@/hooks/useTranslate';
+import { ICategory } from '@/types/category.types';
 
 export interface MoveDialogProps extends DialogControl<string> {
   categories: ICategory[];
@@ -35,7 +35,7 @@ export const MoveDialog: FC<MoveDialogProps> = ({
   categories,
 }: MoveDialogProps) => {
   const { t } = useTranslate();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const handleMove = async () => {
     if (selectedCategoryId && callback) {
       await callback(selectedCategoryId);
@@ -46,7 +46,7 @@ export const MoveDialog: FC<MoveDialogProps> = ({
   return (
     <Dialog open={open} fullWidth onClose={closeDialog}>
       <DialogTitle onClose={closeDialog}>
-        {t("message.select_category")}
+        {t('message.select_category')}
       </DialogTitle>
       <DialogContent>
         <Grid container direction="column" gap={2}>
@@ -58,7 +58,7 @@ export const MoveDialog: FC<MoveDialogProps> = ({
               displayEmpty
             >
               <MenuItem value="" disabled>
-                {t("label.category")}
+                {t('label.category')}
               </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
@@ -75,10 +75,10 @@ export const MoveDialog: FC<MoveDialogProps> = ({
           onClick={handleMove}
           disabled={!selectedCategoryId}
         >
-          {t("button.move")}
+          {t('button.move')}
         </Button>
         <Button variant="outlined" onClick={closeDialog}>
-          {t("button.cancel")}
+          {t('button.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

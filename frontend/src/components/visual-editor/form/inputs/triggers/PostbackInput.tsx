@@ -14,16 +14,16 @@ import {
   InputAdornment,
   Skeleton,
   Typography,
-} from "@mui/material";
-import { useMemo, useState } from "react";
+} from '@mui/material';
+import { useMemo, useState } from 'react';
 
-import { Input } from "@/app-components/inputs/Input";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useTranslate } from "@/hooks/useTranslate";
-import { theme } from "@/layout/themes/theme";
-import { EntityType, Format } from "@/services/types";
-import { IBlock, PayloadPattern } from "@/types/block.types";
+import { Input } from '@/app-components/inputs/Input';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useTranslate } from '@/hooks/useTranslate';
+import { theme } from '@/layout/themes/theme';
+import { EntityType, Format } from '@/services/types';
+import { IBlock, PayloadPattern } from '@/types/block.types';
 import {
   ButtonType,
   PayloadType,
@@ -32,9 +32,9 @@ import {
   StdOutgoingButtonsMessage,
   StdOutgoingQuickRepliesMessage,
   StdQuickReply,
-} from "@/types/message.types";
+} from '@/types/message.types';
 
-import { useBlock } from "../../BlockFormProvider";
+import { useBlock } from '../../BlockFormProvider';
 
 type PayloadOption = PayloadPattern & {
   group: string;
@@ -69,22 +69,22 @@ export const PostbackInput = ({
   //  General options
   const generalOptions = [
     {
-      label: t("label.get_started"),
-      value: "GET_STARTED",
+      label: t('label.get_started'),
+      value: 'GET_STARTED',
       type: PayloadType.button,
-      group: "general",
+      group: 'general',
     },
     {
-      label: t("label.view_more"),
-      value: "VIEW_MORE",
+      label: t('label.view_more'),
+      value: 'VIEW_MORE',
       type: PayloadType.button,
-      group: "general",
+      group: 'general',
     },
     {
-      label: t("label.location"),
-      value: "LOCATION",
+      label: t('label.location'),
+      value: 'LOCATION',
       type: PayloadType.location,
-      group: "general",
+      group: 'general',
     },
   ];
   //  Gather previous blocks buttons
@@ -93,23 +93,26 @@ export const PostbackInput = ({
       (block?.previousBlocks || [])
         .map((b) => getBlockFromCache(b))
         .filter(
-          (b) => b && typeof b.message === "object" && "buttons" in b.message,
+          (b) => b && typeof b.message === 'object' && 'buttons' in b.message,
         )
         .map((b) => b as IBlock)
-        .reduce((acc, b) => {
-          const postbackButtons = (
-            (b.message as StdOutgoingButtonsMessage)?.buttons || []
-          )
-            .filter((btn) => btn.type === ButtonType.postback)
-            .map((btn) => ({ ...btn, group: b.name }));
+        .reduce(
+          (acc, b) => {
+            const postbackButtons = (
+              (b.message as StdOutgoingButtonsMessage)?.buttons || []
+            )
+              .filter((btn) => btn.type === ButtonType.postback)
+              .map((btn) => ({ ...btn, group: b.name }));
 
-          return acc.concat(postbackButtons);
-        }, [] as (PostBackButton & { group: string })[])
+            return acc.concat(postbackButtons);
+          },
+          [] as (PostBackButton & { group: string })[],
+        )
         .map((btn) => ({
           label: btn.title,
           value: btn.payload,
           type: PayloadType.button,
-          group: "button",
+          group: 'button',
         })),
     [block?.previousBlocks, getBlockFromCache],
   );
@@ -120,23 +123,28 @@ export const PostbackInput = ({
         .map((b) => getBlockFromCache(b))
         .filter(
           (b) =>
-            b && typeof b.message === "object" && "quickReplies" in b.message,
+            b && typeof b.message === 'object' && 'quickReplies' in b.message,
         )
         .map((b) => b as IBlock)
-        .reduce((acc, b) => {
-          const postbackQuickReplies = (
-            (b.message as StdOutgoingQuickRepliesMessage)?.quickReplies || []
-          )
-            .filter(({ content_type }) => content_type === QuickReplyType.text)
-            .map((btn) => ({ ...btn, group: b.name }));
+        .reduce(
+          (acc, b) => {
+            const postbackQuickReplies = (
+              (b.message as StdOutgoingQuickRepliesMessage)?.quickReplies || []
+            )
+              .filter(
+                ({ content_type }) => content_type === QuickReplyType.text,
+              )
+              .map((btn) => ({ ...btn, group: b.name }));
 
-          return acc.concat(postbackQuickReplies);
-        }, [] as (StdQuickReply & { group: string })[])
+            return acc.concat(postbackQuickReplies);
+          },
+          [] as (StdQuickReply & { group: string })[],
+        )
         .map((btn) => ({
           label: btn.title as string,
           value: btn.payload as string,
           type: PayloadType.quick_reply,
-          group: "quick_reply",
+          group: 'quick_reply',
         })),
     [block?.previousBlocks],
   );
@@ -146,7 +154,7 @@ export const PostbackInput = ({
       label: title,
       value: payload as string,
       type: PayloadType.menu,
-      group: "menu",
+      group: 'menu',
     }));
   const contentOptions = useMemo(
     () =>
@@ -170,7 +178,7 @@ export const PostbackInput = ({
               label: btn.title,
               value: btn.title,
               type: PayloadType.content,
-              group: "content",
+              group: 'content',
             });
 
             return availableContents.reduce((acc, n) => {
@@ -178,7 +186,7 @@ export const PostbackInput = ({
                 label: n.title,
                 value: n.title,
                 type: PayloadType.content,
-                group: "content",
+                group: 'content',
               });
 
               return acc;
@@ -223,7 +231,7 @@ export const PostbackInput = ({
 
         onChange(payloadPattern);
       }}
-      groupBy={({ group }) => group ?? t("label.other")}
+      groupBy={({ group }) => group ?? t('label.other')}
       getOptionLabel={({ label }) => label}
       renderGroup={({ key, group, children }) => (
         <li key={key}>
@@ -236,25 +244,25 @@ export const PostbackInput = ({
       renderInput={(props) => (
         <Input
           {...props}
-          label={t("label.postback")}
+          label={t('label.postback')}
           InputProps={{
             ...props.InputProps,
             startAdornment: (
               <InputAdornment position="start">
                 <Chip
                   sx={{
-                    left: "8px",
-                    height: "25px",
-                    fontSize: "12px",
-                    minWidth: "75px",
-                    position: "relative",
-                    maxHeight: "30px",
-                    borderRadius: "16px",
+                    left: '8px',
+                    height: '25px',
+                    fontSize: '12px',
+                    minWidth: '75px',
+                    position: 'relative',
+                    maxHeight: '30px',
+                    borderRadius: '16px',
                     borderColor: theme.palette.grey[400],
                   }}
                   color="primary"
                   label={t(
-                    `label.${selectedValue?.type || "postback"}`,
+                    `label.${selectedValue?.type || 'postback'}`,
                   ).toLocaleLowerCase()}
                   variant="role"
                 />

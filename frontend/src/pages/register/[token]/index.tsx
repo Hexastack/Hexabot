@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ReactElement } from "react";
+import { ReactElement } from 'react';
 
-import { Register } from "@/app-components/auth/Register";
-import { Layout } from "@/layout/index";
+import { Register } from '@/app-components/auth/Register';
+import { Layout } from '@/layout/index';
 
 const RegisterPage = () => {
   return <Register />;
 };
 
 RegisterPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout sxContent={{ alignContent: "center" }}>{page}</Layout>;
+  return <Layout sxContent={{ alignContent: 'center' }}>{page}</Layout>;
 };
 
 export default RegisterPage;

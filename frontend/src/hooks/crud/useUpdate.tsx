@@ -6,27 +6,27 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from 'react-query';
 
-import { QueryType, TMutationOptions, TSetCacheProps } from "@/services/types";
+import { QueryType, TMutationOptions, TSetCacheProps } from '@/services/types';
 import {
   IBaseSchema,
   IDynamicProps,
   IEntityMapTypes,
   TType,
-} from "@/types/base.types";
-import { merge } from "@/utils/object";
+} from '@/types/base.types';
+import { merge } from '@/utils/object';
 
-import { useEntityApiClient } from "../useApiClient";
+import { useEntityApiClient } from '../useApiClient';
 
-import { useNormalizeAndCache } from "./helpers";
-import { useGetFromCache } from "./useGet";
+import { useNormalizeAndCache } from './helpers';
+import { useGetFromCache } from './useGet';
 
 export const useUpdate = <
-  TEntity extends IDynamicProps["entity"],
-  TAttr = TType<TEntity>["attributes"],
-  TBasic extends IBaseSchema = TType<TEntity>["basic"],
-  TFull extends IBaseSchema = TType<TEntity>["full"],
+  TEntity extends IDynamicProps['entity'],
+  TAttr = TType<TEntity>['attributes'],
+  TBasic extends IBaseSchema = TType<TEntity>['basic'],
+  TFull extends IBaseSchema = TType<TEntity>['full'],
 >(
   entity: TEntity,
   options?: Omit<
@@ -36,7 +36,7 @@ export const useUpdate = <
       { id: string; params: Partial<TAttr> },
       TBasic
     >,
-    "mutationFn" | "mutationKey"
+    'mutationFn' | 'mutationKey'
   > & {
     invalidate?: boolean;
   },
@@ -63,14 +63,14 @@ export const useUpdateCache = <E extends keyof IEntityMapTypes>(entity: E) => {
     id,
     payload = {},
     preprocess = (data) => data,
-    strategy = "merge",
-  }: TSetCacheProps<TType<E>["basic"]>) => {
+    strategy = 'merge',
+  }: TSetCacheProps<TType<E>['basic']>) => {
     const oldData = getFromCache(id);
     const newData =
-      strategy === "merge" && oldData
+      strategy === 'merge' && oldData
         ? merge(preprocess(oldData), payload)
         : payload;
-    const [qEntity] = entity.split("/");
+    const [qEntity] = entity.split('/');
 
     queryClient.setQueryData([QueryType.item, qEntity, id], newData);
   };

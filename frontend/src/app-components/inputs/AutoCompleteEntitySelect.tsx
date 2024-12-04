@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ChipTypeMap } from "@mui/material";
-import { AutocompleteProps } from "@mui/material/Autocomplete";
-import { forwardRef, useEffect, useRef } from "react";
+import { ChipTypeMap } from '@mui/material';
+import { AutocompleteProps } from '@mui/material/Autocomplete';
+import { forwardRef, useEffect, useRef } from 'react';
 
-import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
-import { useSearch } from "@/hooks/useSearch";
-import { Format, QueryType } from "@/services/types";
-import { IEntityMapTypes } from "@/types/base.types";
-import { TFilterStringFields } from "@/types/search.types";
-import { generateId } from "@/utils/generateId";
+import { useInfiniteFind } from '@/hooks/crud/useInfiniteFind';
+import { useSearch } from '@/hooks/useSearch';
+import { Format, QueryType } from '@/services/types';
+import { IEntityMapTypes } from '@/types/base.types';
+import { TFilterStringFields } from '@/types/search.types';
+import { generateId } from '@/utils/generateId';
 
-import AutoCompleteSelect from "./AutoCompleteSelect";
+import AutoCompleteSelect from './AutoCompleteSelect';
 
 type AutoCompleteEntitySelectProps<
   Value,
@@ -29,9 +29,9 @@ type AutoCompleteEntitySelectProps<
     Multiple,
     false,
     false,
-    ChipTypeMap["defaultComponent"]
+    ChipTypeMap['defaultComponent']
   >,
-  "renderInput" | "options" | "value" | "defaultValue"
+  'renderInput' | 'options' | 'value' | 'defaultValue'
 > & {
   value?: Multiple extends true ? string[] : string | null;
   label: string;
@@ -62,7 +62,7 @@ const AutoCompleteEntitySelect = <
     error,
     helperText,
     preprocess,
-    idKey = "id",
+    idKey = 'id',
     labelKey,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
@@ -130,7 +130,7 @@ const AutoCompleteEntitySelect = <
   );
 };
 
-AutoCompleteEntitySelect.displayName = "AutoCompleteEntitySelect";
+AutoCompleteEntitySelect.displayName = 'AutoCompleteEntitySelect';
 
 export default forwardRef(AutoCompleteEntitySelect) as unknown as <
   Value,

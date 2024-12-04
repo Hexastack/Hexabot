@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format } from '@/services/types';
 
-import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { ILabel } from "./label.types";
+import { IBaseSchema, IFormat, OmitPopulate } from './base.types';
+import { ILabel } from './label.types';
 import {
   AttachmentForeignKey,
   ContentOptions,
@@ -20,8 +20,8 @@ import {
   StdOutgoingQuickRepliesMessage,
   StdOutgoingTextMessage,
   StdPluginMessage,
-} from "./message.types";
-import { IUser } from "./user.types";
+} from './message.types';
+import { IUser } from './user.types';
 
 export type Position = {
   x: number;
@@ -71,19 +71,19 @@ export interface PayloadPattern {
 
 export type NlpPattern = {
   entity: string;
-  match: "value" | "entity";
+  match: 'value' | 'entity';
   value: string;
 };
 
 export type Pattern = null | string | PayloadPattern | NlpPattern[];
 
 export type PatternType =
-  | "regex"
-  | "nlp"
-  | "menu"
-  | "content"
-  | "payload"
-  | "text";
+  | 'regex'
+  | 'nlp'
+  | 'menu'
+  | 'content'
+  | 'payload'
+  | 'text';
 
 export interface IBlockAttributes {
   name: string;

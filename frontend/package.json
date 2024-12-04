@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit --downlevelIteration"
   },
   "dependencies": {
@@ -41,7 +42,10 @@
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
     "react-query": "^3.39.3",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "20.12.12",

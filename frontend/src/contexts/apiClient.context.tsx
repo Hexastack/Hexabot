@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import axios from "axios";
-import { createContext, ReactNode, FC } from "react";
+import axios from 'axios';
+import { createContext, ReactNode, FC } from 'react';
 
-import { getApiClientByEntity, useAxiosInstance } from "@/hooks/useApiClient";
-import { ApiClient, EntityApiClient } from "@/services/api.class";
-import { EntityType } from "@/services/types";
-import { IBaseSchema } from "@/types/base.types";
+import { getApiClientByEntity, useAxiosInstance } from '@/hooks/useApiClient';
+import { ApiClient, EntityApiClient } from '@/services/api.class';
+import { EntityType } from '@/services/types';
+import { IBaseSchema } from '@/types/base.types';
 
 interface ApiClientContextProps {
   children: ReactNode;
@@ -29,7 +29,7 @@ export const ApiClientContext = createContext<ApiClientContext>({
   apiClient: new ApiClient(axios.create()),
   getApiClientByEntity: () => {
     throw new Error(
-      "getApiClientByEntity must be used within an ApiClientProvider",
+      'getApiClientByEntity must be used within an ApiClientProvider',
     );
   },
 });

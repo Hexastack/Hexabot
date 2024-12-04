@@ -6,67 +6,67 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
+import { GridPaginationModel, GridSortModel } from '@mui/x-data-grid';
 
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format } from '@/services/types';
 
-import { IAttachment, IAttachmentAttributes } from "./attachment.types";
+import { IAttachment, IAttachmentAttributes } from './attachment.types';
 import {
   IBlock,
   IBlockAttributes,
   IBlockFull,
   ICustomBlockTemplate,
-} from "./block.types";
-import { ICategory, ICategoryAttributes } from "./category.types";
-import { IChannel, IChannelAttributes } from "./channel.types";
-import { IContentType, IContentTypeAttributes } from "./content-type.types";
-import { IContent, IContentAttributes, IContentFull } from "./content.types";
-import { IContextVar, IContextVarAttributes } from "./context-var.types";
-import { IHelper, IHelperAttributes } from "./helper.types";
-import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
-import { ILanguage, ILanguageAttributes } from "./language.types";
+} from './block.types';
+import { ICategory, ICategoryAttributes } from './category.types';
+import { IChannel, IChannelAttributes } from './channel.types';
+import { IContentType, IContentTypeAttributes } from './content-type.types';
+import { IContent, IContentAttributes, IContentFull } from './content.types';
+import { IContextVar, IContextVarAttributes } from './context-var.types';
+import { IHelper, IHelperAttributes } from './helper.types';
+import { ILabel, ILabelAttributes, ILabelFull } from './label.types';
+import { ILanguage, ILanguageAttributes } from './language.types';
 import {
   IMenuNode,
   IMenuNodeAttributes,
   IMenuNodeFull,
-} from "./menu-tree.types";
-import { IMenuItem, IMenuItemAttributes, IMenuItemFull } from "./menu.types";
-import { IMessage, IMessageAttributes, IMessageFull } from "./message.types";
-import { IModel, IModelAttributes, IModelFull } from "./model.types";
+} from './menu-tree.types';
+import { IMenuItem, IMenuItemAttributes, IMenuItemFull } from './menu.types';
+import { IMessage, IMessageAttributes, IMessageFull } from './message.types';
+import { IModel, IModelAttributes, IModelFull } from './model.types';
 import {
   INlpEntity,
   INlpEntityAttributes,
   INlpEntityFull,
-} from "./nlp-entity.types";
+} from './nlp-entity.types';
 import {
   INlpSample,
   INlpSampleAttributes,
   INlpSampleFull,
-} from "./nlp-sample.types";
+} from './nlp-sample.types';
 import {
   INlpSampleEntity,
   INlpSampleEntityAttributes,
   INlpSampleEntityFull,
-} from "./nlp-sample_entity.types";
+} from './nlp-sample_entity.types';
 import {
   INlpValue,
   INlpValueAttributes,
   INlpValueFull,
-} from "./nlp-value.types";
+} from './nlp-value.types';
 import {
   IPermission,
   IPermissionAttributes,
   IPermissionFull,
-} from "./permission.types";
-import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
-import { ISetting, ISettingAttributes } from "./setting.types";
+} from './permission.types';
+import { IRole, IRoleAttributes, IRoleFull } from './role.types';
+import { ISetting, ISettingAttributes } from './setting.types';
 import {
   ISubscriber,
   ISubscriberAttributes,
   ISubscriberFull,
-} from "./subscriber.types";
-import { ITranslation, ITranslationAttributes } from "./translation.types";
-import { IUser, IUserAttributes, IUserFull } from "./user.types";
+} from './subscriber.types';
+import { ITranslation, ITranslationAttributes } from './translation.types';
+import { IUser, IUserAttributes, IUserFull } from './user.types';
 
 export interface IBaseSchema {
   id: string;
@@ -81,31 +81,31 @@ export interface IFormat<F = Format> {
 export const POPULATE_BY_TYPE = {
   [EntityType.CATEGORY]: [],
   [EntityType.CONTEXT_VAR]: [],
-  [EntityType.ROLE]: ["users", "permissions"],
-  [EntityType.USER]: ["roles", "avatar"],
-  [EntityType.LABEL]: ["users"],
-  [EntityType.MODEL]: ["permissions"],
-  [EntityType.PERMISSION]: ["model", "role"],
-  [EntityType.SUBSCRIBER]: ["labels", "assignedTo"],
+  [EntityType.ROLE]: ['users', 'permissions'],
+  [EntityType.USER]: ['roles', 'avatar'],
+  [EntityType.LABEL]: ['users'],
+  [EntityType.MODEL]: ['permissions'],
+  [EntityType.PERMISSION]: ['model', 'role'],
+  [EntityType.SUBSCRIBER]: ['labels', 'assignedTo'],
   [EntityType.CONTENT_TYPE]: [],
-  [EntityType.CONTENT]: ["entity"],
+  [EntityType.CONTENT]: ['entity'],
   [EntityType.SETTING]: [],
   [EntityType.BOTSTATS]: [],
   [EntityType.BLOCK]: [
-    "nextBlocks",
-    "previousBlocks",
-    "attachedBlock",
-    "attachedToBlock",
-    "assign_labels",
-    "trigger_labels",
-    "assignTo",
+    'nextBlocks',
+    'previousBlocks',
+    'attachedBlock',
+    'attachedToBlock',
+    'assign_labels',
+    'trigger_labels',
+    'assignTo',
   ],
-  [EntityType.NLP_SAMPLE]: ["language", "entities"],
-  [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
-  [EntityType.NLP_ENTITY]: ["values"],
-  [EntityType.NLP_VALUE]: ["entity"],
-  [EntityType.MESSAGE]: ["sender", "recipient", "sentBy"],
-  [EntityType.MENU]: ["parent"],
+  [EntityType.NLP_SAMPLE]: ['language', 'entities'],
+  [EntityType.NLP_SAMPLE_ENTITY]: ['sample', 'entity', 'value'],
+  [EntityType.NLP_ENTITY]: ['values'],
+  [EntityType.NLP_VALUE]: ['entity'],
+  [EntityType.MESSAGE]: ['sender', 'recipient', 'sentBy'],
+  [EntityType.MENU]: ['parent'],
   [EntityType.MENUTREE]: [],
   [EntityType.LANGUAGE]: [],
   [EntityType.TRANSLATION]: [],

@@ -6,34 +6,34 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faTags } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
+import { faTags } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, Grid, Paper } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import React from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
-import { ILabel } from "@/types/label.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType, Format } from '@/services/types';
+import { ILabel } from '@/types/label.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { LabelDialog } from "./LabelDialog";
+import { LabelDialog } from './LabelDialog';
 
 export const Labels = () => {
   const { t } = useTranslate();
@@ -43,7 +43,7 @@ export const Labels = () => {
   const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILabel>({
-    $or: ["name", "title"],
+    $or: ['name', 'title'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.LABEL, format: Format.FULL },
@@ -53,11 +53,11 @@ export const Labels = () => {
   );
   const { mutateAsync: deleteLabel } = useDelete(EntityType.LABEL, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const actionColumns = useActionColumns<ILabel>(
@@ -74,75 +74,75 @@ export const Labels = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<ILabel>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       flex: 1,
-      field: "title",
-      headerName: t("label.title"),
+      field: 'title',
+      headerName: t('label.title'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       flex: 1,
-      field: "name",
-      headerName: t("label.name"),
+      field: 'name',
+      headerName: t('label.name'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       flex: 2,
-      field: "description",
-      headerName: t("label.description"),
+      field: 'description',
+      headerName: t('label.description'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       minWidth: 120,
-      field: "user_count",
-      headerName: t("label.user_count"),
+      field: 'user_count',
+      headerName: t('label.user_count'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       minWidth: 140,
-      field: "label_id",
-      headerName: t("label.label_id"),
+      field: 'label_id',
+      headerName: t('label.label_id'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
 
-      headerAlign: "left",
+      headerAlign: 'left',
     },
 
     {
       minWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       minWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -157,7 +157,7 @@ export const Labels = () => {
           if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
         }}
       />
-      <PageHeader icon={faTags} title={t("title.labels")}>
+      <PageHeader icon={faTags} title={t('title.labels')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -174,10 +174,10 @@ export const Labels = () => {
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                sx={{ float: "right" }}
+                sx={{ float: 'right' }}
                 onClick={() => addDialogCtl.openDialog()}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </Grid>
           ) : null}

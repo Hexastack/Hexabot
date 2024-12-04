@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useChart } from "eazychart-react";
-import React, { DOMAttributes, useEffect, useRef, useState } from "react";
+import { useChart } from 'eazychart-react';
+import React, { DOMAttributes, useEffect, useRef, useState } from 'react';
 
-import { LegendItem } from "./LegendItem";
+import { LegendItem } from './LegendItem';
 
 export interface LegendProps extends DOMAttributes<HTMLDivElement> {
   onLegendClick?: (key: string, isActive: boolean, color: string) => void;
@@ -28,7 +28,7 @@ export const Legend: React.FC<LegendProps> = ({
   ...rest
 }) => {
   const { getScale } = useChart();
-  const colorScale = getScale("colorScale");
+  const colorScale = getScale('colorScale');
   const [keyDict, setKeyDict] = useState<{
     [key: string]: string;
   }>({});
@@ -68,7 +68,7 @@ export const Legend: React.FC<LegendProps> = ({
     });
 
     observer.observe(ref?.current as Element, {
-      box: "border-box",
+      box: 'border-box',
     });
 
     return () => {

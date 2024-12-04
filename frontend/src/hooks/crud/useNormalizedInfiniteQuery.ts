@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
+import { useInfiniteQuery, UseInfiniteQueryOptions } from 'react-query';
 
 import {
   EntityType,
   Format,
   QueryType,
   TPopulateTypeFromFormat,
-} from "@/services/types";
+} from '@/services/types';
 import {
   IBaseSchema,
   IDynamicProps,
@@ -21,24 +21,24 @@ import {
   POPULATE_BY_TYPE,
   TAllowedFormat,
   TType,
-} from "@/types/base.types";
+} from '@/types/base.types';
 
-import { useEntityApiClient } from "../useApiClient";
-import { toPageQueryPayload } from "../usePagination";
+import { useEntityApiClient } from '../useApiClient';
+import { toPageQueryPayload } from '../usePagination';
 
-import { useNormalizeAndCache } from "./helpers";
-import { useGetFromCache } from "./useGet";
+import { useNormalizeAndCache } from './helpers';
+import { useGetFromCache } from './useGet';
 
 const PAGE_SIZE = 20;
 
 export const useNormalizedInfiniteQuery = <
   TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
+  TAttr = TType<TDynamicProps['entity']>['attributes'],
+  TBasic extends IBaseSchema = TType<TDynamicProps['entity']>['basic'],
+  TFull extends IBaseSchema = TType<TDynamicProps['entity']>['full'],
   P = TPopulateTypeFromFormat<TDynamicProps>,
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
+  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps['entity']>,
   config?: IFindConfigProps,
   options?: Omit<
     UseInfiniteQueryOptions<
@@ -47,7 +47,7 @@ export const useNormalizedInfiniteQuery = <
       string[],
       [QueryType, EntityType, any]
     >,
-    "queryFn" | "queryKey" | "onSuccess"
+    'queryFn' | 'queryKey' | 'onSuccess'
   > & { onSuccess?: (result: TBasic[]) => void },
 ) => {
   const initialPaginationState = config?.initialPaginationState || {
@@ -56,8 +56,8 @@ export const useNormalizedInfiniteQuery = <
   };
   const initialSortState = config?.initialSortState || [
     {
-      field: "createdAt",
-      sort: "asc",
+      field: 'createdAt',
+      sort: 'asc',
     },
   ];
   const { onSuccess, ...otherOptions } = options || {};

@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { type IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { type IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   List,
   Theme,
@@ -21,20 +21,20 @@ import {
   ListItemIcon,
   Tooltip as MuiTooltip,
   TooltipProps,
-} from "@mui/material";
+} from '@mui/material';
 // @icon
-import { OverridableComponent } from "@mui/material/OverridableComponent";
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { OverridableComponent } from '@mui/material/OverridableComponent';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/themes/theme";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { useTranslate } from '@/hooks/useTranslate';
+import { TTranslationKeys } from '@/i18n/i18n.types';
+import { theme } from '@/layout/themes/theme';
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
-import { AnimatedChevron } from "../icons/AnimatedChevron";
+import { AnimatedChevron } from '../icons/AnimatedChevron';
 
-type TIcon = OverridableComponent<SvgIconTypeMap<{}, "svg">>;
+type TIcon = OverridableComponent<SvgIconTypeMap<{}, 'svg'>>;
 
 export type TMenuItem = {
   Icon?: TIcon | IconDefinition;
@@ -50,47 +50,47 @@ export type TMenuWithSubmenuItems = TMenuItem & {
 };
 
 const StyledListItemButton = styled(ListItemButton, {
-  shouldForwardProp: (prop) => prop !== "isHovered",
+  shouldForwardProp: (prop) => prop !== 'isHovered',
 })(({ isHovered, theme }: { isHovered?: boolean } & { theme: Theme }) =>
   SXStyleOptions({
     color: theme.palette.text.secondary,
-    "&.Mui-selected": {
+    '&.Mui-selected': {
       color: theme.palette.primary.main,
       backgroundColor: `${theme.palette.primary.light}61 !important`,
-      "&::before": {
+      '&::before': {
         content: '""',
-        width: "4px",
-        position: "absolute",
-        height: "110%",
+        width: '4px',
+        position: 'absolute',
+        height: '110%',
         backgroundColor: theme.palette.primary.main,
         left: 0,
-        borderRadius: "0 20px 20px 0",
+        borderRadius: '0 20px 20px 0',
       },
     },
     ...(isHovered && {
-      backgroundColor: "rgba(0, 0, 0, 0.04)",
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
     }),
     minHeight: 56,
-    paddingRight: "20px",
-    paddingLeft: "20px",
+    paddingRight: '20px',
+    paddingLeft: '20px',
   })({ theme }),
 );
 const StyledDivider = styled(Divider)(({ theme }) =>
   SXStyleOptions({
-    "&:before": {
+    '&:before': {
       borderColor: theme.palette.text.secondary,
     },
-    "&:after": {
+    '&:after': {
       borderColor: theme.palette.text.secondary,
     },
   })({ theme }),
 );
 const StyledListSubheader = styled(ListSubheader)(({ theme }) => ({
   color: theme.palette.text.secondary,
-  background: "transparent",
+  background: 'transparent',
 }));
 const StyledListItemIcon = styled(ListItemIcon, {
-  shouldForwardProp: (prop) => prop !== "isNested" && prop !== "isToggled",
+  shouldForwardProp: (prop) => prop !== 'isNested' && prop !== 'isToggled',
 })(
   ({
     theme,
@@ -103,12 +103,12 @@ const StyledListItemIcon = styled(ListItemIcon, {
   }) => ({
     color: theme?.palette.text.secondary,
     minWidth: 0,
-    marginRight: isToggled ? "20px" : "0",
+    marginRight: isToggled ? '20px' : '0',
     paddingLeft: isNested ? theme?.spacing(3) : 0,
   }),
 );
 const StyledListItemText = styled(ListItemText, {
-  shouldForwardProp: (prop) => prop !== "isNested" && prop !== "isSelected",
+  shouldForwardProp: (prop) => prop !== 'isNested' && prop !== 'isSelected',
 })(
   ({
     isNested,
@@ -122,7 +122,7 @@ const StyledListItemText = styled(ListItemText, {
     }),
   }),
 );
-const StyledList = styled(List)(() => ({ padding: 0, minWidth: "0" }));
+const StyledList = styled(List)(() => ({ padding: 0, minWidth: '0' }));
 const Tooltip = ({ children, ...rest }: TooltipProps) => (
   <MuiTooltip
     arrow
@@ -131,9 +131,9 @@ const Tooltip = ({ children, ...rest }: TooltipProps) => (
       tooltip: {
         sx: {
           p: 1,
-          bgcolor: "common.black",
-          "& .MuiTooltip-arrow": {
-            color: "common.black",
+          bgcolor: 'common.black',
+          '& .MuiTooltip-arrow': {
+            color: 'common.black',
           },
         },
       },
@@ -145,7 +145,7 @@ const Tooltip = ({ children, ...rest }: TooltipProps) => (
 );
 const VerticalMenuItem = ({
   text,
-  href = "",
+  href = '',
   onClick,
   pathname,
   selected,
@@ -166,7 +166,7 @@ const VerticalMenuItem = ({
     href,
     onClick,
   };
-  const isMenuItemHead = typeof isSubmenuOpen === "boolean";
+  const isMenuItemHead = typeof isSubmenuOpen === 'boolean';
   const isSelected = selected || (!isMenuItemHead && pathname === href);
   const color =
     isSelected && !(isToggled && !href && isSubmenuOpen)
@@ -185,15 +185,15 @@ const VerticalMenuItem = ({
         LinkComponent={Link}
         // isHovered={isSubmenuOpen}
       >
-        {Icon && !("icon" in Icon) ? (
+        {Icon && !('icon' in Icon) ? (
           <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
             <Icon htmlColor={color} />
           </StyledListItemIcon>
         ) : null}
-        {Icon && "icon" in Icon ? (
+        {Icon && 'icon' in Icon ? (
           <StyledListItemIcon isNested={isNested} isToggled={isToggled}>
             <FontAwesomeIcon
-              style={{ minWidth: "24px" }}
+              style={{ minWidth: '24px' }}
               color={color}
               icon={Icon}
             />
@@ -270,7 +270,7 @@ export const Sidebar = ({
                 onClick={toggleCollapse(text)}
                 isSubmenuOpen={openItems.includes(text)}
                 selected={submenuItems.some(
-                  ({ href }) => pathname === href || href === "",
+                  ({ href }) => pathname === href || href === '',
                 )}
                 pathname={pathname}
                 isToggled={isToggled}

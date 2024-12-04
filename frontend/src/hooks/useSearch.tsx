@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { debounce } from '@mui/material';
+import { ChangeEvent, useState } from 'react';
 
 import {
   TParamItem,
   TBuildParamProps,
   TBuildInitialParamProps,
-} from "@/types/search.types";
+} from '@/types/search.types';
 
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
@@ -45,17 +45,17 @@ const buildNeqInitialParams = <T,>({
     (acc, obj) => ({
       ...acc,
       [Object.entries(obj)[0][0]]: {
-        "!=": Object.entries(obj)[0][1],
+        '!=': Object.entries(obj)[0][1],
       },
     }),
     {},
   );
 
 export const useSearch = <T,>(params: TParamItem<T>) => {
-  const [searchText, setSearchText] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>('');
   const onSearch = debounce(
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
-      setSearchText(typeof e === "string" ? e : e.target.value);
+      setSearchText(typeof e === 'string' ? e : e.target.value);
     },
     300,
   );

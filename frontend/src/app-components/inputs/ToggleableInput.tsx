@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Switch, TextFieldProps } from "@mui/material";
-import { forwardRef, LegacyRef, useEffect, useState } from "react";
+import { Box, Switch, TextFieldProps } from '@mui/material';
+import { forwardRef, LegacyRef, useEffect, useState } from 'react';
 
-import { Input } from "./Input";
+import { Input } from './Input';
 
 export const ToggleableInput = forwardRef(
   (
@@ -19,7 +19,7 @@ export const ToggleableInput = forwardRef(
       defaultValue,
       disabled,
       ...props
-    }: Omit<TextFieldProps, "onChange"> & {
+    }: Omit<TextFieldProps, 'onChange'> & {
       onChange: (value: string) => void;
       readOnlyValue: string;
     },
@@ -61,7 +61,7 @@ export const ToggleableInput = forwardRef(
             setValue(e.target.value);
             onChange(e.target.value);
           }}
-          value={value ?? ""}
+          value={value ?? ''}
           disabled={disabled || isDisabled}
         />
       </Box>
@@ -69,4 +69,4 @@ export const ToggleableInput = forwardRef(
   },
 );
 
-ToggleableInput.displayName = "ToggleableInput";
+ToggleableInput.displayName = 'ToggleableInput';

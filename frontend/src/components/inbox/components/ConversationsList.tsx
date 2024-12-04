@@ -10,19 +10,19 @@ import {
   Avatar,
   Conversation,
   ConversationList,
-} from "@chatscope/chat-ui-kit-react";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import { Chip, debounce, Grid } from "@mui/material";
+} from '@chatscope/chat-ui-kit-react';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import { Chip, debounce, Grid } from '@mui/material';
 
-import { useConfig } from "@/hooks/useConfig";
-import { useTranslate } from "@/hooks/useTranslate";
-import { Title } from "@/layout/content/Title";
-import { EntityType } from "@/services/types";
+import { useConfig } from '@/hooks/useConfig';
+import { useTranslate } from '@/hooks/useTranslate';
+import { Title } from '@/layout/content/Title';
+import { EntityType } from '@/services/types';
 
-import { getAvatarSrc } from "../helpers/mapMessages";
-import { useChat } from "../hooks/ChatContext";
-import { useInfiniteLiveSubscribers } from "../hooks/useInfiniteLiveSubscribers";
-import { AssignedTo } from "../types";
+import { getAvatarSrc } from '../helpers/mapMessages';
+import { useChat } from '../hooks/ChatContext';
+import { useInfiniteLiveSubscribers } from '../hooks/useInfiniteLiveSubscribers';
+import { AssignedTo } from '../types';
 
 export const SubscribersList = (props: {
   channels: string[];

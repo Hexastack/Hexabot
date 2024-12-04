@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -15,25 +15,25 @@ import {
   ListItem,
   ListItemText,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
-import { useFind } from "@/hooks/crud/useFind";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { useFind } from '@/hooks/crud/useFind';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 
 function ReplacementTokens() {
   const { t } = useTranslate();
   const userInfos = [
-    { name: "first_name", label: t("label.user_first_name") },
-    { name: "last_name", label: t("label.user_last_name") },
+    { name: 'first_name', label: t('label.user_first_name') },
+    { name: 'last_name', label: t('label.user_last_name') },
   ];
   const userLocation = [
-    { name: "lat", label: t("label.user_location_lat") },
-    { name: "lon", label: t("label.user_location_lon") },
-    { name: "address.country", label: t("label.user_location_country") },
-    { name: "address.state", label: t("label.user_location_state") },
-    { name: "address.zipcode", label: t("label.user_location_zipcode") },
-    { name: "address.streetName", label: t("label.user_location_streetName") },
+    { name: 'lat', label: t('label.user_location_lat') },
+    { name: 'lon', label: t('label.user_location_lon') },
+    { name: 'address.country', label: t('label.user_location_country') },
+    { name: 'address.state', label: t('label.user_location_state') },
+    { name: 'address.zipcode', label: t('label.user_location_zipcode') },
+    { name: 'address.streetName', label: t('label.user_location_streetName') },
   ];
   // React Query to fetch context variables
   const { data: contextVars } = useFind({
@@ -47,7 +47,7 @@ function ReplacementTokens() {
     {
       params: {
         where: {
-          group: "contact",
+          group: 'contact',
         },
       },
       hasCount: false,
@@ -57,10 +57,10 @@ function ReplacementTokens() {
   return (
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        {t("label.replacement_tokens")}
+        {t('label.replacement_tokens')}
       </AccordionSummary>
-      <AccordionDetails sx={{ maxHeight: "600px", overflowY: "scroll" }}>
-        <Typography variant="h6">{t("title.context_vars")}</Typography>
+      <AccordionDetails sx={{ maxHeight: '600px', overflowY: 'scroll' }}>
+        <Typography variant="h6">{t('title.context_vars')}</Typography>
         <List>
           {(contextVars || []).map((v, index) => (
             <ListItem key={index}>
@@ -71,7 +71,7 @@ function ReplacementTokens() {
             </ListItem>
           ))}
         </List>
-        <Typography variant="h6">{t("title.user_infos")}</Typography>
+        <Typography variant="h6">{t('title.user_infos')}</Typography>
         <List>
           {userInfos.map((v, index) => (
             <ListItem key={index}>
@@ -82,7 +82,7 @@ function ReplacementTokens() {
             </ListItem>
           ))}
         </List>
-        <Typography variant="h6">{t("title.user_location")}</Typography>
+        <Typography variant="h6">{t('title.user_location')}</Typography>
         <List>
           {userLocation.map((v, index) => (
             <ListItem key={index}>
@@ -94,7 +94,7 @@ function ReplacementTokens() {
           ))}
         </List>
         <Typography variant="h6">
-          {t("title.contact", { ns: "contact" })}
+          {t('title.contact', { ns: 'contact' })}
         </Typography>
         <List>
           {(contactInfos || []).map((v, index) => (
@@ -102,7 +102,7 @@ function ReplacementTokens() {
               <ListItemText
                 primary={`{contact.${v.label}}`}
                 secondary={t(`label.${v.label}`, {
-                  ns: "contact",
+                  ns: 'contact',
                 })}
               />
             </ListItem>
@@ -113,6 +113,6 @@ function ReplacementTokens() {
   );
 }
 
-ReplacementTokens.displayName = "ReplacementTokens";
+ReplacementTokens.displayName = 'ReplacementTokens';
 
 export default ReplacementTokens;

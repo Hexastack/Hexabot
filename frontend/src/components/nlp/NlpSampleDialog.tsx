@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogContent } from "@mui/material";
-import { FC } from "react";
+import { Dialog, DialogContent } from '@mui/material';
+import { FC } from 'react';
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 import {
   INlpDatasetSample,
   INlpDatasetSampleAttributes,
   INlpSampleFormAttributes,
-} from "@/types/nlp-sample.types";
+} from '@/types/nlp-sample.types';
 
-import NlpDatasetSample from "./components/NlpTrainForm";
+import NlpDatasetSample from './components/NlpTrainForm';
 
 export type NlpSampleDialogProps = DialogControlProps<INlpDatasetSample>;
 export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
@@ -37,10 +37,10 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
     INlpDatasetSampleAttributes
   >(EntityType.NLP_SAMPLE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
@@ -67,7 +67,7 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
   return (
     <Dialog open={open} fullWidth maxWidth="md" onClose={closeDialog} {...rest}>
       <DialogTitle onClose={closeDialog}>
-        {t("title.edit_nlp_sample")}
+        {t('title.edit_nlp_sample')}
       </DialogTitle>
       <DialogContent>
         <NlpDatasetSample sample={sample} submitForm={onSubmitForm} />

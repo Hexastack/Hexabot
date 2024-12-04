@@ -6,26 +6,26 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
-import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
-import ReplyIcon from "@mui/icons-material/Reply";
-import { Chip, Grid } from "@mui/material";
-import { ReactNode } from "react";
+import { Message, MessageModel } from '@chatscope/chat-ui-kit-react';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import ReplyIcon from '@mui/icons-material/Reply';
+import { Chip, Grid } from '@mui/material';
+import { ReactNode } from 'react';
 
-import { ROUTES } from "@/services/api.class";
-import { EntityType } from "@/services/types";
-import { IMessage, IMessageFull } from "@/types/message.types";
-import { buildURL } from "@/utils/URL";
+import { ROUTES } from '@/services/api.class';
+import { EntityType } from '@/services/types';
+import { IMessage, IMessageFull } from '@/types/message.types';
+import { buildURL } from '@/utils/URL';
 
-import { AttachmentViewer } from "../components/AttachmentViewer";
-import { Carousel } from "../components/Carousel";
+import { AttachmentViewer } from '../components/AttachmentViewer';
+import { Carousel } from '../components/Carousel';
 
 function hasSameSender(
   m1: IMessage | IMessageFull,
   m2: IMessage | IMessageFull,
 ): boolean {
-  const sender1 = typeof m1.sender === "object" ? m1.sender.id : m1.sender;
-  const sender2 = typeof m2.sender === "object" ? m2.sender.id : m2.sender;
+  const sender1 = typeof m1.sender === 'object' ? m1.sender.id : m1.sender;
+  const sender2 = typeof m2.sender === 'object' ? m2.sender.id : m2.sender;
 
   return sender1 === sender2;
 }
@@ -35,9 +35,9 @@ function hasSameRecipient(
   m2: IMessage | IMessageFull,
 ): boolean {
   const recipient1 =
-    typeof m1.recipient === "object" ? m1.recipient.id : m1.recipient;
+    typeof m1.recipient === 'object' ? m1.recipient.id : m1.recipient;
   const recipient2 =
-    typeof m2.recipient === "object" ? m2.recipient.id : m2.recipient;
+    typeof m2.recipient === 'object' ? m2.recipient.id : m2.recipient;
 
   return recipient1 === recipient2;
 }
@@ -68,7 +68,7 @@ export function getMessageContent(
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
-  if ("text" in message) {
+  if ('text' in message) {
     content.push(
       <Message.TextContent key={messageEntity.id} text={message.text} />,
     );
@@ -76,17 +76,17 @@ export function getMessageContent(
   let chips: { title: string }[] = [];
   let chipsIcon: ReactNode;
 
-  if ("buttons" in message) {
+  if ('buttons' in message) {
     chips = message.buttons;
     chipsIcon = <MenuRoundedIcon color="disabled" />;
   }
-  if ("quickReplies" in message && Array.isArray(message.quickReplies)) {
+  if ('quickReplies' in message && Array.isArray(message.quickReplies)) {
     chips = message.quickReplies as { title: string }[];
     chipsIcon = <ReplyIcon color="disabled" />;
   }
   if (chips.length > 0)
     content.push(
-      <Message.Footer style={{ marginTop: "5px" }}>
+      <Message.Footer style={{ marginTop: '5px' }}>
         <Grid
           container
           justifyItems="center"
@@ -107,7 +107,7 @@ export function getMessageContent(
     );
 
   // If there's an attachment, create a component that handles its display
-  if ("attachment" in message) {
+  if ('attachment' in message) {
     content.push(
       <Message.CustomContent>
         <AttachmentViewer message={message} />
@@ -115,7 +115,7 @@ export function getMessageContent(
     );
   }
 
-  if ("options" in message) {
+  if ('options' in message) {
     content.push(
       <Message.CustomContent>
         <Carousel {...message} />
@@ -134,17 +134,17 @@ export function getAvatarSrc(
   entity: EntityType.USER | EntityType.SUBSCRIBER,
   id?: string,
 ) {
-  return buildURL(apiUrl, `${ROUTES[entity]}/${id || "bot"}/profile_pic`);
+  return buildURL(apiUrl, `${ROUTES[entity]}/${id || 'bot'}/profile_pic`);
 }
 
 export function getMessagePosition(
   currentMessage: IMessageFull | IMessage,
   previousMessage?: IMessageFull | IMessage,
   nextMessage?: IMessageFull | IMessage,
-): MessageModel["position"] {
+): MessageModel['position'] {
   // If there is no previous and no next message, it's a single message
   if (!previousMessage && !nextMessage) {
-    return "single";
+    return 'single';
   }
 
   // If the previous message is from a different sender and the next message is from a different sender
@@ -152,7 +152,7 @@ export function getMessagePosition(
     (!previousMessage || !isSubsequent(previousMessage, currentMessage)) &&
     (!nextMessage || !isSubsequent(currentMessage, nextMessage))
   ) {
-    return "single";
+    return 'single';
   }
 
   // If the previous message is from a different sender and the next message is from the same sender, it's the first message
@@ -160,7 +160,7 @@ export function getMessagePosition(
     (!previousMessage || !isSubsequent(previousMessage, currentMessage)) &&
     isSubsequent(currentMessage, nextMessage)
   ) {
-    return "first";
+    return 'first';
   }
 
   // If the previous message is from the same sender and the next message is from the same sender, it's a normal message
@@ -168,7 +168,7 @@ export function getMessagePosition(
     isSubsequent(previousMessage, currentMessage) &&
     isSubsequent(currentMessage, nextMessage)
   ) {
-    return "normal";
+    return 'normal';
   }
 
   // If the previous message is from the same sender and there's no next message or the next message is from a different sender, it's the last message
@@ -176,9 +176,9 @@ export function getMessagePosition(
     isSubsequent(previousMessage, currentMessage) &&
     (!nextMessage || !isSubsequent(currentMessage, nextMessage))
   ) {
-    return "last";
+    return 'last';
   }
 
   // Default case (should not reach here)
-  return "single";
+  return 'single';
 }

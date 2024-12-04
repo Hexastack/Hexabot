@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useCallback, useMemo } from "react";
-import { InfiniteData, useQueryClient } from "react-query";
+import { useCallback, useMemo } from 'react';
+import { InfiniteData, useQueryClient } from 'react-query';
 
-import { useNormalizeAndCache } from "@/hooks/crud/helpers";
-import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
-import { EntityType, QueryType } from "@/services/types";
-import { useSubscribe } from "@/websocket/socket-hooks";
+import { useNormalizeAndCache } from '@/hooks/crud/helpers';
+import { useNormalizedInfiniteQuery } from '@/hooks/crud/useNormalizedInfiniteQuery';
+import { EntityType, QueryType } from '@/services/types';
+import { useSubscribe } from '@/websocket/socket-hooks';
 
-import { SocketMessageEvents } from "../types";
+import { SocketMessageEvents } from '../types';
 
-import { useChat } from "./ChatContext";
+import { useChat } from './ChatContext';
 
 export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
@@ -40,7 +40,7 @@ export const useInfinitedLiveMessages = () => {
     },
     {
       params,
-      initialSortState: [{ field: "createdAt", sort: "desc" }],
+      initialSortState: [{ field: 'createdAt', sort: 'desc' }],
     },
     {
       enabled: !!activeChat?.id,
@@ -49,7 +49,7 @@ export const useInfinitedLiveMessages = () => {
   const addMessage = useCallback(
     (event: SocketMessageEvents) => {
       if (
-        (event.op === "messageReceived" || event.op === "messageSent") &&
+        (event.op === 'messageReceived' || event.op === 'messageSent') &&
         event.speakerId === activeChat?.id
       ) {
         const { result } = normalizeAndCache(event.msg);
@@ -74,7 +74,7 @@ export const useInfinitedLiveMessages = () => {
     [queryClient, activeChat?.id],
   );
 
-  useSubscribe<SocketMessageEvents>("message", addMessage);
+  useSubscribe<SocketMessageEvents>('message', addMessage);
 
   const messages = useMemo(
     () =>

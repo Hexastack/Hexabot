@@ -6,36 +6,36 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Flag } from "@mui/icons-material";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import { useQueryClient } from "react-query";
+import { Flag } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, Grid, Paper, Switch } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import { useQueryClient } from 'react-query';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { isSameEntity } from '@/hooks/crud/helpers';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { ILanguage } from '@/types/language.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { LanguageDialog } from "./LanguageDialog";
+import { LanguageDialog } from './LanguageDialog';
 
 export const Languages = () => {
   const { t } = useTranslate();
@@ -46,7 +46,7 @@ export const Languages = () => {
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILanguage>({
-    $or: ["title", "code"],
+    $or: ['title', 'code'],
   });
   const { dataGridProps, refetch } = useFind(
     { entity: EntityType.LANGUAGE },
@@ -56,16 +56,16 @@ export const Languages = () => {
   );
   const { mutateAsync: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       refetch();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       queryClient.removeQueries({
@@ -76,7 +76,7 @@ export const Languages = () => {
         },
       });
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const toggleDefault = (row: ILanguage) => {
@@ -104,47 +104,47 @@ export const Languages = () => {
         isDisabled: (row) => row.isDefault,
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<ILanguage>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       flex: 2,
-      field: "title",
-      headerName: t("label.title"),
+      field: 'title',
+      headerName: t('label.title'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       flex: 1,
-      field: "code",
-      headerName: t("label.code"),
+      field: 'code',
+      headerName: t('label.code'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       flex: 1,
-      field: "isRTL",
-      headerName: t("label.is_rtl"),
+      field: 'isRTL',
+      headerName: t('label.is_rtl'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
-      valueGetter: (value) => (value ? t("label.yes") : t("label.no")),
+      headerAlign: 'left',
+      valueGetter: (value) => (value ? t('label.yes') : t('label.no')),
     },
     {
       maxWidth: 120,
-      field: "isDefault",
-      headerName: t("label.is_default"),
+      field: 'isDefault',
+      headerName: t('label.is_default'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderCell: (params) => (
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          inputProps={{ 'aria-label': 'primary checkbox' }}
           disabled={
             params.value ||
             !hasPermission(EntityType.LANGUAGE, PermissionAction.UPDATE)
@@ -157,25 +157,25 @@ export const Languages = () => {
     },
     {
       minWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       minWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -190,7 +190,7 @@ export const Languages = () => {
           if (deleteDialogCtl?.data) deleteLanguage(deleteDialogCtl.data);
         }}
       />
-      <PageHeader icon={Flag} title={t("title.languages")}>
+      <PageHeader icon={Flag} title={t('title.languages')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -207,10 +207,10 @@ export const Languages = () => {
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                sx={{ float: "right" }}
+                sx={{ float: 'right' }}
                 onClick={() => addDialogCtl.openDialog()}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </Grid>
           ) : null}

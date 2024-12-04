@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, MenuItem } from "@mui/material";
-import { FC } from "react";
-import { FieldPath, useFormContext } from "react-hook-form";
+import { Grid, MenuItem } from '@mui/material';
+import { FC } from 'react';
+import { FieldPath, useFormContext } from 'react-hook-form';
 
-import { Input } from "@/app-components/inputs/Input";
-import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
-import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
-import { IBlockAttributes } from "@/types/block.types";
+import { Input } from '@/app-components/inputs/Input';
+import { ToggleableInput } from '@/app-components/inputs/ToggleableInput';
+import { useTranslate } from '@/hooks/useTranslate';
+import { useValidationRules } from '@/hooks/useValidationRules';
+import { IBlockAttributes } from '@/types/block.types';
 import {
   AnyButton,
   ButtonType,
   WebviewHeightRatio,
-} from "@/types/message.types";
+} from '@/types/message.types';
 
 const buildFieldPath = (
   fieldPath: FieldPath<IBlockAttributes>,
@@ -46,8 +46,8 @@ const ButtonInput: FC<ButtonInputProps> = ({
 }) => {
   const { t } = useTranslate();
   const types: { value: ButtonType; label: string }[] = [
-    { value: ButtonType.postback, label: t("label.postback") },
-    { value: ButtonType.web_url, label: t("label.web_url") },
+    { value: ButtonType.postback, label: t('label.postback') },
+    { value: ButtonType.web_url, label: t('label.web_url') },
   ];
   const rules = useValidationRules();
   const setButtonType = (type: ButtonType) => {
@@ -58,7 +58,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
         payload: button.title,
       });
     } else {
-      onChange({ type: ButtonType.web_url, title: button.title, url: "" });
+      onChange({ type: ButtonType.web_url, title: button.title, url: '' });
     }
   };
   const {
@@ -87,22 +87,22 @@ const ButtonInput: FC<ButtonInputProps> = ({
         <Input
           fullWidth
           required
-          placeholder={t("label.title")}
+          placeholder={t('label.title')}
           value={button.title}
           inputProps={{
             maxLength: 20,
           }}
-          {...register(buildFieldPath(fieldPath, idx, "title"), {
-            required: t("message.title_is_required"),
+          {...register(buildFieldPath(fieldPath, idx, 'title'), {
+            required: t('message.title_is_required'),
           })}
           onChange={(e) => {
             onChange({ ...button, title: e.target.value });
           }}
-          error={!!errors.message?.["buttons"]?.[idx]?.title}
+          error={!!errors.message?.['buttons']?.[idx]?.title}
           helperText={
-            errors.message?.["buttons"]?.[idx]?.title?.message ||
+            errors.message?.['buttons']?.[idx]?.title?.message ||
             (button.title.length === 20
-              ? t("message.title_length_exceeded")
+              ? t('message.title_length_exceeded')
               : null)
           }
         />
@@ -112,14 +112,14 @@ const ButtonInput: FC<ButtonInputProps> = ({
           <ToggleableInput
             defaultValue={button.payload}
             readOnlyValue={button.title}
-            {...register(buildFieldPath(fieldPath, idx, "payload"), {
+            {...register(buildFieldPath(fieldPath, idx, 'payload'), {
               validate: {
                 required: (value) => {
                   if (disablePayload || value) {
                     return true;
                   }
 
-                  return t("message.payload_is_required");
+                  return t('message.payload_is_required');
                 },
               },
             })}
@@ -130,8 +130,8 @@ const ButtonInput: FC<ButtonInputProps> = ({
               })
             }
             disabled={disablePayload}
-            error={!!errors.message?.["buttons"]?.[idx]?.payload}
-            helperText={errors.message?.["buttons"]?.[idx]?.payload?.message}
+            error={!!errors.message?.['buttons']?.[idx]?.payload}
+            helperText={errors.message?.['buttons']?.[idx]?.payload?.message}
           />
         ) : (
           <Input
@@ -139,7 +139,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
             type="ur"
             placeholder="URL"
             value={button.url}
-            {...register(buildFieldPath(fieldPath, idx, "url"), {
+            {...register(buildFieldPath(fieldPath, idx, 'url'), {
               validate: {
                 required: (value) => {
                   if (
@@ -149,7 +149,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
                     return true;
                   }
 
-                  return t("message.url_is_required");
+                  return t('message.url_is_required');
                 },
               },
               ...rules.url,
@@ -158,8 +158,8 @@ const ButtonInput: FC<ButtonInputProps> = ({
               onChange({ ...button, url: e.target.value });
             }}
             disabled={disablePayload}
-            error={!!errors.message?.["buttons"]?.[idx]?.url}
-            helperText={errors.message?.["buttons"]?.[idx]?.url?.message}
+            error={!!errors.message?.['buttons']?.[idx]?.url}
+            helperText={errors.message?.['buttons']?.[idx]?.url?.message}
           />
         )}
       </Grid>
@@ -167,22 +167,22 @@ const ButtonInput: FC<ButtonInputProps> = ({
         {button.type === ButtonType.postback ? null : (
           <Input
             select
-            value={button.webview_height_ratio || "none"}
+            value={button.webview_height_ratio || 'none'}
             onChange={(e) => {
               const value = e.target.value;
 
               onChange({
                 ...button,
-                messenger_extensions: e.target.value !== "none",
+                messenger_extensions: e.target.value !== 'none',
                 webview_height_ratio:
-                  value !== "none" ? (value as WebviewHeightRatio) : undefined,
+                  value !== 'none' ? (value as WebviewHeightRatio) : undefined,
               });
             }}
           >
-            <MenuItem value="none">{t("label.none")}</MenuItem>
-            <MenuItem value="compact">{t("label.compact")}</MenuItem>
-            <MenuItem value="tall">{t("label.tall")}</MenuItem>
-            <MenuItem value="full">{t("label.full")}</MenuItem>
+            <MenuItem value="none">{t('label.none')}</MenuItem>
+            <MenuItem value="compact">{t('label.compact')}</MenuItem>
+            <MenuItem value="tall">{t('label.tall')}</MenuItem>
+            <MenuItem value="full">{t('label.full')}</MenuItem>
           </Input>
         )}
       </Grid>

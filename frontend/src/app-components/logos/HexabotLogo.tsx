@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import Link from "next/link";
+import Link from 'next/link';
 
-import { RouterType } from "@/services/types";
+import { RouterType } from '@/services/types';
 
 export const HexabotLogo = () => {
   return (
     <Link
       href={RouterType.HOME}
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
       <svg
@@ -56,7 +56,7 @@ export const HexabotLogo = () => {
           letterSpacing={1.45}
           style={{
             lineHeight: 1.2,
-            whiteSpace: "pre",
+            whiteSpace: 'pre',
           }}
           transform="translate(-62.42 -136.847)"
         />
@@ -72,7 +72,7 @@ export const HexabotLogo = () => {
             paintOrder="normal"
             transform="translate(-62.42 -136.847) matrix(1.0295 0 0 1.0295 57.623 -4.973) translate(.42 2.314) scale(.98608)"
             style={{
-              mixBlendMode: "normal",
+              mixBlendMode: 'normal',
             }}
           />
           <g

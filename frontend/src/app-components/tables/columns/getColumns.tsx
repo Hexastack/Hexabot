@@ -6,53 +6,53 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CheckCircle } from "@mui/icons-material";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import DeleteIcon from "@mui/icons-material/DeleteOutlined";
-import EditIcon from "@mui/icons-material/EditOutlined";
-import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
-import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import TocOutlinedIcon from "@mui/icons-material/TocOutlined";
-import ViewListIcon from "@mui/icons-material/ViewListOutlined";
-import { Stack, Tooltip } from "@mui/material";
+import { CheckCircle } from '@mui/icons-material';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import EditIcon from '@mui/icons-material/EditOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import TocOutlinedIcon from '@mui/icons-material/TocOutlined';
+import ViewListIcon from '@mui/icons-material/ViewListOutlined';
+import { Stack, Tooltip } from '@mui/material';
 import {
   GridActionsCellItem,
   GridColDef,
   GridRenderCellParams,
   GridTreeNodeWithRender,
   GridValidRowModel,
-} from "@mui/x-data-grid";
+} from '@mui/x-data-grid';
 
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
-import { TTranslationKeys } from "@/i18n/i18n.types";
-import { theme } from "@/layout/themes/theme";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useTranslate } from '@/hooks/useTranslate';
+import { TTranslationKeys } from '@/i18n/i18n.types';
+import { theme } from '@/layout/themes/theme';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
 
 export enum ActionColumnLabel {
-  Edit = "Edit",
-  Delete = "Delete",
-  Values = "Values",
-  Manage_Roles = "Manage_Roles",
-  Permissions = "Permissions",
-  Content = "Content",
-  Fields = "Fields",
-  Manage_Labels = "Manage_Labels",
-  Toggle = "Toggle",
+  Edit = 'Edit',
+  Delete = 'Delete',
+  Values = 'Values',
+  Manage_Roles = 'Manage_Roles',
+  Permissions = 'Permissions',
+  Content = 'Content',
+  Fields = 'Fields',
+  Manage_Labels = 'Manage_Labels',
+  Toggle = 'Toggle',
 }
 
 const ACTION_COLUMN_LABEL_MAP: Record<ActionColumnLabel, TTranslationKeys> = {
-  [ActionColumnLabel.Edit]: "button.edit",
-  [ActionColumnLabel.Delete]: "button.delete",
-  [ActionColumnLabel.Values]: "button.values",
-  [ActionColumnLabel.Manage_Roles]: "button.manage_roles",
-  [ActionColumnLabel.Permissions]: "button.permissions",
-  [ActionColumnLabel.Content]: "button.content",
-  [ActionColumnLabel.Fields]: "button.fields",
-  [ActionColumnLabel.Manage_Labels]: "title.manage_labels",
-  [ActionColumnLabel.Toggle]: "button.toggle",
+  [ActionColumnLabel.Edit]: 'button.edit',
+  [ActionColumnLabel.Delete]: 'button.delete',
+  [ActionColumnLabel.Values]: 'button.values',
+  [ActionColumnLabel.Manage_Roles]: 'button.manage_roles',
+  [ActionColumnLabel.Permissions]: 'button.permissions',
+  [ActionColumnLabel.Content]: 'button.content',
+  [ActionColumnLabel.Fields]: 'button.fields',
+  [ActionColumnLabel.Manage_Labels]: 'title.manage_labels',
+  [ActionColumnLabel.Toggle]: 'button.toggle',
 } as const;
 
 export interface ActionColumn<T extends GridValidRowModel> {
@@ -144,7 +144,7 @@ function StackComponent<T extends GridValidRowModel>({
                 getState(params.row)
                   ? getColor(label)
                   : theme.palette.grey[600],
-              "&:hover": {
+              '&:hover': {
                 color: getColor(label),
               },
             }}
@@ -170,11 +170,11 @@ export const getActionsColumn = <T extends GridValidRowModel>(
 ): GridColDef<T> => {
   return {
     maxWidth: getActionsWidth(actions.length),
-    field: "actions",
+    field: 'actions',
     headerName,
     sortable: false,
     minWidth: getActionsWidth(actions.length),
-    align: "center",
+    align: 'center',
     renderCell: (params) => (
       <StackComponent actions={actions} params={params} />
     ),

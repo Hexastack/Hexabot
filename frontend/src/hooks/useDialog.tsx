@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { DialogProps } from "@mui/material";
-import { useState } from "react";
+import { DialogProps } from '@mui/material';
+import { useState } from 'react';
 
 export type DialogControlProps<T, C = never> = Omit<
   DialogControl<T, C>,
-  "openDialog"
+  'openDialog'
 >;
 export type DialogControl<T = null, C = never> = DialogProps & {
   data?: T;
@@ -28,7 +28,7 @@ export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
     setOpen(true);
   };
   const closeDialog = (event?: React.MouseEvent | Event, reason?: string) => {
-    if (reason !== "backdropClick") {
+    if (reason !== 'backdropClick') {
       setOpen(false);
     }
   };

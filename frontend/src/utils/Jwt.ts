@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { TJwtPayload } from "@/types/jwt.types";
+import { TJwtPayload } from '@/types/jwt.types';
 
 export class JWT<T extends TJwtPayload> {
   decode(token: string): T {
     try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url?.replace("-", "+").replace("_", "/");
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url?.replace('-', '+').replace('_', '/');
 
       return JSON.parse(window.atob(base64));
     } catch (e) {
-      throw new Error("Invalid Token");
+      throw new Error('Invalid Token');
     }
   }
 

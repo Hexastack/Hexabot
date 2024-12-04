@@ -6,30 +6,30 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CssBaseline } from "@mui/material";
-import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
-import type { NextPage } from "next";
-import type { AppProps } from "next/app";
-import { Roboto } from "next/font/google";
-import Head from "next/head";
-import { type ReactElement, type ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
+import { CssBaseline } from '@mui/material';
+import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import type { NextPage } from 'next';
+import type { AppProps } from 'next/app';
+import { Roboto } from 'next/font/google';
+import Head from 'next/head';
+import { type ReactElement, type ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
 
-import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
-import { ApiClientProvider } from "@/contexts/apiClient.context";
-import { AuthProvider } from "@/contexts/auth.context";
-import { ConfigProvider } from "@/contexts/config.context";
-import { PermissionProvider } from "@/contexts/permission.context";
-import { SettingsProvider } from "@/contexts/setting.context";
-import { ToastProvider } from "@/hooks/useToast";
-import { theme } from "@/layout/themes/theme";
-import { SocketProvider } from "@/websocket/socket-hooks";
+import { SnackbarCloseButton } from '@/app-components/displays/Toast/CloseButton';
+import { ApiClientProvider } from '@/contexts/apiClient.context';
+import { AuthProvider } from '@/contexts/auth.context';
+import { ConfigProvider } from '@/contexts/config.context';
+import { PermissionProvider } from '@/contexts/permission.context';
+import { SettingsProvider } from '@/contexts/setting.context';
+import { ToastProvider } from '@/hooks/useToast';
+import { theme } from '@/layout/themes/theme';
+import { SocketProvider } from '@/websocket/socket-hooks';
 
-import "../components/inbox/inbox.css";
-import "../i18n/config";
-import "../styles/globals.css";
-import "../styles/visual-editor.css";
+import '../components/inbox/inbox.css';
+import '../i18n/config';
+import '../styles/globals.css';
+import '../styles/visual-editor.css';
 
 type TNextPageWithLayout = NextPage & {
   // eslint-disable-next-line no-unused-vars
@@ -52,8 +52,8 @@ const queryClient = new QueryClient({
 });
 
 export const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["100", "300", "400", "700", "900", "500"],
+  subsets: ['latin'],
+  weight: ['100', '300', '400', '700', '900', '500'],
 });
 const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
   // Use the layout defined at the page level, if available
@@ -74,7 +74,7 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
           <ThemeProvider theme={theme}>
             <ToastProvider
               maxSnack={3}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
               action={(snackbarKey) => (
                 <SnackbarCloseButton snackbarKey={snackbarKey} />
               )}

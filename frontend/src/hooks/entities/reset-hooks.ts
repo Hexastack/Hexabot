@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useMutation } from "react-query";
+import { useMutation } from 'react-query';
 
-import { TMutationOptions } from "@/services/types";
-import { IResetPayload, IResetRequest } from "@/types/reset.types";
+import { TMutationOptions } from '@/services/types';
+import { IResetPayload, IResetRequest } from '@/types/reset.types';
 
-import { useApiClient } from "../useApiClient";
+import { useApiClient } from '../useApiClient';
 
 export const useRequestResetPassword = (
   options?: Omit<
     TMutationOptions<void, Error, IResetRequest, unknown>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -33,7 +33,7 @@ export const useResetPassword = (
   token: string,
   options?: Omit<
     TMutationOptions<void, Error, IResetPayload, unknown>,
-    "mutationFn"
+    'mutationFn'
   >,
 ) => {
   const { apiClient } = useApiClient();

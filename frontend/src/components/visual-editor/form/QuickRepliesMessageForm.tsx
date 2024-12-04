@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { ContentItem } from "@/app-components/dialogs";
-import { Input } from "@/app-components/inputs/Input";
-import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IBlockAttributes } from "@/types/block.types";
+import { ContentItem } from '@/app-components/dialogs';
+import { Input } from '@/app-components/inputs/Input';
+import QuickRepliesIcon from '@/app-components/svg/toolbar/QuickRepliesIcon';
+import SimpleTextIcon from '@/app-components/svg/toolbar/SimpleTextIcon';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IBlockAttributes } from '@/types/block.types';
 
-import { useBlock } from "./BlockFormProvider";
-import { FormSectionTitle } from "./FormSectionTitle";
-import QuickRepliesInput from "./inputs/message/QuickRepliesInput";
+import { useBlock } from './BlockFormProvider';
+import { FormSectionTitle } from './FormSectionTitle';
+import QuickRepliesInput from './inputs/message/QuickRepliesInput';
 
 const QuickRepliesMessageForm = () => {
   const block = useBlock();
@@ -28,31 +28,31 @@ const QuickRepliesMessageForm = () => {
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
 
-  if (!(block?.message && "quickReplies" in block.message)) {
+  if (!(block?.message && 'quickReplies' in block.message)) {
     return null;
   }
 
   return (
     <>
-      {block?.message && "text" in block?.message ? (
+      {block?.message && 'text' in block?.message ? (
         <>
-          <FormSectionTitle title={t("label.message")} Icon={SimpleTextIcon} />
+          <FormSectionTitle title={t('label.message')} Icon={SimpleTextIcon} />
           <ContentItem>
             <Input
-              label={t("label.message")}
+              label={t('label.message')}
               required
               multiline={true}
-              defaultValue={block?.message.text || ""}
+              defaultValue={block?.message.text || ''}
               minRows={3}
-              helperText={errors?.message?.["text"]?.message}
-              error={!!errors?.message?.["text"]}
-              {...register("message.text")}
+              helperText={errors?.message?.['text']?.message}
+              error={!!errors?.message?.['text']}
+              {...register('message.text')}
             />
           </ContentItem>
         </>
       ) : null}
       <FormSectionTitle
-        title={t("label.quick_replies")}
+        title={t('label.quick_replies')}
         Icon={QuickRepliesIcon}
       />
       <ContentItem>
@@ -64,7 +64,7 @@ const QuickRepliesMessageForm = () => {
             <QuickRepliesInput
               value={field?.value || []}
               onChange={field.onChange}
-              minInput={"attachment" in block.message ? 0 : 1}
+              minInput={'attachment' in block.message ? 0 : 1}
             />
           )}
         />
@@ -73,6 +73,6 @@ const QuickRepliesMessageForm = () => {
   );
 };
 
-QuickRepliesMessageForm.displayName = "TextMessageForm";
+QuickRepliesMessageForm.displayName = 'TextMessageForm';
 
 export default QuickRepliesMessageForm;

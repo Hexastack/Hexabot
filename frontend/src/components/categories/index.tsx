@@ -6,37 +6,37 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FolderIcon from "@mui/icons-material/Folder";
-import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useState } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FolderIcon from '@mui/icons-material/Folder';
+import { Button, Grid, Paper } from '@mui/material';
+import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { ICategory } from "../../types/category.types";
+import { ICategory } from '../../types/category.types';
 
-import { CategoryDialog } from "./CategoryDialog";
+import { CategoryDialog } from './CategoryDialog';
 
 export const Categories = () => {
   const { t } = useTranslate();
@@ -46,7 +46,7 @@ export const Categories = () => {
   const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ICategory>({
-    $iLike: ["label"],
+    $iLike: ['label'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.CATEGORY },
@@ -56,22 +56,22 @@ export const Categories = () => {
   );
   const { mutateAsync: deleteCategory } = useDelete(EntityType.CATEGORY, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error.message || t('message.internal_server_error'));
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
       setSelectedCategories([]);
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const { mutateAsync: deleteCategories } = useDeleteMany(EntityType.CATEGORY, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error.message || t('message.internal_server_error'));
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
       setSelectedCategories([]);
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -89,39 +89,39 @@ export const Categories = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<ICategory>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       flex: 1,
-      field: "label",
-      headerName: t("label.label"),
+      field: 'label',
+      headerName: t('label.label'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -148,7 +148,7 @@ export const Categories = () => {
         }}
       />
       <Grid>
-        <PageHeader icon={FolderIcon} title={t("title.categories")}>
+        <PageHeader icon={FolderIcon} title={t('title.categories')}>
           <Grid
             justifyContent="flex-end"
             gap={1}
@@ -165,10 +165,10 @@ export const Categories = () => {
                 <Button
                   startIcon={<AddIcon />}
                   variant="contained"
-                  sx={{ float: "right" }}
+                  sx={{ float: 'right' }}
                   onClick={() => addDialogCtl.openDialog()}
                 >
-                  {t("button.add")}
+                  {t('button.add')}
                 </Button>
               </Grid>
             ) : null}
@@ -180,7 +180,7 @@ export const Categories = () => {
                   color="error"
                   onClick={() => deleteDialogCtl.openDialog(undefined)}
                 >
-                  {t("button.delete")}
+                  {t('button.delete')}
                 </Button>
               </Grid>
             )}

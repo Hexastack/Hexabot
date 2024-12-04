@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Cancel } from "@mui/icons-material";
+import { Cancel } from '@mui/icons-material';
 import {
   Box,
   Chip,
@@ -16,19 +16,19 @@ import {
   Skeleton,
   Typography,
   useTheme,
-} from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
-import { forwardRef, SyntheticEvent, useRef } from "react";
+} from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import { forwardRef, SyntheticEvent, useRef } from 'react';
 
-import { Input } from "@/app-components/inputs/Input";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useSearch } from "@/hooks/useSearch";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { NlpPattern } from "@/types/block.types";
-import { INlpEntity } from "@/types/nlp-entity.types";
-import { INlpValue } from "@/types/nlp-value.types";
+import { Input } from '@/app-components/inputs/Input';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useSearch } from '@/hooks/useSearch';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { NlpPattern } from '@/types/block.types';
+import { INlpEntity } from '@/types/nlp-entity.types';
+import { INlpValue } from '@/types/nlp-value.types';
 
 type NlpPatternSelectProps = {
   patterns: NlpPattern[];
@@ -43,7 +43,7 @@ const NlpPatternSelect = (
   const theme = useTheme();
   const { t } = useTranslate();
   const { searchPayload } = useSearch<INlpEntity>({
-    $iLike: ["name"],
+    $iLike: ['name'],
   });
   const { data: options, isLoading } = useFind(
     { entity: EntityType.NLP_ENTITY, format: Format.FULL },
@@ -67,35 +67,35 @@ const NlpPatternSelect = (
         ({ name }) =>
           ({
             entity: name,
-            match: "entity",
+            match: 'entity',
             value: name,
-          } as NlpPattern),
+          }) as NlpPattern,
       ),
     ];
 
     onChange(newSelection);
   };
   const handleNlpValueChange = (
-    { id, name }: Pick<INlpEntity, "id" | "name">,
+    { id, name }: Pick<INlpEntity, 'id' | 'name'>,
     valueId: string,
   ): void => {
     const newSelection = patterns.slice(0);
     const update = newSelection.find(({ entity: e }) => e === name);
 
     if (!update) {
-      throw new Error("Unable to find nlp entity");
+      throw new Error('Unable to find nlp entity');
     }
 
     if (valueId === id) {
-      update.match = "entity";
+      update.match = 'entity';
       update.value = name;
     } else {
       const value = getNlpValueFromCache(valueId);
 
       if (!value) {
-        throw new Error("Unable to find nlp value in cache");
+        throw new Error('Unable to find nlp value in cache');
       }
-      update.match = "value";
+      update.match = 'value';
       update.value = value.value;
     }
 
@@ -131,16 +131,16 @@ const NlpPatternSelect = (
           display="flex"
           flexDirection="column"
           style={{
-            alignItems: "start",
+            alignItems: 'start',
           }}
           sx={{
             backgroundColor: selected
               ? theme.palette.action.selected
-              : "inherit",
-            "&:hover": {
+              : 'inherit',
+            '&:hover': {
               backgroundColor: theme.palette.action.hover,
             },
-            cursor: "pointer",
+            cursor: 'pointer',
           }}
         >
           <Typography variant="body1" fontWeight="bold">
@@ -161,10 +161,10 @@ const NlpPatternSelect = (
         return (
           <Box
             sx={{
-              display: "flex",
-              flexWrap: "wrap",
+              display: 'flex',
+              flexWrap: 'wrap',
               gap: 0.5,
-              mx: "0.5rem",
+              mx: '0.5rem',
             }}
           >
             {entities.map(({ id, name, values }, index) => {
@@ -193,7 +193,7 @@ const NlpPatternSelect = (
                     }
 
                     if (option === id) {
-                      return t("label.any");
+                      return t('label.any');
                     }
 
                     return option;
@@ -206,13 +206,13 @@ const NlpPatternSelect = (
                   }
                   sx={{
                     minWidth: 50,
-                    ".MuiAutocomplete-input": {
-                      minWidth: "100px !important",
+                    '.MuiAutocomplete-input': {
+                      minWidth: '100px !important',
                     },
-                    "& .MuiOutlinedInput-root": {
-                      paddingRight: "2rem !important",
-                      "&.MuiInputBase-sizeSmall": {
-                        padding: "0 6px 0 0 !important",
+                    '& .MuiOutlinedInput-root': {
+                      paddingRight: '2rem !important',
+                      '&.MuiInputBase-sizeSmall': {
+                        padding: '0 6px 0 0 !important',
                       },
                     },
                   }}
@@ -224,16 +224,16 @@ const NlpPatternSelect = (
                         readOnly: true,
                         sx: {
                           padding: 0,
-                          overflow: "hidden",
-                          cursor: "pointer",
-                          fontSize: "14px",
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          fontSize: '14px',
                         },
                         startAdornment: (
                           <InputAdornment position="start">
                             <Chip
                               sx={{
-                                p: "0 0.3rem",
-                                border: "none",
+                                p: '0 0.3rem',
+                                border: 'none',
                                 borderRadius: 0,
                               }}
                               color="primary"
@@ -248,7 +248,7 @@ const NlpPatternSelect = (
                               <CircularProgress color="inherit" size={20} />
                             ) : (
                               <IconButton
-                                sx={{ p: 0, pr: "2px" }}
+                                sx={{ p: 0, pr: '2px' }}
                                 onClick={(e) => {
                                   onDelete(e);
 
@@ -261,9 +261,9 @@ const NlpPatternSelect = (
                               >
                                 <Cancel
                                   sx={{
-                                    fontSize: "16px",
-                                    transition: ".05s",
-                                    "&:hover": {
+                                    fontSize: '16px',
+                                    transition: '.05s',
+                                    '&:hover': {
                                       color: theme.palette.grey[700],
                                     },
                                   }}
@@ -286,12 +286,12 @@ const NlpPatternSelect = (
         <Input
           {...props}
           sx={{
-            "& .MuiOutlinedInput-root": {
-              paddingRight: "6px !important",
+            '& .MuiOutlinedInput-root': {
+              paddingRight: '6px !important',
             },
           }}
           size="small"
-          label={t("label.nlp")}
+          label={t('label.nlp')}
           InputProps={{
             ...props.InputProps,
             inputRef,
@@ -311,7 +311,7 @@ const NlpPatternSelect = (
   );
 };
 
-NlpPatternSelect.displayName = "NlpPatternSelect";
+NlpPatternSelect.displayName = 'NlpPatternSelect';
 
 export default forwardRef(NlpPatternSelect) as (
   props: NlpPatternSelectProps & {

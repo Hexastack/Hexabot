@@ -6,35 +6,35 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
+import { faUniversalAccess } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, Grid, Paper } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
+import React from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
+import { IRole } from '@/types/role.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { PermissionsDialog } from "./PermissionsDialog";
-import { RoleDialog } from "./RoleDialog";
+import { PermissionsDialog } from './PermissionsDialog';
+import { RoleDialog } from './RoleDialog';
 
 export const Roles = () => {
   const { t } = useTranslate();
@@ -47,7 +47,7 @@ export const Roles = () => {
   }>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IRole>({
-    $iLike: ["name"],
+    $iLike: ['name'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.ROLE },
@@ -61,7 +61,7 @@ export const Roles = () => {
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const actionColumns = useActionColumns<IRole>(
@@ -86,39 +86,39 @@ export const Roles = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<IRole>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       flex: 3,
-      field: "name",
-      headerName: t("label.name"),
+      field: 'name',
+      headerName: t('label.name'),
       sortable: false,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -136,7 +136,7 @@ export const Roles = () => {
           if (deleteDialogCtl.data) deleteRole(deleteDialogCtl.data);
         }}
       />
-      <PageHeader title={t("title.roles")} icon={faUniversalAccess}>
+      <PageHeader title={t('title.roles')} icon={faUniversalAccess}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -154,13 +154,13 @@ export const Roles = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{
-                  float: "right",
+                  float: 'right',
                 }}
                 onClick={() => {
                   addDialogCtl.openDialog();
                 }}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </Grid>
           ) : null}

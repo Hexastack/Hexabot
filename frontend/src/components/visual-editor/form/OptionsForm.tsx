@@ -6,28 +6,28 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Typography } from "@mui/material";
-import { Controller, useFormContext } from "react-hook-form";
+import { Typography } from '@mui/material';
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { IBlockAttributes } from "@/types/block.types";
-import { ILabelFull } from "@/types/label.types";
-import { IUser } from "@/types/user.types";
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { Input } from '@/app-components/inputs/Input';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { IBlockAttributes } from '@/types/block.types';
+import { ILabelFull } from '@/types/label.types';
+import { IUser } from '@/types/user.types';
 
-import { useBlock } from "./BlockFormProvider";
-import ContextVarsInput from "./inputs/options/ContextVarsInput";
-import LocalFallbackInput from "./inputs/options/LocalFallbackInput";
+import { useBlock } from './BlockFormProvider';
+import ContextVarsInput from './inputs/options/ContextVarsInput';
+import LocalFallbackInput from './inputs/options/LocalFallbackInput';
 
 export const OptionsForm = () => {
   const { t } = useTranslate();
   const block = useBlock();
   const { control, register, watch } = useFormContext<IBlockAttributes>();
-  const computed = watch("options.typing");
+  const computed = watch('options.typing');
 
   return (
     <ContentContainer>
@@ -35,12 +35,12 @@ export const OptionsForm = () => {
         <Input
           fullWidth={false}
           defaultValue={block?.options?.typing || 0}
-          label={t("label.typing_indicator")}
-          {...register("options.typing")}
+          label={t('label.typing_indicator')}
+          {...register('options.typing')}
           type="number"
         />
         <Typography component="span" display="inline-block" p={0.5}>
-          = {(computed || 0) / 1000} {t("label.seconds")}
+          = {(computed || 0) / 1000} {t('label.seconds')}
         </Typography>
       </ContentItem>
       <ContentItem>
@@ -53,11 +53,11 @@ export const OptionsForm = () => {
 
             return (
               <AutoCompleteEntitySelect<ILabelFull>
-                searchFields={["title", "name"]}
+                searchFields={['title', 'name']}
                 entity={EntityType.LABEL}
                 format={Format.BASIC}
                 labelKey="title"
-                label={t("label.assign_labels")}
+                label={t('label.assign_labels')}
                 multiple={true}
                 onChange={(_e, selected) =>
                   onChange(selected.map(({ id }) => id))
@@ -79,15 +79,15 @@ export const OptionsForm = () => {
             return (
               <AutoCompleteEntitySelect<
                 IUser,
-                "first_name" | "last_name",
+                'first_name' | 'last_name',
                 false
               >
                 multiple={false}
-                searchFields={["first_name", "last_name"]}
+                searchFields={['first_name', 'last_name']}
                 entity={EntityType.USER}
                 format={Format.BASIC}
                 labelKey="first_name"
-                label={t("label.assign_to")}
+                label={t('label.assign_to')}
                 onChange={(_e, selected) => {
                   onChange(selected?.id);
                 }}
@@ -130,4 +130,4 @@ export const OptionsForm = () => {
   );
 };
 
-OptionsForm.displayName = "OptionsForm";
+OptionsForm.displayName = 'OptionsForm';

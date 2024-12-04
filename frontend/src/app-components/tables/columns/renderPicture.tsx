@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid } from "@mui/material";
-import { GridRenderCellParams } from "@mui/x-data-grid";
+import { Grid } from '@mui/material';
+import { GridRenderCellParams } from '@mui/x-data-grid';
 
-import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
-import { useConfig } from "@/hooks/useConfig";
-import { EntityType } from "@/services/types";
+import { getAvatarSrc } from '@/components/inbox/helpers/mapMessages';
+import { useConfig } from '@/hooks/useConfig';
+import { EntityType } from '@/services/types';
 
 export const buildRenderPicture = (
   entityType: EntityType.USER | EntityType.SUBSCRIBER,
@@ -23,9 +23,9 @@ export const buildRenderPicture = (
       <Grid
         container
         sx={{
-          height: "100%",
-          alignContent: "center",
-          justifyContent: "center",
+          height: '100%',
+          alignContent: 'center',
+          justifyContent: 'center',
         }}
       >
         <img
@@ -36,7 +36,7 @@ export const buildRenderPicture = (
               ? params.row.id
               : params.row.foreign_id,
           )}
-          style={{ width: "36px", height: "36px" }}
+          style={{ width: '36px', height: '36px' }}
         />
       </Grid>
     );

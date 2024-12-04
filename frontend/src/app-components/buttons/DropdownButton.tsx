@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ArrowDropDown } from "@mui/icons-material";
+import { ArrowDropDown } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -17,8 +17,8 @@ import {
   Popover,
   SxProps,
   Theme,
-} from "@mui/material";
-import React, { useState } from "react";
+} from '@mui/material';
+import React, { useState } from 'react';
 
 export interface DropdownButtonAction {
   icon: React.ReactNode;
@@ -37,7 +37,7 @@ interface AddPatternProps {
 const DropdownButton: React.FC<AddPatternProps> = ({
   actions,
   onClick,
-  label = "Add",
+  label = 'Add',
   icon,
   sx,
 }) => {
@@ -69,12 +69,12 @@ const DropdownButton: React.FC<AddPatternProps> = ({
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
         transformOrigin={{
-          vertical: "top",
-          horizontal: "left",
+          vertical: 'top',
+          horizontal: 'left',
         }}
       >
         <List>

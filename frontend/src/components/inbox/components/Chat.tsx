@@ -13,26 +13,26 @@ import {
   Message,
   MessageInput,
   MessageList,
-} from "@chatscope/chat-ui-kit-react";
-import QuestionAnswerTwoToneIcon from "@mui/icons-material/QuestionAnswerTwoTone";
-import { debounce, Grid } from "@mui/material";
+} from '@chatscope/chat-ui-kit-react';
+import QuestionAnswerTwoToneIcon from '@mui/icons-material/QuestionAnswerTwoTone';
+import { debounce, Grid } from '@mui/material';
 
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 
 import {
   getAvatarSrc,
   getMessageContent,
   getMessagePosition,
-} from "../helpers/mapMessages";
-import { useChat } from "../hooks/ChatContext";
-import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
+} from '../helpers/mapMessages';
+import { useChat } from '../hooks/ChatContext';
+import { useInfinitedLiveMessages } from '../hooks/useInfiniteLiveMessages';
 
-import { ChatActions } from "./ChatActions";
-import { ChatHeader } from "./ChatHeader";
+import { ChatActions } from './ChatActions';
+import { ChatHeader } from './ChatHeader';
 
 export function Chat() {
   const { apiUrl } = useConfig();
@@ -47,7 +47,7 @@ export function Chat() {
     return (
       <Grid
         sx={{
-          width: "100%",
+          width: '100%',
         }}
         container
         direction="column"
@@ -55,9 +55,9 @@ export function Chat() {
         alignItems="center"
       >
         <QuestionAnswerTwoToneIcon
-          sx={{ height: "100px", width: "100px", opacity: 0.3 }}
+          sx={{ height: '100px', width: '100px', opacity: 0.3 }}
         />
-        {t("message.no_message_to_display")}
+        {t('message.no_message_to_display')}
       </Grid>
     );
   }
@@ -106,14 +106,14 @@ export function Chat() {
               <Message
                 key={message.id}
                 model={{
-                  direction: message.recipient ? "outgoing" : "incoming",
+                  direction: message.recipient ? 'outgoing' : 'incoming',
                   position,
                   sentTime: message.createdAt.toLocaleDateString(),
                 }}
-                avatarSpacer={position === "first" || position === "normal"}
+                avatarSpacer={position === 'first' || position === 'normal'}
                 // eslint-disable-next-line react/no-children-prop
                 children={[
-                  ...(position === "last" || position === "single"
+                  ...(position === 'last' || position === 'single'
                     ? [
                         <Avatar
                           key={message.id}
@@ -129,7 +129,7 @@ export function Chat() {
                               : EntityType.USER,
                             (message.sender
                               ? subscriber.foreign_id
-                              : message.sentBy) || "",
+                              : message.sentBy) || '',
                           )}
                         />,
                       ]
@@ -143,7 +143,7 @@ export function Chat() {
       )}
       <MessageInput
         attachButton={false}
-        placeholder={t("placeholder.type_message_here")}
+        placeholder={t('placeholder.type_message_here')}
         fancyScroll
         className="changeColor"
         disabled={

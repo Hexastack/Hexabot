@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid } from "@mui/material";
+import { Grid } from '@mui/material';
 
-import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
-import { useFind } from "@/hooks/crud/useFind";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import PluginIcon from '@/app-components/svg/toolbar/PluginIcon';
+import { useFind } from '@/hooks/crud/useFind';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 
-import { Block, StyledTitle } from "./Aside";
+import { Block, StyledTitle } from './Aside';
 
 export const CustomBlocks = () => {
   const { t } = useTranslate();
@@ -25,7 +25,7 @@ export const CustomBlocks = () => {
   return customBlocks?.length ? (
     <>
       <Grid mb="2">
-        <StyledTitle>{t("title.custom_blocks")}</StyledTitle>
+        <StyledTitle>{t('title.custom_blocks')}</StyledTitle>
       </Grid>
       <Grid container>
         {customBlocks?.map((customBlock) => (

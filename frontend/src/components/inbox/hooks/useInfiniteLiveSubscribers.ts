@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useCallback, useMemo } from "react";
-import { InfiniteData, useQueryClient } from "react-query";
+import { useCallback, useMemo } from 'react';
+import { InfiniteData, useQueryClient } from 'react-query';
 
-import { useNormalizeAndCache } from "@/hooks/crud/helpers";
-import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
-import { useUpdateCache } from "@/hooks/crud/useUpdate";
-import { useAuth } from "@/hooks/useAuth";
-import { EntityType, QueryType } from "@/services/types";
-import { useSubscribe } from "@/websocket/socket-hooks";
+import { useNormalizeAndCache } from '@/hooks/crud/helpers';
+import { useNormalizedInfiniteQuery } from '@/hooks/crud/useNormalizedInfiniteQuery';
+import { useUpdateCache } from '@/hooks/crud/useUpdate';
+import { useAuth } from '@/hooks/useAuth';
+import { EntityType, QueryType } from '@/services/types';
+import { useSubscribe } from '@/websocket/socket-hooks';
 
-import { AssignedTo, SocketSubscriberEvents } from "../types";
+import { AssignedTo, SocketSubscriberEvents } from '../types';
 
 export const useInfiniteLiveSubscribers = (props: {
   channels: string[];
@@ -32,7 +32,7 @@ export const useInfiniteLiveSubscribers = (props: {
       ...(props.channels.length > 0
         ? {
             or: props.channels.map((channel) => ({
-              "channel.name": channel,
+              'channel.name': channel,
             })),
           }
         : {}),
@@ -40,12 +40,12 @@ export const useInfiniteLiveSubscribers = (props: {
       ...(props.assignedTo === AssignedTo.ME
         ? { assignedTo: user?.id }
         : props.assignedTo === AssignedTo.OTHERS
-        ? {
-            assignedTo: {
-              "!=": user?.id,
-            },
-          }
-        : {}),
+          ? {
+              assignedTo: {
+                '!=': user?.id,
+              },
+            }
+          : {}),
     },
   };
   const {
@@ -61,15 +61,15 @@ export const useInfiniteLiveSubscribers = (props: {
       params,
       initialSortState: [
         {
-          field: "lastvisit",
-          sort: "desc",
+          field: 'lastvisit',
+          sort: 'desc',
         },
       ],
     },
   );
   const handleSubscriberEvent = useCallback(
     (event: SocketSubscriberEvents) => {
-      if (event.op === "newSubscriber") {
+      if (event.op === 'newSubscriber') {
         const { result } = normalizeAndCache(event.profile);
 
         queryClient.setQueryData(
@@ -87,18 +87,18 @@ export const useInfiniteLiveSubscribers = (props: {
             return oldData;
           },
         );
-      } else if (event.op === "updateSubscriber") {
+      } else if (event.op === 'updateSubscriber') {
         updateCachedSubscriber({
           id: event.profile.id,
           payload: event.profile,
-          strategy: "overwrite",
+          strategy: 'overwrite',
         });
       }
     },
     [queryClient],
   );
 
-  useSubscribe<SocketSubscriberEvents>("subscriber", handleSubscriberEvent);
+  useSubscribe<SocketSubscriberEvents>('subscriber', handleSubscriberEvent);
 
   const subscribers = useMemo(
     () =>

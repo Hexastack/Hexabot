@@ -6,16 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { SvgIconTypeMap, InputAdornment } from "@mui/material";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
+import { SvgIconTypeMap, InputAdornment } from '@mui/material';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
 
-import { theme } from "@/layout/themes/theme";
+import { theme } from '@/layout/themes/theme';
 
 export const Adornment = ({
   Icon,
   color = theme.palette.text.secondary,
 }: {
-  Icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
+  Icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & {
     muiName: string;
   };
   color?: string;

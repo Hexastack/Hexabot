@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid } from "@mui/material";
-import React from "react";
-import { ControllerRenderProps } from "react-hook-form";
+import { Grid } from '@mui/material';
+import React from 'react';
+import { ControllerRenderProps } from 'react-hook-form';
 
-import { Input } from "@/app-components/inputs/Input";
-import { ILanguage } from "@/types/language.types";
-import { ITranslationAttributes } from "@/types/translation.types";
+import { Input } from '@/app-components/inputs/Input';
+import { ILanguage } from '@/types/language.types';
+import { ITranslationAttributes } from '@/types/translation.types';
 
 interface RenderTranslationInputProps {
   language: ILanguage;
@@ -25,7 +25,7 @@ const TranslationInput: React.FC<RenderTranslationInputProps> = ({
 }) => (
   <Input
     inputRef={field.ref}
-    dir={language.isRTL ? "rtl" : "ltr"}
+    dir={language.isRTL ? 'rtl' : 'ltr'}
     label={
       <Grid container dir="ltr">
         <Grid>{language.title}</Grid>
@@ -37,6 +37,6 @@ const TranslationInput: React.FC<RenderTranslationInputProps> = ({
   />
 );
 
-TranslationInput.displayName = "TranslationInput";
+TranslationInput.displayName = 'TranslationInput';
 
 export default TranslationInput;

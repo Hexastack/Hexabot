@@ -6,40 +6,40 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Input, styled } from "@mui/material";
-import randomSeed from "random-seed";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Box, Input, styled } from '@mui/material';
+import randomSeed from 'random-seed';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { INlpDatasetKeywordEntity } from "../../types/nlp-sample.types";
+import { INlpDatasetKeywordEntity } from '../../types/nlp-sample.types';
 
 const SelectableBox = styled(Box)({
-  position: "relative",
-  height: "30px",
-  marginBottom: "1rem",
-  "& .highlight, & .editable": {
-    position: "absolute",
+  position: 'relative',
+  height: '30px',
+  marginBottom: '1rem',
+  '& .highlight, & .editable': {
+    position: 'absolute',
     top: 0,
-    display: "block",
-    width: "100%",
-    padding: "4px",
+    display: 'block',
+    width: '100%',
+    padding: '4px',
   },
-  "& .editable": {
-    backgroundColor: "transparent",
-    padding: "0px 4px",
-    color: "#000",
+  '& .editable': {
+    backgroundColor: 'transparent',
+    padding: '0px 4px',
+    color: '#000',
   },
 });
 const COLORS = [
-  { name: "blue", bg: "#108AA8" },
-  { name: "navy", bg: "#216372" },
-  { name: "lime", bg: "#c6e01a" },
-  { name: "teal", bg: "#4BA49C" },
-  { name: "olive", bg: "#A8BA33" },
-  { name: "fuchsia", bg: "#A80551" },
-  { name: "purple", bg: "#570063" },
-  { name: "orange", bg: "#E6A23C" },
+  { name: 'blue', bg: '#108AA8' },
+  { name: 'navy', bg: '#216372' },
+  { name: 'lime', bg: '#c6e01a' },
+  { name: 'teal', bg: '#4BA49C' },
+  { name: 'olive', bg: '#A8BA33' },
+  { name: 'fuchsia', bg: '#A80551' },
+  { name: 'purple', bg: '#570063' },
+  { name: 'orange', bg: '#E6A23C' },
 ];
-const UNKNOWN_COLOR = { name: "grey", bg: "#aaaaaa" };
+const UNKNOWN_COLOR = { name: 'grey', bg: '#aaaaaa' };
 const TODAY = new Date().toDateString();
 const getColor = (no: number) => {
   const rand = randomSeed.create(TODAY);
@@ -67,11 +67,11 @@ type SelectableProps = {
 const Selectable: FC<SelectableProps> = ({
   defaultValue,
   entities = [],
-  placeholder = "",
+  placeholder = '',
   onChange,
   onSelect,
 }) => {
-  const [text, setText] = useState(defaultValue || "");
+  const [text, setText] = useState(defaultValue || '');
   const editableRef = useRef<HTMLDivElement>(null);
   const selectableRef = useRef(null);
   const selectedEntities = useMemo(
@@ -91,7 +91,7 @@ const Selectable: FC<SelectableProps> = ({
   );
 
   useEffect(() => {
-    setText(defaultValue || "");
+    setText(defaultValue || '');
   }, [defaultValue]);
 
   useEffect(() => {
@@ -104,11 +104,11 @@ const Selectable: FC<SelectableProps> = ({
         selection.anchorNode === editableRef.current
       ) {
         const inputContainer = editableRef.current;
-        let substring: string = "";
+        let substring: string = '';
         let input: HTMLInputElement | null = null;
 
         if (inputContainer) {
-          input = inputContainer.querySelector("input");
+          input = inputContainer.querySelector('input');
 
           if (
             input &&
@@ -131,10 +131,10 @@ const Selectable: FC<SelectableProps> = ({
       }
     };
 
-    document.addEventListener("selectionchange", handleSelectionChange);
+    document.addEventListener('selectionchange', handleSelectionChange);
 
     return () => {
-      document.removeEventListener("selectionchange", handleSelectionChange);
+      document.removeEventListener('selectionchange', handleSelectionChange);
     };
   }, [text, onSelect]);
 
@@ -209,6 +209,6 @@ const Selectable: FC<SelectableProps> = ({
   );
 };
 
-Selectable.displayName = "Selectable";
+Selectable.displayName = 'Selectable';
 
 export default Selectable;

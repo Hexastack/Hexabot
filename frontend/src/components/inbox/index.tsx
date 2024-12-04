@@ -6,28 +6,28 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
-import { Grid, MenuItem } from "@mui/material";
-import { useState } from "react";
+import { MainContainer, Search, Sidebar } from '@chatscope/chat-ui-kit-react';
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import { Grid, MenuItem } from '@mui/material';
+import { useState } from 'react';
 
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
-import { useSearch } from "@/hooks/useSearch";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { IChannel } from "@/types/channel.types";
-import { ISubscriber } from "@/types/subscriber.types";
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { Input } from '@/app-components/inputs/Input';
+import { useSearch } from '@/hooks/useSearch';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { IChannel } from '@/types/channel.types';
+import { ISubscriber } from '@/types/subscriber.types';
 
-import { Chat } from "./components/Chat";
-import { SubscribersList } from "./components/ConversationsList";
-import { ChatProvider } from "./hooks/ChatContext";
-import { AssignedTo } from "./types";
+import { Chat } from './components/Chat';
+import { SubscribersList } from './components/ConversationsList';
+import { ChatProvider } from './hooks/ChatContext';
+import { AssignedTo } from './types';
 
 export const Inbox = () => {
   const { t } = useTranslate();
   const { onSearch, searchPayload } = useSearch<ISubscriber>({
-    $or: ["first_name", "last_name"],
+    $or: ['first_name', 'last_name'],
   });
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
@@ -39,16 +39,16 @@ export const Inbox = () => {
         spacing={0}
         wrap="nowrap"
         sx={{
-          height: "calc(100vh - 64px)",
-          maxHeight: "calc(100vh - 64px)",
+          height: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
         }}
       >
         <Grid item width="100%" height="100%" overflow="hidden">
-          <MainContainer style={{ height: "100%" }}>
+          <MainContainer style={{ height: '100%' }}>
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
                 <Search
-                  onClearClick={() => onSearch("")}
+                  onClearClick={() => onSearch('')}
                   className="changeColor"
                   onChange={(v) => onSearch(v)}
                   placeholder="Search..."
@@ -61,8 +61,8 @@ export const Inbox = () => {
                 marginY={1}
                 gap={1}
               >
-                <AutoCompleteEntitySelect<IChannel, "name">
-                  searchFields={["name"]}
+                <AutoCompleteEntitySelect<IChannel, 'name'>
+                  searchFields={['name']}
                   entity={EntityType.CHANNEL}
                   format={Format.BASIC}
                   idKey="name"
@@ -71,13 +71,13 @@ export const Inbox = () => {
                   onChange={(_e, selected, ..._) => {
                     setChannels((selected || [])?.map(({ name }) => name));
                   }}
-                  label={t("label.channel")}
+                  label={t('label.channel')}
                   value={channels}
                   limitTags={2}
                 />
                 <Input
                   onChange={(e) => setAssignment(e.target.value as AssignedTo)}
-                  label={t("label.assigned_to")}
+                  label={t('label.assigned_to')}
                   select
                   defaultValue={AssignedTo.ALL}
                   sx={{ marginTop: 1 }}

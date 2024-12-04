@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import axios from "axios";
-import { stringify } from "qs";
-import { useContext, useMemo } from "react";
+import axios from 'axios';
+import { stringify } from 'qs';
+import { useContext, useMemo } from 'react';
 
-import { ApiClientContext } from "@/contexts/apiClient.context";
-import { useTranslate } from "@/hooks/useTranslate";
-import { ApiClient, EntityApiClient } from "@/services/api.class";
-import { EntityType } from "@/services/types";
-import { IBaseSchema } from "@/types/base.types";
+import { ApiClientContext } from '@/contexts/apiClient.context';
+import { useTranslate } from '@/hooks/useTranslate';
+import { ApiClient, EntityApiClient } from '@/services/api.class';
+import { EntityType } from '@/services/types';
+import { IBaseSchema } from '@/types/base.types';
 
-import { useLogoutRedirection } from "./useAuth";
-import { useConfig } from "./useConfig";
-import { useToast } from "./useToast";
+import { useLogoutRedirection } from './useAuth';
+import { useConfig } from './useConfig';
+import { useToast } from './useToast';
 
 export const useAxiosInstance = () => {
   const { apiUrl } = useConfig();
@@ -35,10 +35,10 @@ export const useAxiosInstance = () => {
     instance.defaults.paramsSerializer = function (params) {
       // config was made with trial and error and reading the docs
       return stringify(params, {
-        arrayFormat: "indices",
+        arrayFormat: 'indices',
         charsetSentinel: false,
         skipNulls: true,
-        charset: "utf-8",
+        charset: 'utf-8',
       });
     };
 
@@ -48,9 +48,9 @@ export const useAxiosInstance = () => {
       (error) => {
         if (!error.response) {
           // Optionally redirect to an error page or show a notification
-          toast.error(t("message.network_error"));
+          toast.error(t('message.network_error'));
 
-          return Promise.reject(new Error("Network error"));
+          return Promise.reject(new Error('Network error'));
         }
         if (error.response.status === 401) {
           logoutRedirection(true);
@@ -89,7 +89,7 @@ export const useApiClient = (): ApiClientContext => {
   const context = useContext(ApiClientContext);
 
   if (!context) {
-    throw new Error("useApiClient must be used within an ApiClientContext");
+    throw new Error('useApiClient must be used within an ApiClientContext');
   }
 
   return context;

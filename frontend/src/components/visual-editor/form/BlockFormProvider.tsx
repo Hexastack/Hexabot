@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createContext, ReactNode, useContext } from "react";
-import { FormProvider, UseFormReturn } from "react-hook-form";
+import { createContext, ReactNode, useContext } from 'react';
+import { FormProvider, UseFormReturn } from 'react-hook-form';
 
-import { IBlockAttributes, IBlock } from "@/types/block.types";
+import { IBlockAttributes, IBlock } from '@/types/block.types';
 
 // Create a custom context for the block value
 const BlockContext = createContext<IBlock | undefined>(undefined);

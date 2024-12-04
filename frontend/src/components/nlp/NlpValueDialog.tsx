@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { useRouter } from "next/router";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Dialog, DialogActions, DialogContent } from '@mui/material';
+import { useRouter } from 'next/router';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import MultipleInput from "@/app-components/inputs/MultipleInput";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useGet } from "@/hooks/crud/useGet";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import MultipleInput from '@/app-components/inputs/MultipleInput';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useGet } from '@/hooks/crud/useGet';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { INlpValue, INlpValueAttributes } from '@/types/nlp-value.types';
 
 export type TNlpValueAttributesWithRequiredExpressions = INlpValueAttributes & {
   expressions: string[];
@@ -50,35 +50,35 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
   });
   const { mutateAsync: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess(data) {
       refetchEntity();
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
       callback?.(data);
     },
   });
   const { mutateAsync: updateNlpValue } = useUpdate(EntityType.NLP_VALUE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess(data) {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
       callback?.(data);
     },
   });
   const { reset, register, handleSubmit, control } =
     useForm<TNlpValueAttributesWithRequiredExpressions>({
       defaultValues: {
-        value: data?.value || "",
+        value: data?.value || '',
         expressions: data?.expressions || [],
       },
     });
   const validationRules = {
     value: {
-      required: t("message.value_is_required"),
+      required: t('message.value_is_required'),
     },
     name: {},
     description: {},
@@ -110,16 +110,16 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_nlp_value") : t("title.new_nlp_entity_value")}
+          {data ? t('title.edit_nlp_value') : t('title.new_nlp_entity_value')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("placeholder.nlp_value")}
+                label={t('placeholder.nlp_value')}
                 required
                 autoFocus
-                {...register("value", validationRules.value)}
+                {...register('value', validationRules.value)}
               />
             </ContentItem>
 

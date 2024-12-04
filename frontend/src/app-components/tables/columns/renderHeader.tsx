@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Typography } from "@mui/material";
-import { GridColumnHeaderParams, GridValidRowModel } from "@mui/x-data-grid";
+import { Typography } from '@mui/material';
+import { GridColumnHeaderParams, GridValidRowModel } from '@mui/x-data-grid';
 
 export const renderHeader = <T extends GridValidRowModel>({
   colDef,
 }: GridColumnHeaderParams<T, any, any>) => (
   <Typography
     sx={{
-      textTransform: "capitalize",
+      textTransform: 'capitalize',
     }}
     fontSize="15px"
     fontWeight={700}

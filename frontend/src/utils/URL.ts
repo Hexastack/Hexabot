@@ -9,7 +9,7 @@
 export const getFromQuery = ({
   key,
   search,
-  defaultValue = "",
+  defaultValue = '',
 }: {
   key: string;
   search?: string;
@@ -32,8 +32,8 @@ export const buildURL = (baseUrl: string, relativePath: string): string => {
   } catch {
     try {
       return new URL(
-        relativePath.replace(/^\//, ""),
-        baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`,
+        relativePath.replace(/^\//, ''),
+        baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
       ).toString();
     } catch {
       throw new Error(`Invalid base URL: ${baseUrl}`);
@@ -41,13 +41,13 @@ export const buildURL = (baseUrl: string, relativePath: string): string => {
   }
 };
 
-export const isAbsoluteUrl = (value: string = ""): boolean => {
+export const isAbsoluteUrl = (value: string = ''): boolean => {
   try {
     const url = new URL(value);
-    const hostnameParts = url.hostname.split(".");
+    const hostnameParts = url.hostname.split('.');
 
     return (
-      (url.protocol === "http:" || url.protocol === "https:") &&
+      (url.protocol === 'http:' || url.protocol === 'https:') &&
       hostnameParts.length > 1 &&
       hostnameParts[hostnameParts.length - 1].length > 1
     );

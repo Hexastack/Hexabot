@@ -6,37 +6,37 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import React, { useState } from "react";
+import { faAsterisk } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Grid, Paper, Switch } from '@mui/material';
+import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import React, { useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { IContextVar } from "@/types/context-var.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { IContextVar } from '@/types/context-var.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { ContextVarDialog } from "./ContextVarDialog";
+import { ContextVarDialog } from './ContextVarDialog';
 
 export const ContextVars = () => {
   const { t } = useTranslate();
@@ -46,7 +46,7 @@ export const ContextVars = () => {
   const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IContextVar>({
-    $iLike: ["label"],
+    $iLike: ['label'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTEXT_VAR },
@@ -56,10 +56,10 @@ export const ContextVars = () => {
   );
   const { mutateAsync: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
@@ -69,7 +69,7 @@ export const ContextVars = () => {
     onSuccess() {
       deleteDialogCtl.closeDialog();
       setSelectedContextVars([]);
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const { mutateAsync: deleteContextVars } = useDeleteMany(
@@ -81,7 +81,7 @@ export const ContextVars = () => {
       onSuccess: () => {
         deleteDialogCtl.closeDialog();
         setSelectedContextVars([]);
-        toast.success(t("message.item_delete_success"));
+        toast.success(t('message.item_delete_success'));
       },
     },
   );
@@ -100,30 +100,30 @@ export const ContextVars = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<IContextVar>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       flex: 1,
-      field: "label",
-      headerName: t("label.label"),
+      field: 'label',
+      headerName: t('label.label'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
       maxWidth: 120,
-      field: "permanent",
-      headerName: t("label.permanent"),
+      field: 'permanent',
+      headerName: t('label.permanent'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderCell: (params) => (
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          inputProps={{ 'aria-label': 'primary checkbox' }}
           disabled={
             !hasPermission(EntityType.CONTEXT_VAR, PermissionAction.UPDATE)
           }
@@ -138,25 +138,25 @@ export const ContextVars = () => {
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -181,7 +181,7 @@ export const ContextVars = () => {
           }
         }}
       />
-      <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
+      <PageHeader icon={faAsterisk} title={t('title.context_vars')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -198,10 +198,10 @@ export const ContextVars = () => {
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                sx={{ float: "right" }}
+                sx={{ float: 'right' }}
                 onClick={() => addDialogCtl.openDialog()}
               >
-                {t("button.add")}
+                {t('button.add')}
               </Button>
             </Grid>
           ) : null}
@@ -213,7 +213,7 @@ export const ContextVars = () => {
                 color="error"
                 onClick={() => deleteDialogCtl.openDialog(undefined)}
               >
-                {t("button.delete")}
+                {t('button.delete')}
               </Button>
             </Grid>
           )}

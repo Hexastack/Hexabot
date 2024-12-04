@@ -6,30 +6,30 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import getConfig from "next/config";
-import { useRouter } from "next/router";
-import { useState, useEffect, createContext, ReactNode } from "react";
+import getConfig from 'next/config';
+import { useRouter } from 'next/router';
+import { useState, useEffect, createContext, ReactNode } from 'react';
 import {
   useQueryClient,
   useQuery,
   QueryObserverResult,
   RefetchOptions,
   UseMutateFunction,
-} from "react-query";
+} from 'react-query';
 
-import { Progress } from "@/app-components/displays/Progress";
-import { useLogout } from "@/hooks/entities/auth-hooks";
-import { useApiClient } from "@/hooks/useApiClient";
+import { Progress } from '@/app-components/displays/Progress';
+import { useLogout } from '@/hooks/entities/auth-hooks';
+import { useApiClient } from '@/hooks/useApiClient';
 import {
   useLogoutRedirection,
   CURRENT_USER_KEY,
   PUBLIC_PATHS,
-} from "@/hooks/useAuth";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { RouterType } from "@/services/types";
-import { IUser } from "@/types/user.types";
-import { getFromQuery } from "@/utils/URL";
+} from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { RouterType } from '@/services/types';
+import { IUser } from '@/types/user.types';
+import { getFromQuery } from '@/utils/URL';
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -45,7 +45,7 @@ export interface AuthContextValue {
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
-AuthContext.displayName = "AuthContext";
+AuthContext.displayName = 'AuthContext';
 
 export interface AuthProviderProps {
   children: ReactNode;
@@ -56,7 +56,7 @@ const { publicRuntimeConfig } = getConfig();
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
   const { logoutRedirection } = useLogoutRedirection();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
   const { i18n, t } = useTranslate();
   const { toast } = useToast();
@@ -71,14 +71,14 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     updateLanguage(publicRuntimeConfig.lang.default);
     await logoutSession();
     logoutRedirection();
-    toast.success(t("message.logout_success"));
+    toast.success(t('message.logout_success'));
   };
   const authRedirection = async (isAuthenticated: boolean) => {
     if (isAuthenticated) {
-      const redirect = getFromQuery({ search, key: "redirect" });
+      const redirect = getFromQuery({ search, key: 'redirect' });
       const nextPage = redirect && decodeURIComponent(redirect);
 
-      if (nextPage?.startsWith("/")) {
+      if (nextPage?.startsWith('/')) {
         router.push(nextPage);
       } else if (hasPublicPath) router.push(RouterType.HOME);
     }

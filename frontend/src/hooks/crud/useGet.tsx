@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useQuery, useQueryClient, UseQueryOptions } from "react-query";
+import { useQuery, useQueryClient, UseQueryOptions } from 'react-query';
 
-import { EntityType, Format, QueryType } from "@/services/types";
+import { EntityType, Format, QueryType } from '@/services/types';
 import {
   IBaseSchema,
   IDynamicProps,
@@ -16,20 +16,20 @@ import {
   POPULATE_BY_TYPE,
   TAllowedFormat,
   TType,
-} from "@/types/base.types";
+} from '@/types/base.types';
 
-import { useEntityApiClient } from "../useApiClient";
+import { useEntityApiClient } from '../useApiClient';
 
-import { useNormalizeAndCache } from "./helpers";
+import { useNormalizeAndCache } from './helpers';
 
 export const useGet = <
   TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
+  TAttr = TType<TDynamicProps['entity']>['attributes'],
+  TBasic extends IBaseSchema = TType<TDynamicProps['entity']>['basic'],
+  TFull extends IBaseSchema = TType<TDynamicProps['entity']>['full'],
 >(
   id: string,
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
+  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps['entity']>,
   options?: Omit<
     UseQueryOptions<
       unknown,
@@ -37,7 +37,7 @@ export const useGet = <
       TBasic,
       [QueryType.item, EntityType, string]
     >,
-    "queryFn" | "queryKey"
+    'queryFn' | 'queryKey'
   >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
@@ -63,14 +63,14 @@ export const useGet = <
 
 export const useGetFromCache = <
   E extends keyof IEntityMapTypes,
-  TData extends IBaseSchema = TType<E>["basic"],
+  TData extends IBaseSchema = TType<E>['basic'],
 >(
   entity: E,
 ) => {
   const queryClient = useQueryClient();
 
   return (id: string) => {
-    const [qEntity] = entity.split("/");
+    const [qEntity] = entity.split('/');
 
     return queryClient.getQueryData([QueryType.item, qEntity, id]) as
       | TData

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faCogs } from "@fortawesome/free-solid-svg-icons";
+import { faCogs } from '@fortawesome/free-solid-svg-icons';
 import {
   debounce,
   FormControl,
@@ -15,75 +15,78 @@ import {
   styled,
   Tab,
   Tabs,
-} from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { ISetting } from "@/types/setting.types";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { a11yProps, TabPanel } from '@/app-components/tabs/TabPanel';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { ISetting } from '@/types/setting.types';
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
-import SettingInput from "./SettingInput";
+import SettingInput from './SettingInput';
 
 const StyledTab = styled(Tab)(
   SXStyleOptions({
-    alignItems: "center",
-    textTransform: "none",
+    alignItems: 'center',
+    textTransform: 'none',
     borderRadius: 1,
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     paddingX: 2,
     paddingY: 1,
-    borderRight: "1px solid",
-    borderColor: "grey[100]",
-    "& p": {
-      color: "grey[600]",
+    borderRight: '1px solid',
+    borderColor: 'grey[100]',
+    '& p': {
+      color: 'grey[600]',
     },
-    "&:hover": {
-      backgroundColor: "grey.100",
+    '&:hover': {
+      backgroundColor: 'grey.100',
     },
-    "&.Mui-selected": {
-      backgroundColor: "teal.50",
-      "& p": {
-        color: "primary.main",
+    '&.Mui-selected': {
+      backgroundColor: 'teal.50',
+      '& p': {
+        color: 'primary.main',
       },
     },
   }),
 );
-const StyledForm = styled("form")();
+const StyledForm = styled('form')();
 
 function groupBy(array: ISetting[]) {
-  return array.reduce((acc, curr) => {
-    acc[curr.group] = acc[curr.group] ? acc[curr.group].concat(curr) : [curr];
+  return array.reduce(
+    (acc, curr) => {
+      acc[curr.group] = acc[curr.group] ? acc[curr.group].concat(curr) : [curr];
 
-    return acc;
-  }, {} as Record<string, ISetting[]>);
+      return acc;
+    },
+    {} as Record<string, ISetting[]>,
+  );
 }
 
 export const Settings = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("chatbot_settings");
+  const [selectedTab, setSelectedTab] = useState('chatbot_settings');
   const { control, watch } = useForm();
   const { data: settings } = useFind(
     { entity: EntityType.SETTING },
     {
       hasCount: false,
-      initialSortState: [{ field: "weight", sort: "asc" }],
+      initialSortState: [{ field: 'weight', sort: 'asc' }],
     },
   );
   const { mutateAsync: updateSetting } = useUpdate(EntityType.SETTING, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const groups = useMemo(() => {
@@ -97,9 +100,9 @@ export const Settings = () => {
   };
   const isDisabled = (setting: ISetting) => {
     return (
-      setting.group === "nlp_settings" &&
-      setting.label === "endpoint" &&
-      getSettingValue("provider") === "wit"
+      setting.group === 'nlp_settings' &&
+      setting.label === 'endpoint' &&
+      getSettingValue('provider') === 'wit'
     );
   };
   const getSettingValue = (label: string) => {
@@ -124,7 +127,7 @@ export const Settings = () => {
 
   useEffect(() => {
     const subscription = watch((values, { name }) => {
-      const [group, label] = (name as string).split(".");
+      const [group, label] = (name as string).split('.');
 
       debouncedUpdate(group, label, values[group][label]);
     });
@@ -137,22 +140,22 @@ export const Settings = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={faCogs} title={t("title.settings")} />
+      <PageHeader icon={faCogs} title={t('title.settings')} />
       <Grid item xs={12}>
         <Paper sx={{ padding: 3 }}>
-          <Grid sx={{ display: "flex", maxWidth: "md" }}>
+          <Grid sx={{ display: 'flex', maxWidth: 'md' }}>
             <Tabs
               orientation="vertical"
               variant="scrollable"
               value={selectedTab}
               onChange={handleChange}
               sx={{
-                "& .MuiTabs-flexContainer": {
+                '& .MuiTabs-flexContainer': {
                   padding: 0,
                   paddingRight: 0.2,
                 },
-                "& .MuiTabs-indicator": {
-                  width: "3px",
+                '& .MuiTabs-indicator': {
+                  width: '3px',
                 },
               }}
             >
@@ -167,7 +170,7 @@ export const Settings = () => {
                   />
                 ))}
             </Tabs>
-            <StyledForm sx={{ width: "100%", px: 3, paddingY: 2 }}>
+            <StyledForm sx={{ width: '100%', px: 3, paddingY: 2 }}>
               {Object.entries(groups).map(([group, settings]) => (
                 <TabPanel
                   sx={{ gap: 2 }}

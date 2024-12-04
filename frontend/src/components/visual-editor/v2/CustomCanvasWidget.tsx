@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import styled from "@emotion/styled";
+import styled from '@emotion/styled';
 import {
   CanvasEngine,
   SmartLayerWidget,
   TransformLayerWidget,
-} from "@projectstorm/react-diagrams";
-import * as React from "react";
+} from '@projectstorm/react-diagrams';
+import * as React from 'react';
 
 export interface DiagramProps {
   engine: CanvasEngine;
@@ -47,9 +47,9 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     this.props.engine.deregisterListener(this.canvasListener);
     this.props.engine.setCanvas(undefined);
 
-    this.ref.current?.parentElement?.removeEventListener("keyup", this.keyUp);
+    this.ref.current?.parentElement?.removeEventListener('keyup', this.keyUp);
     this.ref.current?.parentElement?.removeEventListener(
-      "keydown",
+      'keydown',
       this.keyDown,
     );
   }
@@ -79,8 +79,8 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
       this.props.engine.getActionEventBus().fireAction({ event });
     };
 
-    this.ref.current?.parentElement?.addEventListener("keyup", this.keyUp);
-    this.ref.current?.parentElement?.addEventListener("keydown", this.keyDown);
+    this.ref.current?.parentElement?.addEventListener('keyup', this.keyUp);
+    this.ref.current?.parentElement?.addEventListener('keydown', this.keyDown);
     this.registerCanvas();
   }
 

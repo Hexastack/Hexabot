@@ -6,21 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CloseIcon from "@mui/icons-material/Close";
-import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import CloseIcon from '@mui/icons-material/Close';
+import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { isSameEntity } from "@/hooks/crud/helpers";
-import { useApiClient } from "@/hooks/useApiClient";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, QueryType } from "@/services/types";
+import AttachmentInput from '@/app-components/attachment/AttachmentInput';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { isSameEntity } from '@/hooks/crud/helpers';
+import { useApiClient } from '@/hooks/useApiClient';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, QueryType } from '@/services/types';
 
 export type NlpImportDialogProps = DialogControlProps<never>;
 
@@ -54,10 +54,10 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
           },
         });
         handleCloseDialog();
-        toast.success(t("message.success_save"));
+        toast.success(t('message.success_save'));
       },
       onError() {
-        toast.error(t("message.internal_server_error"));
+        toast.error(t('message.internal_server_error'));
       },
     },
   );
@@ -68,7 +68,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
 
   return (
     <Dialog open={open} fullWidth onClose={handleCloseDialog} {...rest}>
-      <DialogTitle onClose={handleCloseDialog}>{t("title.import")}</DialogTitle>
+      <DialogTitle onClose={handleCloseDialog}>{t('title.import')}</DialogTitle>
       <DialogContent>
         <ContentContainer>
           <ContentItem>
@@ -89,7 +89,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
           disabled={!attachmentId || isImporting}
           onClick={() => importNlpSamples(attachmentId)}
         >
-          {t("button.import")}
+          {t('button.import')}
         </Button>
         <Button
           startIcon={<CloseIcon />}
@@ -97,7 +97,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
           onClick={handleCloseDialog}
           disabled={isImporting}
         >
-          {t("button.cancel")}
+          {t('button.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

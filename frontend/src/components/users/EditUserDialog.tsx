@@ -12,24 +12,24 @@ import {
   DialogActions,
   DialogContent,
   Grid,
-} from "@mui/material";
-import Link from "next/link";
-import { FC, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import Link from 'next/link';
+import { FC, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { IRole } from "@/types/role.types";
-import { IUser, IUserAttributes } from "@/types/user.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { Input } from '@/app-components/inputs/Input';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { IRole } from '@/types/role.types';
+import { IUser, IUserAttributes } from '@/types/user.types';
 
 const getFullName = (val: IUser) => `${val.first_name} ${val.last_name}`;
 
@@ -46,14 +46,14 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const [fullName, setFullName] = useState<string>("");
+  const [fullName, setFullName] = useState<string>('');
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error.message || t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -66,7 +66,7 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
   });
   const validationRules = {
     roles: {
-      required: t("message.roles_is_required"),
+      required: t('message.roles_is_required'),
     },
   };
   const onSubmitForm = async (params: IUserAttributes) => {
@@ -87,14 +87,14 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {t("title.manage_roles")}
+          {t('title.manage_roles')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
                 disabled
-                label={t("label.auth_user")}
+                label={t('label.auth_user')}
                 value={fullName}
                 InputProps={{
                   readOnly: true,
@@ -115,11 +115,11 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
                       return (
                         <AutoCompleteEntitySelect<IRole>
                           autoFocus
-                          searchFields={["name"]}
+                          searchFields={['name']}
                           entity={EntityType.ROLE}
                           format={Format.BASIC}
                           labelKey="name"
-                          label={t("label.roles")}
+                          label={t('label.roles')}
                           multiple={true}
                           {...field}
                           error={!!errors.roles}
@@ -137,7 +137,7 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
                 </Grid>
                 <Grid alignContent="center">
                   <Link href="/roles">
-                    <Button variant="contained">{t("button.manage")}</Button>
+                    <Button variant="contained">{t('button.manage')}</Button>
                   </Link>
                 </Grid>
               </Grid>

@@ -6,38 +6,38 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faUsers } from "@fortawesome/free-solid-svg-icons";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { faUsers } from '@fortawesome/free-solid-svg-icons';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import { Button, Grid, Paper, Switch } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
 
-import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { ChipEntity } from '@/app-components/displays/ChipEntity';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
-import { IUser } from "@/types/user.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { buildRenderPicture } from '@/app-components/tables/columns/renderPicture';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType, Format } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
+import { IRole } from '@/types/role.types';
+import { IUser } from '@/types/user.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { EditUserDialog } from "./EditUserDialog";
-import { InvitationDialog } from "./InvitationDialog";
+import { EditUserDialog } from './EditUserDialog';
+import { InvitationDialog } from './InvitationDialog';
 
 export const Users = () => {
   const { ssoEnabled } = useConfig();
@@ -46,17 +46,17 @@ export const Users = () => {
   const { user } = useAuth();
   const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error.message || t('message.internal_server_error'));
     },
     onSuccess() {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const invitationDialogCtl = useDialog<IRole[]>(false);
   const editDialogCtl = useDialog<{ user: IUser; roles: IRole[] }>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IUser>({
-    $or: ["first_name", "last_name", "email"],
+    $or: ['first_name', 'last_name', 'email'],
   });
   const { data: roles } = useFind(
     {
@@ -83,14 +83,14 @@ export const Users = () => {
         requires: [PermissionAction.CREATE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<IUser>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
       maxWidth: 64,
-      field: "picture",
-      headerName: "",
+      field: 'picture',
+      headerName: '',
       sortable: false,
       resizable: false,
       disableColumnMenu: true,
@@ -99,26 +99,26 @@ export const Users = () => {
     },
     {
       flex: 1,
-      field: "fullName",
-      headerName: t("label.name"),
+      field: 'fullName',
+      headerName: t('label.name'),
       sortable: false,
       disableColumnMenu: true,
       valueGetter: (params, val) => `${val.first_name} ${val.last_name}`,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderHeader,
     },
     {
       flex: 1,
-      field: "email",
-      headerName: t("label.email"),
+      field: 'email',
+      headerName: t('label.email'),
       disableColumnMenu: true,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderHeader,
     },
     {
       flex: 1,
-      field: "roles",
-      headerName: t("label.roles"),
+      field: 'roles',
+      headerName: t('label.roles'),
       sortable: false,
       disableColumnMenu: true,
       renderCell: ({ row }) =>
@@ -131,21 +131,21 @@ export const Users = () => {
             entity={EntityType.ROLE}
           />
         )),
-      headerAlign: "left",
+      headerAlign: 'left',
       renderHeader,
     },
     {
       maxWidth: 120,
-      field: "state",
-      headerName: t("label.status"),
+      field: 'state',
+      headerName: t('label.status'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderCell: (params) => (
         <Switch
           checked={params.value}
           color="primary"
-          inputProps={{ "aria-label": "primary checkbox" }}
+          inputProps={{ 'aria-label': 'primary checkbox' }}
           disabled={
             params.row.id === user?.id ||
             ssoEnabled ||
@@ -164,25 +164,25 @@ export const Users = () => {
     },
     {
       minWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderHeader,
       resizable: false,
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       minWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
-      headerAlign: "left",
+      headerAlign: 'left',
       renderHeader,
       resizable: false,
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     ...(!ssoEnabled ? [actionColumns] : []),
   ];
@@ -191,7 +191,7 @@ export const Users = () => {
     <Grid container gap={3} flexDirection="column">
       <InvitationDialog {...getDisplayDialogs(invitationDialogCtl)} />
       <EditUserDialog {...getDisplayDialogs(editDialogCtl)} />
-      <PageHeader icon={faUsers} title={t("title.users")}>
+      <PageHeader icon={faUsers} title={t('title.users')}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -210,13 +210,13 @@ export const Users = () => {
                 startIcon={<PersonAddAlt1Icon />}
                 variant="contained"
                 sx={{
-                  float: "right",
+                  float: 'right',
                 }}
                 onClick={() => {
                   invitationDialogCtl.openDialog(roles);
                 }}
               >
-                {t("button.invite")}
+                {t('button.invite')}
               </Button>
             </Grid>
           ) : null}

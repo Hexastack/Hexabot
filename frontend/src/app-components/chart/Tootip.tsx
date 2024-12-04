@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { TooltipProps } from "eazychart-react";
-import { FC, useMemo } from "react";
+import { TooltipProps } from 'eazychart-react';
+import { FC, useMemo } from 'react';
 
 export const Tooltip: FC<TooltipProps> = ({
   offset = { x: 0, y: 0 },
@@ -50,7 +50,7 @@ export const Tooltip: FC<TooltipProps> = ({
                     {attribute} :
                   </div>
                   <div className="ez-tooltip-attribute--value">
-                    {attribute === "day"
+                    {attribute === 'day'
                       ? new Date(datum[attribute]).toISOString()
                       : datum[attribute].toString()}
                   </div>

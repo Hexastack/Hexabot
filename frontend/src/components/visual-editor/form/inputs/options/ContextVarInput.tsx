@@ -6,21 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import ArrowLeftOutlinedIcon from "@mui/icons-material/ArrowLeftOutlined";
-import { Grid } from "@mui/material";
-import { FC } from "react";
-import { useFormContext } from "react-hook-form";
+import ArrowLeftOutlinedIcon from '@mui/icons-material/ArrowLeftOutlined';
+import { Grid } from '@mui/material';
+import { FC } from 'react';
+import { useFormContext } from 'react-hook-form';
 
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
-import { useFind } from "@/hooks/crud/useFind";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { CaptureVar, IBlockAttributes, IBlockFull } from "@/types/block.types";
-import { IContextVar } from "@/types/context-var.types";
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import AutoCompleteSelect from '@/app-components/inputs/AutoCompleteSelect';
+import { useFind } from '@/hooks/crud/useFind';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { CaptureVar, IBlockAttributes, IBlockFull } from '@/types/block.types';
+import { IContextVar } from '@/types/context-var.types';
 
 type ContextVarOption = {
-  value: CaptureVar["entity"] | null;
+  value: CaptureVar['entity'] | null;
   label: string;
   group: string;
 };
@@ -51,33 +51,33 @@ const ContextVarInput: FC<ContextVarInputProps> = ({
     },
   );
   const options: ContextVarOption[] = [
-    { value: -1, label: t("label.text_message"), group: t("label.payload") },
+    { value: -1, label: t('label.text_message'), group: t('label.payload') },
     {
       value: -2,
-      label: t("label.postback_payload"),
-      group: t("label.payload"),
+      label: t('label.postback_payload'),
+      group: t('label.payload'),
     },
     ...(nlpEntities || []).map(({ name }) => ({
       value: name,
       label: name,
-      group: t("label.nlp_entity"),
+      group: t('label.nlp_entity'),
     })),
   ];
 
   return (
     <>
       <Grid item xs={5}>
-        <AutoCompleteEntitySelect<IContextVar, "label", false>
-          searchFields={["label", "name"]}
+        <AutoCompleteEntitySelect<IContextVar, 'label', false>
+          searchFields={['label', 'name']}
           entity={EntityType.CONTEXT_VAR}
           format={Format.BASIC}
           idKey="name"
           labelKey="label"
-          label={t("label.context_var")}
+          label={t('label.context_var')}
           multiple={false}
           value={value.context_var}
           {...register(`capture_vars.${idx}`, {
-            required: t("message.context_var_is_required"),
+            required: t('message.context_var_is_required'),
           })}
           helperText={
             errors.capture_vars?.[idx]
@@ -97,10 +97,10 @@ const ContextVarInput: FC<ContextVarInputProps> = ({
         <ArrowLeftOutlinedIcon fontSize="large" />
       </Grid>
       <Grid item xs={5}>
-        <AutoCompleteSelect<ContextVarOption, "label", false>
+        <AutoCompleteSelect<ContextVarOption, 'label', false>
           idKey="value"
           labelKey="label"
-          label={t("label.value")}
+          label={t('label.value')}
           multiple={false}
           value={value.entity as string}
           onChange={(_e, selected) => {

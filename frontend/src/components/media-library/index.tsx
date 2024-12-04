@@ -6,37 +6,37 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import { Box, Grid, Paper } from "@mui/material";
-import { GridColDef, GridEventListener } from "@mui/x-data-grid";
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import { Box, Grid, Paper } from '@mui/material';
+import { GridColDef, GridEventListener } from '@mui/x-data-grid';
 
-import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import AttachmentThumbnail from '@/app-components/attachment/AttachmentThumbnail';
+import { DeleteDialog } from '@/app-components/dialogs/DeleteDialog';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useDialog } from "@/hooks/useDialog";
-import useFormattedFileSize from "@/hooks/useFormattedFileSize";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
-import { TFilterStringFields } from "@/types/search.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useDialog } from '@/hooks/useDialog';
+import useFormattedFileSize from '@/hooks/useFormattedFileSize';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
+import { TFilterStringFields } from '@/types/search.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { IAttachment } from "../../types/attachment.types";
+import { IAttachment } from '../../types/attachment.types';
 
 type MediaLibraryProps = {
   showTitle?: boolean;
-  onSelect?: GridEventListener<"rowClick">;
+  onSelect?: GridEventListener<'rowClick'>;
   accept?: string;
 };
 
@@ -46,7 +46,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const deleteDialogCtl = useDialog<string>(false);
   const formatFileSize = useFormattedFileSize();
   const { onSearch, searchPayload } = useSearch<IAttachment>({
-    $iLike: ["name"],
+    $iLike: ['name'],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.ATTACHMENT },
@@ -58,10 +58,10 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
             ...searchPayload.where.or,
             ...(accept
               ? accept
-                  .split(",")
+                  .split(',')
                   .map(
                     (type) =>
-                      ({ type } as unknown as TFilterStringFields<IAttachment>),
+                      ({ type }) as unknown as TFilterStringFields<IAttachment>,
                   )
               : undefined),
           },
@@ -71,11 +71,11 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   );
   const { mutateAsync: deleteCategory } = useDelete(EntityType.ATTACHMENT, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const actionColumns = useActionColumns<IAttachment>(
@@ -87,13 +87,13 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<IAttachment>[] = [
-    { field: "id", headerName: "ID" },
+    { field: 'id', headerName: 'ID' },
     {
-      field: "url",
-      headerName: t("label.thumbnail"),
+      field: 'url',
+      headerName: t('label.thumbnail'),
       disableColumnMenu: true,
       resizable: false,
 
@@ -101,65 +101,65 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
         return (
           <Box
             sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <AttachmentThumbnail id={row.id} format="small" size={86} />
           </Box>
         );
       },
-      headerAlign: "center",
+      headerAlign: 'center',
       width: 86,
     },
     {
-      field: "name",
-      headerName: t("label.name"),
+      field: 'name',
+      headerName: t('label.name'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
     },
     {
-      field: "type",
-      headerName: t("label.type"),
+      field: 'type',
+      headerName: t('label.type'),
       disableColumnMenu: true,
       renderHeader,
-      headerAlign: "left",
+      headerAlign: 'left',
       width: 128,
     },
     {
-      field: "size",
-      headerName: t("label.size"),
+      field: 'size',
+      headerName: t('label.size'),
       disableColumnMenu: true,
       resizable: false,
       renderCell: ({ value }) => formatFileSize(value),
-      headerAlign: "left",
+      headerAlign: 'left',
       width: 64,
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -172,7 +172,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
           if (deleteDialogCtl?.data) deleteCategory(deleteDialogCtl.data);
         }}
       />
-      <PageHeader title={t("title.media_library")} icon={DriveFolderUploadIcon}>
+      <PageHeader title={t('title.media_library')} icon={DriveFolderUploadIcon}>
         <Grid
           justifyContent="flex-end"
           gap={1}

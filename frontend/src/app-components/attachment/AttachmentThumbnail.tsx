@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import FileOpenIcon from "@mui/icons-material/FileOpen";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import VideoCameraBackOutlinedIcon from "@mui/icons-material/VideoCameraBackOutlined";
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import FileOpenIcon from '@mui/icons-material/FileOpen';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import VideoCameraBackOutlinedIcon from '@mui/icons-material/VideoCameraBackOutlined';
 import {
   Button,
   Card,
@@ -18,21 +18,21 @@ import {
   CardContent,
   CardMedia,
   Typography,
-} from "@mui/material";
-import { FC } from "react";
+} from '@mui/material';
+import { FC } from 'react';
 
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useGet } from "@/hooks/crud/useGet";
-import { useDialog } from "@/hooks/useDialog";
-import useFormattedFileSize from "@/hooks/useFormattedFileSize";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
-import { PermissionAction } from "@/types/permission.types";
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useGet } from '@/hooks/crud/useGet';
+import { useDialog } from '@/hooks/useDialog';
+import useFormattedFileSize from '@/hooks/useFormattedFileSize';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { IAttachment } from '@/types/attachment.types';
+import { PermissionAction } from '@/types/permission.types';
 
-import { DeleteDialog } from "../dialogs";
+import { DeleteDialog } from '../dialogs';
 
 const AttachmentPreview = ({
   attachment,
@@ -41,24 +41,24 @@ const AttachmentPreview = ({
   attachment: IAttachment;
   size: number;
 }) => {
-  const isImage = attachment?.type.startsWith("image");
+  const isImage = attachment?.type.startsWith('image');
 
   return (
     <CardMedia
       sx={{
         ...(isImage ? { width: size, height: size } : {}),
-        flex: "1 1 50%",
-        textAlign: "center",
-        margin: "auto",
+        flex: '1 1 50%',
+        textAlign: 'center',
+        margin: 'auto',
       }}
       image={isImage ? attachment.url : undefined}
       title={isImage ? attachment.name : undefined}
     >
-      {attachment?.type.startsWith("audio") ? (
+      {attachment?.type.startsWith('audio') ? (
         <MusicNoteIcon sx={{ fontSize: size }} />
-      ) : attachment?.type.startsWith("video") ? (
+      ) : attachment?.type.startsWith('video') ? (
         <VideoCameraBackOutlinedIcon sx={{ fontSize: size }} />
-      ) : !attachment?.type.startsWith("image") ? (
+      ) : !attachment?.type.startsWith('image') ? (
         <FileOpenIcon sx={{ fontSize: size }} />
       ) : null}
     </CardMedia>
@@ -68,13 +68,13 @@ const AttachmentPreview = ({
 type AttachmentThumbnailProps = {
   id: string;
   size?: number;
-  format: "small" | "basic" | "full";
+  format: 'small' | 'basic' | 'full';
   onChange?: (attachment: IAttachment | null) => void;
 };
 
 const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   id,
-  format = "full",
+  format = 'full',
   size = 64,
   onChange,
 }) => {
@@ -88,27 +88,27 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   const deleteDialogCtl = useDialog<string>(false);
   const { mutateAsync: deleteAttachment } = useDelete(EntityType.ATTACHMENT, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
       onChange && onChange(null);
     },
   });
 
   if (!attachment) {
-    return t("message.attachment_not_found") + id;
+    return t('message.attachment_not_found') + id;
   }
 
-  return format === "small" ? (
+  return format === 'small' ? (
     <AttachmentPreview attachment={attachment} size={size} />
   ) : (
-    <Card sx={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+    <Card sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
       <AttachmentPreview attachment={attachment} size={size} />
 
-      {format === "basic" || format === "full" ? (
+      {format === 'basic' || format === 'full' ? (
         <>
-          <CardContent sx={{ marginBottom: 0, flex: "1 1 50%" }}>
+          <CardContent sx={{ marginBottom: 0, flex: '1 1 50%' }}>
             <Typography gutterBottom component="div">
               {attachment.name}
               <Typography variant="body2" color="text.secondary">
@@ -117,7 +117,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
             </Typography>
           </CardContent>
 
-          {format === "full" &&
+          {format === 'full' &&
           hasPermission(EntityType.ATTACHMENT, PermissionAction.DELETE) &&
           onChange ? (
             <>
@@ -127,7 +127,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   deleteAttachment(attachment.id);
                 }}
               />
-              <CardActions sx={{ justifyContent: "center", flex: "1 1 50%" }}>
+              <CardActions sx={{ justifyContent: 'center', flex: '1 1 50%' }}>
                 <Button
                   color="primary"
                   variant="contained"
@@ -139,7 +139,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   }}
                   size="small"
                 >
-                  {t("button.unselect")}
+                  {t('button.unselect')}
                 </Button>
                 <Button
                   color="secondary"
@@ -152,7 +152,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   }}
                   size="small"
                 >
-                  {t("button.remove")}
+                  {t('button.remove')}
                 </Button>
               </CardActions>
             </>
@@ -163,6 +163,6 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   );
 };
 
-AttachmentThumbnail.displayName = "AttachmentThumbnail";
+AttachmentThumbnail.displayName = 'AttachmentThumbnail';
 
 export default AttachmentThumbnail;

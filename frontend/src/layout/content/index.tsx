@@ -6,31 +6,31 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, BoxProps, Grid, styled, Theme } from "@mui/material";
-import { FC } from "react";
+import { Box, BoxProps, Grid, styled, Theme } from '@mui/material';
+import { FC } from 'react';
 
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
-import { IContentPaddingProps } from "..";
+import { IContentPaddingProps } from '..';
 
 const StyledBox = styled(Box, {
-  shouldForwardProp: (prop) => prop !== "hasNoPadding",
+  shouldForwardProp: (prop) => prop !== 'hasNoPadding',
 })(({ hasNoPadding, theme }: IContentPaddingProps & { theme: Theme }) =>
   SXStyleOptions({
-    padding: hasNoPadding ? "0" : 3,
-    width: "calc(100% - 300px)",
-    height: "auto",
-    minHeight: "100vh",
+    padding: hasNoPadding ? '0' : 3,
+    width: 'calc(100% - 300px)',
+    height: 'auto',
+    minHeight: '100vh',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
-    display: hasNoPadding ? "flex" : "block",
-    flexDirection: hasNoPadding ? "column" : "row",
+    display: hasNoPadding ? 'flex' : 'block',
+    flexDirection: hasNoPadding ? 'column' : 'row',
   })({ theme }),
 );
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
   padding: theme.spacing(0, 1),
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,

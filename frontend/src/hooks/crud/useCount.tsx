@@ -6,16 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
+import { useQuery, UseQueryOptions } from 'react-query';
 
-import { EntityType, QueryType } from "@/services/types";
-import { IDynamicProps, TType } from "@/types/base.types";
+import { EntityType, QueryType } from '@/services/types';
+import { IDynamicProps, TType } from '@/types/base.types';
 
-import { useEntityApiClient } from "../useApiClient";
+import { useEntityApiClient } from '../useApiClient';
 
-export const useCount = <TEntity extends IDynamicProps["entity"]>(
+export const useCount = <TEntity extends IDynamicProps['entity']>(
   entity: TEntity,
-  params?: Partial<TType<TEntity>["basic"]>,
+  params?: Partial<TType<TEntity>['basic']>,
   options?: Omit<
     UseQueryOptions<
       { count: number },
@@ -23,7 +23,7 @@ export const useCount = <TEntity extends IDynamicProps["entity"]>(
       { count: number },
       [QueryType, EntityType, unknown]
     >,
-    "queryFn"
+    'queryFn'
   >,
 ) => {
   const api = useEntityApiClient(entity);

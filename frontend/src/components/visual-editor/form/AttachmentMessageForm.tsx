@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from 'react-hook-form';
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentItem } from "@/app-components/dialogs";
-import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IBlockAttributes } from "@/types/block.types";
-import { FileType } from "@/types/message.types";
-import { MIME_TYPES, getFileType } from "@/utils/attachment";
+import AttachmentInput from '@/app-components/attachment/AttachmentInput';
+import { ContentItem } from '@/app-components/dialogs';
+import AttachmentIcon from '@/app-components/svg/toolbar/AttachmentIcon';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IBlockAttributes } from '@/types/block.types';
+import { FileType } from '@/types/message.types';
+import { MIME_TYPES, getFileType } from '@/utils/attachment';
 
-import { useBlock } from "./BlockFormProvider";
-import { FormSectionTitle } from "./FormSectionTitle";
+import { useBlock } from './BlockFormProvider';
+import { FormSectionTitle } from './FormSectionTitle';
 
 const AttachmentMessageForm = () => {
   const block = useBlock();
@@ -27,13 +27,13 @@ const AttachmentMessageForm = () => {
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
 
-  if (!(block?.message && "attachment" in block?.message)) {
+  if (!(block?.message && 'attachment' in block?.message)) {
     return null;
   }
 
   return (
     <ContentItem>
-      <FormSectionTitle title={t("label.attachment")} Icon={AttachmentIcon} />
+      <FormSectionTitle title={t('label.attachment')} Icon={AttachmentIcon} />
       <Controller
         name="message.attachment"
         control={control}
@@ -42,7 +42,7 @@ const AttachmentMessageForm = () => {
             required: (value) => {
               return (
                 !!value?.payload?.attachment_id ||
-                t("message.attachment_is_required")
+                t('message.attachment_is_required')
               );
             },
           },
@@ -56,11 +56,11 @@ const AttachmentMessageForm = () => {
               label=""
               {...rest}
               value={value.payload?.attachment_id}
-              accept={Object.values(MIME_TYPES).flat().join(",")}
+              accept={Object.values(MIME_TYPES).flat().join(',')}
               format="full"
               size={256}
-              error={!!errors?.message?.["attachment"]?.message}
-              helperText={errors?.message?.["attachment"]?.message}
+              error={!!errors?.message?.['attachment']?.message}
+              helperText={errors?.message?.['attachment']?.message}
               onChange={(id, type) => {
                 onChange({
                   type: type ? getFileType(type) : FileType.unknown,
@@ -77,6 +77,6 @@ const AttachmentMessageForm = () => {
   );
 };
 
-AttachmentMessageForm.displayName = "AttachmentMessageForm";
+AttachmentMessageForm.displayName = 'AttachmentMessageForm';
 
 export default AttachmentMessageForm;

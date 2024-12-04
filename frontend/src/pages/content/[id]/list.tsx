@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ReactElement } from "react";
+import { ReactElement } from 'react';
 
-import { Contents } from "@/components/contents";
-import { Layout } from "@/layout";
+import { Contents } from '@/components/contents';
+import { Layout } from '@/layout';
 
 const ContentsPage = () => {
   return <Contents />;

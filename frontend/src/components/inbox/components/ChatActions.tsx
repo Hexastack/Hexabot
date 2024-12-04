@@ -6,29 +6,29 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Avatar } from "@chatscope/chat-ui-kit-react";
-import { faHandPointRight } from "@fortawesome/free-solid-svg-icons";
-import { Button, Grid, IconButton, MenuItem, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Avatar } from '@chatscope/chat-ui-kit-react';
+import { faHandPointRight } from '@fortawesome/free-solid-svg-icons';
+import { Button, Grid, IconButton, MenuItem, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
-import { Input } from "@/app-components/inputs/Input";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { UnifiedIcon } from '@/app-components/icons/UnifiedIcon';
+import { Input } from '@/app-components/inputs/Input';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 
-import { getAvatarSrc } from "../helpers/mapMessages";
-import { useChat } from "../hooks/ChatContext";
+import { getAvatarSrc } from '../helpers/mapMessages';
+import { useChat } from '../hooks/ChatContext';
 
 export const ChatActions = () => {
   const { apiUrl } = useConfig();
   const { t } = useTranslate();
   const { subscriber: activeChat } = useChat();
   const [takeoverBy, setTakeoverBy] = useState<string>(
-    activeChat?.assignedTo ?? "",
+    activeChat?.assignedTo ?? '',
   );
   const { mutate } = useUpdate(EntityType.SUBSCRIBER);
   const { user } = useAuth();
@@ -37,7 +37,7 @@ export const ChatActions = () => {
   });
 
   useEffect(() => {
-    setTakeoverBy(activeChat?.assignedTo ?? "");
+    setTakeoverBy(activeChat?.assignedTo ?? '');
   }, [activeChat?.assignedTo]);
 
   return (
@@ -48,7 +48,7 @@ export const ChatActions = () => {
             onChange={(e) => setTakeoverBy(e.target.value)}
             value={takeoverBy}
             disabled={!activeChat}
-            label={t("label.assign_to")}
+            label={t('label.assign_to')}
             select
           >
             {(users || []).map((user) => (
@@ -62,7 +62,7 @@ export const ChatActions = () => {
                     />
                   </Grid>
                   <Grid>
-                    <Typography sx={{ textTransform: "capitalize" }}>
+                    <Typography sx={{ textTransform: 'capitalize' }}>
                       {user.first_name} {user.last_name}
                     </Typography>
                   </Grid>
@@ -83,7 +83,7 @@ export const ChatActions = () => {
               params: { assignedTo: takeoverBy },
             })
           }
-          sx={{ outline: "#AAAAAA solid 1px" }}
+          sx={{ outline: '#AAAAAA solid 1px' }}
           color="default"
         >
           <UnifiedIcon Icon={faHandPointRight} color="black" />
@@ -105,8 +105,8 @@ export const ChatActions = () => {
           }
         >
           {user && user.id === activeChat?.assignedTo
-            ? t("button.handback")
-            : t("button.takeover")}
+            ? t('button.handback')
+            : t('button.takeover')}
         </Button>
       </Grid>
     </Grid>

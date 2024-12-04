@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { io, Socket, ManagerOptions, SocketOptions } from "socket.io-client";
+import { io, Socket, ManagerOptions, SocketOptions } from 'socket.io-client';
 
-import { IOIncomingMessage, IOOutgoingMessage } from "./types/io-message";
+import { IOIncomingMessage, IOOutgoingMessage } from './types/io-message';
 
 type SocketIoClientConfig = Partial<ManagerOptions & SocketOptions>;
 
@@ -37,7 +37,7 @@ export class SocketIoClient {
     addTrailingSlash: true, // eg: https://domain.path/ => https://domain.path/
     // autoUnref:false, //  firefox only option
     // path: "/socket.io", // This is the socket path in the server, leave it as default unless changed manually in server
-    transports: ["websocket", "polling"], // ["websocket","polling", "websocket"]
+    transports: ['websocket', 'polling'], // ["websocket","polling", "websocket"]
     upgrade: true,
     withCredentials: true,
   };
@@ -73,9 +73,9 @@ export class SocketIoClient {
     onConnectError?: (error: Error) => void;
   }) {
     if (!this.initialized) this.socket.connect();
-    onConnect && this.uniqueOn("connect", onConnect);
-    onDisconnect && this.uniqueOn("disconnect", onDisconnect);
-    onConnectError && this.uniqueOn("connect_error", onConnectError);
+    onConnect && this.uniqueOn('connect', onConnect);
+    onDisconnect && this.uniqueOn('disconnect', onDisconnect);
+    onConnectError && this.uniqueOn('connect_error', onConnectError);
     this.initialized = true;
   }
 
@@ -121,7 +121,7 @@ export class SocketIoClient {
    * @throws Error if the request fails
    */
   public async request<T>(
-    options: Pick<IOOutgoingMessage, "url" | "method"> &
+    options: Pick<IOOutgoingMessage, 'url' | 'method'> &
       Partial<IOOutgoingMessage>,
   ): Promise<IOIncomingMessage<T>> {
     const response: IOIncomingMessage = await this.socket.emitWithAck(
@@ -147,10 +147,10 @@ export class SocketIoClient {
    */
   public async get<T>(
     url: string,
-    options?: Partial<Omit<IOOutgoingMessage, "url" | "method" | "data">>,
+    options?: Partial<Omit<IOOutgoingMessage, 'url' | 'method' | 'data'>>,
   ): Promise<IOIncomingMessage<T>> {
     return this.request({
-      method: "get",
+      method: 'get',
       url,
       ...options,
     });

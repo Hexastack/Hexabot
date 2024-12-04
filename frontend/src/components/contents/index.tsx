@@ -6,40 +6,40 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import UploadIcon from "@mui/icons-material/Upload";
-import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import { faAlignLeft } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import UploadIcon from '@mui/icons-material/Upload';
+import { Button, Chip, Grid, Paper, Switch, Typography } from '@mui/material';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
-import { IContentType } from "@/types/content-type.types";
-import { IContent } from "@/types/content.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGet, useGetFromCache } from '@/hooks/crud/useGet';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType, Format } from '@/services/types';
+import { IContentType } from '@/types/content-type.types';
+import { IContent } from '@/types/content.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { ContentDialog } from "./ContentDialog";
-import { ContentImportDialog } from "./ContentImportDialog";
+import { ContentDialog } from './ContentDialog';
+import { ContentImportDialog } from './ContentImportDialog';
 
 export const Contents = () => {
   const { t } = useTranslate();
@@ -58,7 +58,7 @@ export const Contents = () => {
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContent>({
     $eq: [{ entity: String(query.id) }],
-    $iLike: ["title"],
+    $iLike: ['title'],
   });
   const importDialogCtl = useDialog<{
     contentType?: IContentType;
@@ -75,16 +75,16 @@ export const Contents = () => {
   );
   const { mutateAsync: updateContent } = useUpdate(EntityType.CONTENT, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error.message || t('message.internal_server_error'));
     },
     onSuccess() {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: deleteContent } = useDelete(EntityType.CONTENT, {
     onSuccess: () => {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
@@ -106,7 +106,7 @@ export const Contents = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const { data } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
@@ -117,14 +117,14 @@ export const Contents = () => {
       <Grid item height="fit-content" container>
         <Link href="/content/types">
           <Button variant="text" startIcon={<ArrowBackIcon />}>
-            <Typography sx={{ fontWeight: 500 }}>{t("button.back")}</Typography>
+            <Typography sx={{ fontWeight: 500 }}>{t('button.back')}</Typography>
           </Button>
         </Link>
 
         <PageHeader
           icon={faAlignLeft}
           chip={<Chip label={data?.name} size="medium" variant="title" />}
-          title={t("title.content")}
+          title={t('title.content')}
         >
           <Grid justifyContent="flex-end" gap={1} container alignItems="center">
             <Grid item>
@@ -136,9 +136,9 @@ export const Contents = () => {
                   startIcon={<AddIcon />}
                   variant="contained"
                   onClick={() => addDialogCtl.openDialog({ contentType })}
-                  sx={{ float: "right" }}
+                  sx={{ float: 'right' }}
                 >
-                  {t("button.add")}
+                  {t('button.add')}
                 </Button>
               </Grid>
             ) : null}
@@ -148,9 +148,9 @@ export const Contents = () => {
                   startIcon={<UploadIcon />}
                   variant="contained"
                   onClick={() => importDialogCtl.openDialog({ contentType })}
-                  sx={{ float: "right" }}
+                  sx={{ float: 'right' }}
                 >
-                  {t("button.import")}
+                  {t('button.import')}
                 </Button>
               </Grid>
             ) : null}
@@ -181,12 +181,12 @@ export const Contents = () => {
                 disableColumnFilter
                 showCellVerticalBorder={false}
                 showColumnVerticalBorder={false}
-                sx={{ border: "none" }}
+                sx={{ border: 'none' }}
                 columns={[
-                  { field: "title", headerName: t("label.title"), flex: 1 },
+                  { field: 'title', headerName: t('label.title'), flex: 1 },
                   {
-                    field: "entity",
-                    headerName: t("label.entity"),
+                    field: 'entity',
+                    headerName: t('label.entity'),
                     flex: 1,
                     valueGetter: (entityId) => {
                       const contentType = getEntityFromCache(entityId);
@@ -196,16 +196,16 @@ export const Contents = () => {
                   },
                   {
                     maxWidth: 120,
-                    field: "status",
-                    headerName: t("label.status"),
+                    field: 'status',
+                    headerName: t('label.status'),
                     disableColumnMenu: true,
                     renderHeader,
-                    headerAlign: "left",
+                    headerAlign: 'left',
                     renderCell: (params) => (
                       <Switch
                         checked={params.value}
                         color="primary"
-                        inputProps={{ "aria-label": "primary checkbox" }}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
                         disabled={
                           !hasPermission(
                             EntityType.CONTENT,
@@ -225,25 +225,25 @@ export const Contents = () => {
                   },
                   {
                     maxWidth: 140,
-                    field: "createdAt",
-                    headerName: t("label.createdAt"),
+                    field: 'createdAt',
+                    headerName: t('label.createdAt'),
                     disableColumnMenu: true,
                     renderHeader,
                     resizable: false,
-                    headerAlign: "left",
+                    headerAlign: 'left',
                     valueGetter: (params) =>
-                      t("datetime.created_at", getDateTimeFormatter(params)),
+                      t('datetime.created_at', getDateTimeFormatter(params)),
                   },
                   {
                     maxWidth: 140,
-                    field: "updatedAt",
-                    headerName: t("label.updatedAt"),
+                    field: 'updatedAt',
+                    headerName: t('label.updatedAt'),
                     disableColumnMenu: true,
                     renderHeader,
                     resizable: false,
-                    headerAlign: "left",
+                    headerAlign: 'left',
                     valueGetter: (params) =>
-                      t("datetime.updated_at", getDateTimeFormatter(params)),
+                      t('datetime.updated_at', getDateTimeFormatter(params)),
                   },
                   actionColumns,
                 ]}

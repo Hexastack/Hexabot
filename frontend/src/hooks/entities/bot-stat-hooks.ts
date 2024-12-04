@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useQuery } from "react-query";
+import { useQuery } from 'react-query';
 
-import { StatsType } from "@/types/bot-stat.types";
+import { StatsType } from '@/types/bot-stat.types';
 
-import { useApiClient } from "../useApiClient";
+import { useApiClient } from '../useApiClient';
 
 export const useFindStats = <T>(type: StatsType) => {
   const { apiClient } = useApiClient();
 
   return useQuery({
-    queryKey: ["stats", type],
+    queryKey: ['stats', type],
     queryFn: async () => {
       return await apiClient.getBotStats<T>(type);
     },

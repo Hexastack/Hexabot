@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { IRole, IRoleAttributes } from "@/types/role.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { IRole, IRoleAttributes } from '@/types/role.types';
 
 export type RoleDialogProps = DialogControlProps<IRole>;
 export const RoleDialog: FC<RoleDialogProps> = ({
@@ -38,16 +38,16 @@ export const RoleDialog: FC<RoleDialogProps> = ({
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: updateRole } = useUpdate(EntityType.ROLE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -56,11 +56,11 @@ export const RoleDialog: FC<RoleDialogProps> = ({
     register,
     formState: { errors },
   } = useForm<IRoleAttributes>({
-    defaultValues: { name: "" },
+    defaultValues: { name: '' },
   });
   const validationRules = {
     name: {
-      required: t("message.name_is_required"),
+      required: t('message.name_is_required'),
     },
   };
   const onSubmitForm = async (params: IRoleAttributes) => {
@@ -89,18 +89,18 @@ export const RoleDialog: FC<RoleDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_role") : t("title.new_role")}
+          {data ? t('title.edit_role') : t('title.new_role')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("placeholder.name")}
+                label={t('placeholder.name')}
                 error={!!errors.name}
                 required
                 autoFocus
                 helperText={errors.name ? errors.name.message : null}
-                {...register("name", validationRules.name)}
+                {...register('name', validationRules.name)}
               />
             </ContentItem>
           </ContentContainer>

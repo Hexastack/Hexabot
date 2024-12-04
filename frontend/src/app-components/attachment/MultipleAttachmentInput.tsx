@@ -6,21 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Button, FormHelperText, FormLabel } from "@mui/material";
-import { forwardRef, useState } from "react";
+import { Box, Button, FormHelperText, FormLabel } from '@mui/material';
+import { forwardRef, useState } from 'react';
 
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
-import { PermissionAction } from "@/types/permission.types";
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { EntityType } from '@/services/types';
+import { IAttachment } from '@/types/attachment.types';
+import { PermissionAction } from '@/types/permission.types';
 
-import AttachmentThumbnail from "./AttachmentThumbnail";
-import AttachmentUploader from "./AttachmentUploader";
+import AttachmentThumbnail from './AttachmentThumbnail';
+import AttachmentUploader from './AttachmentUploader';
 
 type MultipleAttachmentInputProps = {
   label: string;
   value: string[];
-  format: "small" | "basic" | "full";
+  format: 'small' | 'basic' | 'full';
   accept: string;
   enableMediaLibrary?: boolean;
   size?: number;
@@ -75,14 +75,14 @@ const MultipleAttachmentInput = forwardRef<
       <Box ref={ref}>
         <FormLabel
           component="label"
-          style={{ display: "inline-block", marginBottom: 8 }}
+          style={{ display: 'inline-block', marginBottom: 8 }}
         >
           {label}
         </FormLabel>
         {attachments.map((attachmentId, index) => (
           <Box
             key={attachmentId}
-            sx={{ display: "flex", alignItems: "center", mb: 2 }}
+            sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
           >
             <AttachmentThumbnail
               id={attachmentId}
@@ -116,6 +116,6 @@ const MultipleAttachmentInput = forwardRef<
   },
 );
 
-MultipleAttachmentInput.displayName = "MultipleAttachmentInput";
+MultipleAttachmentInput.displayName = 'MultipleAttachmentInput';
 
 export default MultipleAttachmentInput;

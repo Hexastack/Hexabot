@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AbcIcon from "@mui/icons-material/Abc";
-import KeyIcon from "@mui/icons-material/Key";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import MarkunreadIcon from "@mui/icons-material/Markunread";
-import PersonIcon from "@mui/icons-material/Person";
+import AbcIcon from '@mui/icons-material/Abc';
+import KeyIcon from '@mui/icons-material/Key';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import MarkunreadIcon from '@mui/icons-material/Markunread';
+import PersonIcon from '@mui/icons-material/Person';
 import {
   Button,
   FormControlLabel,
@@ -18,33 +18,33 @@ import {
   Paper,
   Switch,
   Typography,
-} from "@mui/material";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+} from '@mui/material';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
-import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
-import { IRegisterAttributes } from "@/types/auth/register.types";
-import { JWT } from "@/utils/Jwt";
+import { useAcceptInvite } from '@/hooks/entities/auth-hooks';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { useValidationRules } from '@/hooks/useValidationRules';
+import { IRegisterAttributes } from '@/types/auth/register.types';
+import { JWT } from '@/utils/Jwt';
 
-import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
-import { ContentContainer } from "../dialogs/layouts/ContentContainer";
-import { ContentItem } from "../dialogs/layouts/ContentItem";
-import { Adornment } from "../inputs/Adornment";
-import { Input } from "../inputs/Input";
-import { PasswordInput } from "../inputs/PasswordInput";
+import { PublicContentWrapper } from '../../components/anonymous/PublicContentWrapper';
+import { ContentContainer } from '../dialogs/layouts/ContentContainer';
+import { ContentItem } from '../dialogs/layouts/ContentItem';
+import { Adornment } from '../inputs/Adornment';
+import { Input } from '../inputs/Input';
+import { PasswordInput } from '../inputs/PasswordInput';
 
 const DEFAULT_VALUES: IRegisterAttributes = {
-  email: "",
-  first_name: "",
-  last_name: "",
-  password: "",
-  username: "",
+  email: '',
+  first_name: '',
+  last_name: '',
+  password: '',
+  username: '',
   roles: [],
-  token: "",
+  token: '',
 };
 
 type TRegisterExtendedPayload = IRegisterAttributes & { password2: string };
@@ -55,11 +55,11 @@ export const Register = () => {
   const { toast } = useToast();
   const { mutateAsync: acceptInvite, isLoading } = useAcceptInvite({
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
-      toast.success(t("message.success_invitation_sent"));
-      router.push("/login");
+      toast.success(t('message.success_invitation_sent'));
+      router.push('/login');
     },
   });
   const {
@@ -80,30 +80,30 @@ export const Register = () => {
   const rules = useValidationRules();
   const validationRules = {
     first_name: {
-      required: t("message.first_name_is_required"),
+      required: t('message.first_name_is_required'),
     },
     last_name: {
-      required: t("message.last_name_is_required"),
+      required: t('message.last_name_is_required'),
     },
     username: {
-      required: t("message.username_is_required"),
+      required: t('message.username_is_required'),
     },
     email: {
       ...rules.email,
-      required: t("message.email_is_required"),
+      required: t('message.email_is_required'),
     },
     roles: {},
     token: {},
     password: {
       ...rules.password,
-      required: t("message.password_is_required"),
+      required: t('message.password_is_required'),
     },
     password2: {
       validate: (val?: string) => {
-        if (val !== watch("password")) {
-          trigger("password");
+        if (val !== watch('password')) {
+          trigger('password');
 
-          return t("message.password_match");
+          return t('message.password_match');
         }
       },
     },
@@ -123,13 +123,13 @@ export const Register = () => {
       const decodedToken = jwt.decode(String(queryToken));
 
       if (jwt.isExpired(decodedToken)) {
-        toast.error("Invalid Token");
+        toast.error('Invalid Token');
       } else {
-        setValue("token", String(queryToken));
+        setValue('token', String(queryToken));
 
         // (decodedToken);
-        setValue("email", decodedToken.email);
-        if (decodedToken.roles.length) setValue("roles", decodedToken.roles);
+        setValue('email', decodedToken.email);
+        if (decodedToken.roles.length) setValue('roles', decodedToken.roles);
 
         setReadonlyEmail(!!decodedToken?.email);
       }
@@ -140,7 +140,7 @@ export const Register = () => {
     <PublicContentWrapper>
       <Paper
         sx={{
-          width: { xs: "100%", md: "33%" },
+          width: { xs: '100%', md: '33%' },
           p: 2,
         }}
       >
@@ -148,16 +148,16 @@ export const Register = () => {
           <ContentContainer>
             <ContentItem>
               <Typography variant="h1" fontSize="19px" fontWeight={700}>
-                {t("title.register")}
+                {t('title.register')}
               </Typography>
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("placeholder.first_name")}
+                label={t('placeholder.first_name')}
                 error={!!errors.first_name}
                 required
                 autoFocus
-                {...register("first_name", validationRules.first_name)}
+                {...register('first_name', validationRules.first_name)}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
@@ -168,10 +168,10 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("placeholder.last_name")}
+                label={t('placeholder.last_name')}
                 error={!!errors.last_name}
                 required
-                {...register("last_name", validationRules.last_name)}
+                {...register('last_name', validationRules.last_name)}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
@@ -180,10 +180,10 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("placeholder.username")}
+                label={t('placeholder.username')}
                 error={!!errors.username}
                 required
-                {...register("username", validationRules.username)}
+                {...register('username', validationRules.username)}
                 InputProps={{
                   startAdornment: <Adornment Icon={PersonIcon} />,
                 }}
@@ -192,10 +192,10 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("placeholder.email")}
+                label={t('placeholder.email')}
                 error={!!errors.email}
                 required
-                {...register("email", validationRules.email)}
+                {...register('email', validationRules.email)}
                 helperText={errors.email ? errors.email.message : null}
                 InputProps={{
                   disabled: readonlyEmail,
@@ -206,10 +206,10 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("label.auth_pass")}
+                label={t('label.auth_pass')}
                 error={!!errors.password}
                 required
-                {...register("password", validationRules.password)}
+                {...register('password', validationRules.password)}
                 helperText={errors.password ? errors.password.message : null}
                 InputProps={{
                   startAdornment: <Adornment Icon={KeyIcon} />,
@@ -218,10 +218,10 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("placeholder.password2")}
+                label={t('placeholder.password2')}
                 error={!!errors.password2}
                 required
-                {...register("password2", validationRules.password2)}
+                {...register('password2', validationRules.password2)}
                 helperText={errors.password2 ? errors.password2.message : null}
                 InputProps={{
                   startAdornment: <Adornment Icon={KeyIcon} />,
@@ -235,10 +235,10 @@ export const Register = () => {
                 }
                 label={
                   <Typography
-                    color={isTermsAccepted ? "primary.main" : "text.primary"}
+                    color={isTermsAccepted ? 'primary.main' : 'text.primary'}
                     fontSize="14px"
                   >
-                    {t("label.terms")}
+                    {t('label.terms')}
                   </Typography>
                 }
               />
@@ -252,7 +252,7 @@ export const Register = () => {
                     onClick={handleSubmit(onSubmitForm)}
                     disabled={isLoading || !isTermsAccepted}
                   >
-                    {t("button.register")}
+                    {t('button.register')}
                   </Button>
                 </Grid>
               </Grid>

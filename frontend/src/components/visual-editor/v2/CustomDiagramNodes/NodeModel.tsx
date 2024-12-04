@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BaseModelOptions } from "@projectstorm/react-canvas-core";
+import { BaseModelOptions } from '@projectstorm/react-canvas-core';
 import {
   DefaultNodeModel as StormNodeModel,
   DefaultPortModel,
-} from "@projectstorm/react-diagrams";
+} from '@projectstorm/react-diagrams';
 
-import { BlockPorts } from "@/types/visual-editor.types";
+import { BlockPorts } from '@/types/visual-editor.types';
 
 export interface NodeModelOptions extends BaseModelOptions {
   color?: string;
@@ -40,10 +40,10 @@ export class NodeModel extends StormNodeModel {
   constructor(options: NodeModelOptions = {}) {
     super({
       ...options,
-      type: "ts-custom-node",
+      type: 'ts-custom-node',
     });
-    this.color = options.color || "White";
-    this.title = options.title || "Node";
+    this.color = options.color || 'White';
+    this.title = options.title || 'Node';
     this.content = options.content || undefined;
     this.source = options.source || false;
     this.inputs = options.inputs || [];
@@ -62,14 +62,14 @@ export class NodeModel extends StormNodeModel {
       new DefaultPortModel({
         name: BlockPorts.nextBlocksOutPort,
         in: false,
-        type: "next",
+        type: 'next',
       }),
     );
     this.addPort(
       new DefaultPortModel({
         name: BlockPorts.attachmentOutPort,
         in: false,
-        type: "attached",
+        type: 'attached',
         maximumLinks: 1,
       }),
     );

@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Avatar, Box } from "@mui/material";
-import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
-import { usePathname } from "next/navigation";
+import { Avatar, Box } from '@mui/material';
+import UiChatWidget from 'hexabot-chat-widget/src/UiChatWidget';
+import { usePathname } from 'next/navigation';
 
-import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import i18n from "@/i18n/config";
-import { EntityType, RouterType } from "@/services/types";
+import { getAvatarSrc } from '@/components/inbox/helpers/mapMessages';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import i18n from '@/i18n/config';
+import { EntityType, RouterType } from '@/services/types';
 
-import { ChatWidgetHeader } from "./ChatWidgetHeader";
+import { ChatWidgetHeader } from './ChatWidgetHeader';
 
 export const ChatWidget = () => {
   const pathname = usePathname();
@@ -27,21 +27,21 @@ export const ChatWidget = () => {
   return isAuthenticated ? (
     <Box
       sx={{
-        display: isVisualEditor ? "block" : "none",
+        display: isVisualEditor ? 'block' : 'none',
       }}
     >
       <UiChatWidget
         config={{
           apiUrl,
-          channel: "console-channel",
+          channel: 'console-channel',
           language: i18n.language,
         }}
         CustomHeader={ChatWidgetHeader}
         CustomAvatar={() => (
           <Avatar
-            sx={{ width: "32px", height: "32px" }}
+            sx={{ width: '32px', height: '32px' }}
             src={
-              getAvatarSrc(apiUrl, EntityType.USER, "bot") + "?color=%231ba089"
+              getAvatarSrc(apiUrl, EntityType.USER, 'bot') + '?color=%231ba089'
             }
           />
         )}

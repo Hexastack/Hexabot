@@ -11,12 +11,12 @@ import {
   CircularProgress,
   styled,
   CircularProgressProps,
-} from "@mui/material";
+} from '@mui/material';
 
 const StyledProgress = styled(Stack)(() => ({
-  height: "100vh",
-  alignItems: "center",
-  placeContent: "center",
+  height: '100vh',
+  alignItems: 'center',
+  placeContent: 'center',
 }));
 
 export const Progress = (props: CircularProgressProps) => (

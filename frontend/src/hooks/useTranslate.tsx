@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useTranslation } from "react-i18next";
+import { useTranslation } from 'react-i18next';
 
 import {
   TOptionsBaseExtended,
   TTranslateProps,
   TTranslationKeys,
-} from "@/i18n/i18n.types";
+} from '@/i18n/i18n.types';
 
 export const useTranslate = (ns?: string) => {
   const { t, i18n } = useTranslation(ns);
@@ -22,18 +22,18 @@ export const useTranslate = (ns?: string) => {
     prop3?: unknown,
   ): string => {
     // full key. For example: prop1 = label.buttons
-    if (typeof prop1 === "string" && prop1.includes(".")) {
+    if (typeof prop1 === 'string' && prop1.includes('.')) {
       const key = prop1 as TTranslationKeys;
       const options = (prop2 || {}) as TOptionsBaseExtended;
 
-      return t(key, { defaultValue: "", ...options });
+      return t(key, { defaultValue: '', ...options });
     }
 
     // key with nested key. For example: prop1=label prop2=buttons
     const options = (prop3 || {}) as TOptionsBaseExtended;
 
-    return t([prop1, prop2].join(".") as TTranslationKeys, {
-      defaultValue: "",
+    return t([prop1, prop2].join('.') as TTranslationKeys, {
+      defaultValue: '',
       ...options,
     });
   };

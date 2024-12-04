@@ -6,23 +6,23 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { ILabel, ILabelAttributes } from "@/types/label.types";
-import { slugify } from "@/utils/string";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { ILabel, ILabelAttributes } from '@/types/label.types';
+import { slugify } from '@/utils/string';
 
 export type LabelDialogProps = DialogControlProps<ILabel>;
 export const LabelDialog: FC<LabelDialogProps> = ({
@@ -35,20 +35,20 @@ export const LabelDialog: FC<LabelDialogProps> = ({
   const { toast } = useToast();
   const { mutateAsync: createLabel } = useCreate(EntityType.LABEL, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: updateLabel } = useUpdate(EntityType.LABEL, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -59,14 +59,14 @@ export const LabelDialog: FC<LabelDialogProps> = ({
     handleSubmit,
   } = useForm<ILabelAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      title: data?.title || "",
-      description: data?.description || "",
+      name: data?.name || '',
+      title: data?.title || '',
+      description: data?.description || '',
     },
   });
   const validationRules = {
     title: {
-      required: t("message.title_is_required"),
+      required: t('message.title_is_required'),
     },
     name: {},
     description: {},
@@ -99,21 +99,21 @@ export const LabelDialog: FC<LabelDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_label") : t("title.new_label")}
+          {data ? t('title.edit_label') : t('title.new_label')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("placeholder.title")}
+                label={t('placeholder.title')}
                 error={!!errors.title}
                 required
                 autoFocus
-                {...register("title", validationRules.title)}
+                {...register('title', validationRules.title)}
                 InputProps={{
                   onChange: ({ target: { value } }) => {
-                    setValue("title", value);
-                    setValue("name", slugify(value).toUpperCase());
+                    setValue('title', value);
+                    setValue('name', slugify(value).toUpperCase());
                   },
                 }}
                 helperText={errors.title ? errors.title.message : null}
@@ -121,18 +121,18 @@ export const LabelDialog: FC<LabelDialogProps> = ({
             </ContentItem>
             <ContentItem>
               <Input
-                placeholder={t("placeholder.name")}
+                placeholder={t('placeholder.name')}
                 error={!!errors.name}
-                {...register("name", validationRules.name)}
+                {...register('name', validationRules.name)}
                 disabled
                 helperText={errors.name ? errors.name.message : null}
               />
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("label.description")}
+                label={t('label.description')}
                 error={!!errors.description}
-                {...register("description", validationRules.description)}
+                {...register('description', validationRules.description)}
                 helperText={
                   errors.description ? errors.description.message : null
                 }

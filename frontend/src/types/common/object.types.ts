@@ -11,9 +11,9 @@ export type TFilterNestedKeysOfType<T, U = string> = T extends object
       [K in keyof T]: T[K] extends U
         ? `${K & string}`
         : T[K] extends object
-        ? Array<any> extends T[K]
-          ? never
-          : `${K & string}.${TFilterNestedKeysOfType<T[K], U>}`
-        : never;
+          ? Array<any> extends T[K]
+            ? never
+            : `${K & string}.${TFilterNestedKeysOfType<T[K], U>}`
+          : never;
     }[keyof T]
   : never;

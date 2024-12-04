@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import DoNotDisturbAltRoundedIcon from "@mui/icons-material/DoNotDisturbAltRounded";
-import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
-import LinkIcon from "@mui/icons-material/Link";
-import PlaylistAddRoundedIcon from "@mui/icons-material/PlaylistAddRounded";
-import ReplyIcon from "@mui/icons-material/Reply";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DoNotDisturbAltRoundedIcon from '@mui/icons-material/DoNotDisturbAltRounded';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
+import LinkIcon from '@mui/icons-material/Link';
+import PlaylistAddRoundedIcon from '@mui/icons-material/PlaylistAddRounded';
+import ReplyIcon from '@mui/icons-material/Reply';
 import {
   Accordion,
   AccordionDetails,
@@ -23,56 +23,56 @@ import {
   Typography,
   Grid,
   styled,
-} from "@mui/material";
-import React, { FC, useState } from "react";
+} from '@mui/material';
+import React, { FC, useState } from 'react';
 
-import { AnimatedChevron } from "@/app-components/icons/AnimatedChevron";
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
-import { TMenuItem } from "@/app-components/menus/Sidebar";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
-import { theme } from "@/layout/themes/theme";
-import { EntityType } from "@/services/types";
-import { IMenuNode } from "@/types/menu-tree.types";
-import { MenuType } from "@/types/menu.types";
-import { PermissionAction } from "@/types/permission.types";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { AnimatedChevron } from '@/app-components/icons/AnimatedChevron';
+import { UnifiedIcon } from '@/app-components/icons/UnifiedIcon';
+import { TMenuItem } from '@/app-components/menus/Sidebar';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useTranslate } from '@/hooks/useTranslate';
+import { theme } from '@/layout/themes/theme';
+import { EntityType } from '@/services/types';
+import { IMenuNode } from '@/types/menu-tree.types';
+import { MenuType } from '@/types/menu.types';
+import { PermissionAction } from '@/types/permission.types';
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: "8px",
-  color: "inherit",
+  borderRadius: '8px',
+  color: 'inherit',
   fontWeight: 300,
-  textTransform: "capitalize",
+  textTransform: 'capitalize',
   backgroundColor: theme.palette.background.default,
   borderColor: theme.palette.action.focus,
-  borderWidth: "1px",
-  "&:hover": {
+  borderWidth: '1px',
+  '&:hover': {
     borderColor: theme.palette.action.focus,
   },
 }));
 const StyledAccordion = styled(Accordion)(
   SXStyleOptions({
     // remove shadow and edges
-    "&.MuiAccordion-root": {
-      boxShadow: "none",
-      "&:before": {
-        display: "none",
+    '&.MuiAccordion-root': {
+      boxShadow: 'none',
+      '&:before': {
+        display: 'none',
       },
-      "&.Mui-expanded": {
-        margin: "0",
+      '&.Mui-expanded': {
+        margin: '0',
       },
-      "&.MuiPaper-root": {
-        backgroundColor: "transparent",
+      '&.MuiPaper-root': {
+        backgroundColor: 'transparent',
       },
     },
-    "& .MuiAccordionSummary-root": {
+    '& .MuiAccordionSummary-root': {
       padding: 0,
       gap: 1,
-      flexDirection: "row-reverse", //  expand icon to the right
+      flexDirection: 'row-reverse', //  expand icon to the right
     },
-    "& .MuiAccordionDetails-root": {
-      padding: "0",
+    '& .MuiAccordionDetails-root': {
+      padding: '0',
       marginLeft: 1,
     },
   }),
@@ -86,7 +86,7 @@ interface MenuAccordionProps {
   level?: number;
 }
 
-const getIcon = (menu: IMenuNode): TMenuItem["Icon"] | undefined => {
+const getIcon = (menu: IMenuNode): TMenuItem['Icon'] | undefined => {
   if (menu.type === MenuType.postback) {
     return ReplyIcon;
   }
@@ -110,21 +110,21 @@ const MenuItem: FC<MenuAccordionProps> = ({
     <Box
       key={menu.id}
       sx={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         zIndex: 1,
       }}
     >
       <Grid
         sx={{
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "row",
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'row',
           flexShrink: 0,
-          width: "max-content",
-          maxWidth: "100%",
+          width: 'max-content',
+          maxWidth: '100%',
           gap: 1,
         }}
       >
@@ -135,38 +135,38 @@ const MenuItem: FC<MenuAccordionProps> = ({
         */}
         <div
           style={{
-            height: "24px",
-            width: "24px",
-            alignItems: "center",
-            justifyContent: "center",
+            height: '24px',
+            width: '24px',
+            alignItems: 'center',
+            justifyContent: 'center',
             display:
               menu.type === MenuType.nested &&
               menu.call_to_actions !== undefined
-                ? "none"
-                : "flex",
+                ? 'none'
+                : 'flex',
           }}
         >
           <UnifiedIcon size="20px" Icon={getIcon(menu)} color="#000" />
         </div>
         <Typography>
-          {menu.title} :{" "}
+          {menu.title} :{' '}
           <span
             style={{
-              color: "gray",
-              textTransform: "uppercase",
-              fontSize: "14px",
+              color: 'gray',
+              textTransform: 'uppercase',
+              fontSize: '14px',
               fontWeight: 300,
             }}
           >
             {menu.type}
-            {menu.type === "nested"
-              ? ` (${menu.call_to_actions?.length || "0"})`
-              : ""}
+            {menu.type === 'nested'
+              ? ` (${menu.call_to_actions?.length || '0'})`
+              : ''}
           </span>
           {menu.url ? (
             <>
               <Link
-                sx={{ ml: "0.75em", fontSize: "14px" }}
+                sx={{ ml: '0.75em', fontSize: '14px' }}
                 color={theme.palette.primary.light}
                 href={menu.url}
               >
@@ -181,12 +181,12 @@ const MenuItem: FC<MenuAccordionProps> = ({
         size="small"
         aria-label="editing actions"
         sx={{
-          borderRadius: "2px",
-          overflow: "hidden",
-          height: "32px",
+          borderRadius: '2px',
+          overflow: 'hidden',
+          height: '32px',
         }}
       >
-        {menu.type === "nested" &&
+        {menu.type === 'nested' &&
         hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
           <StyledButton
             startIcon={<PlaylistAddRoundedIcon sx={{ opacity: 0.6 }} />}
@@ -195,18 +195,18 @@ const MenuItem: FC<MenuAccordionProps> = ({
               event.stopPropagation();
             }}
           >
-            {t("button.append")}
+            {t('button.append')}
           </StyledButton>
         ) : null}
         {hasPermission(EntityType.MENU, PermissionAction.UPDATE) ? (
           <StyledButton
-            startIcon={<DriveFileRenameOutlineIcon sx={{ opacity: "60%" }} />}
+            startIcon={<DriveFileRenameOutlineIcon sx={{ opacity: '60%' }} />}
             onClick={(event) => {
               onUpdate(menu);
               event.stopPropagation();
             }}
             sx={{
-              "& .MuiButton-startIcon": {
+              '& .MuiButton-startIcon': {
                 marginRight: 0,
               },
             }}
@@ -220,7 +220,7 @@ const MenuItem: FC<MenuAccordionProps> = ({
             }}
             startIcon={<DeleteOutlineIcon color="error" />}
             sx={{
-              "& .MuiButton-startIcon": {
+              '& .MuiButton-startIcon': {
                 marginRight: 0,
               },
             }}
@@ -247,14 +247,14 @@ const MenuAccordion: React.FC<MenuAccordionProps> = ({
     <Grid
       sx={{
         ...(level !== 0 && {
-          borderLeft: "1px dashed #0003",
+          borderLeft: '1px dashed #0003',
           paddingLeft: 2,
         }),
         zIndex: 1,
-        position: "relative",
+        position: 'relative',
       }}
     >
-      {menu.type === "nested" ? (
+      {menu.type === 'nested' ? (
         <StyledAccordion
           expanded={menu.call_to_actions?.length ? isExpanded : false}
           onChange={toggleExpansion}

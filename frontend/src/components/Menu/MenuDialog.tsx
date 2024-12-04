@@ -12,19 +12,19 @@ import {
   DialogContent,
   DialogProps,
   MenuItem,
-} from "@mui/material";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
-import { isAbsoluteUrl } from "@/utils/URL";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { ToggleableInput } from '@/app-components/inputs/ToggleableInput';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IMenuItem, IMenuItemAttributes, MenuType } from '@/types/menu.types';
+import { isAbsoluteUrl } from '@/utils/URL';
 
 export type MenuDialogProps = DialogProps & {
   open: boolean;
@@ -34,7 +34,7 @@ export type MenuDialogProps = DialogProps & {
   row?: IMenuItem;
   parentId?: string;
 };
-const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
+const DEFAULT_VALUES = { title: '', type: MenuType.web_url, url: undefined };
 
 export const MenuDialog: FC<MenuDialogProps> = ({
   open,
@@ -59,13 +59,13 @@ export const MenuDialog: FC<MenuDialogProps> = ({
   });
   const validationRules = {
     type: {
-      required: t("message.type_is_required"),
+      required: t('message.type_is_required'),
     },
-    title: { required: t("message.title_is_required") },
+    title: { required: t('message.title_is_required') },
     url: {
-      required: t("message.url_is_invalid"),
-      validate: (value: string = "") =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
+      required: t('message.url_is_invalid'),
+      validate: (value: string = '') =>
+        isAbsoluteUrl(value) || t('message.url_is_invalid'),
     },
     payload: {},
   };
@@ -87,16 +87,16 @@ export const MenuDialog: FC<MenuDialogProps> = ({
     }
   }, [open, reset, row]);
 
-  const typeValue = watch("type");
-  const titleValue = watch("title");
+  const typeValue = watch('type');
+  const titleValue = watch('title');
 
   return (
     <Dialog open={open} fullWidth onClose={closeFunction} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeFunction}>
           {createFunction
-            ? t("title.add_menu_item")
-            : t("title.edit_menu_item")}
+            ? t('title.add_menu_item')
+            : t('title.edit_menu_item')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
@@ -112,13 +112,13 @@ export const MenuDialog: FC<MenuDialogProps> = ({
                     return (
                       <Input
                         select
-                        label={t("placeholder.type")}
+                        label={t('placeholder.type')}
                         error={!!errors.type}
                         inputRef={field.ref}
                         required
                         onChange={({ target: { value } }) => {
                           onChange(value);
-                          resetField("url");
+                          resetField('url');
                         }}
                         helperText={errors.type ? errors.type.message : null}
                         {...rest}
@@ -136,12 +136,12 @@ export const MenuDialog: FC<MenuDialogProps> = ({
 
               <ContentItem flex={1}>
                 <Input
-                  label={t("placeholder.title")}
+                  label={t('placeholder.title')}
                   error={!!errors.title}
                   required
                   autoFocus
                   helperText={errors.title ? errors.title.message : null}
-                  {...register("title", validationRules.title)}
+                  {...register('title', validationRules.title)}
                 />
               </ContentItem>
             </ContentContainer>
@@ -149,11 +149,11 @@ export const MenuDialog: FC<MenuDialogProps> = ({
             <ContentItem>
               {typeValue === MenuType.web_url ? (
                 <Input
-                  label={t("label.web_url")}
+                  label={t('label.web_url')}
                   error={!!errors.url}
                   required
                   helperText={errors.url ? errors.url.message : null}
-                  {...register("url", validationRules.url)}
+                  {...register('url', validationRules.url)}
                 />
               ) : typeValue === MenuType.postback ? (
                 <Controller
@@ -162,10 +162,10 @@ export const MenuDialog: FC<MenuDialogProps> = ({
                   render={({ field }) => {
                     return (
                       <ToggleableInput
-                        label={t("label.payload")}
+                        label={t('label.payload')}
                         error={!!errors.payload}
                         required
-                        defaultValue={row?.payload || ""}
+                        defaultValue={row?.payload || ''}
                         readOnlyValue={titleValue}
                         helperText={
                           errors.payload ? errors.payload.message : null

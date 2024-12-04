@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 type ResponseData = {
   apiUrl: string;
@@ -18,7 +18,7 @@ export default function handler(
   res: NextApiResponse<ResponseData>,
 ) {
   res.status(200).json({
-    apiUrl: process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:4000",
-    ssoEnabled: process.env.NEXT_PUBLIC_SSO_ENABLED === "true" || false,
+    apiUrl: process.env.NEXT_PUBLIC_API_ORIGIN || 'http://localhost:4000',
+    ssoEnabled: process.env.NEXT_PUBLIC_SSO_ENABLED === 'true' || false,
   });
 }

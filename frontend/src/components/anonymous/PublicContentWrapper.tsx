@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CircularProgress, Grid } from "@mui/material";
-import { FC } from "react";
+import { CircularProgress, Grid } from '@mui/material';
+import { FC } from 'react';
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from '@/hooks/useAuth';
 
 export type PublicContentWrapperProps = { children: React.ReactNode };
 export const PublicContentWrapper: FC<PublicContentWrapperProps> = ({

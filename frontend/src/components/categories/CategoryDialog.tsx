@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { ICategory, ICategoryAttributes } from "@/types/category.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { ICategory, ICategoryAttributes } from '@/types/category.types';
 
 export type CategoryDialogProps = DialogControlProps<ICategory>;
 
@@ -39,16 +39,16 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
     },
     onSuccess: () => {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: updateCategory } = useUpdate(EntityType.CATEGORY, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -57,11 +57,11 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<ICategoryAttributes>({
-    defaultValues: { label: data?.label || "" },
+    defaultValues: { label: data?.label || '' },
   });
   const validationRules = {
     label: {
-      required: t("message.label_is_required"),
+      required: t('message.label_is_required'),
     },
   };
   const onSubmitForm = async (params: ICategoryAttributes) => {
@@ -90,14 +90,14 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_category") : t("title.new_category")}
+          {data ? t('title.edit_category') : t('title.new_category')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("placeholder.label")}
-                {...register("label", validationRules.label)}
+                label={t('placeholder.label')}
+                {...register('label', validationRules.label)}
                 autoFocus
                 helperText={errors.label ? errors.label.message : null}
               />

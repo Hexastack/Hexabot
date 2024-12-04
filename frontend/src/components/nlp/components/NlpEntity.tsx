@@ -6,35 +6,35 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Chip, Grid } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useRouter } from "next/router";
-import { useState } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Chip, Grid } from '@mui/material';
+import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { INlpEntity } from "@/types/nlp-entity.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { INlpEntity } from '@/types/nlp-entity.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { NlpEntityDialog } from "../NlpEntityDialog";
+import { NlpEntityDialog } from '../NlpEntityDialog';
 
 const NlpEntity = () => {
   const router = useRouter();
@@ -43,11 +43,11 @@ const NlpEntity = () => {
   const editEntityDialogCtl = useDialog<INlpEntity>(false);
   const { mutateAsync: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       deleteEntityDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const { mutateAsync: deleteNlpEntities } = useDeleteMany(
@@ -59,7 +59,7 @@ const NlpEntity = () => {
       onSuccess: () => {
         deleteEntityDialogCtl.closeDialog();
         setSelectedNlpEntities([]);
-        toast.success(t("message.item_delete_success"));
+        toast.success(t('message.item_delete_success'));
       },
     },
   );
@@ -68,7 +68,7 @@ const NlpEntity = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
-    $or: ["name", "doc"],
+    $or: ['name', 'doc'],
   });
   const { dataGridProps: nlpEntityGrid } = useFind(
     {
@@ -87,7 +87,7 @@ const NlpEntity = () => {
         action: (row) =>
           router.push(
             {
-              pathname: "/nlp/nlp-entities/[id]/nlpValues",
+              pathname: '/nlp/nlp-entities/[id]/nlpValues',
               query: { id: row.id },
             },
             undefined,
@@ -109,29 +109,29 @@ const NlpEntity = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const nlpEntityColumns: GridColDef<INlpEntity>[] = [
     {
       flex: 1,
-      field: "name",
-      headerName: t("label.name"),
+      field: 'name',
+      headerName: t('label.name'),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       flex: 2,
-      field: "doc",
-      headerName: t("label.doc"),
+      field: 'doc',
+      headerName: t('label.doc'),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       maxWidth: 210,
-      field: "lookups",
-      headerName: t("label.lookups"),
+      field: 'lookups',
+      headerName: t('label.lookups'),
       renderCell: (val) => <Chip label={val.value} variant="title" />,
       sortable: true,
       disableColumnMenu: true,
@@ -140,8 +140,8 @@ const NlpEntity = () => {
     },
     {
       maxWidth: 90,
-      field: "builtin",
-      headerName: t("label.builtin"),
+      field: 'builtin',
+      headerName: t('label.builtin'),
       sortable: true,
       disableColumnMenu: true,
       resizable: false,
@@ -149,25 +149,25 @@ const NlpEntity = () => {
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionEntityColumns,
   ];
@@ -208,10 +208,10 @@ const NlpEntity = () => {
             <Button
               startIcon={<AddIcon />}
               variant="contained"
-              sx={{ float: "right" }}
+              sx={{ float: 'right' }}
               onClick={() => addDialogCtl.openDialog()}
             >
-              {t("button.add")}
+              {t('button.add')}
             </Button>
           </Grid>
         ) : null}
@@ -223,7 +223,7 @@ const NlpEntity = () => {
               color="error"
               onClick={() => deleteEntityDialogCtl.openDialog(undefined)}
             >
-              {t("button.delete")}
+              {t('button.delete')}
             </Button>
           </Grid>
         )}

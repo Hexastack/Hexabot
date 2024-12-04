@@ -6,34 +6,34 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
-import { InputAdornment, Tooltip } from "@mui/material";
+import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
+import { InputAdornment, Tooltip } from '@mui/material';
 
-type AlertType = "warning" | "error" | "info" | "success";
+type AlertType = 'warning' | 'error' | 'info' | 'success';
 
 type ColorType =
-  | "disabled"
-  | "action"
-  | "inherit"
-  | "error"
-  | "primary"
-  | "secondary"
-  | "info"
-  | "success"
-  | "warning";
+  | 'disabled'
+  | 'action'
+  | 'inherit'
+  | 'error'
+  | 'primary'
+  | 'secondary'
+  | 'info'
+  | 'success'
+  | 'warning';
 
 const getIcon = (type: AlertType, color: ColorType = type) => {
   switch (type) {
-    case "error":
+    case 'error':
       return <ErrorOutlineIcon color={color} />;
-    case "info":
+    case 'info':
       return <InfoOutlinedIcon color={color} />;
-    case "success":
+    case 'success':
       return <CheckCircleOutlineOutlinedIcon color={color} />;
-    case "warning":
+    case 'warning':
     default:
       return <WarningAmberOutlinedIcon color={color} />;
   }
@@ -41,7 +41,7 @@ const getIcon = (type: AlertType, color: ColorType = type) => {
 
 export const AlertAdornment = ({
   title,
-  type = "warning",
+  type = 'warning',
   color,
 }: {
   title: string;
@@ -54,10 +54,10 @@ export const AlertAdornment = ({
       title={title}
       PopperProps={{
         sx: {
-          "& .MuiTooltip-tooltip": {
-            fontSize: "13px",
+          '& .MuiTooltip-tooltip': {
+            fontSize: '13px',
             padding: 0.6,
-            maxWidth: "none",
+            maxWidth: 'none',
           },
         },
       }}

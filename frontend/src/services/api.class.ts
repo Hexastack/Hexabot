@@ -6,67 +6,67 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { AxiosInstance, AxiosResponse } from "axios";
+import { AxiosInstance, AxiosResponse } from 'axios';
 
-import { ILoginAttributes } from "@/types/auth/login.types";
-import { IUserPermissions } from "@/types/auth/permission.types";
-import { StatsType } from "@/types/bot-stat.types";
-import { ICsrf } from "@/types/csrf.types";
-import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
-import { INlpDatasetSampleAttributes } from "@/types/nlp-sample.types";
-import { IResetPayload, IResetRequest } from "@/types/reset.types";
-import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
+import { ILoginAttributes } from '@/types/auth/login.types';
+import { IUserPermissions } from '@/types/auth/permission.types';
+import { StatsType } from '@/types/bot-stat.types';
+import { ICsrf } from '@/types/csrf.types';
+import { IInvitation, IInvitationAttributes } from '@/types/invitation.types';
+import { INlpDatasetSampleAttributes } from '@/types/nlp-sample.types';
+import { IResetPayload, IResetRequest } from '@/types/reset.types';
+import { IUser, IUserAttributes, IUserStub } from '@/types/user.types';
 
-import { EntityType, Format, TCount, TypeByFormat } from "./types";
+import { EntityType, Format, TCount, TypeByFormat } from './types';
 
 export const ROUTES = {
   // Misc
-  ACCEPT_INVITE: "/auth/accept-invite",
-  CONFIRM_ACCOUNT: "/user/confirm",
-  LOGIN: "/auth/local",
-  ME: "/auth/me",
-  LOGOUT: "/auth/logout",
-  PROFILE: "/user/edit",
-  INVITE: "/user/invite",
-  USER_PERMISSIONS: "/user/permissions",
-  CSRF: "/csrftoken",
-  BOTSTATS: "/botstats",
-  REFRESH_TRANSLATIONS: "/translation/refresh",
-  FETCH_REMOTE_I18N: "/i18n",
-  RESET: "/user/reset",
-  NLP_SAMPLE_IMPORT: "/nlpsample/import",
-  NLP_SAMPLE_PREDICT: "/nlpsample/message",
-  CONTENT_IMPORT: "/content/import",
+  ACCEPT_INVITE: '/auth/accept-invite',
+  CONFIRM_ACCOUNT: '/user/confirm',
+  LOGIN: '/auth/local',
+  ME: '/auth/me',
+  LOGOUT: '/auth/logout',
+  PROFILE: '/user/edit',
+  INVITE: '/user/invite',
+  USER_PERMISSIONS: '/user/permissions',
+  CSRF: '/csrftoken',
+  BOTSTATS: '/botstats',
+  REFRESH_TRANSLATIONS: '/translation/refresh',
+  FETCH_REMOTE_I18N: '/i18n',
+  RESET: '/user/reset',
+  NLP_SAMPLE_IMPORT: '/nlpsample/import',
+  NLP_SAMPLE_PREDICT: '/nlpsample/message',
+  CONTENT_IMPORT: '/content/import',
   // Entities
-  [EntityType.SUBSCRIBER]: "/subscriber",
-  [EntityType.LABEL]: "/label",
-  [EntityType.ROLE]: "/role",
-  [EntityType.USER]: "/user",
-  [EntityType.PERMISSION]: "/permission",
-  [EntityType.MODEL]: "/model",
-  [EntityType.CATEGORY]: "/category",
-  [EntityType.CONTEXT_VAR]: "/contextVar",
-  [EntityType.MENU]: "/menu",
-  [EntityType.MENUTREE]: "/menu/tree",
-  [EntityType.CONTENT]: "/content",
-  [EntityType.CONTENT_TYPE]: "/contenttype",
-  [EntityType.SETTING]: "/setting",
-  [EntityType.BOTSTATS]: "/botstats",
-  [EntityType.BLOCK]: "/block",
-  [EntityType.CUSTOM_BLOCK]: "/block/customBlocks",
-  [EntityType.CUSTOM_BLOCK_SETTINGS]: "/block/customBlocks/settings",
-  [EntityType.NLP_SAMPLE]: "/nlpsample",
-  [EntityType.NLP_ENTITY]: "/nlpentity",
-  [EntityType.NLP_VALUE]: "/nlpvalue",
-  [EntityType.NLP_SAMPLE_ENTITY]: "",
-  [EntityType.MESSAGE]: "/message",
-  [EntityType.LANGUAGE]: "/language",
-  [EntityType.TRANSLATION]: "/translation",
-  [EntityType.ATTACHMENT]: "/attachment",
-  [EntityType.CHANNEL]: "/channel",
-  [EntityType.HELPER]: "/helper",
-  [EntityType.NLU_HELPER]: "/helper/nlu",
-  [EntityType.LLM_HELPER]: "/helper/llm",
+  [EntityType.SUBSCRIBER]: '/subscriber',
+  [EntityType.LABEL]: '/label',
+  [EntityType.ROLE]: '/role',
+  [EntityType.USER]: '/user',
+  [EntityType.PERMISSION]: '/permission',
+  [EntityType.MODEL]: '/model',
+  [EntityType.CATEGORY]: '/category',
+  [EntityType.CONTEXT_VAR]: '/contextVar',
+  [EntityType.MENU]: '/menu',
+  [EntityType.MENUTREE]: '/menu/tree',
+  [EntityType.CONTENT]: '/content',
+  [EntityType.CONTENT_TYPE]: '/contenttype',
+  [EntityType.SETTING]: '/setting',
+  [EntityType.BOTSTATS]: '/botstats',
+  [EntityType.BLOCK]: '/block',
+  [EntityType.CUSTOM_BLOCK]: '/block/customBlocks',
+  [EntityType.CUSTOM_BLOCK_SETTINGS]: '/block/customBlocks/settings',
+  [EntityType.NLP_SAMPLE]: '/nlpsample',
+  [EntityType.NLP_ENTITY]: '/nlpentity',
+  [EntityType.NLP_VALUE]: '/nlpvalue',
+  [EntityType.NLP_SAMPLE_ENTITY]: '',
+  [EntityType.MESSAGE]: '/message',
+  [EntityType.LANGUAGE]: '/language',
+  [EntityType.TRANSLATION]: '/translation',
+  [EntityType.ATTACHMENT]: '/attachment',
+  [EntityType.CHANNEL]: '/channel',
+  [EntityType.HELPER]: '/helper',
+  [EntityType.NLU_HELPER]: '/helper/nlu',
+  [EntityType.LLM_HELPER]: '/helper/llm',
 } as const;
 
 export class ApiClient {
@@ -89,7 +89,7 @@ export class ApiClient {
   }
 
   async logout() {
-    const { data } = await this.request.post<{ status: "ok" }>(ROUTES.LOGOUT);
+    const { data } = await this.request.post<{ status: 'ok' }>(ROUTES.LOGOUT);
 
     return data;
   }
@@ -247,7 +247,10 @@ export class ApiClient {
 }
 
 export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
-  constructor(request: AxiosInstance, private readonly type: EntityType) {
+  constructor(
+    request: AxiosInstance,
+    private readonly type: EntityType,
+  ) {
     super(request);
   }
 
@@ -273,7 +276,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
-    formData.append("file", file);
+    formData.append('file', file);
 
     const { data } = await this.request.post<
       TBasic[],
@@ -281,7 +284,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
       FormData
     >(`${ROUTES[this.type]}/upload?_csrf=${_csrf}`, formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        'Content-Type': 'multipart/form-data',
       },
     });
 
@@ -289,7 +292,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
   }
 
   private serializePopulate<P = string[] | undefined>(populate: P) {
-    return ((populate || []) as string[]).join(",");
+    return ((populate || []) as string[]).join(',');
   }
 
   async get<
@@ -298,7 +301,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     T = TypeByFormat<F, TBasic, TFull>,
   >(id?: string, populate?: P) {
     const { data } = await this.request.get<T>(
-      `${ROUTES[this.type]}${id ? `/${id}` : ""}`,
+      `${ROUTES[this.type]}${id ? `/${id}` : ''}`,
       {
         params: {
           ...(Array.isArray(populate) &&

@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, Typography } from "@mui/material";
-import { ReactNode } from "react";
+import { Grid, Typography } from '@mui/material';
+import { ReactNode } from 'react';
 
-import { UnifiedIcon } from "@/app-components/icons/UnifiedIcon";
-import { TMenuItem } from "@/app-components/menus/Sidebar";
+import { UnifiedIcon } from '@/app-components/icons/UnifiedIcon';
+import { TMenuItem } from '@/app-components/menus/Sidebar';
 
 export const Title = (props: {
   title: string;
-  icon: TMenuItem["Icon"];
+  icon: TMenuItem['Icon'];
   chip?: ReactNode;
 }) => (
   <Grid
@@ -22,18 +22,18 @@ export const Title = (props: {
     gap={1}
     sx={{
       padding: 1,
-      flexShrink: "0",
-      width: "max-content",
-      height: "fit-content",
+      flexShrink: '0',
+      width: 'max-content',
+      height: 'fit-content',
     }}
   >
-    <Grid sx={{ height: "24px", alignSelf: "center" }}>
+    <Grid sx={{ height: '24px', alignSelf: 'center' }}>
       <UnifiedIcon Icon={props.icon} color="common.black" />
     </Grid>
     <Grid>
       <Typography fontSize="1.5em" fontWeight={700} height="fit-content">
         {props.title}
-        {props.chip ? ":" : ""}
+        {props.chip ? ':' : ''}
       </Typography>
     </Grid>
     {props.chip ? <Grid>{props.chip}</Grid> : null}

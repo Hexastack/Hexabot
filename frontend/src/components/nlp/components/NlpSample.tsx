@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CircleIcon from "@mui/icons-material/Circle";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadIcon from "@mui/icons-material/Download";
-import UploadIcon from "@mui/icons-material/Upload";
+import CircleIcon from '@mui/icons-material/Circle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';
 import {
   Box,
   Button,
@@ -19,50 +19,50 @@ import {
   IconButton,
   MenuItem,
   Stack,
-} from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useState } from "react";
+} from '@mui/material';
+import { GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
+import { useState } from 'react';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { ChipEntity } from "@/app-components/displays/ChipEntity";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
-import { Input } from "@/app-components/inputs/Input";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { ChipEntity } from '@/app-components/displays/ChipEntity';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
+import { Input } from '@/app-components/inputs/Input';
 import {
   ActionColumnLabel,
   getActionsColumn,
-} from "@/app-components/tables/columns/getColumns";
-import { renderHeader } from "@/app-components/tables/columns/renderHeader";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useConfig } from "@/hooks/useConfig";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
+} from '@/app-components/tables/columns/getColumns';
+import { renderHeader } from '@/app-components/tables/columns/renderHeader';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useDeleteMany } from '@/hooks/crud/useDeleteMany';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { useConfig } from '@/hooks/useConfig';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useHasPermission } from '@/hooks/useHasPermission';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { ILanguage } from '@/types/language.types';
 import {
   INlpDatasetSample,
   INlpSample,
   NlpSampleType,
-} from "@/types/nlp-sample.types";
-import { INlpSampleEntity } from "@/types/nlp-sample_entity.types";
-import { PermissionAction } from "@/types/permission.types";
-import { getDateTimeFormatter } from "@/utils/date";
-import { buildURL } from "@/utils/URL";
+} from '@/types/nlp-sample.types';
+import { INlpSampleEntity } from '@/types/nlp-sample_entity.types';
+import { PermissionAction } from '@/types/permission.types';
+import { getDateTimeFormatter } from '@/utils/date';
+import { buildURL } from '@/utils/URL';
 
-import { NlpImportDialog } from "../NlpImportDialog";
-import { NlpSampleDialog } from "../NlpSampleDialog";
+import { NlpImportDialog } from '../NlpImportDialog';
+import { NlpSampleDialog } from '../NlpSampleDialog';
 
 const NLP_SAMPLE_TYPE_COLORS = {
-  test: "#e6a23c",
-  train: "#67c23a",
-  inbox: "#909399",
+  test: '#e6a23c',
+  train: '#67c23a',
+  inbox: '#909399',
 };
 
 export default function NlpSample() {
@@ -80,15 +80,15 @@ export default function NlpSample() {
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
   const { onSearch, searchPayload } = useSearch<INlpSample>({
     $eq: [...(type ? [{ type }] : []), ...(language ? [{ language }] : [])],
-    $iLike: ["text"],
+    $iLike: ['text'],
   });
   const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const { mutateAsync: deleteNlpSamples } = useDeleteMany(
@@ -100,7 +100,7 @@ export default function NlpSample() {
       onSuccess: () => {
         deleteDialogCtl.closeDialog();
         setSelectedNlpSamples([]);
-        toast.success(t("message.item_delete_success"));
+        toast.success(t('message.item_delete_success'));
       },
     },
   );
@@ -129,8 +129,8 @@ export default function NlpSample() {
               return {
                 end,
                 start,
-                value: getNlpValueFromCache(value)?.value || "",
-                entity: getNlpEntityFromCache(entity)?.name || "",
+                value: getNlpValueFromCache(value)?.value || '',
+                entity: getNlpEntityFromCache(entity)?.name || '',
               };
             }),
             language: language
@@ -148,20 +148,20 @@ export default function NlpSample() {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<INlpSample>[] = [
     {
       flex: 1,
-      field: "text",
-      headerName: t("label.text"),
+      field: 'text',
+      headerName: t('label.text'),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       flex: 1,
-      field: "entities",
+      field: 'entities',
       renderCell: ({ row }) => (
         <Stack direction="row" my={1} spacing={1}>
           {row.entities
@@ -196,63 +196,63 @@ export default function NlpSample() {
             ))}
         </Stack>
       ),
-      headerName: t("label.entities"),
+      headerName: t('label.entities'),
       sortable: false,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       maxWidth: 90,
-      field: "language",
+      field: 'language',
       renderCell: ({ row }) => {
-        return row.language ? getLanguageFromCache(row.language)?.title : "";
+        return row.language ? getLanguageFromCache(row.language)?.title : '';
       },
-      headerName: t("label.language"),
+      headerName: t('label.language'),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       maxWidth: 90,
-      field: "type",
+      field: 'type',
       renderCell: (val) => (
         <Chip
           label={val.value}
           variant={
             val.value === NlpSampleType.train
-              ? "enabled"
+              ? 'enabled'
               : val.value === NlpSampleType.inbox
-              ? "inbox"
-              : "test"
+                ? 'inbox'
+                : 'test'
           }
         />
       ),
-      headerName: t("label.dataset"),
+      headerName: t('label.dataset'),
       sortable: false,
       disableColumnMenu: true,
       renderHeader,
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.created_at", getDateTimeFormatter(params)),
+        t('datetime.created_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       disableColumnMenu: true,
       renderHeader,
       resizable: false,
-      headerAlign: "left",
+      headerAlign: 'left',
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     actionColumns,
   ];
@@ -287,19 +287,19 @@ export default function NlpSample() {
           <FilterTextfield
             onChange={onSearch}
             fullWidth={false}
-            sx={{ minWidth: "256px" }}
+            sx={{ minWidth: '256px' }}
           />
-          <AutoCompleteEntitySelect<ILanguage, "title", false>
+          <AutoCompleteEntitySelect<ILanguage, 'title', false>
             fullWidth={false}
             sx={{
-              minWidth: "150px",
+              minWidth: '150px',
             }}
             autoFocus
-            searchFields={["title", "code"]}
+            searchFields={['title', 'code']}
             entity={EntityType.LANGUAGE}
             format={Format.BASIC}
             labelKey="title"
-            label={t("label.language")}
+            label={t('label.language')}
             multiple={false}
             onChange={(_e, selected) => setLanguage(selected?.id)}
           />
@@ -307,9 +307,9 @@ export default function NlpSample() {
             select
             fullWidth={false}
             sx={{
-              minWidth: "150px",
+              minWidth: '150px',
             }}
-            label={t("label.dataset")}
+            label={t('label.dataset')}
             value={type}
             onChange={(e) => setType(e.target.value as NlpSampleType)}
             SelectProps={{
@@ -337,7 +337,7 @@ export default function NlpSample() {
               </MenuItem>
             ))}
           </Input>
-          <ButtonGroup sx={{ marginLeft: "auto" }}>
+          <ButtonGroup sx={{ marginLeft: 'auto' }}>
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.CREATE) &&
             hasPermission(
               EntityType.NLP_SAMPLE_ENTITY,
@@ -348,7 +348,7 @@ export default function NlpSample() {
                 onClick={() => importDialogCtl.openDialog()}
                 startIcon={<UploadIcon />}
               >
-                {t("button.import")}
+                {t('button.import')}
               </Button>
             ) : null}
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.READ) &&
@@ -360,11 +360,11 @@ export default function NlpSample() {
                 variant="contained"
                 href={buildURL(
                   apiUrl,
-                  `nlpsample/export${type ? `?type=${type}` : ""}`,
+                  `nlpsample/export${type ? `?type=${type}` : ''}`,
                 )}
                 startIcon={<DownloadIcon />}
               >
-                {t("button.export")}
+                {t('button.export')}
               </Button>
             ) : null}
             {selectedNlpSamples.length > 0 && (
@@ -375,7 +375,7 @@ export default function NlpSample() {
                   color="error"
                   onClick={() => deleteDialogCtl.openDialog(undefined)}
                 >
-                  {t("button.delete")}
+                  {t('button.delete')}
                 </Button>
               </Grid>
             )}

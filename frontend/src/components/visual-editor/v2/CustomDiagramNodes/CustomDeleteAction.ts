@@ -10,7 +10,7 @@ import {
   Action,
   InputType,
   ActionEvent,
-} from "@projectstorm/react-canvas-core";
+} from '@projectstorm/react-canvas-core';
 
 export interface CustomDeleteItemsActionOptions {
   keyCodes?: number[];

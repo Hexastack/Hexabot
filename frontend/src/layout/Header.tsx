@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import MenuIcon from "@mui/icons-material/Menu";
+import MenuIcon from '@mui/icons-material/Menu';
 import {
   Avatar,
   Box,
@@ -15,20 +15,20 @@ import {
   Toolbar,
   Typography,
   styled,
-} from "@mui/material";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import { FC, useEffect, useRef, useState } from "react";
+} from '@mui/material';
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import { FC, useEffect, useRef, useState } from 'react';
 
-import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
-import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
-import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { getRandom } from "@/utils/safeRandom";
+import { HexabotLogo } from '@/app-components/logos/HexabotLogo';
+import { PopoverMenu } from '@/app-components/menus/PopoverMenu';
+import { getAvatarSrc } from '@/components/inbox/helpers/mapMessages';
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { getRandom } from '@/utils/safeRandom';
 
-import { borderLine, theme } from "./themes/theme";
+import { borderLine, theme } from './themes/theme';
 
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -36,36 +36,36 @@ interface AppBarProps extends MuiAppBarProps {
 
 const drawerWidth = 280;
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "isToggled",
+  shouldForwardProp: (prop) => prop !== 'isToggled',
 })<AppBarProps>(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
+  transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
   backgroundColor: theme.palette.common.white,
-  borderRadius: "0px",
-  boxShadow: "none",
+  borderRadius: '0px',
+  boxShadow: 'none',
   borderBottom: borderLine,
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
+    transition: theme.transitions.create(['width', 'margin'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
 }));
 const StyledIconButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "isToggled",
+  shouldForwardProp: (prop) => prop !== 'isToggled',
 })(({ isToggled }: { isToggled?: boolean }) => ({
-  color: "gray",
-  marginRight: "40px",
-  ...(isToggled && { display: "none" }),
+  color: 'gray',
+  marginRight: '40px',
+  ...(isToggled && { display: 'none' }),
 }));
 const StyledAppBar = styled(AppBar)(() => ({
-  position: "fixed",
-  background: "#fffe",
+  position: 'fixed',
+  background: '#fffe',
 }));
 
 export type HeaderProps = {
@@ -82,7 +82,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
     setIsMenuPopoverOpen(!isMenuPopoverOpen);
   };
   // This is used to have a unique url in order to force the browser to refetch the image
-  const [randomSeed, setRandomSeed] = useState<string>("randomseed");
+  const [randomSeed, setRandomSeed] = useState<string>('randomseed');
 
   useEffect(() => {
     setRandomSeed(getRandom().toString());
@@ -91,7 +91,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
   return (
     <StyledAppBar open={isSideBarOpen}>
       <Grid container>
-        <Grid maxWidth={isAuthenticated ? "64px" : "0px"}>
+        <Grid maxWidth={isAuthenticated ? '64px' : '0px'}>
           <Toolbar>
             {isAuthenticated ? (
               <StyledIconButton
@@ -112,7 +112,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
         )}
         {isAuthenticated ? (
           <Grid
-            sx={{ width: "max-content" }}
+            sx={{ width: 'max-content' }}
             display="flex"
             justifyContent="end"
             alignItems="center"
@@ -125,17 +125,17 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
               ref={anchorRef}
               onClick={handleMenuPopoverClick}
               sx={{
-                display: "flex",
-                flexDirection: "row",
-                width: "max-content",
+                display: 'flex',
+                flexDirection: 'row',
+                width: 'max-content',
                 gap: 1,
-                cursor: "pointer",
-                alignItems: "center",
+                cursor: 'pointer',
+                alignItems: 'center',
                 ...(isMenuPopoverOpen && {
-                  filter: "brightness(80%)",
+                  filter: 'brightness(80%)',
                 }),
-                "&:hover": {
-                  filter: "brightness(90%)",
+                '&:hover': {
+                  filter: 'brightness(90%)',
                 },
                 borderRadius: 3,
               }}
@@ -177,13 +177,13 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 links={
                   !ssoEnabled
                     ? [
-                        { text: t("menu.home"), href: "/" },
-                        { text: t("menu.edit_account"), href: "/profile" },
+                        { text: t('menu.home'), href: '/' },
+                        { text: t('menu.edit_account'), href: '/profile' },
                       ]
-                    : [{ text: t("menu.home"), href: "/" }]
+                    : [{ text: t('menu.home'), href: '/' }]
                 }
                 logout={{
-                  text: t("menu.logout"),
+                  text: t('menu.logout'),
                   onClick: logout,
                 }}
                 onClose={() => setIsMenuPopoverOpen(false)}

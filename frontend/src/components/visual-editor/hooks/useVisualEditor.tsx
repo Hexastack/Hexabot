@@ -6,29 +6,29 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
-import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
-import * as React from "react";
-import { createContext, useContext } from "react";
+import { debounce } from '@mui/material';
+import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
+import * as React from 'react';
+import { createContext, useContext } from 'react';
 
-import { useCreate } from "@/hooks/crud/useCreate";
-import { EntityType } from "@/services/types";
-import { IBlock } from "@/types/block.types";
+import { useCreate } from '@/hooks/crud/useCreate';
+import { EntityType } from '@/services/types';
+import { IBlock } from '@/types/block.types';
 import {
   BlockPorts,
   IVisualEditor,
   IVisualEditorContext,
   VisualEditorContextProps,
-} from "@/types/visual-editor.types";
+} from '@/types/visual-editor.types';
 
-import { ZOOM_LEVEL } from "../constants";
-import { AdvancedLinkFactory } from "../v2/AdvancedLink/AdvancedLinkFactory";
-import { AdvancedLinkModel } from "../v2/AdvancedLink/AdvancedLinkModel";
-import { CustomCanvasWidget } from "../v2/CustomCanvasWidget";
-import { CustomDeleteItemsAction } from "../v2/CustomDiagramNodes/CustomDeleteAction";
-import { NodeFactory } from "../v2/CustomDiagramNodes/NodeFactory";
-import { NodeModel } from "../v2/CustomDiagramNodes/NodeModel";
-import { BLOCK_HEIGHT, BLOCK_WIDTH } from "../v2/CustomDiagramNodes/NodeWidget";
+import { ZOOM_LEVEL } from '../constants';
+import { AdvancedLinkFactory } from '../v2/AdvancedLink/AdvancedLinkFactory';
+import { AdvancedLinkModel } from '../v2/AdvancedLink/AdvancedLinkModel';
+import { CustomCanvasWidget } from '../v2/CustomCanvasWidget';
+import { CustomDeleteItemsAction } from '../v2/CustomDiagramNodes/CustomDeleteAction';
+import { NodeFactory } from '../v2/CustomDiagramNodes/NodeFactory';
+import { NodeModel } from '../v2/CustomDiagramNodes/NodeModel';
+import { BLOCK_HEIGHT, BLOCK_WIDTH } from '../v2/CustomDiagramNodes/NodeWidget';
 
 const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
@@ -38,9 +38,9 @@ const addNode = (block: IBlock) => {
     id: block.id,
     // @ts-ignore
     title: block.name,
-    content: " ",
-    patterns: (block?.patterns || [""]) as any,
-    message: (block?.message || [""]) as any,
+    content: ' ',
+    patterns: (block?.patterns || ['']) as any,
+    message: (block?.message || ['']) as any,
     starts_conversation: !!block?.starts_conversation,
   });
 
@@ -52,7 +52,7 @@ const addNode = (block: IBlock) => {
 };
 const getCentroid = () => {
   if (document) {
-    const diagramElement = document.getElementById("visual-editor");
+    const diagramElement = document.getElementById('visual-editor');
 
     if (diagramElement) {
       const rect = diagramElement.getBoundingClientRect();
@@ -81,7 +81,7 @@ const buildDiagram = ({
   onDbClickNode,
   targetPortChanged,
 }: IVisualEditor) => {
-  window["customEvents"] = {};
+  window['customEvents'] = {};
   model = new DiagramModel();
 
   engine.getNodeFactories().registerFactory(new NodeFactory());
@@ -116,22 +116,22 @@ const buildDiagram = ({
       const nodeId = entity.options.id;
       const selector = document?.querySelector(`[data-nodeid='${nodeId}']`);
 
-      if (eventType === "diagram-nodes") {
+      if (eventType === 'diagram-nodes') {
         if (isSelected === true) {
           setter?.(nodeId);
           model.getNode(nodeId).setSelected(true);
 
-          if (!window["customEvents"][`dblclickEventNode${nodeId}Added`])
-            selector?.addEventListener("dblclick", (e) => {
+          if (!window['customEvents'][`dblclickEventNode${nodeId}Added`])
+            selector?.addEventListener('dblclick', (e) => {
               onDbClickNode?.(e, nodeId);
-              window["customEvents"][`dblclickEventNode${nodeId}Added`] = true;
+              window['customEvents'][`dblclickEventNode${nodeId}Added`] = true;
             });
         } else {
           setter?.(undefined);
-          selector?.removeEventListener("dblclick", () => {}, true);
+          selector?.removeEventListener('dblclick', () => {}, true);
           model.getNode(nodeId).setSelected(false);
         }
-      } else if (eventType === "diagram-links") {
+      } else if (eventType === 'diagram-links') {
         if (isSelected === true) {
           setter?.(entity.options.id);
         } else {
@@ -142,7 +142,7 @@ const buildDiagram = ({
     const links: AdvancedLinkModel[] = [];
 
     data.forEach((datum, index) => {
-      if ("nextBlocks" in datum && Array.isArray(datum.nextBlocks)) {
+      if ('nextBlocks' in datum && Array.isArray(datum.nextBlocks)) {
         datum.nextBlocks?.forEach((nextBlock) => {
           const link = new AdvancedLinkModel();
           const sourceNode = nodes[index];
@@ -163,11 +163,11 @@ const buildDiagram = ({
       }
 
       //recursive link
-      if ("attachedBlock" in datum && datum.attachedBlock) {
+      if ('attachedBlock' in datum && datum.attachedBlock) {
         const link = new AdvancedLinkModel({
-          color: "#019185",
-          selectedColor: "#019185",
-          type: "default",
+          color: '#019185',
+          selectedColor: '#019185',
+          type: 'default',
         });
         const sourceNode = nodes[index];
         // @ts-ignore
@@ -244,14 +244,14 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   buildDiagram,
   setViewerZoom,
   setViewerOffset,
-  createNode: async (): Promise<IBlock> => ({} as IBlock),
-  selectedCategoryId: "",
+  createNode: async (): Promise<IBlock> => ({}) as IBlock,
+  selectedCategoryId: '',
   setSelectedCategoryId: () => {},
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = React.useState('');
   const { mutateAsync: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = async (payload: any) => {
     payload.position = payload.position || getCentroid();
@@ -291,7 +291,7 @@ export const useVisualEditor = (): IVisualEditorContext => {
 
   if (!context) {
     throw new Error(
-      "useVisualEditor must be used within an VisualEditorContext",
+      'useVisualEditor must be used within an VisualEditorContext',
     );
   }
 

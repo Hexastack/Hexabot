@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ColumnChartProps, MultiLineChartProps } from "eazychart-react";
+import { ColumnChartProps, MultiLineChartProps } from 'eazychart-react';
 
-import { Legend } from "@/app-components/chart/Legend";
-import { Tooltip } from "@/app-components/chart/Tootip";
-import { IBotStat, LineChartStats } from "@/types/bot-stat.types";
+import { Legend } from '@/app-components/chart/Legend';
+import { Tooltip } from '@/app-components/chart/Tootip';
+import { IBotStat, LineChartStats } from '@/types/bot-stat.types';
 
 const buildFormatDateTicks = (lang: string) => (dateNumber: number) =>
   `${new Date(dateNumber).toLocaleDateString(lang, {
-    month: "short",
-    weekday: "short",
-    day: "numeric",
+    month: 'short',
+    weekday: 'short',
+    day: 'numeric',
   })}`;
 const COMMON_CHART_PROPS = {
   padding: {
@@ -28,7 +28,7 @@ const COMMON_CHART_PROPS = {
   animationOptions: {
     delay: 0,
     duration: 400,
-    easing: "easeBack",
+    easing: 'easeBack',
   },
   scopedSlots: {
     TooltipComponent: Tooltip,
@@ -44,22 +44,22 @@ export const buildMultiLineChartConfig =
     ...rest
   }: MultiLineChartProps): MultiLineChartProps => ({
     ...COMMON_CHART_PROPS,
-    colors: ["#1AA089", "#Ab1151", "#E6A23c"],
+    colors: ['#1AA089', '#Ab1151', '#E6A23c'],
     marker: {
       hidden: false,
       radius: 5,
-      color: "#FFF",
+      color: '#FFF',
     },
     data,
     xAxis: {
-      domainKey: "day",
+      domainKey: 'day',
       nice: 0.2,
       tickFormat: buildFormatDateTicks(lang),
     },
     yAxis: {
       domainKeys,
       nice: 1,
-      title: "",
+      title: '',
     },
     ...rest,
   });
@@ -69,16 +69,16 @@ export const buildColumnChartConfig = ({
   ...rest
 }: ColumnChartProps): ColumnChartProps => ({
   ...COMMON_CHART_PROPS,
-  colors: ["#1AA089", "#ab1151", "#e6a23c", "#57006f", "#108aa8"],
+  colors: ['#1AA089', '#ab1151', '#e6a23c', '#57006f', '#108aa8'],
   data,
   xAxis: {
-    domainKey: "id",
+    domainKey: 'id',
     nice: 0.5,
   },
   yAxis: {
-    domainKey: "value",
+    domainKey: 'value',
     nice: 2,
-    title: "",
+    title: '',
   },
   ...rest,
 });
@@ -95,16 +95,19 @@ export const transformToLine = (data: LineChartStats[] | undefined) => {
     return acc.concat(curr.values);
   }, [] as IBotStat[]);
   const domain = new Set<string>();
-  const dict = values.reduce((acc, curr) => {
-    domain.add(curr.name);
+  const dict = values.reduce(
+    (acc, curr) => {
+      domain.add(curr.name);
 
-    acc[curr.day] = {
-      ...(acc[curr.day] || { day: +new Date(curr.day) }),
-      [curr.name]: curr.value,
-    };
+      acc[curr.day] = {
+        ...(acc[curr.day] || { day: +new Date(curr.day) }),
+        [curr.name]: curr.value,
+      };
 
-    return acc;
-  }, {} as Record<string, any>);
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
 
   Object.values(dict).forEach((dayObj) => {
     domain.forEach((key) => {

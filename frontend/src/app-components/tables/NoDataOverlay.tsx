@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, Typography } from "@mui/material";
+import { Grid, Typography } from '@mui/material';
 
-import { useTranslate } from "@/hooks/useTranslate";
+import { useTranslate } from '@/hooks/useTranslate';
 
-import NoDataIcon from "../svg/NoDataIcon";
+import NoDataIcon from '../svg/NoDataIcon';
 
 export const NoDataOverlay = () => {
   const { t } = useTranslate();
@@ -18,10 +18,10 @@ export const NoDataOverlay = () => {
   return (
     <Grid
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        height: "fit-content",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        height: 'fit-content',
         gap: 1,
         opacity: 0.5,
         paddingY: 1,
@@ -31,10 +31,10 @@ export const NoDataOverlay = () => {
       <Grid item>
         <Typography
           style={{
-            color: "text.secondary",
+            color: 'text.secondary',
           }}
         >
-          {t("label.no_data")}
+          {t('label.no_data')}
         </Typography>
       </Grid>
     </Grid>

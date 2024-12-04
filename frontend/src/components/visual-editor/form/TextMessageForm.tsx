@@ -6,18 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from 'react-hook-form';
 
-import { ContentItem } from "@/app-components/dialogs";
-import MultipleInput from "@/app-components/inputs/MultipleInput";
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
-import { useTranslate } from "@/hooks/useTranslate";
-import { IBlockAttributes } from "@/types/block.types";
+import { ContentItem } from '@/app-components/dialogs';
+import MultipleInput from '@/app-components/inputs/MultipleInput';
+import SimpleTextIcon from '@/app-components/svg/toolbar/SimpleTextIcon';
+import { useTranslate } from '@/hooks/useTranslate';
+import { IBlockAttributes } from '@/types/block.types';
 
-import { useBlock } from "./BlockFormProvider";
-import { FormSectionTitle } from "./FormSectionTitle";
-import ReplacementTokens from "./inputs/ReplacementTokens";
-import { getInputControls } from "./utils/inputControls";
+import { useBlock } from './BlockFormProvider';
+import { FormSectionTitle } from './FormSectionTitle';
+import ReplacementTokens from './inputs/ReplacementTokens';
+import { getInputControls } from './utils/inputControls';
 
 const TextMessageForm = () => {
   const block = useBlock();
@@ -30,7 +30,7 @@ const TextMessageForm = () => {
 
   return (
     <ContentItem>
-      <FormSectionTitle title={t("label.message")} Icon={SimpleTextIcon} />
+      <FormSectionTitle title={t('label.message')} Icon={SimpleTextIcon} />
       <Controller
         name="message"
         control={control}
@@ -43,10 +43,10 @@ const TextMessageForm = () => {
               label=""
               {...rest}
               getInputProps={getInputControls(
-                "message",
+                'message',
                 errors,
                 register,
-                t("message.text_message_is_invalid"),
+                t('message.text_message_is_invalid'),
               )}
               value={value as string[]}
               multiline={true}
@@ -60,6 +60,6 @@ const TextMessageForm = () => {
   );
 };
 
-TextMessageForm.displayName = "TextMessageForm";
+TextMessageForm.displayName = 'TextMessageForm';
 
 export default TextMessageForm;

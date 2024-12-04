@@ -6,21 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import KeyIcon from "@mui/icons-material/Key";
-import { Button, Grid, Paper, Typography } from "@mui/material";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useForm } from "react-hook-form";
+import KeyIcon from '@mui/icons-material/Key';
+import { Button, Grid, Paper, Typography } from '@mui/material';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useForm } from 'react-hook-form';
 
-import { useResetPassword } from "@/hooks/entities/reset-hooks";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
+import { useResetPassword } from '@/hooks/entities/reset-hooks';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { useValidationRules } from '@/hooks/useValidationRules';
 
-import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
-import { ContentContainer } from "../dialogs";
-import { Adornment } from "../inputs/Adornment";
-import { PasswordInput } from "../inputs/PasswordInput";
+import { PublicContentWrapper } from '../../components/anonymous/PublicContentWrapper';
+import { ContentContainer } from '../dialogs';
+import { Adornment } from '../inputs/Adornment';
+import { PasswordInput } from '../inputs/PasswordInput';
 
 export const ResetPassword = () => {
   const { t } = useTranslate();
@@ -29,11 +29,11 @@ export const ResetPassword = () => {
   const validationRules = {
     password: {
       ...rules.password,
-      required: t("message.password_is_required"),
+      required: t('message.password_is_required'),
     },
     password2: {
       ...rules.password2,
-      required: t("message.password_is_required"),
+      required: t('message.password_is_required'),
     },
   };
   const {
@@ -41,23 +41,23 @@ export const ResetPassword = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<{ password: string; password2: string }>({
-    defaultValues: { password: "", password2: "" },
+    defaultValues: { password: '', password2: '' },
   });
   const { query, replace } = useRouter();
   // the following typecasting is due to the fact that the query object is not typed
   const { mutate: resetPassword } = useResetPassword(query.token as string, {
     onSuccess: () => {
-      toast.success(t("message.reset_newpass_success"));
-      replace("/login");
+      toast.success(t('message.reset_newpass_success'));
+      replace('/login');
     },
     onError: () => {
-      toast.error(t("message.server_error"));
+      toast.error(t('message.server_error'));
     },
   });
 
   return (
     <PublicContentWrapper>
-      <Paper sx={{ width: { xs: "100%", md: "33%" }, p: 2 }}>
+      <Paper sx={{ width: { xs: '100%', md: '33%' }, p: 2 }}>
         <form
           onSubmit={handleSubmit((payload) => {
             resetPassword(payload);
@@ -65,34 +65,34 @@ export const ResetPassword = () => {
         >
           <ContentContainer gap={2}>
             <Typography variant="h1" fontSize="19px" fontWeight={700}>
-              {t("title.reset_password")}
+              {t('title.reset_password')}
             </Typography>
             <PasswordInput
               autoFocus
-              label={t("placeholder.password")}
+              label={t('placeholder.password')}
               error={!!errors.password}
               required
               InputProps={{
                 startAdornment: <Adornment Icon={KeyIcon} />,
               }}
               helperText={errors.password ? errors.password.message : null}
-              {...register("password", validationRules.password)}
+              {...register('password', validationRules.password)}
             />
 
             <PasswordInput
-              label={t("placeholder.password2")}
+              label={t('placeholder.password2')}
               error={!!errors.password2}
               required
               InputProps={{
                 startAdornment: <Adornment Icon={KeyIcon} />,
               }}
               helperText={errors.password2 ? errors.password2.message : null}
-              {...register("password2", validationRules.password2)}
+              {...register('password2', validationRules.password2)}
             />
             <Grid container gap={1} justifyContent="flex-end">
-              <Button type="submit">{t("button.submit")}</Button>
+              <Button type="submit">{t('button.submit')}</Button>
               <Link href="/login">
-                <Button variant="outlined">{t("button.cancel")}</Button>
+                <Button variant="outlined">{t('button.cancel')}</Button>
               </Link>
             </Grid>
           </ContentContainer>

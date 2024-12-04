@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {
   Accordion,
   AccordionDetails,
@@ -22,32 +22,32 @@ import {
   DialogActions,
   Button,
   Divider,
-} from "@mui/material";
-import { useState, FC, useEffect } from "react";
+} from '@mui/material';
+import { useState, FC, useEffect } from 'react';
 
-import { IconButton } from "@/app-components/buttons/IconButton";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
-import { IPermission, IPermissionAttributes } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
+import { IconButton } from '@/app-components/buttons/IconButton';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useGetFromCache } from '@/hooks/crud/useGet';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType, Format } from '@/services/types';
+import { IPermission, IPermissionAttributes } from '@/types/permission.types';
+import { IRole } from '@/types/role.types';
 
 export type PermissionsDialogProps = DialogControlProps<{
   role: IRole;
 }>;
 
 const DEFAULT_PAYLOAD: IPermissionAttributes = {
-  action: "",
-  model: "",
-  relation: "",
-  role: "",
+  action: '',
+  model: '',
+  relation: '',
+  role: '',
 };
 const AccordionModelHead = () => (
   <Grid container direction="row" minHeight="35px" alignContent="center" mb={1}>
@@ -82,23 +82,23 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
   const { mutateAsync: createPermission } = useCreate(EntityType.PERMISSION, {
     onError: (error: Error & { statusCode?: number }) => {
       if (error.statusCode === 409) {
-        toast.error(t("message.permission_already_exists"));
+        toast.error(t('message.permission_already_exists'));
       } else {
-        toast.error(t("message.internal_server_error"));
+        toast.error(t('message.internal_server_error'));
       }
     },
     onSuccess: () => {
       modelRefetch();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: deletePermission } = useDelete(EntityType.PERMISSION, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
       modelRefetch();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const [expanded, setExpanded] = useState<string | false>(false);
@@ -119,11 +119,11 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
       open={open}
       fullWidth
       onClose={closeFunction}
-      sx={{ maxWidth: "850px", margin: "auto" }}
+      sx={{ maxWidth: '850px', margin: 'auto' }}
       maxWidth="md"
     >
       <DialogTitle onClose={closeFunction}>
-        {t("title.manage_permissions")}
+        {t('title.manage_permissions')}
       </DialogTitle>
       <DialogContent>
         <Typography fontWeight={700} sx={{ marginBottom: 2 }}>
@@ -137,18 +137,18 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
               onChange={handleChange(model.id)}
               sx={{
                 marginTop: 1,
-                boxShadow: "none",
-                "&:before": {
-                  display: "none",
+                boxShadow: 'none',
+                '&:before': {
+                  display: 'none',
                 },
               }}
             >
               <AccordionSummary
                 expandIcon={<KeyboardArrowUpIcon />}
                 sx={{
-                  backgroundColor: "background.default",
+                  backgroundColor: 'background.default',
                   borderRadius: 1,
-                  fontFamily: "inherit",
+                  fontFamily: 'inherit',
                 }}
               >
                 <Typography>{model.name}</Typography>
@@ -177,8 +177,8 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                             sx={{
                               borderRadius: 0.8,
                               padding: 1,
-                              "&:hover": {
-                                backgroundColor: "background.default",
+                              '&:hover': {
+                                backgroundColor: 'background.default',
                               },
                             }}
                             alignItems="center"
@@ -227,7 +227,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                     <Grid item xs alignContent="center">
                       <Input
                         select
-                        sx={{ width: "110px" }}
+                        sx={{ width: '110px' }}
                         label="Action"
                         value={payload.action}
                         onChange={(e) => {
@@ -238,17 +238,17 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                             }));
                         }}
                       >
-                        <MenuItem value="create">{t("label.create")}</MenuItem>
-                        <MenuItem value="read">{t("label.read")}</MenuItem>
-                        <MenuItem value="update">{t("label.update")}</MenuItem>
-                        <MenuItem value="delete">{t("label.delete")}</MenuItem>
+                        <MenuItem value="create">{t('label.create')}</MenuItem>
+                        <MenuItem value="read">{t('label.read')}</MenuItem>
+                        <MenuItem value="update">{t('label.update')}</MenuItem>
+                        <MenuItem value="delete">{t('label.delete')}</MenuItem>
                       </Input>
                     </Grid>
                     <Grid item xs alignContent="center">
                       <Input
                         select
-                        sx={{ width: "110px" }}
-                        label={t("label.relation")}
+                        sx={{ width: '110px' }}
+                        label={t('label.relation')}
                         value={payload.relation}
                         onChange={(e) => {
                           if (e.target.value)
@@ -258,7 +258,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                             }));
                         }}
                       >
-                        <MenuItem value="role">{t("label.role")}</MenuItem>
+                        <MenuItem value="role">{t('label.role')}</MenuItem>
                       </Input>
                     </Grid>
                   </Grid>
@@ -270,7 +270,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
       </DialogContent>
       <DialogActions>
         <Button variant="outlined" onClick={closeFunction}>
-          {t("button.close")}
+          {t('button.close')}
         </Button>
       </DialogActions>
     </Dialog>

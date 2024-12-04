@@ -10,10 +10,10 @@ import {
   DataGridProps,
   GridPaginationModel,
   GridSortModel,
-} from "@mui/x-data-grid";
-import { useState } from "react";
+} from '@mui/x-data-grid';
+import { useState } from 'react';
 
-import { PageQueryDto } from "@/types/pagination.types";
+import { PageQueryDto } from '@/types/pagination.types';
 
 export function toPageQueryPayload(
   pagination?: GridPaginationModel,
@@ -40,13 +40,13 @@ export const usePagination = (
 ): {
   dataGridPaginationProps: Pick<
     DataGridProps,
-    | "paginationMode"
-    | "sortingMode"
-    | "onPaginationModelChange"
-    | "onSortModelChange"
-    | "rowCount"
-    | "initialState"
-    | "pageSizeOptions"
+    | 'paginationMode'
+    | 'sortingMode'
+    | 'onPaginationModelChange'
+    | 'onSortModelChange'
+    | 'rowCount'
+    | 'initialState'
+    | 'pageSizeOptions'
   >;
   pageQueryPayload?: PageQueryDto;
 } => {
@@ -59,13 +59,13 @@ export const usePagination = (
     // spread these in the DataGrid component
     dataGridPaginationProps: {
       pageSizeOptions: [
-        { label: "5/page", value: 5 },
-        { label: "10/page", value: 10 },
-        { label: "25/page", value: 25 },
-        { label: "50/page", value: 50 },
+        { label: '5/page', value: 5 },
+        { label: '10/page', value: 10 },
+        { label: '25/page', value: 25 },
+        { label: '50/page', value: 50 },
       ],
       rowCount,
-      sortingMode: "server",
+      sortingMode: 'server',
       initialState: {
         columns: { columnVisibilityModel: { id: false } },
         pagination: {
@@ -76,7 +76,7 @@ export const usePagination = (
           sortModel: initialSortState,
         },
       },
-      paginationMode: "server",
+      paginationMode: 'server',
       onSortModelChange: setSortModel,
       onPaginationModelChange: setPaginationModel,
     },

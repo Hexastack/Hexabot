@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/router";
-import { useContext } from "react";
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
+import { useContext } from 'react';
 
-import { AuthContext } from "@/contexts/auth.context";
-import { RouterType } from "@/services/types";
+import { AuthContext } from '@/contexts/auth.context';
+import { RouterType } from '@/services/types';
 
-export const CURRENT_USER_KEY = "current-user";
+export const CURRENT_USER_KEY = 'current-user';
 export const PUBLIC_PATHS = [
-  "/login/[[...token]]",
-  "/register/[token]",
-  "/reset/[token]",
-  "/reset",
+  '/login/[[...token]]',
+  '/register/[token]',
+  '/reset/[token]',
+  '/reset',
 ];
 
 export const useAuth = () => {

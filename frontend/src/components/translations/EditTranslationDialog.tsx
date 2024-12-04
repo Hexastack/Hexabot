@@ -12,27 +12,27 @@ import {
   DialogContent,
   FormLabel,
   Typography,
-} from "@mui/material";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { useFind } from '@/hooks/crud/useFind';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 import {
   ITranslation,
   ITranslationAttributes,
   ITranslations,
-} from "@/types/translation.types";
+} from '@/types/translation.types';
 
-import TranslationInput from "./TranslationInput";
+import TranslationInput from './TranslationInput';
 
 export type EditTranslationDialogProps = DialogControlProps<ITranslation>;
 export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
@@ -51,11 +51,11 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
   const { toast } = useToast();
   const { mutateAsync: updateTranslation } = useUpdate(EntityType.TRANSLATION, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { reset, control, handleSubmit } = useForm<ITranslationAttributes>({
@@ -73,11 +73,11 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {t("title.update_translation")}
+          {t('title.update_translation')}
         </DialogTitle>
         <DialogContent>
           <ContentItem>
-            <FormLabel>{t("label.original_text")}</FormLabel>
+            <FormLabel>{t('label.original_text')}</FormLabel>
             <Typography component="p">{data?.str}</Typography>
           </ContentItem>
           <ContentContainer>

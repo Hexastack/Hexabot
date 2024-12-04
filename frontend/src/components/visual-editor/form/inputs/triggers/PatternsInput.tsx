@@ -13,31 +13,31 @@ import {
   PsychologyAlt,
   RemoveCircleOutline,
   Spellcheck,
-} from "@mui/icons-material";
-import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
-import { FC, useEffect, useMemo, useState } from "react";
-import { useFormContext } from "react-hook-form";
+} from '@mui/icons-material';
+import { Box, Chip, IconButton, styled, useTheme } from '@mui/material';
+import { FC, useEffect, useMemo, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import DropdownButton, {
   DropdownButtonAction,
-} from "@/app-components/buttons/DropdownButton";
-import { useTranslate } from "@/hooks/useTranslate";
-import { Pattern } from "@/types/block.types";
-import { PayloadType } from "@/types/message.types";
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
-import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
+} from '@/app-components/buttons/DropdownButton';
+import { useTranslate } from '@/hooks/useTranslate';
+import { Pattern } from '@/types/block.types';
+import { PayloadType } from '@/types/message.types';
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
+import { createValueWithId, ValueWithId } from '@/utils/valueWithId';
 
-import { getInputControls } from "../../utils/inputControls";
+import { getInputControls } from '../../utils/inputControls';
 
-import PatternInput from "./PatternInput";
+import PatternInput from './PatternInput';
 
-const StyledNoPatternsDiv = styled("div")(
+const StyledNoPatternsDiv = styled('div')(
   SXStyleOptions({
-    color: "grey.500",
-    textAlign: "center",
+    color: 'grey.500',
+    textAlign: 'center',
     marginY: 2,
     marginX: 0,
-    width: "100%",
+    width: '100%',
   }),
 );
 
@@ -79,17 +79,17 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
 
   const actions: DropdownButtonAction[] = useMemo(
     () => [
-      { icon: <Spellcheck />, name: "Exact Match", defaultValue: "" },
-      { icon: <Abc />, name: "Pattern Match", defaultValue: "//" },
-      { icon: <PsychologyAlt />, name: "Intent Match", defaultValue: [] },
+      { icon: <Spellcheck />, name: 'Exact Match', defaultValue: '' },
+      { icon: <Abc />, name: 'Pattern Match', defaultValue: '//' },
+      { icon: <PsychologyAlt />, name: 'Intent Match', defaultValue: [] },
       {
         icon: <Mouse />,
-        name: "Interaction",
+        name: 'Interaction',
         defaultValue: {
-          label: t("label.get_started"),
-          value: "GET_STARTED",
+          label: t('label.get_started'),
+          value: 'GET_STARTED',
           type: PayloadType.button,
-          group: "general",
+          group: 'general',
         },
       },
     ],
@@ -101,14 +101,14 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
     <Box display="flex" flexDirection="column">
       <Box display="flex" flexDirection="column">
         {patterns.length == 0 ? (
-          <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
+          <StyledNoPatternsDiv>{t('label.no_patterns')}</StyledNoPatternsDiv>
         ) : (
           patterns.map(({ value, id }, idx) => (
             <Box display="flex" alignItems="center" mt={2} key={id}>
               {idx > 0 && (
                 <Chip
                   sx={{ m: 1, color: theme.palette.grey[600] }}
-                  label={t("label.or")}
+                  label={t('label.or')}
                   size="small"
                   variant="outlined"
                 />
@@ -118,10 +118,10 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                 value={value}
                 onChange={updateInput(idx)}
                 getInputProps={getInputControls(
-                  "label",
+                  'label',
                   errors,
                   register,
-                  t("message.text_is_required"),
+                  t('message.text_is_required'),
                 )}
               />
               <IconButton
@@ -136,8 +136,8 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
         )}
       </Box>
       <DropdownButton
-        sx={{ alignSelf: "end", marginTop: 2 }}
-        label={t("button.add_pattern")}
+        sx={{ alignSelf: 'end', marginTop: 2 }}
+        label={t('button.add_pattern')}
         actions={actions}
         onClick={(action) => addInput(action.defaultValue as Pattern)}
         icon={<Add />}
@@ -146,6 +146,6 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   );
 };
 
-PatternsInput.displayName = "PatternsInput";
+PatternsInput.displayName = 'PatternsInput';
 
 export default PatternsInput;

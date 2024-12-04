@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useRouter } from "next/router";
-import { ReactElement } from "react";
+import { useRouter } from 'next/router';
+import { ReactElement } from 'react';
 
-import { Nlp } from "@/components/nlp";
-import { Layout } from "@/layout";
+import { Nlp } from '@/components/nlp';
+import { Layout } from '@/layout';
 
 const NlpPage = () => {
   const router = useRouter();
@@ -18,7 +18,7 @@ const NlpPage = () => {
   return (
     <Nlp
       entityId={router.query.id as string}
-      selectedTab={router.pathname === "/nlp" ? "sample" : "entity"}
+      selectedTab={router.pathname === '/nlp' ? 'sample' : 'entity'}
     />
   );
 };

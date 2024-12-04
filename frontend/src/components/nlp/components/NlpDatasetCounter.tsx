@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box } from "@mui/material";
-import React from "react";
+import { Box } from '@mui/material';
+import React from 'react';
 
-import { StyledCardHeader } from "@/app-components/card/StyledCardHeader";
-import { useCount } from "@/hooks/crud/useCount";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { NlpSampleType } from "@/types/nlp-sample.types";
+import { StyledCardHeader } from '@/app-components/card/StyledCardHeader';
+import { useCount } from '@/hooks/crud/useCount';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { NlpSampleType } from '@/types/nlp-sample.types';
 
 const NlpDatasetCounter: React.FC = () => {
   const { t } = useTranslate();
@@ -24,36 +24,36 @@ const NlpDatasetCounter: React.FC = () => {
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "row",
-        flexWrap: "wrap",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <StyledCardHeader
-        title={`${t("label.total")}: ${
+        title={`${t('label.total')}: ${
           train.isLoading
-            ? `${t("charts.loading")}...`
-            : train.data?.count ?? t("charts.error")
+            ? `${t('charts.loading')}...`
+            : (train.data?.count ?? t('charts.error'))
         }`}
-        description={`${t("label.training_set")}`}
+        description={`${t('label.training_set')}`}
       />
       <StyledCardHeader
-        title={`${t("label.total")}: ${
+        title={`${t('label.total')}: ${
           test.isLoading
-            ? `${t("charts.loading")}...`
-            : test.data?.count ?? t("charts.error")
+            ? `${t('charts.loading')}...`
+            : (test.data?.count ?? t('charts.error'))
         }`}
-        description={`${t("label.test_set")}`}
+        description={`${t('label.test_set')}`}
       />
       <StyledCardHeader
-        title={`${t("label.total")}: ${
+        title={`${t('label.total')}: ${
           entity.isLoading
-            ? `${t("charts.loading")}...`
-            : entity.data?.count ?? t("charts.error")
+            ? `${t('charts.loading')}...`
+            : (entity.data?.count ?? t('charts.error'))
         }`}
-        description={`${t("label.entities")}`}
+        description={`${t('label.entities')}`}
       />
     </Box>
   );

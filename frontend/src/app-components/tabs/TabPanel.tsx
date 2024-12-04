@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, GridProps, SxProps, Theme } from "@mui/material";
-import * as React from "react";
+import { Grid, GridProps, SxProps, Theme } from '@mui/material';
+import * as React from 'react';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -30,7 +30,7 @@ export function TabPanel(props: TabPanelProps & GridProps) {
       {...other}
     >
       {value === index ? (
-        <Grid container sx={{ flexDirection: "column", ...sx }}>
+        <Grid container sx={{ flexDirection: 'column', ...sx }}>
           {children}
         </Grid>
       ) : null}
@@ -41,6 +41,6 @@ export function TabPanel(props: TabPanelProps & GridProps) {
 export function a11yProps(index: number) {
   return {
     id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`,
+    'aria-controls': `vertical-tabpanel-${index}`,
   };
 }

@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { IBaseSchema } from "./base.types";
+import { IBaseSchema } from './base.types';
 
 export enum BotStatsType {
-  outgoing = "outgoing",
-  new_users = "new_users",
-  all_messages = "all_messages",
-  incoming = "incoming",
-  existing_conversations = "existing_conversations",
-  popular = "popular",
-  new_conversations = "new_conversations",
-  returning_users = "returning_users",
-  retention = "retention",
+  outgoing = 'outgoing',
+  new_users = 'new_users',
+  all_messages = 'all_messages',
+  incoming = 'incoming',
+  existing_conversations = 'existing_conversations',
+  popular = 'popular',
+  new_conversations = 'new_conversations',
+  returning_users = 'returning_users',
+  retention = 'retention',
 }
 
 export type StatsType =
-  | "messages"
-  | "conversation"
-  | "audiance"
-  | "popularBlocks";
+  | 'messages'
+  | 'conversation'
+  | 'audiance'
+  | 'popularBlocks';
 
 export interface IBotStatAttributes {
   type: BotStatsType;
@@ -34,7 +34,7 @@ export interface IBotStatAttributes {
   date: string;
 }
 
-export interface IBotStat extends IBotStatAttributes, Pick<IBaseSchema, "id"> {}
+export interface IBotStat extends IBotStatAttributes, Pick<IBaseSchema, 'id'> {}
 
 export type LineChartStats = {
   id: number;

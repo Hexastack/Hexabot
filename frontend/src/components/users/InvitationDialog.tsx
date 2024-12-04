@@ -6,27 +6,27 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CloseIcon from "@mui/icons-material/Close";
-import SendIcon from "@mui/icons-material/Send";
-import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
-import { Input } from "@/app-components/inputs/Input";
-import { useSendInvitation } from "@/hooks/entities/invitation-hooks";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
-import { EntityType, Format } from "@/services/types";
-import { IInvitationAttributes } from "@/types/invitation.types";
-import { IRole } from "@/types/role.types";
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import AutoCompleteEntitySelect from '@/app-components/inputs/AutoCompleteEntitySelect';
+import { Input } from '@/app-components/inputs/Input';
+import { useSendInvitation } from '@/hooks/entities/invitation-hooks';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { useValidationRules } from '@/hooks/useValidationRules';
+import { EntityType, Format } from '@/services/types';
+import { IInvitationAttributes } from '@/types/invitation.types';
+import { IRole } from '@/types/role.types';
 
-const DEFAULT_VALUES: IInvitationAttributes = { email: "", roles: [] };
+const DEFAULT_VALUES: IInvitationAttributes = { email: '', roles: [] };
 
 export type InvitationDialogProps = DialogControlProps<IRole[]>;
 export const InvitationDialog: FC<InvitationDialogProps> = ({
@@ -39,10 +39,10 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
   const { mutateAsync: sendInvitation } = useSendInvitation({
     onSuccess: () => {
       closeDialog();
-      toast.success(t("message.success_invitation_sent"));
+      toast.success(t('message.success_invitation_sent'));
     },
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
   });
   const {
@@ -58,10 +58,10 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
   const validationRules = {
     email: {
       ...rules.email,
-      required: t("message.email_is_required"),
+      required: t('message.email_is_required'),
     },
     roles: {
-      required: t("message.roles_is_required"),
+      required: t('message.roles_is_required'),
     },
   };
   const onSubmitForm = async (params: IInvitationAttributes) => {
@@ -76,17 +76,17 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {t("title.invite_new_user")}
+          {t('title.invite_new_user')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("placeholder.email")}
+                label={t('placeholder.email')}
                 error={!!errors.email}
                 required
                 autoFocus
-                {...register("email", validationRules.email)}
+                {...register('email', validationRules.email)}
                 helperText={errors.email ? errors.email.message : null}
               />
             </ContentItem>
@@ -101,11 +101,11 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
                   return (
                     <AutoCompleteEntitySelect<IRole>
                       autoFocus
-                      searchFields={["name"]}
+                      searchFields={['name']}
                       entity={EntityType.ROLE}
                       format={Format.BASIC}
                       labelKey="name"
-                      label={t("label.roles")}
+                      label={t('label.roles')}
                       multiple={true}
                       {...field}
                       error={!!errors.roles}
@@ -128,14 +128,14 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({
             type="submit"
             onClick={handleSubmit(onSubmitForm)}
           >
-            {t("button.send")}
+            {t('button.send')}
           </Button>
           <Button
             startIcon={<CloseIcon />}
             variant="outlined"
             onClick={closeDialog}
           >
-            {t("button.cancel")}
+            {t('button.cancel')}
           </Button>
         </DialogActions>
       </form>

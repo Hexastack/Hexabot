@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import Home from "@mui/icons-material/Home";
-import { Grid, GridProps } from "@mui/material";
-import { PropsWithChildren } from "react";
+import Home from '@mui/icons-material/Home';
+import { Grid, GridProps } from '@mui/material';
+import { PropsWithChildren } from 'react';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
 
-import AudienceChart from "./AudienceChart";
-import ConversationChart from "./ConversationChart";
-import MessageChart from "./MessageChart";
-import PopularChart from "./PopularChart";
+import AudienceChart from './AudienceChart';
+import ConversationChart from './ConversationChart';
+import MessageChart from './MessageChart';
+import PopularChart from './PopularChart';
 
 const DashboardContent = (props: PropsWithChildren<GridProps>) => (
   <Grid item md={12} lg={6} {...props} />
@@ -27,7 +27,7 @@ export const Dashboard = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <PageHeader icon={Home} title={t("title.dashboard")} />
+      <PageHeader icon={Home} title={t('title.dashboard')} />
       <Grid container spacing={3}>
         <DashboardContent item container gap={2}>
           <MessageChart />

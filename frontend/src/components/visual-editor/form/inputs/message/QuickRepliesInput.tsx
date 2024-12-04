@@ -6,16 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Button, Grid, IconButton } from '@mui/material';
+import { FC, Fragment, useEffect, useState } from 'react';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { QuickReplyType, StdQuickReply } from "@/types/message.types";
-import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
+import { useTranslate } from '@/hooks/useTranslate';
+import { QuickReplyType, StdQuickReply } from '@/types/message.types';
+import { ValueWithId, createValueWithId } from '@/utils/valueWithId';
 
-import QuickReplyInput from "./QuickReplyInput";
+import QuickReplyInput from './QuickReplyInput';
 
 type QuickRepliesInput = {
   value: StdQuickReply[];
@@ -37,8 +37,8 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
       ...quickReplies,
       createValueWithId({
         content_type: QuickReplyType.text,
-        title: "",
-        payload: "",
+        title: '',
+        payload: '',
       }),
     ]);
   };
@@ -52,8 +52,8 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
         : [
             createValueWithId({
               content_type: QuickReplyType.text,
-              title: "",
-              payload: "",
+              title: '',
+              payload: '',
             }),
           ],
     );
@@ -75,14 +75,14 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
           &nbsp;
         </Grid>
         <Grid item xs={2}>
-          {t("label.type")}
+          {t('label.type')}
         </Grid>
         <Grid item xs={4}>
-          {t("label.title")}
+          {t('label.title')}
         </Grid>
         <Grid item xs={1} />
         <Grid item xs={4}>
-          {t("label.payload")}
+          {t('label.payload')}
         </Grid>
         {quickReplies.map(({ value, id }, idx) => (
           <Fragment key={id}>
@@ -108,10 +108,10 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
         color="primary"
         onClick={addInput}
         startIcon={<AddIcon />}
-        sx={{ marginTop: 2, float: "right" }}
+        sx={{ marginTop: 2, float: 'right' }}
         disabled={quickReplies.length > 10}
       >
-        {t("button.add")}
+        {t('button.add')}
       </Button>
     </Box>
   );

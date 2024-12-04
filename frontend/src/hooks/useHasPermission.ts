@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useCallback, useContext } from "react";
+import { useCallback, useContext } from 'react';
 
-import { PermissionContext } from "@/contexts/permission.context";
-import { EntityType } from "@/services/types";
-import { PermissionAction } from "@/types/permission.types";
+import { PermissionContext } from '@/contexts/permission.context';
+import { EntityType } from '@/services/types';
+import { PermissionAction } from '@/types/permission.types';
 
 export const useHasPermission = () => {
   const { getAllowedActions } = useContext(PermissionContext);

@@ -6,29 +6,29 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CheckIcon from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import LanguageIcon from "@mui/icons-material/Language";
-import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
-import { FC } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { useQueryClient } from "react-query";
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EmailIcon from '@mui/icons-material/Email';
+import KeyIcon from '@mui/icons-material/Key';
+import LanguageIcon from '@mui/icons-material/Language';
+import { Box, Button, Grid, MenuItem, Typography } from '@mui/material';
+import { FC } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useQueryClient } from 'react-query';
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentItem } from "@/app-components/dialogs";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { Adornment } from "@/app-components/inputs/Adornment";
-import { Input } from "@/app-components/inputs/Input";
-import { PasswordInput } from "@/app-components/inputs/PasswordInput";
-import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
-import { CURRENT_USER_KEY } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
-import { IUser, IUserAttributes } from "@/types/user.types";
-import { MIME_TYPES } from "@/utils/attachment";
+import AttachmentInput from '@/app-components/attachment/AttachmentInput';
+import { ContentItem } from '@/app-components/dialogs';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { Adornment } from '@/app-components/inputs/Adornment';
+import { Input } from '@/app-components/inputs/Input';
+import { PasswordInput } from '@/app-components/inputs/PasswordInput';
+import { useUpdateProfile } from '@/hooks/entities/auth-hooks';
+import { CURRENT_USER_KEY } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { useValidationRules } from '@/hooks/useValidationRules';
+import { IUser, IUserAttributes } from '@/types/user.types';
+import { MIME_TYPES } from '@/utils/attachment';
 
 type TUserProfileExtendedPayload = IUserAttributes & { password2: string };
 
@@ -40,11 +40,11 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { toast } = useToast();
   const { mutateAsync: updateProfile, isLoading } = useUpdateProfile({
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: (data) => {
       queryClient.setQueryData([CURRENT_USER_KEY], data);
-      toast.success(t("message.account_update_success"));
+      toast.success(t('message.account_update_success'));
     },
   });
   const {
@@ -70,17 +70,17 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     ...rules,
     email: {
       ...rules.email,
-      required: t("message.email_is_required"),
+      required: t('message.email_is_required'),
     },
     password: {
       ...rules.password,
     },
     password2: {
       validate: (val?: string) => {
-        if (val !== watch("password")) {
-          trigger("password");
+        if (val !== watch('password')) {
+          trigger('password');
 
-          return t("message.password_match");
+          return t('message.password_match');
         }
       },
     },
@@ -105,40 +105,40 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             control={control}
             render={({ field }) => (
               <>
-                <Box sx={{ position: "relative" }}>
+                <Box sx={{ position: 'relative' }}>
                   <AttachmentInput
-                    label={t("label.avatar")}
+                    label={t('label.avatar')}
                     format="small"
-                    accept={MIME_TYPES["images"].join(",")}
+                    accept={MIME_TYPES['images'].join(',')}
                     enableMediaLibrary={false}
                     size={256}
                     {...field}
-                    onChange={(attachment) => setValue("avatar", attachment)}
+                    onChange={(attachment) => setValue('avatar', attachment)}
                   />
-                  {getValues("avatar") ? (
+                  {getValues('avatar') ? (
                     <Button
                       startIcon={<DeleteIcon />}
-                      onClick={() => setValue("avatar", null)}
+                      onClick={() => setValue('avatar', null)}
                       color="error"
                       variant="contained"
                       size="small"
                       sx={{
-                        position: "absolute",
-                        right: "50%",
-                        bottom: "1rem",
-                        transform: "translateX(50%)",
+                        position: 'absolute',
+                        right: '50%',
+                        bottom: '1rem',
+                        transform: 'translateX(50%)',
                       }}
                     >
-                      {t("button.remove")}
+                      {t('button.remove')}
                     </Button>
                   ) : null}
                 </Box>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: "0.8rem", fontStyle: "italic", mt: 2 }}
+                  sx={{ fontSize: '0.8rem', fontStyle: 'italic', mt: 2 }}
                 >
-                  {t("message.avatar_update")}
+                  {t('message.avatar_update')}
                 </Typography>
               </>
             )}
@@ -148,8 +148,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
           <ContentContainer gap={2}>
             <ContentItem>
               <Input
-                label={t("label.user_first_name")}
-                {...register("first_name", validationRules.first_name)}
+                label={t('label.user_first_name')}
+                {...register('first_name', validationRules.first_name)}
                 autoFocus
                 error={!!errors.first_name}
                 helperText={
@@ -159,8 +159,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("label.last_name")}
-                {...register("last_name", validationRules.last_name)}
+                label={t('label.last_name')}
+                {...register('last_name', validationRules.last_name)}
                 error={!!errors.last_name}
                 helperText={errors.last_name ? errors.last_name.message : null}
               />
@@ -171,7 +171,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                 control={control}
                 render={({ field }) => (
                   <Input
-                    label={t("label.language")}
+                    label={t('label.language')}
                     error={!!errors.language}
                     helperText={
                       errors.language ? errors.language.message : null
@@ -190,8 +190,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("label.email")}
-                {...register("email", validationRules.email)}
+                label={t('label.email')}
+                {...register('email', validationRules.email)}
                 required
                 error={!!errors.email}
                 helperText={errors.email ? errors.email.message : null}
@@ -202,8 +202,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("placeholder.password")}
-                {...register("password", validationRules.password)}
+                label={t('placeholder.password')}
+                {...register('password', validationRules.password)}
                 required
                 error={!!errors.password}
                 helperText={errors.password ? errors.password.message : null}
@@ -214,8 +214,8 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("placeholder.password2")}
-                {...register("password2", validationRules.password2)}
+                label={t('placeholder.password2')}
+                {...register('password2', validationRules.password2)}
                 required
                 error={!!errors.password2}
                 helperText={errors.password2 ? errors.password2.message : null}
@@ -233,7 +233,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
               onClick={handleSubmit(onSubmitForm)}
               disabled={isLoading}
             >
-              {t("button.save")}
+              {t('button.save')}
             </Button>
           </Grid>
         </Grid>

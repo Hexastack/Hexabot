@@ -6,26 +6,26 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Card, CardContent, Divider } from "@mui/material";
-import { ColumnChart, ResponsiveChartContainer } from "eazychart-react";
+import { Card, CardContent, Divider } from '@mui/material';
+import { ColumnChart, ResponsiveChartContainer } from 'eazychart-react';
 
-import { StyledCardHeader } from "@/app-components/card/StyledCardHeader";
-import { useFindStats } from "@/hooks/entities/bot-stat-hooks";
-import { useTranslate } from "@/hooks/useTranslate";
-import { ColumnChartStats } from "@/types/bot-stat.types";
-import { buildColumnChartConfig } from "@/utils/chart";
+import { StyledCardHeader } from '@/app-components/card/StyledCardHeader';
+import { useFindStats } from '@/hooks/entities/bot-stat-hooks';
+import { useTranslate } from '@/hooks/useTranslate';
+import { ColumnChartStats } from '@/types/bot-stat.types';
+import { buildColumnChartConfig } from '@/utils/chart';
 
-import { NoDataChart } from "./NoDataChart";
+import { NoDataChart } from './NoDataChart';
 
 const PopularChart = () => {
   const { t } = useTranslate();
-  const { data } = useFindStats<ColumnChartStats>("popularBlocks");
+  const { data } = useFindStats<ColumnChartStats>('popularBlocks');
 
   return (
     <Card>
       <StyledCardHeader
-        title={t("charts.popular_blocks")}
-        description={t("charts.desc.popular_blocks")}
+        title={t('charts.popular_blocks')}
+        description={t('charts.desc.popular_blocks')}
       />
       <Divider />
       <CardContent>
@@ -45,6 +45,6 @@ const PopularChart = () => {
   );
 };
 
-PopularChart.displayName = "PopularChart";
+PopularChart.displayName = 'PopularChart';
 
 export default PopularChart;

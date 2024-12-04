@@ -6,38 +6,38 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EntityType } from "@/services/types";
+import { EntityType } from '@/services/types';
 
-import { IAttachment } from "./attachment.types";
-import { IBaseSchema, OmitPopulate } from "./base.types";
-import { IContent } from "./content.types";
-import { ISubscriber } from "./subscriber.types";
-import { IUser } from "./user.types";
+import { IAttachment } from './attachment.types';
+import { IBaseSchema, OmitPopulate } from './base.types';
+import { IContent } from './content.types';
+import { ISubscriber } from './subscriber.types';
+import { IUser } from './user.types';
 
 export enum OutgoingMessageFormat {
-  text = "text",
-  quickReplies = "quickReplies",
-  buttons = "buttons",
-  attachment = "attachment",
-  list = "list",
-  carousel = "carousel",
+  text = 'text',
+  quickReplies = 'quickReplies',
+  buttons = 'buttons',
+  attachment = 'attachment',
+  list = 'list',
+  carousel = 'carousel',
 }
 
 export enum PayloadType {
-  location = "location",
-  attachments = "attachments",
-  menu = "menu",
-  content = "content",
-  quick_reply = "quick_reply",
-  button = "button",
+  location = 'location',
+  attachments = 'attachments',
+  menu = 'menu',
+  content = 'content',
+  quick_reply = 'quick_reply',
+  button = 'button',
 }
 
 export enum FileType {
-  image = "image",
-  video = "video",
-  audio = "audio",
-  file = "file",
-  unknown = "unknown",
+  image = 'image',
+  video = 'video',
+  audio = 'audio',
+  file = 'file',
+  unknown = 'unknown',
 }
 
 // Attachments
@@ -86,12 +86,12 @@ export interface ContentOptions {
   limit: number;
   query?: any; // Waterline model criteria
   entity?: string | number | null; // ContentTypeID
-  top_element_style?: "large" | "compact";
+  top_element_style?: 'large' | 'compact';
 }
 
 export enum ButtonType {
-  postback = "postback",
-  web_url = "web_url",
+  postback = 'postback',
+  web_url = 'web_url',
 }
 
 export type Payload =
@@ -108,8 +108,8 @@ export type Payload =
     };
 
 export enum QuickReplyType {
-  text = "text",
-  location = "location",
+  text = 'text',
+  location = 'location',
   // @TODO : The following are not in use anymore
   // user_phone_number = "user_phone_number",
   // user_email = "user_email",
@@ -127,7 +127,7 @@ export type PostBackButton = {
   payload: string;
 };
 
-export type WebviewHeightRatio = "compact" | "tall" | "full";
+export type WebviewHeightRatio = 'compact' | 'tall' | 'full';
 
 export type WebUrlButton = {
   type: ButtonType.web_url;

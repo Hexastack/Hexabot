@@ -11,17 +11,17 @@ import {
   DiagramModel,
   DiagramEngine,
   DiagramModelGenerics,
-} from "@projectstorm/react-diagrams";
-import { ReactNode } from "react";
+} from '@projectstorm/react-diagrams';
+import { ReactNode } from 'react';
 
-import { CustomDeleteItemsActionOptions } from "@/components/visual-editor/v2/CustomDiagramNodes/CustomDeleteAction";
+import { CustomDeleteItemsActionOptions } from '@/components/visual-editor/v2/CustomDiagramNodes/CustomDeleteAction';
 
-import { IBlock } from "./block.types";
+import { IBlock } from './block.types';
 
 export enum BlockPorts {
-  inPort = "In",
-  nextBlocksOutPort = "Out",
-  attachmentOutPort = "Out2",
+  inPort = 'In',
+  nextBlocksOutPort = 'Out',
+  attachmentOutPort = 'Out2',
 }
 
 export interface IVisualEditor {
@@ -32,7 +32,7 @@ export interface IVisualEditor {
   //TODO: type need to be updated
   updateFn?: any;
   onDbClickNode?: (event?: any, id?: string) => void;
-  onRemoveNode?: CustomDeleteItemsActionOptions["callback"];
+  onRemoveNode?: CustomDeleteItemsActionOptions['callback'];
   linkChangeHandler?: (event: any) => void;
   targetPortChanged?: (event: any) => void;
 }
@@ -55,12 +55,12 @@ export interface VisualEditorContextProps {
 }
 
 export enum BlockTypes {
-  text = "text",
-  attachment = "attachment",
-  quickReplies = "quickReplies",
-  buttons = "buttons",
-  list = "list",
-  plugin = "plugin",
+  text = 'text',
+  attachment = 'attachment',
+  quickReplies = 'quickReplies',
+  buttons = 'buttons',
+  list = 'list',
+  plugin = 'plugin',
 }
 
 export type TBlock = keyof typeof BlockTypes;

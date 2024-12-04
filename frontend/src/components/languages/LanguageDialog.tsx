@@ -12,22 +12,22 @@ import {
   DialogContent,
   FormControlLabel,
   Switch,
-} from "@mui/material";
-import { FC, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+} from '@mui/material';
+import { FC, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { ILanguage, ILanguageAttributes } from "@/types/language.types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { ILanguage, ILanguageAttributes } from '@/types/language.types';
 
 export type LanguageDialogProps = DialogControlProps<ILanguage>;
 export const LanguageDialog: FC<LanguageDialogProps> = ({
@@ -40,20 +40,20 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
   const { toast } = useToast();
   const { mutateAsync: createLanguage } = useCreate(EntityType.LANGUAGE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const { mutateAsync: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess() {
       closeDialog();
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const {
@@ -64,17 +64,17 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
     control,
   } = useForm<ILanguageAttributes>({
     defaultValues: {
-      title: data?.title || "",
-      code: data?.code || "",
+      title: data?.title || '',
+      code: data?.code || '',
       isRTL: data?.isRTL || false,
     },
   });
   const validationRules = {
     title: {
-      required: t("message.title_is_required"),
+      required: t('message.title_is_required'),
     },
     code: {
-      required: t("message.code_is_required"),
+      required: t('message.code_is_required'),
     },
   };
   const onSubmitForm = async (params: ILanguageAttributes) => {
@@ -105,24 +105,24 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_label") : t("title.new_label")}
+          {data ? t('title.edit_label') : t('title.new_label')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("label.title")}
+                label={t('label.title')}
                 error={!!errors.title}
-                {...register("title", validationRules.title)}
+                {...register('title', validationRules.title)}
                 helperText={errors.title ? errors.title.message : null}
                 multiline={true}
               />
             </ContentItem>
             <ContentItem>
               <Input
-                label={t("label.code")}
+                label={t('label.code')}
                 error={!!errors.code}
-                {...register("code", validationRules.code)}
+                {...register('code', validationRules.code)}
                 helperText={errors.code ? errors.code.message : null}
                 multiline={true}
               />
@@ -134,7 +134,7 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
                 render={({ field }) => (
                   <FormControlLabel
                     control={<Switch {...field} checked={field.value} />}
-                    label={t("label.is_rtl")}
+                    label={t('label.is_rtl')}
                   />
                 )}
               />

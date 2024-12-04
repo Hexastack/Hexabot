@@ -6,16 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Chip, ChipTypeMap, CircularProgress } from "@mui/material";
+import { Box, Chip, ChipTypeMap, CircularProgress } from '@mui/material';
 import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
-} from "@mui/material/Autocomplete";
-import { forwardRef, useCallback, useMemo } from "react";
+} from '@mui/material/Autocomplete';
+import { forwardRef, useCallback, useMemo } from 'react';
 
-import { Input } from "@/app-components/inputs/Input";
+import { Input } from '@/app-components/inputs/Input';
 
-import { AlertAdornment } from "./AlertAdornment";
+import { AlertAdornment } from './AlertAdornment';
 
 type AutoCompleteSelectProps<
   Value,
@@ -29,9 +29,9 @@ type AutoCompleteSelectProps<
     Multiple,
     DisableClearable,
     FreeSolo,
-    ChipTypeMap["defaultComponent"]
+    ChipTypeMap['defaultComponent']
   >,
-  "renderInput" | "defaultValue" | "value"
+  'renderInput' | 'defaultValue' | 'value'
 > & {
   value?: Multiple extends true ? string[] : string | null;
   label: string;
@@ -54,7 +54,7 @@ const AutoCompleteSelect = <
     label,
     value,
     options = [],
-    idKey = "id",
+    idKey = 'id',
     labelKey,
     multiple,
     onSearch,
@@ -124,8 +124,8 @@ const AutoCompleteSelect = <
       renderTags={(tags, getTagProps) => (
         <Box
           sx={{
-            display: "flex",
-            flexWrap: "wrap",
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: 0.5,
           }}
         >
@@ -147,7 +147,7 @@ const AutoCompleteSelect = <
           {limitTags && tags.length > limitTags && (
             <Chip
               variant="role"
-              sx={{ marginTop: "2px" }}
+              sx={{ marginTop: '2px' }}
               label={`+${tags.length - limitTags}`}
             />
           )}
@@ -180,7 +180,7 @@ const AutoCompleteSelect = <
   );
 };
 
-AutoCompleteSelect.displayName = "AutoCompleteSelect";
+AutoCompleteSelect.displayName = 'AutoCompleteSelect';
 
 export default forwardRef(AutoCompleteSelect) as unknown as <
   Value,

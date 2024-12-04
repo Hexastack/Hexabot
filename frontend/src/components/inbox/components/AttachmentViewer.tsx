@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import DownloadIcon from "@mui/icons-material/Download";
-import { Button, Dialog, DialogContent } from "@mui/material";
-import { FC } from "react";
+import DownloadIcon from '@mui/icons-material/Download';
+import { Button, Dialog, DialogContent } from '@mui/material';
+import { FC } from 'react';
 
-import { DialogTitle } from "@/app-components/dialogs";
-import { useDialog } from "@/hooks/useDialog";
-import { useTranslate } from "@/hooks/useTranslate";
+import { DialogTitle } from '@/app-components/dialogs';
+import { useDialog } from '@/hooks/useDialog';
+import { useTranslate } from '@/hooks/useTranslate';
 import {
   AttachmentAttrs,
   FileType,
   StdIncomingAttachmentMessage,
   StdOutgoingAttachmentMessage,
   WithUrl,
-} from "@/types/message.types";
+} from '@/types/message.types';
 
 interface AttachmentInterface {
   url?: string;
@@ -39,7 +39,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
               <img
                 width="auto"
                 height={800}
-                style={{ objectFit: "contain", cursor: "pointer" }}
+                style={{ objectFit: 'contain', cursor: 'pointer' }}
                 alt={url}
                 src={url}
                 onClick={dialogCtl.openDialog}
@@ -50,7 +50,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
           <img
             width="auto"
             height={200}
-            style={{ objectFit: "contain", cursor: "pointer" }}
+            style={{ objectFit: 'contain', cursor: 'pointer' }}
             alt={url}
             src={url}
             onClick={dialogCtl.openDialog}
@@ -72,14 +72,14 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
 
     return (
       <div>
-        <span style={{ fontWeight: "bold" }}>{t("label.attachment")}: </span>
+        <span style={{ fontWeight: 'bold' }}>{t('label.attachment')}: </span>
         <Button
           href={props.url}
           endIcon={<DownloadIcon />}
           color="inherit"
           variant="text"
         >
-          {t("button.download")}
+          {t('button.download')}
         </Button>
       </div>
     );

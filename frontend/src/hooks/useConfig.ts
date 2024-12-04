@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { ConfigContext } from "@/contexts/config.context";
+import { ConfigContext } from '@/contexts/config.context';
 
 export const useConfig = () => {
   const context = useContext(ConfigContext);
 
   if (!context) {
-    throw new Error("useConfig must be used within a ConfigProvider");
+    throw new Error('useConfig must be used within a ConfigProvider');
   }
 
   return context;

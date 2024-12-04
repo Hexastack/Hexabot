@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, GridProps } from "@mui/material";
+import { Grid, GridProps } from '@mui/material';
 
 export const ContentItem = ({
   children,

@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useQuery, UseQueryOptions } from "react-query";
+import { useQuery, UseQueryOptions } from 'react-query';
 
 import {
   EntityType,
   Format,
   QueryType,
   TPopulateTypeFromFormat,
-} from "@/services/types";
+} from '@/services/types';
 import {
   IBaseSchema,
   IDynamicProps,
@@ -21,27 +21,27 @@ import {
   POPULATE_BY_TYPE,
   TAllowedFormat,
   TType,
-} from "@/types/base.types";
+} from '@/types/base.types';
 
-import { useEntityApiClient } from "../useApiClient";
-import { usePagination } from "../usePagination";
+import { useEntityApiClient } from '../useApiClient';
+import { usePagination } from '../usePagination';
 
-import { useNormalizeAndCache } from "./helpers";
-import { useCount } from "./useCount";
-import { useGetFromCache } from "./useGet";
+import { useNormalizeAndCache } from './helpers';
+import { useCount } from './useCount';
+import { useGetFromCache } from './useGet';
 
 export const useFind = <
   TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
+  TAttr = TType<TDynamicProps['entity']>['attributes'],
+  TBasic extends IBaseSchema = TType<TDynamicProps['entity']>['basic'],
+  TFull extends IBaseSchema = TType<TDynamicProps['entity']>['full'],
   P = TPopulateTypeFromFormat<TDynamicProps>,
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
+  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps['entity']>,
   config?: IFindConfigProps,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
-    "queryFn" | "queryKey" | "onSuccess"
+    'queryFn' | 'queryKey' | 'onSuccess'
   > & { onSuccess?: (result: TBasic[]) => void },
 ) => {
   const {
@@ -56,7 +56,7 @@ export const useFind = <
     entity,
   );
   const getFromCache = useGetFromCache(entity);
-  const { data: total } = useCount(entity, params["where"], {
+  const { data: total } = useCount(entity, params['where'], {
     enabled: hasCount,
   });
   const { dataGridPaginationProps, pageQueryPayload } = usePagination(

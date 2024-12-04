@@ -6,33 +6,33 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faLanguage } from "@fortawesome/free-solid-svg-icons";
-import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { faLanguage } from '@fortawesome/free-solid-svg-icons';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import { Button, Chip, Grid, Paper, Stack } from '@mui/material';
+import { GridColDef } from '@mui/x-data-grid';
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { DeleteDialog } from '@/app-components/dialogs';
+import { FilterTextfield } from '@/app-components/inputs/FilterTextfield';
 import {
   ActionColumnLabel,
   useActionColumns,
-} from "@/app-components/tables/columns/getColumns";
-import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useFind } from "@/hooks/crud/useFind";
-import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
-import { ILanguage } from "@/types/language.types";
-import { PermissionAction } from "@/types/permission.types";
-import { ITranslation } from "@/types/translation.types";
-import { getDateTimeFormatter } from "@/utils/date";
+} from '@/app-components/tables/columns/getColumns';
+import { DataGrid } from '@/app-components/tables/DataGrid';
+import { useDelete } from '@/hooks/crud/useDelete';
+import { useFind } from '@/hooks/crud/useFind';
+import { useRefreshTranslations } from '@/hooks/entities/translation-hooks';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useSearch } from '@/hooks/useSearch';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType } from '@/services/types';
+import { ILanguage } from '@/types/language.types';
+import { PermissionAction } from '@/types/permission.types';
+import { ITranslation } from '@/types/translation.types';
+import { getDateTimeFormatter } from '@/utils/date';
 
-import { EditTranslationDialog } from "./EditTranslationDialog";
+import { EditTranslationDialog } from './EditTranslationDialog';
 
 export const Translations = () => {
   const { t } = useTranslate();
@@ -46,7 +46,7 @@ export const Translations = () => {
   const editDialogCtl = useDialog<ITranslation>(false);
   const deleteDialogCtl = useDialog<string>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
-    $iLike: ["str"],
+    $iLike: ['str'],
   });
   const { dataGridProps, refetch: refreshTranslations } = useFind(
     { entity: EntityType.TRANSLATION },
@@ -60,17 +60,17 @@ export const Translations = () => {
     },
     onSuccess() {
       deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t('message.item_delete_success'));
     },
   });
   const { mutateAsync: checkRefreshTranslations, isLoading } =
     useRefreshTranslations({
       onError: () => {
-        toast.error(t("message.internal_server_error"));
+        toast.error(t('message.internal_server_error'));
       },
       onSuccess: () => {
         refreshTranslations();
-        toast.success(t("message.success_translation_refresh"));
+        toast.success(t('message.success_translation_refresh'));
       },
     });
   const actionColumns = useActionColumns<ITranslation>(
@@ -87,14 +87,14 @@ export const Translations = () => {
         requires: [PermissionAction.DELETE],
       },
     ],
-    t("label.operations"),
+    t('label.operations'),
   );
   const columns: GridColDef<ITranslation>[] = [
-    { flex: 1, field: "str", headerName: t("label.str") },
+    { flex: 1, field: 'str', headerName: t('label.str') },
     {
       maxWidth: 300,
-      field: "translations",
-      headerName: t("label.translations"),
+      field: 'translations',
+      headerName: t('label.translations'),
       sortable: false,
       renderCell: (params) => (
         <Stack direction="row" my={1} spacing={1}>
@@ -105,8 +105,8 @@ export const Translations = () => {
                 key={language.code}
                 variant={
                   params.row.translations[language.code]
-                    ? "available"
-                    : "unavailable"
+                    ? 'available'
+                    : 'unavailable'
                 }
                 label={language.title}
               />
@@ -116,19 +116,19 @@ export const Translations = () => {
     },
     {
       maxWidth: 140,
-      field: "createdAt",
-      headerName: t("label.createdAt"),
+      field: 'createdAt',
+      headerName: t('label.createdAt'),
       resizable: false,
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
     {
       maxWidth: 140,
-      field: "updatedAt",
-      headerName: t("label.updatedAt"),
+      field: 'updatedAt',
+      headerName: t('label.updatedAt'),
       resizable: false,
       valueGetter: (params) =>
-        t("datetime.updated_at", getDateTimeFormatter(params)),
+        t('datetime.updated_at', getDateTimeFormatter(params)),
     },
 
     actionColumns,
@@ -136,7 +136,7 @@ export const Translations = () => {
 
   return (
     <Grid container flexDirection="column" gap={3}>
-      <PageHeader title={t("title.translations")} icon={faLanguage}>
+      <PageHeader title={t('title.translations')} icon={faLanguage}>
         <Grid
           justifyContent="flex-end"
           gap={1}
@@ -153,10 +153,10 @@ export const Translations = () => {
               startIcon={<AutorenewIcon />}
               variant="contained"
               onClick={checkRefreshTranslations}
-              sx={{ float: "right" }}
+              sx={{ float: 'right' }}
               disabled={isLoading}
             >
-              {t("button.refresh")}
+              {t('button.refresh')}
             </Button>
           </Grid>
         </Grid>

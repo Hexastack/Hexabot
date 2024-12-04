@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import { Button } from "@mui/material";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import { Button } from '@mui/material';
 
-import { useTranslate } from "@/hooks/useTranslate";
+import { useTranslate } from '@/hooks/useTranslate';
 
 interface DialogButtonsProps {
   closeDialog?: () => void;
@@ -31,7 +31,7 @@ const DialogButtons: React.FC<DialogButtonsProps> = ({
         type="submit"
         onClick={handleSubmit}
       >
-        {t("button.submit")}
+        {t('button.submit')}
       </Button>
       <Button
         startIcon={<CloseIcon />}
@@ -39,7 +39,7 @@ const DialogButtons: React.FC<DialogButtonsProps> = ({
         color="error"
         onClick={closeDialog}
       >
-        {t("button.cancel")}
+        {t('button.cancel')}
       </Button>
     </>
   );

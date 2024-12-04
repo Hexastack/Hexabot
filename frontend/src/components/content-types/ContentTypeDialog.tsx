@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Dialog, DialogActions, DialogContent } from '@mui/material';
+import { FC, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
-import { Input } from "@/app-components/inputs/Input";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import DialogButtons from '@/app-components/buttons/DialogButtons';
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { ContentContainer } from '@/app-components/dialogs/layouts/ContentContainer';
+import { ContentItem } from '@/app-components/dialogs/layouts/ContentItem';
+import { Input } from '@/app-components/inputs/Input';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useUpdate } from '@/hooks/crud/useUpdate';
+import { DialogControlProps } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
 import {
   IContentType,
   IContentTypeAttributes,
-} from "@/types/content-type.types";
+} from '@/types/content-type.types';
 
 export type ContentTypeDialogProps = DialogControlProps<IContentType>;
 export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
@@ -40,7 +40,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     reset,
     formState: { errors },
   } = useForm<IContentTypeAttributes>({
-    defaultValues: { name: data?.name || "" },
+    defaultValues: { name: data?.name || '' },
   });
   const CloseAndReset = () => {
     closeDialog();
@@ -54,7 +54,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
       },
       onSuccess: () => {
         closeDialog();
-        toast.success(t("message.success_save"));
+        toast.success(t('message.success_save'));
       },
     },
   );
@@ -62,17 +62,17 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     EntityType.CONTENT_TYPE,
     {
       onError: () => {
-        toast.error(t("message.internal_server_error"));
+        toast.error(t('message.internal_server_error'));
       },
       onSuccess: () => {
         closeDialog();
-        toast.success(t("message.success_save"));
+        toast.success(t('message.success_save'));
       },
     },
   );
   const validationRules = {
     name: {
-      required: t("message.name_is_required"),
+      required: t('message.name_is_required'),
     },
   };
   const onSubmitForm = async (params: IContentTypeAttributes) => {
@@ -104,15 +104,15 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     <Dialog open={open} fullWidth onClose={CloseAndReset}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={CloseAndReset}>
-          {data ? t("title.edit_content_type") : t("title.new_content_type")}
+          {data ? t('title.edit_content_type') : t('title.new_content_type')}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
             <ContentItem>
               <Input
-                label={t("label.name")}
+                label={t('label.name')}
                 error={!!errors.name}
-                {...register("name", validationRules.name)}
+                {...register('name', validationRules.name)}
                 helperText={errors.name ? errors.name.message : null}
                 required
                 autoFocus

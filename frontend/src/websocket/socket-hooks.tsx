@@ -13,14 +13,14 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import { QueryOptions, useQuery } from "react-query";
+} from 'react';
+import { QueryOptions, useQuery } from 'react-query';
 
-import { useAuth } from "@/hooks/useAuth";
-import { useConfig } from "@/hooks/useConfig";
-import { useToast } from "@/hooks/useToast";
+import { useAuth } from '@/hooks/useAuth';
+import { useConfig } from '@/hooks/useConfig';
+import { useToast } from '@/hooks/useToast';
 
-import { SocketIoClient } from "./SocketIoClient";
+import { SocketIoClient } from './SocketIoClient';
 
 interface socketContext {
   socket: SocketIoClient | null;
@@ -83,14 +83,14 @@ export const useSubscribe = <T,>(event: string, callback: (arg: T) => void) => {
 
 export const useSocketGetQuery = <T,>(
   url: string,
-  options?: Omit<QueryOptions<T, Error, T, string[]>, "queryFn">,
+  options?: Omit<QueryOptions<T, Error, T, string[]>, 'queryFn'>,
 ) => {
   const { socket } = useSocket();
   const query = useQuery({
     ...options,
-    queryKey: ["socket", "get", url],
+    queryKey: ['socket', 'get', url],
     queryFn: async () => {
-      if (!socket) throw new Error("Socket not initialized");
+      if (!socket) throw new Error('Socket not initialized');
       const response = await socket.get<T>(url);
 
       return response.body;

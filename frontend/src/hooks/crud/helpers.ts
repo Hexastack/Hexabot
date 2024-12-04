@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { normalize } from "normalizr";
-import { useQueryClient } from "react-query";
+import { normalize } from 'normalizr';
+import { useQueryClient } from 'react-query';
 
-import { ENTITY_MAP } from "@/services/entities";
-import { EntityType, QueryType } from "@/services/types";
-import { IBaseSchema, IEntityMapTypes } from "@/types/base.types";
+import { ENTITY_MAP } from '@/services/entities';
+import { EntityType, QueryType } from '@/services/types';
+import { IBaseSchema, IEntityMapTypes } from '@/types/base.types';
 
 export const useNormalizeAndCache = <
   TData extends IBaseSchema,
@@ -62,5 +62,5 @@ export const useNormalizeAndCache = <
 
 export const isSameEntity = (qEntity: unknown, entity: string) => {
   // We may have entities referencing the same entity type : Menu and Menu/tree
-  return typeof qEntity === "string" && qEntity.split("/")[0] === entity;
+  return typeof qEntity === 'string' && qEntity.split('/')[0] === entity;
 };

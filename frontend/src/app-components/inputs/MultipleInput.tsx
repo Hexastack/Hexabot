@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,
   Button,
@@ -16,18 +16,18 @@ import {
   Grid,
   IconButton,
   TextFieldProps,
-} from "@mui/material";
+} from '@mui/material';
 import {
   ChangeEvent,
   forwardRef,
   useCallback,
   useEffect,
   useState,
-} from "react";
+} from 'react';
 
-import { useTranslate } from "@/hooks/useTranslate";
+import { useTranslate } from '@/hooks/useTranslate';
 
-import { Input } from "./Input";
+import { Input } from './Input';
 
 type MultipleInputProps = TextFieldProps & {
   value: string[];
@@ -39,7 +39,7 @@ type MultipleInputProps = TextFieldProps & {
 const createEmptyInputs = (count: number, startId: number) =>
   Array.from({ length: count }, (_, idx) => ({
     id: startId + idx,
-    value: "",
+    value: '',
   }));
 const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
   (
@@ -84,7 +84,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
       [inputs, setInputs],
     );
     const handleAddInput = useCallback(() => {
-      setInputs([...inputs, { id: Date.now(), value: "" }]);
+      setInputs([...inputs, { id: Date.now(), value: '' }]);
     }, [inputs, setInputs]);
     const handleRemoveInput = useCallback(
       (id: number) => {
@@ -92,7 +92,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
           const updatedInputs = prevInputs.filter((input) => input.id !== id);
 
           if (updatedInputs.length === 0) {
-            return [{ id: Date.now(), value: "" }];
+            return [{ id: Date.now(), value: '' }];
           }
 
           return updatedInputs;
@@ -117,7 +117,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
     return (
       <Grid container ref={ref} direction="column" mb={1}>
         {label && (
-          <FormLabel sx={{ display: "block", marginBottom: "1rem" }}>
+          <FormLabel sx={{ display: 'block', marginBottom: '1rem' }}>
             {label}
           </FormLabel>
         )}
@@ -161,7 +161,7 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
               startIcon={<AddIcon />}
               disabled={disabled}
             >
-              {t("button.add")}
+              {t('button.add')}
             </Button>
           </Box>
         </Grid>
@@ -170,6 +170,6 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
   },
 );
 
-MultipleInput.displayName = "MultipleInput";
+MultipleInput.displayName = 'MultipleInput';
 
 export default MultipleInput;

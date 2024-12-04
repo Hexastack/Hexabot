@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { css, keyframes } from "@emotion/react";
-import styled from "@emotion/styled";
+import { css, keyframes } from '@emotion/react';
+import styled from '@emotion/styled';
 import {
   DefaultLinkFactory,
   DefaultLinkWidget,
-} from "@projectstorm/react-diagrams";
-import React from "react";
+} from '@projectstorm/react-diagrams';
+import React from 'react';
 
-import { AdvancedLinkModel } from "./AdvancedLinkModel";
+import { AdvancedLinkModel } from './AdvancedLinkModel';
 
 interface Point {
   x: number;
@@ -54,7 +54,7 @@ namespace S {
 
 export class AdvancedLinkFactory extends DefaultLinkFactory {
   constructor() {
-    super("advanced");
+    super('advanced');
   }
 
   generateModel(): AdvancedLinkModel {

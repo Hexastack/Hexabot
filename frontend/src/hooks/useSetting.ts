@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useContext } from "react";
+import { useContext } from 'react';
 
-import { SettingsContext } from "@/contexts/setting.context";
+import { SettingsContext } from '@/contexts/setting.context';
 
 export const useSetting = (type: string, label: string) => {
   const { settings } = useContext(SettingsContext);

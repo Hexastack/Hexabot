@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { TextField, TextFieldProps } from "@mui/material";
-import { ForwardedRef, forwardRef } from "react";
+import { TextField, TextFieldProps } from '@mui/material';
+import { ForwardedRef, forwardRef } from 'react';
 
 export const Input = forwardRef(
   (props: TextFieldProps, ref: ForwardedRef<HTMLDivElement>) => (
@@ -25,4 +25,4 @@ export const Input = forwardRef(
   ),
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';

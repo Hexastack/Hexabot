@@ -12,14 +12,14 @@ import {
   useState,
   Dispatch,
   useContext,
-} from "react";
+} from 'react';
 
-import { useGet } from "@/hooks/crud/useGet";
-import { EntityType, Format } from "@/services/types";
-import { ISubscriber } from "@/types/subscriber.types";
-import { useSocketGetQuery } from "@/websocket/socket-hooks";
+import { useGet } from '@/hooks/crud/useGet';
+import { EntityType, Format } from '@/services/types';
+import { ISubscriber } from '@/types/subscriber.types';
+import { useSocketGetQuery } from '@/websocket/socket-hooks';
 
-import { noop } from "../helpers/noop";
+import { noop } from '../helpers/noop';
 
 interface IChatContext {
   subscriber: ISubscriber | null;
@@ -34,7 +34,7 @@ const chatContext = createContext<IChatContext>({
 export const ChatProvider = ({ children }: PropsWithChildren) => {
   const [subscriberId, setSubscriberId] = useState<string | null>(null);
   const { data } = useGet(
-    subscriberId === null ? "" : subscriberId,
+    subscriberId === null ? '' : subscriberId,
     {
       entity: EntityType.SUBSCRIBER,
       format: Format.FULL,
@@ -49,9 +49,9 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
     setSubscriberId,
   };
 
-  useSocketGetQuery("/message/subscribe/");
+  useSocketGetQuery('/message/subscribe/');
 
-  useSocketGetQuery("/subscriber/subscribe/");
+  useSocketGetQuery('/subscriber/subscribe/');
 
   return (
     <chatContext.Provider value={context}>{children}</chatContext.Provider>
@@ -66,7 +66,7 @@ export const useChat = () => {
   const context = useContext(chatContext);
 
   if (!context) {
-    throw new Error("useChat must be used within a ChatProvider");
+    throw new Error('useChat must be used within a ChatProvider');
   }
 
   return context;

@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import { IconButton, InputAdornment, TextFieldProps } from "@mui/material";
-import React, { forwardRef, useState } from "react";
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { IconButton, InputAdornment, TextFieldProps } from '@mui/material';
+import React, { forwardRef, useState } from 'react';
 
-import { Input } from "./Input";
+import { Input } from './Input';
 
 export const PasswordInput = forwardRef<any, TextFieldProps>(
   ({ onChange, InputProps, value, ...rest }, ref) => {
@@ -30,7 +30,7 @@ export const PasswordInput = forwardRef<any, TextFieldProps>(
     return (
       <Input
         ref={ref}
-        type={showPassword ? "text" : "password"}
+        type={showPassword ? 'text' : 'password'}
         {...rest}
         defaultValue={value}
         onChange={handleChange}
@@ -53,4 +53,4 @@ export const PasswordInput = forwardRef<any, TextFieldProps>(
   },
 );
 
-PasswordInput.displayName = "PasswordInput";
+PasswordInput.displayName = 'PasswordInput';

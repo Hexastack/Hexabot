@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, styled, Typography } from "@mui/material";
+import { Grid, styled, Typography } from '@mui/material';
 
-import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { SXStyleOptions } from '@/utils/SXStyleOptions';
 
 const StyledCardTitle = styled(Typography)(() => ({
-  fontSize: "1.17em",
+  fontSize: '1.17em',
   fontWeight: 700,
 }));
 const StyledCardDescription = styled(Typography)(
   SXStyleOptions({
     paddingTop: 1,
-    fontStyle: "italic",
-    fontSize: ".75rem",
-    color: "grey",
+    fontStyle: 'italic',
+    fontSize: '.75rem',
+    color: 'grey',
   }),
 );
 

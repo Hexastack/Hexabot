@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Typography } from "@mui/material";
+import { Box, Typography } from '@mui/material';
 
-import { useTranslate } from "@/hooks/useTranslate";
+import { useTranslate } from '@/hooks/useTranslate';
 
-import HexabotLogoRound from "../logos/HexabotLogoRound";
+import HexabotLogoRound from '../logos/HexabotLogoRound';
 
 export const ChatWidgetHeader = () => {
   const { t } = useTranslate();
@@ -19,7 +19,7 @@ export const ChatWidgetHeader = () => {
     <Box display="flex" alignItems="center" ml={2}>
       <HexabotLogoRound width={32} height={32} />
       <Typography component="h2" fontSize="1.25rem" ml={2}>
-        {t("title.console")}
+        {t('title.console')}
       </Typography>
     </Box>
   );

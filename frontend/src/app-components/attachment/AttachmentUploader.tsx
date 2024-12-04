@@ -6,22 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import FolderCopyIcon from "@mui/icons-material/FolderCopy";
-import { Box, Button, Divider, Grid, styled, Typography } from "@mui/material";
-import { ChangeEvent, DragEvent, FC, useState } from "react";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import FolderCopyIcon from '@mui/icons-material/FolderCopy';
+import { Box, Button, Divider, Grid, styled, Typography } from '@mui/material';
+import { ChangeEvent, DragEvent, FC, useState } from 'react';
 
-import { useUpload } from "@/hooks/crud/useUpload";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
+import { useUpload } from '@/hooks/crud/useUpload';
+import { getDisplayDialogs, useDialog } from '@/hooks/useDialog';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { EntityType } from '@/services/types';
+import { IAttachment } from '@/types/attachment.types';
 
-import { AttachmentDialog } from "./AttachmentDialog";
-import AttachmentThumbnail from "./AttachmentThumbnail";
+import { AttachmentDialog } from './AttachmentDialog';
+import AttachmentThumbnail from './AttachmentThumbnail';
 
-const FileUploadLabel = styled("label")(
+const FileUploadLabel = styled('label')(
   ({ isDragOver }: { isDragOver: boolean }) => `
   position: relative;
   cursor: pointer;
@@ -50,7 +50,7 @@ const FileUploadLabel = styled("label")(
   }
 `,
 );
-const HiddenInput = styled("input")`
+const HiddenInput = styled('input')`
   display: none;
 `;
 const IconText = styled(Box)`
@@ -83,10 +83,10 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const { toast } = useToast();
   const { mutateAsync: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
     onError: () => {
-      toast.error(t("message.upload_failed"));
+      toast.error(t('message.upload_failed'));
     },
     onSuccess: (data) => {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
       setAttachment(data);
       onChange && onChange(data);
       onUploadComplete && onUploadComplete();
@@ -102,14 +102,14 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.target.files.item(0);
 
       if (file) {
-        const acceptedTypes = accept.split(",");
+        const acceptedTypes = accept.split(',');
         const isValidType = acceptedTypes.some(
           (type) =>
-            file.type === type || file.name.endsWith(type.replace(".*", "")),
+            file.type === type || file.name.endsWith(type.replace('.*', '')),
         );
 
         if (!isValidType) {
-          toast.error(t("message.invalid_file_type"));
+          toast.error(t('message.invalid_file_type'));
 
           return;
         }
@@ -162,7 +162,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               display="flex"
               justifyContent="center"
               alignItems="center"
-              sx={{ padding: "20px" }}
+              sx={{ padding: '20px' }}
             >
               {attachment ? (
                 <AttachmentThumbnail
@@ -174,7 +174,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                 <IconText height="100%" width="80%">
                   <CloudUploadIcon fontSize="large" />
                   <Typography>
-                    {t("label.click_or_dragndrop_to_upload")}
+                    {t('label.click_or_dragndrop_to_upload')}
                   </Typography>
                 </IconText>
               )}
@@ -184,8 +184,8 @@ const AttachmentUploader: FC<FileUploadProps> = ({
         {enableMediaLibrary ? (
           <>
             <Grid container item xs={2}>
-              <Divider orientation="vertical" flexItem sx={{ margin: "20px" }}>
-                {t("label.or")}
+              <Divider orientation="vertical" flexItem sx={{ margin: '20px' }}>
+                {t('label.or')}
               </Divider>
             </Grid>
             <Grid
@@ -201,7 +201,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                 color="primary"
                 onClick={() => libraryDialogCtl.openDialog()}
               >
-                {t("button.media_library")}
+                {t('button.media_library')}
               </Button>
             </Grid>
           </>
@@ -211,6 +211,6 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   );
 };
 
-AttachmentUploader.displayName = "AttachmentUploader";
+AttachmentUploader.displayName = 'AttachmentUploader';
 
 export default AttachmentUploader;

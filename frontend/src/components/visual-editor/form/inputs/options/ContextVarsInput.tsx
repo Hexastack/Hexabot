@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
   Accordion,
   AccordionDetails,
@@ -17,14 +17,14 @@ import {
   Button,
   Grid,
   IconButton,
-} from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+} from '@mui/material';
+import { FC, Fragment, useEffect, useState } from 'react';
 
-import { useTranslate } from "@/hooks/useTranslate";
-import { CaptureVar } from "@/types/block.types";
-import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
+import { useTranslate } from '@/hooks/useTranslate';
+import { CaptureVar } from '@/types/block.types';
+import { ValueWithId, createValueWithId } from '@/utils/valueWithId';
 
-import ContextVarInput from "./ContextVarInput";
+import ContextVarInput from './ContextVarInput';
 
 type ContextVarsInputProps = {
   value: CaptureVar[];
@@ -59,12 +59,12 @@ const ContextVarsInput: FC<ContextVarsInputProps> = ({ value, onChange }) => {
     <Accordion defaultExpanded={vars?.length > 0}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <CheckCircleIcon
-          color={vars?.length > 0 ? "success" : "disabled"}
-          sx={{ marginRight: ".5rem" }}
+          color={vars?.length > 0 ? 'success' : 'disabled'}
+          sx={{ marginRight: '.5rem' }}
         />
-        {t("label.capture_context_vars")}
+        {t('label.capture_context_vars')}
       </AccordionSummary>
-      <AccordionDetails sx={{ display: "flex", flexDirection: "column" }}>
+      <AccordionDetails sx={{ display: 'flex', flexDirection: 'column' }}>
         <Grid container spacing={2}>
           {vars.map(({ value, id }, idx) => (
             <Fragment key={id}>
@@ -86,9 +86,9 @@ const ContextVarsInput: FC<ContextVarsInputProps> = ({ value, onChange }) => {
           color="primary"
           onClick={addInput}
           startIcon={<AddIcon />}
-          sx={{ marginTop: 2, alignSelf: "end" }}
+          sx={{ marginTop: 2, alignSelf: 'end' }}
         >
-          {t("button.add")}
+          {t('button.add')}
         </Button>
       </AccordionDetails>
     </Accordion>

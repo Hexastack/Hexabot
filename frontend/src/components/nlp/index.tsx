@@ -6,39 +6,39 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import { Grid, Paper, Tab, Tabs } from "@mui/material";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
-import React from "react";
+import { faGraduationCap } from '@fortawesome/free-solid-svg-icons';
+import { Grid, Paper, Tab, Tabs } from '@mui/material';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
+import React from 'react';
 
-import { TabPanel } from "@/app-components/tabs/TabPanel";
-import { useCreate } from "@/hooks/crud/useCreate";
-import { useFind } from "@/hooks/crud/useFind";
-import { useToast } from "@/hooks/useToast";
-import { useTranslate } from "@/hooks/useTranslate";
-import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType, Format } from "@/services/types";
+import { TabPanel } from '@/app-components/tabs/TabPanel';
+import { useCreate } from '@/hooks/crud/useCreate';
+import { useFind } from '@/hooks/crud/useFind';
+import { useToast } from '@/hooks/useToast';
+import { useTranslate } from '@/hooks/useTranslate';
+import { PageHeader } from '@/layout/content/PageHeader';
+import { EntityType, Format } from '@/services/types';
 import {
   INlpDatasetSampleAttributes,
   INlpSample,
   INlpSampleFormAttributes,
   INlpSampleFull,
-} from "@/types/nlp-sample.types";
+} from '@/types/nlp-sample.types';
 
-import NlpDatasetCounter from "./components/NlpDatasetCounter";
-import NlpSample from "./components/NlpSample";
-import NlpDatasetSample from "./components/NlpTrainForm";
-import { NlpValues } from "./components/NlpValues";
+import NlpDatasetCounter from './components/NlpDatasetCounter';
+import NlpSample from './components/NlpSample';
+import NlpDatasetSample from './components/NlpTrainForm';
+import { NlpValues } from './components/NlpValues';
 
-const NlpEntity = dynamic(() => import("./components/NlpEntity"));
+const NlpEntity = dynamic(() => import('./components/NlpEntity'));
 
 export const Nlp = ({
   entityId,
   selectedTab,
 }: {
   entityId?: string;
-  selectedTab: "sample" | "entity";
+  selectedTab: 'sample' | 'entity';
 }) => {
   useFind(
     {
@@ -52,7 +52,7 @@ export const Nlp = ({
   const router = useRouter();
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     router.push(
-      `/nlp/${newValue === "sample" ? "" : "nlp-entities"}`,
+      `/nlp/${newValue === 'sample' ? '' : 'nlp-entities'}`,
       undefined,
       {
         shallow: true,
@@ -69,10 +69,10 @@ export const Nlp = ({
     INlpSampleFull
   >(EntityType.NLP_SAMPLE, {
     onError: () => {
-      toast.error(t("message.internal_server_error"));
+      toast.error(t('message.internal_server_error'));
     },
     onSuccess: () => {
-      toast.success(t("message.success_save"));
+      toast.success(t('message.success_save'));
     },
   });
   const onSubmitForm = (params: INlpSampleFormAttributes) => {
@@ -86,7 +86,7 @@ export const Nlp = ({
 
   return (
     <Grid container gap={2} flexDirection="column">
-      <PageHeader title={t("title.nlp_train")} icon={faGraduationCap} />
+      <PageHeader title={t('title.nlp_train')} icon={faGraduationCap} />
       <Grid item xs={12}>
         <Grid container flexDirection="row">
           <Grid item xs={7}>
@@ -102,19 +102,19 @@ export const Nlp = ({
         </Grid>
       </Grid>
       <Grid item xs={12}>
-        <Paper sx={{ pb: "20px" }}>
+        <Paper sx={{ pb: '20px' }}>
           <Tabs
             orientation="horizontal"
             variant="scrollable"
             value={selectedTab}
             onChange={handleChange}
           >
-            <Tab label={t("title.nlp")} value="sample" />
-            <Tab label={t("title.nlp_entities")} value="entity" />
+            <Tab label={t('title.nlp')} value="sample" />
+            <Tab label={t('title.nlp_entities')} value="entity" />
           </Tabs>
 
           {/* NLP SAMPLES */}
-          <Grid sx={{ padding: "20px" }}>
+          <Grid sx={{ padding: '20px' }}>
             <TabPanel value={selectedTab} index="sample">
               <NlpSample />
             </TabPanel>

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import ErrorIcon from "@mui/icons-material/Error";
+import ErrorIcon from '@mui/icons-material/Error';
 import {
   Button,
   Dialog,
@@ -14,11 +14,11 @@ import {
   DialogContent,
   Grid,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { DialogControl } from "@/hooks/useDialog";
-import { useTranslate } from "@/hooks/useTranslate";
+import { DialogTitle } from '@/app-components/dialogs/DialogTitle';
+import { DialogControl } from '@/hooks/useDialog';
+import { useTranslate } from '@/hooks/useTranslate';
 
 export type DeleteDialogProps<T = string> = DialogControl<T>;
 export const DeleteDialog = <T extends any = string>({
@@ -30,14 +30,14 @@ export const DeleteDialog = <T extends any = string>({
 
   return (
     <Dialog open={open} fullWidth onClose={closeFunction}>
-      <DialogTitle onClose={closeFunction}>{t("title.warning")}</DialogTitle>
+      <DialogTitle onClose={closeFunction}>{t('title.warning')}</DialogTitle>
       <DialogContent>
         <Grid container gap={1}>
           <Grid item height="28px">
-            <ErrorIcon sx={{ fontSize: "28px" }} color="error" />
+            <ErrorIcon sx={{ fontSize: '28px' }} color="error" />
           </Grid>
           <Grid item alignSelf="center">
-            <Typography>{t("message.item_delete_confirm")}</Typography>
+            <Typography>{t('message.item_delete_confirm')}</Typography>
           </Grid>
         </Grid>
       </DialogContent>
@@ -52,10 +52,10 @@ export const DeleteDialog = <T extends any = string>({
           }}
           autoFocus
         >
-          {t("button.yes")}
+          {t('button.yes')}
         </Button>
         <Button variant="outlined" onClick={closeFunction}>
-          {t("button.no")}
+          {t('button.no')}
         </Button>
       </DialogActions>
     </Dialog>
