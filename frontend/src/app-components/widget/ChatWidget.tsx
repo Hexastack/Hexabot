@@ -9,6 +9,7 @@
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useLoadSettings } from "@/hooks/entities/auth-hooks";
@@ -25,9 +26,14 @@ export const ChatWidget = () => {
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
   const { data: settings } = useLoadSettings();
-  const key = JSON.stringify(
-    settings?.["console_channel"]?.find((s) => s.label === "allowed_domains")
-      ?.value,
+  const key = useMemo(
+    () =>
+      JSON.stringify(
+        settings?.["console_channel"]?.find(
+          (s) => s.label === "allowed_domains",
+        )?.value,
+      ),
+    [settings],
   );
 
   return isAuthenticated ? (
