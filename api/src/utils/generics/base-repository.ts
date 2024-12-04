@@ -234,10 +234,8 @@ export abstract class BaseRepository<
       // @TODO : Issue a warning ?
       return Promise.resolve(undefined);
     }
-    const query =
-      typeof criteria === 'string'
-        ? this.model.findById<T>(criteria)
-        : this.model.findOne<T>(criteria);
+
+    const query = this.findOneQuery(criteria);
     return await this.executeOne(query, this.cls, options);
   }
 
