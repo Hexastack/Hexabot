@@ -74,7 +74,7 @@ describe('RoleRepository', () => {
       jest.spyOn(roleModel, 'findById');
       const permissions = await permissionRepository.find({ role: role.id });
       const result = await roleRepository.findOneAndPopulate(role.id);
-      expect(roleModel.findById).toHaveBeenCalledWith(role.id);
+      expect(roleModel.findById).toHaveBeenCalledWith(role.id, undefined);
       expect(result).toEqualPayload({
         ...roleFixtures.find(({ name }) => name === 'admin'),
         users,
@@ -106,7 +106,7 @@ describe('RoleRepository', () => {
         return acc;
       }, []);
 
-      expect(roleModel.find).toHaveBeenCalledWith({});
+      expect(roleModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
     });
   });

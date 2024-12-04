@@ -23,7 +23,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { MessageModel, Message } from '../schemas/message.schema';
+import { Message, MessageModel } from '../schemas/message.schema';
 import { SubscriberModel } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
 
@@ -70,7 +70,7 @@ describe('MessageRepository', () => {
       const user = await userRepository.findOne(message['sentBy']);
       const result = await messageRepository.findOneAndPopulate(message.id);
 
-      expect(messageModel.findById).toHaveBeenCalledWith(message.id);
+      expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
       expect(result).toEqualPayload({
         ...messageFixtures.find(({ mid }) => mid === message.mid),
         sender,
@@ -95,7 +95,7 @@ describe('MessageRepository', () => {
         sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
       }));
 
-      expect(messageModel.find).toHaveBeenCalledWith({});
+      expect(messageModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(messages);
     });
   });

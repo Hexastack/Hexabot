@@ -26,8 +26,8 @@ import {
 import { Content, ContentModel } from '../schemas/content.schema';
 
 import {
-  installContentFixtures,
   contentFixtures,
+  installContentFixtures,
 } from './../../utils/test/fixtures/content';
 import { ContentRepository } from './content.repository';
 
@@ -63,7 +63,7 @@ describe('ContentRepository', () => {
       const content = await contentModel.findOne({ title: 'Jean' });
       const contentType = await contentTypeModel.findById(content.entity);
       const result = await contentRepository.findOneAndPopulate(content.id);
-      expect(findSpy).toHaveBeenCalledWith(content.id);
+      expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
         entity: contentTypeFixtures.find(

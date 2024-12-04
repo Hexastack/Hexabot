@@ -21,8 +21,8 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { LabelModel, Label } from '../schemas/label.schema';
-import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
+import { Label, LabelModel } from '../schemas/label.schema';
+import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 
 import { LabelRepository } from './label.repository';
 import { SubscriberRepository } from './subscriber.repository';
@@ -62,7 +62,7 @@ describe('LabelRepository', () => {
       const label = await labelRepository.findOne({ name: 'TEST_TITLE_2' });
       const result = await labelRepository.findOneAndPopulate(label.id);
 
-      expect(labelModel.findById).toHaveBeenCalledWith(label.id);
+      expect(labelModel.findById).toHaveBeenCalledWith(label.id, undefined);
       expect(result).toEqualPayload({
         ...labelFixtures.find(({ name }) => name === label.name),
         users,
@@ -79,7 +79,7 @@ describe('LabelRepository', () => {
         users,
       }));
 
-      expect(labelModel.find).toHaveBeenCalledWith({});
+      expect(labelModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(labelsWithUsers);
     });
   });
@@ -94,7 +94,7 @@ describe('LabelRepository', () => {
         users,
       }));
 
-      expect(labelModel.find).toHaveBeenCalledWith({});
+      expect(labelModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(labelsWithUsers.sort(sortRowsBy));
     });
   });
