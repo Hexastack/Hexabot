@@ -9,6 +9,7 @@
 import { ConflictException } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
+import { ProjectionType } from 'mongoose';
 
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -31,23 +32,36 @@ export abstract class BaseService<
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
+    projection?: ProjectionType<T>,
   ): Promise<T> {
-    return await this.repository.findOne(criteria, options);
+    return await this.repository.findOne(criteria, options, projection);
   }
 
-  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
-    return await this.repository.findOneAndPopulate(criteria);
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<T>,
+    projection?: ProjectionType<T>,
+  ) {
+    return await this.repository.findOneAndPopulate(criteria, projection);
   }
 
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
   ): Promise<T[]> {
-    return await this.repository.find(filter, pageQuery);
+    return await this.repository.find(filter, pageQuery, projection);
   }
 
-  async findAndPopulate(filters: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
-    return await this.repository.findAndPopulate(filters, pageQuery);
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
+    return await this.repository.findAndPopulate(
+      filters,
+      pageQuery,
+      projection,
+    );
   }
 
   async findAll(sort?: QuerySortDto<T>): Promise<T[]> {
@@ -56,20 +70,6 @@ export abstract class BaseService<
 
   async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
     return await this.repository.findAllAndPopulate(sort);
-  }
-
-  async findPage(
-    filters: TFilterQuery<T>,
-    pageQueryDto: PageQueryDto<T>,
-  ): Promise<T[]> {
-    return await this.repository.findPage(filters, pageQueryDto);
-  }
-
-  async findPageAndPopulate(
-    filters: TFilterQuery<T>,
-    pageQueryDto: PageQueryDto<T>,
-  ): Promise<TFull[]> {
-    return await this.repository.findPageAndPopulate(filters, pageQueryDto);
   }
 
   async countAll(): Promise<number> {

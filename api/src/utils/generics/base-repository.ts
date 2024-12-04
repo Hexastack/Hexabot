@@ -17,6 +17,7 @@ import {
   FlattenMaps,
   HydratedDocument,
   Model,
+  ProjectionType,
   Query,
   SortOrder,
   UpdateQuery,
@@ -215,47 +216,64 @@ export abstract class BaseRepository<
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
 
-  protected findOneQuery(criteria: string | TFilterQuery<T>) {
+  protected findOneQuery(
+    criteria: string | TFilterQuery<T>,
+    projection?: ProjectionType<T>,
+  ) {
     if (!criteria) {
       // An empty criteria would return the first document that it finds
       throw new Error('findOneQuery() should not have an empty criteria');
     }
 
     return typeof criteria === 'string'
-      ? this.model.findById(criteria)
-      : this.model.findOne<T>(criteria);
+      ? this.model.findById(criteria, projection)
+      : this.model.findOne<T>(criteria, projection);
   }
 
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
+    projection?: ProjectionType<T>,
   ) {
     if (!criteria) {
       // @TODO : Issue a warning ?
       return Promise.resolve(undefined);
     }
 
-    const query = this.findOneQuery(criteria);
+    const query = this.findOneQuery(criteria, projection);
     return await this.executeOne(query, this.cls, options);
   }
 
-  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<T>,
+    projection?: ProjectionType<T>,
+  ) {
     this.ensureCanPopulate();
-    const query = this.findOneQuery(criteria).populate(this.populate);
+    const query = this.findOneQuery(criteria, projection).populate(
+      this.populate,
+    );
     return await this.executeOne(query, this.clsPopulate);
   }
 
-  protected findQuery(filter: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
+  protected findQuery(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
     const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
-    const query = this.model.find<T>(filter);
+    const query = this.model.find<T>(filter, projection);
     return query
       .skip(skip)
       .limit(limit)
       .sort([sort] as [string, SortOrder][]);
   }
 
-  async find(filter: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
-    const query = this.findQuery(filter, pageQuery);
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
+    const query = this.findQuery(filter, pageQuery, projection);
     return await this.execute(query, this.cls);
   }
 
@@ -265,9 +283,15 @@ export abstract class BaseRepository<
     }
   }
 
-  async findAndPopulate(filters: TFilterQuery<T>, pageQuery?: PageQueryDto<T>) {
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
     this.ensureCanPopulate();
-    const query = this.findQuery(filters, pageQuery).populate(this.populate);
+    const query = this.findQuery(filters, pageQuery, projection).populate(
+      this.populate,
+    );
     return await this.execute(query, this.clsPopulate);
   }
 
