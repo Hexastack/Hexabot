@@ -11,6 +11,7 @@ import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import { usePathname } from "next/navigation";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useLoadSettings } from "@/hooks/entities/auth-hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import i18n from "@/i18n/config";
@@ -23,6 +24,11 @@ export const ChatWidget = () => {
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
+  const { data: settings } = useLoadSettings();
+  const key = JSON.stringify(
+    settings?.["console_channel"]?.find((s) => s.label === "allowed_domains")
+      ?.value,
+  );
 
   return isAuthenticated ? (
     <Box
@@ -31,6 +37,7 @@ export const ChatWidget = () => {
       }}
     >
       <UiChatWidget
+        key={key}
         config={{
           apiUrl,
           channel: "console-channel",
