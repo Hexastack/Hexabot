@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
-import type { Listener, OnOptions } from 'eventemitter2';
 import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
@@ -33,9 +31,9 @@ import type {
 } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
-import {
+import type {
+  NlpValue,
   NlpValueDocument,
-  type NlpValue,
 } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
 import { type Invitation } from '@/user/schemas/invitation.schema';
@@ -44,7 +42,10 @@ import { type Permission } from '@/user/schemas/permission.schema';
 import { type Role } from '@/user/schemas/role.schema';
 import { type User } from '@/user/schemas/user.schema';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
+import type {
+  TFilterQuery,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
 import '@nestjs/event-emitter';
 /**
@@ -301,13 +302,17 @@ declare module '@nestjs/event-emitter' {
         : false;
 
   type TCustomEvents<G extends keyof IHookEntityOperationMap> =
-    keyof IHookEntityOperationMap[G]['operations'] & string;
+    keyof IHookEntityOperationMap[G]['operations'];
+
+  type TNormalizedOrCustomized<G> = G extends IHookEntities
+    ? TNormalizedEvents | TCustomEvents<G>
+    : TCustomEvents<G>;
 
   type customEvent<G extends EventNamespaces | ConstrainedString> =
     G extends EventNamespaces
       ? G extends `hook:${string}`
         ? G
-        : `hook:${G}:${TNormalizedEvents | TCustomEvents<G>}`
+        : `hook:${G}:${TNormalizedOrCustomized<G>}`
       : never;
 
   interface ListenerFn<G extends EventNamespaces | ConstrainedString> {
