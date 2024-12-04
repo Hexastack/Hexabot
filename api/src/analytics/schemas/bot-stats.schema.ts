@@ -9,6 +9,7 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
 export enum BotStatsType {
@@ -115,9 +116,9 @@ export class BotStats extends BaseSchema {
 
 export type BotStatsDocument = THydratedDocument<BotStats>;
 
-export const BotStatsModel: ModelDefinition = {
+export const BotStatsModel: ModelDefinition = LifecycleHookManager.attach({
   name: BotStats.name,
   schema: SchemaFactory.createForClass(BotStats),
-};
+});
 
 export default BotStatsModel.schema;
