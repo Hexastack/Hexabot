@@ -287,6 +287,9 @@ export abstract class BaseRepository<
     return await this.execute(query, this.clsPopulate);
   }
 
+  /**
+   * @deprecated
+   */
   protected findPageQuery(
     filters: TFilterQuery<T>,
     { skip, limit, sort }: PageQueryDto<T>,
@@ -297,6 +300,9 @@ export abstract class BaseRepository<
       .sort([sort] as [string, SortOrder][]);
   }
 
+  /**
+   * @deprecated
+   */
   async findPage(
     filters: TFilterQuery<T>,
     pageQuery: PageQueryDto<T>,
@@ -305,6 +311,9 @@ export abstract class BaseRepository<
     return await this.execute(query, this.cls);
   }
 
+  /**
+   * @deprecated
+   */
   async findPageAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery: PageQueryDto<T>,
