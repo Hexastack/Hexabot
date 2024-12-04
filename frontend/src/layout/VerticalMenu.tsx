@@ -205,6 +205,8 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
           [EntityType.LABEL]: [PermissionAction.READ],
         },
       },
+
+      
       // {
       //   text: 'menu.broadcast',
       //   href: "/subscribers/broadcast",
