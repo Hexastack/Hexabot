@@ -72,6 +72,26 @@ export abstract class BaseService<
     return await this.repository.findAllAndPopulate(sort);
   }
 
+  /**
+   * @deprecated
+   */
+  async findPage(
+    filters: TFilterQuery<T>,
+    pageQueryDto: PageQueryDto<T>,
+  ): Promise<T[]> {
+    return await this.repository.findPage(filters, pageQueryDto);
+  }
+
+  /**
+   * @deprecated
+   */
+  async findPageAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQueryDto: PageQueryDto<T>,
+  ): Promise<TFull[]> {
+    return await this.repository.findPageAndPopulate(filters, pageQueryDto);
+  }
+
   async countAll(): Promise<number> {
     return await this.repository.countAll();
   }
