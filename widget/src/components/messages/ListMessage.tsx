@@ -9,7 +9,7 @@
 import React from "react";
 
 import { useColors } from "../../providers/ColorProvider";
-import { TMessage } from "../../types/message.types";
+import { Direction, TMessage } from "../../types/message.types";
 
 import ButtonsMessage from "./ButtonMessage";
 
@@ -39,7 +39,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
     throw new Error("Unable to find elements");
   }
 
-  const colors = allColors[messageList.direction || "received"];
+  const colors = allColors[messageList.direction || Direction.received];
 
   return (
     <div

@@ -10,7 +10,7 @@ import Autolinker from "autolinker";
 import React, { useEffect, useRef } from "react";
 
 import { useColors } from "../../providers/ColorProvider";
-import { TMessage } from "../../types/message.types";
+import { Direction, TMessage } from "../../types/message.types";
 
 import "./TextMessage.scss";
 
@@ -28,7 +28,7 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
   }, [message]);
 
   const autoLink = () => {
-    if (message.direction === "received" && messageTextRef.current) {
+    if (message.direction === Direction.received && messageTextRef.current) {
       const text = messageTextRef.current.innerText;
 
       messageTextRef.current.innerHTML = Autolinker.link(text, {
@@ -42,7 +42,7 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
     throw new Error("Unable to find text.");
   }
 
-  const colors = allColors[message.direction || "received"];
+  const colors = allColors[message.direction || Direction.received];
 
   return (
     <div
