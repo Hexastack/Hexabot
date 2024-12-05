@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useColors } from "../../providers/ColorProvider";
 import { useWidget } from "../../providers/WidgetProvider";
-import { TMessage } from "../../types/message.types";
+import { Direction, TMessage } from "../../types/message.types";
 
 import "./GeolocationMessage.scss";
 
@@ -58,7 +58,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
   },${coordinates.lat - 0.1},${coordinates.lng + 0.1},${
     coordinates.lat + 0.1
   }&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`;
-  const colors = allColors[message.direction || "received"];
+  const colors = allColors[message.direction || Direction.received];
 
   return (
     <div

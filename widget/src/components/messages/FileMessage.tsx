@@ -10,7 +10,7 @@ import React from "react";
 
 import { useTranslation } from "../../hooks/useTranslation";
 import { useColors } from "../../providers/ColorProvider";
-import { TMessage } from "../../types/message.types";
+import { Direction, TMessage } from "../../types/message.types";
 import FileIcon from "../icons/FileIcon";
 
 import "./FileMessage.scss";
@@ -22,7 +22,7 @@ interface FileMessageProps {
 const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   const { t } = useTranslation();
   const { colors: allColors } = useColors();
-  const colors = allColors[message.direction || "received"];
+  const colors = allColors[message.direction || Direction.received];
 
   if (!("type" in message.data)) {
     throw new Error("Unable to detect type for file message");
