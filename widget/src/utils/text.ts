@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 
 import { ChannelSettings } from "../providers/SettingsProvider";
 
@@ -47,13 +47,13 @@ type TCriterion = {
 
 export const extractSettingValue = (
   settings: TSettings,
-  criterion: TCriterion
+  criterion: TCriterion,
 ) =>
   settings?.[criterion.group]?.find(
-    (setting) => setting.label === criterion.label
+    (setting) => setting.label === criterion.label,
   )?.[criterion?.selectedField];
 
 export const extractSettingValues = (
   settings: TSettings,
-  criteria: TCriterion[]
+  criteria: TCriterion[],
 ) => criteria.map((criterion) => extractSettingValue(settings, criterion));
