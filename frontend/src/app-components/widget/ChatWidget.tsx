@@ -8,8 +8,12 @@
 
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
+import {
+  extractSettingValues,
+  generateUUIDFromString,
+} from "hexabot-chat-widget/src/utils/text";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useLoadSettings } from "@/hooks/entities/auth-hooks";
@@ -26,15 +30,24 @@ export const ChatWidget = () => {
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
   const { data: settings } = useLoadSettings();
-  const key = useMemo(
-    () =>
-      JSON.stringify(
-        settings?.["console_channel"]?.find(
-          (s) => s.label === "allowed_domains",
-        )?.value,
-      ),
-    [settings],
-  );
+  const [key, setKey] = useState("");
+
+  useEffect(() => {
+    const settingValues = extractSettingValues(settings, [
+      {
+        group: "console_channel",
+        label: "allowed_domains",
+        selectedField: "value",
+      },
+      {
+        group: "console_channel",
+        label: "theme_color",
+        selectedField: "value",
+      },
+    ]);
+
+    setKey(generateUUIDFromString(settingValues.join()));
+  }, [settings]);
 
   return isAuthenticated ? (
     <Box
