@@ -9,8 +9,8 @@
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import {
-  extractSettingValues,
-  generateUUIDFromString,
+  generateHashFromString,
+  getSettingValues,
 } from "hexabot-chat-widget/src/utils/text";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -33,7 +33,7 @@ export const ChatWidget = () => {
   const [key, setKey] = useState("");
 
   useEffect(() => {
-    const settingValues = extractSettingValues(settings, [
+    const settingValues = getSettingValues(settings, [
       {
         group: "console_channel",
         label: "allowed_domains",
@@ -46,7 +46,7 @@ export const ChatWidget = () => {
       },
     ]);
 
-    setKey(generateUUIDFromString(settingValues.join()));
+    generateHashFromString(settingValues.join()).then((key) => setKey(key));
   }, [settings]);
 
   return isAuthenticated ? (
