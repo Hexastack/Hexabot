@@ -13,7 +13,7 @@ export interface IOIncomingMessage<T = unknown> {
 }
 
 export interface IOOutgoingMessage<T = unknown> {
-  method: 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head';
+  method: "get" | "post" | "put" | "delete" | "patch" | "options" | "head";
   headers: Record<string, string>;
   data: T;
   // params: Record<string, any>;

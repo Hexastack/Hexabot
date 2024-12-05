@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-import { useTranslation } from '../hooks/useTranslation';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useSettings } from '../providers/SettingsProvider';
-import { TOutgoingMessageType } from '../types/message.types';
-import { OutgoingMessageState } from '../types/state.types';
+import { useTranslation } from "../hooks/useTranslation";
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { useSettings } from "../providers/SettingsProvider";
+import { TOutgoingMessageType } from "../types/message.types";
+import { OutgoingMessageState } from "../types/state.types";
 
-import EmojiButton from './buttons/EmojiButton';
-import FileButton from './buttons/FileButton';
-import LocationButton from './buttons/LocationButton';
-import MenuButton from './buttons/MenuButton';
-import SendButton from './buttons/SendButton';
-import CloseIcon from './icons/CloseIcon';
-import FileInputIcon from './icons/FileInputIcon';
-import Suggestions from './Suggestions';
+import EmojiButton from "./buttons/EmojiButton";
+import FileButton from "./buttons/FileButton";
+import LocationButton from "./buttons/LocationButton";
+import MenuButton from "./buttons/MenuButton";
+import SendButton from "./buttons/SendButton";
+import CloseIcon from "./icons/CloseIcon";
+import FileInputIcon from "./icons/FileInputIcon";
+import Suggestions from "./Suggestions";
 
-import './UserInput.scss';
+import "./UserInput.scss";
 
 const UserInput: React.FC = () => {
   const { t } = useTranslation();
@@ -63,8 +63,8 @@ const UserInput: React.FC = () => {
   }, [message, focusOnOpen]);
 
   useEffect(() => {
-    if (message === '') {
-      userInputRef.current!.innerHTML = '';
+    if (message === "") {
+      userInputRef.current!.innerHTML = "";
     }
   }, [message]);
 
@@ -80,12 +80,12 @@ const UserInput: React.FC = () => {
     setMessage(
       userInputRef.current?.innerText ||
         userInputRef.current?.textContent ||
-        '',
+        "",
     );
   };
   const sendMessage = (
     event: React.MouseEvent | React.KeyboardEvent,
-    source: string = 'send-button',
+    source: string = "send-button",
   ) => {
     if (message) {
       send({
@@ -97,7 +97,7 @@ const UserInput: React.FC = () => {
         },
       });
       if (autoFlush) {
-        setMessage('');
+        setMessage("");
       }
     }
     if (file) {
@@ -105,9 +105,9 @@ const UserInput: React.FC = () => {
       const typeCheck = allowedUploadTypes.includes(file.type) || false;
 
       if (!typeCheck) {
-        setFileError(t('messages.file_message.unsupported_file_type'));
+        setFileError(t("messages.file_message.unsupported_file_type"));
       } else if (file.size > (allowedUploadSize || 0)) {
-        setFileError(t('messages.file_message.unsupported_file_size'));
+        setFileError(t("messages.file_message.unsupported_file_size"));
       } else {
         send({
           event,
@@ -127,8 +127,8 @@ const UserInput: React.FC = () => {
     }
   };
   const handleKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      sendMessage(event, 'enter-key');
+    if (event.key === "Enter" && !event.shiftKey) {
+      sendMessage(event, "enter-key");
       event.preventDefault();
     }
   };
@@ -170,7 +170,7 @@ const UserInput: React.FC = () => {
       )}
 
       <form
-        className={`sc-user-input ${inputActive ? 'active' : ''}`}
+        className={`sc-user-input ${inputActive ? "active" : ""}`}
         style={{ background: colors.userInput.bg }}
       >
         {menu.length > 0 && <MenuButton />}

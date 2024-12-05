@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
-import { useTranslations } from '../providers/TranslationProvider';
+import { useTranslations } from "../providers/TranslationProvider";
 
 // Define a recursive interface for nested objects
 interface NestedTranslation {
@@ -20,9 +20,9 @@ const getNestedTranslation = (
   path: string,
 ): string | undefined => {
   return path
-    .split('.')
+    .split(".")
     .reduce((acc: NestedTranslation | string | undefined, part) => {
-      if (typeof acc === 'object' && acc !== null) {
+      if (typeof acc === "object" && acc !== null) {
         return acc[part];
       }
 

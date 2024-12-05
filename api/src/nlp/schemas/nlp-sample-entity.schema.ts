@@ -11,6 +11,7 @@ import { Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import {
   TFilterPopulateFields,
   THydratedDocument,
@@ -103,10 +104,11 @@ export class NlpSampleEntityFull extends NlpSampleEntityStub {
 
 export type NlpSampleEntityDocument = THydratedDocument<NlpSampleEntity>;
 
-export const NlpSampleEntityModel: ModelDefinition = {
-  name: NlpSampleEntity.name,
-  schema: SchemaFactory.createForClass(NlpSampleEntityStub),
-};
+export const NlpSampleEntityModel: ModelDefinition =
+  LifecycleHookManager.attach({
+    name: NlpSampleEntity.name,
+    schema: SchemaFactory.createForClass(NlpSampleEntityStub),
+  });
 
 export default NlpSampleEntityModel.schema;
 

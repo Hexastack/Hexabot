@@ -7,13 +7,13 @@
  */
 
 export enum Direction {
-  sent = 'sent',
-  received = 'received',
+  sent = "sent",
+  received = "received",
 }
 
 export enum QuickReplyType {
-  text = 'text',
-  location = 'location',
+  text = "text",
+  location = "location",
 }
 
 export interface IQuickReply {
@@ -31,11 +31,11 @@ export interface IPayload {
 }
 
 export enum FileType {
-  image = 'image',
-  video = 'video',
-  audio = 'audio',
-  file = 'file',
-  unknkown = 'unknown',
+  image = "image",
+  video = "video",
+  audio = "audio",
+  file = "file",
+  unknkown = "unknown",
 }
 
 export interface ISubscriber {
@@ -55,8 +55,8 @@ export interface ISubscriber {
 }
 
 export enum ButtonType {
-  postback = 'postback',
-  web_url = 'web_url',
+  postback = "postback",
+  web_url = "web_url",
 }
 
 export type TPostBackButton = {
@@ -70,7 +70,7 @@ export type TWebUrlButton = {
   title: string;
   url: string;
   messenger_extensions?: boolean;
-  webview_height_ratio?: 'compact' | 'tall' | 'full';
+  webview_height_ratio?: "compact" | "tall" | "full";
 };
 
 export type TButton = TPostBackButton | TWebUrlButton;
@@ -92,28 +92,28 @@ export type TRequestSession = {
 };
 
 export enum TStatusEventType {
-  delivery = 'delivery',
-  read = 'read',
-  typing = 'typing',
+  delivery = "delivery",
+  read = "read",
+  typing = "typing",
 }
 
 export enum TOutgoingMessageType {
-  text = 'text',
-  quick_reply = 'quick_reply',
-  postback = 'postback',
-  location = 'location',
-  file = 'file',
+  text = "text",
+  quick_reply = "quick_reply",
+  postback = "postback",
+  location = "location",
+  file = "file",
 }
 
 export type TEventType = TStatusEventType | TOutgoingMessageType;
 
 export enum IncomingMessageType {
-  text = 'text',
-  buttons = 'buttons',
-  quick_replies = 'quick_replies',
-  file = 'file',
-  list = 'list',
-  carousel = 'carousel',
+  text = "text",
+  buttons = "buttons",
+  quick_replies = "quick_replies",
+  file = "file",
+  list = "list",
+  carousel = "carousel",
 }
 
 export type TOutgoingTextMessageData = { text: string };
@@ -213,7 +213,7 @@ export interface IMessageElement {
   title: string;
   subtitle?: string;
   image_url?: string;
-  default_action?: Omit<TWebUrlButton, 'title'>;
+  default_action?: Omit<TWebUrlButton, "title">;
   buttons?: TButton[];
 }
 
@@ -238,7 +238,7 @@ export type TIncomingCarouselMessageData = {
 };
 
 export type TIncomingListMessageData = TIncomingCarouselMessageData & {
-  top_element_style?: 'large' | 'compact';
+  top_element_style?: "large" | "compact";
   buttons: TButton[];
 };
 

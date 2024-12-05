@@ -7,11 +7,11 @@
  */
 
 export enum StdEventType {
-  message = 'message',
-  delivery = 'delivery',
-  read = 'read',
-  typing = 'typing',
-  follow = 'follow',
-  echo = 'echo',
-  unknown = '',
+  message = "message",
+  delivery = "delivery",
+  read = "read",
+  typing = "typing",
+  follow = "follow",
+  echo = "echo",
+  unknown = "",
 }

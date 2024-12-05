@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useColors } from '../providers/ColorProvider';
-import { IMenuNode } from '../types/menu.type';
-import { IPayload } from '../types/message.types';
+import { useColors } from "../providers/ColorProvider";
+import { IMenuNode } from "../types/menu.type";
+import { IPayload } from "../types/message.types";
 
-import './MenuItem.scss';
+import "./MenuItem.scss";
 
 interface MenuItemProps {
   item: IMenuNode;
@@ -30,13 +30,13 @@ const MenuItem: React.FC<MenuItemProps> = ({
   const { colors } = useColors();
   const handleClick = () => {
     switch (item.type) {
-      case 'web_url':
-        window.open(item.url, '_blank');
+      case "web_url":
+        window.open(item.url, "_blank");
         break;
-      case 'nested':
+      case "nested":
         onOpenSubItems({ ...item, _parent: parent });
         break;
-      case 'postback':
+      case "postback":
         onPostback({ text: item.title, payload: item.payload });
         break;
     }
@@ -51,7 +51,7 @@ const MenuItem: React.FC<MenuItemProps> = ({
         onClick={handleClick}
       >
         {item.title}
-        {item.type === 'nested' && (
+        {item.type === "nested" && (
           <span className="sc-menu-item-button">&#10095;</span>
         )}
       </a>

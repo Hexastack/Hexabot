@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FileType } from '../types/message.types';
+import { FileType } from "../types/message.types";
 
 export function getFileType(mimeType: string): FileType {
-  if (mimeType.startsWith('image/')) {
+  if (mimeType.startsWith("image/")) {
     return FileType.image;
-  } else if (mimeType.startsWith('video/')) {
+  } else if (mimeType.startsWith("video/")) {
     return FileType.video;
-  } else if (mimeType.startsWith('audio/')) {
+  } else if (mimeType.startsWith("audio/")) {
     return FileType.audio;
   } else {
     return FileType.file;

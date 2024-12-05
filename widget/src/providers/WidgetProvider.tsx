@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
-import { ChatScreen } from '../types/state.types';
+import { ChatScreen } from "../types/state.types";
 
 export interface WidgetContextType {
   syncState: boolean;
@@ -32,7 +32,7 @@ const WidgetProvider: React.FC<{
   onOpen,
   onClose,
   onScrollToTop,
-  defaultScreen = 'prechat',
+  defaultScreen = "prechat",
   children,
 }) => {
   const [syncState, setSyncState] = useState<boolean>(true);
@@ -54,9 +54,9 @@ const WidgetProvider: React.FC<{
   };
   const handleSetScreen = (newScreen: ChatScreen) => {
     setScreen(
-      ['prechat', 'postchat', 'webview'].includes(newScreen)
+      ["prechat", "postchat", "webview"].includes(newScreen)
         ? newScreen
-        : 'chat',
+        : "chat",
     );
   };
   const handleSetScroll = (newScroll: number) => {
@@ -87,7 +87,7 @@ export const useWidget = () => {
   const context = useContext(WidgetContext);
 
   if (context === undefined) {
-    throw new Error('useWidget must be used within a WidgetProvider');
+    throw new Error("useWidget must be used within a WidgetProvider");
   }
 
   return context;

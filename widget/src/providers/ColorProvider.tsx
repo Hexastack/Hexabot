@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { createContext, ReactNode, useContext } from 'react';
+import React, { createContext, ReactNode, useContext } from "react";
 
-import colors from '../constants/colors';
-import { ColorState } from '../types/colors.types';
+import colors from "../constants/colors";
+import { ColorState } from "../types/colors.types";
 
-import { useSettings } from './SettingsProvider';
+import { useSettings } from "./SettingsProvider";
 
-const initialState: ColorState = colors['orange'];
+const initialState: ColorState = colors["orange"];
 const ColorContext = createContext<{
   colors: ColorState;
 }>({
@@ -36,7 +36,7 @@ export const useColors = () => {
   const context = useContext(ColorContext);
 
   if (!context) {
-    throw new Error('useColors must be used within a ColorProvider');
+    throw new Error("useColors must be used within a ColorProvider");
   }
 
   return context;

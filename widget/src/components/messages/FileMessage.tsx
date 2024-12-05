@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useTranslation } from '../../hooks/useTranslation';
-import { useColors } from '../../providers/ColorProvider';
-import { TMessage } from '../../types/message.types';
-import FileIcon from '../icons/FileIcon';
+import { useTranslation } from "../../hooks/useTranslation";
+import { useColors } from "../../providers/ColorProvider";
+import { TMessage } from "../../types/message.types";
+import FileIcon from "../icons/FileIcon";
 
-import './FileMessage.scss';
+import "./FileMessage.scss";
 
 interface FileMessageProps {
   message: TMessage;
@@ -22,20 +22,20 @@ interface FileMessageProps {
 const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   const { t } = useTranslation();
   const { colors: allColors } = useColors();
-  const colors = allColors[message.direction || 'received'];
+  const colors = allColors[message.direction || "received"];
 
-  if (!('type' in message.data)) {
-    throw new Error('Unable to detect type for file message');
+  if (!("type" in message.data)) {
+    throw new Error("Unable to detect type for file message");
   }
 
   if (
     message.data &&
-    message.data.type !== 'image' &&
-    message.data.type !== 'audio' &&
-    message.data.type !== 'video' &&
-    message.data.type !== 'file'
+    message.data.type !== "image" &&
+    message.data.type !== "audio" &&
+    message.data.type !== "video" &&
+    message.data.type !== "file"
   ) {
-    throw new Error('Uknown type for file message');
+    throw new Error("Uknown type for file message");
   }
 
   return (
@@ -46,28 +46,28 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
         backgroundColor: colors.bg,
       }}
     >
-      {message.data.type === 'image' && (
+      {message.data.type === "image" && (
         <div className="sc-message--file-icon">
-          <img src={message.data.url || ''} className="sc-image" alt="File" />
+          <img src={message.data.url || ""} className="sc-image" alt="File" />
         </div>
       )}
-      {message.data.type === 'audio' && (
+      {message.data.type === "audio" && (
         <div className="sc-message--file-audio">
           <audio controls>
             <source src={message.data.url} />
-            {t('messages.file_message.browser_audio_unsupport')}
+            {t("messages.file_message.browser_audio_unsupport")}
           </audio>
         </div>
       )}
-      {message.data.type === 'video' && (
+      {message.data.type === "video" && (
         <div className="sc-message--file-video">
           <video controls width="100%">
             <source src={message.data.url} />
-            {t('messages.file_message.browser_video_unsupport')}
+            {t("messages.file_message.browser_video_unsupport")}
           </video>
         </div>
       )}
-      {message.data.type === 'file' && (
+      {message.data.type === "file" && (
         <div
           className="sc-message--file-download"
           style={{
@@ -76,13 +76,13 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
           }}
         >
           <a
-            href={message.data.url ? message.data.url : '#'}
+            href={message.data.url ? message.data.url : "#"}
             target="_blank"
             rel="noopener noreferrer"
             download
           >
             <FileIcon />
-            {t('messages.file_message.download')}
+            {t("messages.file_message.download")}
           </a>
         </div>
       )}

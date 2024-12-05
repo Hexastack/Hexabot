@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -19,23 +19,24 @@
     <div id="hb-chat-widget"></div>
     <script>
       // Create the shadow root and attach it to the widget container
-      const createElement = (tag, props = {}) => Object.assign(document.createElement(tag), props);
+      const createElement = (tag, props = {}) =>
+        Object.assign(document.createElement(tag), props);
       const shadowContainer = createElement("div");
       document
-          .getElementById('hb-chat-widget')
-          .attachShadow({ mode: 'open' })
-          .append( 
-            shadowContainer,
-            createElement("link", {
-              rel: "stylesheet",
-              href: "./style.css"
-            })
-          );
+        .getElementById("hb-chat-widget")
+        .attachShadow({ mode: "open" })
+        .append(
+          shadowContainer,
+          createElement("link", {
+            rel: "stylesheet",
+            href: "./style.css",
+          }),
+        );
       ReactDOM.render(
         React.createElement(HexabotWidget, {
-          apiUrl: 'http://localhost:4000',
-          channel: 'web-channel',
-          token: 'token123',
+          apiUrl: "http://localhost:4000",
+          channel: "web-channel",
+          token: "token123",
         }),
         shadowContainer,
       );

@@ -6,7 +6,7 @@
   outline: none;
   position: relative;
   cursor: pointer;
-  opacity: .5;
+  opacity: 0.5;
 }
 .sc-user-input--file-icon-wrapper {
   background: none;
@@ -26,5 +26,5 @@
 }
 
 .sc-user-input--file-wrapper:hover {
-  opacity: 1
+  opacity: 1;
 }

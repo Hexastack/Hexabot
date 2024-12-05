@@ -6,19 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren } from "react";
 
-import Launcher from './components/Launcher';
-import UserSubscription from './components/UserSubscription';
-import ChatProvider from './providers/ChatProvider';
-import { ColorProvider } from './providers/ColorProvider';
-import { Config, ConfigProvider } from './providers/ConfigProvider';
-import { SettingsProvider } from './providers/SettingsProvider';
-import { SocketProvider } from './providers/SocketProvider';
-import { TranslationProvider } from './providers/TranslationProvider';
-import WidgetProvider, { WidgetContextType } from './providers/WidgetProvider';
-import './UiChatWidget.css';
-import { ConnectionState } from './types/state.types';
+import Launcher from "./components/Launcher";
+import UserSubscription from "./components/UserSubscription";
+import ChatProvider from "./providers/ChatProvider";
+import { ColorProvider } from "./providers/ColorProvider";
+import { Config, ConfigProvider } from "./providers/ConfigProvider";
+import { SettingsProvider } from "./providers/SettingsProvider";
+import { SocketProvider } from "./providers/SocketProvider";
+import { TranslationProvider } from "./providers/TranslationProvider";
+import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
+import "./UiChatWidget.css";
+import { ConnectionState } from "./types/state.types";
 
 type UiChatWidgetProps = PropsWithChildren<{
   CustomLauncher?: (props: { widget: WidgetContextType }) => JSX.Element;

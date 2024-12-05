@@ -12,22 +12,22 @@ import React, {
   useEffect,
   useRef,
   useState,
-} from 'react';
+} from "react";
 
-import { useTranslation } from '../hooks/useTranslation';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useConfig } from '../providers/ConfigProvider';
-import { useSettings } from '../providers/SettingsProvider';
-import { useSocket } from '../providers/SocketProvider';
-import { useWidget } from '../providers/WidgetProvider';
+import { useTranslation } from "../hooks/useTranslation";
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { useConfig } from "../providers/ConfigProvider";
+import { useSettings } from "../providers/SettingsProvider";
+import { useSocket } from "../providers/SocketProvider";
+import { useWidget } from "../providers/WidgetProvider";
 import {
   Direction,
   ISubscriber,
   TMessage,
   TOutgoingMessageType,
-} from '../types/message.types';
-import './UserSubscription.scss';
+} from "../types/message.types";
+import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
   const config = useConfig();
@@ -43,8 +43,8 @@ const UserSubscription: React.FC = () => {
     participants,
     setParticipants,
   } = useChat();
-  const [firstName, setFirstName] = useState<string>('');
-  const [lastName, setLastName] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
   const isInitialized = useRef(false);
   const handleSubmit = useCallback(
     async (event?: React.FormEvent<HTMLFormElement>) => {
@@ -59,7 +59,7 @@ const UserSubscription: React.FC = () => {
         );
         const { messages, profile } = body;
 
-        localStorage.setItem('profile', JSON.stringify(profile));
+        localStorage.setItem("profile", JSON.stringify(profile));
         messages.forEach((message) => {
           const direction =
             message.author === profile.foreign_id ||
@@ -86,23 +86,23 @@ const UserSubscription: React.FC = () => {
         if (messages.length === 0) {
           send({
             event: event as SyntheticEvent,
-            source: 'get_started_button',
+            source: "get_started_button",
             data: {
               type: TOutgoingMessageType.postback,
               data: {
-                text: t('messages.get_started'),
-                payload: 'GET_STARTED',
+                text: t("messages.get_started"),
+                payload: "GET_STARTED",
               },
               author: profile.foreign_id,
             },
           });
         }
         setConnectionState(3);
-        setScreen('chat');
+        setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('Unable to subscribe user', e);
-        setScreen('prechat');
+        console.error("Unable to subscribe user", e);
+        setScreen("prechat");
         setConnectionState(0);
       }
     },
@@ -123,7 +123,7 @@ const UserSubscription: React.FC = () => {
     // User already subscribed ? (example : refreshed the page)
     if (!isInitialized.current) {
       isInitialized.current = true;
-      const profile = localStorage.getItem('profile');
+      const profile = localStorage.getItem("profile");
 
       if (profile) {
         const parsedProfile = JSON.parse(profile);
@@ -146,14 +146,14 @@ const UserSubscription: React.FC = () => {
             className="user-subscription-form-input"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder={t('user_subscription.first_name')}
+            placeholder={t("user_subscription.first_name")}
             required
           />
           <input
             className="user-subscription-form-input"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            placeholder={t('user_subscription.last_name')}
+            placeholder={t("user_subscription.last_name")}
             required
           />
           <button
@@ -161,7 +161,7 @@ const UserSubscription: React.FC = () => {
             style={{ background: colors.header.bg, color: colors.header.text }}
             className="user-subscription-form-button-submit"
           >
-            {t('user_subscription.get_started')}
+            {t("user_subscription.get_started")}
           </button>
         </div>
       </form>

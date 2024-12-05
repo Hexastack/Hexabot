@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import Autolinker from 'autolinker';
-import React, { useEffect, useRef } from 'react';
+import Autolinker from "autolinker";
+import React, { useEffect, useRef } from "react";
 
-import { useColors } from '../../providers/ColorProvider';
-import { TMessage } from '../../types/message.types';
+import { useColors } from "../../providers/ColorProvider";
+import { TMessage } from "../../types/message.types";
 
-import './TextMessage.scss';
+import "./TextMessage.scss";
 
 interface TextMessageProps {
   message: TMessage;
@@ -28,21 +28,21 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
   }, [message]);
 
   const autoLink = () => {
-    if (message.direction === 'received' && messageTextRef.current) {
+    if (message.direction === "received" && messageTextRef.current) {
       const text = messageTextRef.current.innerText;
 
       messageTextRef.current.innerHTML = Autolinker.link(text, {
-        className: 'chatLink',
-        truncate: { length: 50, location: 'smart' },
+        className: "chatLink",
+        truncate: { length: 50, location: "smart" },
       });
     }
   };
 
-  if (!('text' in message.data)) {
-    throw new Error('Unable to find text.');
+  if (!("text" in message.data)) {
+    throw new Error("Unable to find text.");
   }
 
-  const colors = allColors[message.direction || 'received'];
+  const colors = allColors[message.direction || "received"];
 
   return (
     <div

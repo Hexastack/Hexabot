@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useTranslation } from '../hooks/useTranslation';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
+import { useTranslation } from "../hooks/useTranslation";
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
 
-import ConnectionIcon from './icons/ConnectionIcon';
-import LoadingIcon from './icons/LoadingIcon';
-import './ConnectionLost.scss';
+import ConnectionIcon from "./icons/ConnectionIcon";
+import LoadingIcon from "./icons/LoadingIcon";
+import "./ConnectionLost.scss";
 
 const ConnectionLost: React.FC = () => {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ const ConnectionLost: React.FC = () => {
             className="sc-chat--disconnected-text"
             style={{ color: colors.button.text }}
           >
-            {t('settings.connection_lost')}
+            {t("settings.connection_lost")}
           </h3>
           <button
             className="sc-chat--disconnected-button"

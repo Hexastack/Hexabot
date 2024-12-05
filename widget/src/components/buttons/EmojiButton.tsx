@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { RefObject, useRef, useState } from 'react';
+import React, { RefObject, useRef, useState } from "react";
 
-import EmojiPicker from '../EmojiPicker';
-import './EmojiButton.scss';
-import EmojiIcon from '../icons/EmojiIcon';
+import EmojiPicker from "../EmojiPicker";
+import "./EmojiButton.scss";
+import EmojiIcon from "../icons/EmojiIcon";
 
 const EmojiButton: React.FC<{
   inputRef: RefObject<HTMLDivElement>;
