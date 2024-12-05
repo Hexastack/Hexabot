@@ -1,6 +1,6 @@
 .sc-message {
   margin: auto;
-  padding: 0 0.5rem;
+  padding: 0 0.5rem 0 0;
   display: flex;
   margin-bottom: 0.25rem;
 
@@ -55,6 +55,7 @@
     .sc-message--wrapper {
       display: flex;
       flex-direction: column;
+      max-width: 290px;
       width: 100%;
 
       .sc-message--text {

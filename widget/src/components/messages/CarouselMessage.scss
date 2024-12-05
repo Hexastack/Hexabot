@@ -17,13 +17,9 @@
       justify-content: center;
 
       .sc-message--carousel-element {
-        padding: 1rem 2rem;
         width: 100%;
-        min-width: 307px;
-        min-height: 172px;
-
+        min-width: 290px;
         .sc-message--carousel-element-image {
-          background-position: center;
           background-repeat: no-repeat;
           background-size: cover;
           position: relative;
@@ -39,6 +35,8 @@
         }
         .sc-message--carousel-element-description {
           width: 100%;
+          padding: 0 2rem;
+          box-sizing: border-box;
         }
       }
     }
@@ -57,11 +55,13 @@
 
     &.prev {
       left: 0px;
+      top: 175px;
       width: 1.5rem;
       height: 2rem;
     }
 
     &.next {
+      top: 175px;
       right: 0px;
       width: 1.5rem;
       height: 2rem;
