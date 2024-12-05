@@ -6,25 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import dayjs from 'dayjs';
-import 'dayjs/locale/en';
-import 'dayjs/locale/fr';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import React, { PropsWithChildren, useState } from 'react';
+import dayjs from "dayjs";
+import "dayjs/locale/en";
+import "dayjs/locale/fr";
+import relativeTime from "dayjs/plugin/relativeTime";
+import React, { PropsWithChildren, useState } from "react";
 
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { TMessage } from '../types/message.types';
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { TMessage } from "../types/message.types";
 
-import ChatIcon from './icons/ChatIcon';
-import './Message.scss';
-import ButtonsMessage from './messages/ButtonMessage';
-import CarouselMessage from './messages/CarouselMessage';
-import FileMessage from './messages/FileMessage';
-import GeolocationMessage from './messages/GeolocationMessage';
-import ListMessage from './messages/ListMessage';
-import TextMessage from './messages/TextMessage';
-import MessageStatus from './MessageStatus';
+import ChatIcon from "./icons/ChatIcon";
+import "./Message.scss";
+import ButtonsMessage from "./messages/ButtonMessage";
+import CarouselMessage from "./messages/CarouselMessage";
+import FileMessage from "./messages/FileMessage";
+import GeolocationMessage from "./messages/GeolocationMessage";
+import ListMessage from "./messages/ListMessage";
+import TextMessage from "./messages/TextMessage";
+import MessageStatus from "./MessageStatus";
 
 dayjs.extend(relativeTime);
 
@@ -40,8 +40,8 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
   const user = participants.find(
     (participant) => participant.id === message.author,
   ) || {
-    id: 'me',
-    name: 'Anon',
+    id: "me",
+    name: "Anon",
   };
   const handleTime = () => {
     setIsTimeVisible(!isTimeVisible);
@@ -73,21 +73,21 @@ const Message: React.FC<MessageProps> = ({ message, Avatar }) => {
           ) : null}
         </div>
         <div className="sc-message--wrapper" onClick={handleTime}>
-          {message.data && 'text' in message.data && (
+          {message.data && "text" in message.data && (
             <TextMessage message={message} />
           )}
-          {message.type === 'file' && <FileMessage message={message} />}
-          {message.type === 'location' && (
+          {message.type === "file" && <FileMessage message={message} />}
+          {message.type === "location" && (
             <GeolocationMessage message={message} />
           )}
-          {message.type === 'list' && <ListMessage messageList={message} />}
-          {message.type === 'carousel' && (
+          {message.type === "list" && <ListMessage messageList={message} />}
+          {message.type === "carousel" && (
             <CarouselMessage messageCarousel={message} />
           )}
-          {message.type === 'buttons' && <ButtonsMessage message={message} />}
+          {message.type === "buttons" && <ButtonsMessage message={message} />}
 
           <div className="sc-message--meta">
-            {message.direction === 'sent' && (
+            {message.direction === "sent" && (
               <MessageStatus message={message} />
             )}
             <div

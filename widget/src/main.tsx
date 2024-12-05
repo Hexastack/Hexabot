@@ -6,20 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import ChatWidget from './ChatWidget.tsx';
+import ChatWidget from "./ChatWidget.tsx";
 
-import './index.css';
+import "./index.css";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ChatWidget
       {...{
-        apiUrl: process.env.REACT_APP_WIDGET_API_URL || 'http://localhost:4000',
-        channel: process.env.REACT_APP_WIDGET_CHANNEL || 'web-channel',
-        language: 'en',
+        apiUrl: process.env.REACT_APP_WIDGET_API_URL || "http://localhost:4000",
+        channel: process.env.REACT_APP_WIDGET_CHANNEL || "web-channel",
+        language: "en",
       }}
     />
   </React.StrictMode>,

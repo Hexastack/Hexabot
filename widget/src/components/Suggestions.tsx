@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useSettings } from '../providers/SettingsProvider';
-import { ISuggestion, TOutgoingMessageType } from '../types/message.types';
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { useSettings } from "../providers/SettingsProvider";
+import { ISuggestion, TOutgoingMessageType } from "../types/message.types";
 
-import './Suggestions.scss';
+import "./Suggestions.scss";
 
 const Suggestions: React.FC = () => {
   const { setPayload, send, suggestions } = useChat();
@@ -26,7 +26,7 @@ const Suggestions: React.FC = () => {
     setPayload(suggestion);
     send({
       event,
-      source: 'quick-reply',
+      source: "quick-reply",
       data: {
         type: TOutgoingMessageType.quick_reply,
         data: suggestion,

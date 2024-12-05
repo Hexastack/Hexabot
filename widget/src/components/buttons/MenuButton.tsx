@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-import { useChat } from '../../providers/ChatProvider';
-import { useColors } from '../../providers/ColorProvider';
-import { useSettings } from '../../providers/SettingsProvider';
-import { IMenuNode, MenuType } from '../../types/menu.type';
-import { IPayload, TOutgoingMessageType } from '../../types/message.types';
-import MenuIcon from '../icons/MenuIcon';
-import MenuItem from '../MenuItem';
+import { useChat } from "../../providers/ChatProvider";
+import { useColors } from "../../providers/ColorProvider";
+import { useSettings } from "../../providers/SettingsProvider";
+import { IMenuNode, MenuType } from "../../types/menu.type";
+import { IPayload, TOutgoingMessageType } from "../../types/message.types";
+import MenuIcon from "../icons/MenuIcon";
+import MenuItem from "../MenuItem";
 
-import './MenuButton.scss';
+import "./MenuButton.scss";
 
 const MenuButton: React.FC = () => {
   const { colors } = useColors();
@@ -24,7 +24,7 @@ const MenuButton: React.FC = () => {
   const { send, setPayload } = useChat();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [current, setCurrent] = useState<IMenuNode>({
-    title: 'Menu',
+    title: "Menu",
     type: MenuType.nested,
     call_to_actions: settings?.menu || [],
   });
@@ -32,7 +32,7 @@ const MenuButton: React.FC = () => {
 
   useEffect(() => {
     setCurrent({
-      title: 'Menu',
+      title: "Menu",
       type: MenuType.nested,
       call_to_actions: settings?.menu || [],
     });
@@ -49,7 +49,7 @@ const MenuButton: React.FC = () => {
   const blur = (e: React.FocusEvent<HTMLDivElement>) => {
     if (
       !e.relatedTarget ||
-      (e.relatedTarget as HTMLElement).id !== 'sc-menu-button'
+      (e.relatedTarget as HTMLElement).id !== "sc-menu-button"
     ) {
       setDisplayMenu(false);
     }
@@ -61,8 +61,8 @@ const MenuButton: React.FC = () => {
     setPayload(item);
     send({
       // @ts-expect-error todo
-      event: new Event('postback'),
-      source: 'persistent-menu',
+      event: new Event("postback"),
+      source: "persistent-menu",
       data: {
         type: TOutgoingMessageType.postback,
         data: {

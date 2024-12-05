@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useColors } from '../providers/ColorProvider';
-import { TMessage } from '../types/message.types';
+import { useColors } from "../providers/ColorProvider";
+import { TMessage } from "../types/message.types";
 
-import CheckIcon from './icons/CheckIcon';
-import './MessageStatus.scss';
+import CheckIcon from "./icons/CheckIcon";
+import "./MessageStatus.scss";
 
 interface MessageStatusProps {
   message: TMessage;
@@ -21,8 +21,8 @@ interface MessageStatusProps {
 const MessageStatus: React.FC<MessageStatusProps> = ({ message }) => {
   const { colors } = useColors();
 
-  if (!('delivery' in message && 'read' in message)) {
-    throw new Error('Unable to find delivery/read attributes');
+  if (!("delivery" in message && "read" in message)) {
+    throw new Error("Unable to find delivery/read attributes");
   }
 
   return (

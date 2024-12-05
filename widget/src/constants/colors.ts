@@ -6,217 +6,217 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ColorState } from '../types/colors.types';
+import { ColorState } from "../types/colors.types";
 
 const colors: Record<string, ColorState> = {
   orange: {
     header: {
-      bg: '#FF851B',
-      text: '#fff',
+      bg: "#FF851B",
+      text: "#fff",
     },
     launcher: {
-      bg: '#FF851B',
+      bg: "#FF851B",
     },
     messageList: {
-      bg: '#fff',
+      bg: "#fff",
     },
     sent: {
-      bg: '#FF851B',
-      text: '#fff',
+      bg: "#FF851B",
+      text: "#fff",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#ffffff',
-      text: '#FF851B',
-      border: '#FF851B',
+      bg: "#ffffff",
+      text: "#FF851B",
+      border: "#FF851B",
     },
     messageStatus: {
-      bg: '#FF851B',
+      bg: "#FF851B",
     },
     messageTime: {
-      text: '#9C9C9C',
+      text: "#9C9C9C",
     },
   },
   red: {
     header: {
-      bg: '#FF4136',
-      text: '#fff',
+      bg: "#FF4136",
+      text: "#fff",
     },
     launcher: {
-      bg: '#FF4136',
+      bg: "#FF4136",
     },
     messageList: {
-      bg: '#fff',
+      bg: "#fff",
     },
     sent: {
-      bg: '#FF4136',
-      text: '#fff',
+      bg: "#FF4136",
+      text: "#fff",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#ffffff',
-      text: '#FF4136',
-      border: '#FF4136',
+      bg: "#ffffff",
+      text: "#FF4136",
+      border: "#FF4136",
     },
     messageStatus: {
-      bg: '#FF4136',
+      bg: "#FF4136",
     },
     messageTime: {
-      text: '#FF4136',
+      text: "#FF4136",
     },
   },
   green: {
     header: {
-      bg: '#2ECC40',
-      text: '#fff',
+      bg: "#2ECC40",
+      text: "#fff",
     },
     launcher: {
-      bg: '#2ECC40',
+      bg: "#2ECC40",
     },
     messageList: {
-      bg: '#fff',
+      bg: "#fff",
     },
     sent: {
-      bg: '#2ECC40',
-      text: '#fff',
+      bg: "#2ECC40",
+      text: "#fff",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#ffffff',
-      text: '#2ECC40',
-      border: '#2ECC40',
+      bg: "#ffffff",
+      text: "#2ECC40",
+      border: "#2ECC40",
     },
     messageStatus: {
-      bg: '#2ECC40',
+      bg: "#2ECC40",
     },
     messageTime: {
-      text: '#2ECC40',
+      text: "#2ECC40",
     },
   },
   blue: {
     header: {
-      bg: '#0074D9',
-      text: '#fff',
+      bg: "#0074D9",
+      text: "#fff",
     },
     launcher: {
-      bg: '#0074D9',
+      bg: "#0074D9",
     },
     messageList: {
-      bg: '#fff',
+      bg: "#fff",
     },
     sent: {
-      bg: '#0074D9',
-      text: '#fff',
+      bg: "#0074D9",
+      text: "#fff",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#ffffff',
-      text: '#0074D9',
-      border: '#0074D9',
+      bg: "#ffffff",
+      text: "#0074D9",
+      border: "#0074D9",
     },
     messageStatus: {
-      bg: '#0074D9',
+      bg: "#0074D9",
     },
     messageTime: {
-      text: '#0074D9',
+      text: "#0074D9",
     },
   },
   teal: {
     header: {
-      bg: '#1BA089',
-      text: '#fff',
+      bg: "#1BA089",
+      text: "#fff",
     },
     launcher: {
-      bg: '#1BA089',
+      bg: "#1BA089",
     },
     messageList: {
-      bg: '#fff',
+      bg: "#fff",
     },
     sent: {
-      bg: '#1BA089',
-      text: '#fff',
+      bg: "#1BA089",
+      text: "#fff",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#ffffff',
-      text: '#1BA089',
-      border: '#1BA089',
+      bg: "#ffffff",
+      text: "#1BA089",
+      border: "#1BA089",
     },
     messageStatus: {
-      bg: '#1BA089',
+      bg: "#1BA089",
     },
     messageTime: {
-      text: '#9C9C9C',
+      text: "#9C9C9C",
     },
   },
   dark: {
     header: {
-      bg: '#000',
-      text: '#ecf0f1',
+      bg: "#000",
+      text: "#ecf0f1",
     },
     launcher: {
-      bg: '#000',
+      bg: "#000",
     },
     messageList: {
-      bg: '#FFF',
+      bg: "#FFF",
     },
     sent: {
-      bg: '#000',
-      text: '#FFF',
+      bg: "#000",
+      text: "#FFF",
     },
     received: {
-      bg: '#f6f8f9',
-      text: '#000',
+      bg: "#f6f8f9",
+      text: "#000",
     },
     userInput: {
-      bg: '#fff',
-      text: '#000',
+      bg: "#fff",
+      text: "#000",
     },
     button: {
-      bg: '#000',
-      text: '#ecf0f1',
-      border: '#34495e',
+      bg: "#000",
+      text: "#ecf0f1",
+      border: "#34495e",
     },
     messageStatus: {
-      bg: '#95a5a6',
+      bg: "#95a5a6",
     },
     messageTime: {
-      text: '#ffffff',
+      text: "#ffffff",
     },
   },
 };

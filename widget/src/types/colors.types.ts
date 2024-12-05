@@ -20,11 +20,11 @@ export type ColorState = {
 
 export type ColorAction = {
   type:
-    | 'setPrimary'
-    | 'setSecondary'
-    | 'setText'
-    | 'setTextSecondary'
-    | 'updateComponent';
+    | "setPrimary"
+    | "setSecondary"
+    | "setText"
+    | "setTextSecondary"
+    | "updateComponent";
   payload: {
     component: keyof ColorState;
     value: { bg: string; text?: string; border?: string };

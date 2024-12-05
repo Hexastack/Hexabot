@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, SVGProps } from 'react';
+import { FC, SVGProps } from "react";
 
 const OpenIcon: FC<SVGProps<SVGSVGElement>> = ({
-  width = '18',
-  height = '18',
+  width = "18",
+  height = "18",
   ...rest
 }) => {
   return (
@@ -32,7 +32,7 @@ const OpenIcon: FC<SVGProps<SVGSVGElement>> = ({
           strokeWidth={4.4649702399999995}
           paintOrder="normal"
           style={{
-            mixBlendMode: 'normal',
+            mixBlendMode: "normal",
           }}
           transform="translate(-58.835 -133.808) translate(53.705 -18.313) scale(1.10427)"
         />

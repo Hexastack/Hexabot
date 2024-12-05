@@ -9,23 +9,23 @@
 import { type IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  List,
-  Theme,
-  styled,
-  Divider,
   Collapse,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemIcon,
   ListItemText,
   ListSubheader,
-  ListItemButton,
-  SvgIconTypeMap,
-  ListItemIcon,
   Tooltip as MuiTooltip,
+  SvgIconTypeMap,
+  Theme,
   TooltipProps,
+  styled,
 } from "@mui/material";
 // @icon
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";

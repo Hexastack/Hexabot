@@ -35,7 +35,7 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
       if (scrollListRef.current) {
         const scrollPercent = Math.round(
           (100 * scrollListRef.current.scrollTop) /
-            (scrollListRef.current.scrollHeight || 1)
+            (scrollListRef.current.scrollHeight || 1),
         );
 
         if (Math.abs(scrollPercent - scroll) > 1 || scroll === 100) {
@@ -43,7 +43,7 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
             if (scrollListRef.current) {
               scrollListRef.current.scrollTo({
                 top: Math.round(
-                  (scroll * scrollListRef.current.scrollHeight) / 100
+                  (scroll * scrollListRef.current.scrollHeight) / 100,
                 ),
                 behavior: "instant",
                 left: 0,

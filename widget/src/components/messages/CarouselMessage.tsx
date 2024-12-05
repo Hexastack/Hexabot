@@ -74,7 +74,7 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
     setActiveIndex(
-      (prevIndex) => (prevIndex + items.length - 1) % items.length
+      (prevIndex) => (prevIndex + items.length - 1) % items.length,
     );
   };
   const goToNext = () => {

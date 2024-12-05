@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useChat } from '../../providers/ChatProvider';
-import { useSettings } from '../../providers/SettingsProvider';
-import { TOutgoingMessageType } from '../../types/message.types';
-import LocationIcon from '../icons/LocationIcon';
+import { useChat } from "../../providers/ChatProvider";
+import { useSettings } from "../../providers/SettingsProvider";
+import { TOutgoingMessageType } from "../../types/message.types";
+import LocationIcon from "../icons/LocationIcon";
 
-import './LocationButton.scss';
+import "./LocationButton.scss";
 
 const LocationButton: React.FC = () => {
   const { setPayload, send } = useChat();
@@ -30,7 +30,7 @@ const LocationButton: React.FC = () => {
           });
           send({
             event,
-            source: 'geo-location',
+            source: "geo-location",
             data: {
               type: TOutgoingMessageType.location,
               data: {
@@ -47,12 +47,12 @@ const LocationButton: React.FC = () => {
         },
         (error) => {
           // eslint-disable-next-line no-console
-          console.error('Error getting location', error);
+          console.error("Error getting location", error);
         },
       );
     } else {
       // eslint-disable-next-line no-console
-      console.error('Geolocation is not supported by this browser.');
+      console.error("Geolocation is not supported by this browser.");
     }
   };
 

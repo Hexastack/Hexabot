@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React from 'react';
+import React from "react";
 
-import { useColors } from '../../providers/ColorProvider';
-import { TMessage } from '../../types/message.types';
+import { useColors } from "../../providers/ColorProvider";
+import { TMessage } from "../../types/message.types";
 
-import ButtonsMessage from './ButtonMessage';
+import ButtonsMessage from "./ButtonMessage";
 
-import './ListMessage.scss';
+import "./ListMessage.scss";
 
 interface ListMessageProps {
   messageList: TMessage;
@@ -29,17 +29,17 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
     return result;
   };
   const truncate = (string: string, length: number = 100) => {
-    return string.length > length ? string.substr(0, length) + '...' : string;
+    return string.length > length ? string.substr(0, length) + "..." : string;
   };
   const linebreak = (string: string) => {
-    return string.replace(/\n/g, '<br />');
+    return string.replace(/\n/g, "<br />");
   };
 
-  if (!('elements' in messageList.data)) {
-    throw new Error('Unable to find elements');
+  if (!("elements" in messageList.data)) {
+    throw new Error("Unable to find elements");
   }
 
-  const colors = allColors[messageList.direction || 'received'];
+  const colors = allColors[messageList.direction || "received"];
 
   return (
     <div
@@ -52,10 +52,10 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
       {messageList.data.elements.map((message, idx) => {
         const mode =
           idx === 0 &&
-          'top_element_style' in messageList.data &&
-          messageList.data.top_element_style === 'large'
-            ? 'large'
-            : 'compact';
+          "top_element_style" in messageList.data &&
+          messageList.data.top_element_style === "large"
+            ? "large"
+            : "compact";
 
         return (
           <div
@@ -69,7 +69,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
                   className="sc-message--list-element-image"
                   style={{ backgroundImage: `url('${message.image_url}')` }}
                 >
-                  {mode === 'large' && (
+                  {mode === "large" && (
                     <div className="sc-message--list-element-description">
                       <h3 className="sc-message--title">{message.title}</h3>
                       {message.subtitle && (
@@ -83,7 +83,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
                   )}
                 </div>
               )}
-              {mode === 'compact' && (
+              {mode === "compact" && (
                 <div className="sc-message--list-element-description">
                   <h3 className="sc-message--title">{message.title}</h3>
                   {message.subtitle && (
@@ -104,7 +104,7 @@ const ListMessage: React.FC<ListMessageProps> = ({ messageList }) => {
           </div>
         );
       })}
-      {'buttons' in messageList.data &&
+      {"buttons" in messageList.data &&
         Array.isArray(messageList.data.buttons) &&
         messageList.data.buttons.length > 0 && (
           <div className="sc-message--list-element-bottom">

@@ -5,9 +5,11 @@
   bottom: 0;
   display: flex;
   background-color: #f4f7f9;
-  border-bottom-left-radius: .5rem;
-  border-bottom-right-radius: .5rem;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
   border-top: 1px solid #eef2f4;
 }
 
@@ -16,7 +18,7 @@
   resize: none;
   border: none;
   outline: none;
-  border-bottom-left-radius: .5rem;
+  border-bottom-left-radius: 0.5rem;
   box-sizing: border-box;
   padding: 18px 8px;
   font-size: 15px;
@@ -42,18 +44,18 @@
   cursor: text;
 }
 
-.sc-user-input--text[contenteditable='true']:focus:empty:before {
+.sc-user-input--text[contenteditable="true"]:focus:empty:before {
   position: absolute;
 }
 
-.sc-user-input--text[contenteditable='true']:focus:empty:after {
-  content: '\00a0';
+.sc-user-input--text[contenteditable="true"]:focus:empty:after {
+  content: "\00a0";
 }
 
 .sc-user-input--buttons {
   display: flex;
   gap: 4px;
-  margin: 0 .5rem;
+  margin: 0 0.5rem;
 }
 
 .sc-user-input--button {

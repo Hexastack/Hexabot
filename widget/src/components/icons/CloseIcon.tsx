@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, SVGProps } from 'react';
+import { FC, SVGProps } from "react";
 
 const CloseIcon: FC<SVGProps<SVGSVGElement>> = ({
-  viewBox = '0 0 24 24',
+  viewBox = "0 0 24 24",
   ...rest
 }) => {
   return (
