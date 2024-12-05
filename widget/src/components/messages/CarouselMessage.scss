@@ -1,7 +1,7 @@
 .sc-message--carousel {
   border-radius: 0.5rem;
   position: relative;
-  width: 100%;
+  width: 275px;
   overflow: hidden;
 
   .sc-message--carousel-inner {
@@ -18,7 +18,6 @@
 
       .sc-message--carousel-element {
         width: 100%;
-        min-width: 290px;
         .sc-message--carousel-element-image {
           background-repeat: no-repeat;
           background-size: cover;

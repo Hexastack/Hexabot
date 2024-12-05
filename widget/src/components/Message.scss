@@ -38,14 +38,14 @@
     display: flex;
     flex-direction: row;
     position: relative;
-    max-width: calc(100% - 2rem);
+    max-width: calc(100% - 40px); // same as avatar spacing
     width: auto;
 
     .sc-message--avatar {
       width: 32px;
       height: 32px;
       margin-right: 4px;
-      margin-top: 2px;
+      margin: 2px 4px;
       background-position: 0 0;
       flex-shrink: 0;
       background-size: cover;
@@ -55,8 +55,6 @@
     .sc-message--wrapper {
       display: flex;
       flex-direction: column;
-      max-width: 290px;
-      width: 100%;
 
       .sc-message--text {
         padding: 10px 20px;
