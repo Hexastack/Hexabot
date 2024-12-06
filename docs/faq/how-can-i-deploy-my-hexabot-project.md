@@ -4,28 +4,33 @@
 
 This documentation explains how to deploy your Hexabot project using two different methods:
 
-1. [**Using Nginx as a service and Certbot for SSL.**](how-can-i-deploy-my-hexabot-project.md#using-nginx-as-a-service-and-certbot-for-ssl)
-2. [**Using Dockerized Nginx and Certbot services.**](how-can-i-deploy-my-hexabot-project.md#using-dockerized-nginx-and-certbot-services)
+1. [**Method 1: Using Nginx as a service and Certbot for SSL**](how-can-i-deploy-my-hexabot-project.md#using-nginx-as-a-service-and-certbot-for-ssl)
+2. [**Method 2: Using Dockerized Nginx and Certbot services**](how-can-i-deploy-my-hexabot-project.md#using-dockerized-nginx-and-certbot-services)
 
 ### Pre-requisites
 
-Make sure you have access to a server running a Linux distribution with SSH enabled. The following documentation is based on an Ubuntu distribution, so you may need to adapt the steps according to your specific operating system.
+Before starting, ensure you have the following:
 
-***
+#### **Step 1: Server Requirements**
 
-### **Using Nginx as a service and Certbot for SSL**
+* A server running a Linux distribution with SSH enabled.
+* These instructions are based on Ubuntu, so adapt as needed for other distributions.
 
-#### Step 1: Install Docker
+#### Step 2: Install Required Software
+
+* #### Install Docker
 
 {% content-ref url="../developer-guide/setting-up-docker-for-development-and-production.md" %}
 [setting-up-docker-for-development-and-production.md](../developer-guide/setting-up-docker-for-development-and-production.md)
 {% endcontent-ref %}
 
-#### Step 2: Install NPM
+* #### Install NPM
 
 {% content-ref url="../developer-guide/setup-node.js-with-nvm.md" %}
 [setup-node.js-with-nvm.md](../developer-guide/setup-node.js-with-nvm.md)
 {% endcontent-ref %}
+
+***
 
 #### Step 3: Setup Hexabot project
 
@@ -61,7 +66,7 @@ This command will copy the `.env.example` file to `.env` in the `./docker` direc
 
 4. Update your `.env` file for production, especially the following ones:
 
-<table><thead><tr><th>Variable Name</th><th>Example Value</th><th>Env variable description</th><th data-hidden></th></tr></thead><tbody><tr><td>NODE_ENV</td><td>prod</td><td>Environment Mode</td><td></td></tr><tr><td>APP_DOMAIN</td><td>mychatbot.ai</td><td>Application Domain Name</td><td></td></tr><tr><td>API_ORIGIN</td><td>https://mychatbot.ai/api</td><td>The api endpoint will be used to communicate with the backend</td><td></td></tr><tr><td>FRONTEND_ORIGIN</td><td>https://mychatbot.ai</td><td>The origins that will be accepted by the API</td><td></td></tr><tr><td>JWT_SECRET</td><td>346998ba1f171f107433</td><td>Secret to encrypt jwt token</td><td></td></tr><tr><td>SESSION_SECRET</td><td>27feaf70d2c78892bf49</td><td>Secret to encrypt session token</td><td></td></tr><tr><td>HTTPS_ENABLED</td><td>true</td><td>Https setting</td><td></td></tr><tr><td>INVITATION_JWT_SECRET</td><td>51c8ea00d82eb10ee226</td><td>Secret to encrypt invitation token</td><td></td></tr><tr><td>PASSWORD_RESET_JWT_SECRET</td><td>5ee97916017176d1ca6c</td><td>Secret to encrypt reset password token</td><td></td></tr><tr><td>CONFIRM_ACCOUNT_SECRET</td><td>80f74dce70e5385bf80b</td><td>Secret to encrypt confirm account token</td><td></td></tr><tr><td>MONGO_USER</td><td>my_mongo_username</td><td>Mongodb username</td><td></td></tr><tr><td>MONGO_PASSWORD</td><td>my_mongo_password</td><td>Mongodb password</td><td></td></tr><tr><td>AUTH_TOKEN</td><td>c97643c1c1e5e9dc5745</td><td>Secret to encrypt NLU token</td><td></td></tr><tr><td>NEXT_PUBLIC_API_ORIGIN</td><td>https://mychatbot.ai/api</td><td>Nextjs api endpoint</td><td></td></tr></tbody></table>
+<table><thead><tr><th width="310">Variable Name</th><th>Example Value</th><th>Env variable description</th><th data-hidden></th></tr></thead><tbody><tr><td>NODE_ENV</td><td>prod</td><td>Environment Mode</td><td></td></tr><tr><td>APP_DOMAIN</td><td>mychatbot.ai</td><td>Application Domain Name</td><td></td></tr><tr><td>API_ORIGIN</td><td>https://mychatbot.ai/api</td><td>The api endpoint will be used to communicate with the backend</td><td></td></tr><tr><td>FRONTEND_ORIGIN</td><td>https://mychatbot.ai</td><td>The origins that will be accepted by the API</td><td></td></tr><tr><td>JWT_SECRET</td><td>346998ba1f171f107433</td><td>Secret to encrypt jwt token</td><td></td></tr><tr><td>SESSION_SECRET</td><td>27feaf70d2c78892bf49</td><td>Secret to encrypt session token</td><td></td></tr><tr><td>HTTPS_ENABLED</td><td>true</td><td>Https setting</td><td></td></tr><tr><td>INVITATION_JWT_SECRET</td><td>51c8ea00d82eb10ee226</td><td>Secret to encrypt invitation token</td><td></td></tr><tr><td>PASSWORD_RESET_JWT_SECRET</td><td>5ee97916017176d1ca6c</td><td>Secret to encrypt reset password token</td><td></td></tr><tr><td>CONFIRM_ACCOUNT_SECRET</td><td>80f74dce70e5385bf80b</td><td>Secret to encrypt confirm account token</td><td></td></tr><tr><td>MONGO_USER</td><td>my_mongo_username</td><td>Mongodb username</td><td></td></tr><tr><td>MONGO_PASSWORD</td><td>my_mongo_password</td><td>Mongodb password</td><td></td></tr><tr><td>AUTH_TOKEN</td><td>c97643c1c1e5e9dc5745</td><td>Secret to encrypt NLU token</td><td></td></tr><tr><td>NEXT_PUBLIC_API_ORIGIN</td><td>https://mychatbot.ai/api</td><td>Nextjs api endpoint</td><td></td></tr></tbody></table>
 
 Note that you can also adjust the default token expirations durations as needed.
 
@@ -69,7 +74,9 @@ Note that you can also adjust the default token expirations durations as needed.
 To be able to send email you will need to configure SMTP. Learn how to configure SMTP environment variables by following our detailed [SMTP setup guide](../developer-guide/smtp-configuration-and-emails.md)[.](../developer-guide/smtp-configuration-and-emails.md)
 {% endhint %}
 
-5. Run your Hexabot project in production mode:
+### **Method 1 : Using Nginx as a service and Certbot for SSL**
+
+#### Step 1: Run your Hexabot project in production mode:
 
 ```bash
 hexabot start
@@ -79,7 +86,7 @@ hexabot start --services nlu,ollama,influxdb
 
 Note that this command will start all the services (api, frontend, mongodb, ...) as Docker containers.
 
-#### Step 4: Install Nginx
+#### Step 2: Install Nginx
 
 Deploying an Hexabot project on production requires you to setup a HTTP Web Server like Apache2, HAProxy or Nginx to secure communications using SSL, establish access per domain name, and a lot of other capabilities such as rate limiting for example to help protect against abuse and prevent server overload. In this guide, we will walk you through a typical HTTP Web Server setup using Nginx and Certbot for SSL certificate generation.
 
@@ -115,7 +122,7 @@ sudo systemctl status nginx
 
 ***
 
-#### Step 5: Configure Nginx
+#### Step 3: Configure Nginx
 
 1. Replace Nginx server configuration with the following : **/etc/nginx/sites-available/default**.
 
@@ -168,7 +175,7 @@ server {
 }
 ```
 
-#### Step6: Generate SSL certificate using Certbot
+#### Step 4: Generate SSL certificate using Certbot
 
 1. Install Certbot:
 
@@ -194,7 +201,7 @@ sudo crontab -e
 0 12 * * * certbot renew --quiet
 ```
 
-**Step 7: Reload Nginx with new configuration**
+**Step 5: Reload Nginx with new configuration**
 
 1. Test configuration syntax:
 
@@ -214,6 +221,70 @@ sudo systemctl reload nginx
 
 Access your domain using HTTPS (eg. https://mychatbot.ai) to check if you have successfully deployed your Hexabot project using Nginx!  🚀🎉. Feel free to ask for support from the community on our Discord channel.
 
-## **Using Dockerized Nginx and Certbot services** :
+## **Method 2: Using Dockerized Nginx and Certbot services** :
 
-The second deployment method, where everything is Dockerized, is still WIP.
+This guide will help you set up Nginx with SSL using Docker and Certbot for your Hexabot project.
+
+#### Step 1: Copy Required Files for Dockerized Nginx and Certbot
+
+To use the Dockerized version of Nginx and Certbot:
+
+1. Download the following files from the Hexabot GitHub repository:
+   * docker/nginx
+   * docker/docker-compose.nginx.yml
+   * docker/docker-compose.nginx.prod.yml
+   * docker/init-letsencrypt.sh
+2. Copy these files under the `my-chatbot/docker` directory of your project.
+
+#### Step 2: Initialize SSL with Certbot
+
+1. Navigate to the `my-chatbot/docker` directory:
+
+```sh
+cd my-chatbot/docker
+```
+
+2. **Optional**: If you'd like to test your setup without hitting request limits for SSL certificates, set the staging variable to 1 in the `init-letsencrypt.sh` script before running it:
+
+```sh
+staging=1
+```
+
+After confirming the setup, set the `staging` variable back to `0` to request live certificates.
+
+3. Run the `init-letsencrypt.sh` script:
+
+Make sure to set the `APP_DOMAIN` variable to your application domain name in the`.env` file. It's recommended also to use a valid email address so make sure to set the `SSL_EMAIL` variable as well.
+
+```sh
+APP_DOMAIN=mychatbot.ai
+SSL_EMAIL=hello@hexabot.ai
+```
+
+You can test the DNS configuration by running one of these commands:
+
+```sh
+nslookup mychatbot.ai
+```
+
+Or
+
+```sh
+dig mychatbot.ai
+```
+
+Make the `init-letsencrypt.sh` script executable by granting it execute permissions.
+
+```sh
+chmod +x init-letsencrypt.sh
+```
+
+Now you will be able to run the script
+
+```sh
+./init-letsencrypt.sh
+```
+
+#### Step 3: Verify Deployment
+
+Once the script completes, run `docker ps` verify that your Nginx and Certbot docker containers are up and running. Access your Hexabot instance via the domain you specified (e.g., `https://mychatbot.ai`) to check if SSL certificates have been generated and are properly installed.
