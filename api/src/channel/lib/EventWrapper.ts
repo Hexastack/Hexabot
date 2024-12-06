@@ -19,6 +19,8 @@ import {
 import { Payload } from '@/chat/schemas/types/quick-reply';
 import { Nlp } from '@/helper/types';
 
+import { ExtendedSubscriber } from '../types';
+
 import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
@@ -27,12 +29,13 @@ export default abstract class EventWrapper<
   A,
   E,
   C extends ChannelHandler = ChannelHandler,
+  D = Record<string, never>,
 > {
-  _adapter: A = {} as A;
+  _adapter: A = { raw: {} } as A;
 
   _handler: C;
 
-  _profile!: Subscriber;
+  _profile!: ExtendedSubscriber<C, D>;
 
   _nlp!: Nlp.ParseEntities;
 
@@ -46,7 +49,11 @@ export default abstract class EventWrapper<
    * @param  event - The message event received
    * @param  channelData - Channel's specific data
    */
-  constructor(handler: C, event: E, channelData: any = {}) {
+  constructor(
+    handler: C,
+    event: E,
+    channelData: D | Record<string, never> = {},
+  ) {
     this._handler = handler;
     this._init(event);
     this.set('channelData', channelData);
@@ -114,7 +121,7 @@ export default abstract class EventWrapper<
    * @param attr - Event attribute name
    * @param value - The value to set for the specified attribute.
    */
-  set(attr: string, value: any) {
+  set<T>(attr: string, value: T) {
     (this._adapter as any).raw[attr] = value;
   }
 
@@ -171,7 +178,7 @@ export default abstract class EventWrapper<
    *
    * @param profile - Sender data
    */
-  setSender(profile: Subscriber) {
+  setSender(profile: ExtendedSubscriber<C, D>) {
     this._profile = profile;
   }
 
