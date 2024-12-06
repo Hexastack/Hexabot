@@ -18,6 +18,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { EntityType } from "@/services/types";
+import { normalizeDate } from "@/utils/date";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
@@ -69,7 +70,7 @@ export const SubscribersList = (props: {
                   {conversation.first_name} {conversation.last_name}
                 </div>
                 <div className="cs-conversation__info">
-                  {conversation.lastvisit?.toLocaleString(i18n.language)}
+                  {normalizeDate(i18n.language, conversation.lastvisit)}
                 </div>
               </Conversation.Content>
               <Conversation.Operations visible>
