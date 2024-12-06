@@ -22,6 +22,7 @@ import {
   SortOrder,
   UpdateQuery,
   UpdateWithAggregationPipeline,
+  UpdateWriteOpResult,
 } from 'mongoose';
 
 import { TFilterQuery } from '@/utils/types/filter.types';
@@ -70,7 +71,7 @@ export abstract class BaseRepository<
     this.registerLifeCycleHooks();
   }
 
-  getPopulate() {
+  getPopulate(): P[] {
     return this.populate;
   }
 
@@ -79,7 +80,7 @@ export abstract class BaseRepository<
     return `hook:${entity}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
-  private registerLifeCycleHooks() {
+  private registerLifeCycleHooks(): void {
     const repository = this;
     const hooks = LifecycleHookManager.getHooks(this.cls.name);
 
@@ -202,7 +203,7 @@ export abstract class BaseRepository<
   protected async execute<R extends Omit<T, P>>(
     query: Query<T[], T>,
     cls: new () => R,
-  ) {
+  ): Promise<R[]> {
     const resultSet = await query.lean(this.leanOpts).exec();
     return resultSet.map((doc) => plainToClass(cls, doc, this.transformOpts));
   }
@@ -211,7 +212,7 @@ export abstract class BaseRepository<
     query: Query<T, T>,
     cls: new () => R,
     options?: ClassTransformOptions,
-  ) {
+  ): Promise<R> {
     const doc = await query.lean(this.leanOpts).exec();
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
@@ -219,7 +220,7 @@ export abstract class BaseRepository<
   protected findOneQuery(
     criteria: string | TFilterQuery<T>,
     projection?: ProjectionType<T>,
-  ) {
+  ): Query<T, T, object, T, 'findOne', object> {
     if (!criteria) {
       // An empty criteria would return the first document that it finds
       throw new Error('findOneQuery() should not have an empty criteria');
@@ -247,7 +248,7 @@ export abstract class BaseRepository<
   async findOneAndPopulate(
     criteria: string | TFilterQuery<T>,
     projection?: ProjectionType<T>,
-  ) {
+  ): Promise<TFull> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
       this.populate,
@@ -262,19 +263,19 @@ export abstract class BaseRepository<
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
     projection?: ProjectionType<T>,
-  );
+  ): Query<T[], T, object, T, 'find', object>;
 
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
-  );
+  ): Query<T[], T, object, T, 'find', object>;
 
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
-  ) {
+  ): Query<T[], T, object, T, 'find', object> {
     if (Array.isArray(pageQuery)) {
       const query = this.model.find<T>(filter, projection);
       return query.sort([pageQuery] as [string, SortOrder][]);
@@ -321,7 +322,7 @@ export abstract class BaseRepository<
     return await this.execute(query, this.cls);
   }
 
-  private ensureCanPopulate() {
+  private ensureCanPopulate(): void {
     if (!this.populate || !this.clsPopulate) {
       throw new Error('Cannot populate query');
     }
@@ -361,15 +362,17 @@ export abstract class BaseRepository<
     }
   }
 
-  protected findAllQuery(sort?: QuerySortDto<T>) {
+  protected findAllQuery(
+    sort?: QuerySortDto<T>,
+  ): Query<T[], T, object, T, 'find', object> {
     return this.findQuery({}, { limit: 0, skip: 0, sort });
   }
 
-  async findAll(sort?: QuerySortDto<T>) {
+  async findAll(sort?: QuerySortDto<T>): Promise<T[]> {
     return await this.find({}, { limit: 0, skip: 0, sort });
   }
 
-  async findAllAndPopulate(sort?: QuerySortDto<T>) {
+  async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
     this.ensureCanPopulate();
     const query = this.findAllQuery(sort).populate(this.populate);
     return await this.execute(query, this.clsPopulate);
@@ -381,7 +384,7 @@ export abstract class BaseRepository<
   protected findPageQuery(
     filters: TFilterQuery<T>,
     { skip, limit, sort }: PageQueryDto<T>,
-  ) {
+  ): Query<T[], T, object, T, 'find', object> {
     return this.findQuery(filters)
       .skip(skip)
       .limit(limit)
@@ -405,7 +408,7 @@ export abstract class BaseRepository<
   async findPageAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery: PageQueryDto<T>,
-  ) {
+  ): Promise<TFull[]> {
     this.ensureCanPopulate();
     const query = this.findPageQuery(filters, pageQuery).populate(
       this.populate,
@@ -431,7 +434,7 @@ export abstract class BaseRepository<
     );
   }
 
-  async createMany(dtoArray: U[]) {
+  async createMany(dtoArray: U[]): Promise<T[]> {
     const docs = await this.model.create(dtoArray);
 
     return docs.map((doc) =>
@@ -460,7 +463,7 @@ export abstract class BaseRepository<
   async updateMany<D extends Partial<U>>(
     filter: TFilterQuery<T>,
     dto: UpdateQuery<D>,
-  ) {
+  ): Promise<UpdateWriteOpResult> {
     return await this.model.updateMany<T>(filter, {
       $set: dto,
     });
@@ -476,19 +479,19 @@ export abstract class BaseRepository<
     return await this.model.deleteMany(criteria);
   }
 
-  async preValidate(_doc: HydratedDocument<T>) {
+  async preValidate(_doc: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
-  async postValidate(_validated: HydratedDocument<T>) {
+  async postValidate(_validated: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
-  async preCreate(_doc: HydratedDocument<T>) {
+  async preCreate(_doc: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
-  async postCreate(_created: HydratedDocument<T>) {
+  async postCreate(_created: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
@@ -496,7 +499,7 @@ export abstract class BaseRepository<
     _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
     _criteria: TFilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 
@@ -504,35 +507,35 @@ export abstract class BaseRepository<
     _query: Query<D, D, unknown, T, 'updateMany'>,
     _criteria: TFilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 
   async postUpdateMany(
     _query: Query<D, D, unknown, T, 'updateMany'>,
     _updated: any,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 
   async postUpdate(
     _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
     _updated: T,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 
   async preDelete(
     _query: Query<DeleteResult, D, unknown, T, 'deleteOne' | 'deleteMany'>,
     _criteria: TFilterQuery<T>,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 
   async postDelete(
     _query: Query<DeleteResult, D, unknown, T, 'deleteOne' | 'deleteMany'>,
     _result: DeleteResult,
-  ) {
+  ): Promise<void> {
     // Nothing ...
   }
 }
