@@ -44,21 +44,59 @@ export abstract class BaseService<
     return await this.repository.findOneAndPopulate(criteria, projection);
   }
 
+  /**
+   * @deprecated
+   */
   async find(
     filter: TFilterQuery<T>,
-    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<T[]>;
+
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<T[]>;
+
+  async find(
+    filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]> {
+    if (Array.isArray(pageQuery))
+      return await this.repository.find(filter, pageQuery, projection);
+
     return await this.repository.find(filter, pageQuery, projection);
   }
 
+  /**
+   * @deprecated
+   */
   async findAndPopulate(
     filters: TFilterQuery<T>,
-    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<TFull[]>;
+
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<TFull[]>;
+
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
-  ) {
+  ): Promise<TFull[]> {
+    if (Array.isArray(pageQuery))
+      return await this.repository.findAndPopulate(
+        filters,
+        pageQuery,
+        projection,
+      );
+
     return await this.repository.findAndPopulate(
       filters,
       pageQuery,
