@@ -258,11 +258,18 @@ export default class CoreNluHelper extends BaseNlpHelper<
   ): Promise<Nlp.ParseEntities> {
     try {
       const settings = await this.getSettings();
+      const trimmedText = text.trim().replace(/\s+/g, ' ');
+
+      // Check if the trimmed text is empty
+      if (!trimmedText) {
+        this.logger.warn('Input text is empty after trimming.');
+        return { entities: [] };
+      }
       const { data: nlp } =
         await this.httpService.axiosRef.post<NlpParseResultType>(
           buildURL(settings.endpoint, '/parse'),
           {
-            q: text,
+            q: trimmedText,
             project,
           },
           {
