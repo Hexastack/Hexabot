@@ -9,20 +9,32 @@
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
+import { useSetting } from "@/hooks/useSetting";
 import i18n from "@/i18n/config";
 import { EntityType, RouterType } from "@/services/types";
+import { generateId } from "@/utils/generateId";
 
 import { ChatWidgetHeader } from "./ChatWidgetHeader";
+
+const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
   const pathname = usePathname();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
+  const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
+  const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
+  const [key, setKey] = useState(generateId());
+
+  useEffect(() => {
+    setKey(generateId());
+  }, [allowedDomainsSetting, themeColorSetting]);
 
   return isAuthenticated ? (
     <Box
@@ -31,6 +43,7 @@ export const ChatWidget = () => {
       }}
     >
       <UiChatWidget
+        key={key}
         config={{
           apiUrl,
           channel: "console-channel",
