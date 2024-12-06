@@ -279,7 +279,11 @@ export abstract class BaseRepository<
       const query = this.model.find<T>(filter, projection);
       return query.sort([pageQuery] as [string, SortOrder][]);
     } else {
-      const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
+      const {
+        skip = 0,
+        limit = 0,
+        sort = ['createdAt', 'asc'],
+      } = pageQuery || {};
       const query = this.model.find<T>(filter, projection);
       return query
         .skip(skip)
@@ -358,11 +362,11 @@ export abstract class BaseRepository<
   }
 
   protected findAllQuery(sort?: QuerySortDto<T>) {
-    return this.findQuery({}, { limit: undefined, skip: undefined, sort });
+    return this.findQuery({}, { limit: 0, skip: undefined, sort });
   }
 
   async findAll(sort?: QuerySortDto<T>) {
-    return await this.find({}, { limit: undefined, skip: undefined, sort });
+    return await this.find({}, { limit: 0, skip: undefined, sort });
   }
 
   async findAllAndPopulate(sort?: QuerySortDto<T>) {
