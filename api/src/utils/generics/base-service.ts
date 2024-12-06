@@ -46,7 +46,8 @@ export abstract class BaseService<
 
   async find(
     filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
+    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]> {
     return await this.repository.find(filter, pageQuery, projection);
@@ -54,7 +55,8 @@ export abstract class BaseService<
 
   async findAndPopulate(
     filters: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
+    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ) {
     return await this.repository.findAndPopulate(

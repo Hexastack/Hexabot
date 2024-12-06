@@ -257,20 +257,28 @@ export abstract class BaseRepository<
 
   protected findQuery(
     filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
+    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ) {
-    const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
-    const query = this.model.find<T>(filter, projection);
-    return query
-      .skip(skip)
-      .limit(limit)
-      .sort([sort] as [string, SortOrder][]);
+    // TODO: current block need to be removed
+    if (Array.isArray(pageQuery)) {
+      const query = this.model.find<T>(filter, projection);
+      return query.sort([pageQuery] as [string, SortOrder][]);
+    } else {
+      const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
+      const query = this.model.find<T>(filter, projection);
+      return query
+        .skip(skip)
+        .limit(limit)
+        .sort([sort] as [string, SortOrder][]);
+    }
   }
 
   async find(
     filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
+    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ) {
     const query = this.findQuery(filter, pageQuery, projection);
@@ -285,7 +293,8 @@ export abstract class BaseRepository<
 
   async findAndPopulate(
     filters: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
+    // TODO: QuerySortDto<T> need to be removed
+    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ) {
     this.ensureCanPopulate();
