@@ -362,11 +362,11 @@ export abstract class BaseRepository<
   }
 
   protected findAllQuery(sort?: QuerySortDto<T>) {
-    return this.findQuery({}, { limit: 0, skip: undefined, sort });
+    return this.findQuery({}, { limit: 0, skip: 0, sort });
   }
 
   async findAll(sort?: QuerySortDto<T>) {
-    return await this.find({}, { limit: 0, skip: undefined, sort });
+    return await this.find({}, { limit: 0, skip: 0, sort });
   }
 
   async findAllAndPopulate(sort?: QuerySortDto<T>) {
