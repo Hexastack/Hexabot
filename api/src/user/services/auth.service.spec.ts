@@ -77,7 +77,11 @@ describe('AuthService', () => {
         'admin@admin.admin',
         'adminadmin',
       );
-      expect(userRepository.findOne).toHaveBeenCalledWith(searchCriteria, {});
+      expect(userRepository.findOne).toHaveBeenCalledWith(
+        searchCriteria,
+        {},
+        undefined,
+      );
       expect(result.id).toBe(user.id);
     });
     it('should not validate user if the provided password is incorrect', async () => {
@@ -85,7 +89,11 @@ describe('AuthService', () => {
         'admin@admin.admin',
         'randomPassword',
       );
-      expect(userRepository.findOne).toHaveBeenCalledWith(searchCriteria, {});
+      expect(userRepository.findOne).toHaveBeenCalledWith(
+        searchCriteria,
+        {},
+        undefined,
+      );
       expect(result).toBeNull();
     });
 
@@ -99,6 +107,7 @@ describe('AuthService', () => {
           email: 'admin2@admin.admin',
         },
         {},
+        undefined,
       );
       expect(result).toBeNull();
     });

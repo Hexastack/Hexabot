@@ -24,7 +24,7 @@ import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { ModelModel } from '../schemas/model.schema';
-import { PermissionModel, Permission } from '../schemas/permission.schema';
+import { Permission, PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
 
@@ -77,8 +77,12 @@ describe('PermissionRepository', () => {
       const model = await modelRepository.findOne(permission.model);
       const result = await permissionRepository.findOneAndPopulate(
         permission.id,
+        undefined,
       );
-      expect(permissionModel.findById).toHaveBeenCalledWith(permission.id);
+      expect(permissionModel.findById).toHaveBeenCalledWith(
+        permission.id,
+        undefined,
+      );
       expect(result).toEqualPayload({
         ...permissionFixtures.find(({ action }) => action === 'create'),
         role,
@@ -111,7 +115,7 @@ describe('PermissionRepository', () => {
         },
         [],
       );
-      expect(permissionModel.find).toHaveBeenCalledWith({});
+      expect(permissionModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(permissionsWithRolesAndModels);
     });
   });

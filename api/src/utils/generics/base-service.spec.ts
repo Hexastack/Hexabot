@@ -58,6 +58,7 @@ describe('BaseService', () => {
       expect(dummyRepository.findOne).toHaveBeenCalledWith(
         createdId,
         undefined,
+        undefined,
       );
       expect(result).toEqualPayload(createdPayload);
     });
@@ -68,6 +69,7 @@ describe('BaseService', () => {
 
       expect(dummyRepository.findOne).toHaveBeenCalledWith(
         createdPayload,
+        undefined,
         undefined,
       );
       expect(result).toEqualPayload(createdPayload);

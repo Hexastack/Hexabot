@@ -170,7 +170,10 @@ describe('BlockService', () => {
       jest.spyOn(blockRepository, 'findOneAndPopulate');
       const result = await blockService.findOneAndPopulate(block.id);
 
-      expect(blockRepository.findOneAndPopulate).toHaveBeenCalledWith(block.id);
+      expect(blockRepository.findOneAndPopulate).toHaveBeenCalledWith(
+        block.id,
+        undefined,
+      );
       expect(result).toEqualPayload({
         ...blockFixtures.find(({ name }) => name === 'hasNextBlocks'),
         category,
@@ -195,6 +198,7 @@ describe('BlockService', () => {
 
       expect(blockRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
+        undefined,
         undefined,
       );
       expect(result).toEqualPayload(blocksWithCategory);

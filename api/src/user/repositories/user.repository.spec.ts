@@ -27,8 +27,8 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
-import { UserModel, User } from '../schemas/user.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
+import { User, UserModel } from '../schemas/user.schema';
 
 describe('UserRepository', () => {
   let roleRepository: RoleRepository;
@@ -91,7 +91,7 @@ describe('UserRepository', () => {
     it('should find one user and populate its role', async () => {
       jest.spyOn(userModel, 'findById');
       const result = await userRepository.findOneAndPopulate(user.id);
-      expect(userModel.findById).toHaveBeenCalledWith(user.id);
+      expect(userModel.findById).toHaveBeenCalledWith(user.id, undefined);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
@@ -118,7 +118,7 @@ describe('UserRepository', () => {
         return acc;
       }, []);
 
-      expect(userModel.find).toHaveBeenCalledWith({});
+      expect(userModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(usersWithRoles);
     });
   });

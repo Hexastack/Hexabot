@@ -30,7 +30,7 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -96,14 +96,14 @@ describe('RoleController', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
     it('should find roles', async () => {
-      jest.spyOn(roleService, 'findPage');
+      jest.spyOn(roleService, 'find');
       const result = await roleController.findPage(pageQuery, [], {});
-      expect(roleService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(roleService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(roleFixtures);
     });
 
     it('should find roles, and for each role populate the corresponding users and permissions', async () => {
-      jest.spyOn(roleService, 'findPageAndPopulate');
+      jest.spyOn(roleService, 'findAndPopulate');
       const allRoles = await roleService.findAll();
       const allPermissions = await permissionService.findAll();
       const allUsers = await userService.findAll();
@@ -128,10 +128,7 @@ describe('RoleController', () => {
         return acc;
       }, []);
 
-      expect(roleService.findPageAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(roleService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
     });
   });

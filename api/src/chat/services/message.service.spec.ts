@@ -113,6 +113,7 @@ describe('MessageService', () => {
 
       expect(messageRepository.findOneAndPopulate).toHaveBeenCalledWith(
         message.id,
+        undefined,
       );
       expect(result).toEqualPayload({
         ...messageFixtures.find(({ mid }) => mid === message.mid),

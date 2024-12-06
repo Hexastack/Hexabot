@@ -172,10 +172,10 @@ describe('TranslationController', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Translation>();
     it('should find translations', async () => {
-      jest.spyOn(translationService, 'findPage');
+      jest.spyOn(translationService, 'find');
       const result = await translationController.findPage(pageQuery, {});
 
-      expect(translationService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(translationService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(translationFixtures);
     });
   });

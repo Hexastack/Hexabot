@@ -100,10 +100,10 @@ describe('LanguageController', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Language>({ sort: ['code', 'asc'] });
     it('should find languages', async () => {
-      jest.spyOn(languageService, 'findPage');
+      jest.spyOn(languageService, 'find');
       const result = await languageController.findPage(pageQuery, {});
 
-      expect(languageService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(languageService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(
         languageFixtures.sort(({ code: codeA }, { code: codeB }) => {
           if (codeA < codeB) {

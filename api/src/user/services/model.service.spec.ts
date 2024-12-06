@@ -19,8 +19,8 @@ import {
 
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
-import { ModelModel, Model } from '../schemas/model.schema';
-import { PermissionModel, Permission } from '../schemas/permission.schema';
+import { Model, ModelModel } from '../schemas/model.schema';
+import { Permission, PermissionModel } from '../schemas/permission.schema';
 
 import { ModelService } from './model.service';
 
@@ -82,6 +82,7 @@ describe('ModelService', () => {
       }, []);
       expect(modelRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
+        undefined,
         undefined,
       );
       expect(result).toEqualPayload(modelsWithPermissions);

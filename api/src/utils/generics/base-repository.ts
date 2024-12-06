@@ -17,6 +17,7 @@ import {
   FlattenMaps,
   HydratedDocument,
   Model,
+  ProjectionType,
   Query,
   SortOrder,
   UpdateQuery,
@@ -215,48 +216,64 @@ export abstract class BaseRepository<
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
 
-  protected findOneQuery(criteria: string | TFilterQuery<T>) {
+  protected findOneQuery(
+    criteria: string | TFilterQuery<T>,
+    projection?: ProjectionType<T>,
+  ) {
     if (!criteria) {
       // An empty criteria would return the first document that it finds
       throw new Error('findOneQuery() should not have an empty criteria');
     }
 
     return typeof criteria === 'string'
-      ? this.model.findById(criteria)
-      : this.model.findOne<T>(criteria);
+      ? this.model.findById(criteria, projection)
+      : this.model.findOne<T>(criteria, projection);
   }
 
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
+    projection?: ProjectionType<T>,
   ) {
     if (!criteria) {
       // @TODO : Issue a warning ?
       return Promise.resolve(undefined);
     }
-    const query =
-      typeof criteria === 'string'
-        ? this.model.findById<T>(criteria)
-        : this.model.findOne<T>(criteria);
+
+    const query = this.findOneQuery(criteria, projection);
     return await this.executeOne(query, this.cls, options);
   }
 
-  async findOneAndPopulate(criteria: string | TFilterQuery<T>) {
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<T>,
+    projection?: ProjectionType<T>,
+  ) {
     this.ensureCanPopulate();
-    const query = this.findOneQuery(criteria).populate(this.populate);
+    const query = this.findOneQuery(criteria, projection).populate(
+      this.populate,
+    );
     return await this.executeOne(query, this.clsPopulate);
   }
 
-  protected findQuery(filter: TFilterQuery<T>, sort?: QuerySortDto<T>) {
-    const query = this.model.find<T>(filter);
-    if (sort) {
-      return query.sort([sort] as [string, SortOrder][]);
-    }
-    return query;
+  protected findQuery(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
+    const { skip = 0, limit, sort = ['createdAt', 'asc'] } = pageQuery || {};
+    const query = this.model.find<T>(filter, projection);
+    return query
+      .skip(skip)
+      .limit(limit)
+      .sort([sort] as [string, SortOrder][]);
   }
 
-  async find(filter: TFilterQuery<T>, sort?: QuerySortDto<T>) {
-    const query = this.findQuery(filter, sort);
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
+    const query = this.findQuery(filter, pageQuery, projection);
     return await this.execute(query, this.cls);
   }
 
@@ -266,18 +283,24 @@ export abstract class BaseRepository<
     }
   }
 
-  async findAndPopulate(filters: TFilterQuery<T>, sort?: QuerySortDto<T>) {
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ) {
     this.ensureCanPopulate();
-    const query = this.findQuery(filters, sort).populate(this.populate);
+    const query = this.findQuery(filters, pageQuery, projection).populate(
+      this.populate,
+    );
     return await this.execute(query, this.clsPopulate);
   }
 
   protected findAllQuery(sort?: QuerySortDto<T>) {
-    return this.findQuery({}, sort);
+    return this.findQuery({}, { limit: undefined, skip: undefined, sort });
   }
 
   async findAll(sort?: QuerySortDto<T>) {
-    return await this.find({}, sort);
+    return await this.find({}, { limit: undefined, skip: undefined, sort });
   }
 
   async findAllAndPopulate(sort?: QuerySortDto<T>) {
@@ -286,6 +309,9 @@ export abstract class BaseRepository<
     return await this.execute(query, this.clsPopulate);
   }
 
+  /**
+   * @deprecated
+   */
   protected findPageQuery(
     filters: TFilterQuery<T>,
     { skip, limit, sort }: PageQueryDto<T>,
@@ -296,6 +322,9 @@ export abstract class BaseRepository<
       .sort([sort] as [string, SortOrder][]);
   }
 
+  /**
+   * @deprecated
+   */
   async findPage(
     filters: TFilterQuery<T>,
     pageQuery: PageQueryDto<T>,
@@ -304,6 +333,9 @@ export abstract class BaseRepository<
     return await this.execute(query, this.cls);
   }
 
+  /**
+   * @deprecated
+   */
   async findPageAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery: PageQueryDto<T>,

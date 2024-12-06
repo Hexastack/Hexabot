@@ -56,7 +56,7 @@ describe('ModelRepository', () => {
     it('should find a model and populate its permissions', async () => {
       jest.spyOn(modelModel, 'findById');
       const result = await modelRepository.findOneAndPopulate(model.id);
-      expect(modelModel.findById).toHaveBeenCalledWith(model.id);
+      expect(modelModel.findById).toHaveBeenCalledWith(model.id, undefined);
       expect(result).toEqualPayload({
         ...modelFixtures.find(({ name }) => name === 'ContentType'),
         permissions,
@@ -79,7 +79,7 @@ describe('ModelRepository', () => {
         });
         return acc;
       }, []);
-      expect(modelModel.find).toHaveBeenCalledWith({});
+      expect(modelModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(modelsWithPermissions);
     });
   });
