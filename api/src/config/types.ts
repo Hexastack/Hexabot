@@ -27,8 +27,8 @@ type TCacheConfig = {
 export type Config = {
   i18n: { translationFilename: string };
   appPath: string;
-  apiPath: string;
-  frontendPath: string;
+  apiBaseUrl: string;
+  uiBaseUrl: string;
   security: {
     httpsEnabled: boolean;
     trustProxy: boolean;
@@ -81,8 +81,6 @@ export type Config = {
     storageMode: 'disk' | 'memory';
     maxUploadSize: number;
     appName: string;
-    apiUrl: string;
-    appUrl: string;
   };
   pagination: {
     limit: number;

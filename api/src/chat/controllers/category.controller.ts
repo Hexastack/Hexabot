@@ -57,11 +57,7 @@ export class CategoryController extends BaseController<Category> {
     @Query(new SearchFilterPipe<Category>({ allowedFields: ['label'] }))
     filters: TFilterQuery<Category>,
   ) {
-    if (pageQuery.limit) {
-      return await this.categoryService.findPage(filters, pageQuery);
-    }
-
-    return await this.categoryService.find(filters, pageQuery.sort);
+    return await this.categoryService.find(filters, pageQuery);
   }
 
   /**

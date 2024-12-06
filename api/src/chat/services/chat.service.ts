@@ -253,6 +253,11 @@ export class ChatService {
         // Already existing user profile
         // Exec lastvisit hook
         this.eventEmitter.emit('hook:user:lastvisit', subscriber);
+        this.websocketGateway.broadcast(
+          subscriber,
+          event.getEventType(),
+          event._adapter.raw,
+        );
       }
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
@@ -270,7 +275,7 @@ export class ChatService {
       if (event.getText() && !event.getNLP()) {
         try {
           const helper = await this.helperService.getDefaultNluHelper();
-          const nlp = await helper.predict(event.getText());
+          const nlp = await helper.predict(event.getText(), true);
           event.setNLP(nlp);
         } catch (err) {
           this.logger.error('Unable to perform NLP parse', err);

@@ -74,13 +74,14 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
   const items = messageCarousel.data.elements;
   const goToPrevious = () => {
     setActiveIndex(
-      (prevIndex) => (prevIndex + items.length - 1) % items.length
+      (prevIndex) => (prevIndex + items.length - 1) % items.length,
     );
   };
   const goToNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % items.length);
   };
   const colors = allColors[messageCarousel.direction || "received"];
+  const shouldDisplayNavigationButtons = items.length > 1;
 
   return (
     <div
@@ -98,15 +99,22 @@ const CarouselMessage: React.FC<CarouselMessageProps> = ({
           <CarouselItem key={idx} message={message} idx={idx} />
         ))}
       </div>
-      <button
-        className="sc-message--carousel-control prev"
-        onClick={goToPrevious}
-      >
-        &#10094;
-      </button>
-      <button className="sc-message--carousel-control next" onClick={goToNext}>
-        &#10095;
-      </button>
+      {shouldDisplayNavigationButtons && (
+        <>
+          <button
+            className="sc-message--carousel-control prev"
+            onClick={goToPrevious}
+          >
+            &#10094;
+          </button>
+          <button
+            className="sc-message--carousel-control next"
+            onClick={goToNext}
+          >
+            &#10095;
+          </button>
+        </>
+      )}
     </div>
   );
 };

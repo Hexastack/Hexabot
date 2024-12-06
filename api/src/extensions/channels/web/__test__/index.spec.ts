@@ -134,6 +134,59 @@ describe('WebChannelHandler', () => {
     expect(handler.getName()).toEqual('web-channel');
   });
 
+  it('should allow the request if the origin is in the allowed domains', async () => {
+    const req = {
+      headers: {
+        origin: 'https://example.com',
+      },
+      method: 'GET',
+    } as unknown as Request;
+
+    const res = {
+      set: jest.fn(),
+    } as any;
+
+    jest.spyOn(handler, 'getSettings').mockResolvedValue({
+      allowed_domains:
+        'https://example.com/,https://test.com,http://invalid-url',
+    });
+
+    await expect(handler['validateCors'](req, res)).resolves.not.toThrow();
+
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Origin',
+      'https://example.com',
+    );
+    expect(res.set).toHaveBeenCalledWith(
+      'Access-Control-Allow-Credentials',
+      'true',
+    );
+  });
+
+  it('should reject the request if the origin is not in the allowed domains', async () => {
+    const req = {
+      headers: {
+        origin: 'https://notallowed.com',
+      },
+      method: 'GET',
+    } as unknown as Request;
+
+    jest.spyOn(handler, 'getSettings').mockResolvedValue({
+      allowed_domains:
+        'https://example.com/,https://test.com,http://invalid-url',
+    });
+
+    const res = {
+      set: jest.fn(),
+    } as any;
+
+    await expect(handler['validateCors'](req, res)).rejects.toThrow(
+      'CORS - Domain not allowed!',
+    );
+
+    expect(res.set).toHaveBeenCalledWith('Access-Control-Allow-Origin', '');
+  });
+
   it('should format text properly', () => {
     const formatted = handler._textFormat(textMessage, {});
     expect(formatted).toEqual(webText);

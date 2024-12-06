@@ -6,16 +6,29 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Typography } from "@mui/material";
-import { useMemo } from "react";
+import {
+  Autocomplete,
+  Box,
+  Chip,
+  CircularProgress,
+  InputAdornment,
+  Skeleton,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 
-import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
+import { Input } from "@/app-components/inputs/Input";
+import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { theme } from "@/layout/themes/theme";
+import { EntityType, Format } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
 import {
+  ButtonType,
+  PayloadType,
   PostBackButton,
+  QuickReplyType,
   StdOutgoingButtonsMessage,
   StdOutgoingQuickRepliesMessage,
   StdQuickReply,
@@ -23,38 +36,55 @@ import {
 
 import { useBlock } from "../../BlockFormProvider";
 
-type PayloadOption = {
-  id: string;
-  label: string;
-  group?: string;
+type PayloadOption = PayloadPattern & {
+  group: string;
 };
 
+const isSamePostback = <T extends PayloadPattern>(a: T, b: T) =>
+  a.label === b.label && a.value === b.value;
+
 type PostbackInputProps = {
-  value?: string | null;
+  defaultValue: PayloadPattern;
   onChange: (pattern: PayloadPattern) => void;
 };
 
-export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
+export const PostbackInput = ({
+  defaultValue,
+  onChange,
+}: PostbackInputProps) => {
   const block = useBlock();
+  const [selectedValue, setSelectedValue] = useState(defaultValue);
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
+  const { data: menu, isLoading: isLoadingMenu } = useFind(
+    { entity: EntityType.MENU, format: Format.FULL },
+    { hasCount: false },
+  );
+  const { data: contents, isLoading: isLoadingContent } = useFind(
+    { entity: EntityType.CONTENT, format: Format.FULL },
+    {
+      hasCount: false,
+    },
+  );
   const { t } = useTranslate();
   //  General options
   const generalOptions = [
     {
-      id: "GET_STARTED",
       label: t("label.get_started"),
-      group: t("label.general"),
+      value: "GET_STARTED",
+      type: PayloadType.button,
+      group: "general",
     },
-
     {
-      id: "VIEW_MORE",
       label: t("label.view_more"),
-      group: t("label.general"),
+      value: "VIEW_MORE",
+      type: PayloadType.button,
+      group: "general",
     },
     {
-      id: "LOCATION",
       label: t("label.location"),
-      group: t("label.general"),
+      value: "LOCATION",
+      type: PayloadType.location,
+      group: "general",
     },
   ];
   //  Gather previous blocks buttons
@@ -62,28 +92,25 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
     () =>
       (block?.previousBlocks || [])
         .map((b) => getBlockFromCache(b))
-        .filter((b) => {
-          return b && typeof b.message === "object" && "buttons" in b.message;
-        })
+        .filter(
+          (b) => b && typeof b.message === "object" && "buttons" in b.message,
+        )
         .map((b) => b as IBlock)
         .reduce((acc, b) => {
           const postbackButtons = (
             (b.message as StdOutgoingButtonsMessage)?.buttons || []
           )
-            .filter((btn) => btn.type === "postback")
-            .map((btn) => {
-              return { ...btn, group: b.name };
-            });
+            .filter((btn) => btn.type === ButtonType.postback)
+            .map((btn) => ({ ...btn, group: b.name }));
 
           return acc.concat(postbackButtons);
         }, [] as (PostBackButton & { group: string })[])
-        .map((btn) => {
-          return {
-            id: btn.payload,
-            label: btn.title,
-            group: btn.group,
-          };
-        }),
+        .map((btn) => ({
+          label: btn.title,
+          value: btn.payload,
+          type: PayloadType.button,
+          group: "button",
+        })),
     [block?.previousBlocks, getBlockFromCache],
   );
   //  Gather previous blocks quick replies
@@ -91,62 +118,155 @@ export const PostbackInput = ({ value, onChange }: PostbackInputProps) => {
     () =>
       (block?.previousBlocks || [])
         .map((b) => getBlockFromCache(b))
-        .filter((b) => {
-          return (
-            b && typeof b.message === "object" && "quickReplies" in b.message
-          );
-        })
+        .filter(
+          (b) =>
+            b && typeof b.message === "object" && "quickReplies" in b.message,
+        )
         .map((b) => b as IBlock)
         .reduce((acc, b) => {
           const postbackQuickReplies = (
             (b.message as StdOutgoingQuickRepliesMessage)?.quickReplies || []
           )
-            .filter((btn) => btn.content_type === "text")
-            .map((btn) => {
-              return { ...btn, group: b.name };
-            });
+            .filter(({ content_type }) => content_type === QuickReplyType.text)
+            .map((btn) => ({ ...btn, group: b.name }));
 
           return acc.concat(postbackQuickReplies);
         }, [] as (StdQuickReply & { group: string })[])
-        .map((btn) => {
-          return {
-            id: btn.payload as string,
-            label: btn.title as string,
-            group: btn.group,
-          };
-        }),
+        .map((btn) => ({
+          label: btn.title as string,
+          value: btn.payload as string,
+          type: PayloadType.quick_reply,
+          group: "quick_reply",
+        })),
     [block?.previousBlocks],
   );
+  const menuOptions = menu
+    .filter(({ payload }) => payload)
+    .map(({ title, payload }) => ({
+      label: title,
+      value: payload as string,
+      type: PayloadType.menu,
+      group: "menu",
+    }));
+  const contentOptions = useMemo(
+    () =>
+      (block?.previousBlocks || [])
+        .map((bId) => getBlockFromCache(bId) as IBlock)
+        .filter(
+          (b) =>
+            b &&
+            b.options?.content?.entity &&
+            b.options.content.buttons.length > 0,
+        )
+        .map((b) => {
+          const availableContents = (contents || []).filter(
+            ({ entity, status }) =>
+              status && entity === b.options?.content?.entity,
+          );
+
+          return (b.options?.content?.buttons || []).reduce((payloads, btn) => {
+            // Return a payload for each node/button combination
+            payloads.push({
+              label: btn.title,
+              value: btn.title,
+              type: PayloadType.content,
+              group: "content",
+            });
+
+            return availableContents.reduce((acc, n) => {
+              acc.push({
+                label: n.title,
+                value: n.title,
+                type: PayloadType.content,
+                group: "content",
+              });
+
+              return acc;
+            }, payloads);
+          }, [] as PayloadOption[]);
+        })
+        .flat(),
+    [block?.previousBlocks, contents, getBlockFromCache],
+  );
   // Concat all previous blocks
-  const options = [...generalOptions, ...btnOptions, ...qrOptions];
+  const options: PayloadOption[] = [
+    ...generalOptions,
+    ...btnOptions,
+    ...qrOptions,
+    ...menuOptions,
+    ...contentOptions,
+  ];
+  const isOptionsReady =
+    !defaultValue || options.find((o) => isSamePostback(o, defaultValue));
+
+  if (!isOptionsReady || isLoadingContent || isLoadingMenu) {
+    return (
+      <Skeleton animation="wave" variant="rounded" width="100%" height={40} />
+    );
+  }
+  const selected = defaultValue
+    ? options.find((o) => isSamePostback(o, defaultValue))
+    : undefined;
 
   return (
-    <>
-      <AutoCompleteSelect<PayloadOption, "label", false>
-        value={value}
-        options={options}
-        labelKey="label"
-        label={t("label.postback")}
-        multiple={false}
-        onChange={(_e, content) => {
-          content &&
-            onChange({
-              label: content.label,
-              value: content.id,
-            } as PayloadPattern);
-        }}
-        groupBy={(option) => {
-          return option.group ?? t("label.other");
-        }}
-        renderGroup={(params) => (
-          <li key={params.key}>
-            <Typography component="h4" p={2} fontWeight={700} color="primary">
-              {params.group}
-            </Typography>
-            <Box>{params.children}</Box>
-          </li>
-        )}
-      />
-    </>
+    <Autocomplete
+      size="small"
+      fullWidth
+      defaultValue={selected || undefined}
+      value={selected}
+      options={options}
+      multiple={false}
+      disableClearable
+      onChange={(_e, value) => {
+        setSelectedValue(value);
+        const { group: _g, ...payloadPattern } = value;
+
+        onChange(payloadPattern);
+      }}
+      groupBy={({ group }) => group ?? t("label.other")}
+      getOptionLabel={({ label }) => label}
+      renderGroup={({ key, group, children }) => (
+        <li key={key}>
+          <Typography component="h4" p={2} fontWeight={700} color="primary">
+            {t(`label.${group}`)}
+          </Typography>
+          <Box>{children}</Box>
+        </li>
+      )}
+      renderInput={(props) => (
+        <Input
+          {...props}
+          label={t("label.postback")}
+          InputProps={{
+            ...props.InputProps,
+            startAdornment: (
+              <InputAdornment position="start">
+                <Chip
+                  sx={{
+                    left: "8px",
+                    height: "25px",
+                    fontSize: "12px",
+                    minWidth: "75px",
+                    position: "relative",
+                    maxHeight: "30px",
+                    borderRadius: "16px",
+                    borderColor: theme.palette.grey[400],
+                  }}
+                  color="primary"
+                  label={t(
+                    `label.${selectedValue?.type || "postback"}`,
+                  ).toLocaleLowerCase()}
+                  variant="role"
+                />
+              </InputAdornment>
+            ),
+            endAdornment:
+              isLoadingMenu || isLoadingContent ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : null,
+          }}
+        />
+      )}
+    />
   );
 };

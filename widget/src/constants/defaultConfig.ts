@@ -7,7 +7,7 @@
  */
 
 export const DEFAULT_CONFIG = {
-  apiUrl: process.env.REACT_APP_WIDGET_API_URL || 'http://localhost:4000',
-  channel: process.env.REACT_APP_WIDGET_CHANNEL || 'console-channel',
-  language: 'en',
+  apiUrl: process.env.REACT_APP_WIDGET_API_URL || "http://localhost:4000",
+  channel: process.env.REACT_APP_WIDGET_CHANNEL || "console-channel",
+  language: "en",
 };

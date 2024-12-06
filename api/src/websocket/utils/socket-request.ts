@@ -92,7 +92,7 @@ export class SocketRequest {
     const urlObj = new URL(
       this.url.startsWith('http')
         ? this.url
-        : `${config.parameters.apiUrl}${this.url}`,
+        : `${config.apiBaseUrl}${this.url}`,
     );
     this.path = urlObj.pathname || '/';
 

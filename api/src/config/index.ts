@@ -15,8 +15,8 @@ export const config: Config = {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
   appPath: process.cwd(),
-  apiPath: process.env.API_ORIGIN || 'http://localhost:4000',
-  frontendPath: process.env.FRONTEND_ORIGIN
+  apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:4000',
+  uiBaseUrl: process.env.FRONTEND_ORIGIN
     ? process.env.FRONTEND_ORIGIN.split(',')[0]
     : 'http://localhost:8080',
   security: {
@@ -112,8 +112,6 @@ export const config: Config = {
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
       : 2000000,
     appName: 'Hexabot.ai',
-    apiUrl: 'http://localhost:4000',
-    appUrl: 'http://localhost:8081',
   },
   pagination: {
     limit: 10,

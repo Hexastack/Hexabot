@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from "react";
 
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
-import { useSocketLifecycle } from '../providers/SocketProvider';
-import { useWidget, WidgetContextType } from '../providers/WidgetProvider';
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
+import { useSocketLifecycle } from "../providers/SocketProvider";
+import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
 
-import ChatWindow from './ChatWindow';
-import CloseIcon from './icons/CloseIcon';
-import OpenIcon from './icons/OpenIcon';
-import './Launcher.scss';
+import ChatWindow from "./ChatWindow";
+import CloseIcon from "./icons/CloseIcon";
+import OpenIcon from "./icons/OpenIcon";
+import "./Launcher.scss";
 
 type LauncherProps = PropsWithChildren<{
   CustomLauncher?: (props: { widget: WidgetContextType }) => JSX.Element;
@@ -46,7 +46,7 @@ const Launcher: React.FC<LauncherProps> = ({
   return (
     <div>
       <div
-        className={`sc-launcher-wrapper ${widget.isOpen ? 'opened' : ''}`}
+        className={`sc-launcher-wrapper ${widget.isOpen ? "opened" : ""}`}
         onClick={handleToggle}
       >
         {CustomLauncher ? (

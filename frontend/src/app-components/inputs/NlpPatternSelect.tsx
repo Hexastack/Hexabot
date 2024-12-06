@@ -117,6 +117,7 @@ const NlpPatternSelect = (
     <Autocomplete
       ref={ref}
       size="medium"
+      fullWidth={true}
       disabled={options.length === 0}
       value={defaultValue}
       multiple={true}

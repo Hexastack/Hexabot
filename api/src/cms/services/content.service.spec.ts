@@ -84,7 +84,7 @@ describe('ContentService', () => {
       const content = await contentService.findOne({ title: 'Jean' });
       const contentType = await contentTypeService.findOne(content.entity);
       const result = await contentService.findOneAndPopulate(content.id);
-      expect(findSpy).toHaveBeenCalledWith(content.id);
+      expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
         entity: contentType,

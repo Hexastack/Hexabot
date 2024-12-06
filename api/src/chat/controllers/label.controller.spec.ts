@@ -104,13 +104,13 @@ describe('LabelController', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Label>();
     it('should find labels', async () => {
-      jest.spyOn(labelService, 'findPage');
+      jest.spyOn(labelService, 'find');
       const result = await labelController.findPage(pageQuery, [], {});
       const labelsWithBuiltin = labelFixtures.map((labelFixture) => ({
         ...labelFixture,
       }));
 
-      expect(labelService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(labelService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(labelsWithBuiltin.sort(sortRowsBy), [
         ...IGNORED_TEST_FIELDS,
         'nextBlocks',
@@ -118,7 +118,7 @@ describe('LabelController', () => {
     });
 
     it('should find labels, and foreach label populate its corresponding users', async () => {
-      jest.spyOn(labelService, 'findPageAndPopulate');
+      jest.spyOn(labelService, 'findAndPopulate');
       const result = await labelController.findPage(pageQuery, ['users'], {});
       const allLabels = await labelService.findAll();
       const allSubscribers = await subscriberService.findAll();
@@ -127,10 +127,7 @@ describe('LabelController', () => {
         users: allSubscribers,
       }));
 
-      expect(labelService.findPageAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(labelService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(labelsWithUsers.sort(sortRowsBy));
     });
   });

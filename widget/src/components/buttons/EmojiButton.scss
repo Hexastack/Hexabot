@@ -1,26 +1,25 @@
-
 .sc-user-input--emoji-icon-wrapper {
-    background: none;
-    border: none;
-    padding: 0px;
-    margin: 0px;
-    outline: none;
-    opacity: .5;
-  }
-  
-  .sc-user-input--emoji-icon-wrapper:focus {
-    outline: none;
-  }
-  
-  .sc-user-input--emoji-icon {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    align-self: center;
-    vertical-align: middle;
-  }
-  
-  .sc-user-input--emoji-icon-wrapper:focus,
-  .sc-user-input--emoji-icon-wrapper:hover {
-    opacity: 1;
-  }
+  background: none;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  outline: none;
+  opacity: 0.5;
+}
+
+.sc-user-input--emoji-icon-wrapper:focus {
+  outline: none;
+}
+
+.sc-user-input--emoji-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  align-self: center;
+  vertical-align: middle;
+}
+
+.sc-user-input--emoji-icon-wrapper:focus,
+.sc-user-input--emoji-icon-wrapper:hover {
+  opacity: 1;
+}

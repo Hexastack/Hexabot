@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from "react";
 
-import { useChat } from '../providers/ChatProvider';
-import { useWidget } from '../providers/WidgetProvider';
+import { useChat } from "../providers/ChatProvider";
+import { useWidget } from "../providers/WidgetProvider";
 
-import ChatHeader from './ChatHeader';
-import ConnectionLost from './ConnectionLost';
-import Messages from './Messages';
-import UserInput from './UserInput';
-import Webview from './Webview';
-import './ChatWindow.scss';
+import ChatHeader from "./ChatHeader";
+import ConnectionLost from "./ConnectionLost";
+import Messages from "./Messages";
+import UserInput from "./UserInput";
+import Webview from "./Webview";
+import "./ChatWindow.scss";
 
 type ChatWindowProps = PropsWithChildren<{
   CustomHeader?: () => JSX.Element;
@@ -35,18 +35,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const { screen, isOpen } = useWidget();
 
   return (
-    <div className={`sc-chat-window ${isOpen ? 'opened' : 'closed'}`}>
+    <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
       <ChatHeader>{CustomHeader && <CustomHeader />}</ChatHeader>
-      {screen === 'prechat' && PreChat && <PreChat />}
-      {['prechat', 'postchat', 'webview'].indexOf(screen) === -1 &&
+      {screen === "prechat" && PreChat && <PreChat />}
+      {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
         connectionState === 3 && <Messages Avatar={CustomAvatar} />}
-      {screen !== 'prechat' &&
-        screen !== 'postchat' &&
+      {screen !== "prechat" &&
+        screen !== "postchat" &&
         connectionState !== 3 && <ConnectionLost />}
-      {screen === 'postchat' && PostChat && <PostChat />}
-      {['prechat', 'postchat', 'webview'].indexOf(screen) === -1 &&
+      {screen === "postchat" && PostChat && <PostChat />}
+      {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
         connectionState === 3 && <UserInput />}
-      {screen === 'webview' && <Webview />}
+      {screen === "webview" && <Webview />}
     </div>
   );
 };

@@ -12,11 +12,11 @@ import {
   useContext,
   useEffect,
   useRef,
-} from 'react';
+} from "react";
 
-import { getSocketIoClient, SocketIoClient } from '../utils/SocketIoClient';
+import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
-import { useConfig } from './ConfigProvider';
+import { useConfig } from "./ConfigProvider";
 
 interface socketContext {
   socket: SocketIoClient;
@@ -33,16 +33,16 @@ export const SocketProvider = (props: PropsWithChildren) => {
       onConnect: () => {
         // eslint-disable-next-line no-console
         console.info(
-          'Hexabot Live Chat : Successfully established WS Connection!',
+          "Hexabot Live Chat : Successfully established WS Connection!",
         );
       },
       onConnectError: () => {
         // eslint-disable-next-line no-console
-        console.error('Hexabot Live Chat : Failed to establish WS Connection!');
+        console.error("Hexabot Live Chat : Failed to establish WS Connection!");
       },
       onDisconnect: () => {
         // eslint-disable-next-line no-console
-        console.info('Hexabot Live Chat : Disconnected WS.');
+        console.info("Hexabot Live Chat : Disconnected WS.");
       },
     }),
   );

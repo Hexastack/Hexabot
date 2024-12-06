@@ -19,7 +19,7 @@ import {
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { UserModel, User } from '@/user/schemas/user.schema';
+import { User, UserModel } from '@/user/schemas/user.schema';
 import {
   installSubscriberFixtures,
   subscriberFixtures,
@@ -31,11 +31,11 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { LabelModel, Label } from '../schemas/label.schema';
+import { Label, LabelModel } from '../schemas/label.schema';
 import {
-  SubscriberModel,
   Subscriber,
   SubscriberFull,
+  SubscriberModel,
 } from '../schemas/subscriber.schema';
 
 import { LabelRepository } from './label.repository';
@@ -119,7 +119,10 @@ describe('SubscriberRepository', () => {
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       };
 
-      expect(subscriberModel.findById).toHaveBeenCalledWith(subscriber.id);
+      expect(subscriberModel.findById).toHaveBeenCalledWith(
+        subscriber.id,
+        undefined,
+      );
       expect(result).toEqualPayload(subscriberWithLabels);
     });
   });
@@ -133,7 +136,7 @@ describe('SubscriberRepository', () => {
         pageQuery,
       );
 
-      expect(subscriberModel.find).toHaveBeenCalledWith({});
+      expect(subscriberModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(
         subscribersWithPopulatedFields.sort(sortRowsBy),
       );
@@ -145,7 +148,7 @@ describe('SubscriberRepository', () => {
       jest.spyOn(subscriberModel, 'find');
       const result = await subscriberRepository.findAllAndPopulate();
 
-      expect(subscriberModel.find).toHaveBeenCalledWith({});
+      expect(subscriberModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(
         subscribersWithPopulatedFields.sort(sortRowsBy),
       );

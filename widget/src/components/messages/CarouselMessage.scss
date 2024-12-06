@@ -1,7 +1,7 @@
 .sc-message--carousel {
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   position: relative;
-  width: 100%;
+  width: 275px;
   overflow: hidden;
 
   .sc-message--carousel-inner {
@@ -17,11 +17,8 @@
       justify-content: center;
 
       .sc-message--carousel-element {
-        padding: 1rem;
         width: 100%;
-
         .sc-message--carousel-element-image {
-          background-position: center;
           background-repeat: no-repeat;
           background-size: cover;
           position: relative;
@@ -35,9 +32,10 @@
           padding: 0.5rem 0;
           margin-top: 8px;
         }
-        
         .sc-message--carousel-element-description {
           width: 100%;
+          padding: 0 2rem;
+          box-sizing: border-box;
         }
       }
     }
@@ -51,15 +49,21 @@
     color: white;
     border: none;
     cursor: pointer;
-    padding: 10px;
     z-index: 2;
+    font-size: 0.75rem;
 
     &.prev {
-      left: 10px;
+      left: 0px;
+      top: calc(50% - 14px);
+      width: 1.5rem;
+      height: 2rem;
     }
 
     &.next {
-      right: 10px;
+      top: calc(50% - 14px);
+      right: 0px;
+      width: 1.5rem;
+      height: 2rem;
     }
   }
 }

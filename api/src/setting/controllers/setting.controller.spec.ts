@@ -78,6 +78,8 @@ describe('SettingController', () => {
         {},
         {
           sort: ['weight', 'asc'],
+          limit: undefined,
+          skip: undefined,
         },
       );
 

@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, SVGProps } from 'react';
+import { FC, SVGProps } from "react";
 
 const MenuIcon: FC<SVGProps<SVGSVGElement>> = ({
-  width = '32',
-  height = '32',
-  x = '0',
-  y = '0',
-  className = 'sc-user-input--menu-img',
-  viewBox = '0 0 32 32',
+  width = "32",
+  height = "32",
+  x = "0",
+  y = "0",
+  className = "sc-user-input--menu-img",
+  viewBox = "0 0 32 32",
   ...rest
 }) => {
   return (

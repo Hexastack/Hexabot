@@ -68,15 +68,9 @@ export class RoleController extends BaseController<
     @Query(new SearchFilterPipe<Role>({ allowedFields: ['name'] }))
     filters: TFilterQuery<Role>,
   ) {
-    if (pageQuery.limit) {
-      return this.canPopulate(populate)
-        ? await this.roleService.findPageAndPopulate(filters, pageQuery)
-        : await this.roleService.findPage(filters, pageQuery);
-    }
-
     return this.canPopulate(populate)
-      ? await this.roleService.findAndPopulate(filters, pageQuery.sort)
-      : await this.roleService.find(filters, pageQuery.sort);
+      ? await this.roleService.findAndPopulate(filters, pageQuery)
+      : await this.roleService.find(filters, pageQuery);
   }
 
   /**

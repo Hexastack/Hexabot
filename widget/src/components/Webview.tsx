@@ -6,14 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import { useTranslation } from '../hooks/useTranslation';
-import { useChat } from '../providers/ChatProvider';
-import { useColors } from '../providers/ColorProvider';
+import { useTranslation } from "../hooks/useTranslation";
+import { useChat } from "../providers/ChatProvider";
+import { useColors } from "../providers/ColorProvider";
 
-import BackIcon from './icons/BackIcon';
-import './Webview.scss';
+import BackIcon from "./icons/BackIcon";
+import "./Webview.scss";
 
 const Webview: React.FC = () => {
   const { t } = useTranslation();
@@ -26,7 +26,7 @@ const Webview: React.FC = () => {
   }, []);
 
   const close = () => {
-    setWebviewUrl('');
+    setWebviewUrl("");
   };
 
   return (
@@ -40,7 +40,7 @@ const Webview: React.FC = () => {
       >
         <h3 className="sc-webview--button" onClick={close}>
           <BackIcon width="16px" height="16px" />
-          {t('settings.back')}
+          {t("settings.back")}
         </h3>
       </div>
     </div>

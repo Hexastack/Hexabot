@@ -14,9 +14,9 @@ import React, {
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from "react";
 
-import { StdEventType } from '../types/chat-io-messages.types';
+import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
   IPayload,
@@ -26,13 +26,13 @@ import {
   TEvent,
   TMessage,
   TPostMessageEvent,
-} from '../types/message.types';
-import { ConnectionState, OutgoingMessageState } from '../types/state.types';
+} from "../types/message.types";
+import { ConnectionState, OutgoingMessageState } from "../types/state.types";
 
-import { useConfig } from './ConfigProvider';
-import { useSettings } from './SettingsProvider';
-import { useSocket, useSubscribe } from './SocketProvider';
-import { useWidget } from './WidgetProvider';
+import { useConfig } from "./ConfigProvider";
+import { useSettings } from "./SettingsProvider";
+import { useSocket, useSubscribe } from "./SocketProvider";
+import { useWidget } from "./WidgetProvider";
 
 interface Participant {
   id: string;
@@ -149,10 +149,10 @@ interface ChatContextType {
 const defaultCtx: ChatContextType = {
   participants: [
     {
-      id: 'chatbot',
-      name: 'Hexabot',
-      foreign_id: 'chatbot',
-      imageUrl: '',
+      id: "chatbot",
+      name: "Hexabot",
+      foreign_id: "chatbot",
+      imageUrl: "",
     },
   ],
   setParticipants: () => {},
@@ -170,9 +170,9 @@ const defaultCtx: ChatContextType = {
   setNewIOMessage: () => {},
   newMessagesCount: 0,
   setNewMessagesCount: () => {},
-  webviewUrl: '',
+  webviewUrl: "",
   setWebviewUrl: () => {},
-  message: '',
+  message: "",
   setMessage: () => {},
   payload: null,
   setPayload: () => {},
@@ -228,8 +228,8 @@ const ChatProvider: React.FC<{
     setNewIOMessage(newIOMessage);
     if (
       newIOMessage &&
-      'type' in newIOMessage &&
-      newIOMessage.type === 'typing'
+      "type" in newIOMessage &&
+      newIOMessage.type === "typing"
     ) {
       return showTypingIndicator === true;
     }
@@ -237,26 +237,29 @@ const ChatProvider: React.FC<{
 
     if (
       newIOMessage &&
-      'mid' in newIOMessage &&
+      "mid" in newIOMessage &&
       !messages.find((msg) => newIOMessage.mid === msg.mid)
     ) {
-      if ('author' in newIOMessage) {
+      if ("author" in newIOMessage) {
         newIOMessage.direction =
-          newIOMessage.author === 'chatbot'
+          newIOMessage.author === "chatbot"
             ? Direction.received
             : Direction.sent;
         newIOMessage.read = true;
         newIOMessage.delivery = true;
       }
 
-      setMessages([...messages, newIOMessage as TMessage]);
+      setMessages((prevMessages) => [
+        ...prevMessages.filter((message) => message.mid !== newIOMessage.mid),
+        newIOMessage as TMessage,
+      ]);
       setScroll(0);
     }
 
     if (
       newIOMessage &&
-      'data' in newIOMessage &&
-      'quick_replies' in newIOMessage.data
+      "data" in newIOMessage &&
+      "quick_replies" in newIOMessage.data
     ) {
       setSuggestions(
         (newIOMessage.data.quick_replies || []).map(
@@ -265,13 +268,14 @@ const ChatProvider: React.FC<{
               content_type: QuickReplyType.text,
               text: qr.title,
               payload: qr.payload,
-            } as ISuggestion),
+            }) as ISuggestion,
         ),
       );
     } else {
       setSuggestions([]);
     }
-    isOpen || updateNewMessagesCount(newMessagesCount + 1);
+    isOpen ||
+      updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
     settings.alwaysScrollToBottom && setScroll(101); // @hack
     setOutgoingMessageState(OutgoingMessageState.sent);
   };
@@ -283,11 +287,11 @@ const ChatProvider: React.FC<{
     data: TPostMessageEvent;
   }) => {
     setOutgoingMessageState(
-      data.type === 'file'
+      data.type === "file"
         ? OutgoingMessageState.uploading
         : OutgoingMessageState.sending,
     );
-    setMessage('');
+    setMessage("");
     const sentMessage = await socketCtx.socket.post<TMessage>(
       `/webhook/${config.channel}/`,
       {
@@ -311,7 +315,7 @@ const ChatProvider: React.FC<{
           `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
         );
 
-        localStorage.setItem('profile', JSON.stringify(body.profile));
+        localStorage.setItem("profile", JSON.stringify(body.profile));
         setMessages(
           body.messages.map((message) => {
             return {
@@ -336,11 +340,11 @@ const ChatProvider: React.FC<{
           },
         ]);
         setConnectionState(3);
-        setScreen('chat');
+        setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('Unable to subscribe user', e);
-        setScreen('prechat');
+        console.error("Unable to subscribe user", e);
+        setScreen("prechat");
         setConnectionState(0);
       }
     },
@@ -362,9 +366,9 @@ const ChatProvider: React.FC<{
   const updateWebviewUrl = (url: string) => {
     if (url) {
       setWebviewUrl(url);
-      setScreen('webview');
+      setScreen("webview");
     } else {
-      setScreen('chat');
+      setScreen("chat");
     }
   };
 
@@ -375,7 +379,7 @@ const ChatProvider: React.FC<{
   }, [syncState, isOpen]);
 
   useEffect(() => {
-    if (screen === 'chat' && connectionState === ConnectionState.connected) {
+    if (screen === "chat" && connectionState === ConnectionState.connected) {
       handleSubscription();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -433,7 +437,7 @@ export const useChat = () => {
   const context = useContext(ChatContext);
 
   if (!context) {
-    throw new Error('useChat must be used within a ChatContext');
+    throw new Error("useChat must be used within a ChatContext");
   }
 
   return context;

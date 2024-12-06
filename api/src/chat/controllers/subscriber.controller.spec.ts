@@ -18,7 +18,7 @@ import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { PermissionModel } from '@/user/schemas/permission.schema';
 import { RoleModel } from '@/user/schemas/role.schema';
-import { UserModel, User } from '@/user/schemas/user.schema';
+import { User, UserModel } from '@/user/schemas/user.schema';
 import { RoleService } from '@/user/services/role.service';
 import {
   installSubscriberFixtures,
@@ -35,8 +35,8 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { LabelModel, Label } from '../schemas/label.schema';
-import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
+import { Label, LabelModel } from '../schemas/label.schema';
+import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 import { SubscriberService } from '../services/subscriber.service';
 
 import { UserService } from './../../user/services/user.service';
@@ -153,7 +153,7 @@ describe('SubscriberController', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Subscriber>();
     it('should find subscribers', async () => {
-      jest.spyOn(subscriberService, 'findPage');
+      jest.spyOn(subscriberService, 'find');
       const result = await subscriberController.findPage(pageQuery, [], {});
       const subscribersWithIds = allSubscribers.map(({ labels, ...rest }) => ({
         ...rest,
@@ -162,12 +162,12 @@ describe('SubscriberController', () => {
           .map(({ id }) => id),
       }));
 
-      expect(subscriberService.findPage).toHaveBeenCalledWith({}, pageQuery);
+      expect(subscriberService.find).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(subscribersWithIds.sort(sortRowsBy));
     });
 
     it('should find subscribers, and foreach subscriber populate the corresponding labels', async () => {
-      jest.spyOn(subscriberService, 'findPageAndPopulate');
+      jest.spyOn(subscriberService, 'findAndPopulate');
       const result = await subscriberController.findPage(
         pageQuery,
         ['labels'],
@@ -181,7 +181,7 @@ describe('SubscriberController', () => {
         }),
       );
 
-      expect(subscriberService.findPageAndPopulate).toHaveBeenCalledWith(
+      expect(subscriberService.findAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
       );

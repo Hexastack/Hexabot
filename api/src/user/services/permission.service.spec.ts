@@ -26,9 +26,9 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { ModelModel } from '../schemas/model.schema';
 import {
-  PermissionModel,
   Permission,
   PermissionFull,
+  PermissionModel,
 } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
@@ -89,6 +89,7 @@ describe('PermissionService', () => {
       const result = await permissionService.findOneAndPopulate(permission.id);
       expect(permissionRepository.findOneAndPopulate).toHaveBeenLastCalledWith(
         permission.id,
+        undefined,
       );
       expect(result).toEqualPayload({
         ...permissionFixtures.find(({ action }) => action === 'create'),

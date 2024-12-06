@@ -1,4 +1,3 @@
-
 .sc-emoji-picker {
   position: absolute;
   bottom: 30px;
@@ -24,7 +23,7 @@
 }
 
 .sc-emoji-picker--content {
-  padding: .5rem;
+  padding: 0.5rem;
   overflow: auto;
   width: 100%;
   max-height: 195px;
@@ -54,7 +53,9 @@
   cursor: pointer;
   vertical-align: middle;
   font-size: 1.5rem;
-  transition: transform 60ms ease-out,-webkit-transform 60ms ease-out;
+  transition:
+    transform 60ms ease-out,
+    -webkit-transform 60ms ease-out;
 }
 
 .sc-emoji-picker--emoji:hover {

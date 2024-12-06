@@ -20,7 +20,7 @@ import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { QuerySortDto } from '@/utils/pagination/pagination-query.dto';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
@@ -52,9 +52,9 @@ export class SettingController {
       }),
     )
     filters: TFilterQuery<Setting>,
-    @Query(PageQueryPipe) { sort }: { sort: QuerySortDto<Setting> },
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<Setting>,
   ) {
-    return await this.settingService.find(filters, sort);
+    return await this.settingService.find(filters, pageQuery);
   }
 
   /**

@@ -15,7 +15,7 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
-import { IBlockAttributes, ICustomBlockTemplate } from "@/types/block.types";
+import { IBlockAttributes } from "@/types/block.types";
 import { ILabelFull } from "@/types/label.types";
 import { IUser } from "@/types/user.types";
 
@@ -93,38 +93,6 @@ export const OptionsForm = () => {
                 }}
                 getOptionLabel={(option) => {
                   return `${option.first_name} ${option.last_name}`;
-                }}
-                {...rest}
-              />
-            );
-          }}
-        />
-      </ContentItem>
-      <ContentItem>
-        <Controller
-          name="options.effects"
-          control={control}
-          defaultValue={block?.options?.effects || []}
-          render={({ field }) => {
-            const { onChange, ...rest } = field;
-
-            return (
-              <AutoCompleteEntitySelect<ICustomBlockTemplate, "id">
-                searchFields={["id"]}
-                entity={EntityType.CUSTOM_BLOCK}
-                format={Format.BASIC}
-                idKey="id"
-                labelKey="id"
-                label={t("label.effects")}
-                multiple={true}
-                getOptionLabel={(option) => {
-                  return t(`title.${option.id}`, { ns: option.id });
-                }}
-                onChange={(_e, selected) =>
-                  onChange(selected.map(({ id }) => id))
-                }
-                preprocess={(options) => {
-                  return options.filter(({ effects }) => effects.length > 0);
                 }}
                 {...rest}
               />

@@ -72,7 +72,7 @@ describe('BaseRepository', () => {
       jest.spyOn(dummyModel, 'findById');
       const result = await dummyRepository.findOne(createdId);
 
-      expect(dummyModel.findById).toHaveBeenCalledWith(createdId);
+      expect(dummyModel.findById).toHaveBeenCalledWith(createdId, undefined);
       expect(result).toEqualPayload({
         dummy: 'dummy test 5',
       });
@@ -82,9 +82,12 @@ describe('BaseRepository', () => {
       jest.spyOn(dummyModel, 'findOne');
       const result = await dummyRepository.findOne({ dummy: 'dummy test 5' });
 
-      expect(dummyModel.findOne).toHaveBeenCalledWith({
-        dummy: 'dummy test 5',
-      });
+      expect(dummyModel.findOne).toHaveBeenCalledWith(
+        {
+          dummy: 'dummy test 5',
+        },
+        undefined,
+      );
       expect(result).toEqualPayload({
         dummy: 'dummy test 5',
       });
