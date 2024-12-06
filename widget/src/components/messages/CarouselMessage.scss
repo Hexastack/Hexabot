@@ -54,13 +54,13 @@
 
     &.prev {
       left: 0px;
-      top: 175px;
+      top: calc(50% - 14px);
       width: 1.5rem;
       height: 2rem;
     }
 
     &.next {
-      top: 175px;
+      top: calc(50% - 14px);
       right: 0px;
       width: 1.5rem;
       height: 2rem;
