@@ -255,13 +255,26 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.clsPopulate);
   }
 
+  /**
+   * @deprecated
+   */
   protected findQuery(
     filter: TFilterQuery<T>,
-    // TODO: QuerySortDto<T> type need to be removed
+    pageQuery?: QuerySortDto<T>,
+    projection?: ProjectionType<T>,
+  );
+
+  protected findQuery(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  );
+
+  protected findQuery(
+    filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ) {
-    // TODO: current block need to be removed
     if (Array.isArray(pageQuery)) {
       const query = this.model.find<T>(filter, projection);
       return query.sort([pageQuery] as [string, SortOrder][]);
@@ -286,7 +299,7 @@ export abstract class BaseRepository<
 
   async find(
     filter: TFilterQuery<T>,
-    pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
+    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]>;
 
@@ -295,6 +308,11 @@ export abstract class BaseRepository<
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]> {
+    if (Array.isArray(pageQuery)) {
+      const query = this.findQuery(filter, pageQuery, projection);
+      return await this.execute(query, this.cls);
+    }
+
     const query = this.findQuery(filter, pageQuery, projection);
     return await this.execute(query, this.cls);
   }
@@ -326,10 +344,17 @@ export abstract class BaseRepository<
     projection?: ProjectionType<T>,
   ): Promise<TFull[]> {
     this.ensureCanPopulate();
-    const query = this.findQuery(filters, pageQuery, projection).populate(
-      this.populate,
-    );
-    return await this.execute(query, this.clsPopulate);
+    if (Array.isArray(pageQuery)) {
+      const query = this.findQuery(filters, pageQuery, projection).populate(
+        this.populate,
+      );
+      return await this.execute(query, this.clsPopulate);
+    } else {
+      const query = this.findQuery(filters, pageQuery, projection).populate(
+        this.populate,
+      );
+      return await this.execute(query, this.clsPopulate);
+    }
   }
 
   protected findAllQuery(sort?: QuerySortDto<T>) {
