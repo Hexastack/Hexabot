@@ -253,6 +253,11 @@ export class ChatService {
         // Already existing user profile
         // Exec lastvisit hook
         this.eventEmitter.emit('hook:user:lastvisit', subscriber);
+        this.websocketGateway.broadcast(
+          subscriber,
+          event.getEventType(),
+          event._adapter.raw,
+        );
       }
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);

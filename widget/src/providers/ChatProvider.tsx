@@ -250,7 +250,7 @@ const ChatProvider: React.FC<{
       }
 
       setMessages((prevMessages) => [
-        ...prevMessages,
+        ...prevMessages.filter((message) => message.mid !== newIOMessage.mid),
         newIOMessage as TMessage,
       ]);
       setScroll(0);
