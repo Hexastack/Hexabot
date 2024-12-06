@@ -20,7 +20,7 @@ import { SessionStorage } from "../utils/sessionStorage";
 
 import { useSubscribe } from "./SocketProvider";
 
-export type ChannelSettings = {
+type ChannelSettings = {
   menu: IMenuNode[];
   secret: string;
   allowed_domains: string;
