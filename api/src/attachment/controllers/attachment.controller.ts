@@ -153,7 +153,7 @@ export class AttachmentController extends BaseController<Attachment> {
       throw new NotFoundException('Attachment not found');
     }
 
-    return this.attachmentService.download(attachment);
+    return await this.attachmentService.download(attachment);
   }
 
   /**

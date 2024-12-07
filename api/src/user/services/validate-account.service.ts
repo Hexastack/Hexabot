@@ -50,7 +50,7 @@ export class ValidateAccountService {
    * @returns A promise that resolves to the signed JWT token.
    */
   async sign(dto: { email: string }) {
-    return this.jwtService.signAsync(dto, this.jwtSignOptions);
+    return await this.jwtService.signAsync(dto, this.jwtSignOptions);
   }
 
   /**
@@ -61,7 +61,7 @@ export class ValidateAccountService {
    * @returns A promise that resolves to an object containing the user's email.
    */
   async verify(token: string): Promise<{ email: string }> {
-    return this.jwtService.verifyAsync(token, this.jwtSignOptions);
+    return await this.jwtService.verifyAsync(token, this.jwtSignOptions);
   }
 
   /**
