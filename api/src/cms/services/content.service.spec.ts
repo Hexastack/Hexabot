@@ -13,7 +13,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { FileType } from '@/chat/schemas/types/attachment';
 import {
   ContentElement,
   OutgoingMessageFormat,
@@ -119,7 +118,7 @@ describe('ContentService', () => {
         status: true,
         dynamicFields: {
           image: {
-            type: FileType.image,
+            type: 'image',
             payload: {
               attachment_id: '123',
             },
@@ -135,7 +134,7 @@ describe('ContentService', () => {
         status: true,
         dynamicFields: {
           image: {
-            type: FileType.image,
+            type: 'image',
             payload: {
               attachment_id: '456',
             },
@@ -151,7 +150,7 @@ describe('ContentService', () => {
         status: true,
         dynamicFields: {
           image: {
-            type: FileType.image,
+            type: 'image',
             payload: {
               url: 'https://remote.file/image.jpg',
             },

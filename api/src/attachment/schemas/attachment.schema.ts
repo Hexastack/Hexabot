@@ -102,14 +102,14 @@ export class Attachment extends BaseSchema {
    * @returns The attachment type ('image', 'audio', 'video' or 'file')
    */
   static getTypeByMime(mimeType: string): FileType {
-    if (mimeType.startsWith(FileType.image)) {
-      return FileType.image;
-    } else if (mimeType.startsWith(FileType.audio)) {
-      return FileType.audio;
-    } else if (mimeType.startsWith(FileType.video)) {
-      return FileType.video;
+    if (mimeType.startsWith('image')) {
+      return 'image';
+    } else if (mimeType.startsWith('audio')) {
+      return 'audio';
+    } else if (mimeType.startsWith('video')) {
+      return 'video';
     } else {
-      return FileType.file;
+      return 'file';
     }
   }
 }

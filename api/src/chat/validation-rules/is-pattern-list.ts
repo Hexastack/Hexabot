@@ -12,62 +12,14 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import Joi from 'joi';
+import { z } from 'zod';
 
-import { Pattern } from '../schemas/types/pattern';
+import { Pattern, patternSchema } from '../schemas/types/pattern';
 
+// Function to check if the given input is a valid Pattern list
 export function isPatternList(patterns: Pattern[]) {
-  return (
-    Array.isArray(patterns) &&
-    patterns.every((pattern) => {
-      if (typeof pattern === 'string') {
-        // Check if valid regex
-        if (pattern.endsWith('/') && pattern.startsWith('/')) {
-          try {
-            new RegExp(pattern.slice(1, -1), 'gi');
-          } catch (err) {
-            return false;
-          }
-          return true;
-        }
-        // Check if valid string (Equals/Like)
-        return pattern !== '';
-      } else if (Array.isArray(pattern)) {
-        // Check if valid NLP pattern
-        const nlpSchema = Joi.array()
-          .items(
-            Joi.object().keys({
-              entity: Joi.string().required(),
-              match: Joi.string().valid('entity', 'value').required(),
-              value: Joi.string().required(),
-            }),
-          )
-          .min(1);
-        const nlpCheck = nlpSchema.validate(pattern);
-        if (nlpCheck.error) {
-          // console.log('Message validation failed! ', nlpCheck);
-        }
-        return !nlpCheck.error;
-      } else if (typeof pattern === 'object') {
-        // Invalid structure?
-        const payloadSchema = Joi.object().keys({
-          label: Joi.string().required(),
-          value: Joi.any().required(),
-          type: Joi.string(),
-        });
-        const payloadCheck = payloadSchema.validate(pattern);
-        if (payloadCheck.error) {
-          // console.log(
-          //   'Message validation failed! ',
-          //   payloadCheck,
-          // );
-        }
-        return !payloadCheck.error;
-      } else {
-        return false;
-      }
-    })
-  );
+  const patternArraySchema = z.array(patternSchema);
+  return patternArraySchema.safeParse(patterns).success;
 }
 
 @ValidatorConstraint({ async: false })
