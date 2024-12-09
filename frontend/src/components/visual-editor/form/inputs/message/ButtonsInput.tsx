@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { FieldPath } from "react-hook-form";
@@ -75,9 +75,6 @@ const ButtonsInput: FC<ButtonsInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={1}>
-          &nbsp;
-        </Grid>
         <Grid item xs={2}>
           {t("label.type")}
         </Grid>
@@ -90,16 +87,11 @@ const ButtonsInput: FC<ButtonsInput> = ({
         <Grid item xs={2}>
           {t("label.webview")}
         </Grid>
+        <Grid item xs={1}>
+          &nbsp;
+        </Grid>
         {buttons.map(({ value, id }, idx) => (
           <Fragment key={id}>
-            <Grid item xs={1}>
-              <IconButton
-                onClick={() => removeInput(idx)}
-                disabled={buttons.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
             <ButtonInput
               fieldPath={fieldPath}
               idx={idx}
@@ -107,6 +99,15 @@ const ButtonsInput: FC<ButtonsInput> = ({
               onChange={updateInput(idx)}
               disablePayload={disablePayload}
             />
+            <Grid item xs={1}>
+              <IconButton
+                color="error"
+                onClick={() => removeInput(idx)}
+                disabled={buttons.length <= minInput}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
+            </Grid>
           </Fragment>
         ))}
       </Grid>

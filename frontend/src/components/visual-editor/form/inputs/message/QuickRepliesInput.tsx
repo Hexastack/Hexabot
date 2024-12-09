@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { Box, Button, Grid, IconButton } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 
@@ -71,9 +71,6 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={1}>
-          &nbsp;
-        </Grid>
         <Grid item xs={2}>
           {t("label.type")}
         </Grid>
@@ -84,22 +81,26 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
         <Grid item xs={4}>
           {t("label.payload")}
         </Grid>
+        <Grid item xs={1}>
+          &nbsp;
+        </Grid>
         {quickReplies.map(({ value, id }, idx) => (
           <Fragment key={id}>
-            <Grid item xs={1}>
-              <IconButton
-                size="medium"
-                onClick={() => removeInput(idx)}
-                disabled={quickReplies.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
             <QuickReplyInput
               value={value}
               idx={idx}
               onChange={updateInput(idx)}
             />
+            <Grid item xs={1}>
+              <IconButton
+                color="error"
+                size="medium"
+                onClick={() => removeInput(idx)}
+                disabled={quickReplies.length <= minInput}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
+            </Grid>
           </Fragment>
         ))}
       </Grid>
