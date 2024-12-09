@@ -7,11 +7,21 @@
  */
 
 import DEFAULT_WEB_CHANNEL_SETTINGS, {
+  WEB_CHANNEL_NAME,
   WEB_CHANNEL_NAMESPACE,
 } from './settings';
 
 declare global {
   interface Settings extends SettingTree<typeof DEFAULT_WEB_CHANNEL_SETTINGS> {}
+
+  interface SubscriberChannelDict {
+    [WEB_CHANNEL_NAME]: {
+      name: typeof WEB_CHANNEL_NAME;
+      isSocket: boolean;
+      ipAddress: string;
+      agent: string;
+    };
+  }
 }
 
 declare module '@nestjs/event-emitter' {

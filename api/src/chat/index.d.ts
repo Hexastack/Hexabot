@@ -6,24 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import CONSOLE_CHANNEL_SETTINGS, {
-  CONSOLE_CHANNEL_NAMESPACE,
-} from './settings';
+import { ChannelName } from '@/channel/types';
 
 declare global {
-  interface Settings extends SettingTree<typeof CONSOLE_CHANNEL_SETTINGS> {}
-  interface SubscriberChannelDict {
-    [CONSOLE_CHANNEL_NAME]: {
-      name: typeof CONSOLE_CHANNEL_NAME;
-    };
-  }
-}
-
-declare module '@nestjs/event-emitter' {
-  interface IHookExtensionsOperationMap {
-    [CONSOLE_CHANNEL_NAMESPACE]: TDefinition<
-      object,
-      SettingMapByType<typeof CONSOLE_CHANNEL_SETTINGS>
-    >;
-  }
+  interface SubscriberChannelDict extends Record<ChannelName | string, any> {}
 }

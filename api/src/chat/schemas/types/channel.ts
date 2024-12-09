@@ -8,10 +8,13 @@
 
 import { ChannelName } from '@/channel/types';
 
-interface BaseChannelData {
-  name: ChannelName; // channel name
-  isSocket?: boolean;
-  type?: any; //TODO: type has to be checked
-}
-
-export type ChannelData = BaseChannelData;
+export type SubscriberChannel<
+  C extends ChannelName = null,
+  K extends keyof SubscriberChannelDict[C] = keyof SubscriberChannelDict[C],
+> = C extends null
+  ? { name: ChannelName }
+  : {
+      [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][K];
+    } & {
+      name: C;
+    };

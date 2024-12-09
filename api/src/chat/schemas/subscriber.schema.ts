@@ -11,6 +11,7 @@ import { Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { ChannelName } from '@/channel/types';
 import { User } from '@/user/schemas/user.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -20,7 +21,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { Label } from './label.schema';
-import { ChannelData } from './types/channel';
+import { SubscriberChannel } from './types/channel';
 import { SubscriberContext } from './types/subscriberContext';
 
 @Schema({ timestamps: true })
@@ -102,7 +103,7 @@ export class SubscriberStub extends BaseSchema {
   @Prop({
     type: Object,
   })
-  channel: ChannelData;
+  channel: SubscriberChannel;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -116,6 +117,13 @@ export class SubscriberStub extends BaseSchema {
     default: { vars: {} },
   })
   context?: SubscriberContext;
+
+  static getChannelData<
+    C extends ChannelName,
+    S extends SubscriberStub = Subscriber,
+  >(subscriber: S) {
+    return subscriber.channel as unknown as SubscriberChannel<C>;
+  }
 }
 
 @Schema({ timestamps: true })

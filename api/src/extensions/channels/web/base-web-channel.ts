@@ -59,7 +59,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { WEB_CHANNEL_NAMESPACE } from './settings';
+import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
 
@@ -1185,7 +1185,9 @@ export default abstract class BaseWebChannelHandler<
     type: StdEventType,
     content: any,
   ): void {
-    if (subscriber.channel.isSocket) {
+    const channelData =
+      Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
+    if (channelData.isSocket) {
       this.websocketGateway.broadcast(subscriber, type, content);
     } else {
       // Do nothing, messages will be retrieved via polling
@@ -1278,6 +1280,17 @@ export default abstract class BaseWebChannelHandler<
    * @returns The web's response, otherwise an error
    */
   async getUserData(event: WebEventWrapper): Promise<SubscriberCreateDto> {
-    return event.getSender() as SubscriberCreateDto;
+    const sender = event.getSender();
+    const {
+      id: _id,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ...rest
+    } = sender;
+    const subscriber: SubscriberCreateDto = {
+      ...rest,
+      channel: Subscriber.getChannelData(sender),
+    };
+    return subscriber;
   }
 }
