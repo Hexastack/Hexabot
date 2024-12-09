@@ -256,18 +256,18 @@ export abstract class BaseRepository<
     return await this.executeOne(query, this.clsPopulate);
   }
 
+  protected findQuery(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Query<T[], T, object, T, 'find', object>;
+
   /**
    * @deprecated
    */
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
-  ): Query<T[], T, object, T, 'find', object>;
-
-  protected findQuery(
-    filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Query<T[], T, object, T, 'find', object>;
 
@@ -293,18 +293,18 @@ export abstract class BaseRepository<
     }
   }
 
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<T[]>;
+
   /**
    * @deprecated
    */
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
-  ): Promise<T[]>;
-
-  async find(
-    filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]>;
 
@@ -328,18 +328,18 @@ export abstract class BaseRepository<
     }
   }
 
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<TFull[]>;
+
   /**
    * @deprecated
    */
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
-  ): Promise<TFull[]>;
-
-  async findAndPopulate(
-    filters: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<TFull[]>;
 

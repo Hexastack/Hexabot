@@ -44,18 +44,18 @@ export abstract class BaseService<
     return await this.repository.findOneAndPopulate(criteria, projection);
   }
 
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<T[]>;
+
   /**
    * @deprecated
    */
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
-  ): Promise<T[]>;
-
-  async find(
-    filter: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<T[]>;
 
@@ -70,18 +70,18 @@ export abstract class BaseService<
     return await this.repository.find(filter, pageQuery, projection);
   }
 
+  async findAndPopulate(
+    filters: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+    projection?: ProjectionType<T>,
+  ): Promise<TFull[]>;
+
   /**
    * @deprecated
    */
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
-  ): Promise<TFull[]>;
-
-  async findAndPopulate(
-    filters: TFilterQuery<T>,
-    pageQuery?: PageQueryDto<T>,
     projection?: ProjectionType<T>,
   ): Promise<TFull[]>;
 
