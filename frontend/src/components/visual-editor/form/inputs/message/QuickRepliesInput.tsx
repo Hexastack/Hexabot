@@ -6,11 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { RemoveCircleOutline } from "@mui/icons-material";
+import { Abc, LocationOn, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import { Box, Grid, IconButton } from "@mui/material";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
+import DropdownButton, {
+  DropdownButtonAction,
+} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { QuickReplyType, StdQuickReply } from "@/types/message.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
@@ -31,16 +34,30 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   const { t } = useTranslate();
   const [quickReplies, setQuickReplies] = useState<
     ValueWithId<StdQuickReply>[]
-  >(value.map((quickReplie) => createValueWithId(quickReplie)));
-  const addInput = () => {
-    setQuickReplies([
-      ...quickReplies,
-      createValueWithId({
-        content_type: QuickReplyType.text,
-        title: "",
-        payload: "",
-      }),
-    ]);
+  >(value.map((quickReply) => createValueWithId(quickReply)));
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      {
+        icon: <Abc />,
+        name: t("button.text"),
+        defaultValue: {
+          content_type: QuickReplyType.text,
+          title: "",
+          payload: "",
+        },
+      },
+      {
+        icon: <LocationOn />,
+        name: t("button.location"),
+        defaultValue: {
+          content_type: QuickReplyType.location,
+        },
+      },
+    ],
+    [t],
+  );
+  const addInput = (defaultValue: StdQuickReply) => {
+    setQuickReplies([...quickReplies, createValueWithId(defaultValue)]);
   };
   const removeInput = (index: number) => {
     const updatedQuickReplies = [...quickReplies];
@@ -104,16 +121,14 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
           </Fragment>
         ))}
       </Grid>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={addInput}
-        startIcon={<AddIcon />}
+      <DropdownButton
         sx={{ marginTop: 2, float: "right" }}
+        label={t("button.add_quick_reply")}
+        actions={actions}
+        onClick={(action) => addInput(action.defaultValue)}
+        icon={<AddIcon />}
         disabled={quickReplies.length > 10}
-      >
-        {t("button.add")}
-      </Button>
+      />
     </Box>
   );
 };

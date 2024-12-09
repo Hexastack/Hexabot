@@ -6,12 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { RemoveCircleOutline } from "@mui/icons-material";
+import { KeyboardReturn, Link, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import { Box, Grid, IconButton } from "@mui/material";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { FieldPath } from "react-hook-form";
 
+import DropdownButton, {
+  DropdownButtonAction,
+} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { AnyButton, ButtonType } from "@/types/message.types";
@@ -40,11 +43,31 @@ const ButtonsInput: FC<ButtonsInput> = ({
   const [buttons, setButtons] = useState<ValueWithId<AnyButton>[]>(
     value.map((button) => createValueWithId(button)),
   );
-  const addInput = () => {
-    setButtons([
-      ...buttons,
-      createValueWithId({ type: ButtonType.postback, title: "", payload: "" }),
-    ]);
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      {
+        icon: <KeyboardReturn />,
+        name: t("button.postback"),
+        defaultValue: {
+          type: ButtonType.postback,
+          title: "",
+          payload: "",
+        },
+      },
+      {
+        icon: <Link />,
+        name: t("button.url"),
+        defaultValue: {
+          type: ButtonType.web_url,
+          title: "",
+          url: "",
+        },
+      },
+    ],
+    [t],
+  );
+  const addInput = (defaultValue: AnyButton) => {
+    setButtons([...buttons, createValueWithId(defaultValue)]);
   };
   const removeInput = (index: number) => {
     const updatedButtons = [...buttons];
@@ -111,16 +134,14 @@ const ButtonsInput: FC<ButtonsInput> = ({
           </Fragment>
         ))}
       </Grid>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={addInput}
-        startIcon={<AddIcon />}
+      <DropdownButton
         sx={{ m: 1, float: "right" }}
+        label={t("button.add_button")}
+        actions={actions}
+        onClick={(action) => addInput(action.defaultValue)}
+        icon={<AddIcon />}
         disabled={buttons.length >= maxInput}
-      >
-        {t("button.add")}
-      </Button>
+      />
     </Box>
   );
 };

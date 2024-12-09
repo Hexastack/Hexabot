@@ -558,6 +558,12 @@
     "manage_roles": "Manage Roles",
     "connect_with_sso": "Connect with SSO",
     "add_pattern": "New Trigger",
+    "postback": "Postback",
+    "url": "Url",
+    "add_button": "New Button",
+    "add_quick_reply": "New Quick Reply",
+    "text": "Text",
+    "location": "Location",
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle button"
   },

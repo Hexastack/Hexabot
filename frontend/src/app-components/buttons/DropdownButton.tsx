@@ -32,6 +32,7 @@ interface AddPatternProps {
   label?: string;
   icon?: React.ReactNode;
   sx?: SxProps<Theme> | undefined;
+  disabled?: boolean;
 }
 
 const DropdownButton: React.FC<AddPatternProps> = ({
@@ -40,10 +41,13 @@ const DropdownButton: React.FC<AddPatternProps> = ({
   label = "Add",
   icon,
   sx,
+  disabled = false,
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+    if (!disabled) {
+      setAnchorEl(event.currentTarget);
+    }
   };
   const handleClose = () => {
     setAnchorEl(null);
@@ -61,6 +65,7 @@ const DropdownButton: React.FC<AddPatternProps> = ({
         onClick={handleOpen}
         startIcon={icon}
         endIcon={<ArrowDropDown />}
+        disabled={disabled}
       >
         {label}
       </Button>
