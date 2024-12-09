@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  ludwig:
+    image: ludwigai/ludwig:master
+    command: serve --model_path /src/results/experiment_run/model
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
+      - ./src:/src
+    ports:
+      - "8000:8000"  # This exposes port 8000 on the host and maps it to port 8000 inside the container
+
