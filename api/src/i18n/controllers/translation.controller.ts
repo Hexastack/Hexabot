@@ -137,7 +137,7 @@ export class TranslationController extends BaseController<Translation> {
     );
     await Promise.all(queue);
     // Purge non existing translations
-    return this.translationService.deleteMany({
+    return await this.translationService.deleteMany({
       str: { $nin: strings },
     });
   }

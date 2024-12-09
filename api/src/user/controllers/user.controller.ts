@@ -84,7 +84,7 @@ export class ReadOnlyUserController extends BaseController<
   @Roles('public')
   @Get('bot/profile_pic')
   async botProfilePic(@Query('color') color: string) {
-    return getBotAvatar(color);
+    return await getBotAvatar(color);
   }
 
   /**
@@ -103,7 +103,7 @@ export class ReadOnlyUserController extends BaseController<
     } catch (e) {
       const user = await this.userService.findOne(id);
       if (user) {
-        return generateInitialsAvatar(user);
+        return await generateInitialsAvatar(user);
       } else {
         throw new NotFoundException(`user with ID ${id} not found`);
       }

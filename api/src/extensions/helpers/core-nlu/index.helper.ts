@@ -272,7 +272,7 @@ export default class CoreNluHelper extends BaseNlpHelper<
           },
         );
 
-      return this.filterEntitiesByConfidence(nlp, threshold);
+      return await this.filterEntitiesByConfidence(nlp, threshold);
     } catch (err) {
       this.logger.error('Core NLU Helper : Unable to parse nlp', err);
       throw err;
