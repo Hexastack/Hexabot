@@ -279,18 +279,18 @@ export abstract class BaseRepository<
     if (Array.isArray(pageQuery)) {
       const query = this.model.find<T>(filter, projection);
       return query.sort([pageQuery] as [string, SortOrder][]);
-    } else {
-      const {
-        skip = 0,
-        limit = 0,
-        sort = ['createdAt', 'asc'],
-      } = pageQuery || {};
-      const query = this.model.find<T>(filter, projection);
-      return query
-        .skip(skip)
-        .limit(limit)
-        .sort([sort] as [string, SortOrder][]);
     }
+
+    const {
+      skip = 0,
+      limit = 0,
+      sort = ['createdAt', 'asc'],
+    } = pageQuery || {};
+    const query = this.model.find<T>(filter, projection);
+    return query
+      .skip(skip)
+      .limit(limit)
+      .sort([sort] as [string, SortOrder][]);
   }
 
   async find(
@@ -354,12 +354,12 @@ export abstract class BaseRepository<
         this.populate,
       );
       return await this.execute(query, this.clsPopulate);
-    } else {
-      const query = this.findQuery(filters, pageQuery, projection).populate(
-        this.populate,
-      );
-      return await this.execute(query, this.clsPopulate);
     }
+
+    const query = this.findQuery(filters, pageQuery, projection).populate(
+      this.populate,
+    );
+    return await this.execute(query, this.clsPopulate);
   }
 
   protected findAllQuery(
