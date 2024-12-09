@@ -15,6 +15,9 @@ declare global {
   interface SubscriberChannelDict {
     [CONSOLE_CHANNEL_NAME]: {
       name: typeof CONSOLE_CHANNEL_NAME;
+      isSocket: boolean;
+      ipAddress: string;
+      agent: string;
     };
   }
 }
