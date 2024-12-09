@@ -126,7 +126,7 @@ export class MessageService extends BaseService<
    * @returns The message history since the specified date.
    */
   async findLastMessages(subscriber: Subscriber, limit: number = 5) {
-    const lastMessages = await this.findPage(
+    const lastMessages = await this.find(
       {
         $or: [{ sender: subscriber.id }, { recipient: subscriber.id }],
       },

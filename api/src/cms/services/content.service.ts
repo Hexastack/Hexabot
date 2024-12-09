@@ -170,7 +170,7 @@ export class ContentService extends BaseService<
       }
 
       try {
-        const contents = await this.findPage(query, {
+        const contents = await this.find(query, {
           skip,
           limit,
           sort: ['createdAt', 'desc'],

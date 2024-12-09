@@ -106,7 +106,7 @@ export class SubscriberRepository extends BaseRepository<
    * @returns The constructed query object.
    */
   findByForeignIdQuery(id: string) {
-    return this.findPageQuery(
+    return this.findQuery(
       { foreign_id: id },
       { skip: 0, limit: 1, sort: ['lastvisit', 'desc'] },
     );
