@@ -148,34 +148,30 @@ export class AttachmentService extends BaseService<Attachment> {
    * @returns A promise that resolves to an array of uploaded attachments.
    */
   async uploadFiles(files: { file: Express.Multer.File[] }) {
+    const uploadedFiles: Attachment[] = [];
+
     if (this.getStoragePlugin()) {
-      const dtos = await Promise.all(
-        files.file.map((file) => {
-          return this.getStoragePlugin().upload(file);
-        }),
-      );
-      const uploadedFiles = await Promise.all(
-        dtos.map((dto) => {
-          return this.create(dto);
-        }),
-      );
-      return uploadedFiles;
+      for (const file of files?.file) {
+        const dto = await this.getStoragePlugin().upload(file);
+        const uploadedFile = await this.create(dto);
+        uploadedFiles.push(uploadedFile);
+      }
     } else {
       if (Array.isArray(files?.file)) {
-        const uploadedFiles = await Promise.all(
-          files?.file?.map(async ({ size, filename, mimetype }) => {
-            return await this.create({
-              size,
-              type: mimetype,
-              name: filename,
-              channel: {},
-              location: `/${filename}`,
-            });
-          }),
-        );
-        return uploadedFiles;
+        for (const { size, mimetype, filename } of files?.file) {
+          const uploadedFile = await this.repository.create({
+            size,
+            type: mimetype,
+            name: filename,
+            channel: {},
+            location: `/${filename}`,
+          });
+          uploadedFiles.push(uploadedFile);
+        }
       }
     }
+
+    return uploadedFiles;
   }
 
   /**
