@@ -94,7 +94,7 @@ export class AttachmentController extends BaseController<Attachment> {
     )
     filters: TFilterQuery<Attachment>,
   ) {
-    return await this.attachmentService.findPage(filters, pageQuery);
+    return await this.attachmentService.find(filters, pageQuery);
   }
 
   /**

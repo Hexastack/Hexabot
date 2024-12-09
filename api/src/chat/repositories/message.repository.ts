@@ -72,7 +72,7 @@ export class MessageRepository extends BaseRepository<
     until = new Date(),
     limit: number = 30,
   ) {
-    return await this.findPage(
+    return await this.find(
       {
         $or: [{ recipient: subscriber.id }, { sender: subscriber.id }],
         createdAt: { $lt: until },
@@ -96,7 +96,7 @@ export class MessageRepository extends BaseRepository<
     since = new Date(),
     limit: number = 30,
   ) {
-    return await this.findPage(
+    return await this.find(
       {
         $or: [{ recipient: subscriber.id }, { sender: subscriber.id }],
         createdAt: { $gt: since },
