@@ -6,24 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NLU } from '@/helper/types';
+import LLM_NLU_HELPER_SETTINGS, { LLM_NLU_HELPER_NAMESPACE } from './settings';
 
-export const nlpEntitiesGreeting: NLU.ParseEntities = {
-  entities: [
-    {
-      entity: 'intent',
-      value: 'greeting',
-      confidence: 0.999,
-    },
-    {
-      entity: 'firstname',
-      value: 'jhon',
-      confidence: 0.5,
-    },
-    {
-      entity: 'lastname',
-      value: 'doe',
-      confidence: 0.5,
-    },
-  ],
-};
+declare global {
+  interface Settings extends SettingTree<typeof LLM_NLU_HELPER_SETTINGS> {}
+}
+
+declare module '@nestjs/event-emitter' {
+  interface IHookExtensionsOperationMap {
+    [LLM_NLU_HELPER_NAMESPACE]: TDefinition<
+      object,
+      SettingMapByType<typeof LLM_NLU_HELPER_SETTINGS>
+    >;
+  }
+}

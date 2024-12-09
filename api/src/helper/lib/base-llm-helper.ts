@@ -11,7 +11,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
-import { HelperName, HelperType } from '../types';
+import { HelperName, HelperType, LLM } from '../types';
 
 import BaseHelper from './base-helper';
 
@@ -30,7 +30,7 @@ export default abstract class BaseLlmHelper<
   }
 
   /**
-   * Generates a response using LLM
+   * Generates a text response using LLM
    *
    * @param prompt - The input text from the user
    * @param model - The model to be used
@@ -44,6 +44,24 @@ export default abstract class BaseLlmHelper<
     systemPrompt: string,
     extra?: any,
   ): Promise<string>;
+
+  /**
+   * Generates a structured response using LLM
+   *
+   * @param prompt - The input text from the user
+   * @param model - The model to be used
+   * @param systemPrompt - The input text from the system
+   * @param schema - The OpenAPI data schema
+   * @param extra - Extra options
+   * @returns {Promise<string>} - The generated response from the LLM
+   */
+  generateStructuredResponse?<T>(
+    prompt: string,
+    model: string,
+    systemPrompt: string,
+    schema: LLM.ResponseSchema,
+    extra?: any,
+  ): Promise<T>;
 
   /**
    * Send a chat completion request with the conversation history.

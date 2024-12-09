@@ -1,0 +1,8 @@
+{
+  "name": "hexabot-helper-llm-nlu",
+  "version": "2.0.0",
+  "description": "The LLM NLU Helper Extension for Hexabot to enable the Intent Classification and Language Detection",
+  "dependencies": {},
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

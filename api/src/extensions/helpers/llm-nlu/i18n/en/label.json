@@ -1,0 +1,5 @@
+{
+  "model": "LLM Model",
+  "language_classifier_prompt_template": "Language Detection Prompt Template",
+  "trait_classifier_prompt_template": "Trait Classifier Prompt Template"
+}

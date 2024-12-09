@@ -1,0 +1,5 @@
+{
+  "model": "Spécifiez le nom du modèle LLM que vous souhaitez utiliser. Laissez ce champ vide si vous préférez utiliser le modèle par défaut spécifié dans les paramètres de l'assistant LLM.",
+  "language_classifier_prompt_template": "Fournissez le modèle de prompt utilisé pour la détection de langue. Utilisez la syntaxe Handlebars pour insérer dynamiquement des variables ou personnaliser le prompt en fonction de vos besoins.",
+  "trait_classifier_prompt_template": "Définissez le modèle de prompt pour les tâches de classification des traits, telles que la détection d'intention ou de sentiment. Utilisez la syntaxe Handlebars pour structurer et formater correctement le prompt."
+}
