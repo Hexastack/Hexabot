@@ -159,7 +159,7 @@ export class AttachmentService extends BaseService<Attachment> {
     } else {
       if (Array.isArray(files?.file)) {
         for (const { size, mimetype, filename } of files?.file) {
-          const uploadedFile = await this.repository.create({
+          const uploadedFile = await this.create({
             size,
             type: mimetype,
             name: filename,
