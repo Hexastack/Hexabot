@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Button,
@@ -130,12 +130,6 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
               gap={1}
               mb={1}
             >
-              <IconButton
-                onClick={() => handleRemoveInput(input.id)}
-                disabled={inputs.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
               <Input
                 {...(getInputProps ? getInputProps(idx) : null)}
                 {...rest}
@@ -146,6 +140,13 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
                 }}
                 fullWidth
               />
+              <IconButton
+                color="error"
+                onClick={() => handleRemoveInput(input.id)}
+                disabled={inputs.length <= minInput}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
             </Box>
           ))}
           <Box

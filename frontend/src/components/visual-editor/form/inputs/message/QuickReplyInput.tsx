@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, MenuItem } from "@mui/material";
+import { Grid } from "@mui/material";
 import { FC, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -28,51 +28,15 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
   idx,
 }) => {
   const { t } = useTranslate();
-  const [quickReplyType, setQuickReplyType] = useState(value.content_type);
+  const [quickReplyType, _setQuickReplyType] = useState(value.content_type);
   const {
     register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  const types = Object.values(QuickReplyType).map((value) => {
-    return {
-      value,
-      label: t(`label.${value}`),
-    };
-  });
 
   return (
     <>
-      <Grid item xs={2}>
-        <Input
-          select
-          defaultValue={quickReplyType}
-          onChange={(e) => {
-            const selected = e.target.value as QuickReplyType;
-
-            setQuickReplyType(selected);
-
-            onChange(
-              selected === QuickReplyType.location
-                ? {
-                    content_type: QuickReplyType.location,
-                  }
-                : {
-                    content_type: selected,
-                    title: "",
-                    payload: "",
-                  },
-            );
-          }}
-        >
-          {types.map((item) => (
-            <MenuItem key={item.value.toString()} value={item.value.toString()}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </Input>
-      </Grid>
-
-      <Grid item xs={4}>
+      <Grid item xs={5}>
         {quickReplyType !== QuickReplyType.location ? (
           <Input
             value={value.title}
@@ -99,7 +63,7 @@ const QuickReplyInput: FC<QuickReplyInputProps> = ({
           />
         ) : null}
       </Grid>
-      <Grid item xs={5}>
+      <Grid item xs={6}>
         {quickReplyType !== QuickReplyType.location ? (
           <ToggleableInput
             defaultValue={value.payload}
