@@ -98,17 +98,11 @@ const ButtonsInput: FC<ButtonsInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={2}>
-          {t("label.type")}
-        </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={5}>
           {t("label.title")}
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           {t("label.payload")} / {t("label.url")}
-        </Grid>
-        <Grid item xs={2}>
-          {t("label.webview")}
         </Grid>
         <Grid item xs={1}>
           &nbsp;
@@ -135,7 +129,7 @@ const ButtonsInput: FC<ButtonsInput> = ({
         ))}
       </Grid>
       <DropdownButton
-        sx={{ m: 1, float: "right" }}
+        sx={{ m: 1, float: "right", padding: "16px" }}
         label={t("button.add_button")}
         actions={actions}
         onClick={(action) => addInput(action.defaultValue)}

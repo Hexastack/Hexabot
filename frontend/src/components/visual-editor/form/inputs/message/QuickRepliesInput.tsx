@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Abc, LocationOn, RemoveCircleOutline } from "@mui/icons-material";
+import { Abc, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Grid, IconButton } from "@mui/material";
 import { FC, Fragment, useEffect, useMemo, useState } from "react";
@@ -46,13 +46,6 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
           payload: "",
         },
       },
-      {
-        icon: <LocationOn />,
-        name: t("button.location"),
-        defaultValue: {
-          content_type: QuickReplyType.location,
-        },
-      },
     ],
     [t],
   );
@@ -88,14 +81,11 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={2}>
-          {t("label.type")}
-        </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={5}>
           {t("label.title")}
         </Grid>
         <Grid item xs={1} />
-        <Grid item xs={4}>
+        <Grid item xs={5}>
           {t("label.payload")}
         </Grid>
         <Grid item xs={1}>
@@ -122,7 +112,12 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
         ))}
       </Grid>
       <DropdownButton
-        sx={{ marginTop: 2, float: "right" }}
+        sx={{
+          marginTop: 2,
+          float: "right",
+          verticalAlign: "middle",
+          padding: "20px",
+        }}
         label={t("button.add_quick_reply")}
         actions={actions}
         onClick={(action) => addInput(action.defaultValue)}
