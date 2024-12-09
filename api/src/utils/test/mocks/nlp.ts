@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Nlp } from '@/helper/types';
+import { NLU } from '@/helper/types';
 
-export const nlpEntitiesGreeting: Nlp.ParseEntities = {
+export const nlpEntitiesGreeting: NLU.ParseEntities = {
   entities: [
     {
       entity: 'intent',

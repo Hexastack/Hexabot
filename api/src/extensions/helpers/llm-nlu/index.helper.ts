@@ -12,7 +12,7 @@ import Handlebars from 'handlebars';
 
 import { HelperService } from '@/helper/helper.service';
 import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
-import { LLM, Nlp } from '@/helper/types';
+import { LLM, NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
@@ -103,7 +103,7 @@ export default class LlmNluHelper
   private findKeywordEntities(
     text: string,
     entity: NlpEntityFull,
-  ): Nlp.ParseEntity[] {
+  ): NLU.ParseEntity[] {
     return entity.values
       .flatMap(({ value, expressions }) => {
         const allValues = [value, ...expressions];
@@ -128,7 +128,7 @@ export default class LlmNluHelper
       .filter((v) => !!v);
   }
 
-  async predict(text: string): Promise<Nlp.ParseEntities> {
+  async predict(text: string): Promise<NLU.ParseEntities> {
     const settings = await this.getSettings();
     const helper = await this.helperService.getDefaultLlmHelper();
     const defaultLanguage = await this.languageService.getDefaultLanguage();
@@ -143,7 +143,7 @@ export default class LlmNluHelper
       },
     );
 
-    const traits: Nlp.ParseEntity[] = [
+    const traits: NLU.ParseEntity[] = [
       {
         entity: 'language',
         value: language || defaultLanguage.code,

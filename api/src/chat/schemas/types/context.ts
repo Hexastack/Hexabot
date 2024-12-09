@@ -7,7 +7,7 @@
  */
 
 import { ChannelName } from '@/channel/types';
-import { Nlp } from '@/helper/types';
+import { NLU } from '@/helper/types';
 
 import { Subscriber } from '../subscriber.schema';
 
@@ -17,7 +17,7 @@ export interface Context {
   channel?: ChannelName;
   text?: string;
   payload?: Payload | string;
-  nlp?: Nlp.ParseEntities | null;
+  nlp?: NLU.ParseEntities | null;
   vars: { [key: string]: any };
   user_location: {
     address?: Record<string, string>;

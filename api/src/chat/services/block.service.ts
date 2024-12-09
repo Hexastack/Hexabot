@@ -13,7 +13,7 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
-import { Nlp } from '@/helper/types';
+import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -254,7 +254,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
    * @returns The NLP patterns that matches
    */
   matchNLP(
-    nlp: Nlp.ParseEntities,
+    nlp: NLU.ParseEntities,
     block: Block | BlockFull,
   ): NlpPattern[] | undefined {
     // No nlp entities to check against

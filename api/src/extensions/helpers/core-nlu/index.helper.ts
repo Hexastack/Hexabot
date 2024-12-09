@@ -11,7 +11,7 @@ import { Injectable } from '@nestjs/common';
 
 import { HelperService } from '@/helper/helper.service';
 import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
-import { Nlp } from '@/helper/types';
+import { NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntity, NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
@@ -191,10 +191,10 @@ export default class CoreNluHelper extends BaseNlpHelper<
   async filterEntitiesByConfidence(
     nlp: NlpParseResultType,
     threshold: boolean,
-  ): Promise<Nlp.ParseEntities> {
+  ): Promise<NLU.ParseEntities> {
     try {
       let minConfidence = 0;
-      const guess: Nlp.ParseEntities = {
+      const guess: NLU.ParseEntities = {
         entities: nlp.entities.slice(),
       };
       if (threshold) {
@@ -255,7 +255,7 @@ export default class CoreNluHelper extends BaseNlpHelper<
     text: string,
     threshold: boolean,
     project: string = 'current',
-  ): Promise<Nlp.ParseEntities> {
+  ): Promise<NLU.ParseEntities> {
     try {
       const settings = await this.getSettings();
       const { data: nlp } =

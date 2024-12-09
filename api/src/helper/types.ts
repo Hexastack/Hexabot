@@ -13,7 +13,7 @@ import BaseHelper from './lib/base-helper';
 import BaseLlmHelper from './lib/base-llm-helper';
 import BaseNlpHelper from './lib/base-nlp-helper';
 
-export namespace Nlp {
+export namespace NLU {
   export interface ParseEntity {
     entity: string; // Entity name
     value: string; // Value name

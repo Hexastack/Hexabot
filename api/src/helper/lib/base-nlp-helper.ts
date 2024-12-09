@@ -23,7 +23,7 @@ import {
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
-import { HelperName, HelperType, Nlp } from '../types';
+import { HelperName, HelperType, NLU } from '../types';
 
 import BaseHelper from './base-helper';
 
@@ -163,7 +163,7 @@ export default abstract class BaseNlpHelper<
   filterEntitiesByConfidence?(
     nlp: any,
     threshold: boolean,
-  ): Promise<Nlp.ParseEntities>;
+  ): Promise<NLU.ParseEntities>;
 
   /**
    * Returns only the entities that have strong confidence (> than the threshold), can return an empty result
@@ -178,5 +178,5 @@ export default abstract class BaseNlpHelper<
     text: string,
     threshold?: boolean,
     project?: string,
-  ): Promise<Nlp.ParseEntities>;
+  ): Promise<NLU.ParseEntities>;
 }

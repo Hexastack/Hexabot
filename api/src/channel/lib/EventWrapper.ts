@@ -17,25 +17,21 @@ import {
   StdIncomingMessage,
 } from '@/chat/schemas/types/message';
 import { Payload } from '@/chat/schemas/types/quick-reply';
-import { Nlp } from '@/helper/types';
+import { NLU } from '@/helper/types';
 
 import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
 
 // eslint-disable-next-line prettier/prettier
-export default abstract class EventWrapper<
-  A,
-  E,
-  C extends ChannelHandler = ChannelHandler,
-> {
+export default abstract class EventWrapper<A, E, C extends ChannelHandler = ChannelHandler> {
   _adapter: A = {} as A;
 
   _handler: C;
 
   _profile!: Subscriber;
 
-  _nlp!: Nlp.ParseEntities;
+  _nlp!: NLU.ParseEntities;
 
   /**
    * Constructor : Class used to wrap any channel's event in order
@@ -138,7 +134,7 @@ export default abstract class EventWrapper<
    *
    * @returns The parsed NLP entities, or null if not available.
    */
-  getNLP(): Nlp.ParseEntities | null {
+  getNLP(): NLU.ParseEntities | null {
     return this._nlp;
   }
 
@@ -147,7 +143,7 @@ export default abstract class EventWrapper<
    *
    * @param nlp - NLP parse results
    */
-  setNLP(nlp: Nlp.ParseEntities) {
+  setNLP(nlp: NLU.ParseEntities) {
     this._nlp = nlp;
   }
 
