@@ -1,6 +1,6 @@
 input_features:
   - name: text
-    type: text  # We assume the data consists of text for language classification
+    type: text 
     preprocessing:
       tokenizer: ngram
       ngram: 3
@@ -10,13 +10,14 @@ input_features:
 
 output_features:
   - name: language
-    type: category  # Multi-class classification problem, with language labels
+    type: category  
     decoder:
       type: classifier
 
 preprocessing:
   split:
-      type: random
+      type: stratify
+      column: language
       probabilities:
       - 0.85
       - 0.1

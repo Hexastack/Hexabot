@@ -9,9 +9,9 @@ scipy>=0.18
 tabulate>=0.7
 scikit-learn
 tqdm
-torch>=2.0.0
+torch==2.0.1
 torchaudio
-torchtext
+torchtext==0.15.2
 torchvision
 pydantic<2.0
 transformers>=4.42.3
@@ -69,3 +69,4 @@ datasets
 
 # pin required for torch 2.1.0
 urllib3<2
+ludwig==0.10.2 # Must downgrade to 0.10.2 or it won't be able to load in dockerized environment using Ludwig's official image

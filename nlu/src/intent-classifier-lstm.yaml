@@ -3,7 +3,7 @@ input_features:
       type: sequence
       encoder:
         type: rnn
-       dropout: 0.2
+        dropout: 0.2
         cell_type: lstm
         bidirectional: true
         num_layers: 2
@@ -15,7 +15,7 @@ input_features:
 output_features:
     - name: intent
       type: category
-      dropout: 0.35
+      dropout: 0.2
       reduce_input: sum
 
 preprocessing:
@@ -31,5 +31,5 @@ trainer:
   decay: true
   early_stop: 0
   epochs: 10
-  learning_rate: 0.0005
+  learning_rate: 0.001
   

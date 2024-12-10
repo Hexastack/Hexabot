@@ -5,8 +5,9 @@ services:
     image: ludwigai/ludwig:master
     command: >
       experiment --config /src/${MODEL_NAME}.yaml
-                 --dataset /data/data.json
-                 --output_directory /src/results
+                 --dataset /data/train_data.json
+                 --output_directory /results
     volumes:
       - ./data:/data
       - ./src:/src
+      - ./results/results
