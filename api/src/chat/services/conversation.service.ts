@@ -9,7 +9,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { ChannelName } from '@/channel/types';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -70,7 +69,7 @@ export class ConversationService extends BaseService<
     const msgType = event.getMessageType();
     const profile = event.getSender();
     // Capture channel specific context data
-    convo.context.channel = event.getHandler().getName() as ChannelName;
+    convo.context.channel = event.getHandler().getName();
     convo.context.text = event.getText();
     convo.context.payload = event.getPayload();
     convo.context.nlp = event.getNLP();

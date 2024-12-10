@@ -186,6 +186,7 @@ describe('BlockService', () => {
     const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
+      agent: 'Chromium',
     });
 
     const [block] = await blockService.findAndPopulate({ patterns: ['Hi'] });
@@ -254,6 +255,7 @@ describe('BlockService', () => {
     const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
+      agent: 'Chromium',
     });
     const webSubscriber = await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
@@ -307,6 +309,7 @@ describe('BlockService', () => {
     const event = new WebEventWrapper(handler, webEventText, {
       isSocket: false,
       ipAddress: '1.1.1.1',
+      agent: 'Chromium',
     });
     const webSubscriber = await subscriberService.findOne({
       foreign_id: 'foreign-id-web-2',

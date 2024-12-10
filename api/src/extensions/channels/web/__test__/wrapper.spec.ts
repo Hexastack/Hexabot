@@ -37,6 +37,7 @@ import { SocketEventDispatcherService } from '@/websocket/services/socket-event-
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
+import { WEB_CHANNEL_NAME } from '../settings';
 import WebEventWrapper from '../wrapper';
 
 import { webEvents } from './events.mock';
@@ -119,7 +120,10 @@ describe(`Web event wrapper`, () => {
       e,
       expected.channelData,
     );
-    expect(event.getChannelData()).toEqual(expected.channelData);
+    expect(event.getChannelData()).toEqual({
+      ...expected.channelData,
+      name: WEB_CHANNEL_NAME,
+    });
     expect(event.getId()).toEqual(expected.id);
     expect(event.getEventType()).toEqual(expected.eventType);
     expect(event.getMessageType()).toEqual(expected.messageType);

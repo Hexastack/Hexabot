@@ -9,16 +9,17 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsArray,
+  IsDate,
   IsNotEmpty,
   IsNumber,
-  IsString,
   IsOptional,
-  IsDate,
+  IsString,
 } from 'class-validator';
 
+import { ChannelName } from '@/channel/types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
-import { ChannelData } from '../schemas/types/channel';
+import { SubscriberChannelData } from '../schemas/types/channel';
 import { IsChannelData } from '../validation-rules/is-channel-data';
 
 export class SubscriberCreateDto {
@@ -85,7 +86,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  assignedAt: Date | null;
+  assignedAt?: Date | null;
 
   @ApiPropertyOptional({
     description: 'Subscriber last visit',
@@ -93,7 +94,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  lastvisit: Date;
+  lastvisit?: Date;
 
   @ApiPropertyOptional({
     description: 'Subscriber retained from',
@@ -101,7 +102,7 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  retainedFrom: Date;
+  retainedFrom?: Date;
 
   @ApiProperty({
     description: 'Subscriber channel',
@@ -109,7 +110,7 @@ export class SubscriberCreateDto {
   })
   @IsNotEmpty()
   @IsChannelData()
-  channel: ChannelData;
+  channel: SubscriberChannelData<ChannelName>;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

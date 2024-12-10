@@ -30,12 +30,6 @@ export namespace Web {
 
   export type Settings = Record<SettingLabel, any>;
 
-  export type ChannelData = {
-    isSocket: boolean;
-    ipAddress: string;
-    agent: string;
-  };
-
   export type RequestSession = {
     web?: {
       profile: SubscriberFull;

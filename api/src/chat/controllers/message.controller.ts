@@ -41,6 +41,7 @@ import {
   MessagePopulate,
   MessageStub,
 } from '../schemas/message.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import {
   AnyMessage,
   OutgoingMessage,
@@ -137,7 +138,9 @@ export class MessageController extends BaseController<
       );
     }
 
-    if (!this.channelService.findChannel(subscriber?.channel.name)) {
+    const channelData = Subscriber.getChannelData(subscriber);
+
+    if (!this.channelService.findChannel(channelData.name)) {
       throw new BadRequestException(`Subscriber channel not found`);
     }
 
@@ -146,7 +149,7 @@ export class MessageController extends BaseController<
       message: messageDto.message as StdOutgoingTextMessage,
     };
     const channelHandler = this.channelService.getChannelHandler(
-      subscriber.channel.name,
+      channelData.name,
     );
     const event = new GenericEventWrapper(channelHandler, {
       senderId: subscriber.foreign_id,

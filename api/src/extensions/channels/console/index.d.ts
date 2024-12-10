@@ -12,6 +12,13 @@ import CONSOLE_CHANNEL_SETTINGS, {
 
 declare global {
   interface Settings extends SettingTree<typeof CONSOLE_CHANNEL_SETTINGS> {}
+  interface SubscriberChannelDict {
+    [CONSOLE_CHANNEL_NAME]: {
+      isSocket: boolean;
+      ipAddress: string;
+      agent: string;
+    };
+  }
 }
 
 declare module '@nestjs/event-emitter' {

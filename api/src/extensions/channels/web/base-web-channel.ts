@@ -59,7 +59,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { WEB_CHANNEL_NAMESPACE } from './settings';
+import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
 
@@ -433,7 +433,6 @@ export default abstract class BaseWebChannelHandler<
       return subscriber;
     }
 
-    const channelData = this.getChannelData(req);
     const newProfile: SubscriberCreateDto = {
       foreign_id: this.generateId(),
       first_name: data.first_name ? data.first_name.toString() : 'Anon.',
@@ -443,8 +442,8 @@ export default abstract class BaseWebChannelHandler<
       lastvisit: new Date(),
       retainedFrom: new Date(),
       channel: {
-        ...channelData,
-        name: this.getName() as ChannelName,
+        name: this.getName(),
+        ...this.getChannelAttributes(req),
       },
       language: '',
       locale: '',
@@ -736,13 +735,15 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Handle channel event (probably a message)
+   * Return subscriber channel specific attributes
    *
    * @param req
    *
-   * @returns The channel's data
+   * @returns The subscriber channel's attributes
    */
-  protected getChannelData(req: Request | SocketRequest): Web.ChannelData {
+  getChannelAttributes(
+    req: Request | SocketRequest,
+  ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
       isSocket: 'isSocket' in req && !!req.isSocket,
       ipAddress: this.getIpAddress(req),
@@ -780,11 +781,11 @@ export default abstract class BaseWebChannelHandler<
           if (upload) {
             data.data = upload;
           }
-          const channelData = this.getChannelData(req);
+          const channelAttrs = this.getChannelAttributes(req);
           const event: WebEventWrapper = new WebEventWrapper(
             this,
             data,
-            channelData,
+            channelAttrs,
           );
           if (event.getEventType() === 'message') {
             // Handler sync message sent by chabbot
@@ -1185,7 +1186,9 @@ export default abstract class BaseWebChannelHandler<
     type: StdEventType,
     content: any,
   ): void {
-    if (subscriber.channel.isSocket) {
+    const channelData =
+      Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
+    if (channelData.isSocket) {
       this.websocketGateway.broadcast(subscriber, type, content);
     } else {
       // Do nothing, messages will be retrieved via polling
@@ -1278,6 +1281,17 @@ export default abstract class BaseWebChannelHandler<
    * @returns The web's response, otherwise an error
    */
   async getUserData(event: WebEventWrapper): Promise<SubscriberCreateDto> {
-    return event.getSender() as SubscriberCreateDto;
+    const sender = event.getSender();
+    const {
+      id: _id,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ...rest
+    } = sender;
+    const subscriber: SubscriberCreateDto = {
+      ...rest,
+      channel: Subscriber.getChannelData(sender),
+    };
+    return subscriber;
   }
 }

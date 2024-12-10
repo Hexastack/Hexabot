@@ -8,14 +8,7 @@
 
 import { ChannelName } from '@/channel/types';
 
-export type SubscriberChannelData<
-  C extends ChannelName = null,
-  K extends keyof SubscriberChannelDict[C] = keyof SubscriberChannelDict[C],
-> = C extends null
-  ? { name: ChannelName }
-  : {
-      name: C;
-    } & {
-      // Channel's specific attributes
-      [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][K];
-    };
+declare global {
+  interface SubscriberChannelDict
+    extends Record<ChannelName | string, Record<string, any>> {}
+}
