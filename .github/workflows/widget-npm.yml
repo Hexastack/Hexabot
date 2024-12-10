@@ -19,14 +19,15 @@ jobs:
           node-version: '18' # Ensure it matches your project requirements
           cache: 'npm'
 
-      - name: Navigate to Widget Folder
-        run: cd widget/
-
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd widget/
+          npm ci
 
       - name: Build the package
-        run: npm run build
+        run: |
+          cd widget/
+          npm run build
 
       - name: Determine release type
         id: determine-release
@@ -55,4 +56,6 @@ jobs:
 
       - name: Publish to npm
         if: env.release != 'none'
-        run: npm publish
+        run: |
+          cd widget/
+          npm publish
