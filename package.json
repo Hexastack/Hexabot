@@ -15,8 +15,8 @@
     "dev:widget": "npm run dev --workspace=widget",
     "release:api:patch": "cd api/ && npm version --git-tag-version false --commit-hooks false patch",
     "release:api:minor": "cd api/ && npm version --git-tag-version false --commit-hooks false minor",
-    "release:patch": "npm run release:api:patch && npm version patch --workspaces && git push origin main --tags",
-    "release:minor": "npm run release:api:minor && npm version minor --workspaces && git push origin main --tags"
+    "release:patch": "npm run release:api:patch && npm version --git-tag-version false --commit-hooks false --workspaces patch",
+    "release:minor": "npm run release:api:minor && npm version --git-tag-version false --commit-hooks false --workspaces minor"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",

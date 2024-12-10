@@ -55,9 +55,4 @@ jobs:
 
       - name: Publish to npm
         if: env.release != 'none'
-        run: |
-          if [[ "$release" == "patch" ]]; then
-            npm run release:patch
-          elif [[ "$release" == "minor" ]]; then
-            npm run release:minor
-          fi
+        run: npm publish
