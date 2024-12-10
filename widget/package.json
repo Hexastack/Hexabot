@@ -14,8 +14,7 @@
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "preview": "vite preview",
     "serve": "npx http-server ./dist/",
-    "typecheck": "tsc --noEmit",
-    "release": "npm run build && npm version patch && npm publish"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@types/emoji-js": "^3.5.2",

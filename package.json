@@ -12,7 +12,9 @@
   "scripts": {
     "prepare": "husky install",
     "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:widget": "npm run dev --workspace=widget"
+    "dev:widget": "npm run dev --workspace=widget",
+    "release:api:patch": "npm version patch --workspace=api --workspace=frontend --workspace=widget && git push origin main --tags",
+    "release:api:minor": "npm version minor --workspace=api --workspace=frontend --workspace=widget && git push origin main --tags"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
