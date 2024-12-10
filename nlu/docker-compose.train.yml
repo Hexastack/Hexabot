@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ludwig:
+    image: ludwigai/ludwig:master
+    command: >
+      experiment --config /src/${MODEL_NAME}.yaml
+                 --dataset /data/train_data.json
+                 --output_directory /results
+    volumes:
+      - ./data:/data
+      - ./src:/src
+      - ./results/results

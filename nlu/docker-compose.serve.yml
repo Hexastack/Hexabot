@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ludwig:
+    image: ludwigai/ludwig:master
+    command: >-
+      serve
+      --model_paths '{"slot": "/results/slot-filler-lstm/experiment_run/model", "intent": "/results/language-classifier-cnn/experiment_run/model"}'
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data 
+      - ./results:/results
+      - ./serve.py:/usr/local/lib/python3.8/site-packages/ludwig/serve.py
+
+    ports:
+      - "8000:8000" 

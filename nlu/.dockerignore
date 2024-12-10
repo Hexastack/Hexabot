@@ -1,5 +1,0 @@
-__pycache__
-/experiments/*
-/venv
-.env.dev
-/repos/*
