@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid, MenuItem } from "@mui/material";
+import { Grid } from "@mui/material";
 import { FC } from "react";
 import { FieldPath, useFormContext } from "react-hook-form";
 
@@ -15,11 +15,7 @@ import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
 import { IBlockAttributes } from "@/types/block.types";
-import {
-  AnyButton,
-  ButtonType,
-  WebviewHeightRatio,
-} from "@/types/message.types";
+import { AnyButton, ButtonType } from "@/types/message.types";
 
 const buildFieldPath = (
   fieldPath: FieldPath<IBlockAttributes>,
@@ -45,22 +41,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
   fieldPath,
 }) => {
   const { t } = useTranslate();
-  const types: { value: ButtonType; label: string }[] = [
-    { value: ButtonType.postback, label: t("label.postback") },
-    { value: ButtonType.web_url, label: t("label.web_url") },
-  ];
   const rules = useValidationRules();
-  const setButtonType = (type: ButtonType) => {
-    if (type === ButtonType.postback) {
-      onChange({
-        type: ButtonType.postback,
-        title: button.title,
-        payload: button.title,
-      });
-    } else {
-      onChange({ type: ButtonType.web_url, title: button.title, url: "" });
-    }
-  };
   const {
     register,
     formState: { errors },
@@ -68,22 +49,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
 
   return (
     <>
-      <Grid item xs={2}>
-        <Input
-          select
-          value={button.type}
-          onChange={(e) => {
-            setButtonType(e.target.value as ButtonType);
-          }}
-        >
-          {types.map((item) => (
-            <MenuItem key={item.value} value={item.value}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </Input>
-      </Grid>
-      <Grid item xs={3}>
+      <Grid item xs={5}>
         <Input
           fullWidth
           required
@@ -107,7 +73,7 @@ const ButtonInput: FC<ButtonInputProps> = ({
           }
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={6}>
         {button.type === ButtonType.postback ? (
           <ToggleableInput
             defaultValue={button.payload}
@@ -161,29 +127,6 @@ const ButtonInput: FC<ButtonInputProps> = ({
             error={!!errors.message?.["buttons"]?.[idx]?.url}
             helperText={errors.message?.["buttons"]?.[idx]?.url?.message}
           />
-        )}
-      </Grid>
-      <Grid item xs={2}>
-        {button.type === ButtonType.postback ? null : (
-          <Input
-            select
-            value={button.webview_height_ratio || "none"}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              onChange({
-                ...button,
-                messenger_extensions: e.target.value !== "none",
-                webview_height_ratio:
-                  value !== "none" ? (value as WebviewHeightRatio) : undefined,
-              });
-            }}
-          >
-            <MenuItem value="none">{t("label.none")}</MenuItem>
-            <MenuItem value="compact">{t("label.compact")}</MenuItem>
-            <MenuItem value="tall">{t("label.tall")}</MenuItem>
-            <MenuItem value="full">{t("label.full")}</MenuItem>
-          </Input>
         )}
       </Grid>
     </>

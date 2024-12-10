@@ -6,11 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Abc, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import { Box, Grid, IconButton } from "@mui/material";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 
+import DropdownButton, {
+  DropdownButtonAction,
+} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { QuickReplyType, StdQuickReply } from "@/types/message.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
@@ -31,16 +34,23 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   const { t } = useTranslate();
   const [quickReplies, setQuickReplies] = useState<
     ValueWithId<StdQuickReply>[]
-  >(value.map((quickReplie) => createValueWithId(quickReplie)));
-  const addInput = () => {
-    setQuickReplies([
-      ...quickReplies,
-      createValueWithId({
-        content_type: QuickReplyType.text,
-        title: "",
-        payload: "",
-      }),
-    ]);
+  >(value.map((quickReply) => createValueWithId(quickReply)));
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      {
+        icon: <Abc />,
+        name: t("button.text"),
+        defaultValue: {
+          content_type: QuickReplyType.text,
+          title: "",
+          payload: "",
+        },
+      },
+    ],
+    [t],
+  );
+  const addInput = (defaultValue: StdQuickReply) => {
+    setQuickReplies([...quickReplies, createValueWithId(defaultValue)]);
   };
   const removeInput = (index: number) => {
     const updatedQuickReplies = [...quickReplies];
@@ -71,48 +81,49 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
-        <Grid item xs={1}>
-          &nbsp;
-        </Grid>
-        <Grid item xs={2}>
-          {t("label.type")}
-        </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={5}>
           {t("label.title")}
         </Grid>
         <Grid item xs={1} />
-        <Grid item xs={4}>
+        <Grid item xs={5}>
           {t("label.payload")}
+        </Grid>
+        <Grid item xs={1}>
+          &nbsp;
         </Grid>
         {quickReplies.map(({ value, id }, idx) => (
           <Fragment key={id}>
-            <Grid item xs={1}>
-              <IconButton
-                size="medium"
-                onClick={() => removeInput(idx)}
-                disabled={quickReplies.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
             <QuickReplyInput
               value={value}
               idx={idx}
               onChange={updateInput(idx)}
             />
+            <Grid item xs={1}>
+              <IconButton
+                color="error"
+                size="medium"
+                onClick={() => removeInput(idx)}
+                disabled={quickReplies.length <= minInput}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
+            </Grid>
           </Fragment>
         ))}
       </Grid>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={addInput}
-        startIcon={<AddIcon />}
-        sx={{ marginTop: 2, float: "right" }}
+      <DropdownButton
+        sx={{
+          marginTop: 2,
+          float: "right",
+          verticalAlign: "middle",
+          padding: "20px",
+        }}
+        label={t("button.add_quick_reply")}
+        actions={actions}
+        onClick={(action) => addInput(action.defaultValue)}
+        icon={<AddIcon />}
         disabled={quickReplies.length > 10}
-      >
-        {t("button.add")}
-      </Button>
+      />
     </Box>
   );
 };
