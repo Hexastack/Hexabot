@@ -32,7 +32,7 @@ const ButtonsInput: FC<ButtonsInput> = ({
   value,
   onChange,
   minInput = 1,
-  maxInput = 13,
+  maxInput = 3,
   disablePayload = false,
   fieldPath,
 }) => {
