@@ -6,11 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FULL_WIDTH_PATHNAMES, TRouterValues } from "@/services/types";
+import { FULL_WIDTH_PATHNAMES } from "@/services/types";
 
 type TLayout = "default" | "full_width";
 
 export const getLayout = (pathname: string): TLayout =>
-  FULL_WIDTH_PATHNAMES.includes(pathname as TRouterValues)
+  FULL_WIDTH_PATHNAMES.some((path) => pathname.startsWith(path))
     ? "full_width"
     : "default";
