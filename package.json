@@ -5,14 +5,18 @@
     "frontend",
     "widget"
   ],
-  "version": "2.0.0",
+  "version": "2.0.17",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
   "scripts": {
     "prepare": "husky install",
     "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:widget": "npm run dev --workspace=widget"
+    "dev:widget": "npm run dev --workspace=widget",
+    "release:api:patch": "cd api/ && npm version --git-tag-version false --commit-hooks false patch",
+    "release:api:minor": "cd api/ && npm version --git-tag-version false --commit-hooks false minor",
+    "release:patch": "npm run release:api:patch && npm version --git-tag-version false --commit-hooks false --workspaces patch",
+    "release:minor": "npm run release:api:minor && npm version --git-tag-version false --commit-hooks false --workspaces minor"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",

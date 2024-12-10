@@ -39,13 +39,7 @@
     "typecheck": "tsc --noEmit",
     "reset": "npm install && npm run containers:restart",
     "reset:hard": "npm clean-install && npm run containers:rebuild",
-    "migrate": "npx ts-migrate-mongoose --config-path ./migrations/config/migrate.ts",
-    "docker:build-base": "docker build --pull --rm -f Dockerfile.base -t hexabot-base:latest .",
-    "docker:tag-base": "docker tag hexabot-base:latest hexastack/hexabot-base:latest",
-    "docker:push-base": "docker push hexastack/hexabot-base:latest",
-    "docker:release-base": "npm run docker:build-base && npm run docker:tag-base && npm run docker:push-base",
-    "npm:release": "npm version patch && npm publish",
-    "release": "npm run build && npm run npm:release && npm run docker:release-base"
+    "migrate": "npx ts-migrate-mongoose --config-path ./migrations/config/migrate.ts"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.11.2",
