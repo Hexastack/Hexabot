@@ -20,13 +20,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
         working-directory: api
+        run: npm ci
 
 
       - name: Build the package
-        run: npm run build
         working-directory: api
+        run: npm run build
 
       - name: Determine release type
         id: determine-release
@@ -54,6 +54,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
+        working-directory: api
         if: env.release != 'none'
         run: npm publish
-        working-directory: api
