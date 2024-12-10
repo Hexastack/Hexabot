@@ -283,10 +283,7 @@ export class ContentController extends BaseController<
       );
       throw new NotFoundException(`ContentType of id ${contentType} not found`);
     }
-    return await this.contentService.findPage(
-      { entity: contentType },
-      pageQuery,
-    );
+    return await this.contentService.find({ entity: contentType }, pageQuery);
   }
 
   /**

@@ -100,7 +100,7 @@ export class ContentRepository extends BaseRepository<
    * @returns A promise that resolves to the matching content documents.
    */
   async textSearch(query: string) {
-    return this.find({
+    return await this.find({
       $text: {
         $search: query,
         $diacriticSensitive: false,

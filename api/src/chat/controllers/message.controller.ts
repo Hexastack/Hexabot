@@ -56,7 +56,7 @@ import { SubscriberService } from '../services/subscriber.service';
 @UseInterceptors(CsrfInterceptor)
 @Controller('message')
 export class MessageController extends BaseController<
-  Message,
+  AnyMessage,
   MessageStub,
   MessagePopulate,
   MessageFull

@@ -74,6 +74,6 @@ export class NlpSampleEntityService extends BaseService<
       } as NlpSampleEntity;
     });
 
-    return this.createMany(sampleEntities);
+    return await this.createMany(sampleEntities);
   }
 }

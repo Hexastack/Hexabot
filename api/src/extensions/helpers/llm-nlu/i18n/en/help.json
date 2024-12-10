@@ -1,0 +1,5 @@
+{
+  "model": "Specify the name of the LLM (Large Language Model) you want to use. Leave this field empty if you prefer to use the default model specified in the LLM helper's settings.",
+  "language_classifier_prompt_template": "Provide the prompt template used for language detection. Use Handlebars syntax to dynamically insert variables or customize the prompt based on your requirements.",
+  "trait_classifier_prompt_template": "Define the prompt template for trait classification tasks, such as intent or sentiment detection. Use Handlebars syntax to structure and format the prompt appropriately."
+}

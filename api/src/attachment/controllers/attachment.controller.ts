@@ -94,7 +94,7 @@ export class AttachmentController extends BaseController<Attachment> {
     )
     filters: TFilterQuery<Attachment>,
   ) {
-    return await this.attachmentService.findPage(filters, pageQuery);
+    return await this.attachmentService.find(filters, pageQuery);
   }
 
   /**
@@ -153,7 +153,7 @@ export class AttachmentController extends BaseController<Attachment> {
       throw new NotFoundException('Attachment not found');
     }
 
-    return this.attachmentService.download(attachment);
+    return await this.attachmentService.download(attachment);
   }
 
   /**

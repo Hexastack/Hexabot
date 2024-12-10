@@ -49,7 +49,7 @@ export class ContentService extends BaseService<
    * @return A list of content matching the search query.
    */
   async textSearch(query: string) {
-    return this.repository.textSearch(query);
+    return await this.repository.textSearch(query);
   }
 
   /**
@@ -170,7 +170,7 @@ export class ContentService extends BaseService<
       }
 
       try {
-        const contents = await this.findPage(query, {
+        const contents = await this.find(query, {
           skip,
           limit,
           sort: ['createdAt', 'desc'],

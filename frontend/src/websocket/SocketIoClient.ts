@@ -149,7 +149,7 @@ export class SocketIoClient {
     url: string,
     options?: Partial<Omit<IOOutgoingMessage, "url" | "method" | "data">>,
   ): Promise<IOIncomingMessage<T>> {
-    return this.request({
+    return await this.request({
       method: "get",
       url,
       ...options,

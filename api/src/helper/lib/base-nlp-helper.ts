@@ -23,7 +23,7 @@ import {
 import { SettingService } from '@/setting/services/setting.service';
 
 import { HelperService } from '../helper.service';
-import { HelperName, HelperType, Nlp } from '../types';
+import { HelperName, HelperType, NLU } from '../types';
 
 import BaseHelper from './base-helper';
 
@@ -119,7 +119,7 @@ export default abstract class BaseNlpHelper<
    *
    * @returns The formatted NLP training set
    */
-  abstract format(samples: NlpSampleFull[], entities: NlpEntityFull[]): unknown;
+  format?(samples: NlpSampleFull[], entities: NlpEntityFull[]): unknown;
 
   /**
    * Perform training request
@@ -129,10 +129,7 @@ export default abstract class BaseNlpHelper<
    *
    * @returns Training result
    */
-  abstract train(
-    samples: NlpSampleFull[],
-    entities: NlpEntityFull[],
-  ): Promise<any>;
+  train?(samples: NlpSampleFull[], entities: NlpEntityFull[]): Promise<any>;
 
   /**
    * Perform evaluation request
@@ -142,10 +139,7 @@ export default abstract class BaseNlpHelper<
    *
    * @returns NLP evaluation result
    */
-  abstract evaluate(
-    samples: NlpSampleFull[],
-    entities: NlpEntityFull[],
-  ): Promise<any>;
+  evaluate?(samples: NlpSampleFull[], entities: NlpEntityFull[]): Promise<any>;
 
   /**
    * Delete/Forget a sample
@@ -154,7 +148,7 @@ export default abstract class BaseNlpHelper<
    *
    * @returns The deleted sample otherwise an error
    */
-  async forget(sample: NlpSample): Promise<NlpSample> {
+  async forget?(sample: NlpSample): Promise<NlpSample> {
     return sample;
   }
 
@@ -166,10 +160,10 @@ export default abstract class BaseNlpHelper<
    *
    * @returns NLP Parsed entities
    */
-  abstract filterEntitiesByConfidence(
+  filterEntitiesByConfidence?(
     nlp: any,
     threshold: boolean,
-  ): Promise<Nlp.ParseEntities>;
+  ): Promise<NLU.ParseEntities>;
 
   /**
    * Returns only the entities that have strong confidence (> than the threshold), can return an empty result
@@ -184,5 +178,5 @@ export default abstract class BaseNlpHelper<
     text: string,
     threshold?: boolean,
     project?: string,
-  ): Promise<Nlp.ParseEntities>;
+  ): Promise<NLU.ParseEntities>;
 }

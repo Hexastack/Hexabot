@@ -127,7 +127,7 @@ export class PasswordResetService {
    * @returns The signed JWT token.
    */
   async sign(dto: UserRequestResetDto) {
-    return this.jwtService.signAsync(dto, this.jwtSignOptions);
+    return await this.jwtService.signAsync(dto, this.jwtSignOptions);
   }
 
   /**
@@ -138,6 +138,6 @@ export class PasswordResetService {
    * @returns The decoded payload of the token.
    */
   async verify(token: string): Promise<UserRequestResetDto> {
-    return this.jwtService.verifyAsync(token, this.jwtSignOptions);
+    return await this.jwtService.verifyAsync(token, this.jwtSignOptions);
   }
 }
