@@ -209,10 +209,22 @@ export class AttachmentService extends BaseService<Attachment> {
     }
   }
 
+  /**
+   * Downloads an attachment as a buffer.
+   *
+   * @param attachment - The attachment to download.
+   * @returns A promise that resolves to a Buffer representing the downloaded attachment.
+   */
   async downloadAsBytes(attachment: Attachment): Promise<Buffer> {
     return await this.streamToBuffer(await this.download(attachment));
   }
 
+  /**
+   * Converts a StreamableFile to a Buffer.
+   *
+   * @param StreamableFile - The StreamableFile to convert to a Buffer.
+   * @return A promise that resolves to a Buffer representing the StreamableFile.
+   */
   private streamToBuffer(StreamableFile: StreamableFile): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const chunks = [];
