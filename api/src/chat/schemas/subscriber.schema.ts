@@ -21,7 +21,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { Label } from './label.schema';
-import { SubscriberChannel } from './types/channel';
+import { SubscriberChannelData } from './types/channel';
 import { SubscriberContext } from './types/subscriberContext';
 
 @Schema({ timestamps: true })
@@ -103,7 +103,7 @@ export class SubscriberStub extends BaseSchema {
   @Prop({
     type: Object,
   })
-  channel: SubscriberChannel;
+  channel: SubscriberChannelData;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -122,7 +122,7 @@ export class SubscriberStub extends BaseSchema {
     C extends ChannelName,
     S extends SubscriberStub = Subscriber,
   >(subscriber: S) {
-    return subscriber.channel as unknown as SubscriberChannel<C>;
+    return subscriber.channel as SubscriberChannelData<C>;
   }
 }
 

@@ -8,13 +8,14 @@
 
 import { ChannelName } from '@/channel/types';
 
-export type SubscriberChannel<
+export type SubscriberChannelData<
   C extends ChannelName = null,
   K extends keyof SubscriberChannelDict[C] = keyof SubscriberChannelDict[C],
 > = C extends null
   ? { name: ChannelName }
   : {
-      [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][K];
-    } & {
       name: C;
+    } & {
+      // Channel's specific attributes
+      [P in keyof SubscriberChannelDict[C]]: SubscriberChannelDict[C][K];
     };

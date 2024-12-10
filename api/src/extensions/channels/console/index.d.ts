@@ -14,7 +14,6 @@ declare global {
   interface Settings extends SettingTree<typeof CONSOLE_CHANNEL_SETTINGS> {}
   interface SubscriberChannelDict {
     [CONSOLE_CHANNEL_NAME]: {
-      name: typeof CONSOLE_CHANNEL_NAME;
       isSocket: boolean;
       ipAddress: string;
       agent: string;

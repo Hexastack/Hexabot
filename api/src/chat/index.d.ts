@@ -9,5 +9,6 @@
 import { ChannelName } from '@/channel/types';
 
 declare global {
-  interface SubscriberChannelDict extends Record<ChannelName | string, any> {}
+  interface SubscriberChannelDict
+    extends Record<ChannelName | string, Record<string, any>> {}
 }

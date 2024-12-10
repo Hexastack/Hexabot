@@ -28,6 +28,8 @@ import { ChannelName, ChannelSetting } from '../types';
 
 import EventWrapper from './EventWrapper';
 
+export type ChannelNameOf<C> = C extends ChannelHandler<infer N> ? N : never;
+
 @Injectable()
 export default abstract class ChannelHandler<
     N extends ChannelName = ChannelName,
@@ -48,10 +50,14 @@ export default abstract class ChannelHandler<
     this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
+  getName() {
+    return this.name as N;
+  }
+
   async onModuleInit() {
     await super.onModuleInit();
     this.channelService.setChannel(
-      this.getName() as ChannelName,
+      this.getName(),
       this as unknown as ChannelHandler<N>,
     );
     this.setup();

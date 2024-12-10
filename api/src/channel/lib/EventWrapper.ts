@@ -11,6 +11,7 @@ import {
   AttachmentForeignKey,
   AttachmentPayload,
 } from '@/chat/schemas/types/attachment';
+import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
   StdEventType,
@@ -19,10 +20,11 @@ import {
 import { Payload } from '@/chat/schemas/types/quick-reply';
 import { Nlp } from '@/helper/types';
 
-import ChannelHandler from './Handler';
+import ChannelHandler, { ChannelNameOf } from './Handler';
 
 export interface ChannelEvent {}
 
+// eslint-disable-next-line prettier/prettier
 export default abstract class EventWrapper<
   A,
   E,
@@ -31,6 +33,8 @@ export default abstract class EventWrapper<
   _adapter: A = {} as A;
 
   _handler: C;
+
+  channelAttrs: SubscriberChannelDict[ChannelNameOf<C>];
 
   _profile!: Subscriber;
 
@@ -42,14 +46,18 @@ export default abstract class EventWrapper<
    *
    * Any method declared in this class should be extended and overridden in any given channel's
    * event wrapper if needed.
-   * @param  handler - The channel's handler
-   * @param  event - The message event received
-   * @param  channelData - Channel's specific data
+   * @param handler - The channel's handler
+   * @param event - The message event received
+   * @param channelAttrs - Channel's specific data
    */
-  constructor(handler: C, event: E, channelData: any = {}) {
+  constructor(
+    handler: C,
+    event: E,
+    channelAttrs: SubscriberChannelDict[ChannelNameOf<C>] = {},
+  ) {
     this._handler = handler;
     this._init(event);
-    this.set('channelData', channelData);
+    this.channelAttrs = channelAttrs;
   }
 
   toString() {
@@ -98,8 +106,11 @@ export default abstract class EventWrapper<
    *
    * @returns Returns any channel related data.
    */
-  getChannelData(): any {
-    return this.get('channelData', {});
+  getChannelData(): SubscriberChannelData<ChannelNameOf<C>> {
+    return {
+      name: this._handler.getName(),
+      ...this.channelAttrs,
+    } as SubscriberChannelData<ChannelNameOf<C>>;
   }
 
   /**
@@ -283,15 +294,6 @@ export class GenericEventWrapper extends EventWrapper<
     this._adapter.eventType = StdEventType.unknown;
     this._adapter.messageType = IncomingMessageType.unknown;
     this._adapter.raw = event;
-  }
-
-  /**
-   * Returns channel related data
-   *
-   * @returns An object representing the channel specific data
-   */
-  getChannelData(): any {
-    return this.get('channelData', {});
   }
 
   /**

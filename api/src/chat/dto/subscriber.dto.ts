@@ -19,7 +19,7 @@ import {
 import { ChannelName } from '@/channel/types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
-import { SubscriberChannel } from '../schemas/types/channel';
+import { SubscriberChannelData } from '../schemas/types/channel';
 import { IsChannelData } from '../validation-rules/is-channel-data';
 
 export class SubscriberCreateDto {
@@ -110,7 +110,7 @@ export class SubscriberCreateDto {
   })
   @IsNotEmpty()
   @IsChannelData()
-  channel: SubscriberChannel<ChannelName>;
+  channel: SubscriberChannelData<ChannelName>;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

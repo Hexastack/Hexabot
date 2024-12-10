@@ -244,10 +244,7 @@ export class ChatService {
       if (!subscriber) {
         const subscriberData = await handler.getUserData(event);
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
-        subscriberData.channel = {
-          ...event.getChannelData(),
-          name: handler.getName(),
-        };
+        subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
       } else {
         // Already existing user profile

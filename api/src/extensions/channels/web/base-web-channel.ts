@@ -433,7 +433,6 @@ export default abstract class BaseWebChannelHandler<
       return subscriber;
     }
 
-    const channelData = this.getChannelData(req);
     const newProfile: SubscriberCreateDto = {
       foreign_id: this.generateId(),
       first_name: data.first_name ? data.first_name.toString() : 'Anon.',
@@ -443,8 +442,8 @@ export default abstract class BaseWebChannelHandler<
       lastvisit: new Date(),
       retainedFrom: new Date(),
       channel: {
-        ...channelData,
-        name: this.getName() as ChannelName,
+        name: this.getName(),
+        ...this.getChannelAttributes(req),
       },
       language: '',
       locale: '',
@@ -736,13 +735,15 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Handle channel event (probably a message)
+   * Return subscriber channel specific attributes
    *
    * @param req
    *
-   * @returns The channel's data
+   * @returns The subscriber channel's attributes
    */
-  protected getChannelData(req: Request | SocketRequest): Web.ChannelData {
+  getChannelAttributes(
+    req: Request | SocketRequest,
+  ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
       isSocket: 'isSocket' in req && !!req.isSocket,
       ipAddress: this.getIpAddress(req),
@@ -780,11 +781,11 @@ export default abstract class BaseWebChannelHandler<
           if (upload) {
             data.data = upload;
           }
-          const channelData = this.getChannelData(req);
+          const channelAttrs = this.getChannelAttributes(req);
           const event: WebEventWrapper = new WebEventWrapper(
             this,
             data,
-            channelData,
+            channelAttrs,
           );
           if (event.getEventType() === 'message') {
             // Handler sync message sent by chabbot

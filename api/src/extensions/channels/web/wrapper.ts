@@ -21,6 +21,7 @@ import {
 import { Payload } from '@/chat/schemas/types/quick-reply';
 
 import BaseWebChannelHandler from './base-web-channel';
+import { WEB_CHANNEL_NAME } from './settings';
 import { Web } from './types';
 
 type WebEventAdapter =
@@ -76,10 +77,14 @@ export default class WebEventWrapper<
    *
    * @param handler - The channel's handler
    * @param event - The message event received
-   * @param channelData - Channel's specific extra data {isSocket, ipAddress}
+   * @param channelAttrs - Channel's specific extra attributes {isSocket, ipAddress}
    */
-  constructor(handler: T, event: Web.Event, channelData: any) {
-    super(handler, event, channelData);
+  constructor(
+    handler: T,
+    event: Web.Event,
+    channelAttrs: SubscriberChannelDict[typeof WEB_CHANNEL_NAME],
+  ) {
+    super(handler, event, channelAttrs);
   }
 
   /**
@@ -127,20 +132,6 @@ export default class WebEventWrapper<
         break;
     }
     this._adapter.raw = event;
-  }
-
-  /**
-   * Returns channel related data
-   *
-   * @returns Channel's data
-   */
-  getChannelData(): any {
-    return this.get('channelData', {
-      isSocket: true,
-      ipAddress: '0.0.0.0',
-      agent:
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-    });
   }
 
   /**

@@ -236,7 +236,11 @@ describe('BlockService', () => {
           text: 'Hello',
         },
       },
-      {},
+      {
+        isSocket: true,
+        ipAddress: '1.1.1.1',
+        agent: 'Chromium',
+      },
     );
     const webEventGetStarted = new WebEventWrapper(
       handlerMock,
@@ -247,7 +251,11 @@ describe('BlockService', () => {
           payload: 'GET_STARTED',
         },
       },
-      {},
+      {
+        isSocket: true,
+        ipAddress: '1.1.1.1',
+        agent: 'Chromium',
+      },
     );
 
     it('should return undefined when no blocks are provided', async () => {
