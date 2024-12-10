@@ -30,7 +30,7 @@ export default abstract class EventWrapper<
   E,
   C extends ChannelHandler = ChannelHandler,
 > {
-  _adapter: A = {} as A;
+  _adapter: A = { raw: {} } as A;
 
   _handler: C;
 

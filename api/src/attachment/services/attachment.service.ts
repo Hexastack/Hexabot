@@ -208,4 +208,43 @@ export class AttachmentService extends BaseService<Attachment> {
       });
     }
   }
+
+  /**
+   * Downloads an attachment as a buffer.
+   *
+   * @param attachment - The attachment to download.
+   * @returns A promise that resolves to a Buffer representing the downloaded attachment.
+   */
+  async downloadAsBytes(attachment: Attachment): Promise<Buffer> {
+    return await this.streamToBuffer(await this.download(attachment));
+  }
+
+  /**
+   * Converts a StreamableFile to a Buffer.
+   *
+   * @param StreamableFile - The StreamableFile to convert to a Buffer.
+   * @return A promise that resolves to a Buffer representing the StreamableFile.
+   */
+  private streamToBuffer(StreamableFile: StreamableFile): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      const readableStream = StreamableFile.getStream();
+      readableStream.on('data', (data) => {
+        if (typeof data === 'string') {
+          // Convert string to Buffer assuming UTF-8 encoding
+          chunks.push(Buffer.from(data, 'utf-8'));
+        } else if (data instanceof Buffer) {
+          chunks.push(data);
+        } else {
+          // Convert other data types to JSON and then to a Buffer
+          const jsonData = JSON.stringify(data);
+          chunks.push(Buffer.from(jsonData, 'utf-8'));
+        }
+      });
+      readableStream.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      readableStream.on('error', reject);
+    });
+  }
 }
