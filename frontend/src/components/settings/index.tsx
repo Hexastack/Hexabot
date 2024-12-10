@@ -16,6 +16,7 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
+import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -25,7 +26,7 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { ISetting } from "@/types/setting.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
@@ -66,10 +67,16 @@ function groupBy(array: ISetting[]) {
   }, {} as Record<string, ISetting[]>);
 }
 
+const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
+
 export const Settings = () => {
   const { t } = useTranslate();
+  const router = useRouter();
+  const group = router.query.group?.toString();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("chatbot_settings");
+  const [selectedTab, setSelectedTab] = useState(
+    group || DEFAULT_SETTINGS_GROUP,
+  );
   const { control, watch } = useForm();
   const { data: settings } = useFind(
     { entity: EntityType.SETTING },
@@ -94,6 +101,7 @@ export const Settings = () => {
   };
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setSelectedTab(newValue);
+    router.push(`/${RouterType.SETTINGS}/groups/${newValue}`);
   };
   const isDisabled = (setting: ISetting) => {
     return (
@@ -134,6 +142,12 @@ export const Settings = () => {
       debouncedUpdate.clear();
     };
   }, [watch, debouncedUpdate]);
+
+  useEffect(() => {
+    setSelectedTab(group || DEFAULT_SETTINGS_GROUP);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group]);
 
   return (
     <Grid container gap={3} flexDirection="column">

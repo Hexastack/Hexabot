@@ -27,7 +27,7 @@ export const ChatWidget = () => {
   const pathname = usePathname();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
-  const isVisualEditor = pathname === `/${RouterType.VISUAL_EDITOR}`;
+  const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
   const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
   const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
   const [key, setKey] = useState(generateId());

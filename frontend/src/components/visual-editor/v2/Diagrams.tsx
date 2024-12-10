@@ -29,6 +29,7 @@ import {
   DiagramModel,
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
+import { useRouter } from "next/router";
 import {
   SyntheticEvent,
   useCallback,
@@ -52,7 +53,7 @@ import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format, QueryType } from "@/services/types";
+import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
@@ -65,6 +66,8 @@ import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
 
 const Diagrams = () => {
   const { t } = useTranslate();
+  const router = useRouter();
+  const flowId = router.query.id?.toString();
   const [model, setModel] = useState<
     DiagramModel<DiagramModelGenerics> | undefined
   >();
@@ -95,7 +98,9 @@ const Diagrams = () => {
     },
     {
       onSuccess([{ id, zoom, offset }]) {
-        if (id) {
+        if (flowId) {
+          setSelectedCategoryId?.(flowId);
+        } else if (id) {
           setSelectedCategoryId?.(id);
           if (engine?.getModel()) {
             setViewerOffset(offset || [0, 0]);
@@ -161,6 +166,8 @@ const Diagrams = () => {
       if (id) {
         setSelectedCategoryId?.(id);
         setSelectedBlockId(undefined); // Reset selected block when switching categories, resetting edit & remove buttons
+
+        router.push(`/${RouterType.VISUAL_EDITOR}/flows/${id}`);
       }
     }
   };
@@ -180,6 +187,12 @@ const Diagrams = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setSelectedCategoryId(flowId || "");
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flowId]);
 
   useEffect(() => {
     const { canvas, model, engine } = buildDiagram({
