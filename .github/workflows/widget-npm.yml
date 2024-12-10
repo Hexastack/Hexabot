@@ -20,15 +20,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          cd widget/
-          npx husky install
-          npm ci
+        run: npm ci
+        working-directory: widget
 
       - name: Build the package
-        run: |
-          cd widget/
-          npm run build
+        run: npm run build
+        working-directory: widget
 
       - name: Determine release type
         id: determine-release
@@ -57,6 +54,5 @@ jobs:
 
       - name: Publish to npm
         if: env.release != 'none'
-        run: |
-          cd widget/
-          npm publish
+        run: npm publish
+        working-directory: widget
