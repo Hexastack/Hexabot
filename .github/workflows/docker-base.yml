@@ -21,11 +21,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            hexastack/hexabot-ui
-            hexastack/hexabot-api
-            hexastack/hexabot-base
-            hexastack/hexabot-nlu
+          images: hexastack/hexabot-base
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -46,44 +42,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Frontend Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./
-          target: production
-          file: ./frontend/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push API Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./api/
-          target: production
-          file: ./api/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-      
       - name: Build and push Base Docker base image
         uses: docker/build-push-action@v6
         with:
           context: ./api/
           target: production
           file: ./api/Dockerfile.base
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push NLU Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./nlu/
-          file: ./nlu/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
