@@ -28,13 +28,24 @@ elif [[ "$RELEASE_TYPE" == "minor" ]]; then
 fi
 
 # Retrieve the new version from package.json
-NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/package.json")
+NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/api/package.json")
 
 if [ -z "$NEW_VERSION" ]; then
-  echo "Failed to retrieve the version from package.json."
+  echo "Failed to retrieve the version from api/package.json."
   exit 1
 fi
 
+# Function to update version in a package.json
+update_version() {
+  local file=$1
+  echo "Updating version in $file to $NEW_VERSION"
+  jq --arg newVersion "$NEW_VERSION" '.version = $newVersion' "$file" > tmp.$$.json && mv tmp.$$.json "$file"
+}
+
+# Update root package.json
+if [[ -f "$ROOT_DIR/package.json" ]]; then
+  update_version "$ROOT_DIR/package.json"
+fi
 
 # Commit and push changes
 echo "Committing and pushing changes..."
