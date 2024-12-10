@@ -19,6 +19,9 @@ jobs:
           node-version: '18' # Ensure it matches your project requirements
           cache: 'npm'
 
+      - name: Install Husky
+        run: npx husky install
+
       - name: Install dependencies
         run: |
           cd widget/
