@@ -71,11 +71,31 @@ export class SettingController {
     @Param('id') id: string,
     @Body() settingUpdateDto: { value: any },
   ): Promise<Setting> {
-    const result = await this.settingService.updateOne(id, settingUpdateDto);
-    if (!result) {
-      this.logger.warn(`Unable to update setting by id ${id}`);
+    const setting = await this.settingService.findOne(id);
+
+    if (!setting) {
+      this.logger.warn(`Setting with ID ${id} not found`);
       throw new NotFoundException(`Setting with ID ${id} not found`);
     }
+
+    // Edge case handling:
+    // If the setting type is 'number' but the value provided in the DTO is not already a number,
+    // we attempt to convert the value to a number. This is necessary because the value might be
+    // passed as a string representation of a number (e.g., "123"), and we need to ensure it's a number.
+    const updatedValue =
+      setting.type === 'number' && typeof settingUpdateDto.value !== 'number'
+        ? Number(settingUpdateDto.value)
+        : settingUpdateDto.value;
+
+    const result = await this.settingService.updateOne(id, {
+      value: updatedValue,
+    });
+
+    if (!result) {
+      this.logger.warn(`Failed to update setting with ID ${id}`);
+      throw new NotFoundException(`Setting with ID ${id} not found`);
+    }
+
     return result;
   }
 }
