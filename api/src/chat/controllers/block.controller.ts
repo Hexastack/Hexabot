@@ -299,7 +299,7 @@ export class BlockController extends BaseController<
     const result = await this.blockService.updateOne(id, parsedBlockUpdate);
 
     if (!result) {
-      this.logger.warn(`Block with ID ${id} not found for update.`);
+      this.logger.warn(`Unable to update Block by id ${id}`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
 

@@ -92,7 +92,7 @@ export class SettingController {
     });
 
     if (!result) {
-      this.logger.warn(`Failed to update setting with ID ${id}`);
+      this.logger.warn(`Unable to update setting by id ${id}`);
       throw new NotFoundException(`Setting with ID ${id} not found`);
     }
 
