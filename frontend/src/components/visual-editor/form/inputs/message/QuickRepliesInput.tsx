@@ -6,14 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Abc, RemoveCircleOutline } from "@mui/icons-material";
+import { RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useMemo, useState } from "react";
+import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
+import { FC, Fragment, useEffect, useState } from "react";
 
-import DropdownButton, {
-  DropdownButtonAction,
-} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { QuickReplyType, StdQuickReply } from "@/types/message.types";
 import { ValueWithId, createValueWithId } from "@/utils/valueWithId";
@@ -35,22 +32,15 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   const [quickReplies, setQuickReplies] = useState<
     ValueWithId<StdQuickReply>[]
   >(value.map((quickReply) => createValueWithId(quickReply)));
-  const actions: DropdownButtonAction[] = useMemo(
-    () => [
-      {
-        icon: <Abc />,
-        name: t("button.text"),
-        defaultValue: {
-          content_type: QuickReplyType.text,
-          title: "",
-          payload: "",
-        },
-      },
-    ],
-    [t],
-  );
-  const addInput = (defaultValue: StdQuickReply) => {
-    setQuickReplies([...quickReplies, createValueWithId(defaultValue)]);
+  const addInput = (): void => {
+    setQuickReplies([
+      ...quickReplies,
+      createValueWithId({
+        content_type: QuickReplyType.text,
+        title: "",
+        payload: "",
+      }),
+    ]);
   };
   const removeInput = (index: number) => {
     const updatedQuickReplies = [...quickReplies];
@@ -80,50 +70,62 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
 
   return (
     <Box>
-      <Grid container spacing={2}>
-        <Grid item xs={5}>
-          {t("label.title")}
+      {quickReplies.length > 0 ? (
+        <Grid container spacing={2}>
+          <Grid item xs={5}>
+            {t("label.title")}
+          </Grid>
+          <Grid item xs={1} />
+          <Grid item xs={5}>
+            {t("label.payload")}
+          </Grid>
+          <Grid item xs={1}>
+            &nbsp;
+          </Grid>
+          {quickReplies.map(({ value, id }, idx) => (
+            <Fragment key={id}>
+              <QuickReplyInput
+                value={value}
+                idx={idx}
+                onChange={updateInput(idx)}
+              />
+              <Grid item xs={1}>
+                <IconButton
+                  color="error"
+                  size="medium"
+                  onClick={() => removeInput(idx)}
+                  disabled={quickReplies.length <= minInput}
+                >
+                  <RemoveCircleOutline />
+                </IconButton>
+              </Grid>
+            </Fragment>
+          ))}
         </Grid>
-        <Grid item xs={1} />
-        <Grid item xs={5}>
-          {t("label.payload")}
-        </Grid>
-        <Grid item xs={1}>
-          &nbsp;
-        </Grid>
-        {quickReplies.map(({ value, id }, idx) => (
-          <Fragment key={id}>
-            <QuickReplyInput
-              value={value}
-              idx={idx}
-              onChange={updateInput(idx)}
-            />
-            <Grid item xs={1}>
-              <IconButton
-                color="error"
-                size="medium"
-                onClick={() => removeInput(idx)}
-                disabled={quickReplies.length <= minInput}
-              >
-                <RemoveCircleOutline />
-              </IconButton>
-            </Grid>
-          </Fragment>
-        ))}
-      </Grid>
-      <DropdownButton
+      ) : (
+        <Typography
+          sx={{
+            color: "lightgrey",
+            textAlign: "center",
+            marginTop: 2,
+          }}
+        >
+          {t("label.no_quick_replies")}
+        </Typography>
+      )}
+      <Button
         sx={{
           marginTop: 2,
           float: "right",
           verticalAlign: "middle",
-          padding: "20px",
         }}
-        label={t("button.add_quick_reply")}
-        actions={actions}
-        onClick={(action) => addInput(action.defaultValue)}
-        icon={<AddIcon />}
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={addInput}
         disabled={quickReplies.length > 10}
-      />
+      >
+        {t("button.add_quick_reply")}
+      </Button>
     </Box>
   );
 };

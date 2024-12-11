@@ -234,6 +234,7 @@
     "patterns": "Motifs",
     "text_patterns": "Motifs textuels",
     "no_patterns": "- Aucun motif -",
+    "no_quick_replies": "- Aucune réponse rapide -",
     "triggers": "Déclencheurs",
     "payloads": "Payloads",
     "general_payloads": "Payloads généraux",

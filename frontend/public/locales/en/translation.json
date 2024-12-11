@@ -233,6 +233,7 @@
     "block_event_type": "Type of event",
     "patterns": "Patterns",
     "no_patterns": "- No triggers -",
+    "no_quick_replies": "- No quick replies -",
     "text_patterns": " Text Patterns",
     "triggers": "Triggers",
     "payloads": "Payloads",
