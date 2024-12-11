@@ -30,6 +30,7 @@ import { PluginName, PluginType } from '@/plugins/types';
 import { UserService } from '@/user/services/user.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
+import { parseNumbersInObject } from '@/utils/helpers/parser';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
@@ -293,11 +294,15 @@ export class BlockController extends BaseController<
     @Param('id') id: string,
     @Body() blockUpdate: BlockUpdateDto,
   ): Promise<Block> {
-    const result = await this.blockService.updateOne(id, blockUpdate);
+    // Parse numbers from string type to numbers in the DTO to ensure correct type
+    const parsedBlockUpdate = parseNumbersInObject(blockUpdate);
+    const result = await this.blockService.updateOne(id, parsedBlockUpdate);
+
     if (!result) {
-      this.logger.warn(`Unable to update Block by id ${id}`);
+      this.logger.warn(`Block with ID ${id} not found for update.`);
       throw new NotFoundException(`Block with ID ${id} not found`);
     }
+
     return result;
   }
 
