@@ -20,7 +20,9 @@ import {
 import { Payload } from '@/chat/schemas/types/quick-reply';
 import { NLU } from '@/helper/types';
 
-import ChannelHandler, { ChannelNameOf } from './Handler';
+import { ChannelName } from '../types';
+
+import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
 
@@ -28,13 +30,15 @@ export interface ChannelEvent {}
 export default abstract class EventWrapper<
   A,
   E,
-  C extends ChannelHandler = ChannelHandler,
+  N extends ChannelName = ChannelName,
+  C extends ChannelHandler = ChannelHandler<N>,
+  S = SubscriberChannelDict[N],
 > {
   _adapter: A = {} as A;
 
   _handler: C;
 
-  channelAttrs: SubscriberChannelDict[ChannelNameOf<C>];
+  channelAttrs: S;
 
   _profile!: Subscriber;
 
@@ -50,11 +54,7 @@ export default abstract class EventWrapper<
    * @param event - The message event received
    * @param channelAttrs - Channel's specific data
    */
-  constructor(
-    handler: C,
-    event: E,
-    channelAttrs: SubscriberChannelDict[ChannelNameOf<C>] = {},
-  ) {
+  constructor(handler: C, event: E, channelAttrs: S = {} as S) {
     this._handler = handler;
     this._init(event);
     this.channelAttrs = channelAttrs;
@@ -106,11 +106,11 @@ export default abstract class EventWrapper<
    *
    * @returns Returns any channel related data.
    */
-  getChannelData(): SubscriberChannelData<ChannelNameOf<C>> {
+  getChannelData(): SubscriberChannelData<N> {
     return {
       name: this._handler.getName(),
       ...this.channelAttrs,
-    } as SubscriberChannelData<ChannelNameOf<C>>;
+    } as SubscriberChannelData<N>;
   }
 
   /**
@@ -267,7 +267,8 @@ type GenericEventAdapter = {
 
 export class GenericEventWrapper extends EventWrapper<
   GenericEventAdapter,
-  GenericEvent
+  GenericEvent,
+  ChannelName
 > {
   /**
    * Constructor : channel's event wrapper

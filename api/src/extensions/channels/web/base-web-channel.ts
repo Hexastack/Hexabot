@@ -20,7 +20,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
-import EventWrapper from '@/channel/lib/EventWrapper';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -782,11 +781,7 @@ export default abstract class BaseWebChannelHandler<
             data.data = upload;
           }
           const channelAttrs = this.getChannelAttributes(req);
-          const event: WebEventWrapper = new WebEventWrapper(
-            this,
-            data,
-            channelAttrs,
-          );
+          const event = new WebEventWrapper<N>(this, data, channelAttrs);
           if (event.getEventType() === 'message') {
             // Handler sync message sent by chabbot
             if (data.sync && data.author === 'chatbot') {
@@ -1206,7 +1201,7 @@ export default abstract class BaseWebChannelHandler<
    * @returns The web's response, otherwise an error
    */
   async sendMessage(
-    event: EventWrapper<any, any>,
+    event: WebEventWrapper<N>,
     envelope: StdOutgoingEnvelope,
     options: BlockOptions,
     _context?: any,
@@ -1280,7 +1275,7 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns The web's response, otherwise an error
    */
-  async getUserData(event: WebEventWrapper): Promise<SubscriberCreateDto> {
+  async getUserData(event: WebEventWrapper<N>): Promise<SubscriberCreateDto> {
     const sender = event.getSender();
     const {
       id: _id,

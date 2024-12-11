@@ -26,6 +26,7 @@ import { ContentService } from '@/cms/services/content.service';
 import { MenuService } from '@/cms/services/menu.service';
 import { webEventText } from '@/extensions/channels/web/__test__/events.mock';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
@@ -201,7 +202,7 @@ describe('BlockService', () => {
       .spyOn(botService, 'findBlockAndSendReply')
       .mockImplementation(
         (
-          actualEvent: WebEventWrapper,
+          actualEvent: WebEventWrapper<typeof WEB_CHANNEL_NAME>,
           actualConversation: Conversation,
           actualBlock: BlockFull,
           isFallback: boolean,
@@ -267,7 +268,7 @@ describe('BlockService', () => {
       .mockImplementation(
         async (
           actualConversation: ConversationFull,
-          event: WebEventWrapper,
+          event: WebEventWrapper<typeof WEB_CHANNEL_NAME>,
         ) => {
           expect(actualConversation).toEqualPayload({
             next: [],

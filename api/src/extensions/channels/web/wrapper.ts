@@ -68,10 +68,12 @@ type WebEventAdapter =
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
     };
 
-export default class WebEventWrapper<
-  T extends
-    BaseWebChannelHandler<ChannelName> = BaseWebChannelHandler<ChannelName>,
-> extends EventWrapper<WebEventAdapter, Web.Event> {
+// eslint-disable-next-line prettier/prettier
+export default class WebEventWrapper<N extends ChannelName> extends EventWrapper<
+  WebEventAdapter,
+  Web.Event,
+  N
+> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -80,7 +82,7 @@ export default class WebEventWrapper<
    * @param channelAttrs - Channel's specific extra attributes {isSocket, ipAddress}
    */
   constructor(
-    handler: T,
+    handler: BaseWebChannelHandler<N>,
     event: Web.Event,
     channelAttrs: SubscriberChannelDict[typeof WEB_CHANNEL_NAME],
   ) {
