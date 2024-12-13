@@ -247,7 +247,7 @@ declare module '@nestjs/event-emitter' {
     T = IHookEntityOperationMap[E]['schema'],
   > =
     | {
-        [EHook.preValidate]: TPreValidate<T>;
+        [EHook.preCreateValidate]: TPreValidate<T>;
       }
     | {
         [EHook.preCreate]: TPreCreate<T>;
@@ -259,7 +259,7 @@ declare module '@nestjs/event-emitter' {
         [EHook.preDelete]: TPreDelete<T>;
       }
     | {
-        [EHook.postValidate]: TPostValidate<T>;
+        [EHook.postCreateValidate]: TPostValidate<T>;
       }
     | {
         [EHook.postCreate]: TPostCreate<T>;

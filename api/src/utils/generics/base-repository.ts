@@ -42,12 +42,12 @@ export enum EHook {
   preUpdate = 'preUpdate',
   preUpdateMany = 'preUpdateMany',
   preDelete = 'preDelete',
-  preValidate = 'preValidate',
+  preCreateValidate = 'preCreateValidate',
   postCreate = 'postCreate',
   postUpdate = 'postUpdate',
   postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
-  postValidate = 'postValidate',
+  postCreateValidate = 'postCreateValidate',
 }
 
 export abstract class BaseRepository<
@@ -87,13 +87,16 @@ export abstract class BaseRepository<
     hooks?.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreateValidate(doc);
-      repository.emitter.emit(repository.getEventName(EHook.preValidate), doc);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preCreateValidate),
+        doc,
+      );
     });
 
     hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postCreateValidate(created);
       repository.emitter.emit(
-        repository.getEventName(EHook.postValidate),
+        repository.getEventName(EHook.postCreateValidate),
         created,
       );
     });
