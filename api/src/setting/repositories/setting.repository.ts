@@ -40,7 +40,7 @@ export class SettingRepository extends BaseRepository<Setting> {
    *
    * @param setting The `Setting` document to be validated.
    */
-  async postValidate(
+  async preCreateValidate(
     setting: Document<unknown, unknown, Setting> &
       Setting & { _id: Types.ObjectId },
   ) {

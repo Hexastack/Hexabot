@@ -86,12 +86,12 @@ export abstract class BaseRepository<
 
     hooks?.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
-      await repository.preValidate(doc);
+      await repository.preCreateValidate(doc);
       repository.emitter.emit(repository.getEventName(EHook.preValidate), doc);
     });
 
     hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
-      await repository.postValidate(created);
+      await repository.postCreateValidate(created);
       repository.emitter.emit(
         repository.getEventName(EHook.postValidate),
         created,
@@ -479,11 +479,11 @@ export abstract class BaseRepository<
     return await this.model.deleteMany(criteria);
   }
 
-  async preValidate(_doc: HydratedDocument<T>): Promise<void> {
+  async preCreateValidate(_doc: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
-  async postValidate(_validated: HydratedDocument<T>): Promise<void> {
+  async postCreateValidate(_validated: HydratedDocument<T>): Promise<void> {
     // Nothing ...
   }
 
