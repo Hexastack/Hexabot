@@ -52,6 +52,17 @@ export enum EHook {
   preUpdateValidate = 'preUpdateValidate',
   postUpdateValidate = 'postUpdateValidate',
 }
+// ! ------------------------------------ Note --------------------------------------------
+// Methods like `update()`, `updateOne()`, `updateMany()`, `findOneAndUpdate()`,
+// `findByIdAndUpdate()`, `findOneAndReplace()`, `findOneAndDelete()`, and `findByIdAndDelete()`
+// do not trigger Mongoose validation hooks by default. This is because these methods do not
+// return Mongoose Documents but plain JavaScript objects (POJOs), which do not have Mongoose
+// instance methods like `validate()` attached.
+//
+// Be cautious when using the `.lean()` function as well. It returns POJOs instead of Mongoose
+// Documents, so methods and hooks like `validate()` will not be available when working with
+// the returned data. If you need validation, ensure that you're working with a Mongoose Document
+// or explicitly use `runValidators: true` in the options for update operations.
 
 export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
