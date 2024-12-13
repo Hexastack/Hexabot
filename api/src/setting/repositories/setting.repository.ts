@@ -12,10 +12,19 @@ import {
   IHookSettingsGroupLabelOperationMap,
 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, Types } from 'mongoose';
+import {
+  Document,
+  FilterQuery,
+  Model,
+  Query,
+  Types,
+  UpdateQuery,
+  UpdateWithAggregationPipeline,
+} from 'mongoose';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseRepository, EHook } from '@/utils/generics/base-repository';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { Setting } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
@@ -30,48 +39,38 @@ export class SettingRepository extends BaseRepository<Setting> {
     super(eventEmitter, model, Setting);
   }
 
-  /**
-   * Validates the `Setting` document after it has been retrieved.
-   *
-   * Checks the `type` of the setting and validates the `value` field according to the type:
-   * - `text` expects a string.
-   * - `multiple_text` expects an array of strings.
-   * - `checkbox` expects a boolean.
-   *
-   * @param setting The `Setting` document to be validated.
-   */
   async preCreateValidate(
-    setting: Document<unknown, unknown, Setting> &
+    doc: Document<unknown, unknown, Setting> &
       Setting & { _id: Types.ObjectId },
+    filterCriteria: FilterQuery<Setting>,
+    updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
   ) {
-    if (
-      (setting.type === SettingType.text ||
-        setting.type === SettingType.textarea) &&
-      typeof setting.value !== 'string' &&
-      setting.value !== null
-    ) {
-      throw new Error('Setting Model : Value must be a string!');
-    } else if (setting.type === SettingType.multiple_text) {
-      const isStringArray =
-        Array.isArray(setting.value) &&
-        setting.value.every((v) => {
-          return typeof v === 'string';
-        });
-      if (!isStringArray) {
-        throw new Error('Setting Model : Value must be a string array!');
-      }
-    } else if (
-      setting.type === SettingType.checkbox &&
-      typeof setting.value !== 'boolean' &&
-      setting.value !== null
-    ) {
-      throw new Error('Setting Model : Value must be a boolean!');
-    } else if (
-      setting.type === SettingType.number &&
-      typeof setting.value !== 'number' &&
-      setting.value !== null
-    ) {
-      throw new Error('Setting Model : Value must be a number!');
+    this.validateSettingValue(doc.type, doc.value);
+    if (filterCriteria && updates) {
+      this.eventEmitter.emit(
+        `hook:setting:${EHook.preUpdateValidate}`,
+        filterCriteria,
+        updates,
+      );
+    }
+  }
+
+  async preUpdateValidate(
+    criteria: string | TFilterQuery<Setting>,
+    dto: UpdateQuery<Setting>,
+    filterCriteria: FilterQuery<Setting>,
+    updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
+  ): Promise<void> {
+    const payload = dto.$set ? dto.$set : dto;
+    if (typeof payload.value !== 'undefined') {
+      const { type } =
+        'type' in payload ? payload : await this.findOne(criteria);
+      this.validateSettingValue(type, payload.value);
+      this.eventEmitter.emit(
+        `hook:setting:${EHook.preUpdateValidate}`,
+        filterCriteria,
+        updates,
+      );
     }
   }
 
@@ -99,5 +98,46 @@ export class SettingRepository extends BaseRepository<Setting> {
 
     // Sync global settings var
     this.eventEmitter.emit(`hook:${group}:${label}`, setting);
+  }
+
+  /**
+   * Validates the `Setting` document after it has been retrieved.
+   *
+   * Checks the `type` of the setting and validates the `value` field according to the type:
+   * - `text` expects a string.
+   * - `multiple_text` expects an array of strings.
+   * - `checkbox` expects a boolean.
+   *
+   * @param setting The `Setting` document to be validated.
+   */
+  private validateSettingValue(type: SettingType, value: any) {
+    if (
+      (type === SettingType.text || type === SettingType.textarea) &&
+      typeof value !== 'string' &&
+      value !== null
+    ) {
+      throw new Error('Setting Model : Value must be a string!');
+    } else if (type === SettingType.multiple_text) {
+      const isStringArray =
+        Array.isArray(value) &&
+        value.every((v) => {
+          return typeof v === 'string';
+        });
+      if (!isStringArray) {
+        throw new Error('Setting Model : Value must be a string array!');
+      }
+    } else if (
+      type === SettingType.checkbox &&
+      typeof value !== 'boolean' &&
+      value !== null
+    ) {
+      throw new Error('Setting Model : Value must be a boolean!');
+    } else if (
+      type === SettingType.number &&
+      typeof value !== 'number' &&
+      value !== null
+    ) {
+      throw new Error('Setting Model : Value must be a number!');
+    }
   }
 }

@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import type { Document, Query } from 'mongoose';
+import type { Document, FilterQuery, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
@@ -207,6 +207,10 @@ declare module '@nestjs/event-emitter' {
 
   type TPostUpdate<T> = THydratedDocument<T>;
 
+  type TPreUpdateValidate<T> = FilterQuery<T>;
+
+  type TPostUpdateValidate<T> = THydratedDocument<T>;
+
   type TPostDelete = DeleteResult;
 
   type TPostUnion<T> =
@@ -269,6 +273,12 @@ declare module '@nestjs/event-emitter' {
       }
     | {
         [EHook.postDelete]: TPostDelete;
+      }
+    | {
+        [EHook.preUpdateValidate]: TPreUpdateValidate<T>;
+      }
+    | {
+        [EHook.postUpdateValidate]: TPostUpdateValidate<T>;
       };
 
   type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<

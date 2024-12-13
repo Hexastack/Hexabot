@@ -14,6 +14,7 @@ import {
 import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
+  FilterQuery,
   FlattenMaps,
   HydratedDocument,
   Model,
@@ -48,6 +49,8 @@ export enum EHook {
   postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
   postCreateValidate = 'postCreateValidate',
+  preUpdateValidate = 'preUpdateValidate',
+  postUpdateValidate = 'postUpdateValidate',
 }
 
 export abstract class BaseRepository<
@@ -460,6 +463,10 @@ export abstract class BaseRepository<
         new: true,
       },
     );
+    const filterCriteria = query.getFilter();
+    const queryUpdates = query.getUpdate();
+    await this.preUpdateValidate(criteria, dto, filterCriteria, queryUpdates);
+    await this.postUpdateValidate(criteria, dto, filterCriteria, queryUpdates);
     return await this.executeOne(query, this.cls);
   }
 
@@ -482,11 +489,33 @@ export abstract class BaseRepository<
     return await this.model.deleteMany(criteria);
   }
 
-  async preCreateValidate(_doc: HydratedDocument<T>): Promise<void> {
+  async preCreateValidate(
+    _doc: HydratedDocument<T>,
+    _filterCriteria?: FilterQuery<T>,
+    _updates?: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
     // Nothing ...
   }
 
   async postCreateValidate(_validated: HydratedDocument<T>): Promise<void> {
+    // Nothing ...
+  }
+
+  async preUpdateValidate<D extends Partial<U>>(
+    _criteria: string | TFilterQuery<T>,
+    _dto: UpdateQuery<D>,
+    _filterCriteria: FilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
+    // Nothing ...
+  }
+
+  async postUpdateValidate<D extends Partial<U>>(
+    _criteria: string | TFilterQuery<T>,
+    _dto: UpdateQuery<D>,
+    _filterCriteria: FilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
     // Nothing ...
   }
 
