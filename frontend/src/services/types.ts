@@ -65,6 +65,7 @@ export enum RouterType {
   RESET = "reset",
   VISUAL_EDITOR = "visual-editor",
   INBOX = "inbox",
+  SETTINGS = "settings",
 }
 
 export const FULL_WIDTH_PATHNAMES: TRouterValues[] = [

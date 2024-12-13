@@ -28,8 +28,6 @@ import { ChannelName, ChannelSetting } from '../types';
 
 import EventWrapper from './EventWrapper';
 
-export type ChannelNameOf<C> = C extends ChannelHandler<infer N> ? N : never;
-
 @Injectable()
 export default abstract class ChannelHandler<
     N extends ChannelName = ChannelName,
@@ -176,7 +174,7 @@ export default abstract class ChannelHandler<
    
    */
   abstract sendMessage(
-    event: EventWrapper<any, any>,
+    event: EventWrapper<any, any, N>,
     envelope: StdOutgoingEnvelope,
     options: any,
     context: any,
@@ -189,7 +187,7 @@ export default abstract class ChannelHandler<
    
    */
   abstract getUserData(
-    event: EventWrapper<any, any>,
+    event: EventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto>;
 
   /**

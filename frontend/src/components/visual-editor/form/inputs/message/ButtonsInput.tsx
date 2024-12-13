@@ -6,12 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { KeyboardReturn, Link, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useState } from "react";
+import { Box, Grid, IconButton } from "@mui/material";
+import { FC, Fragment, useEffect, useMemo, useState } from "react";
 import { FieldPath } from "react-hook-form";
 
+import DropdownButton, {
+  DropdownButtonAction,
+} from "@/app-components/buttons/DropdownButton";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { AnyButton, ButtonType } from "@/types/message.types";
@@ -32,7 +35,7 @@ const ButtonsInput: FC<ButtonsInput> = ({
   value,
   onChange,
   minInput = 1,
-  maxInput = 13,
+  maxInput = 3,
   disablePayload = false,
   fieldPath,
 }) => {
@@ -40,11 +43,31 @@ const ButtonsInput: FC<ButtonsInput> = ({
   const [buttons, setButtons] = useState<ValueWithId<AnyButton>[]>(
     value.map((button) => createValueWithId(button)),
   );
-  const addInput = () => {
-    setButtons([
-      ...buttons,
-      createValueWithId({ type: ButtonType.postback, title: "", payload: "" }),
-    ]);
+  const actions: DropdownButtonAction[] = useMemo(
+    () => [
+      {
+        icon: <KeyboardReturn />,
+        name: t("button.postback"),
+        defaultValue: {
+          type: ButtonType.postback,
+          title: "",
+          payload: "",
+        },
+      },
+      {
+        icon: <Link />,
+        name: t("button.url"),
+        defaultValue: {
+          type: ButtonType.web_url,
+          title: "",
+          url: "",
+        },
+      },
+    ],
+    [t],
+  );
+  const addInput = (defaultValue: AnyButton) => {
+    setButtons([...buttons, createValueWithId(defaultValue)]);
   };
   const removeInput = (index: number) => {
     const updatedButtons = [...buttons];
@@ -75,31 +98,17 @@ const ButtonsInput: FC<ButtonsInput> = ({
   return (
     <Box>
       <Grid container spacing={2}>
+        <Grid item xs={5}>
+          {t("label.title")}
+        </Grid>
+        <Grid item xs={6}>
+          {t("label.payload")} / {t("label.url")}
+        </Grid>
         <Grid item xs={1}>
           &nbsp;
         </Grid>
-        <Grid item xs={2}>
-          {t("label.type")}
-        </Grid>
-        <Grid item xs={3}>
-          {t("label.title")}
-        </Grid>
-        <Grid item xs={4}>
-          {t("label.payload")} / {t("label.url")}
-        </Grid>
-        <Grid item xs={2}>
-          {t("label.webview")}
-        </Grid>
         {buttons.map(({ value, id }, idx) => (
           <Fragment key={id}>
-            <Grid item xs={1}>
-              <IconButton
-                onClick={() => removeInput(idx)}
-                disabled={buttons.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
             <ButtonInput
               fieldPath={fieldPath}
               idx={idx}
@@ -107,19 +116,26 @@ const ButtonsInput: FC<ButtonsInput> = ({
               onChange={updateInput(idx)}
               disablePayload={disablePayload}
             />
+            <Grid item xs={1}>
+              <IconButton
+                color="error"
+                onClick={() => removeInput(idx)}
+                disabled={buttons.length <= minInput}
+              >
+                <RemoveCircleOutline />
+              </IconButton>
+            </Grid>
           </Fragment>
         ))}
       </Grid>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={addInput}
-        startIcon={<AddIcon />}
-        sx={{ m: 1, float: "right" }}
+      <DropdownButton
+        sx={{ m: 1, float: "right", padding: "16px" }}
+        label={t("button.add_button")}
+        actions={actions}
+        onClick={(action) => addInput(action.defaultValue)}
+        icon={<AddIcon />}
         disabled={buttons.length >= maxInput}
-      >
-        {t("button.add")}
-      </Button>
+      />
     </Box>
   );
 };

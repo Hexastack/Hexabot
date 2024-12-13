@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, Grid, IconButton } from "@mui/material";
+import { Box, Button, Grid, IconButton, Typography } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
@@ -33,8 +33,8 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   const { t } = useTranslate();
   const [quickReplies, setQuickReplies] = useState<
     ValueWithId<StdQuickReply>[]
-  >(value.map((quickReplie) => createValueWithId(quickReplie)));
-  const addInput = () => {
+  >(value.map((quickReply) => createValueWithId(quickReply)));
+  const addInput = (): void => {
     setQuickReplies([
       ...quickReplies,
       createValueWithId({
@@ -72,48 +72,61 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
 
   return (
     <Box>
-      <Grid container spacing={2}>
-        <Grid item xs={1}>
-          &nbsp;
+      {quickReplies.length > 0 ? (
+        <Grid container spacing={2}>
+          <Grid item xs={5}>
+            {t("label.title")}
+          </Grid>
+          <Grid item xs={1} />
+          <Grid item xs={5}>
+            {t("label.payload")}
+          </Grid>
+          <Grid item xs={1}>
+            &nbsp;
+          </Grid>
+          {quickReplies.map(({ value, id }, idx) => (
+            <Fragment key={id}>
+              <QuickReplyInput
+                value={value}
+                idx={idx}
+                onChange={updateInput(idx)}
+              />
+              <Grid item xs={1}>
+                <IconButton
+                  color="error"
+                  size="medium"
+                  onClick={() => removeInput(idx)}
+                  disabled={quickReplies.length <= minInput}
+                >
+                  <RemoveCircleOutline />
+                </IconButton>
+              </Grid>
+            </Fragment>
+          ))}
         </Grid>
-        <Grid item xs={2}>
-          {t("label.type")}
-        </Grid>
-        <Grid item xs={4}>
-          {t("label.title")}
-        </Grid>
-        <Grid item xs={1} />
-        <Grid item xs={4}>
-          {t("label.payload")}
-        </Grid>
-        {quickReplies.map(({ value, id }, idx) => (
-          <Fragment key={id}>
-            <Grid item xs={1}>
-              <IconButton
-                size="medium"
-                onClick={() => removeInput(idx)}
-                disabled={quickReplies.length <= minInput}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-            <QuickReplyInput
-              value={value}
-              idx={idx}
-              onChange={updateInput(idx)}
-            />
-          </Fragment>
-        ))}
-      </Grid>
+      ) : (
+        <Typography
+          sx={{
+            color: "lightgrey",
+            textAlign: "center",
+            marginTop: 2,
+          }}
+        >
+          {t("label.no_quick_replies")}
+        </Typography>
+      )}
       <Button
+        sx={{
+          marginTop: 2,
+          float: "right",
+          verticalAlign: "middle",
+        }}
         variant="contained"
-        color="primary"
-        onClick={addInput}
         startIcon={<AddIcon />}
-        sx={{ marginTop: 2, float: "right" }}
+        onClick={addInput}
         disabled={quickReplies.length >= maxInput}
       >
-        {t("button.add")}
+        {t("button.add_quick_reply")}
       </Button>
     </Box>
   );
