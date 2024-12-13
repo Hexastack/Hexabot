@@ -21,12 +21,14 @@ type QuickRepliesInput = {
   value: StdQuickReply[];
   onChange: (patterns: StdQuickReply[]) => void;
   minInput?: number;
+  maxInput?: number;
 };
 
 const QuickRepliesInput: FC<QuickRepliesInput> = ({
   value,
   onChange,
   minInput = 1,
+  maxInput = 11,
 }) => {
   const { t } = useTranslate();
   const [quickReplies, setQuickReplies] = useState<
@@ -122,7 +124,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
         variant="contained"
         startIcon={<AddIcon />}
         onClick={addInput}
-        disabled={quickReplies.length > 10}
+        disabled={quickReplies.length >= maxInput}
       >
         {t("button.add_quick_reply")}
       </Button>
