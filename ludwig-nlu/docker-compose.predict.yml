@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ludwig-predict:
+    image: ludwigai/ludwig:master
+    command: >
+      predict
+      --model_path /results/experiment_run/model
+      --dataset /data/predict.csv
+      --output_directory /predictions
+    volumes:
+      - ./data:/data
+      - ./src:/src
+      - ./results:/results
+      - ./predictions:/predictions
+      

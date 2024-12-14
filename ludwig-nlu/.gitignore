@@ -1,0 +1,8 @@
+results/
+predictions/
+visualizations/
+data/*
+.env
+venv/
+.idea/
+.aim/

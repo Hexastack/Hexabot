@@ -1,0 +1,27 @@
+input_features:
+  - name: text
+    type: text 
+    preprocessing:
+      tokenizer: ngram
+      ngram: 3
+      max_sequence_length: 256
+    encoder:
+      type: parallel_cnn
+
+output_features:
+  - name: language
+    type: category  
+    decoder:
+      type: classifier
+
+preprocessing:
+  split:
+      type: stratify
+      column: language
+      probabilities:
+      - 0.85
+      - 0.1
+      - 0.05
+trainer:
+  early_stop: 0
+  epochs: 5

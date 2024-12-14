@@ -1,0 +1,35 @@
+input_features:
+    - name: text
+      type: sequence
+      encoder:
+        type: rnn
+        dropout: 0.2
+        cell_type: lstm
+        bidirectional: true
+        num_layers: 2
+        reduce_output: null
+      preprocessing:
+        tokenizer: ngram
+        ngram_size: 3
+
+output_features:
+    - name: intent
+      type: category
+      dropout: 0.2
+      reduce_input: sum
+
+preprocessing:
+  split:
+      type: stratify
+      column: intent
+      probabilities:
+      - 0.85
+      - 0.1
+      - 0.05
+
+trainer:
+  decay: true
+  early_stop: 0
+  epochs: 10
+  learning_rate: 0.001
+  

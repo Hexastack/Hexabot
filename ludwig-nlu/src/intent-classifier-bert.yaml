@@ -1,0 +1,27 @@
+input_features:
+  - name: text
+    type: text
+    encoder:
+      type: bert
+      trainable: true
+      pretrained_model_name_or_path: google-bert/bert-base-multilingual-uncased
+
+output_features:
+  - name: intent
+    type: category
+
+preprocessing:
+  split:
+      type: stratify
+      column: intent
+      probabilities:
+      - 0.85
+      - 0.1
+      - 0.05
+
+trainer:
+  batch_size: 32
+  decay: true
+  learning_rate: 0.00002
+  epochs: 8
+  

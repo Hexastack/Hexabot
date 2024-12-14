@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ludwig-visualization:
+    image: ludwigai/ludwig:master
+    command: >
+      visualize --visualization learning_curves
+      --ground_truth_metadata /results/intent-classifier-lstm/model/training_set_metadata.json
+      --training_statistics /results/intent-classifier-lstm/training_statistics.json
+      --file_format png
+      --output_directory /visualizations
+    volumes:
+      - ./visualizations:/visualizations
+      - ./results:/results
+    environment:
+      - PYTHONUNBUFFERED=1  # Optional, to ensure logs are printed immediately
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge

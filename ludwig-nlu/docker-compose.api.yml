@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ludwig-python:
+    image: ludwigai/ludwig:master
+    working_dir: /src
+    entrypoint: python
+    command: /src/language_classifier.py
+    volumes:
+      - ./data:/data
+      - ./src:/src
