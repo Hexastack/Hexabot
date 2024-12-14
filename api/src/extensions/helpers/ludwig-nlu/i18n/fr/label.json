@@ -1,0 +1,5 @@
+{
+    "endpoint": "API Ludwig NLU",
+    "token": "Jeton d'API",
+    "threshold": "Seuil de Probabilité"
+}

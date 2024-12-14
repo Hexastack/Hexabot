@@ -1,0 +1,6 @@
+{
+    "endpoint": "Enter the endpoint URL for the Ludwig NLU API where requests will be sent.",
+    "token": "Provide the API token for authenticating requests to the Ludwig NLU API.",
+    "threshold": "Set the minimum probability score for predictions to be considered valid."
+  }
+  
