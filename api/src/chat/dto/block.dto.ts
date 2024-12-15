@@ -12,6 +12,7 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -21,6 +22,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { transformToNumeric } from '@/utils/helpers/transform';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { CaptureVar } from '../schemas/types/capture-var';
@@ -64,11 +66,13 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'Block options', type: Object })
   @IsOptional()
   @IsObject()
+  @Transform(({ value }) => transformToNumeric(value))
   options?: BlockOptions;
 
   @ApiProperty({ description: 'Block message', type: Object })
   @IsNotEmpty()
   @IsMessage({ message: 'Message is invalid' })
+  @Transform(({ value }) => transformToNumeric(value))
   message: BlockMessage;
 
   @ApiPropertyOptional({ description: 'next blocks', type: Array })
