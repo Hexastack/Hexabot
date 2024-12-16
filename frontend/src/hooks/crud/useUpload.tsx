@@ -23,7 +23,7 @@ export const useUpload = <
 >(
   entity: TEntity,
   options?: Omit<
-    TMutationOptions<TBasic, Error, File, TBasic>,
+    TMutationOptions<TBasic, Error, { file: File; context?: string }, TBasic>,
     "mutationFn" | "mutationKey"
   > & {
     invalidate?: boolean;
@@ -35,8 +35,8 @@ export const useUpload = <
   const { invalidate = true, ...otherOptions } = options || {};
 
   return useMutation({
-    mutationFn: async (variables: File) => {
-      const data = await api.upload(variables);
+    mutationFn: async ({ file, context }) => {
+      const data = await api.upload(file, context);
       const { entities, result } = normalizeAndCache(data);
 
       // Invalidate all counts & collections
