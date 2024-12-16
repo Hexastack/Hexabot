@@ -16,7 +16,7 @@ import { IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
-import AttachmentUploader from "./AttachmentUploader";
+import AttachmentUploader, { TAttachmentContext } from "./AttachmentUploader";
 
 type AttachmentThumbnailProps = {
   label: string;
@@ -28,6 +28,7 @@ type AttachmentThumbnailProps = {
   onChange?: (id: string | null, mimeType: string | null) => void;
   error?: boolean;
   helperText?: string;
+  mediaLibraryContext?: TAttachmentContext;
 };
 
 const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
@@ -42,6 +43,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
       onChange,
       error,
       helperText,
+      mediaLibraryContext,
     },
     ref,
   ) => {
@@ -80,6 +82,8 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
           <AttachmentUploader
             accept={accept}
             enableMediaLibrary={enableMediaLibrary}
+            context={mediaLibraryContext}
+            mediaLibraryContext={mediaLibraryContext && [mediaLibraryContext]}
             onChange={handleChange}
           />
         ) : null}

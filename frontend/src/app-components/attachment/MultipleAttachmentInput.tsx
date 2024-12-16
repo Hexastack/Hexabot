@@ -15,7 +15,7 @@ import { IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
-import AttachmentUploader from "./AttachmentUploader";
+import AttachmentUploader, { TAttachmentContext } from "./AttachmentUploader";
 
 type MultipleAttachmentInputProps = {
   label: string;
@@ -27,6 +27,7 @@ type MultipleAttachmentInputProps = {
   onChange?: (ids: string[]) => void;
   error?: boolean;
   helperText?: string;
+  mediaLibraryContext?: TAttachmentContext[];
 };
 
 const MultipleAttachmentInput = forwardRef<
@@ -44,6 +45,7 @@ const MultipleAttachmentInput = forwardRef<
       onChange,
       error,
       helperText,
+      mediaLibraryContext,
     },
     ref,
   ) => {
@@ -105,6 +107,7 @@ const MultipleAttachmentInput = forwardRef<
             key={uploadKey}
             accept={accept}
             enableMediaLibrary={enableMediaLibrary}
+            mediaLibraryContext={mediaLibraryContext}
             onChange={(attachment) => handleChange(attachment)}
           />
         )}

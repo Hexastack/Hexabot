@@ -14,7 +14,7 @@ import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { FileType } from "@/types/message.types";
-import { MIME_TYPES, getFileType } from "@/utils/attachment";
+import { getFileType } from "@/utils/attachment";
 
 import { useBlock } from "./BlockFormProvider";
 import { FormSectionTitle } from "./FormSectionTitle";
@@ -56,7 +56,7 @@ const AttachmentMessageForm = () => {
               label=""
               {...rest}
               value={value.payload?.attachment_id}
-              accept={Object.values(MIME_TYPES).flat().join(",")}
+              accept="" //Object.values(MIME_TYPES).flat().join(",")
               format="full"
               size={256}
               error={!!errors?.message?.["attachment"]?.message}
@@ -69,6 +69,7 @@ const AttachmentMessageForm = () => {
                   },
                 });
               }}
+              mediaLibraryContext="block_attachment"
             />
           );
         }}

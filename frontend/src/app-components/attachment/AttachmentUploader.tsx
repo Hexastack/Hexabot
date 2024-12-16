@@ -61,10 +61,21 @@ const IconText = styled(Box)`
   position: absolute;
 `;
 
+export type TAttachmentContext =
+  | "setting"
+  | "nlp"
+  | "user_avatar"
+  | "subscriber_avatar"
+  | "block_attachment"
+  | "content_attachment"
+  | "message_attachment";
+
 export type FileUploadProps = {
   imageButton?: boolean;
   accept: string;
   enableMediaLibrary?: boolean;
+  context?: TAttachmentContext;
+  mediaLibraryContext?: TAttachmentContext[];
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
 };
@@ -72,6 +83,8 @@ export type FileUploadProps = {
 const AttachmentUploader: FC<FileUploadProps> = ({
   accept,
   enableMediaLibrary,
+  context,
+  mediaLibraryContext,
   onChange,
   onUploadComplete,
 }) => {
@@ -114,7 +127,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
           return;
         }
 
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };
@@ -123,7 +136,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.dataTransfer.files.item(0);
 
       if (file) {
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };
@@ -134,6 +147,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
         {...getDisplayDialogs(libraryDialogCtl)}
         callback={onChange}
         accept={accept}
+        mediaLibraryContext={mediaLibraryContext}
       />
       <Grid container>
         <Grid item xs={enableMediaLibrary ? 5 : 12}>
