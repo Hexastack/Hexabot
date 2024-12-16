@@ -58,25 +58,33 @@ export class SearchFilterPipe<T>
       if (Types.ObjectId.isValid(String(val[field])))
         return {
           operator: 'eq',
-          [field === 'id' ? '_id' : field]: this.getNullableValue(val[field]),
+          data: {
+            [field === 'id' ? '_id' : field]: this.getNullableValue(val[field]),
+          },
         };
       return {};
     } else if (val['contains'] || val[field]?.['contains']) {
       return {
         operator: 'iLike',
-        [field]: this.getRegexValue(
-          String(val['contains'] || val[field]['contains']),
-        ),
+        data: {
+          [field]: this.getRegexValue(
+            String(val['contains'] || val[field]['contains']),
+          ),
+        },
       };
     } else if (val['!=']) {
       return {
         operator: 'neq',
-        [field]: this.getNullableValue(val['!=']),
+        data: {
+          [field]: this.getNullableValue(val['!=']),
+        },
       };
     }
     return {
       operator: 'eq',
-      [field]: this.getNullableValue(String(val)),
+      data: {
+        [field]: this.getNullableValue(String(val)),
+      },
     };
   }
 
@@ -89,6 +97,7 @@ export class SearchFilterPipe<T>
         .map((val) => {
           const [field] = Object.keys(val);
           const filter = this.transformField(field, val[field]);
+
           if (filter.operator)
             filters.push({
               ...filter,
@@ -111,13 +120,15 @@ export class SearchFilterPipe<T>
         });
 
     return filters.reduce(
-      (acc, { context, operator, ...filter }) => ({
+      (acc, { context, operator, data, ...filter }) => ({
         ...acc,
         ...(operator === 'neq'
-          ? { $nor: [...(acc?.$nor || []), filter] }
+          ? { $nor: [...(acc?.$nor || []), { ...filter, ...data }] }
           : context === 'or'
-            ? { $or: [...(acc?.$or || []), filter] }
-            : context === 'and' && { $and: [...(acc?.$and || []), filter] }),
+            ? { $or: [...(acc?.$or || []), { ...filter, ...data }] }
+            : context === 'and' && {
+                $and: [...(acc?.$and || []), { ...filter, ...data }],
+              }),
       }),
       {} as TFilterQuery<T>,
     );
