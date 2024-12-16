@@ -16,9 +16,9 @@ export const config: Config = {
   },
   appPath: process.cwd(),
   apiBaseUrl: process.env.API_ORIGIN || 'http://localhost:4000',
-  uiBaseUrl: process.env.FRONTEND_ORIGIN
-    ? process.env.FRONTEND_ORIGIN.split(',')[0]
-    : 'http://localhost:8080',
+  uiBaseUrl: process.env.FRONTEND_BASE_URL
+    ? process.env.FRONTEND_BASE_URL
+    : 'http://localhost:8080', // default to local dev
   security: {
     httpsEnabled: process.env.HTTPS_ENABLED === 'true',
     trustProxy: process.env.HTTPS_ENABLED === 'true', // Nginx in use ?
@@ -27,7 +27,7 @@ export const config: Config = {
       headers: 'content-type,x-xsrf-token,x-csrf-token',
       methods: ['GET', 'PATCH', 'POST', 'DELETE', 'OPTIONS', 'HEAD'],
       allowOrigins: process.env.FRONTEND_ORIGIN
-        ? process.env.FRONTEND_ORIGIN.split(',')
+        ? process.env.FRONTEND_ORIGIN.split(',').map((origin) => origin.trim())
         : ['*'],
       allowCredentials: true,
     },
@@ -72,7 +72,7 @@ export const config: Config = {
     // to get access to a 3rd party cookie and to enable sessions).
     grant3rdPartyCookie: true,
     onlyAllowOrigins: process.env.FRONTEND_ORIGIN
-      ? process.env.FRONTEND_ORIGIN.split(',')
+      ? process.env.FRONTEND_ORIGIN.split(',').map((origin) => origin.trim())
       : [undefined], // ['http://example.com', 'https://example.com'],
   },
   session: {
