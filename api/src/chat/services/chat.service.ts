@@ -212,7 +212,7 @@ export class ChatService {
           mid: event.getId(),
           recipient: recipient.id,
           message: event.getMessage(),
-          delivery: false,
+          delivery: true,
           read: false,
         };
 

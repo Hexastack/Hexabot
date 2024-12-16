@@ -28,13 +28,17 @@ export interface ChannelEvent {}
 
 // eslint-disable-next-line prettier/prettier
 export default abstract class EventWrapper<
-  A,
+  A extends {
+    eventType: StdEventType;
+    messageType?: IncomingMessageType;
+    raw: E;
+  },
   E,
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
 > {
-  _adapter: A = {} as A;
+  _adapter: A = { raw: {}, eventType: StdEventType.unknown } as A;
 
   _handler: C;
 
@@ -54,7 +58,7 @@ export default abstract class EventWrapper<
    * @param event - The message event received
    * @param channelAttrs - Channel's specific data
    */
-  constructor(handler: C, event: E, channelAttrs: S = {} as S) {
+  constructor(handler: C, event: A['raw'], channelAttrs: S = {} as S) {
     this._handler = handler;
     this._init(event);
     this.channelAttrs = channelAttrs;
@@ -66,7 +70,7 @@ export default abstract class EventWrapper<
         handler: this._handler.getName(),
         channelData: this.getChannelData(),
         sender: this.getSender(),
-        recipient: this.getRecipientForeignId(),
+        // recipient: this.getRecipientForeignId(),
         eventType: this.getEventType(),
         messageType: this.getMessageType(),
         payload: this.getPayload(),
@@ -90,7 +94,7 @@ export default abstract class EventWrapper<
    *- `_adapter.raw` : Sets a typed object of the event raw data
    * @param event - The message event received from a given channel
    */
-  abstract _init(event: E): void;
+  abstract _init(event: A['raw']): void;
 
   /**
    * Retrieves the current channel handler.
@@ -198,14 +202,18 @@ export default abstract class EventWrapper<
    *
    * @returns The type of event received (message, delivery, read, ...)
    */
-  abstract getEventType(): StdEventType;
+  getEventType(): StdEventType {
+    return this._adapter.eventType;
+  }
 
   /**
    * Identifies the type of the message received
    *
    * @return The type of message
    */
-  abstract getMessageType(): IncomingMessageType;
+  getMessageType(): IncomingMessageType | undefined {
+    return this._adapter.messageType;
+  }
 
   /**
    * Return payload whenever user clicks on a button/quick_reply or sends an attachment, false otherwise

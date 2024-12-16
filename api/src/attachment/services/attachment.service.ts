@@ -96,13 +96,12 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param res - The response object from which the profile picture will be buffered or piped.
    * @param filename - The filename
    */
-  async uploadProfilePic(res: fetch.Response, filename: string) {
+  async uploadProfilePic(data: Buffer | fetch.Response, filename: string) {
     if (this.getStoragePlugin()) {
       // Upload profile picture
-      const buffer = await res.buffer();
       const picture = {
         originalname: filename,
-        buffer,
+        buffer: Buffer.isBuffer(data) ? data : await data.buffer(),
       } as Express.Multer.File;
       try {
         await this.getStoragePlugin().uploadAvatar(picture);
@@ -122,12 +121,19 @@ export class AttachmentService extends BaseService<Attachment> {
     } else {
       // Save profile picture locally
       const dirPath = path.join(config.parameters.avatarDir, filename);
+
       try {
+        // Ensure the directory exists
         await fs.promises.mkdir(config.parameters.avatarDir, {
           recursive: true,
-        }); // Ensure the directory exists
-        const dest = fs.createWriteStream(dirPath);
-        res.body.pipe(dest);
+        });
+
+        if (Buffer.isBuffer(data)) {
+          await fs.promises.writeFile(dirPath, data);
+        } else {
+          const dest = fs.createWriteStream(dirPath);
+          data.body.pipe(dest);
+        }
         this.logger.debug(
           'Messenger Channel Handler : Profile picture fetched successfully',
         );
@@ -202,6 +208,24 @@ export class AttachmentService extends BaseService<Attachment> {
           disposition,
         },
       });
+    }
+  }
+
+  /**
+   * Downloads an attachment identified by the provided parameters as a Buffer.
+   *
+   * @param  attachment - The attachment to download.
+   * @returns A promise that resolves to a Buffer representing the downloaded attachment.
+   */
+  async readAsBuffer(attachment: Attachment): Promise<Buffer> {
+    if (this.getStoragePlugin()) {
+      return await this.getStoragePlugin().readAsBuffer(attachment);
+    } else {
+      if (!fileExists(attachment.location)) {
+        throw new NotFoundException('No file was found');
+      }
+      const filePath = join(config.parameters.uploadDir, attachment.location);
+      return await fs.promises.readFile(filePath); // Reads the file content as a Buffer
     }
   }
 }

@@ -32,4 +32,6 @@ export abstract class BaseStoragePlugin extends BasePlugin {
   abstract download(attachment: Attachment): Promise<StreamableFile>;
 
   abstract downloadProfilePic(name: string): Promise<StreamableFile>;
+
+  readAsBuffer?(attachment: Attachment): Promise<Buffer>;
 }
