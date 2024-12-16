@@ -20,7 +20,7 @@ export default [
   {
     group: CONSOLE_CHANNEL_NAMESPACE,
     label: Web.SettingLabel.allowed_domains,
-    value: config.uiBaseUrl,
+    value: config.security.cors.allowOrigins.join(','),
     type: SettingType.text,
   },
   {
