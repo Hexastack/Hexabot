@@ -172,7 +172,6 @@ const ListMessageForm = () => {
         <FormLabel component="h4" sx={{ marginBottom: "1rem" }}>
           {t("title.fields_map")}
         </FormLabel>
-        {/* here! */}
         <ContentItem>
           <Controller
             name="options.content.fields.title"
