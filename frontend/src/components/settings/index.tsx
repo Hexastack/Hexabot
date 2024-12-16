@@ -133,14 +133,8 @@ export const Settings = () => {
   useEffect(() => {
     const subscription = watch((values, { name }) => {
       const [group, label] = (name as string).split(".");
-      const currentSettingValue = values[group][label] as any;
-      // if setting value is Number but typed string convert it to number
-      const settingValue =
-        typeof values[group][label] === "string" && isNaN(currentSettingValue)
-          ? values[group][label]
-          : Number(values[group][label]);
 
-      debouncedUpdate(group, label, settingValue);
+      debouncedUpdate(group, label, values[group][label]);
     });
 
     return () => {

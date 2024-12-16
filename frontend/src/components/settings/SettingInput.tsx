@@ -95,6 +95,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           label={label}
           helperText={helperText}
           {...field}
+          onChange={(e) => field.onChange(Number(e.target.value))}
           disabled={isDisabled(setting)}
         />
       );

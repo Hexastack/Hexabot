@@ -150,7 +150,7 @@ export class SettingRepository extends BaseRepository<Setting> {
     } else if (type === SettingType.secret && typeof value !== 'string') {
       throw new Error('Setting Model (secret) : Value must be a string');
     } else if (type === SettingType.select && typeof value !== 'string') {
-      throw new Error('Setting Model (select): Value must be a string array!');
+      throw new Error('Setting Model (select): Value must be a string!');
     }
   }
 
