@@ -14,6 +14,47 @@
  *
  * @param value - The value to be transformed, which can be a string, array, object, or any other type.
  * @returns The transformed value, where strings representing numbers are converted to numbers.
+ *
+ * @example
+ * // String to number conversion
+ * transformToNumeric('123'); // Output: 123
+ *
+ * @example
+ * // Non-numeric string remains unchanged
+ * transformToNumeric('abc'); // Output: 'abc'
+ *
+ * @example
+ * // Numbers are returned as is
+ * transformToNumeric(123); // Output: 123
+ *
+ * @example
+ * // Arrays are transformed recursively
+ * transformToNumeric(['123', 'abc', '45.67', 89]);
+ * // Output: [123, 'abc', 45.67, 89]
+ *
+ * @example
+ * // Objects are transformed recursively
+ * transformToNumeric({
+ *   a: '123',
+ *   b: 'abc',
+ *   c: { d: '45.67', e: 89 },
+ * });
+ * // Output: {
+ * //   a: 123,
+ * //   b: 'abc',
+ * //   c: { d: 45.67, e: 89 },
+ * // }
+ *
+ * @example
+ * // Nested structures are handled correctly
+ * transformToNumeric({
+ *   a: ['123', 'abc', { b: '45.67', c: 'def' }],
+ *   d: '99',
+ * });
+ * // Output: {
+ * //   a: [123, 'abc', { b: 45.67, c: 'def' }],
+ * //   d: 99,
+ * // }
  */
 export function transformToNumeric(value: unknown): unknown {
   if (typeof value === 'string' && !isNaN(Number(value))) {
