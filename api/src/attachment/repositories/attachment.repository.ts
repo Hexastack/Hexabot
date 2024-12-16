@@ -13,14 +13,23 @@ import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
-import { Attachment } from '../schemas/attachment.schema';
+import {
+  Attachment,
+  ATTACHMENT_POPULATE,
+  AttachmentFull,
+  AttachmentPopulate,
+} from '../schemas/attachment.schema';
 
 @Injectable()
-export class AttachmentRepository extends BaseRepository<Attachment, never> {
+export class AttachmentRepository extends BaseRepository<
+  Attachment,
+  AttachmentPopulate,
+  AttachmentFull
+> {
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(Attachment.name) readonly model: Model<Attachment>,
   ) {
-    super(eventEmitter, model, Attachment);
+    super(eventEmitter, model, Attachment, ATTACHMENT_POPULATE, AttachmentFull);
   }
 }
