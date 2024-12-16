@@ -88,8 +88,7 @@ export class NlpSampleService extends BaseService<
         await this.findOneOrCreate(record, record);
         this.logger.debug('User message saved as a inbox sample !');
       } catch (err) {
-        this.logger.error('Unable to add message as a new inbox sample!', err);
-        throw err;
+        this.logger.warn('Unable to add message as a new inbox sample!', err);
       }
     }
   }
