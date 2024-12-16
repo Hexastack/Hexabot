@@ -118,13 +118,10 @@ export class SettingRepository extends BaseRepository<Setting> {
     ) {
       throw new Error('Setting Model : Value must be a string!');
     } else if (type === SettingType.multiple_text) {
-      const isStringArray =
-        Array.isArray(value) &&
-        value.every((v) => {
-          return typeof v === 'string';
-        });
-      if (!isStringArray) {
-        throw new Error('Setting Model : Value must be a string array!');
+      if (!this.isArrayOfString(value)) {
+        throw new Error(
+          'Setting Model (Multiple Text) : Value must be a string array!',
+        );
       }
     } else if (
       type === SettingType.checkbox &&
@@ -138,6 +135,26 @@ export class SettingRepository extends BaseRepository<Setting> {
       value !== null
     ) {
       throw new Error('Setting Model : Value must be a number!');
+    } else if (type === SettingType.multiple_attachment) {
+      if (!this.isArrayOfString(value)) {
+        throw new Error(
+          'Setting Model (Multiple Attachement): Value must be a string array!',
+        );
+      }
+    } else if (type === SettingType.attachment) {
+      if (typeof value !== 'string' && typeof value !== null) {
+        throw new Error(
+          'Setting Model (attachement): Value must be a string or null !',
+        );
+      }
+    } else if (type === SettingType.secret && typeof value !== 'string') {
+      throw new Error('Setting Model (secret) : Value must be a string');
+    } else if (type === SettingType.select && typeof value !== 'string') {
+      throw new Error('Setting Model (select): Value must be a string array!');
     }
+  }
+
+  private isArrayOfString(value: any): boolean {
+    return Array.isArray(value) && value.every((v) => typeof v === 'string');
   }
 }
