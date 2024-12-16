@@ -7,28 +7,32 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Transform, Type } from 'class-transformer';
+import { Schema as MongooseSchema } from 'mongoose';
 
+import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
+import { User } from '@/user/schemas/user.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { buildURL } from '@/utils/helpers/URL';
-import { THydratedDocument } from '@/utils/types/filter.types';
+import {
+  TFilterPopulateFields,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
 import { MIME_REGEX } from '../utilities';
 
-// TODO: Interface AttachmentAttrs declared, currently not used
-
-export interface AttachmentAttrs {
-  name: string;
-  type: string;
-  size: number;
-  location: string;
-  channel?: Record<string, any>;
-}
+export type TContextType =
+  | 'user_avatar'
+  | 'subscriber_avatar'
+  | 'block_attachment'
+  | 'content_attachment'
+  | 'message_attachment';
 
 @Schema({ timestamps: true })
-export class Attachment extends BaseSchema {
+export class AttachmentStub extends BaseSchema {
   /**
    * The name of the attachment.
    */
@@ -112,6 +116,32 @@ export class Attachment extends BaseSchema {
       return FileType.file;
     }
   }
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    refPath: 'ownerType',
+    default: null,
+  })
+  owner?: unknown;
+
+  @Prop({ type: String })
+  ownerType?: 'User' | 'Subscriber';
+
+  @Prop({ type: String })
+  context?: TContextType;
+}
+
+@Schema({ timestamps: true })
+export class Attachment extends AttachmentStub {
+  @Transform(({ obj }) => obj.owner?.toString() || null)
+  owner?: string | null;
+}
+
+@Schema({ timestamps: true })
+export class AttachmentFull extends AttachmentStub {
+  // TODO: dynamic Type User or Subscriber
+  @Type(() => User)
+  owner: User | Subscriber | null;
 }
 
 export type AttachmentDocument = THydratedDocument<Attachment>;
@@ -132,3 +162,10 @@ AttachmentModel.schema.virtual('url').get(function () {
 });
 
 export default AttachmentModel.schema;
+
+export type AttachmentPopulate = keyof TFilterPopulateFields<
+  Attachment,
+  AttachmentStub
+>;
+
+export const ATTACHMENT_POPULATE: AttachmentPopulate[] = ['owner'];

@@ -25,11 +25,20 @@ import { PluginType } from '@/plugins/types';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { Attachment } from '../schemas/attachment.schema';
+import {
+  Attachment,
+  AttachmentFull,
+  AttachmentPopulate,
+  TContextType,
+} from '../schemas/attachment.schema';
 import { fileExists, getStreamableFile } from '../utilities';
 
 @Injectable()
-export class AttachmentService extends BaseService<Attachment> {
+export class AttachmentService extends BaseService<
+  Attachment,
+  AttachmentPopulate,
+  AttachmentFull
+> {
   private storagePlugin: PluginInstance<PluginType.storage> | null = null;
 
   constructor(
@@ -153,24 +162,34 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param files - An array of files to upload.
    * @returns A promise that resolves to an array of uploaded attachments.
    */
-  async uploadFiles(files: { file: Express.Multer.File[] }) {
+  async uploadFiles({
+    files,
+    ownerId,
+    context,
+  }: {
+    files: Express.Multer.File[];
+    ownerId?: string;
+    context?: TContextType;
+  }) {
     const uploadedFiles: Attachment[] = [];
 
     if (this.getStoragePlugin()) {
-      for (const file of files?.file) {
+      for (const file of files) {
         const dto = await this.getStoragePlugin().upload(file);
         const uploadedFile = await this.create(dto);
         uploadedFiles.push(uploadedFile);
       }
     } else {
-      if (Array.isArray(files?.file)) {
-        for (const { size, mimetype, filename } of files?.file) {
+      if (Array.isArray(files)) {
+        for (const { size, mimetype, filename } of files) {
           const uploadedFile = await this.create({
             size,
             type: mimetype,
             name: filename,
             channel: {},
             location: `/${filename}`,
+            ...(ownerId && { owner: ownerId }),
+            context,
           });
           uploadedFiles.push(uploadedFile);
         }
