@@ -172,6 +172,7 @@ const ListMessageForm = () => {
         <FormLabel component="h4" sx={{ marginBottom: "1rem" }}>
           {t("title.fields_map")}
         </FormLabel>
+        {/* here! */}
         <ContentItem>
           <Controller
             name="options.content.fields.title"
@@ -186,7 +187,9 @@ const ListMessageForm = () => {
               return (
                 <AutoCompleteSelect<ContentField, "label", false>
                   options={(contentType?.fields || []).filter(
-                    ({ type }) => ContentFieldType.TEXT === type,
+                    ({ type }) =>
+                      ContentFieldType.TEXT === type ||
+                      ContentFieldType.TEXTAREA === type,
                   )}
                   idKey="name"
                   labelKey="label"
@@ -214,7 +217,9 @@ const ListMessageForm = () => {
               return (
                 <AutoCompleteSelect<ContentField, "label", false>
                   options={(contentType?.fields || []).filter(
-                    ({ type }) => ContentFieldType.TEXT === type,
+                    ({ type }) =>
+                      ContentFieldType.TEXT === type ||
+                      ContentFieldType.TEXTAREA === type,
                   )}
                   idKey="name"
                   labelKey="label"
