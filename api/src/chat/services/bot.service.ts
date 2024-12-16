@@ -339,7 +339,7 @@ export class BotService {
       return await this.handleIncomingMessage(conversation, event);
     } catch (err) {
       this.logger.error(
-        'An error occured when searching for a conversation ',
+        'An error occurred when searching for a conversation ',
         err,
       );
       return null;
@@ -492,7 +492,7 @@ export class BotService {
         this.startConversation(event, block);
       } catch (err) {
         this.logger.error(
-          'An error occured while retrieving starting message blocks ',
+          'An error occurred while retrieving starting message blocks ',
           err,
         );
       }
