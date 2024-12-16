@@ -80,6 +80,7 @@ export const NlpImportDialog: FC<NlpImportDialogProps> = ({
               }}
               label=""
               value={attachmentId}
+              mediaLibraryContext="nlp"
             />
           </ContentItem>
         </ContentContainer>

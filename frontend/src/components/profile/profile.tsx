@@ -114,6 +114,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
                     size={256}
                     {...field}
                     onChange={(attachment) => setValue("avatar", attachment)}
+                    mediaLibraryContext="user_avatar"
                   />
                   {getValues("avatar") ? (
                     <Button

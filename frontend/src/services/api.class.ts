@@ -269,11 +269,12 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     return data;
   }
 
-  async upload(file: File) {
+  async upload(file: File, context?: string) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
     formData.append("file", file);
+    if (context) formData.append("context", context);
 
     const { data } = await this.request.post<
       TBasic[],
