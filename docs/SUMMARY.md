@@ -62,8 +62,8 @@
 * [Hexabot API](developer-guide/hexabot-api.md)
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
 * [Plugins](developer-guide/integrations/README.md)
+  * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
   * [Build Your First plugin](developer-guide/integrations/build-your-first-plugin.md)
-  * [RAG Plugin](developer-guide/integrations/openapi.md)
 * [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
 
 ## Key Concepts

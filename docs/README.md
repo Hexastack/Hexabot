@@ -21,7 +21,7 @@ Welcome to the Hexabot Documentation! Hexabot is a powerful and versatile open-s
 
 ## Key Features
 
-Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:
+Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:q
 
 * **Intuitive Visual Editor:** Build complex conversation flows without coding using our drag-and-drop interface and a diverse library of pre-built blocks.
 * **NLU Engine:** Leverage state-of-the-art NLU technology to understand user intent, extract key information, and deliver personalized responses.
@@ -34,19 +34,19 @@ Hexabot comes equipped with a comprehensive suite of features to empower your ch
 This documentation is a valuable resource for:
 
 * **New Users:** Get started with Hexabot, learn the basics of chatbot creation, and build your first conversational chatbot.
-* Experienced Users: Explore advanced features, optimize your existing chatbots, and discover best practices for chatbot development.
-* Developers: Integrate Hexabot with your applications, leverage our APIs, and extend the platform's functionality by developing add-ons for Hexabot.
-* Administrators: Manage users, configure settings, and ensure the smooth operation of Hexabot within your organization.
+* **Experienced Users**: Explore advanced features, optimize your existing chatbots, and discover best practices for chatbot development.
+* **Developers**: Integrate Hexabot with your applications, leverage our APIs, and extend the platform's functionality by developing add-ons for Hexabot.
+* **Administrators**: Manage users, configure settings, and ensure the smooth operation of Hexabot within your organization.
 
 ## How to Use This Documentation
 
 To navigate this documentation effectively:
 
-* Search: Use the search bar to quickly find information on specific topics or keywords.
-* Navigation: Browse through the table of contents to explore different sections and find the information you need.
-* Links: Follow links to related articles and resources for in-depth explanations and examples.
+* **Search**: Use the search bar to quickly find information on specific topics or keywords.
+* **Navigation**: Browse through the table of contents to explore different sections and find the information you need.
+* **Links**: Follow links to related articles and resources for in-depth explanations and examples.
 
-Feedback: We encourage you to provide feedback and suggestions for improvement. Your input helps us make this documentation even better.
+Feedback: We encourage you to provide feedback and suggestions for improvement. Your input helps us make this documentation even better.&#x20;
 
 ## Contacting Support
 

@@ -26,9 +26,7 @@ Before starting, ensure you have the following:
 
 * #### Install NPM
 
-{% content-ref url="../developer-guide/setup-node.js-with-nvm.md" %}
-[setup-node.js-with-nvm.md](../developer-guide/setup-node.js-with-nvm.md)
-{% endcontent-ref %}
+{% include "../.gitbook/includes/untitled.md" %}
 
 ***
 
