@@ -24,166 +24,166 @@ Pa**ssword :** adminadmin
 
 #### 1. Go to Hexabot visual editor page. This is your main workspace where you can build your chatbot conversation flow. In this tutorial, we will design a chatbot that can answer question about a company return policy.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/hgU8qwtDbLiBmmO-mWrXk.jpeg\&x=2054\&y=713\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/hgU8qwtDbLiBmmO-mWrXk.jpeg\&x=2054\&y=713\&fill=009185\&color=009185)
 
 #### 2. Click 'Simple Text' to insert a new block in your workspace.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/xf\_5jG03onF6ELW5dFg2V.jpg\&x=147\&y=364\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/xf_5jG03onF6ELW5dFg2V.jpg\&x=147\&y=364\&fill=009185\&color=009185)
 
 #### 3. Double-click on a block to begin making changes
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/10b-S\_Za0xipN0LOQUi6h.jpg\&x=2470\&y=983\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/10b-S_Za0xipN0LOQUi6h.jpg\&x=2470\&y=983\&fill=009185\&color=009185)
 
 #### 4. Add a descriptive block title relevant to this step in the flow.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/rqMorxpDNCn4ASR99K96G.jpeg\&x=1747\&y=384\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 15-18-42.png>)
 
 #### 5. Toggle the switch to set this block as a starting step in the conversation.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/9IsujTlUTOCsS1MYRDlMx.jpeg\&x=2791\&y=551\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 15-17-24.png>)
 
-#### 6. You can trigger blocks based on custom conditions. Click 'Add Pattern' to create a new trigger.
+#### 6. You can trigger blocks based on custom conditions. Click 'NEW TRIGGER' to create a new one.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/UoYDblK\_HGxLBTbUc\_qn1.jpg\&x=2764\&y=1090\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 15-27-35.png>)
 
-#### 7. Select 'NLU' from the dropdown to create a condition based on natural language understanding.
+#### 7. Select 'Intent Match' from the dropdown to create a condition based on natural language understanding.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/dwhn4kTe7dQjOtBBc841n.jpg\&x=1416\&y=1396\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 16-07-27.png>)
 
-#### 8. NLU triggers can detect the user's intent, even if the message is in different words or forms.
+#### 8. Intent Match triggers can detect the user's intent, even if the message is in different words or forms.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/nazb\_s2kFhalgmRoZ1quX.jpg\&x=1300\&y=1403\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 16-15-08.png>)
 
 #### 9. Let's start by adding a greeting intent as a trigger, since this is the beginning of our conversation. You can also combine multiple triggers for more complex scenarios.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/5DCUAX4sRRI1YP2IILQZI.jpg\&x=2181\&y=1034\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 16-20-17.png>)
 
 #### 10. Click to select the intent 'greetings\_hello' from the list.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/1nsXs5NmIIQN9U1AXXGtN.jpg\&x=1764\&y=1294\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 16-53-09.png>)
 
 #### 11. Go to the 'Message' tab to configure responses.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/1XM2n7pQopRaXyF4U321y.jpg\&x=1650\&y=674\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 16-57-30.png>)
 
 #### 12. Expand this section to view the replacement tokens.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/IUBdMWl2cL6G90SJtCcjk.jpg\&x=2870\&y=1422\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 17-12-02.png>)
 
 #### 13. Select the first name replacement token
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/LF0uH1hZq0hcPM3LQxcfa.jpg\&x=1549\&y=1454\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 17-19-55.png>)
 
 #### 14. Copy the token
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/P52csqBY7dvaR2761fAg9.jpg\&x=1282\&y=1461\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 17-22-09.png>)
 
 #### 15. To customize the reply message, edit the response to 'Hi {context.user.first\_name} !'
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/NQxDq8y23UWtkenDxg5\_s.jpg\&x=1146\&y=815\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 17-28-57.png>)
 
 #### 16. Hit the submit button to save the block setup
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/3yAaxy3KSH6MghDGzDyQK.jpg\&x=2513\&y=1916\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-13 17-30-54.png>)
 
 #### 17. To test your conversation flow, open the chat widget launcher.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/ETeTXnEkIaoeV0HQr05oz.jpg\&x=3696\&y=1920\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/ETeTXnEkIaoeV0HQr05oz.jpg\&x=3696\&y=1920\&fill=009185\&color=009185)
 
 #### 18. Type any form of greeting to trigger a reply from the chatbot.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/MdfwqPTCgqOIp89b18WA3.jpg\&x=2909\&y=1928\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/MdfwqPTCgqOIp89b18WA3.jpg\&x=2909\&y=1928\&fill=009185\&color=009185)
 
 #### 19. Return to the blocks library and add a Quick Reply block to your flow.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/6JyaPTeo\_3xmR2Sk8C-Wv.jpg\&x=151\&y=624\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/6JyaPTeo_3xmR2Sk8C-Wv.jpg\&x=151\&y=624\&fill=009185\&color=009185)
 
 #### 20. Double-click on the block to customize it.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/70glz\_-zfifRTaxIvdGPH.jpg\&x=2259\&y=979\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/70glz_-zfifRTaxIvdGPH.jpg\&x=2259\&y=979\&fill=009185\&color=009185)
 
 #### 21. Let's modify the trigger to use natural language understanding (NLU) instead of basic keyword matching.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/yCDcgQKJ1sExX6-i72QPA.jpg\&x=1330\&y=963\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 08-28-21.png>)
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/MhkSyrREej324K3ZkghM4.jpg\&x=1275\&y=1331\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 08-28-53.png>)
 
 #### 23. We've previously created a new intent in our NLU provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlu-training.md](../user-guide/nlu-training.md "mention") guide:
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/FtF1bEnRR66bfUlRS5rNa.jpg\&x=2868\&y=951\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-41-35.png>)
 
 #### 24. Set this block as the starting point. Multiple blocks can serve as entry points in your flow.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/Vaz3CDNq4x3wBxUjJz8La.jpg\&x=2710\&y=553\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-39-42.png>)
 
 #### 25. Go to the 'Message' tab to configure responses for this block.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/3-2qson8zujnc0\_pNYb84.jpg\&x=1645\&y=759\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-45-10 (2).png>)
 
 #### 26. Customize the response message by replacing the default content.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/Iagb2xFsGddefjws54vTy.jpg\&x=2875\&y=899\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-50-34.png>)
 
 #### 27. Add quick replies. Each reply will be an option the user can click instead of typing.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/NGZL6wVtr--YxJwQZh5zY.jpg\&x=1992\&y=1340\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-53-07.png>)
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/d\_0QYKjYyT4VmTYsIpJ7W.jpg\&x=1675\&y=1500\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 09-59-06.png>)
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/hlukf4hdWcY8OGIFvjhIw.jpg\&x=1750\&y=1635\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 10-02-16.png>)
 
 #### 30. Save your changes, then link the blocks together
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/hAY64A8zg90mRtraPKTH9.jpg\&x=2499\&y=1915\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 10-03-50.png>)
 
 #### 31. Try out the new block by asking a question about the return policy in the chat widget.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/\_B8qgX\_zbZmhglVQwq-u\_.jpg\&x=2910\&y=1930\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/_B8qgX_zbZmhglVQwq-u_.jpg\&x=2910\&y=1930\&fill=009185\&color=009185)
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/zJKxHebaVYMptZ9uagudh.jpg\&x=2910\&y=1506\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/zJKxHebaVYMptZ9uagudh.jpg\&x=2910\&y=1506\&fill=009185\&color=009185)
 
 #### 33. Depending on the user's response, we'll provide different answers. Let's add a new block to continue building our flow
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/BUnMj6j56W7cdla5jAwQX.jpg\&x=146\&y=322\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/BUnMj6j56W7cdla5jAwQX.jpg\&x=146\&y=322\&fill=009185\&color=009185)
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/436OvEZVj-iCPCQMKXFnM.jpg\&x=2796\&y=734\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/436OvEZVj-iCPCQMKXFnM.jpg\&x=2796\&y=734\&fill=009185\&color=009185)
 
 #### 35. Let's name this block Return Eligibility
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/8AxxnrgwPgOkJRKcCj-sK.jpg\&x=1505\&y=576\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/8AxxnrgwPgOkJRKcCj-sK.jpg\&x=1505\&y=576\&fill=009185\&color=009185)
 
 #### 36. Go to triggers tab
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/KFtJMTT9skBhT3YyoqHhn.jpg\&x=1042\&y=763\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/KFtJMTT9skBhT3YyoqHhn.jpg\&x=1042\&y=763\&fill=009185\&color=009185)
 
 #### 37. Our keyword trigger should match the option we added in the quick replies block
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/d8AMO7RW1SzaxOxcAPlxj.jpg\&x=1637\&y=946\&fill=009185\&color=009185)
+![](<../.gitbook/assets/Screenshot from 2024-12-16 10-05-51.png>)
 
 #### 38. Click on "Message".
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/UQ\_BeniZYiF6iIHBuFSrg.jpg\&x=1707\&y=743\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/UQ_BeniZYiF6iIHBuFSrg.jpg\&x=1707\&y=743\&fill=009185\&color=009185)
 
 #### 39. And provide the appropriate message or messages
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/1jKLy9HJlze8fSlmDgKHt.jpg\&x=1559\&y=1087\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/1jKLy9HJlze8fSlmDgKHt.jpg\&x=1559\&y=1087\&fill=009185\&color=009185)
 
 #### 40. Save and connect the block to the Quick Replies block to continue the conversation flow.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/zTNdIk0zKaftH-jxCWGdH.jpg\&x=2614\&y=1706\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/zTNdIk0zKaftH-jxCWGdH.jpg\&x=2614\&y=1706\&fill=009185\&color=009185)
 
 #### 41. Go back to the chat widget
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/LggaLSXimY\_OSChbnqBpl.jpg\&x=2882\&y=1920\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/LggaLSXimY_OSChbnqBpl.jpg\&x=2882\&y=1920\&fill=009185\&color=009185)
 
 #### 42. Click on "Return Eligibility".
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/LggaLSXimY\_OSChbnqBpl.jpg\&x=3104\&y=1815\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/LggaLSXimY_OSChbnqBpl.jpg\&x=3104\&y=1815\&fill=009185\&color=009185)
 
 #### 43. 🎉 By following this flow, the user was able to receive accurate information about return eligibility from the chatbot.
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/j4VsCqh31Gouy\_xYnEuES.jpg\&x=2923\&y=1652\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/j4VsCqh31Gouy_xYnEuES.jpg\&x=2923\&y=1652\&fill=009185\&color=009185)
 
 #### 44. You can add more blocks to cover the other options like "Refund Timeframe" and "Other" by creating connecting a new block and repeating the same steps
 
-![](https://d16ev9qffqt5qm.cloudfront.net/?s3\_key=cm13fx1ui000ykz7ijmdsawl9/1vjudS6Zw3gKe4x98h1cq.jpg\&x=268\&y=801\&fill=009185\&color=009185)
+![](https://d16ev9qffqt5qm.cloudfront.net/?s3_key=cm13fx1ui000ykz7ijmdsawl9/1vjudS6Zw3gKe4x98h1cq.jpg\&x=268\&y=801\&fill=009185\&color=009185)
