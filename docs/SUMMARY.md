@@ -63,7 +63,7 @@
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
 * [Plugins](developer-guide/integrations/README.md)
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
-  * [Build Your First plugin](developer-guide/integrations/build-your-first-plugin.md)
+  * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)
 * [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
 
 ## Key Concepts
