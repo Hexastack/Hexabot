@@ -14,6 +14,7 @@ import {
 import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
+  FilterQuery,
   FlattenMaps,
   HydratedDocument,
   Model,
@@ -38,17 +39,31 @@ export type DeleteResult = {
 };
 
 export enum EHook {
+  preCreateValidate = 'preCreateValidate',
   preCreate = 'preCreate',
+  preUpdateValidate = 'preUpdateValidate',
   preUpdate = 'preUpdate',
   preUpdateMany = 'preUpdateMany',
   preDelete = 'preDelete',
-  preValidate = 'preValidate',
+  postCreateValidate = 'postCreateValidate',
   postCreate = 'postCreate',
+  postUpdateValidate = 'postUpdateValidate',
   postUpdate = 'postUpdate',
   postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
-  postValidate = 'postValidate',
 }
+
+// ! ------------------------------------ Note --------------------------------------------
+// Methods like `update()`, `updateOne()`, `updateMany()`, `findOneAndUpdate()`,
+// `findByIdAndUpdate()`, `findOneAndReplace()`, `findOneAndDelete()`, and `findByIdAndDelete()`
+// do not trigger Mongoose validation hooks by default. This is because these methods do not
+// return Mongoose Documents but plain JavaScript objects (POJOs), which do not have Mongoose
+// instance methods like `validate()` attached.
+//
+// Be cautious when using the `.lean()` function as well. It returns POJOs instead of Mongoose
+// Documents, so methods and hooks like `validate()` will not be available when working with
+// the returned data. If you need validation, ensure that you're working with a Mongoose Document
+// or explicitly use `runValidators: true` in the options for update operations.
 
 export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
@@ -86,14 +101,17 @@ export abstract class BaseRepository<
 
     hooks?.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
-      await repository.preValidate(doc);
-      repository.emitter.emit(repository.getEventName(EHook.preValidate), doc);
+      await repository.preCreateValidate(doc);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preCreateValidate),
+        doc,
+      );
     });
 
     hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
-      await repository.postValidate(created);
+      await repository.postCreateValidate(created);
       repository.emitter.emit(
-        repository.getEventName(EHook.postValidate),
+        repository.getEventName(EHook.postCreateValidate),
         created,
       );
     });
@@ -457,6 +475,23 @@ export abstract class BaseRepository<
         new: true,
       },
     );
+    const filterCriteria = query.getFilter();
+    const queryUpdates = query.getUpdate();
+
+    await this.preUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.preUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
+
+    await this.postUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.postUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
+
     return await this.executeOne(query, this.cls);
   }
 
@@ -479,11 +514,29 @@ export abstract class BaseRepository<
     return await this.model.deleteMany(criteria);
   }
 
-  async preValidate(_doc: HydratedDocument<T>): Promise<void> {
+  async preCreateValidate(
+    _doc: HydratedDocument<T>,
+    _filterCriteria?: FilterQuery<T>,
+    _updates?: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
     // Nothing ...
   }
 
-  async postValidate(_validated: HydratedDocument<T>): Promise<void> {
+  async postCreateValidate(_validated: HydratedDocument<T>): Promise<void> {
+    // Nothing ...
+  }
+
+  async preUpdateValidate(
+    _filterCriteria: FilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
+    // Nothing ...
+  }
+
+  async postUpdateValidate(
+    _filterCriteria: FilterQuery<T>,
+    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
+  ): Promise<void> {
     // Nothing ...
   }
 

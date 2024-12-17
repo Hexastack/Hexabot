@@ -7,12 +7,16 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import {
-  EventEmitter2,
-  IHookSettingsGroupLabelOperationMap,
-} from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query, Types } from 'mongoose';
+import {
+  Document,
+  FilterQuery,
+  Model,
+  Types,
+  UpdateQuery,
+  UpdateWithAggregationPipeline,
+} from 'mongoose';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
@@ -30,6 +34,27 @@ export class SettingRepository extends BaseRepository<Setting> {
     super(eventEmitter, model, Setting);
   }
 
+  async preCreateValidate(
+    doc: Document<unknown, unknown, Setting> &
+      Setting & { _id: Types.ObjectId },
+  ) {
+    this.validateSettingValue(doc.type, doc.value);
+  }
+
+  async preUpdateValidate(
+    criteria: FilterQuery<Setting>,
+    updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
+  ): Promise<void> {
+    if (!Array.isArray(updates)) {
+      const payload = updates.$set;
+      if (typeof payload.value !== 'undefined') {
+        const { type } =
+          'type' in payload ? payload : await this.findOne(criteria);
+        this.validateSettingValue(type, payload.value);
+      }
+    }
+  }
+
   /**
    * Validates the `Setting` document after it has been retrieved.
    *
@@ -40,64 +65,51 @@ export class SettingRepository extends BaseRepository<Setting> {
    *
    * @param setting The `Setting` document to be validated.
    */
-  async postValidate(
-    setting: Document<unknown, unknown, Setting> &
-      Setting & { _id: Types.ObjectId },
-  ) {
+  private validateSettingValue(type: SettingType, value: any) {
     if (
-      (setting.type === SettingType.text ||
-        setting.type === SettingType.textarea) &&
-      typeof setting.value !== 'string' &&
-      setting.value !== null
+      (type === SettingType.text || type === SettingType.textarea) &&
+      typeof value !== 'string' &&
+      value !== null
     ) {
       throw new Error('Setting Model : Value must be a string!');
-    } else if (setting.type === SettingType.multiple_text) {
-      const isStringArray =
-        Array.isArray(setting.value) &&
-        setting.value.every((v) => {
-          return typeof v === 'string';
-        });
-      if (!isStringArray) {
-        throw new Error('Setting Model : Value must be a string array!');
+    } else if (type === SettingType.multiple_text) {
+      if (!this.isArrayOfString(value)) {
+        throw new Error(
+          'Setting Model (Multiple Text) : Value must be a string array!',
+        );
       }
     } else if (
-      setting.type === SettingType.checkbox &&
-      typeof setting.value !== 'boolean' &&
-      setting.value !== null
+      type === SettingType.checkbox &&
+      typeof value !== 'boolean' &&
+      value !== null
     ) {
       throw new Error('Setting Model : Value must be a boolean!');
     } else if (
-      setting.type === SettingType.number &&
-      typeof setting.value !== 'number' &&
-      setting.value !== null
+      type === SettingType.number &&
+      typeof value !== 'number' &&
+      value !== null
     ) {
       throw new Error('Setting Model : Value must be a number!');
+    } else if (type === SettingType.multiple_attachment) {
+      if (!this.isArrayOfString(value)) {
+        throw new Error(
+          'Setting Model (Multiple Attachement): Value must be a string array!',
+        );
+      }
+    } else if (type === SettingType.attachment) {
+      if (typeof value !== 'string' && typeof value !== null) {
+        throw new Error(
+          'Setting Model (attachement): Value must be a string or null !',
+        );
+      }
+    } else if (type === SettingType.secret && typeof value !== 'string') {
+      throw new Error('Setting Model (secret) : Value must be a string');
+    } else if (type === SettingType.select && typeof value !== 'string') {
+      throw new Error('Setting Model (select): Value must be a string!');
     }
   }
 
-  /**
-   * Emits an event after a `Setting` has been updated.
-   *
-   * This method is used to synchronize global settings by emitting an event
-   * based on the `group` and `label` of the `Setting`.
-   *
-   * @param _query The Mongoose query object used to find and update the document.
-   * @param setting The updated `Setting` object.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Setting, any, any>,
-      Document<Setting, any, any>,
-      unknown,
-      Setting,
-      'findOneAndUpdate'
-    >,
-    setting: Setting,
-  ) {
-    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-    const label = setting.label as '*';
-
-    // Sync global settings var
-    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
+  private isArrayOfString(value: any): boolean {
+    return Array.isArray(value) && value.every((v) => typeof v === 'string');
   }
 }

@@ -162,6 +162,105 @@ describe('BaseRepository', () => {
         expect.objectContaining({ dummy: 'updated dummy text' }),
       );
     });
+
+    it('should updateOne by id and trigger preUpdateValidate and postUpdateValidate methods', async () => {
+      const created = await dummyRepository.create({ dummy: 'initial text' });
+      const mockGetFilterValue = { _id: created.id };
+      const mockedGetFilter = jest.fn().mockReturnValue(mockGetFilterValue);
+
+      const mockGetUpdateValue = {
+        $set: {
+          value: 'updated dummy text',
+        },
+      };
+
+      const mockedGetUpdate = jest.fn().mockReturnValue(mockGetUpdateValue);
+      const mockQueryValue = {
+        getFilter: mockedGetFilter,
+        getUpdate: mockedGetUpdate,
+        lean: jest.fn(() => {
+          return {
+            exec: jest.fn(),
+          };
+        }),
+      };
+
+      jest
+        .spyOn(dummyModel, 'findOneAndUpdate')
+        .mockReturnValue(mockQueryValue as any);
+
+      const mockUpdate = { dummy: 'updated dummy text' };
+      const spyPreUpdateValidate = jest
+        .spyOn(dummyRepository, 'preUpdateValidate')
+        .mockResolvedValue();
+      const spyPostUpdateValidate = jest
+        .spyOn(dummyRepository, 'postUpdateValidate')
+        .mockResolvedValue();
+
+      const spyExecutoneOne = jest
+        .spyOn(
+          dummyRepository as DummyRepository & {
+            executeOne: () => Promise<{ dummy: string }>;
+          },
+          'executeOne',
+        )
+        .mockResolvedValue({ dummy: 'updated dummy text' });
+
+      await dummyRepository.updateOne(created.id, mockUpdate);
+
+      expect(spyPreUpdateValidate).toHaveBeenCalledWith(
+        mockGetFilterValue,
+        mockGetUpdateValue,
+      );
+      expect(spyPostUpdateValidate).toHaveBeenCalledWith(
+        mockGetFilterValue,
+        mockGetUpdateValue,
+      );
+      expect(spyExecutoneOne).toHaveBeenCalledWith(mockQueryValue, Dummy);
+    });
+
+    it('should throw an error while trying to updateOne when calling preUpdateValidate', async () => {
+      const created = await dummyRepository.create({ dummy: 'initial text' });
+      const mockGetFilterValue = { _id: created.id };
+      const mockedGetFilter = jest.fn().mockReturnValue(mockGetFilterValue);
+
+      const mockGetUpdateValue = {
+        $set: {
+          value: 10,
+        },
+      };
+
+      const mockedGetUpdate = jest.fn().mockReturnValue(mockGetUpdateValue);
+      const mockQueryValue = {
+        getFilter: mockedGetFilter,
+        getUpdate: mockedGetUpdate,
+        lean: jest.fn(() => {
+          return {
+            exec: jest.fn(),
+          };
+        }),
+      };
+
+      jest
+        .spyOn(dummyModel, 'findOneAndUpdate')
+        .mockReturnValue(mockQueryValue as any);
+
+      const mockUpdate = { dummy: 10 };
+      const spyPreUpdateValidate = jest
+        .spyOn(dummyRepository, 'preUpdateValidate')
+        .mockImplementation(() => {
+          throw new Error('Mocked error while validating dummy');
+        });
+
+      await expect(
+        dummyRepository.updateOne(created.id, mockUpdate),
+      ).rejects.toThrow('Mocked error while validating dummy');
+
+      expect(spyPreUpdateValidate).toHaveBeenCalledWith(
+        mockGetFilterValue,
+        mockGetUpdateValue,
+      );
+    });
   });
 
   describe('deleteOne', () => {
