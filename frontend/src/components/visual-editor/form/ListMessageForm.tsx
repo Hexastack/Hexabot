@@ -166,7 +166,7 @@ const ListMessageForm = () => {
         </ContentItem>
       </Grid>
       <Grid item xs={1}>
-        <Divider orientation="vertical" sx={{ margin: "2rem" }} />
+        <Divider orientation="vertical" sx={{ marginX: "2rem" }} />
       </Grid>
       <Grid item xs={6}>
         <FormLabel component="h4" sx={{ marginBottom: "1rem" }}>
@@ -278,7 +278,7 @@ const ListMessageForm = () => {
           />
         </ContentItem>
       </Grid>
-      <ContentItem>
+      <ContentItem width="100%">
         <FormSectionTitle title={t("label.buttons")} Icon={ButtonsIcon} />
         <Controller
           name="options.content.buttons"
