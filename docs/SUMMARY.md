@@ -56,15 +56,15 @@
 * [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
 * [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
-* [Contributers Installation Guide](developer-guide/contributers-installation-guide.md)
+* [Plugins](developer-guide/integrations/README.md)
+  * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
+  * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)
 * [Hexabot UI Admin Panel](developer-guide/hexabot-ui-admin-panel.md)
 * [Hexabot Live Chat Widget](developer-guide/hexabot-live-chat-widget.md)
 * [Hexabot API](developer-guide/hexabot-api.md)
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
-* [Plugins](developer-guide/integrations/README.md)
-  * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
-  * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)
 * [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
+* [Contributers Installation Guide](developer-guide/contributers-installation-guide.md)
 
 ## Key Concepts
 
