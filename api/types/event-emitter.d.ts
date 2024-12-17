@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import type { Document, FilterQuery, Query } from 'mongoose';
+import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
@@ -179,11 +179,13 @@ declare module '@nestjs/event-emitter' {
   type EventNamespaces = keyof IHookEntityOperationMap;
 
   /* pre hooks */
-  type TPreValidate<T> = THydratedDocument<T>;
+  type TPreCreateValidate<T> = THydratedDocument<T>;
 
   type TPreCreate<T> = THydratedDocument<T>;
 
-  type TPreUpdate<T> = TFilterQuery<T> & object;
+  type TPreUpdateValidate<T> = FilterQuery<T>;
+
+  type TPreUpdate<T> = TFilterQuery<T>;
 
   type TPreDelete<T> = Query<
     DeleteResult,
@@ -195,27 +197,27 @@ declare module '@nestjs/event-emitter' {
   >;
 
   type TPreUnion<T> =
-    | TPreValidate<T>
+    | TPreCreateValidate<T>
     | TPreCreate<T>
+    | TPreUpdateValidate<T>
     | TPreUpdate<T>
     | TPreDelete<T>;
 
   /* post hooks */
-  type TPostValidate<T> = THydratedDocument<T>;
+  type TPostCreateValidate<T> = THydratedDocument<T>;
 
   type TPostCreate<T> = THydratedDocument<T>;
 
+  type TPostUpdateValidate<T> = FilterQuery<T>;
+
   type TPostUpdate<T> = THydratedDocument<T>;
-
-  type TPreUpdateValidate<T> = FilterQuery<T>;
-
-  type TPostUpdateValidate<T> = THydratedDocument<T>;
 
   type TPostDelete = DeleteResult;
 
   type TPostUnion<T> =
-    | TPostValidate<T>
+    | TPostCreateValidate<T>
     | TPostCreate<T>
+    | TPostUpdateValidate<T>
     | TPostUpdate<T>
     | TPostDelete;
 
@@ -251,10 +253,13 @@ declare module '@nestjs/event-emitter' {
     T = IHookEntityOperationMap[E]['schema'],
   > =
     | {
-        [EHook.preCreateValidate]: TPreValidate<T>;
+        [EHook.preCreateValidate]: TPreCreateValidate<T>;
       }
     | {
         [EHook.preCreate]: TPreCreate<T>;
+      }
+    | {
+        [EHook.preUpdateValidate]: TPreUpdateValidate<T>;
       }
     | {
         [EHook.preUpdate]: TPreUpdate<T>;
@@ -263,22 +268,19 @@ declare module '@nestjs/event-emitter' {
         [EHook.preDelete]: TPreDelete<T>;
       }
     | {
-        [EHook.postCreateValidate]: TPostValidate<T>;
+        [EHook.postCreateValidate]: TPostCreateValidate<T>;
       }
     | {
         [EHook.postCreate]: TPostCreate<T>;
+      }
+    | {
+        [EHook.postUpdateValidate]: TPostUpdateValidate<T>;
       }
     | {
         [EHook.postUpdate]: TPostUpdate<T>;
       }
     | {
         [EHook.postDelete]: TPostDelete;
-      }
-    | {
-        [EHook.preUpdateValidate]: TPreUpdateValidate<T>;
-      }
-    | {
-        [EHook.postUpdateValidate]: TPostUpdateValidate<T>;
       };
 
   type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<

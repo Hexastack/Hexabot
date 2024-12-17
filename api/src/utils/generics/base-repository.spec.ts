@@ -209,14 +209,10 @@ describe('BaseRepository', () => {
       await dummyRepository.updateOne(created.id, mockUpdate);
 
       expect(spyPreUpdateValidate).toHaveBeenCalledWith(
-        created.id,
-        mockUpdate,
         mockGetFilterValue,
         mockGetUpdateValue,
       );
       expect(spyPostUpdateValidate).toHaveBeenCalledWith(
-        created.id,
-        mockUpdate,
         mockGetFilterValue,
         mockGetUpdateValue,
       );
@@ -261,8 +257,6 @@ describe('BaseRepository', () => {
       ).rejects.toThrow('Mocked error while validating dummy');
 
       expect(spyPreUpdateValidate).toHaveBeenCalledWith(
-        created.id,
-        mockUpdate,
         mockGetFilterValue,
         mockGetUpdateValue,
       );

@@ -7,24 +7,19 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import {
-  EventEmitter2,
-  IHookSettingsGroupLabelOperationMap,
-} from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
   FilterQuery,
   Model,
-  Query,
   Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { BaseRepository, EHook } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
@@ -42,62 +37,22 @@ export class SettingRepository extends BaseRepository<Setting> {
   async preCreateValidate(
     doc: Document<unknown, unknown, Setting> &
       Setting & { _id: Types.ObjectId },
-    filterCriteria: FilterQuery<Setting>,
-    updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
   ) {
     this.validateSettingValue(doc.type, doc.value);
-    if (filterCriteria && updates) {
-      this.eventEmitter.emit(
-        `hook:setting:${EHook.preUpdateValidate}`,
-        filterCriteria,
-        updates,
-      );
-    }
   }
 
   async preUpdateValidate(
-    criteria: string | TFilterQuery<Setting>,
-    dto: UpdateQuery<Setting>,
-    filterCriteria: FilterQuery<Setting>,
+    criteria: FilterQuery<Setting>,
     updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
   ): Promise<void> {
-    const payload = dto.$set ? dto.$set : dto;
-    if (typeof payload.value !== 'undefined') {
-      const { type } =
-        'type' in payload ? payload : await this.findOne(criteria);
-      this.validateSettingValue(type, payload.value);
-      this.eventEmitter.emit(
-        `hook:setting:${EHook.preUpdateValidate}`,
-        filterCriteria,
-        updates,
-      );
+    if (!Array.isArray(updates)) {
+      const payload = updates.$set;
+      if (typeof payload.value !== 'undefined') {
+        const { type } =
+          'type' in payload ? payload : await this.findOne(criteria);
+        this.validateSettingValue(type, payload.value);
+      }
     }
-  }
-
-  /**
-   * Emits an event after a `Setting` has been updated.
-   *
-   * This method is used to synchronize global settings by emitting an event
-   * based on the `group` and `label` of the `Setting`.
-   *
-   * @param _query The Mongoose query object used to find and update the document.
-   * @param setting The updated `Setting` object.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<Setting, any, any>,
-      Document<Setting, any, any>,
-      unknown,
-      Setting,
-      'findOneAndUpdate'
-    >,
-    setting: Setting,
-  ) {
-    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-    const label = setting.label as '*';
-
-    // Sync global settings var
-    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
   }
 
   /**

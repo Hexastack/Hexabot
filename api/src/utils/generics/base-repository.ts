@@ -39,19 +39,20 @@ export type DeleteResult = {
 };
 
 export enum EHook {
+  preCreateValidate = 'preCreateValidate',
   preCreate = 'preCreate',
+  preUpdateValidate = 'preUpdateValidate',
   preUpdate = 'preUpdate',
   preUpdateMany = 'preUpdateMany',
   preDelete = 'preDelete',
-  preCreateValidate = 'preCreateValidate',
+  postCreateValidate = 'postCreateValidate',
   postCreate = 'postCreate',
+  postUpdateValidate = 'postUpdateValidate',
   postUpdate = 'postUpdate',
   postUpdateMany = 'postUpdateMany',
   postDelete = 'postDelete',
-  postCreateValidate = 'postCreateValidate',
-  preUpdateValidate = 'preUpdateValidate',
-  postUpdateValidate = 'postUpdateValidate',
 }
+
 // ! ------------------------------------ Note --------------------------------------------
 // Methods like `update()`, `updateOne()`, `updateMany()`, `findOneAndUpdate()`,
 // `findByIdAndUpdate()`, `findOneAndReplace()`, `findOneAndDelete()`, and `findByIdAndDelete()`
@@ -476,8 +477,21 @@ export abstract class BaseRepository<
     );
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
-    await this.preUpdateValidate(criteria, dto, filterCriteria, queryUpdates);
-    await this.postUpdateValidate(criteria, dto, filterCriteria, queryUpdates);
+
+    await this.preUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.preUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
+
+    await this.postUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.postUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
+
     return await this.executeOne(query, this.cls);
   }
 
@@ -512,18 +526,14 @@ export abstract class BaseRepository<
     // Nothing ...
   }
 
-  async preUpdateValidate<D extends Partial<U>>(
-    _criteria: string | TFilterQuery<T>,
-    _dto: UpdateQuery<D>,
+  async preUpdateValidate(
     _filterCriteria: FilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
   ): Promise<void> {
     // Nothing ...
   }
 
-  async postUpdateValidate<D extends Partial<U>>(
-    _criteria: string | TFilterQuery<T>,
-    _dto: UpdateQuery<D>,
+  async postUpdateValidate(
     _filterCriteria: FilterQuery<T>,
     _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
   ): Promise<void> {
