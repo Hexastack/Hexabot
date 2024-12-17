@@ -83,6 +83,8 @@
     "category_is_required": "La catégorie est requise",
     "attachment_is_required": "L'attachement est obligatoire",
     "success_import": "Le contenu a été importé avec succès!",
+    "import_failed": "Échec de l'importation",
+    "import_duplicated_data": "Les données existent déjà",
     "attachment_not_synced": "- En attente de Sync. -",
     "success_translation_refresh": "Les traductions ont été actualisées avec succès!",
     "message_tag_is_required": "Vous devez spécifier le tag de message.",
