@@ -186,9 +186,7 @@ const ListMessageForm = () => {
               return (
                 <AutoCompleteSelect<ContentField, "label", false>
                   options={(contentType?.fields || []).filter(
-                    ({ type }) =>
-                      ContentFieldType.TEXT === type ||
-                      ContentFieldType.TEXTAREA === type,
+                    ({ type }) => ContentFieldType.TEXT === type,
                   )}
                   idKey="name"
                   labelKey="label"
