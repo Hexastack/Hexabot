@@ -25,8 +25,10 @@ import {
   Query,
   Res,
   StreamableFile,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
 import Papa from 'papaparse';
@@ -369,7 +371,116 @@ export class NlpSampleController extends BaseController<
     return deleteResult;
   }
 
+  private async parseAndSaveDataset(data: string) {
+    const allEntities = await this.nlpEntityService.findAll();
+
+    // Check if file location is present
+    if (allEntities.length === 0) {
+      throw new NotFoundException(
+        'No entities found, please create them first.',
+      );
+    }
+
+    // Parse local CSV file
+    const result: {
+      errors: any[];
+      data: Array<Record<string, string>>;
+    } = Papa.parse(data, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    if (result.errors && result.errors.length > 0) {
+      this.logger.warn(
+        `Errors parsing the file: ${JSON.stringify(result.errors)}`,
+      );
+      throw new BadRequestException(result.errors, {
+        cause: result.errors,
+        description: 'Error while parsing CSV',
+      });
+    }
+    // Remove data with no intent
+    const filteredData = result.data.filter((d) => d.intent !== 'none');
+    const languages = await this.languageService.getLanguages();
+    const defaultLanguage = await this.languageService.getDefaultLanguage();
+    const nlpSamples: NlpSample[] = [];
+    // Reduce function to ensure executing promises one by one
+    for (const d of filteredData) {
+      try {
+        // Check if a sample with the same text already exists
+        const existingSamples = await this.nlpSampleService.find({
+          text: d.text,
+        });
+
+        // Skip if sample already exists
+        if (Array.isArray(existingSamples) && existingSamples.length > 0) {
+          continue;
+        }
+
+        // Fallback to default language if 'language' is missing or invalid
+        if (!d.language || !(d.language in languages)) {
+          if (d.language) {
+            this.logger.warn(
+              `Language "${d.language}" does not exist, falling back to default.`,
+            );
+          }
+          d.language = defaultLanguage.code;
+        }
+
+        // Create a new sample dto
+        const sample: NlpSampleCreateDto = {
+          text: d.text,
+          trained: false,
+          language: languages[d.language].id,
+        };
+
+        // Create a new sample entity dto
+        const entities: NlpSampleEntityValue[] = allEntities
+          .filter(({ name }) => name in d)
+          .map(({ name }) => ({
+            entity: name,
+            value: d[name],
+          }));
+
+        // Store any new entity/value
+        const storedEntities = await this.nlpEntityService.storeNewEntities(
+          sample.text,
+          entities,
+          ['trait'],
+        );
+        // Store sample
+        const createdSample = await this.nlpSampleService.create(sample);
+        nlpSamples.push(createdSample);
+        // Map and assign the sample ID to each stored entity
+        const sampleEntities = storedEntities.map((storedEntity) => ({
+          ...storedEntity,
+          sample: createdSample?.id,
+        }));
+
+        // Store sample entities
+        await this.nlpSampleEntityService.createMany(sampleEntities);
+      } catch (err) {
+        this.logger.error('Error occurred when extracting data. ', err);
+      }
+    }
+
+    return nlpSamples;
+  }
+
+  @CsrfCheck(true)
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importFile(@UploadedFile() file: Express.Multer.File) {
+    try {
+      const datasetContent = file.buffer.toString('utf-8');
+      return await this.parseAndSaveDataset(datasetContent);
+    } catch (err) {
+      this.logger.error('Error processing file:', err);
+    }
+  }
+
   /**
+   * @deprecated
    * Imports NLP samples from a CSV file.
    *
    * @param file - The file path or ID of the CSV file to import.
@@ -408,88 +519,7 @@ export class NlpSampleController extends BaseController<
     // Read file content
     const data = fs.readFileSync(filePath, 'utf8');
 
-    // Parse local CSV file
-    const result: {
-      errors: any[];
-      data: Array<Record<string, string>>;
-    } = Papa.parse(data, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    if (result.errors && result.errors.length > 0) {
-      this.logger.warn(
-        `Errors parsing the file: ${JSON.stringify(result.errors)}`,
-      );
-      throw new BadRequestException(result.errors, {
-        cause: result.errors,
-        description: 'Error while parsing CSV',
-      });
-    }
-    // Remove data with no intent
-    const filteredData = result.data.filter((d) => d.intent !== 'none');
-    const languages = await this.languageService.getLanguages();
-    const defaultLanguage = await this.languageService.getDefaultLanguage();
-    // Reduce function to ensure executing promises one by one
-    for (const d of filteredData) {
-      try {
-        // Check if a sample with the same text already exists
-        const existingSamples = await this.nlpSampleService.find({
-          text: d.text,
-        });
-
-        // Skip if sample already exists
-        if (Array.isArray(existingSamples) && existingSamples.length > 0) {
-          continue;
-        }
-
-        // Fallback to default language if 'language' is missing or invalid
-        if (!d.language || !(d.language in languages)) {
-          if (d.language) {
-            this.logger.warn(
-              `Language "${d.language}" does not exist, falling back to default.`,
-            );
-          }
-          d.language = defaultLanguage.code;
-        }
-
-        // Create a new sample dto
-        const sample: NlpSampleCreateDto = {
-          text: d.text,
-          trained: false,
-          language: languages[d.language].id,
-        };
-
-        // Create a new sample entity dto
-        const entities: NlpSampleEntityValue[] = allEntities
-          .filter(({ name }) => name in d)
-          .map(({ name }) => {
-            return {
-              entity: name,
-              value: d[name],
-            };
-          });
-
-        // Store any new entity/value
-        const storedEntities = await this.nlpEntityService.storeNewEntities(
-          sample.text,
-          entities,
-          ['trait'],
-        );
-        // Store sample
-        const createdSample = await this.nlpSampleService.create(sample);
-        // Map and assign the sample ID to each stored entity
-        const sampleEntities = storedEntities.map((se) => ({
-          ...se,
-          sample: createdSample?.id,
-        }));
-
-        // Store sample entities
-        await this.nlpSampleEntityService.createMany(sampleEntities);
-      } catch (err) {
-        this.logger.error('Error occurred when extracting data. ', err);
-      }
-    }
+    await this.parseAndSaveDataset(data);
 
     this.logger.log('Import process completed successfully.');
     return { success: true };
