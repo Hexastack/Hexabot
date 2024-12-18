@@ -24,11 +24,12 @@ To ensure Hexabot runs smoothly, you'll need the following:
 
 <summary>Do you want to install Hexabot on a Windows machine?</summary>
 
-1. Install Docker Desktop for Windows Download and install Docker Desktop for Windows.
+1. Download and install Docker Desktop for Windows.
 2. During installation, ensure that you select the option to use WSL 2 as the default backend for Docker.
 3. After installation, start Docker Desktop and verify that WSL integration is enabled:
 4. Open Docker Desktop and go to Settings. Under the General tab, ensure that "Use the WSL 2 based engine" is selected. Under Resources > WSL Integration, enable integration with your installed Linux distribution (e.g., Ubuntu). Restart your machine to finalize the Docker installation.
-5. Clone the Hexabot Repository Open your WSL terminal (e.g., Ubuntu).
+5. Open your WSL terminal (e.g., Ubuntu).
+6. Follow Hexabot [installation ](installation.md#installation)steps below
 
 Learn more : [https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers)
 
