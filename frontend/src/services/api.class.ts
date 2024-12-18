@@ -274,17 +274,22 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     const formData = new FormData();
 
     formData.append("file", file);
-    if (context) formData.append("context", context);
 
     const { data } = await this.request.post<
       TBasic[],
       AxiosResponse<TBasic[]>,
       FormData
-    >(`${ROUTES[this.type]}/upload?_csrf=${_csrf}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    >(
+      `${ROUTES[this.type]}/upload?_csrf=${_csrf}${
+        context ? `&context=${context}` : ""
+      }`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
-    });
+    );
 
     return data[0];
   }
