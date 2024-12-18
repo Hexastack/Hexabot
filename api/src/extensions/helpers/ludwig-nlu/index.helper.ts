@@ -22,7 +22,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { buildURL } from '@/utils/helpers/URL';
 
 import { LUDWIG_NLU_HELPER_NAME } from './settings';
-import { LudwigNluResultType, NlpParseResultType, RasaNlu } from './types';
+import { LudwigNlu } from './types';
 
 @Injectable()
 export default class LudwigNluHelper extends BaseNlpHelper<
@@ -53,13 +53,13 @@ export default class LudwigNluHelper extends BaseNlpHelper<
   async format(
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
-  ): Promise<RasaNlu.Dataset> {
+  ): Promise<LudwigNlu.LudwigNluDataSample[]> {
     const entityMap = NlpEntity.getEntityMap(entities);
     const valueMap = NlpValue.getValueMap(
       NlpValue.getValuesFromEntities(entities),
     );
 
-    const common_examples: RasaNlu.CommonExample[] = samples
+    const dataset: LudwigNlu.LudwigNluDataSample[] = samples
       .filter((s) => s.entities.length > 0)
       .map((s) => {
         const intent = s.entities.find(
@@ -68,12 +68,12 @@ export default class LudwigNluHelper extends BaseNlpHelper<
         if (!intent) {
           throw new Error('Unable to find the `intent` nlp entity.');
         }
-        const sampleEntities: RasaNlu.ExampleEntity[] = s.entities
+        const sampleEntities: LudwigNlu.ExampleEntity[] = s.entities
           .filter((e) => entityMap[<string>e.entity].name !== 'intent')
           .map((e) => {
-            const res: RasaNlu.ExampleEntity = {
-              entity: entityMap[<string>e.entity].name,
-              value: valueMap[<string>e.value].value,
+            const res: LudwigNlu.ExampleEntity = {
+              entity: entityMap[<string>e.entity].name || '',
+              value: valueMap[<string>e.value]?.value || '', // Use optional chaining to safely access 'value'
             };
             if ('start' in e && 'end' in e) {
               Object.assign(res, {
@@ -82,53 +82,55 @@ export default class LudwigNluHelper extends BaseNlpHelper<
               });
             }
             return res;
-          })
-          // TODO : place language at the same level as the intent
-          .concat({
-            entity: 'language',
-            value: s.language.code,
           });
 
+        const formattedSlots = this.formatSlots(s.text, sampleEntities);
+
+        // Add language as a property at the same level as intent
         return {
           text: s.text,
           intent: valueMap[intent.value].value,
-          entities: sampleEntities,
+          language: s.language.code, // Add language here
+          slots: formattedSlots,
         };
       });
 
-    const languages = await this.languageService.getLanguages();
-    const lookup_tables: RasaNlu.LookupTable[] = entities
-      .map((e) => {
-        return {
-          name: e.name,
-          elements: e.values.map((v) => {
-            return v.value;
-          }),
-        };
-      })
-      .concat({
-        name: 'language',
-        elements: Object.keys(languages),
-      });
-    const entity_synonyms = entities
-      .reduce((acc, e) => {
-        const synonyms = e.values.map((v) => {
-          return {
-            value: v.value,
-            synonyms: v.expressions,
-          };
-        });
-        return acc.concat(synonyms);
-      }, [] as RasaNlu.EntitySynonym[])
-      .filter((s) => {
-        return s.synonyms.length > 0;
-      });
-    return {
-      common_examples,
-      regex_features: [],
-      lookup_tables,
-      entity_synonyms,
-    };
+    return dataset;
+  }
+
+  private formatSlots(
+    text: string,
+    entities: LudwigNlu.ExampleEntity[],
+  ): string {
+    const words = text.split(/\s+/);
+
+    // Initialize the slots array with 'O' tags
+    const slots = Array(words.length).fill('O');
+
+    // Track the current character position in the original text
+    let currentPosition = 0;
+
+    // Iterate over the words and map them to slots using entity indices
+    words.forEach((word, index) => {
+      // Calculate the start and end indices of the current word
+      const wordStart = currentPosition;
+      const wordEnd = currentPosition + word.length;
+
+      // Look for a matching entity whose indices overlap the current word
+      const matchingEntity = entities.find(
+        (e) => e.start < wordEnd && e.end > wordStart, // Check for overlap
+      );
+
+      if (matchingEntity) {
+        slots[index] = `B-${matchingEntity.entity}`;
+      }
+
+      // Update the current position (account for the space after the word)
+      currentPosition = wordEnd + 1;
+    });
+
+    const formattedSlots = slots.join(' ');
+    return formattedSlots;
   }
 
   /**
@@ -142,18 +144,7 @@ export default class LudwigNluHelper extends BaseNlpHelper<
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
   ): Promise<any> {
-    const nluData: RasaNlu.Dataset = await this.format(samples, entities);
-    const settings = await this.getSettings();
-    // Train samples
-    return await this.httpService.axiosRef.post(
-      buildURL(settings.endpoint, `/train`),
-      nluData,
-      {
-        params: {
-          token: settings.token,
-        },
-      },
-    );
+    throw new Error('Method not Implemented yet');
   }
 
   /**
@@ -167,24 +158,13 @@ export default class LudwigNluHelper extends BaseNlpHelper<
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
   ): Promise<any> {
-    const settings = await this.getSettings();
-    const nluTestData: RasaNlu.Dataset = await this.format(samples, entities);
-    // Evaluate model with test samples
-    return await this.httpService.axiosRef.post(
-      buildURL(settings.endpoint, `/evaluate`),
-      nluTestData,
-      {
-        params: {
-          token: settings.token,
-        },
-      },
-    );
+    throw new Error('Method Not Implemented Yet');
   }
 
-  async process_incoming_nlu_payload(
-    nlp: LudwigNluResultType,
+  async processIncomingNluPayload(
+    nlp: LudwigNlu.LudwigNluResultType,
     givenText: string,
-  ): Promise<NlpParseResultType> {
+  ): Promise<LudwigNlu.NluProcessedResultType> {
     const words = givenText.split(' ');
 
     const intentValue = nlp.intent.predictions.intent_predictions;
@@ -240,7 +220,7 @@ export default class LudwigNluHelper extends BaseNlpHelper<
    * @returns The parsed entities
    */
   async filterEntitiesByConfidence(
-    nlp: NlpParseResultType,
+    nlp: LudwigNlu.NluProcessedResultType,
     threshold: boolean,
   ): Promise<NLU.ParseEntities> {
     try {
@@ -264,12 +244,6 @@ export default class LudwigNluHelper extends BaseNlpHelper<
             return e;
           })
           .filter((e) => e.confidence >= minConfidence);
-        // Get past threshold and the highest confidence for the same entity
-        // .filter((e, idx, self) => {
-        //   const sameEntities = self.filter((s) => s.entity === e.entity);
-        //   const max = Math.max.apply(Math, sameEntities.map((e) => { return e.confidence; }));
-        //   return e.confidence === max;
-        // });
       }
 
       ['intent', 'language'].forEach((trait) => {
@@ -284,7 +258,7 @@ export default class LudwigNluHelper extends BaseNlpHelper<
       return guess;
     } catch (e) {
       this.logger.error(
-        'Core NLU Helper : Unable to parse nlp result to extract best guess!',
+        'Ludwig NLU Helper : Unable to parse nlp result to extract best guess!',
         e,
       );
       return {
@@ -316,16 +290,16 @@ export default class LudwigNluHelper extends BaseNlpHelper<
       };
 
       const { data: nlp } =
-        await this.httpService.axiosRef.post<LudwigNluResultType>(
+        await this.httpService.axiosRef.post<LudwigNlu.LudwigNluResultType>(
           buildURL(settings.endpoint, '/predict'),
           form, // Pass the form-data object directly
           requestConfig,
         );
 
-      const formattedNlp = await this.process_incoming_nlu_payload(nlp, text);
+      const formattedNlp = await this.processIncomingNluPayload(nlp, text);
       return await this.filterEntitiesByConfidence(formattedNlp, threshold);
     } catch (err) {
-      this.logger.error('Core NLU Helper : Unable to parse nlp', err);
+      this.logger.error('Ludwig NLU Helper : Unable to parse nlp', err);
       throw err;
     }
   }
