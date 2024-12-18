@@ -16,22 +16,30 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request } from 'express';
+
+import { TContextType } from '@/attachment/schemas/attachment.schema';
+import { AttachmentService } from '@/attachment/services/attachment.service';
 
 import { TRole } from '../schemas/role.schema';
 import { User } from '../schemas/user.schema';
+import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { MethodToAction } from '../types/action.type';
 import { TModel } from '../types/model.type';
 
+import { AttachmentGuardRules } from './rules/attachment-guard-rules';
+
 @Injectable()
-export class Ability implements CanActivate {
+export class Ability extends AttachmentGuardRules implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly permissionService: PermissionService,
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+    readonly permissionService: PermissionService,
+    readonly modelService: ModelService,
+    readonly attachmentService: AttachmentService,
+  ) {
+    super(permissionService, modelService, attachmentService);
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<TRole[]>('roles', context.getHandler());
@@ -40,7 +48,7 @@ export class Ability implements CanActivate {
       return true;
     }
 
-    const { user, method, _parsedUrl, session } = context
+    const { user, method, _parsedUrl, session, query } = context
       .switchToHttp()
       .getRequest<Request & { user: User; _parsedUrl: Url }>();
 
@@ -59,11 +67,23 @@ export class Ability implements CanActivate {
       ) {
         return true;
       }
-      const modelFromPathname = _parsedUrl.pathname
-        .split('/')[1]
-        .toLowerCase() as TModel;
-
+      const paths = _parsedUrl.pathname.split('/');
+      const modelFromPathname = paths?.[1].toLowerCase() as TModel;
       const permissions = await this.permissionService.getPermissions();
+
+      // attachment
+      const attachmentUploadContext =
+        query?.context?.toString() as TContextType;
+
+      if (modelFromPathname === 'attachment') {
+        if (paths?.[2] === 'upload' && attachmentUploadContext)
+          return await this.hasRequiredUploadPermission(
+            user,
+            attachmentUploadContext,
+          );
+        else if (paths?.[2] === 'download')
+          return await this.hasRequiredDownloadPermission(user, paths?.[3]);
+      }
 
       if (permissions) {
         const permissionsFromRoles = Object.entries(permissions)

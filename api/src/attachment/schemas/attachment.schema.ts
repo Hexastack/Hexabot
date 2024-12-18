@@ -24,7 +24,10 @@ import {
 
 import { MIME_REGEX } from '../utilities';
 
+export type TOwnerType = 'User' | 'Subscriber';
+
 export type TContextType =
+  | 'setting_attachment'
   | 'user_avatar'
   | 'subscriber_avatar'
   | 'block_attachment'
@@ -125,7 +128,7 @@ export class AttachmentStub extends BaseSchema {
   owner?: unknown;
 
   @Prop({ type: String })
-  ownerType?: 'User' | 'Subscriber';
+  ownerType?: TOwnerType;
 
   @Prop({ type: String })
   context?: TContextType;
@@ -138,10 +141,15 @@ export class Attachment extends AttachmentStub {
 }
 
 @Schema({ timestamps: true })
-export class AttachmentFull extends AttachmentStub {
-  // TODO: dynamic Type User or Subscriber
+export class AttachmentUserFull extends AttachmentStub {
   @Type(() => User)
-  owner: User | Subscriber | null;
+  owner: User | null;
+}
+
+@Schema({ timestamps: true })
+export class AttachmentSubscriberFull extends AttachmentStub {
+  @Type(() => Subscriber)
+  owner: Subscriber | null;
 }
 
 export type AttachmentDocument = THydratedDocument<Attachment>;

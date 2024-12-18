@@ -10,42 +10,25 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
-import { PermissionRepository } from '@/user/repositories/permission.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { UserModel } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
-
 import { AttachmentController } from './controllers/attachment.controller';
+import { AttachmentSubscriberRepository } from './repositories/attachment-subscriber.repository';
+import { AttachmentUserRepository } from './repositories/attachment-user.repository';
 import { AttachmentRepository } from './repositories/attachment.repository';
 import { AttachmentModel } from './schemas/attachment.schema';
 import { AttachmentService } from './services/attachment.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      AttachmentModel,
-      RoleModel,
-      PermissionModel,
-      UserModel,
-    ]),
+    MongooseModule.forFeature([AttachmentModel]),
     PassportModule.register({
       session: true,
     }),
   ],
   providers: [
     AttachmentRepository,
+    AttachmentUserRepository,
+    AttachmentSubscriberRepository,
     AttachmentService,
-    RoleRepository,
-    RoleService,
-    PermissionRepository,
-    PermissionService,
-    UserRepository,
-    UserService,
   ],
   controllers: [AttachmentController],
   exports: [AttachmentService],

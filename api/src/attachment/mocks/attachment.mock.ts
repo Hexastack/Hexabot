@@ -21,6 +21,7 @@ export const attachment: Attachment = {
   updatedAt: new Date(),
   context: 'user_avatar',
   owner: '0',
+  ownerType: 'User',
 };
 
 export const attachmentFile: Express.Multer.File = {

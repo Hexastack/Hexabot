@@ -10,7 +10,6 @@ import { extname } from 'path';
 
 import {
   BadRequestException,
-  Body,
   Controller,
   Delete,
   Get,
@@ -33,9 +32,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { TRole } from '@/user/schemas/role.schema';
-import { UserService } from '@/user/services/user.service';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -47,9 +43,10 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import { AttachmentDownloadDto } from '../dto/attachment.dto';
 import {
   Attachment,
-  AttachmentFull,
   AttachmentPopulate,
   AttachmentStub,
+  AttachmentSubscriberFull,
+  AttachmentUserFull,
   TContextType,
 } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
@@ -60,72 +57,13 @@ export class AttachmentController extends BaseController<
   Attachment,
   AttachmentStub,
   AttachmentPopulate,
-  AttachmentFull
+  AttachmentUserFull | AttachmentSubscriberFull
 > {
   constructor(
     private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
-    private readonly userService: UserService,
   ) {
     super(attachmentService);
-  }
-
-  private hasRequiredAccessRole = async (
-    sessionId?: string,
-    allowedRoles: TRole[] = ['admin'],
-  ): Promise<boolean> => {
-    const user = await this.userService.findOneAndPopulate({
-      _id: sessionId,
-    });
-    const hasRequiredAccessRole = user?.roles?.some(({ name }) =>
-      allowedRoles.map((allowedRole) => allowedRole.toString()).includes(name),
-    );
-
-    return hasRequiredAccessRole;
-  };
-
-  async hasAttachmentAccess(
-    attachment: Attachment,
-    sessionId?: string,
-    allowedRoles: TRole[] = ['admin'],
-  ): Promise<boolean> {
-    const isOwner = sessionId === attachment?.owner;
-
-    // gives access to the Attachment owner
-    if (sessionId && isOwner) {
-      return true;
-    }
-
-    const hasRequiredAccessRole = await this.hasRequiredAccessRole(
-      sessionId,
-      allowedRoles,
-    );
-
-    // gives access to the user having one of the required role(s)
-    if (sessionId && hasRequiredAccessRole) {
-      return true;
-    }
-
-    // else restrict access
-    return false;
-  }
-
-  /**
-   * Returns the query filters for attachments.
-   *
-   @returns A promise that resolves to an object representing the TFilterQuery filtered of attachments.
-   */
-  private async getAttachmentsFilters(
-    filters: TFilterQuery<Attachment>,
-    sessionId?: string,
-    allowedRoles: TRole[] = ['admin'],
-  ): Promise<TFilterQuery<Attachment>> {
-    const hasRequiredAccessRole = await this.hasRequiredAccessRole(
-      sessionId,
-      allowedRoles,
-    );
-
-    return hasRequiredAccessRole ? filters : { ...filters, owner: sessionId };
   }
 
   /**
@@ -137,7 +75,7 @@ export class AttachmentController extends BaseController<
   async filterCount(
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type', 'context'],
+        allowedFields: ['name', 'type'],
       }),
     )
     filters?: TFilterQuery<Attachment>,
@@ -148,20 +86,20 @@ export class AttachmentController extends BaseController<
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @Session() session?: ExpressSession,
-  ): Promise<Attachment> {
+    @Query(PopulatePipe)
+    populate: string[],
+  ) {
     const doc = await this.attachmentService.findOne(id);
     if (!doc) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
 
-    if (
-      !(await this.hasAttachmentAccess(doc, session?.passport?.user?.id, [
-        'registered',
-      ]))
-    ) {
-      throw new BadRequestException('You cannot access this Attachment');
+    if (this.attachmentService.canPopulate(populate)) {
+      if (doc.ownerType === 'User')
+        return await this.attachmentService.findOneUserAndPopulate(id);
+      else if (doc.ownerType === 'Subscriber')
+        return await this.attachmentService.findOneSubscriberAndPopulate(id);
     }
 
     return doc;
@@ -181,20 +119,23 @@ export class AttachmentController extends BaseController<
     populate: string[],
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type', 'context'],
+        allowedFields: ['name', 'type'],
       }),
     )
     filters: TFilterQuery<Attachment>,
-    @Session() session?: ExpressSession,
   ) {
-    const accessFilters = await this.getAttachmentsFilters(
-      filters,
-      session.passport.user.id,
-      ['admin'],
-    );
+    const publicAttachmentsFilter: TFilterQuery<Attachment> = {
+      ...filters,
+      context: {
+        $in: ['block_attachment', 'content_attachment'],
+      },
+    };
     return this.canPopulate(populate)
-      ? await this.attachmentService.findAndPopulate(accessFilters, pageQuery)
-      : await this.attachmentService.find(accessFilters, pageQuery);
+      ? await this.attachmentService.findAndPopulate(
+          publicAttachmentsFilter,
+          pageQuery,
+        )
+      : await this.attachmentService.find(publicAttachmentsFilter, pageQuery);
   }
 
   /**
@@ -228,9 +169,9 @@ export class AttachmentController extends BaseController<
   )
   async uploadFile(
     @UploadedFiles() files: { file: Express.Multer.File[] },
-    @Body() { context }: { context?: TContextType },
+    @Query() { context }: { context?: TContextType },
     @Session() session?: ExpressSession,
-  ): Promise<Attachment[]> {
+  ) {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
     }
@@ -241,6 +182,7 @@ export class AttachmentController extends BaseController<
       files: files.file,
       ownerId,
       context,
+      ownerType: 'User',
     });
   }
 
@@ -250,26 +192,14 @@ export class AttachmentController extends BaseController<
    * @param  params - The parameters identifying the attachment to download.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  @Roles('public')
   @Get('download/:id/:filename?')
   async download(
     @Param() params: AttachmentDownloadDto,
-    @Session() session?: ExpressSession,
   ): Promise<StreamableFile> {
     const attachment = await this.attachmentService.findOne(params.id);
 
     if (!attachment) {
       throw new NotFoundException('Attachment not found');
-    }
-
-    if (
-      !(await this.hasAttachmentAccess(
-        attachment,
-        session?.passport?.user?.id,
-        ['admin'],
-      ))
-    ) {
-      throw new BadRequestException('You cannot access this Attachment');
     }
 
     return await this.attachmentService.download(attachment);

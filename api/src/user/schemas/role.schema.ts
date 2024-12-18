@@ -19,7 +19,7 @@ import {
 import { Permission } from './permission.schema';
 import { User } from './user.schema';
 
-export type TRole = 'admin' | 'manager' | 'registered' | 'public';
+export type TRole = 'admin' | 'manager' | 'public';
 
 @Schema({ timestamps: true })
 export class RoleStub extends BaseSchema {
