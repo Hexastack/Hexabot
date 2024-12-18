@@ -27,6 +27,8 @@
   * [Manage NLU Entities](user-guide/nlu/manage-nlu-entities.md)
   * [NLU Engines](user-guide/nlu/nlu-engines/README.md)
     * [LLM NLU Engine](user-guide/nlu/nlu-engines/llm-nlu-engine.md)
+    * [Ludwig NLU Engine](user-guide/nlu/nlu-engines/ludwig-nlu-engine.md)
+    * [Tensorflow NLU Engine](user-guide/nlu/nlu-engines/tensorflow-nlu-engine.md)
 * [NLU Training](user-guide/nlu-training.md)
 * [Knowledge Base](user-guide/knowledge-base/README.md)
   * [Content Types](user-guide/knowledge-base/content-types.md)
