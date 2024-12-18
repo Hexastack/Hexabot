@@ -15,6 +15,7 @@ import {
   Optional,
   StreamableFile,
 } from '@nestjs/common';
+import { ProjectionType } from 'mongoose';
 import fetch from 'node-fetch';
 
 import { config } from '@/config';
@@ -23,28 +24,32 @@ import { PluginInstance } from '@/plugins/map-types';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { BaseService } from '@/utils/generics/base-service';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { AttachmentSubscriberRepository } from '../repositories/attachment-subscriber.repository';
+import { AttachmentUserRepository } from '../repositories/attachment-user.repository';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import {
   Attachment,
-  AttachmentFull,
+  ATTACHMENT_POPULATE,
   AttachmentPopulate,
   TContextType,
+  TOwnerType,
 } from '../schemas/attachment.schema';
 import { fileExists, getStreamableFile } from '../utilities';
 
 @Injectable()
-export class AttachmentService extends BaseService<
-  Attachment,
-  AttachmentPopulate,
-  AttachmentFull
-> {
+export class AttachmentService extends BaseService<Attachment> {
   private storagePlugin: PluginInstance<PluginType.storage> | null = null;
 
   constructor(
     readonly repository: AttachmentRepository,
     private readonly logger: LoggerService,
     @Optional() private readonly pluginService: PluginService,
+    @Optional()
+    private readonly attachmentUserRepository: AttachmentUserRepository,
+    @Optional()
+    private readonly attachmentSubscriberRepository: AttachmentSubscriberRepository,
   ) {
     super(repository);
   }
@@ -166,10 +171,12 @@ export class AttachmentService extends BaseService<
     files,
     ownerId,
     context,
+    ownerType,
   }: {
     files: Express.Multer.File[];
     ownerId?: string;
     context?: TContextType;
+    ownerType?: TOwnerType;
   }) {
     const uploadedFiles: Attachment[] = [];
 
@@ -190,6 +197,7 @@ export class AttachmentService extends BaseService<
             location: `/${filename}`,
             ...(ownerId && { owner: ownerId }),
             context,
+            ownerType,
           });
           uploadedFiles.push(uploadedFile);
         }
@@ -246,5 +254,31 @@ export class AttachmentService extends BaseService<
       const filePath = join(config.parameters.uploadDir, attachment.location);
       return await fs.promises.readFile(filePath); // Reads the file content as a Buffer
     }
+  }
+
+  async findOneUserAndPopulate(
+    criteria: string | TFilterQuery<Attachment>,
+    projection?: ProjectionType<Attachment>,
+  ) {
+    return await this.attachmentUserRepository.findOneAndPopulate(
+      criteria,
+      projection,
+    );
+  }
+
+  async findOneSubscriberAndPopulate(
+    criteria: string | TFilterQuery<Attachment>,
+    projection?: ProjectionType<Attachment>,
+  ) {
+    return await this.attachmentSubscriberRepository.findOneAndPopulate(
+      criteria,
+      projection,
+    );
+  }
+
+  canPopulate(populate: string[]): boolean {
+    return populate.some((p) =>
+      ATTACHMENT_POPULATE.includes(p as AttachmentPopulate),
+    );
   }
 }

@@ -6,25 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Session as ExpressSession } from 'express-session';
 
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { PermissionRepository } from '@/user/repositories/permission.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { UserModel } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
@@ -37,6 +26,8 @@ import {
 } from '@/utils/test/test';
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
+import { AttachmentSubscriberRepository } from '../repositories/attachment-subscriber.repository';
+import { AttachmentUserRepository } from '../repositories/attachment-user.repository';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
@@ -52,30 +43,13 @@ describe('AttachmentController', () => {
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(installAttachmentFixtures),
-        MongooseModule.forFeature([
-          AttachmentModel,
-          UserModel,
-          RoleModel,
-          PermissionModel,
-        ]),
+        MongooseModule.forFeature([AttachmentModel]),
       ],
       providers: [
         AttachmentService,
         AttachmentRepository,
-        RoleRepository,
-        RoleService,
-        UserRepository,
-        UserService,
-        PermissionRepository,
-        PermissionService,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
+        AttachmentUserRepository,
+        AttachmentSubscriberRepository,
         LoggerService,
         EventEmitter2,
         PluginService,
@@ -89,9 +63,7 @@ describe('AttachmentController', () => {
     });
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -133,6 +105,7 @@ describe('AttachmentController', () => {
         channel: {},
         location: `/${attachmentFile.filename}`,
         context: 'user_avatar',
+        ownerType: 'User',
       });
 
       expect(result).toEqualPayload(
@@ -152,49 +125,14 @@ describe('AttachmentController', () => {
       );
     });
 
-    it(`should throw BadRequestException if the user is not the Attachment owner`, async () => {
-      jest.spyOn(attachmentService, 'findOne');
-      const storedAttachment = await attachmentService.findOne({
-        name: 'store1.jpg',
-      });
-      const result = attachmentController.download(
-        {
-          id: storedAttachment.id,
-        },
-        {
-          passport: {
-            user: {
-              id: NOT_FOUND_ID,
-            },
-          },
-        } as ExpressSession,
-      );
-
-      expect(attachmentService.findOne).toHaveBeenCalledWith(
-        storedAttachment.id,
-      );
-      expect(result).rejects.toThrow(
-        new BadRequestException('You cannot access this Attachment'),
-      );
-    });
-
     it('should download the attachment by id', async () => {
       jest.spyOn(attachmentService, 'findOne');
       const storedAttachment = await attachmentService.findOne({
         name: 'store1.jpg',
       });
-      const result = await attachmentController.download(
-        {
-          id: storedAttachment.id,
-        },
-        {
-          passport: {
-            user: {
-              id: attachmentFixtures[0].owner,
-            },
-          },
-        } as ExpressSession,
-      );
+      const result = await attachmentController.download({
+        id: storedAttachment.id,
+      });
 
       expect(attachmentService.findOne).toHaveBeenCalledWith(
         storedAttachment.id,
