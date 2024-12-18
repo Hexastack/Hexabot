@@ -52,48 +52,49 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
       .switchToHttp()
       .getRequest<Request & { user: User; _parsedUrl: Url }>();
 
-    if (!user) {
+    const paths = _parsedUrl.pathname.split('/');
+    const modelFromPathname = paths?.[1].toLowerCase() as TModel;
+    const isAttachmentUrl =
+      modelFromPathname === 'attachment' &&
+      ['upload', 'download'].includes(paths?.[2]);
+
+    if (!user && !isAttachmentUrl) {
       throw new UnauthorizedException();
     }
     if (!session?.cookie || session.cookie.expires < new Date()) {
       throw new UnauthorizedException('Session expired');
     }
 
-    if (user?.roles?.length) {
-      if (
-        ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
-          _parsedUrl.pathname,
-        )
-      ) {
-        return true;
-      }
-      const paths = _parsedUrl.pathname.split('/');
-      const modelFromPathname = paths?.[1].toLowerCase() as TModel;
-      const permissions = await this.permissionService.getPermissions();
+    if (
+      ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
+        _parsedUrl.pathname,
+      )
+    ) {
+      return true;
+    }
 
+    if (isAttachmentUrl) {
       // attachment
       const attachmentUploadContext =
         query?.context?.toString() as TContextType;
-
       if (
-        modelFromPathname === 'attachment' &&
-        ['upload', 'download'].includes(paths?.[2])
-      ) {
-        if (
-          method === 'POST' &&
-          paths?.[2] === 'upload' &&
-          attachmentUploadContext
-        )
-          return await this.hasRequiredUploadPermission(
-            user,
-            attachmentUploadContext,
-          );
-        else if (method === 'GET' && paths?.[2] === 'download')
-          return await this.hasRequiredDownloadPermission(user, paths?.[3]);
-        else {
-          return false;
-        }
+        method === 'POST' &&
+        paths?.[2] === 'upload' &&
+        attachmentUploadContext
+      )
+        return await this.hasRequiredUploadPermission(
+          user,
+          attachmentUploadContext,
+        );
+      else if (method === 'GET' && paths?.[2] === 'download')
+        return await this.hasRequiredDownloadPermission(user, paths?.[3]);
+      else {
+        return false;
       }
+    }
+
+    if (user?.roles?.length) {
+      const permissions = await this.permissionService.getPermissions();
 
       if (permissions) {
         const permissionsFromRoles = Object.entries(permissions)
