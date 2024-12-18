@@ -39,7 +39,7 @@ A Hexabot plugins resides in the following directory  `/extensions/plugins/` wit
 ├── README.md                        // Plugin documentation
 ├── index.plugin.ts                  // Main plugin entry point
 ├── package.json                     // Plugin manifest
-├── settings.json                    // Plugin settings
+├── settings.ts                      // Plugin settings
 ├── i18n/                            // Translation directory
 │   └── en/                        
 │        └── title.json
