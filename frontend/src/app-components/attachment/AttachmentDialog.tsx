@@ -16,19 +16,16 @@ import { DialogControlProps } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IAttachment } from "@/types/attachment.types";
 
-import { TAttachmentContext } from "./AttachmentUploader";
-
 export type AttachmentDialogProps = DialogControlProps<
   never,
   IAttachment | null
-> & { accept: string; mediaLibraryContext?: TAttachmentContext[] };
+> & { accept: string };
 
 export const AttachmentDialog: FC<AttachmentDialogProps> = ({
   open,
   closeDialog,
   callback,
   accept,
-  mediaLibraryContext,
   ...rest
 }) => {
   const { t } = useTranslate();
@@ -53,7 +50,6 @@ export const AttachmentDialog: FC<AttachmentDialogProps> = ({
           showTitle={false}
           onSelect={handleSelection}
           accept={accept}
-          mediaLibraryContext={mediaLibraryContext}
         />
       </DialogContent>
       <DialogActions>

@@ -11,7 +11,6 @@ import { Box, Grid, Paper } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
-import { TAttachmentContext } from "@/app-components/attachment/AttachmentUploader";
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -39,14 +38,9 @@ type MediaLibraryProps = {
   showTitle?: boolean;
   onSelect?: GridEventListener<"rowClick">;
   accept?: string;
-  mediaLibraryContext?: TAttachmentContext[];
 };
 
-export const MediaLibrary = ({
-  onSelect,
-  accept,
-  mediaLibraryContext,
-}: MediaLibraryProps) => {
+export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const deleteDialogCtl = useDialog<string>(false);
@@ -70,9 +64,6 @@ export const MediaLibrary = ({
                       ({ type } as unknown as TFilterStringFields<IAttachment>),
                   )
               : undefined),
-            ...mediaLibraryContext?.map((contextType) => ({
-              context: contextType,
-            })),
           },
         },
       },

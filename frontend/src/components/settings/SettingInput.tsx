@@ -184,7 +184,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           accept={MIME_TYPES["images"].join(",")}
           format="full"
           size={128}
-          mediaLibraryContext="setting_attachment"
+          context="setting_attachment"
         />
       );
 
@@ -197,7 +197,6 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           accept={MIME_TYPES["images"].join(",")}
           format="full"
           size={128}
-          mediaLibraryContext={["setting_attachment"]}
         />
       );
     default:

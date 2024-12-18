@@ -12,11 +12,7 @@ import { MediaLibrary } from "@/components/media-library";
 import { Layout } from "@/layout";
 
 const MediaLibraryPage = () => {
-  return (
-    <MediaLibrary
-      mediaLibraryContext={["block_attachment", "content_attachment"]}
-    />
-  );
+  return <MediaLibrary />;
 };
 
 MediaLibraryPage.getLayout = function getLayout(page: ReactElement) {
