@@ -74,7 +74,6 @@ export type FileUploadProps = {
   accept: string;
   enableMediaLibrary?: boolean;
   context?: TAttachmentContext;
-  mediaLibraryContext?: TAttachmentContext[];
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
 };
@@ -83,7 +82,6 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   accept,
   enableMediaLibrary,
   context,
-  mediaLibraryContext,
   onChange,
   onUploadComplete,
 }) => {
@@ -146,7 +144,6 @@ const AttachmentUploader: FC<FileUploadProps> = ({
         {...getDisplayDialogs(libraryDialogCtl)}
         callback={onChange}
         accept={accept}
-        mediaLibraryContext={mediaLibraryContext}
       />
       <Grid container>
         <Grid item xs={enableMediaLibrary ? 5 : 12}>

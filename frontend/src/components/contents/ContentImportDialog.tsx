@@ -80,7 +80,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
               }}
               label=""
               value={attachmentId}
-              mediaLibraryContext="content_attachment"
+              context="content_attachment"
             />
           </ContentItem>
         </ContentContainer>

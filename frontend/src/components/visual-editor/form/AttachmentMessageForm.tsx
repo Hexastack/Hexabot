@@ -69,7 +69,7 @@ const AttachmentMessageForm = () => {
                   },
                 });
               }}
-              mediaLibraryContext="block_attachment"
+              context="block_attachment"
             />
           );
         }}
