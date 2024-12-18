@@ -189,7 +189,8 @@ const Diagrams = () => {
   }, []);
 
   useEffect(() => {
-    setSelectedCategoryId(flowId || "");
+    if (flowId) setSelectedCategoryId(flowId);
+    else if (categories?.length) setSelectedCategoryId(categories[0].id);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flowId]);
