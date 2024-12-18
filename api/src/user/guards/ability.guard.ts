@@ -65,14 +65,6 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
       throw new UnauthorizedException('Session expired');
     }
 
-    if (
-      ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
-        _parsedUrl.pathname,
-      )
-    ) {
-      return true;
-    }
-
     if (isAttachmentUrl) {
       // attachment
       const attachmentUploadContext =
@@ -94,6 +86,14 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
     }
 
     if (user?.roles?.length) {
+      if (
+        ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
+          _parsedUrl.pathname,
+        )
+      ) {
+        return true;
+      }
+
       const permissions = await this.permissionService.getPermissions();
 
       if (permissions) {
