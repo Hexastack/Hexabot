@@ -30,16 +30,17 @@ export class AttachmentGuardRules {
     identity: TModel,
     action?: Action,
   ) {
-    for (const role of user.roles) {
-      const model = (await this.modelService.findOne({ identity }))?.id;
-      const hasRequiredPermission = await this.permissionService.findOne({
-        action,
-        role,
-        model,
-      });
+    if (user?.roles)
+      for (const role of user.roles) {
+        const model = (await this.modelService.findOne({ identity }))?.id;
+        const hasRequiredPermission = await this.permissionService.findOne({
+          action,
+          role,
+          model,
+        });
 
-      if (hasRequiredPermission) return true;
-    }
+        if (hasRequiredPermission) return true;
+      }
 
     return false;
   }
