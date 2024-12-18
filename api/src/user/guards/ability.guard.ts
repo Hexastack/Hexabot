@@ -75,7 +75,10 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
       const attachmentUploadContext =
         query?.context?.toString() as TContextType;
 
-      if (modelFromPathname === 'attachment') {
+      if (
+        modelFromPathname === 'attachment' &&
+        ['upload', 'download'].includes(paths?.[2])
+      ) {
         if (
           method === 'POST' &&
           paths?.[2] === 'upload' &&
@@ -87,6 +90,9 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
           );
         else if (method === 'GET' && paths?.[2] === 'download')
           return await this.hasRequiredDownloadPermission(user, paths?.[3]);
+        else {
+          return false;
+        }
       }
 
       if (permissions) {
