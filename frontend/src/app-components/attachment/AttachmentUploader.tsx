@@ -62,8 +62,7 @@ const IconText = styled(Box)`
 `;
 
 export type TAttachmentContext =
-  | "setting"
-  | "nlp"
+  | "setting_attachment"
   | "user_avatar"
   | "subscriber_avatar"
   | "block_attachment"
