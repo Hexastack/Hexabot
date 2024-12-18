@@ -9,9 +9,8 @@
 import mongoose from 'mongoose';
 
 import { BlockCreateDto } from '@/chat/dto/block.dto';
-import { BlockModel, Block } from '@/chat/schemas/block.schema';
+import { Block, BlockModel } from '@/chat/schemas/block.schema';
 import { CategoryModel } from '@/chat/schemas/category.schema';
-import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
@@ -129,7 +128,7 @@ export const blocks: BlockCreateDto[] = [
     },
     message: {
       attachment: {
-        type: FileType.image,
+        type: 'image',
         payload: {
           attachment_id: '1',
         },

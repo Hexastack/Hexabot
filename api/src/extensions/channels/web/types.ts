@@ -7,8 +7,8 @@
  */
 
 import { SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import { FileType } from '@/chat/schemas/types/attachment';
 import { Button, WebUrlButton } from '@/chat/schemas/types/button';
-import { FileType } from '@/chat/schemas/types/message';
 import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
 
 export namespace Web {

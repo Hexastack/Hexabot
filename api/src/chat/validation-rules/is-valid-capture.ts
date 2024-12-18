@@ -12,43 +12,16 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import Joi from 'joi';
+import { z } from 'zod';
 
-type Tentity = -1 | -2;
+import { CaptureVar, captureVarSchema } from '../schemas/types/capture-var';
 
-export interface CaptureVar {
-  // entity=`-1` to match text message
-  // entity=`-2` for postback payload
-  // entity is `String` for NLP entities
-  entity: Tentity | string;
-  context_var: string;
-}
+// Define the array schema
+const captureVarArraySchema = z.array(captureVarSchema);
 
-const allowedEntityValues: Tentity[] = [-1, -2];
-
+// Validation function
 export function isValidVarCapture(vars: CaptureVar[]) {
-  const captureSchema = Joi.array().items(
-    Joi.object().keys({
-      entity: Joi.alternatives().try(
-        // `-1` to match text message & `-2` for postback payload
-        Joi.number()
-          .valid(...allowedEntityValues)
-          .required(),
-        // String for NLP entities
-        Joi.string().required(),
-      ),
-      context_var: Joi.string()
-        .regex(/^[a-z][a-z_0-9]*$/)
-        .required(),
-    }),
-  );
-
-  const captureCheck = captureSchema.validate(vars);
-  if (captureCheck.error) {
-    // eslint-disable-next-line
-    console.log('Capture vars validation failed!', captureCheck.error);
-  }
-  return !captureCheck.error;
+  return captureVarArraySchema.safeParse(vars).success;
 }
 
 @ValidatorConstraint({ async: false })

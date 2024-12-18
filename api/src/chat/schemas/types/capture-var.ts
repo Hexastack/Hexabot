@@ -6,10 +6,27 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export interface CaptureVar {
-  // entity=`-1` to match text message
-  // entity=`-2` for postback payload
-  // entity is `String` for NLP entities
-  entity: number | string;
-  context_var: string;
-}
+import { z } from 'zod';
+
+// Zod schema for CaptureVar
+const captureVarSchema = z.object({
+  entity: z.union([
+    // entity=`-1` to match text message
+    // entity=`-2` for postback payload
+    // entity is `String` for NLP entities
+    z
+      .number()
+      .int()
+      .refine((val) => val === -1 || val === -2, {
+        message: "entity must be -1 or -2 when it's a number",
+      }),
+    z.string(), // entity is a string for NLP entities
+  ]),
+  context_var: z.string(),
+});
+
+// Infer the TypeScript type
+type CaptureVar = z.infer<typeof captureVarSchema>;
+
+// Export the schema and type
+export { CaptureVar, captureVarSchema };
