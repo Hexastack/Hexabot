@@ -14,51 +14,36 @@ export namespace LudwigNlu {
     end?: number;
   }
 
-  export interface NluProcessedResultType {
-    intent: {
+  export type NluProcessedResultType = Record<
+    string,
+    {
       name: string;
       confidence: number;
-    };
-    language?: {
-      name: string;
-      confidence: number;
-    };
-    intent_ranking: any[];
-    entities: ParseEntity[];
-    text: string;
-  }
+    }
+  > & { intent_ranking: any[]; entities: ParseEntity[]; text: string };
 
   export interface LudwigNluDataSample {
     text: string;
     language: string;
-    intent: string;
+    [traitName: string]: string;
     slots: string;
   }
 
-  export interface LudwigNluResultType {
-    slots: {
-      predictions: {
-        slots_predictions: string[];
-        slots_probabilities: number[];
-        slots_probability: number;
-      };
-      status: string;
-    };
-    language: {
-      predictions: {
-        language_predictions: string;
-        language_probabilities: number[];
-        language_probability: number;
-      };
-      status: string;
-    };
-    intent: {
-      predictions: {
-        intent_predictions: string;
-        intent_probabilities: number[];
-        intent_probability: number;
-      };
-      status: string;
+  export interface Prediction<T> {
+    [x: string]: any;
+    predictions: T;
+    probabilities: number[];
+    probability: number;
+  }
+
+  export interface Status {
+    status: string;
+  }
+
+  export interface LudwigNluResultType<T> {
+    [key: string]: {
+      predictions: Prediction<T>;
+      status: Status;
     };
   }
 }

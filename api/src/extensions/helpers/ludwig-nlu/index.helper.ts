@@ -62,18 +62,22 @@ export default class LudwigNluHelper extends BaseNlpHelper<
     const dataset: LudwigNlu.LudwigNluDataSample[] = samples
       .filter((s) => s.entities.length > 0)
       .map((s) => {
-        const intent = s.entities.find(
-          (e) => entityMap[e.entity].name === 'intent',
+        const traitEntities = s.entities.filter((e) =>
+          entityMap[e.entity]?.lookups.includes('trait'),
         );
-        if (!intent) {
-          throw new Error('Unable to find the `intent` nlp entity.');
+
+        if (traitEntities.length === 0) {
+          throw new Error('Unable to find any `trait` nlp entities.');
         }
+
         const sampleEntities: LudwigNlu.ExampleEntity[] = s.entities
-          .filter((e) => entityMap[<string>e.entity].name !== 'intent')
+          .filter(
+            (e) => !entityMap[<string>e.entity]?.lookups.includes('trait'),
+          )
           .map((e) => {
             const res: LudwigNlu.ExampleEntity = {
               entity: entityMap[<string>e.entity].name || '',
-              value: valueMap[<string>e.value]?.value || '', // Use optional chaining to safely access 'value'
+              value: valueMap[<string>e.value]?.value || '',
             };
             if ('start' in e && 'end' in e) {
               Object.assign(res, {
@@ -86,12 +90,20 @@ export default class LudwigNluHelper extends BaseNlpHelper<
 
         const formattedSlots = this.formatSlots(s.text, sampleEntities);
 
-        // Add language as a property at the same level as intent
+        // Flatten traits into individual key-value pairs
+        const flattenedTraits = traitEntities.reduce(
+          (acc, t) => {
+            const traitName = entityMap[t.entity]?.name || 'unknown_trait';
+            acc[traitName] = valueMap[t.value]?.value || '';
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
         return {
           text: s.text,
-          intent: valueMap[intent.value].value,
-          language: s.language.code, // Add language here
+          language: s.language.code,
           slots: formattedSlots,
+          ...flattenedTraits, // Spread the flattened traits into the object
         };
       });
 
@@ -161,29 +173,42 @@ export default class LudwigNluHelper extends BaseNlpHelper<
     throw new Error('Method Not Implemented Yet');
   }
 
-  async processIncomingNluPayload(
-    nlp: LudwigNlu.LudwigNluResultType,
+  async processIncomingNluPayload<T>(
+    nlp: LudwigNlu.LudwigNluResultType<T>,
     givenText: string,
   ): Promise<LudwigNlu.NluProcessedResultType> {
     const words = givenText.split(' ');
 
-    const intentValue = nlp.intent.predictions.intent_predictions;
-    const intentKey = `intent_probabilities_${intentValue}`; // e.g., "intent_probabilities_greeting"
-    const intentConfidence = nlp.intent.predictions[intentKey];
-    const formattedIntentPayload = {
-      name: intentValue,
-      confidence: intentConfidence,
-    };
+    // Dynamically get all keys from nlp excluding 'language' and 'slots'
+    const fields = Object.keys(nlp).filter(
+      (field) => field !== 'language' && field !== 'slots',
+    );
 
+    const formattedPayloads = fields.map((field) => {
+      const predictions = nlp[field]?.predictions || {};
+      const keyToRestore = `${field}_predictions`;
+      const traitValue = predictions[keyToRestore];
+      const traitKey = `${field}_probabilities_${traitValue}`;
+      const traitConfidence = predictions[traitKey];
+      return {
+        [field]: {
+          name: traitValue,
+          confidence: traitConfidence,
+        },
+      };
+    });
+
+    // Process language
     const languageValue = nlp.language.predictions.language_predictions;
     const languageKey = `language_probabilities_${languageValue}`;
-    const languageConfidence: number = nlp.language.predictions[languageKey];
+    const languageConfidence = nlp.language.predictions[languageKey];
     const formattedLanguagePayload = {
       entity: 'language',
       value: languageValue,
       confidence: languageConfidence,
     };
 
+    // Process slots
     const slotsValues = nlp.slots.predictions.slots_predictions;
     const slotsProbabilities = nlp.slots.predictions.slots_probabilities;
 
@@ -205,9 +230,9 @@ export default class LudwigNluHelper extends BaseNlpHelper<
 
     return {
       text: givenText,
-      intent: formattedIntentPayload,
+      ...Object.assign({}, ...formattedPayloads), // Merge formattedPayloads dynamically
       entities: restoredEntities,
-      intent_ranking: [],
+      intent_ranking: [], // Optional: Populate intent rankings if needed
     };
   }
 
@@ -289,12 +314,13 @@ export default class LudwigNluHelper extends BaseNlpHelper<
         },
       };
 
-      const { data: nlp } =
-        await this.httpService.axiosRef.post<LudwigNlu.LudwigNluResultType>(
-          buildURL(settings.endpoint, '/predict'),
-          form, // Pass the form-data object directly
-          requestConfig,
-        );
+      const { data: nlp } = await this.httpService.axiosRef.post<
+        LudwigNlu.LudwigNluResultType<any>
+      >(
+        buildURL(settings.endpoint, '/predict'),
+        form, // Pass the form-data object directly
+        requestConfig,
+      );
 
       const formattedNlp = await this.processIncomingNluPayload(nlp, text);
       return await this.filterEntitiesByConfidence(formattedNlp, threshold);
