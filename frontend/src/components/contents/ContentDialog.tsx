@@ -68,6 +68,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.URL:
       return (
         <Input
+          autoFocus
           multiline={contentField.type === ContentFieldType.TEXTAREA}
           rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
           label={t(`label.${contentField.name}`, {
