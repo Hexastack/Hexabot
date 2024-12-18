@@ -80,13 +80,13 @@ export abstract class BaseRepository<
     private readonly emitter: EventEmitter2,
     readonly model: Model<T>,
     private readonly cls: new () => T,
-    protected readonly populate: P[] = [],
-    protected readonly clsPopulate: new () => TFull = undefined,
+    protected readonly populate: P[] | undefined = undefined,
+    protected readonly clsPopulate: (new () => TFull) | undefined = undefined,
   ) {
     this.registerLifeCycleHooks();
   }
 
-  getPopulate(): P[] {
+  getPopulate(): P[] | undefined {
     return this.populate;
   }
 
@@ -98,8 +98,15 @@ export abstract class BaseRepository<
   private registerLifeCycleHooks(): void {
     const repository = this;
     const hooks = LifecycleHookManager.getHooks(this.cls.name);
+    if (!hooks) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `LifeCycleHooks has not been registered for ${this.cls.name}`,
+      );
+      return;
+    }
 
-    hooks?.validate.pre.execute(async function () {
+    hooks.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreateValidate(doc);
       repository.emitter.emit(
@@ -108,7 +115,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.validate.post.execute(async function (created: HydratedDocument<T>) {
+    hooks.validate.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postCreateValidate(created);
       repository.emitter.emit(
         repository.getEventName(EHook.postCreateValidate),
@@ -116,13 +123,13 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.save.pre.execute(async function () {
+    hooks.save.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreate(doc);
       repository.emitter.emit(repository.getEventName(EHook.preCreate), doc);
     });
 
-    hooks?.save.post.execute(async function (created: HydratedDocument<T>) {
+    hooks.save.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postCreate(created);
       repository.emitter.emit(
         repository.getEventName(EHook.postCreate),
@@ -130,7 +137,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.deleteOne.pre.execute(async function () {
+    hooks.deleteOne.pre.execute(async function () {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       const criteria = query.getQuery();
       await repository.preDelete(query, criteria);
@@ -141,7 +148,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.deleteOne.post.execute(async function (result: DeleteResult) {
+    hooks.deleteOne.post.execute(async function (result: DeleteResult) {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       await repository.postDelete(query, result);
       repository.emitter.emit(
@@ -151,7 +158,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.deleteMany.pre.execute(async function () {
+    hooks.deleteMany.pre.execute(async function () {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       const criteria = query.getQuery();
       await repository.preDelete(query, criteria);
@@ -166,30 +173,32 @@ export abstract class BaseRepository<
       await repository.postDelete(query, result);
     });
 
-    hooks?.findOneAndUpdate.pre.execute(async function () {
+    hooks.findOneAndUpdate.pre.execute(async function () {
       const query = this as Query<D, D, unknown, T, 'findOneAndUpdate'>;
       const criteria = query.getFilter();
       const updates = query.getUpdate();
-
-      await repository.preUpdate(query, criteria, updates);
-      repository.emitter.emit(
-        repository.getEventName(EHook.preUpdate),
-        criteria,
-        updates?.['$set'],
-      );
+      if (updates) {
+        await repository.preUpdate(query, criteria, updates);
+        repository.emitter.emit(
+          repository.getEventName(EHook.preUpdate),
+          criteria,
+          updates?.['$set'],
+        );
+      }
     });
 
-    hooks?.updateMany.pre.execute(async function () {
+    hooks.updateMany.pre.execute(async function () {
       const query = this as Query<D, D, unknown, T, 'updateMany'>;
       const criteria = query.getFilter();
       const updates = query.getUpdate();
-
-      await repository.preUpdateMany(query, criteria, updates);
-      repository.emitter.emit(
-        repository.getEventName(EHook.preUpdateMany),
-        criteria,
-        updates?.['$set'],
-      );
+      if (updates) {
+        await repository.preUpdateMany(query, criteria, updates);
+        repository.emitter.emit(
+          repository.getEventName(EHook.preUpdateMany),
+          criteria,
+          updates?.['$set'],
+        );
+      }
     });
 
     hooks?.updateMany.post.execute(async function (updated: any) {
@@ -201,7 +210,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks?.findOneAndUpdate.post.execute(async function (
+    hooks.findOneAndUpdate.post.execute(async function (
       updated: HydratedDocument<T>,
     ) {
       if (updated) {
@@ -227,18 +236,23 @@ export abstract class BaseRepository<
   }
 
   protected async executeOne<R extends Omit<T, P>>(
-    query: Query<T, T>,
+    query: Query<T | null, T>,
     cls: new () => R,
     options?: ClassTransformOptions,
   ): Promise<R> {
     const doc = await query.lean(this.leanOpts).exec();
+    if (!doc) {
+      throw new Error(
+        `executeOne() query did not return document to transform into ${cls.name}`,
+      );
+    }
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
 
   protected findOneQuery(
     criteria: string | TFilterQuery<T>,
     projection?: ProjectionType<T>,
-  ): Query<T, T, object, T, 'findOne', object> {
+  ): Query<T | null, T, object, T, 'findOne', object> {
     if (!criteria) {
       // An empty criteria would return the first document that it finds
       throw new Error('findOneQuery() should not have an empty criteria');
@@ -269,9 +283,9 @@ export abstract class BaseRepository<
   ): Promise<TFull> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
-      this.populate,
+      this.populate as P[],
     );
-    return await this.executeOne(query, this.clsPopulate);
+    return await this.executeOne(query, this.clsPopulate as new () => TFull);
   }
 
   protected findQuery(
@@ -369,15 +383,15 @@ export abstract class BaseRepository<
     this.ensureCanPopulate();
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filters, pageQuery, projection).populate(
-        this.populate,
+        this.populate as P[],
       );
-      return await this.execute(query, this.clsPopulate);
+      return await this.execute(query, this.clsPopulate as new () => TFull);
     }
 
     const query = this.findQuery(filters, pageQuery, projection).populate(
-      this.populate,
+      this.populate as P[],
     );
-    return await this.execute(query, this.clsPopulate);
+    return await this.execute(query, this.clsPopulate as new () => TFull);
   }
 
   protected findAllQuery(
@@ -392,8 +406,8 @@ export abstract class BaseRepository<
 
   async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
     this.ensureCanPopulate();
-    const query = this.findAllQuery(sort).populate(this.populate);
-    return await this.execute(query, this.clsPopulate);
+    const query = this.findAllQuery(sort).populate(this.populate as P[]);
+    return await this.execute(query, this.clsPopulate as new () => TFull);
   }
 
   /**
@@ -429,9 +443,9 @@ export abstract class BaseRepository<
   ): Promise<TFull[]> {
     this.ensureCanPopulate();
     const query = this.findPageQuery(filters, pageQuery).populate(
-      this.populate,
+      this.populate as P[],
     );
-    return await this.execute(query, this.clsPopulate);
+    return await this.execute(query, this.clsPopulate as new () => TFull);
   }
 
   async countAll(): Promise<number> {
@@ -475,23 +489,25 @@ export abstract class BaseRepository<
         new: true,
       },
     );
+
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
 
-    await this.preUpdateValidate(filterCriteria, queryUpdates);
-    this.emitter.emit(
-      this.getEventName(EHook.preUpdateValidate),
-      filterCriteria,
-      queryUpdates,
-    );
+    if (queryUpdates) {
+      await this.preUpdateValidate(filterCriteria, queryUpdates);
+      this.emitter.emit(
+        this.getEventName(EHook.preUpdateValidate),
+        filterCriteria,
+        queryUpdates,
+      );
 
-    await this.postUpdateValidate(filterCriteria, queryUpdates);
-    this.emitter.emit(
-      this.getEventName(EHook.postUpdateValidate),
-      filterCriteria,
-      queryUpdates,
-    );
-
+      await this.postUpdateValidate(filterCriteria, queryUpdates);
+      this.emitter.emit(
+        this.getEventName(EHook.postUpdateValidate),
+        filterCriteria,
+        queryUpdates,
+      );
+    }
     return await this.executeOne(query, this.cls);
   }
 
