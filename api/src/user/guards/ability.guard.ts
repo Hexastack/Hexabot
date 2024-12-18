@@ -76,12 +76,16 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
         query?.context?.toString() as TContextType;
 
       if (modelFromPathname === 'attachment') {
-        if (paths?.[2] === 'upload' && attachmentUploadContext)
+        if (
+          method === 'POST' &&
+          paths?.[2] === 'upload' &&
+          attachmentUploadContext
+        )
           return await this.hasRequiredUploadPermission(
             user,
             attachmentUploadContext,
           );
-        else if (paths?.[2] === 'download')
+        else if (method === 'GET' && paths?.[2] === 'download')
           return await this.hasRequiredDownloadPermission(user, paths?.[3]);
       }
 
