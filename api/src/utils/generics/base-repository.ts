@@ -80,13 +80,13 @@ export abstract class BaseRepository<
     private readonly emitter: EventEmitter2,
     readonly model: Model<T>,
     private readonly cls: new () => T,
-    protected readonly populate: P[] | undefined = undefined,
-    protected readonly clsPopulate: (new () => TFull) | undefined = undefined,
+    protected readonly populate: P[] = [],
+    protected readonly clsPopulate?: new () => TFull,
   ) {
     this.registerLifeCycleHooks();
   }
 
-  getPopulate(): P[] | undefined {
+  getPopulate(): P[] {
     return this.populate;
   }
 
@@ -148,7 +148,7 @@ export abstract class BaseRepository<
       );
     });
 
-    hooks.deleteOne.post.execute(async function (result: DeleteResult) {
+    hooks?.deleteOne.post.execute(async function (result: DeleteResult) {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       await repository.postDelete(query, result);
       repository.emitter.emit(
@@ -164,7 +164,7 @@ export abstract class BaseRepository<
       await repository.preDelete(query, criteria);
     });
 
-    hooks?.deleteMany.post.execute(async function (result: DeleteResult) {
+    hooks.deleteMany.post.execute(async function (result: DeleteResult) {
       repository.emitter.emit(
         repository.getEventName(EHook.postDelete),
         result,
@@ -201,7 +201,7 @@ export abstract class BaseRepository<
       }
     });
 
-    hooks?.updateMany.post.execute(async function (updated: any) {
+    hooks.updateMany.post.execute(async function (updated: any) {
       const query = this as Query<D, D, unknown, T, 'updateMany'>;
       await repository.postUpdateMany(query, updated);
       repository.emitter.emit(
@@ -241,11 +241,6 @@ export abstract class BaseRepository<
     options?: ClassTransformOptions,
   ): Promise<R> {
     const doc = await query.lean(this.leanOpts).exec();
-    if (!doc) {
-      throw new Error(
-        `executeOne() query did not return document to transform into ${cls.name}`,
-      );
-    }
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
 
@@ -283,9 +278,9 @@ export abstract class BaseRepository<
   ): Promise<TFull> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
-      this.populate as P[],
+      this.populate,
     );
-    return await this.executeOne(query, this.clsPopulate as new () => TFull);
+    return await this.executeOne(query, this.clsPopulate!);
   }
 
   protected findQuery(
@@ -383,15 +378,15 @@ export abstract class BaseRepository<
     this.ensureCanPopulate();
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filters, pageQuery, projection).populate(
-        this.populate as P[],
+        this.populate,
       );
-      return await this.execute(query, this.clsPopulate as new () => TFull);
+      return await this.execute(query, this.clsPopulate!);
     }
 
     const query = this.findQuery(filters, pageQuery, projection).populate(
-      this.populate as P[],
+      this.populate,
     );
-    return await this.execute(query, this.clsPopulate as new () => TFull);
+    return await this.execute(query, this.clsPopulate!);
   }
 
   protected findAllQuery(
@@ -406,8 +401,8 @@ export abstract class BaseRepository<
 
   async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
     this.ensureCanPopulate();
-    const query = this.findAllQuery(sort).populate(this.populate as P[]);
-    return await this.execute(query, this.clsPopulate as new () => TFull);
+    const query = this.findAllQuery(sort).populate(this.populate);
+    return await this.execute(query, this.clsPopulate!);
   }
 
   /**
@@ -443,9 +438,9 @@ export abstract class BaseRepository<
   ): Promise<TFull[]> {
     this.ensureCanPopulate();
     const query = this.findPageQuery(filters, pageQuery).populate(
-      this.populate as P[],
+      this.populate,
     );
-    return await this.execute(query, this.clsPopulate as new () => TFull);
+    return await this.execute(query, this.clsPopulate!);
   }
 
   async countAll(): Promise<number> {
@@ -489,10 +484,8 @@ export abstract class BaseRepository<
         new: true,
       },
     );
-
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
-
     if (queryUpdates) {
       await this.preUpdateValidate(filterCriteria, queryUpdates);
       this.emitter.emit(
@@ -508,6 +501,7 @@ export abstract class BaseRepository<
         queryUpdates,
       );
     }
+
     return await this.executeOne(query, this.cls);
   }
 
