@@ -9,9 +9,13 @@
 import mongoose from 'mongoose';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import {
+  Attachment,
+  AttachmentModel,
+} from '@/attachment/schemas/attachment.schema';
 
-export const attachmentFixtures: AttachmentCreateDto[] = [
+export const attachmentFixtures: (AttachmentCreateDto &
+  Pick<Attachment, 'owner'>)[] = [
   {
     name: 'store1.jpg',
     type: 'image/jpeg',
@@ -22,6 +26,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
         id: '1',
       },
     },
+    owner: '675ff345085566a488be80d3',
   },
 
   {

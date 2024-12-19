@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { TAttachmentContext } from "@/app-components/attachment/AttachmentUploader";
 import { Format } from "@/services/types";
 
 import { IBaseSchema, IFormat } from "./base.types";
@@ -17,6 +18,7 @@ export interface IAttachmentAttributes {
   location: string;
   url: string;
   channel?: Record<string, any>;
+  context: TAttachmentContext;
 }
 
 export interface IAttachmentStub extends IBaseSchema, IAttachmentAttributes {}

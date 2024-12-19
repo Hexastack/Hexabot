@@ -18,33 +18,47 @@ import {
   Param,
   Post,
   Query,
+  Session,
   StreamableFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Session as ExpressSession } from 'express-session';
 import { diskStorage, memoryStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
+import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { AttachmentDownloadDto } from '../dto/attachment.dto';
-import { Attachment } from '../schemas/attachment.schema';
+import {
+  Attachment,
+  AttachmentPopulate,
+  AttachmentStub,
+  AttachmentSubscriberFull,
+  AttachmentUserFull,
+  TContextType,
+} from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
-export class AttachmentController extends BaseController<Attachment> {
+export class AttachmentController extends BaseController<
+  Attachment,
+  AttachmentStub,
+  AttachmentPopulate,
+  AttachmentUserFull | AttachmentSubscriberFull
+> {
   constructor(
     private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
@@ -70,12 +84,24 @@ export class AttachmentController extends BaseController<Attachment> {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Attachment> {
+  async findOne(
+    @Param('id') id: string,
+    @Query(PopulatePipe)
+    populate: string[],
+  ) {
     const doc = await this.attachmentService.findOne(id);
     if (!doc) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
+
+    if (this.attachmentService.canPopulate(populate)) {
+      if (doc.ownerType === 'User')
+        return await this.attachmentService.findOneUserAndPopulate(id);
+      else if (doc.ownerType === 'Subscriber')
+        return await this.attachmentService.findOneSubscriberAndPopulate(id);
+    }
+
     return doc;
   }
 
@@ -89,12 +115,27 @@ export class AttachmentController extends BaseController<Attachment> {
   @Get()
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
+    @Query(PopulatePipe)
+    populate: string[],
     @Query(
-      new SearchFilterPipe<Attachment>({ allowedFields: ['name', 'type'] }),
+      new SearchFilterPipe<Attachment>({
+        allowedFields: ['name', 'type'],
+      }),
     )
     filters: TFilterQuery<Attachment>,
   ) {
-    return await this.attachmentService.find(filters, pageQuery);
+    const publicAttachmentsFilter: TFilterQuery<Attachment> = {
+      ...filters,
+      context: {
+        $in: ['block_attachment', 'content_attachment'],
+      },
+    };
+    return this.canPopulate(populate)
+      ? await this.attachmentService.findAndPopulate(
+          publicAttachmentsFilter,
+          pageQuery,
+        )
+      : await this.attachmentService.find(publicAttachmentsFilter, pageQuery);
   }
 
   /**
@@ -128,12 +169,21 @@ export class AttachmentController extends BaseController<Attachment> {
   )
   async uploadFile(
     @UploadedFiles() files: { file: Express.Multer.File[] },
-  ): Promise<Attachment[]> {
+    @Query() { context }: { context?: TContextType },
+    @Session() session?: ExpressSession,
+  ) {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
     }
 
-    return await this.attachmentService.uploadFiles(files);
+    const ownerId = session?.passport?.user?.id;
+
+    return await this.attachmentService.uploadFiles({
+      files: files.file,
+      ownerId,
+      context,
+      ownerType: 'User',
+    });
   }
 
   /**
@@ -142,7 +192,6 @@ export class AttachmentController extends BaseController<Attachment> {
    * @param  params - The parameters identifying the attachment to download.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  @Roles('public')
   @Get('download/:id/:filename?')
   async download(
     @Param() params: AttachmentDownloadDto,
