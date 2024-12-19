@@ -62,6 +62,7 @@
 * [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
 * [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
+* [Extensions](developer-guide/extensions.md)
 * [Plugins](developer-guide/integrations/README.md)
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
   * [Build your First Plugin](developer-guide/integrations/build-your-first-plugin.md)

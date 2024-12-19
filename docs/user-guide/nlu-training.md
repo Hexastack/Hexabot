@@ -4,7 +4,7 @@ hidden: true
 
 # NLU Training
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption><p>NLU Training</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption><p>NLU Training</p></figcaption></figure>
 
 Hexabot leverages Natural Language Understanding (NLU) to understand what your users are saying and respond appropriately. To make sure Hexabot accurately interprets user intent, you need to train its NLU engine to learn from your user's interactions.&#x20;
 

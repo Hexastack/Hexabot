@@ -1,3 +1,7 @@
+---
+icon: cube
+---
+
 # Plugins
 
 Hexabot's extensions system allows you to add new features and custom integrations. The Hexabot [Extension Library](https://hexabot.ai/extensions) offers a growing collection of plugins, channels and helpers built by the community, ready to be installed and used in your own projects. Plugins allow you to add "**Building Blocks**" that you can use within the [Visual Editor](https://docs.hexabot.ai/user-guide/visual-editor) to build your flows. Each time you install or develop a new custom plugin, a new block will appear in the visual editor's left panel under the "**Custom Blocks**" section. These plugins can range from simple utility enhancements to 3rd party integrations with external apps or systems. This page explains how to install and use existing plugins within your Hexabot project, enabling you to enhance your conversational AI with minimal effort.

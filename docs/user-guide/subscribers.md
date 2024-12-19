@@ -40,7 +40,7 @@ Click on the "MANAGE LABELS" button next to the subscriber to manage their label
 * **Promotional Messages:** Send targeted promotional messages based on subscriber labels.
 * **Personalized Responses:** Use labels to provide more personalized responses to users based on their interests or behaviors.
 
-<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption><p>Target subscribers with a given label</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption><p>Target subscribers with a given label</p></figcaption></figure>
 
 **Best Practices for Subscriber Management:**
 

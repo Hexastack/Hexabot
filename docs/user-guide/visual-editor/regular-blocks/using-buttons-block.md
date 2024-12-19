@@ -1,6 +1,6 @@
 # Using Buttons Block
 
-<figure><img src="../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The Buttons block enables you to display a set of clickable buttons to users, allowing them to easily make choices and guide the flow of the conversation. Unlike Quick Replies, which are typically displayed horizontally, Buttons can be arranged in a vertical layout, providing a more structured and visually appealing way to present options.
 
