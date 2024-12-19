@@ -53,12 +53,14 @@ interface ContentFieldInput {
       [key: string]: any;
     }
   >;
+  idx: number;
 }
 
 const ContentFieldInput: React.FC<ContentFieldInput> = ({
   contentField: contentField,
   field,
   errors,
+  idx,
 }) => {
   const { t } = useTranslate();
 
@@ -68,7 +70,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
     case ContentFieldType.URL:
       return (
         <Input
-          autoFocus
+          autoFocus={idx === 0}
           multiline={contentField.type === ContentFieldType.TEXTAREA}
           rows={contentField.type === ContentFieldType.TEXTAREA ? 5 : 1}
           label={t(`label.${contentField.name}`, {
@@ -226,7 +228,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
-            {(contentType?.fields || []).map((contentField) => (
+            {(contentType?.fields || []).map((contentField, index) => (
               <ContentItem key={contentField.name}>
                 <Controller
                   name={contentField.name}
@@ -249,6 +251,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
                         contentField={contentField}
                         field={field}
                         errors={errors}
+                        idx={index}
                       />
                     </FormControl>
                   )}
