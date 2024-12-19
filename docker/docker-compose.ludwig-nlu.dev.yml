@@ -1,0 +1,6 @@
+version: "3.9"
+
+services:
+  ludwig-nlu-api:
+    ports:
+      - "${LUDWIG_NLU_PORT}:${LUDWIG_NLU_PORT}"

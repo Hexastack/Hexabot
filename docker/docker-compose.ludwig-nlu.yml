@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  ludwig-nlu-api:
+    image: ludwigai/ludwig:master
+    container_name: ludwig-nlu-api
+    command: >-
+      multi_serve_hf
+      --model_paths '${MODEL_PATHS}' --port ${LUDWIG_NLU_PORT}
+    stdin_open: true
+    tty: true
+    env_file: .env
+    networks:
+      - ludwig-nlu-network
+    volumes:
+      - ../ludwig-nlu/data:/data 
+      - ../ludwig-nlu/results:/results
+      - ../ludwig-nlu/cli.py:/usr/local/lib/python3.8/site-packages/ludwig/cli.py
+      - ../ludwig-nlu/multi_serve_hf.py:/usr/local/lib/python3.8/site-packages/ludwig/multi_serve_hf.py
+      - ludwig-nlu-data:/app/repos
+  api:
+    networks:
+      - ludwig-nlu-network
+
+volumes:
+  ludwig-nlu-data:
+
+networks:
+  ludwig-nlu-network:
