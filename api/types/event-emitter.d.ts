@@ -314,7 +314,8 @@ declare module '@nestjs/event-emitter' {
         : false;
 
   type TCustomEvents<G extends keyof IHookEntityOperationMap> =
-    keyof IHookEntityOperationMap[G]['operations'];
+    | '*'
+    | keyof IHookEntityOperationMap[G]['operations'];
 
   type TNormalizedOrCustomized<G> = G extends IHookEntities
     ? TNormalizedEvents | TCustomEvents<G>
