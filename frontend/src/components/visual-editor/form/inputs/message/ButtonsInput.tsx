@@ -8,8 +8,8 @@
 
 import { KeyboardReturn, Link, RemoveCircleOutline } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Grid, IconButton } from "@mui/material";
-import { FC, Fragment, useEffect, useMemo, useState } from "react";
+import { Box, IconButton } from "@mui/material";
+import { FC, useEffect, useMemo, useState } from "react";
 import { FieldPath } from "react-hook-form";
 
 import DropdownButton, {
@@ -96,19 +96,10 @@ const ButtonsInput: FC<ButtonsInput> = ({
   }, [buttons]);
 
   return (
-    <Box>
-      <Grid container spacing={2}>
-        <Grid item xs={5}>
-          {t("label.title")}
-        </Grid>
-        <Grid item xs={6}>
-          {t("label.payload")} / {t("label.url")}
-        </Grid>
-        <Grid item xs={1}>
-          &nbsp;
-        </Grid>
+    <Box display="flex" flexDirection="column">
+      <Box display="flex" flexDirection="column">
         {buttons.map(({ value, id }, idx) => (
-          <Fragment key={id}>
+          <Box display="flex" flex={1} mt={2} key={id}>
             <ButtonInput
               fieldPath={fieldPath}
               idx={idx}
@@ -116,20 +107,18 @@ const ButtonsInput: FC<ButtonsInput> = ({
               onChange={updateInput(idx)}
               disablePayload={disablePayload}
             />
-            <Grid item xs={1}>
-              <IconButton
-                color="error"
-                onClick={() => removeInput(idx)}
-                disabled={buttons.length <= minInput}
-              >
-                <RemoveCircleOutline />
-              </IconButton>
-            </Grid>
-          </Fragment>
+            <IconButton
+              color="error"
+              onClick={() => removeInput(idx)}
+              disabled={buttons.length <= minInput}
+            >
+              <RemoveCircleOutline />
+            </IconButton>
+          </Box>
         ))}
-      </Grid>
+      </Box>
       <DropdownButton
-        sx={{ m: 1, float: "right", padding: "16px" }}
+        sx={{ alignSelf: "end", marginTop: 2 }}
         label={t("button.add_button")}
         actions={actions}
         onClick={(action) => addInput(action.defaultValue)}

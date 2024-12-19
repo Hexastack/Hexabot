@@ -41,7 +41,7 @@ export const ToggleableInput = forwardRef(
     }, [readOnlyValue, isDisabled, defaultValue]);
 
     return (
-      <Box display="flex">
+      <Box display="flex" flex={1}>
         <Switch
           onChange={() => {
             const newIsDisabled = !isDisabled;
