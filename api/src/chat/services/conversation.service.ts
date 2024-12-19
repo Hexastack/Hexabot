@@ -136,11 +136,13 @@ export class ConversationService extends BaseService<
     }
 
     // Handle attachments (location, ...)
-    if (msgType === 'location') {
-      const coordinates = event.getMessage().coordinates;
-      convo.context.user_location = { lat: 0, lon: 0 };
-      convo.context.user_location.lat = parseFloat(coordinates.lat);
-      convo.context.user_location.lon = parseFloat(coordinates.lon);
+    const msg = event.getMessage();
+    if (msgType === 'location' && 'coordinates' in msg) {
+      const coordinates = msg.coordinates;
+      convo.context.user_location = {
+        lat: parseFloat(coordinates.lat.toString()),
+        lon: parseFloat(coordinates.lon.toString()),
+      };
     } else if (msgType === 'attachments') {
       // @TODO : deprecated in favor of geolocation msgType
       const attachments = event.getAttachments();
