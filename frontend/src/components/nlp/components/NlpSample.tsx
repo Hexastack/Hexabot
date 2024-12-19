@@ -15,13 +15,14 @@ import {
   Button,
   ButtonGroup,
   Chip,
+  CircularProgress,
   Grid,
   IconButton,
   MenuItem,
   Stack,
 } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
@@ -38,6 +39,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useImport } from "@/hooks/crud/useImport";
 import { useConfig } from "@/hooks/useConfig";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -101,6 +103,20 @@ export default function NlpSample() {
         deleteDialogCtl.closeDialog();
         setSelectedNlpSamples([]);
         toast.success(t("message.item_delete_success"));
+      },
+    },
+  );
+  const { mutateAsync: importDataset, isLoading } = useImport(
+    EntityType.NLP_SAMPLE,
+    {
+      onError: () => {
+        toast.error(t("message.import_failed"));
+      },
+      onSuccess: (data) => {
+        if (data.length) toast.success(t("message.success_import"));
+        else {
+          toast.error(t("message.import_duplicated_data"));
+        }
       },
     },
   );
@@ -259,6 +275,15 @@ export default function NlpSample() {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpSamples(selection as string[]);
   };
+  const handleImportChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files?.length) {
+      const file = event.target.files.item(0);
+
+      if (file) {
+        await importDataset(file);
+      }
+    }
+  };
 
   return (
     <Grid item xs={12}>
@@ -343,13 +368,25 @@ export default function NlpSample() {
               EntityType.NLP_SAMPLE_ENTITY,
               PermissionAction.CREATE,
             ) ? (
-              <Button
-                variant="contained"
-                onClick={() => importDialogCtl.openDialog()}
-                startIcon={<UploadIcon />}
-              >
-                {t("button.import")}
-              </Button>
+              <>
+                <Button
+                  htmlFor="importFile"
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  endIcon={isLoading ? <CircularProgress size="1rem" /> : null}
+                  disabled={isLoading}
+                >
+                  {t("button.import")}
+                </Button>
+                <Input
+                  id="importFile"
+                  type="file"
+                  value="" // to trigger an automatic reset to allow the same file to be selected multiple times
+                  sx={{ display: "none" }}
+                  onChange={handleImportChange}
+                />
+              </>
             ) : null}
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.READ) &&
             hasPermission(
