@@ -16,17 +16,21 @@ This ensures that Hexabot uses the LLM-powered NLU engine for processing intents
 
 #### **Step 2: Select the Default LLM Helper**
 
+{% hint style="info" %}
+**Helper Installation:** Ensure the desired LLM helper is installed before selecting it in the settings. Installation instructions for each helper are provided in their respective documentation.
+{% endhint %}
+
 1. In the same “Chatbot” tab, locate the “Default LLM Helper” setting.
 2. Choose your preferred LLM helper from the installed options. Below some LLM helpers as an example:
    1. **Ollama Helper (**[**hexabot-helper-ollama**](https://hexabot.ai/extensions/672731347ddd71f5fb2f0d7a)**) :** A helper for integrating with [Ollama](https://ollama.ai/), an LLM platform designed for localized or containerized usage. Install Ollama either locally on your machine or as a Docker container.
    2. **Google Gemini Helper (**[**hexabot-helper-gemini**](https://hexabot.ai/extensions/67272e927ddd71f5fb2f0c5c)**):** A helper for integrating with Google Gemini, Google’s advanced LLM for high-performance AI applications. Generate an API key from Google Cloud Console. Configure the helper with the API key in Hexabot’s settings.
    3. **OpenAI ChatGPT Helper (**[**hexabot-helper-chatgpt**](https://hexabot.ai/extensions/67272fef7ddd71f5fb2f0d02)**):** A helper for integrating with OpenAI’s ChatGPT, a widely used and versatile LLM. Generate an API key from the OpenAI dashboard. Configure the helper with the API key in Hexabot’s settings.
 
-3\. Ensure the necessary helper is installed and configured.
+3\. Before moving to the next steps, ensure the necessary helper is installed and fully configured.
 
 #### **Step 3: Configure the prompts of the LLM NLU Engine**
 
-The LLM NLU Helper Settings allow you to configure and fine-tune the behavior of the LLM-powered NLU engine in Hexabot. These settings include options for selecting the model, defining language detection prompts, and customizing trait classification prompts. Below are the details and guidelines for configuring these settings.
+The LLM NLU Helper Settings allow you to configure and fine-tune the behaviour of the LLM-powered NLU engine in Hexabot. These settings include options for selecting the model, defining language detection prompts, and customizing trait classification prompts. Below are the details and guidelines for configuring these settings.
 
 <figure><img src="../../../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
 
@@ -67,11 +71,9 @@ Prompts use [Handlebars](https://handlebarsjs.com/guide/) for dynamic templates:
 
 ### Key Considerations
 
-**1. Helper Installation:** Ensure the desired LLM helper is installed before selecting it in the settings. Installation instructions for each helper are provided in their respective documentation.
+**1. Performance and Limitations:** LLMs excel at detecting intents and languages without custom training, but they lack confidence scores and may perform poorly with less-common languages or dialects.
 
-**2. Performance and Limitations:** LLMs excel at detecting intents and languages without custom training, but they lack confidence scores and may perform poorly with less-common languages or dialects.
-
-**3. Security and Privacy:**
+**2. Security and Privacy:**
 
 * Use local deployment options like **Ollama** if privacy is a concern.
 * For cloud-based APIs (Google Gemini and OpenAI ChatGPT), ensure API keys are securely managed and adhere to organizational security policies.
