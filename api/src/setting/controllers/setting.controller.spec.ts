@@ -23,7 +23,7 @@ import {
 } from '@/utils/test/test';
 
 import { SettingRepository } from '../repositories/setting.repository';
-import { SettingModel } from '../schemas/setting.schema';
+import { Setting, SettingModel } from '../schemas/setting.schema';
 import { SettingSeeder } from '../seeds/setting.seed';
 import { SettingService } from '../services/setting.service';
 
@@ -100,8 +100,9 @@ describe('SettingController', () => {
       const payload = {
         value: 'updated setting value',
       };
-      const id = (await settingService.findOne({ value: 'admin@example.com' }))
-        .id;
+      const { id } = (await settingService.findOne({
+        value: 'admin@example.com',
+      })) as Setting;
       const result = await settingController.updateOne(id, payload);
 
       expect(settingService.updateOne).toHaveBeenCalledWith(id, payload);

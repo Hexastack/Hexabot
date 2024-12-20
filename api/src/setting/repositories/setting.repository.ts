@@ -49,10 +49,15 @@ export class SettingRepository extends BaseRepository<Setting> {
   ): Promise<void> {
     if (!Array.isArray(updates)) {
       const payload = updates.$set;
-      if (typeof payload.value !== 'undefined') {
-        const { type } =
-          'type' in payload ? payload : await this.findOne(criteria);
-        this.validateSettingValue(type, payload.value);
+      if (payload && 'value' in payload) {
+        const hasType = 'type' in payload;
+        if (hasType) {
+          this.validateSettingValue(payload.type, payload.value);
+        } else {
+          const setting = await this.findOne(criteria);
+          if (setting && 'type' in setting)
+            this.validateSettingValue(setting.type, payload.value);
+        }
       }
     }
   }
