@@ -35,8 +35,8 @@ describe('SettingService', () => {
   const commonAttributes = {
     type: SettingType.text,
     id: '',
-    createdAt: undefined,
-    updatedAt: undefined,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeAll(async () => {

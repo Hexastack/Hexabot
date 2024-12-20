@@ -33,7 +33,7 @@ export abstract class BaseService<
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
     projection?: ProjectionType<T>,
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     return await this.repository.findOne(criteria, options, projection);
   }
 
