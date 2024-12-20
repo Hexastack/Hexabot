@@ -104,8 +104,7 @@ export const config: Config = {
   },
   parameters: {
     uploadDir:
-      (process.env.UPLOAD_DIR ? join(process.cwd(), process.env.UPLOAD_DIR)) :
-      join(process.cwd(), 'uploads'),
+      (process.env.UPLOAD_DIR ? join(process.cwd(), process.env.UPLOAD_DIR) : join(process.cwd(), 'uploads'),
     avatarDir:
       (process.env.AVATAR_DIR ? join(process.cwd(), process.env.AVATAR_DIR)) :
       join(process.cwd(), 'avatars'),
