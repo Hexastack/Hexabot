@@ -79,11 +79,12 @@ export async function seedDatabase(app: INestApplicationContext) {
     (model) => !['Role', 'User', 'Permission'].includes(model.name),
   );
   const roleModelsCombinations = [
+  const roleModelsCombinations = [
     ...models.map((model) => [model.id, adminRole.id]),
     ...managerModels.map((model) => [model.id, managerRole.id]),
   ] as [string, string][];
 
-  const permissionSeeds = roleModelsCombinations.reduce(
+  const permissionSeeds = roleModelsCombinations.reduce<PermissionCreateDto[]>(
     (acc, [modelId, roleId]) => {
       return acc.concat(permissionModels(modelId, roleId));
     },
