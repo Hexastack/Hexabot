@@ -8,15 +8,15 @@
 
 import {
   registerDecorator,
-  ValidationOptions,
   ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 
 export function IsLessThanDate(
   property: string,
   validationOptions?: ValidationOptions,
 ) {
-  return (object: unknown, propertyName: string) => {
+  return (object: object, propertyName: string) => {
     registerDecorator({
       target: object.constructor,
       propertyName,
