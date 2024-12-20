@@ -33,7 +33,7 @@ import { UserSeeder } from './user/seeds/user.seed';
 import { userModels } from './user/seeds/user.seed-model';
 
 export async function seedDatabase(app: INestApplicationContext) {
-  const logger = app.get(LoggerService);
+  const logger = await app.resolve(LoggerService);
   const modelSeeder = app.get(ModelSeeder);
   const categorySeeder = app.get(CategorySeeder);
   const contextVarSeeder = app.get(ContextVarSeeder);
