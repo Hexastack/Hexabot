@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   InternalServerErrorException,
@@ -16,7 +17,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
@@ -43,7 +43,7 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
 import { InvitationService } from '../services/invitation.service';
 import { PermissionService } from '../services/permission.service';
@@ -92,7 +92,17 @@ describe('AuthController', () => {
         InvitationRepository,
         InvitationService,
         LanguageRepository,
-        LanguageService,
+        {
+          provide: LanguageService,
+          useValue: {
+            getDefaultLanguage: jest.fn().mockResolvedValue({
+              title: 'English',
+              code: 'en',
+              isDefault: true,
+              isRTL: false,
+            }),
+          },
+        },
         JwtService,
         {
           provide: MailerService,

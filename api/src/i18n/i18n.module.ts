@@ -54,6 +54,12 @@ export class I18nModule extends NativeI18nModule {
 
   static forRoot(options: I18nOptions): DynamicModule {
     const { imports, providers, controllers, exports } = super.forRoot(options);
+    if (!providers) {
+      throw new Error('Providers missing ');
+    }
+    if (!exports) {
+      throw new Error('Exports missing');
+    }
     return {
       module: I18nModule,
       imports: (imports || []).concat([

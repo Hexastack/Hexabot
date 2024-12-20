@@ -8,10 +8,10 @@
 
 import mongoose from 'mongoose';
 
-import { LanguageUpdateDto } from '@/i18n/dto/language.dto';
+import { LanguageCreateDto } from '@/i18n/dto/language.dto';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 
-export const languageFixtures: LanguageUpdateDto[] = [
+export const languageFixtures: LanguageCreateDto[] = [
   {
     title: 'English',
     code: 'en',

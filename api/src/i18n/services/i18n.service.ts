@@ -34,7 +34,7 @@ export class I18nService<
       ...options,
     };
     let { lang } = options;
-    lang = this.resolveLanguage(lang);
+    lang = this.resolveLanguage(lang!);
 
     // Translate block message, button text, ...
     if (lang in this.dynamicTranslations) {

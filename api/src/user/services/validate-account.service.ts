@@ -6,15 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -79,6 +80,9 @@ export class ValidateAccountService {
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
+        if (!defaultLanguage) {
+          throw new NotFoundException('Default language not found');
+        }
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'account_confirmation.mjml',

@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   Inject,
@@ -16,7 +17,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer';
 import { compareSync } from 'bcryptjs';
 
 import { config } from '@/config';
@@ -62,6 +62,9 @@ export class PasswordResetService {
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
+        if (!defaultLanguage) {
+          throw new NotFoundException('Default language not found');
+        }
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'password_reset.mjml',
