@@ -12,6 +12,7 @@ services:
       - app-network
     volumes:
       - api-data:/app/uploads
+      - api-avatars-data:/app/avatars
     depends_on:
       mongo:
         condition: service_healthy
@@ -55,6 +56,7 @@ services:
 volumes:
   mongo-data:
   api-data:
+  api-avatars-data:
 
 networks:
   db-network:
