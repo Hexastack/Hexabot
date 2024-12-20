@@ -227,7 +227,7 @@ export default abstract class EventWrapper<
    *
    * @returns The received message
    */
-  abstract getMessage(): any;
+  abstract getMessage(): StdIncomingMessage;
 
   /**
    * Return the text message received
