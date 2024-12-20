@@ -141,7 +141,9 @@ describe('TranslationController', () => {
     translationController = module.get<TranslationController>(
       TranslationController,
     );
-    translation = await translationService.findOne({ str: 'Welcome' });
+    translation = (await translationService.findOne({
+      str: 'Welcome',
+    })) as Translation;
   });
 
   afterEach(jest.clearAllMocks);
@@ -160,11 +162,15 @@ describe('TranslationController', () => {
   describe('findOne', () => {
     it('should find one translation by id', async () => {
       jest.spyOn(translationService, 'findOne');
-      const result = await translationController.findOne(translation.id);
+      const result = (await translationController.findOne(
+        translation.id,
+      )) as Translation;
 
       expect(translationService.findOne).toHaveBeenCalledWith(translation.id);
       expect(result).toEqualPayload(
-        translationFixtures.find(({ str }) => str === translation.str),
+        translationFixtures.find(
+          ({ str }) => str === translation.str,
+        ) as Translation,
       );
     });
   });

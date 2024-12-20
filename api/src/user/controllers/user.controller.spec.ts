@@ -45,8 +45,8 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
-import { UserModel, User } from '../schemas/user.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
+import { User, UserModel } from '../schemas/user.schema';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -112,7 +112,17 @@ describe('UserController', () => {
         },
         AttachmentService,
         AttachmentRepository,
-        LanguageService,
+        {
+          provide: LanguageService,
+          useValue: {
+            getDefaultLanguage: jest.fn().mockResolvedValue({
+              title: 'English',
+              code: 'en',
+              isDefault: true,
+              isRTL: false,
+            }),
+          },
+        },
         LanguageRepository,
         ValidateAccountService,
         {

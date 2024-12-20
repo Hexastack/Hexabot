@@ -66,7 +66,17 @@ describe('PasswordResetService', () => {
         AttachmentService,
         AttachmentRepository,
         RoleRepository,
-        LanguageService,
+        {
+          provide: LanguageService,
+          useValue: {
+            getDefaultLanguage: jest.fn().mockResolvedValue({
+              title: 'English',
+              code: 'en',
+              isDefault: true,
+              isRTL: false,
+            }),
+          },
+        },
         LanguageRepository,
         LoggerService,
         PasswordResetService,

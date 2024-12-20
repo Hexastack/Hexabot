@@ -62,6 +62,9 @@ export class PasswordResetService {
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
+        if (!defaultLanguage) {
+          throw new NotFoundException('Default language not found');
+        }
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'password_reset.mjml',

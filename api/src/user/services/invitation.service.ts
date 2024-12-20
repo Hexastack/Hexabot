@@ -10,6 +10,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   Optional,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -65,6 +66,9 @@ export class InvitationService extends BaseService<
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
+        if (!defaultLanguage) {
+          throw new NotFoundException('Default language not found');
+        }
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'invitation.mjml',

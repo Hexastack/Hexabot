@@ -55,7 +55,7 @@ export class BotStats extends BaseSchema {
    */
 
   @Prop({ type: Number, default: 0 })
-  value?: number;
+  value: number;
 
   /**
    *  name of the insight (e.g: incoming messages).
@@ -75,7 +75,7 @@ export class BotStats extends BaseSchema {
       return {
         id: index + 1,
         name: type,
-        values: [],
+        values: [] as unknown as BotStats & { date: Date }[],
       };
     });
 

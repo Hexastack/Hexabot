@@ -71,7 +71,17 @@ describe('InvitationService', () => {
         InvitationRepository,
         InvitationService,
         LanguageRepository,
-        LanguageService,
+        {
+          provide: LanguageService,
+          useValue: {
+            getDefaultLanguage: jest.fn().mockResolvedValue({
+              title: 'English',
+              code: 'en',
+              isDefault: true,
+              isRTL: false,
+            }),
+          },
+        },
         JwtService,
         Logger,
         {
