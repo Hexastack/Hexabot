@@ -488,22 +488,24 @@ export abstract class BaseRepository<
     );
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
-    if (queryUpdates) {
-      await this.preUpdateValidate(filterCriteria, queryUpdates);
-      this.emitter.emit(
-        this.getEventName(EHook.preUpdateValidate),
-        filterCriteria,
-        queryUpdates,
-      );
 
-      await this.postUpdateValidate(filterCriteria, queryUpdates);
-      this.emitter.emit(
-        this.getEventName(EHook.postUpdateValidate),
-        filterCriteria,
-        queryUpdates,
-      );
+    if (!queryUpdates) {
+      throw new Error('updateOne() query updates are not undefined');
     }
 
+    await this.preUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.preUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
+
+    await this.postUpdateValidate(filterCriteria, queryUpdates);
+    this.emitter.emit(
+      this.getEventName(EHook.postUpdateValidate),
+      filterCriteria,
+      queryUpdates,
+    );
     return await this.executeOne(query, this.cls);
   }
 
