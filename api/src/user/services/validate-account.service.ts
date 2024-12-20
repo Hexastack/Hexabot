@@ -10,6 +10,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   Optional,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -79,6 +80,9 @@ export class ValidateAccountService {
     if (this.mailerService) {
       try {
         const defaultLanguage = await this.languageService.getDefaultLanguage();
+        if (!defaultLanguage) {
+          throw new NotFoundException('Default language not found');
+        }
         await this.mailerService.sendMail({
           to: dto.email,
           template: 'account_confirmation.mjml',

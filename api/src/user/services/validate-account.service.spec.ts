@@ -61,7 +61,6 @@ describe('ValidateAccountService', () => {
         UserRepository,
         RoleService,
         RoleRepository,
-        LanguageService,
         LanguageRepository,
         LoggerService,
         {
@@ -87,6 +86,17 @@ describe('ValidateAccountService', () => {
             del: jest.fn(),
             get: jest.fn(),
             set: jest.fn(),
+          },
+        },
+        {
+          provide: LanguageService,
+          useValue: {
+            getDefaultLanguage: jest.fn().mockResolvedValue({
+              title: 'English',
+              code: 'en',
+              isDefault: true,
+              isRTL: false,
+            }),
           },
         },
       ],

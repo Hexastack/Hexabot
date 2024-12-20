@@ -100,6 +100,7 @@ export class TranslationService extends BaseService<Translation> {
     }
     // Add fallback messages
     if (
+      block.options &&
       'fallback' in block.options &&
       block.options.fallback &&
       'message' in block.options.fallback &&

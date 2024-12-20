@@ -69,7 +69,7 @@ describe('LanguageController', () => {
     }).compile();
     languageService = module.get<LanguageService>(LanguageService);
     languageController = module.get<LanguageController>(LanguageController);
-    language = await languageService.findOne({ code: 'en' });
+    language = (await languageService.findOne({ code: 'en' })) as Language;
   });
 
   afterEach(jest.clearAllMocks);
@@ -92,7 +92,7 @@ describe('LanguageController', () => {
 
       expect(languageService.findOne).toHaveBeenCalledWith(language.id);
       expect(result).toEqualPayload(
-        languageFixtures.find(({ code }) => code === language.code),
+        languageFixtures.find(({ code }) => code === language.code) as Language,
       );
     });
   });
@@ -142,7 +142,9 @@ describe('LanguageController', () => {
     it('should mark a language as default', async () => {
       jest.spyOn(languageService, 'updateOne');
       const translationUpdateDto = { isDefault: true };
-      const frLang = await languageService.findOne({ code: 'fr' });
+      const frLang = (await languageService.findOne({
+        code: 'fr',
+      })) as Language;
       const result = await languageController.updateOne(
         frLang.id,
         translationUpdateDto,
@@ -157,7 +159,9 @@ describe('LanguageController', () => {
         ...translationUpdateDto,
       });
 
-      const enLang = await languageService.findOne({ code: 'en' });
+      const enLang = (await languageService.findOne({
+        code: 'en',
+      })) as Language;
       expect(enLang.isDefault).toBe(false);
     });
 
@@ -171,7 +175,9 @@ describe('LanguageController', () => {
 
   describe('deleteOne', () => {
     it('should throw when attempting to delete the default language', async () => {
-      const defaultLang = await languageService.findOne({ isDefault: true });
+      const defaultLang = (await languageService.findOne({
+        isDefault: true,
+      })) as Language;
 
       await expect(
         languageController.deleteOne(defaultLang.id),
