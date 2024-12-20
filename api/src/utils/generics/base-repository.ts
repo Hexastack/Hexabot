@@ -177,28 +177,30 @@ export abstract class BaseRepository<
       const query = this as Query<D, D, unknown, T, 'findOneAndUpdate'>;
       const criteria = query.getFilter();
       const updates = query.getUpdate();
-      if (updates) {
-        await repository.preUpdate(query, criteria, updates);
-        repository.emitter.emit(
-          repository.getEventName(EHook.preUpdate),
-          criteria,
-          updates?.['$set'],
-        );
+      if (!updates) {
+        throw new Error('Unable to run findOneAndUpdate pre hook');
       }
+      await repository.preUpdate(query, criteria, updates);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preUpdate),
+        criteria,
+        updates?.['$set'],
+      );
     });
 
     hooks.updateMany.pre.execute(async function () {
       const query = this as Query<D, D, unknown, T, 'updateMany'>;
       const criteria = query.getFilter();
       const updates = query.getUpdate();
-      if (updates) {
-        await repository.preUpdateMany(query, criteria, updates);
-        repository.emitter.emit(
-          repository.getEventName(EHook.preUpdateMany),
-          criteria,
-          updates?.['$set'],
-        );
+      if (!updates) {
+        throw new Error('Unable to run run updateMany pre hook');
       }
+      await repository.preUpdateMany(query, criteria, updates);
+      repository.emitter.emit(
+        repository.getEventName(EHook.preUpdateMany),
+        criteria,
+        updates?.['$set'],
+      );
     });
 
     hooks.updateMany.post.execute(async function (updated: any) {
