@@ -104,9 +104,11 @@ export const config: Config = {
   },
   parameters: {
     uploadDir:
-      (process.env.UPLOAD_DIR && join(process.cwd(), process.env.UPLOAD_DIR)) ??
+      (process.env.UPLOAD_DIR ? join(process.cwd(), process.env.UPLOAD_DIR)) :
       join(process.cwd(), 'uploads'),
-    avatarDir: process.env.AVATAR_DIR ?? join(process.cwd(), 'avatars'),
+    avatarDir:
+      (process.env.AVATAR_DIR ? join(process.cwd(), process.env.AVATAR_DIR)) :
+      join(process.cwd(), 'avatars'),
     storageMode: 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
