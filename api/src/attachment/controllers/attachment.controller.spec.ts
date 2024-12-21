@@ -26,8 +26,10 @@ import {
 } from '@/utils/test/test';
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
+import { AttachmentSubscriberRepository } from '../repositories/attachment-subscriber.repository';
+import { AttachmentUserRepository } from '../repositories/attachment-user.repository';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { AttachmentModel, Attachment } from '../schemas/attachment.schema';
+import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 import { AttachmentController } from './attachment.controller';
@@ -36,7 +38,6 @@ describe('AttachmentController', () => {
   let attachmentController: AttachmentController;
   let attachmentService: AttachmentService;
   let attachmentToDelete: Attachment;
-
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AttachmentController],
@@ -47,6 +48,8 @@ describe('AttachmentController', () => {
       providers: [
         AttachmentService,
         AttachmentRepository,
+        AttachmentUserRepository,
+        AttachmentSubscriberRepository,
         LoggerService,
         EventEmitter2,
         PluginService,
@@ -60,9 +63,7 @@ describe('AttachmentController', () => {
     });
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -78,9 +79,12 @@ describe('AttachmentController', () => {
 
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
-      const promiseResult = attachmentController.uploadFile({
-        file: undefined,
-      });
+      const promiseResult = attachmentController.uploadFile(
+        {
+          file: undefined,
+        },
+        { context: 'user_avatar' },
+      );
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
       );
@@ -88,19 +92,25 @@ describe('AttachmentController', () => {
 
     it('should upload attachment', async () => {
       jest.spyOn(attachmentService, 'create');
-      const result = await attachmentController.uploadFile({
-        file: [attachmentFile],
-      });
+      const result = await attachmentController.uploadFile(
+        {
+          file: [attachmentFile],
+        },
+        { context: 'user_avatar' },
+      );
       expect(attachmentService.create).toHaveBeenCalledWith({
         size: attachmentFile.size,
         type: attachmentFile.mimetype,
         name: attachmentFile.filename,
         channel: {},
         location: `/${attachmentFile.filename}`,
+        context: 'user_avatar',
+        ownerType: 'User',
       });
+
       expect(result).toEqualPayload(
         [attachment],
-        [...IGNORED_TEST_FIELDS, 'url'],
+        [...IGNORED_TEST_FIELDS, 'url', 'owner'],
       );
     });
   });
