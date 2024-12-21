@@ -77,6 +77,14 @@ This will copy the `.env.example` file to `.env` in the `./docker` directory if 
 hexabot dev --services ollama
 ```
 
+Notice that we added an extra service called [Ollama](https://ollama.com/). Ollama makes it easy to get up and running with large language models locally. Make sure to SSH into the container and pull the model(s) you would like to use:
+
+```
+docker exec -it ollama ollama pull tinyllama
+```
+
+You can pull different models, a complete reference of all the Ollama models can be found here: [https://ollama.com/library](https://ollama.com/library).
+
 {% hint style="info" %}
 **Note:** The first time you run the app, Docker will take some time to download all the required images
 {% endhint %}
