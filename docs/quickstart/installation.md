@@ -74,7 +74,7 @@ This will copy the `.env.example` file to `.env` in the `./docker` directory if 
 6. **Run in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
 ```
-hexabot dev --services nlu,ollama
+hexabot dev --services ollama
 ```
 
 {% hint style="info" %}
