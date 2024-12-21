@@ -4,11 +4,10 @@ The Ludwig NLU Engine is a robust Natural Language Understanding (NLU) solution 
 
 ### Setting up the Ludwig NLU Engine
 
-1. Clone the [Hexabot Template Ludwig Repository](https://github.com/Hexastack/hexabot-template-ludwig/)
-2. Install the Hexabot CLI running this command `npm install -g hexabot-cli`
-3. Create your own chatbot using the command: `hexabot create my-chatbot --template Hexastack/hexabot-template-ludwig`
-4. Initialize your project and customize your configuration in my-chatbot/docker/.env file: `hexabot init`&#x20;
-5. Kickstart your newly created chatbot running: `hexabot dev --services ludwig-nlu,ollama`
+1. Install the Hexabot CLI running this command `npm install -g hexabot-cli`
+2. Create your own chatbot using the command: `hexabot create my-chatbot --template Hexastack/hexabot-template-ludwig`
+3. Initialize your project and customize your configuration in my-chatbot/docker/.env file: `hexabot init`&#x20;
+4. Kickstart your newly created chatbot running: `hexabot dev --services ludwig-nlu,ollama`
 
 <figure><img src="../../../.gitbook/assets/Screenshot from 2024-12-20 17-31-16.png" alt=""><figcaption></figcaption></figure>
 
