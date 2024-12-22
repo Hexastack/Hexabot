@@ -355,7 +355,7 @@ The following represents what your custom plugin will look like based on the exa
 
 ## Publishing your plugin
 
-After completing your plugin, be sure to connect with the Hexabot community on [Discord](https://discord.gg/rNb9t2MFkG) to showcase your plugin and work in the _show-n-tell_ channel.&#x20;
+After completing your plugin, be sure to connect with the Hexabot community on Discord to showcase your plugin and work in the _show-n-tell_ channel.&#x20;
 
 Consider publishing your plugin to a repository (e.g., NPM, GitHub) for others to use and continue to improve it.
 
