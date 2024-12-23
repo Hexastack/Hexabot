@@ -7,18 +7,22 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookSettingsGroupLabelOperationMap,
+} from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
   FilterQuery,
   Model,
+  Query,
   Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
-import { I18nService } from '@/i18n/services/i18n.service';
+// import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
@@ -29,7 +33,7 @@ export class SettingRepository extends BaseRepository<Setting> {
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(Setting.name) readonly model: Model<Setting>,
-    private readonly i18n: I18nService,
+    // private readonly i18n: I18nService,
   ) {
     super(eventEmitter, model, Setting);
   }
@@ -56,6 +60,32 @@ export class SettingRepository extends BaseRepository<Setting> {
   }
 
   /**
+   * Emits an event after a `Setting` has been updated.
+   *
+   * This method is used to synchronize global settings by emitting an event
+   * based on the `group` and `label` of the `Setting`.
+   *
+   * @param _query The Mongoose query object used to find and update the document.
+   * @param setting The updated `Setting` object.
+   */
+  async postUpdate(
+    _query: Query<
+      Document<Setting, any, any>,
+      Document<Setting, any, any>,
+      unknown,
+      Setting,
+      'findOneAndUpdate'
+    >,
+    setting: Setting,
+  ) {
+    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
+    const label = setting.label as '*';
+
+    // Sync global settings var
+    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
+  }
+
+  /**
    * Validates the `Setting` document after it has been retrieved.
    *
    * Checks the `type` of the setting and validates the `value` field according to the type:
@@ -65,7 +95,7 @@ export class SettingRepository extends BaseRepository<Setting> {
    *
    * @param setting The `Setting` document to be validated.
    */
-  private validateSettingValue(type: SettingType, value: any) {
+  public validateSettingValue(type: SettingType, value: any) {
     if (
       (type === SettingType.text || type === SettingType.textarea) &&
       typeof value !== 'string' &&
