@@ -22,7 +22,6 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
-// import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
@@ -33,7 +32,6 @@ export class SettingRepository extends BaseRepository<Setting> {
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(Setting.name) readonly model: Model<Setting>,
-    // private readonly i18n: I18nService,
   ) {
     super(eventEmitter, model, Setting);
   }
