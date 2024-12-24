@@ -105,8 +105,9 @@ type TOperator = 'eq' | 'iLike' | 'neq';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {
-  [x: string]: string | RegExp;
-  _id?: string;
+  data?: {
+    [x: string]: string | RegExp;
+  };
   context?: TContext;
   operator?: TOperator;
 };

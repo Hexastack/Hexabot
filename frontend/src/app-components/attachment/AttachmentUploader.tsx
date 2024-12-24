@@ -61,10 +61,19 @@ const IconText = styled(Box)`
   position: absolute;
 `;
 
+export type TAttachmentContext =
+  | "setting_attachment"
+  | "user_avatar"
+  | "subscriber_avatar"
+  | "block_attachment"
+  | "content_attachment"
+  | "message_attachment";
+
 export type FileUploadProps = {
   imageButton?: boolean;
   accept: string;
   enableMediaLibrary?: boolean;
+  context?: TAttachmentContext;
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
 };
@@ -72,6 +81,7 @@ export type FileUploadProps = {
 const AttachmentUploader: FC<FileUploadProps> = ({
   accept,
   enableMediaLibrary,
+  context,
   onChange,
   onUploadComplete,
 }) => {
@@ -114,7 +124,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
           return;
         }
 
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };
@@ -123,7 +133,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.dataTransfer.files.item(0);
 
       if (file) {
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };
