@@ -6,17 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs from 'fs';
-
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -50,7 +45,6 @@ import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 import { NlpValueService } from '../services/nlp-value.service';
-import { NlpService } from '../services/nlp.service';
 
 import { NlpSampleController } from './nlp-sample.controller';
 
@@ -60,7 +54,6 @@ describe('NlpSampleController', () => {
   let nlpSampleService: NlpSampleService;
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
-  let attachmentService: AttachmentService;
   let languageService: LanguageService;
   let byeJhonSampleId: string;
   let languages: Language[];
@@ -76,7 +69,6 @@ describe('NlpSampleController', () => {
         MongooseModule.forFeature([
           NlpSampleModel,
           NlpSampleEntityModel,
-          AttachmentModel,
           NlpEntityModel,
           NlpValueModel,
           SettingModel,
@@ -87,9 +79,7 @@ describe('NlpSampleController', () => {
         LoggerService,
         NlpSampleRepository,
         NlpSampleEntityRepository,
-        AttachmentService,
         NlpEntityService,
-        AttachmentRepository,
         NlpEntityRepository,
         NlpValueService,
         NlpValueRepository,
@@ -98,7 +88,6 @@ describe('NlpSampleController', () => {
         LanguageRepository,
         LanguageService,
         EventEmitter2,
-        NlpService,
         HelperService,
         SettingRepository,
         SettingService,
@@ -131,7 +120,6 @@ describe('NlpSampleController', () => {
         text: 'Bye Jhon',
       })
     ).id;
-    attachmentService = module.get<AttachmentService>(AttachmentService);
     languageService = module.get<LanguageService>(LanguageService);
     languages = await languageService.findAll();
   });
@@ -315,83 +303,44 @@ describe('NlpSampleController', () => {
     });
   });
 
-  describe('import', () => {
-    it('should throw exception when attachment is not found', async () => {
-      const invalidattachmentId = (
-        await attachmentService.findOne({
-          name: 'store2.jpg',
-        })
-      ).id;
-      await attachmentService.deleteOne({ name: 'store2.jpg' });
-      await expect(
-        nlpSampleController.import(invalidattachmentId),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw exception when file location is not present', async () => {
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(false);
-      await expect(nlpSampleController.import(attachmentId)).rejects.toThrow(
-        NotFoundException,
+  describe('importFile', () => {
+    it('should throw exception when something is wrong with the upload', async () => {
+      const file = {
+        buffer: Buffer.from('', 'utf-8'),
+        size: 0,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      await expect(nlpSampleController.importFile(file)).rejects.toThrow(
+        'Bad Request Exception',
       );
     });
 
     it('should return a failure if an error occurs when parsing csv file ', async () => {
       const mockCsvDataWithErrors: string = `intent,entities,lang,question
           greeting,person,en`;
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvDataWithErrors);
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
 
-      const mockParsedCsvDataWithErrors = {
-        data: [{ intent: 'greeting', entities: 'person', lang: 'en' }],
-        errors: [
-          {
-            type: 'FieldMismatch',
-            code: 'TooFewFields',
-            message: 'Too few fields: expected 4 fields but parsed 3',
-            row: 0,
-          },
-        ],
-        meta: {
-          delimiter: ',',
-          linebreak: '\n',
-          aborted: false,
-          truncated: false,
-          cursor: 49,
-          fields: ['intent', 'entities', 'lang', 'question'],
-        },
-      };
-      await expect(nlpSampleController.import(attachmentId)).rejects.toThrow(
-        new BadRequestException({
-          cause: mockParsedCsvDataWithErrors.errors,
-          description: 'Error while parsing CSV',
-        }),
-      );
+      const buffer = Buffer.from(mockCsvDataWithErrors, 'utf-8');
+      const file = {
+        buffer,
+        size: buffer.length,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      await expect(nlpSampleController.importFile(file)).rejects.toThrow();
     });
 
     it('should import data from a CSV file', async () => {
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
       const mockCsvData: string = [
         `text,intent,language`,
         `How much does a BMW cost?,price,en`,
       ].join('\n');
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvData);
 
-      const result = await nlpSampleController.import(attachmentId);
+      const buffer = Buffer.from(mockCsvData, 'utf-8');
+      const file = {
+        buffer,
+        size: buffer.length,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      const result = await nlpSampleController.importFile(file);
       const intentEntityResult = await nlpEntityService.findOne({
         name: 'intent',
       });
@@ -429,9 +378,10 @@ describe('NlpSampleController', () => {
       expect(intentEntityResult).toEqualPayload(intentEntity);
       expect(priceValueResult).toEqualPayload(priceValue);
       expect(textSampleResult).toEqualPayload(textSample);
-      expect(result).toEqual({ success: true });
+      expect(result).toEqualPayload([textSample]);
     });
   });
+
   describe('deleteMany', () => {
     it('should delete multiple nlp samples', async () => {
       const samplesToDelete = [
