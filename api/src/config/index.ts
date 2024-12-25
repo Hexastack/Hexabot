@@ -110,7 +110,7 @@ export const config: Config = {
     storageMode: 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-      : 2000000,
+      : 50 * 1024 * 1024, // 50 MB in bytes
     appName: 'Hexabot.ai',
   },
   pagination: {
