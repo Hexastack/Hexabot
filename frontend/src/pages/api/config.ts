@@ -11,6 +11,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 type ResponseData = {
   apiUrl: string;
   ssoEnabled: boolean;
+  maxUploadSize: number;
 };
 
 export default function handler(
@@ -20,5 +21,8 @@ export default function handler(
   res.status(200).json({
     apiUrl: process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:4000",
     ssoEnabled: process.env.NEXT_PUBLIC_SSO_ENABLED === "true" || false,
+    maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
+      ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
+      : 50 * 1024 * 1024, // 50 MB in bytes
   });
 }

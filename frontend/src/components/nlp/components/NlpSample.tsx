@@ -7,9 +7,9 @@
  */
 
 import CircleIcon from "@mui/icons-material/Circle";
+import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
-import UploadIcon from "@mui/icons-material/Upload";
 import {
   Box,
   Button,
@@ -17,15 +17,19 @@ import {
   Chip,
   Grid,
   IconButton,
+  InputAdornment,
   MenuItem,
   Stack,
+  Typography,
 } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
+import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
 import {
@@ -34,10 +38,12 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
+import { useImport } from "@/hooks/crud/useImport";
 import { useConfig } from "@/hooks/useConfig";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -60,6 +66,7 @@ import { NlpImportDialog } from "../NlpImportDialog";
 import { NlpSampleDialog } from "../NlpSampleDialog";
 
 const NLP_SAMPLE_TYPE_COLORS = {
+  all: "#fff",
   test: "#e6a23c",
   train: "#67c23a",
   inbox: "#909399",
@@ -69,7 +76,8 @@ export default function NlpSample() {
   const { apiUrl } = useConfig();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const [type, setType] = useState<NlpSampleType | undefined>(undefined);
+  const queryClient = useQueryClient();
+  const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
   const hasPermission = useHasPermission();
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
@@ -79,7 +87,10 @@ export default function NlpSample() {
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
   const { onSearch, searchPayload } = useSearch<INlpSample>({
-    $eq: [...(type ? [{ type }] : []), ...(language ? [{ language }] : [])],
+    $eq: [
+      ...(type !== "all" ? [{ type }] : []),
+      ...(language ? [{ language }] : []),
+    ],
     $iLike: ["text"],
   });
   const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
@@ -101,6 +112,32 @@ export default function NlpSample() {
         deleteDialogCtl.closeDialog();
         setSelectedNlpSamples([]);
         toast.success(t("message.item_delete_success"));
+      },
+    },
+  );
+  const { mutateAsync: importDataset, isLoading } = useImport(
+    EntityType.NLP_SAMPLE,
+    {
+      onError: () => {
+        toast.error(t("message.import_failed"));
+      },
+      onSuccess: (data) => {
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) => {
+            const [_qType, qEntity] = queryKey;
+
+            return (
+              isSameEntity(qEntity, EntityType.NLP_SAMPLE_ENTITY) ||
+              isSameEntity(qEntity, EntityType.NLP_ENTITY) ||
+              isSameEntity(qEntity, EntityType.NLP_VALUE)
+            );
+          },
+        });
+        if (data.length) {
+          toast.success(t("message.success_import"));
+        } else {
+          toast.error(t("message.import_duplicated_data"));
+        }
       },
     },
   );
@@ -259,6 +296,9 @@ export default function NlpSample() {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpSamples(selection as string[]);
   };
+  const handleImportChange = async (file: File) => {
+    await importDataset(file);
+  };
 
   return (
     <Grid item xs={12}>
@@ -292,7 +332,7 @@ export default function NlpSample() {
           <AutoCompleteEntitySelect<ILanguage, "title", false>
             fullWidth={false}
             sx={{
-              minWidth: "150px",
+              minWidth: "256px",
             }}
             autoFocus
             searchFields={["title", "code"]}
@@ -307,35 +347,38 @@ export default function NlpSample() {
             select
             fullWidth={false}
             sx={{
-              minWidth: "150px",
+              minWidth: "256px",
             }}
             label={t("label.dataset")}
             value={type}
             onChange={(e) => setType(e.target.value as NlpSampleType)}
             SelectProps={{
               ...(type && {
-                IconComponent: () => (
-                  <IconButton size="small" onClick={() => setType(undefined)}>
-                    <DeleteIcon />
-                  </IconButton>
+                endAdornment: (
+                  <InputAdornment sx={{ marginRight: "1rem" }} position="end">
+                    <IconButton size="small" onClick={() => setType("all")}>
+                      <ClearIcon sx={{ fontSize: "1.25rem" }} />
+                    </IconButton>
+                  </InputAdornment>
                 ),
               }),
               renderValue: (value) => <Box>{t(`label.${value}`)}</Box>,
             }}
           >
-            {Object.values(NlpSampleType).map((nlpSampleType, index) => (
-              <MenuItem key={index} value={nlpSampleType}>
-                <Grid container>
-                  <Grid item xs={4}>
+            {["all", ...Object.values(NlpSampleType)].map(
+              (nlpSampleType, index) => (
+                <MenuItem key={index} value={nlpSampleType}>
+                  <Box display="flex" gap={1}>
                     <CircleIcon
-                      fontSize="small"
-                      sx={{ color: NLP_SAMPLE_TYPE_COLORS[nlpSampleType] }}
+                      sx={{
+                        color: NLP_SAMPLE_TYPE_COLORS[nlpSampleType],
+                      }}
                     />
-                  </Grid>
-                  <Grid item>{nlpSampleType}</Grid>
-                </Grid>
-              </MenuItem>
-            ))}
+                    <Typography>{t(`label.${nlpSampleType}`)}</Typography>
+                  </Box>
+                </MenuItem>
+              ),
+            )}
           </Input>
           <ButtonGroup sx={{ marginLeft: "auto" }}>
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.CREATE) &&
@@ -343,13 +386,12 @@ export default function NlpSample() {
               EntityType.NLP_SAMPLE_ENTITY,
               PermissionAction.CREATE,
             ) ? (
-              <Button
-                variant="contained"
-                onClick={() => importDialogCtl.openDialog()}
-                startIcon={<UploadIcon />}
-              >
-                {t("button.import")}
-              </Button>
+              <FileUploadButton
+                accept="text/csv"
+                label={t("button.import")}
+                onChange={handleImportChange}
+                isLoading={isLoading}
+              />
             ) : null}
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.READ) &&
             hasPermission(

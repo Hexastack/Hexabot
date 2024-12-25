@@ -7,6 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -27,7 +28,7 @@ import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntityModel } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
   NlpSampleEntity,
   NlpSampleEntityModel,
@@ -41,7 +42,10 @@ import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
 
 describe('NlpSampleService', () => {
+  let nlpEntityService: NlpEntityService;
   let nlpSampleService: NlpSampleService;
+  let nlpSampleEntityService: NlpSampleEntityService;
+  let languageService: LanguageService;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleRepository: NlpSampleRepository;
   let languageRepository: LanguageRepository;
@@ -84,7 +88,11 @@ describe('NlpSampleService', () => {
         },
       ],
     }).compile();
+    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
     nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
+    nlpSampleEntityService = module.get<NlpSampleEntityService>(
+      NlpSampleEntityService,
+    );
     nlpSampleRepository = module.get<NlpSampleRepository>(NlpSampleRepository);
     nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
@@ -92,6 +100,7 @@ describe('NlpSampleService', () => {
     nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
     );
+    languageService = module.get<LanguageService>(LanguageService);
     languageRepository = module.get<LanguageRepository>(LanguageRepository);
     noNlpSample = await nlpSampleService.findOne({ text: 'No' });
     nlpSampleEntity = await nlpSampleEntityRepository.findOne({
@@ -160,6 +169,106 @@ describe('NlpSampleService', () => {
     it('should delete a nlp Sample', async () => {
       const result = await nlpSampleService.deleteOne(noNlpSample.id);
       expect(result.deletedCount).toEqual(1);
+    });
+  });
+
+  describe('parseAndSaveDataset', () => {
+    it('should throw NotFoundException if no entities are found', async () => {
+      jest.spyOn(nlpEntityService, 'findAll').mockResolvedValue([]);
+
+      await expect(
+        nlpSampleService.parseAndSaveDataset(
+          'text,intent,language\nHello,none,en',
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(nlpEntityService.findAll).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException if CSV parsing fails', async () => {
+      const invalidCSV = 'text,intent,language\n"Hello,none'; // Malformed CSV
+      jest
+        .spyOn(nlpEntityService, 'findAll')
+        .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
+      jest.spyOn(languageService, 'getLanguages').mockResolvedValue({});
+      jest
+        .spyOn(languageService, 'getDefaultLanguage')
+        .mockResolvedValue({ code: 'en' } as Language);
+
+      await expect(
+        nlpSampleService.parseAndSaveDataset(invalidCSV),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should filter out rows with "none" as intent', async () => {
+      const mockData = 'text,intent,language\nHello,none,en\nHi,greet,en';
+      jest
+        .spyOn(nlpEntityService, 'findAll')
+        .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
+      jest
+        .spyOn(languageService, 'getLanguages')
+        .mockResolvedValue({ en: { id: '1' } });
+      jest
+        .spyOn(languageService, 'getDefaultLanguage')
+        .mockResolvedValue({ code: 'en' } as Language);
+      jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
+      jest
+        .spyOn(nlpSampleService, 'create')
+        .mockResolvedValue({ id: '1', text: 'Hi' } as NlpSample);
+      jest.spyOn(nlpSampleEntityService, 'createMany').mockResolvedValue([]);
+
+      const result = await nlpSampleService.parseAndSaveDataset(mockData);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].text).toEqual('Hi');
+    });
+
+    it('should fallback to the default language if the language is invalid', async () => {
+      const mockData = 'text,intent,language\nHi,greet,invalidLang';
+      jest
+        .spyOn(nlpEntityService, 'findAll')
+        .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
+      jest
+        .spyOn(languageService, 'getLanguages')
+        .mockResolvedValue({ en: { id: '1' } });
+      jest
+        .spyOn(languageService, 'getDefaultLanguage')
+        .mockResolvedValue({ code: 'en' } as Language);
+      jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
+      jest
+        .spyOn(nlpSampleService, 'create')
+        .mockResolvedValue({ id: '1', text: 'Hi' } as NlpSample);
+      jest.spyOn(nlpSampleEntityService, 'createMany').mockResolvedValue([]);
+
+      const result = await nlpSampleService.parseAndSaveDataset(mockData);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].text).toEqual('Hi');
+    });
+
+    it('should successfully process and save valid dataset rows', async () => {
+      const mockData = 'text,intent,language\nHi,greet,en\nBye,bye,en';
+      const mockLanguages = { en: { id: '1' } };
+
+      jest
+        .spyOn(languageService, 'getLanguages')
+        .mockResolvedValue(mockLanguages);
+      jest
+        .spyOn(languageService, 'getDefaultLanguage')
+        .mockResolvedValue({ code: 'en' } as Language);
+      jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
+      let id = 0;
+      jest.spyOn(nlpSampleService, 'create').mockImplementation((s) => {
+        return Promise.resolve({ id: (++id).toString(), ...s } as NlpSample);
+      });
+      jest.spyOn(nlpSampleEntityService, 'createMany').mockResolvedValue([]);
+
+      const result = await nlpSampleService.parseAndSaveDataset(mockData);
+
+      expect(nlpSampleEntityService.createMany).toHaveBeenCalledTimes(2);
+      expect(result).toHaveLength(2);
+      expect(result[0].text).toEqual('Hi');
+      expect(result[1].text).toEqual('Bye');
     });
   });
 });

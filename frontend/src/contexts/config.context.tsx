@@ -13,6 +13,7 @@ export const ConfigContext = createContext<IConfig | null>(null);
 export interface IConfig {
   apiUrl: string;
   ssoEnabled: boolean;
+  maxUploadSize: number;
 }
 
 export const ConfigProvider = ({ children }) => {

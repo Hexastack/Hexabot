@@ -269,6 +269,20 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     return data;
   }
 
+  async import<T = TBasic>(file: File) {
+    const { _csrf } = await this.getCsrf();
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const { data } = await this.request.post<T[], AxiosResponse<T[]>, FormData>(
+      `${ROUTES[this.type]}/import?_csrf=${_csrf}`,
+      formData,
+    );
+
+    return data;
+  }
+
   async upload(file: File) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
