@@ -20,6 +20,7 @@ import { PermissionController } from './controllers/permission.controller';
 import { RoleController } from './controllers/role.controller';
 import { ReadWriteUserController } from './controllers/user.controller';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { AttachmentGuard } from './guards/rules/attachment-guard-rules';
 import { LocalStrategy } from './passport/auth-strategy/local.strategy';
 import { AuthSerializer } from './passport/session.serializer';
 import { InvitationRepository } from './repositories/invitation.repository';
@@ -76,6 +77,7 @@ import { ValidateAccountService } from './services/validate-account.service';
     PermissionRepository,
     LocalStrategy,
     AuthService,
+    AttachmentGuard,
     LocalAuthGuard,
     AuthSerializer,
     InvitationRepository,

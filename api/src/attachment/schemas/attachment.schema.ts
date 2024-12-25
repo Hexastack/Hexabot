@@ -24,15 +24,23 @@ import {
 
 import { MIME_REGEX } from '../utilities';
 
-export type TOwnerType = 'User' | 'Subscriber';
+/**
+ * Defines the types of owners for an attachment,
+ * indicating whether the file belongs to a User or a Subscriber.
+ */
+export type TAttachmentOwnerType = 'User' | 'Subscriber';
 
-export type TContextType =
-  | 'setting_attachment'
-  | 'user_avatar'
-  | 'subscriber_avatar'
-  | 'block_attachment'
-  | 'content_attachment'
-  | 'message_attachment';
+/**
+ * Defines the various contexts in which an attachment can exist.
+ * These contexts influence how the attachment is uploaded, stored, and accessed:
+ */
+export type TAttachmentContextType =
+  | 'setting_attachment' // Attachments related to app settings, restricted to users with specific permissions.
+  | 'user_avatar' // Avatar files for users, only the current user can upload, accessible to those with appropriate permissions.
+  | 'subscriber_avatar' // Avatar files for subscribers, uploaded programmatically, accessible to authorized users.
+  | 'block_attachment' // Files sent by the bot, public or private based on the channel and user authentication.
+  | 'content_attachment' // Files in the knowledge base, usually public but could vary based on specific needs.
+  | 'message_attachment'; // Files sent or received via messages, uploaded programmatically, accessible to users with inbox permissions.;
 
 @Schema({ timestamps: true })
 export class AttachmentStub extends BaseSchema {
@@ -128,10 +136,10 @@ export class AttachmentStub extends BaseSchema {
   owner?: unknown;
 
   @Prop({ type: String })
-  ownerType?: TOwnerType;
+  ownerType?: TAttachmentOwnerType;
 
   @Prop({ type: String })
-  context?: TContextType;
+  context?: TAttachmentContextType;
 }
 
 @Schema({ timestamps: true })
@@ -160,12 +168,12 @@ export const AttachmentModel: ModelDefinition = LifecycleHookManager.attach({
 });
 
 AttachmentModel.schema.virtual('url').get(function () {
-  if (this._id && this.name)
+  if (this._id && this.name) {
     return buildURL(
       config.apiBaseUrl,
       `/attachment/download/${this._id}/${this.name}`,
     );
-
+  }
   return '';
 });
 

@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { extname } from 'path';
-
 import {
   BadRequestException,
   Controller,
@@ -27,7 +25,6 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Session as ExpressSession } from 'express-session';
 import { diskStorage, memoryStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -47,9 +44,10 @@ import {
   AttachmentStub,
   AttachmentSubscriberFull,
   AttachmentUserFull,
-  TContextType,
+  TAttachmentContextType,
 } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
+import { generateUniqueFilename } from '../utilities';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
@@ -83,6 +81,18 @@ export class AttachmentController extends BaseController<
     return await this.count(filters);
   }
 
+  /**
+   * Retrieves a single attachment by its ID.
+   *
+   * This endpoint fetches an attachment from the database using its unique identifier.
+   * If the attachment is found and the `populate` query parameter is provided,
+   * it determines whether the requested population of related data is allowed and returns the populated data.
+   * Otherwise, it fetches the attachment based on its owner type.
+   *
+   * @param id - The unique identifier of the attachment to retrieve.
+   * @param populate - (Optional) An array of fields to populate in the response.
+   * @returns The requested attachment, potentially populated.
+   */
   @Get(':id')
   async findOne(
     @Param('id') id: string,
@@ -95,14 +105,12 @@ export class AttachmentController extends BaseController<
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
 
-    if (this.attachmentService.canPopulate(populate)) {
-      if (doc.ownerType === 'User')
-        return await this.attachmentService.findOneUserAndPopulate(id);
-      else if (doc.ownerType === 'Subscriber')
-        return await this.attachmentService.findOneSubscriberAndPopulate(id);
-    }
-
-    return doc;
+    return this.attachmentService.canPopulate(populate)
+      ? await this.attachmentService.findOneByOwnerAndPopulate(
+          doc.ownerType,
+          id,
+        )
+      : await this.attachmentService.findOneByOwner(doc.ownerType, id);
   }
 
   /**
@@ -157,10 +165,8 @@ export class AttachmentController extends BaseController<
         } else {
           return diskStorage({
             destination: config.parameters.uploadDir,
-            filename: (req, file, cb) => {
-              const name = file.originalname.split('.')[0];
-              const extension = extname(file.originalname);
-              cb(null, `${name}-${uuidv4()}${extension}`);
+            filename: (_req, file, cb) => {
+              cb(null, generateUniqueFilename(file.originalname));
             },
           });
         }
@@ -169,7 +175,7 @@ export class AttachmentController extends BaseController<
   )
   async uploadFile(
     @UploadedFiles() files: { file: Express.Multer.File[] },
-    @Query() { context }: { context?: TContextType },
+    @Query() { context }: { context?: TAttachmentContextType },
     @Session() session?: ExpressSession,
   ) {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
@@ -177,6 +183,12 @@ export class AttachmentController extends BaseController<
     }
 
     const ownerId = session?.passport?.user?.id;
+
+    if (!ownerId) {
+      throw new BadRequestException(
+        'Must be logged-in to be able to upload a file.',
+      );
+    }
 
     return await this.attachmentService.uploadFiles({
       files: files.file,

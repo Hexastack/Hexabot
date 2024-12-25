@@ -33,8 +33,8 @@ import {
   Attachment,
   ATTACHMENT_POPULATE,
   AttachmentPopulate,
-  TContextType,
-  TOwnerType,
+  TAttachmentContextType,
+  TAttachmentOwnerType,
 } from '../schemas/attachment.schema';
 import { fileExists, getStreamableFile } from '../utilities';
 
@@ -175,8 +175,8 @@ export class AttachmentService extends BaseService<Attachment> {
   }: {
     files: Express.Multer.File[];
     ownerId?: string;
-    context?: TContextType;
-    ownerType?: TOwnerType;
+    context?: TAttachmentContextType;
+    ownerType?: TAttachmentOwnerType;
   }) {
     const uploadedFiles: Attachment[] = [];
 
@@ -256,24 +256,46 @@ export class AttachmentService extends BaseService<Attachment> {
     }
   }
 
-  async findOneUserAndPopulate(
+  async findOneByOwner(
+    ownerType: TAttachmentOwnerType,
     criteria: string | TFilterQuery<Attachment>,
     projection?: ProjectionType<Attachment>,
   ) {
-    return await this.attachmentUserRepository.findOneAndPopulate(
-      criteria,
-      projection,
-    );
+    if (ownerType === 'Subscriber') {
+      return await this.attachmentSubscriberRepository.findOne(
+        criteria,
+        undefined,
+        projection,
+      );
+    } else if (ownerType === 'User') {
+      return await this.attachmentUserRepository.findOne(
+        criteria,
+        undefined,
+        projection,
+      );
+    } else {
+      throw new TypeError('Unknown owner type.');
+    }
   }
 
-  async findOneSubscriberAndPopulate(
+  async findOneByOwnerAndPopulate(
+    ownerType: TAttachmentOwnerType,
     criteria: string | TFilterQuery<Attachment>,
     projection?: ProjectionType<Attachment>,
   ) {
-    return await this.attachmentSubscriberRepository.findOneAndPopulate(
-      criteria,
-      projection,
-    );
+    if (ownerType === 'Subscriber') {
+      return await this.attachmentSubscriberRepository.findOneAndPopulate(
+        criteria,
+        projection,
+      );
+    } else if (ownerType === 'User') {
+      return await this.attachmentUserRepository.findOneAndPopulate(
+        criteria,
+        projection,
+      );
+    } else {
+      throw new TypeError('Unknown owner type.');
+    }
   }
 
   canPopulate(populate: string[]): boolean {

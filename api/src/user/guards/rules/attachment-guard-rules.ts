@@ -6,9 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Url } from 'url';
 
-import { TContextType } from '@/attachment/schemas/attachment.schema';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Request } from 'express';
+
+import { TAttachmentContextType } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 
 import { User } from '../../schemas/user.schema';
@@ -18,13 +21,21 @@ import { Action } from '../../types/action.type';
 import { TModel } from '../../types/model.type';
 
 @Injectable()
-export class AttachmentGuardRules {
+export class AttachmentGuard implements CanActivate {
   constructor(
     readonly permissionService: PermissionService,
     readonly modelService: ModelService,
     readonly attachmentService: AttachmentService,
   ) {}
 
+  /**
+   * Checks if the user has the required permission for a given action and model.
+   *
+   * @param user - The current authenticated user.
+   * @param identity - The model identity being accessed.
+   * @param action - The action being performed (e.g., CREATE, READ).
+   * @returns A promise that resolves to `true` if the user has the required permission, otherwise `false`.
+   */
   private async hasRequiredPermission(
     user: Express.User & User,
     identity: TModel,
@@ -45,18 +56,20 @@ export class AttachmentGuardRules {
     return false;
   }
 
+  /**
+   * Checks if the user has permission to upload an attachment based on its context.
+   *
+   * @param user - The current user.
+   * @param context - The context of the attachment (e.g., user_avatar, setting_attachment).
+   * @returns A promise that resolves to `true` if the user has the required upload permission, otherwise `false`.
+   */
   protected async hasRequiredUploadPermission(
     user: Express.User & User,
-    context: TContextType,
+    context: TAttachmentContextType,
   ): Promise<boolean> {
     switch (context) {
       case 'setting_attachment': {
-        const hasSettingsCreatePermission = await this.hasRequiredPermission(
-          user,
-          'setting',
-          Action.CREATE,
-        );
-        return hasSettingsCreatePermission;
+        return await this.hasRequiredPermission(user, 'setting', Action.UPDATE);
       }
       case 'user_avatar':
       case 'block_attachment':
@@ -64,12 +77,20 @@ export class AttachmentGuardRules {
         return true;
       case 'subscriber_avatar':
       case 'message_attachment':
+        // upload is done programmatically, accessible to subscribers and users with inbox permissions
         return false;
       default:
         return false;
     }
   }
 
+  /**
+   * Checks if the user has permission to download an attachment based on its context.
+   *
+   * @param user - The current authenticated user.
+   * @param attachmentId - The ID of the attachment being accessed.
+   * @returns A promise that resolves to `true` if the user has the required download permission, otherwise `false`.
+   */
   protected async hasRequiredDownloadPermission(
     user: Express.User & User,
     attachmentId: string,
@@ -122,6 +143,34 @@ export class AttachmentGuardRules {
       }
       default:
         return false;
+    }
+  }
+
+  /**
+   * Determines if the current request is authorized to access the attachment resource.
+   *
+   * @param context - The execution context of the request.
+   * @returns A promise that resolves to `true` if the request is authorized, otherwise `false`.
+   */
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const { user, method, _parsedUrl, query } = context
+      .switchToHttp()
+      .getRequest<Request & { user: User; _parsedUrl: Url }>();
+    const [_, _controller, action, id] = _parsedUrl.pathname.split('/');
+
+    // attachment
+    const attachmentUploadContext =
+      query?.context?.toString() as TAttachmentContextType;
+
+    if (method === 'POST' && action === 'upload' && attachmentUploadContext) {
+      return await this.hasRequiredUploadPermission(
+        user,
+        attachmentUploadContext,
+      );
+    } else if (method === 'GET' && action === 'download') {
+      return await this.hasRequiredDownloadPermission(user, id);
+    } else {
+      return false;
     }
   }
 }

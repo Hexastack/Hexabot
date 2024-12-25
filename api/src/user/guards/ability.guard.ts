@@ -16,30 +16,25 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request } from 'express';
-
-import { TContextType } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 
 import { TRole } from '../schemas/role.schema';
 import { User } from '../schemas/user.schema';
-import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { MethodToAction } from '../types/action.type';
 import { TModel } from '../types/model.type';
 
-import { AttachmentGuardRules } from './rules/attachment-guard-rules';
+import { AttachmentGuard } from './rules/attachment-guard-rules';
 
 @Injectable()
-export class Ability extends AttachmentGuardRules implements CanActivate {
+export class Ability implements CanActivate {
   constructor(
     private reflector: Reflector,
-    readonly permissionService: PermissionService,
-    readonly modelService: ModelService,
-    readonly attachmentService: AttachmentService,
-  ) {
-    super(permissionService, modelService, attachmentService);
-  }
+    private readonly permissionService: PermissionService,
+    private readonly attachmentGuard: AttachmentGuard,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<TRole[]>('roles', context.getHandler());
@@ -48,41 +43,25 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
       return true;
     }
 
-    const { user, method, _parsedUrl, session, query } = context
+    const { user, method, _parsedUrl, session } = context
       .switchToHttp()
       .getRequest<Request & { user: User; _parsedUrl: Url }>();
 
-    const paths = _parsedUrl.pathname.split('/');
-    const modelFromPathname = paths?.[1].toLowerCase() as TModel;
-    const isAttachmentUrl =
-      modelFromPathname === 'attachment' &&
-      ['upload', 'download'].includes(paths?.[2]);
-
-    if (!user && !isAttachmentUrl) {
+    if (!user) {
       throw new UnauthorizedException();
     }
+
     if (!session?.cookie || session.cookie.expires < new Date()) {
       throw new UnauthorizedException('Session expired');
     }
 
+    const [_, controller, action] = _parsedUrl.pathname.split('/');
+    const modelName = controller.toLowerCase() as TModel;
+
+    const isAttachmentUrl =
+      modelName === 'attachment' && ['upload', 'download'].includes(action);
     if (isAttachmentUrl) {
-      // attachment
-      const attachmentUploadContext =
-        query?.context?.toString() as TContextType;
-      if (
-        method === 'POST' &&
-        paths?.[2] === 'upload' &&
-        attachmentUploadContext
-      )
-        return await this.hasRequiredUploadPermission(
-          user,
-          attachmentUploadContext,
-        );
-      else if (method === 'GET' && paths?.[2] === 'download')
-        return await this.hasRequiredDownloadPermission(user, paths?.[3]);
-      else {
-        return false;
-      }
+      return await this.attachmentGuard.canActivate(context);
     }
 
     if (user?.roles?.length) {
@@ -103,7 +82,7 @@ export class Ability extends AttachmentGuardRules implements CanActivate {
 
         if (
           permissionsFromRoles.some((permission) =>
-            permission[modelFromPathname]?.includes(MethodToAction[method]),
+            permission[modelName]?.includes(MethodToAction[method]),
           )
         ) {
           return true;

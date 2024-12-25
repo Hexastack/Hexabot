@@ -41,27 +41,30 @@ export class AttachmentUserRepository extends BaseRepository<
   }
 
   /**
-   * @deprecated - This method is not allowed
+   * @deprecated
+   * Overrides parent implementation and  set to private in order prevent calling this.
    */
   protected findAllQuery(
     _sort?: QuerySortDto<Attachment>,
   ): Query<Attachment[], Attachment, object, Attachment, 'find', object> {
-    throw new Error('findAllQuery method is not allowed');
+    throw new Error('findAllQuery() method is not allowed');
   }
 
   /**
-   * @deprecated - This method is not allowed
+   * @deprecated
+   * Overrides parent implementation and  set to private in order prevent calling this.
    */
   async findAll(_sort?: QuerySortDto<Attachment>): Promise<Attachment[]> {
-    throw new Error('findAll method is not allowed');
+    throw new Error('findAll() method is not allowed');
   }
 
   /**
-   * @deprecated - This method is not allowed
+   * @deprecated
+   * Overrides parent implementation and  set to private in order prevent calling this.
    */
   async findAllAndPopulate(
     _sort?: QuerySortDto<Attachment>,
   ): Promise<AttachmentUserFull[]> {
-    throw new Error('findAllAndPopulate method is not allowed');
+    throw new Error('findAllAndPopulate() method is not allowed');
   }
 }
