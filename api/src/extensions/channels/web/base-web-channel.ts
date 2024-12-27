@@ -202,6 +202,16 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
+   * Checks if a given message is an IncomingMessage
+   *
+   * @param message Any type of message
+   * @returns True, if it's a incoming message
+   */
+  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
+    return 'sender' in message && !!message.sender;
+  }
+
+  /**
    * Adapt the message structure for web channel
    *
    * @param messages - The messages to be formatted
@@ -209,27 +219,32 @@ export default abstract class BaseWebChannelHandler<
    * @returns Formatted message
    */
   protected formatMessages(messages: AnyMessage[]): Web.Message[] {
-    return messages.map((anyMessage: AnyMessage) => {
-      if ('sender' in anyMessage && anyMessage.sender) {
-        return {
-          ...this.formatIncomingHistoryMessage(anyMessage as IncomingMessage),
+    const formattedMessages: Web.Message[] = [];
+
+    for (const anyMessage of messages) {
+      if (this.isIncomingMessage(anyMessage)) {
+        const message = this.formatIncomingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           createdAt: anyMessage.createdAt,
-        } as Web.IncomingMessage;
+        });
       } else {
-        const outgoingMessage = anyMessage as OutgoingMessage;
-        return {
-          ...this.formatOutgoingHistoryMessage(outgoingMessage),
+        const message = this.formatOutgoingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: outgoingMessage.mid,
-          handover: !!outgoingMessage.handover,
-          createdAt: outgoingMessage.createdAt,
-        } as Web.OutgoingMessage;
+          mid: anyMessage.mid,
+          handover: !!anyMessage.handover,
+          createdAt: anyMessage.createdAt,
+        });
       }
-    });
+    }
+
+    return formattedMessages;
   }
 
   /**
@@ -373,7 +388,8 @@ export default abstract class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     } else if (
-      ('isSocket' in req && !!req.isSocket !== req.session.web.isSocket) ||
+      (this.isSocketRequest(req) &&
+        !!req.isSocket !== req.session.web.isSocket) ||
       !Array.isArray(req.session.web.messageQueue)
     ) {
       this.logger.warn(
@@ -462,7 +478,7 @@ export default abstract class BaseWebChannelHandler<
 
     req.session.web = {
       profile,
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       messageQueue: [],
       polling: false,
     };
@@ -472,12 +488,12 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Return message queue (using by long polling case only)
    *
-   * @param req
-   * @param res
+   * @param req HTTP Express Request
+   * @param res HTTP Express Response
    */
   private getMessageQueue(req: Request, res: Response) {
     // Polling not authorized when using websockets
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       this.logger.warn(
         'Web Channel Handler : Polling not authorized when using websockets',
       );
@@ -548,13 +564,13 @@ export default abstract class BaseWebChannelHandler<
   ) {
     this.logger.debug(
       'Web Channel Handler : subscribe (isSocket=' +
-        ('isSocket' in req && !!req.isSocket) +
+        this.isSocketRequest(req) +
         ')',
     );
     try {
       const profile = await this.getOrCreateSession(req);
       // Join socket room when using websocket
-      if ('isSocket' in req && !!req.isSocket) {
+      if (this.isSocketRequest(req)) {
         try {
           await req.socket.join(profile.foreign_id);
         } catch (err) {
@@ -667,7 +683,7 @@ export default abstract class BaseWebChannelHandler<
       return next(new Error('Invalid file path!'), false);
     }
 
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       // @TODO : test this
       try {
         await fsPromises.writeFile(filePath, upload.file);
@@ -698,7 +714,6 @@ export default abstract class BaseWebChannelHandler<
           return next(new Error('Unable to upload file!'), false);
         }
         // @TODO : test upload
-        // @ts-expect-error @TODO : This needs to be fixed at a later point
         const file = req.file;
         this.storeAttachment(
           {
@@ -716,12 +731,12 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Returns the request client IP address
    *
-   * @param req
+   * @param req Either a HTTP request or a WS Request (Synthetic object)
    *
    * @returns IP Address
    */
   protected getIpAddress(req: Request | SocketRequest): string {
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       return req.socket.handshake.address;
     } else if (Array.isArray(req.ips) && req.ips.length > 0) {
       // If config.http.trustProxy is enabled, this variable contains the IP addresses
@@ -744,7 +759,7 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
   ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       ipAddress: this.getIpAddress(req),
       agent: req.headers['user-agent'],
     };
@@ -819,10 +834,20 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
+   * Checks if a given request is a socket request
+   *
+   * @param req Either a HTTP express request or a WS request
+   * @returns True if it's a WS request
+   */
+  isSocketRequest(req: Request | SocketRequest): req is SocketRequest {
+    return 'isSocket' in req && req.isSocket;
+  }
+
+  /**
    * Process incoming Web Channel data (finding out its type and assigning it to its proper handler)
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
     const settings = await this.getSettings();
@@ -830,7 +855,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       await this.checkRequest(req, res);
       if (req.method === 'GET') {
-        if (!('isSocket' in req) && req.query._get) {
+        if (!this.isSocketRequest(req) && req.query._get) {
           switch (req.query._get) {
             case 'settings':
               this.logger.debug(
