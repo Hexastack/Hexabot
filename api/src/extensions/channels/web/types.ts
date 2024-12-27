@@ -12,24 +12,6 @@ import { FileType } from '@/chat/schemas/types/message';
 import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
 
 export namespace Web {
-  export enum SettingLabel {
-    allowed_domains = 'allowed_domains',
-    start_button = 'start_button',
-    input_disabled = 'input_disabled',
-    persistent_menu = 'persistent_menu',
-    greeting_message = 'greeting_message',
-    theme_color = 'theme_color',
-    window_title = 'window_title',
-    avatar_url = 'avatar_url',
-    show_emoji = 'show_emoji',
-    show_file = 'show_file',
-    show_location = 'show_location',
-    allowed_upload_size = 'allowed_upload_size',
-    allowed_upload_types = 'allowed_upload_types',
-  }
-
-  export type Settings = Record<SettingLabel, any>;
-
   export type RequestSession = {
     web?: {
       profile: SubscriberFull;

@@ -12,13 +12,14 @@ import Launcher from "./components/Launcher";
 import UserSubscription from "./components/UserSubscription";
 import ChatProvider from "./providers/ChatProvider";
 import { ColorProvider } from "./providers/ColorProvider";
-import { Config, ConfigProvider } from "./providers/ConfigProvider";
+import { ConfigProvider } from "./providers/ConfigProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
-import "./UiChatWidget.css";
+import { Config } from "./types/config.types";
 import { ConnectionState } from "./types/state.types";
+import "./UiChatWidget.css";
 
 type UiChatWidgetProps = PropsWithChildren<{
   CustomLauncher?: (props: { widget: WidgetContextType }) => JSX.Element;
@@ -26,7 +27,7 @@ type UiChatWidgetProps = PropsWithChildren<{
   CustomAvatar?: () => JSX.Element;
   PreChat?: React.FC;
   PostChat?: React.FC;
-  config: Config;
+  config: Partial<Config>;
 }>;
 
 function UiChatWidget({

@@ -23,6 +23,6 @@ export default function handler(
     ssoEnabled: process.env.NEXT_PUBLIC_SSO_ENABLED === "true" || false,
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-      : 50 * 1024 * 1024, // 50 MB in bytes
+      : 20 * 1024 * 1024, // 20 MB in bytes
   });
 }

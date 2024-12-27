@@ -35,7 +35,6 @@ type ChannelSettings = {
   show_location: boolean;
   allowed_upload_types: string;
   greeting_message: string;
-  allowed_upload_size: number;
 };
 
 type ChatSettings = {
@@ -52,7 +51,6 @@ type ChatSettings = {
   menu: IMenuNode[];
   autoFlush: boolean;
   allowedUploadTypes: string[];
-  allowedUploadSize: number;
   color: string;
   greetingMessage: string;
   avatarUrl: string;
@@ -72,7 +70,6 @@ const defaultSettings: ChatSettings = {
   menu: [],
   autoFlush: true,
   allowedUploadTypes: ["image/gif", "image/png", "image/jpeg"],
-  allowedUploadSize: 2500000,
   color: "blue",
   greetingMessage: "Welcome !",
   avatarUrl: "",
@@ -106,7 +103,6 @@ export const SettingsProvider: React.FC<ChatSettingsProviderProps> = ({
       titleImageUrl: settings.avatar_url,
       menu: settings.menu,
       allowedUploadTypes: settings.allowed_upload_types.split(","),
-      allowedUploadSize: settings.allowed_upload_size,
       inputDisabled: settings.input_disabled,
       color: settings.theme_color,
       greetingMessage: settings.greeting_message,
