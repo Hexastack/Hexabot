@@ -62,7 +62,6 @@ import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 import { buildURL } from "@/utils/URL";
 
-import { NlpImportDialog } from "../NlpImportDialog";
 import { NlpSampleDialog } from "../NlpSampleDialog";
 
 const NLP_SAMPLE_TYPE_COLORS = {
@@ -150,7 +149,6 @@ export default function NlpSample() {
   );
   const deleteDialogCtl = useDialog<string>(false);
   const editDialogCtl = useDialog<INlpDatasetSample>(false);
-  const importDialogCtl = useDialog<never>(false);
   const actionColumns = getActionsColumn<INlpSample>(
     [
       {
@@ -315,7 +313,6 @@ export default function NlpSample() {
           }
         }}
       />
-      <NlpImportDialog {...getDisplayDialogs(importDialogCtl)} />
       <Grid container alignItems="center">
         <Grid
           container
