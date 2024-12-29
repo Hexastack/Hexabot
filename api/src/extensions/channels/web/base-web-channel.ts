@@ -673,16 +673,11 @@ export default abstract class BaseWebChannelHandler<
 
         try {
           const file = req.file;
-          const attachment = await this.attachmentService.store(
-            config.parameters.storageMode === 'memory'
-              ? file.buffer
-              : file.path,
-            {
-              name: file.originalname,
-              size: file.size,
-              type: file.mimetype,
-            },
-          );
+          const attachment = await this.attachmentService.store(file, {
+            name: file.originalname,
+            size: file.size,
+            type: file.mimetype,
+          });
           next(null, {
             type: Attachment.getTypeByMime(attachment.type),
             url: Attachment.getAttachmentUrl(attachment.id, attachment.name),

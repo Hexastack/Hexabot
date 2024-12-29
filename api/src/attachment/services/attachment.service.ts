@@ -191,11 +191,11 @@ export class AttachmentService extends BaseService<Attachment> {
    * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
    * Otherwise, uploads files to the local directory.
    *
-   * @param file - The file path or the Buffer / Readable
+   * @param file - The file
    * @returns A promise that resolves to an array of uploaded attachments.
    */
   async store(
-    file: Buffer | Readable | string,
+    file: Buffer | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
   ): Promise<Attachment> {
     if (this.getStoragePlugin()) {
@@ -210,12 +210,7 @@ export class AttachmentService extends BaseService<Attachment> {
         throw new Error('Invalid file path');
       }
 
-      if (typeof file === 'string') {
-        // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
-        const srcFilePath = path.resolve(file);
-        await fsPromises.copyFile(srcFilePath, filePath);
-        await fsPromises.unlink(srcFilePath);
-      } else if (Buffer.isBuffer(file)) {
+      if (Buffer.isBuffer(file)) {
         await fsPromises.writeFile(filePath, file);
       } else if (file instanceof Readable) {
         await new Promise((resolve, reject) => {
@@ -225,7 +220,14 @@ export class AttachmentService extends BaseService<Attachment> {
           writeStream.on('error', reject);
         });
       } else {
-        throw new TypeError('Unrecognized file object');
+        if (file.path) {
+          // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
+          const srcFilePath = path.resolve(file.path);
+          await fsPromises.copyFile(srcFilePath, filePath);
+          await fsPromises.unlink(srcFilePath);
+        } else {
+          await fsPromises.writeFile(filePath, file.buffer);
+        }
       }
 
       const location = filePath.replace(dirPath, '');
