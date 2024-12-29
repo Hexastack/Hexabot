@@ -17,6 +17,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import fetch from 'node-fetch';
+import sanitizeFilename from 'sanitize-filename';
 
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
@@ -203,12 +204,17 @@ export class AttachmentService extends BaseService<Attachment> {
     } else {
       const dirPath = path.join(config.parameters.uploadDir);
       const uniqueFilename = generateUniqueFilename(metadata.name);
-      const filePath = path.resolve(dirPath, uniqueFilename);
+      const filePath = path.resolve(dirPath, sanitizeFilename(uniqueFilename));
+
+      if (!filePath.startsWith(dirPath)) {
+        throw new Error('Invalid file path');
+      }
 
       if (typeof file === 'string') {
         // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
-        await fsPromises.copyFile(file, filePath);
-        await fsPromises.unlink(file);
+        const srcFilePath = path.resolve(file);
+        await fsPromises.copyFile(srcFilePath, filePath);
+        await fsPromises.unlink(srcFilePath);
       } else if (Buffer.isBuffer(file)) {
         await fsPromises.writeFile(filePath, file);
       } else if (file instanceof Readable) {
