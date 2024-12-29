@@ -6,14 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { promises as fsPromises } from 'fs';
-import path from 'path';
-
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
-import multer, { diskStorage } from 'multer';
-import sanitize from 'sanitize-filename';
+import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,7 +27,6 @@ import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
   ContentElement,
-  FileType,
   IncomingMessage,
   OutgoingMessage,
   OutgoingMessageFormat,
@@ -202,6 +197,16 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
+   * Checks if a given message is an IncomingMessage
+   *
+   * @param message Any type of message
+   * @returns True, if it's a incoming message
+   */
+  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
+    return 'sender' in message && !!message.sender;
+  }
+
+  /**
    * Adapt the message structure for web channel
    *
    * @param messages - The messages to be formatted
@@ -209,27 +214,32 @@ export default abstract class BaseWebChannelHandler<
    * @returns Formatted message
    */
   protected formatMessages(messages: AnyMessage[]): Web.Message[] {
-    return messages.map((anyMessage: AnyMessage) => {
-      if ('sender' in anyMessage && anyMessage.sender) {
-        return {
-          ...this.formatIncomingHistoryMessage(anyMessage as IncomingMessage),
+    const formattedMessages: Web.Message[] = [];
+
+    for (const anyMessage of messages) {
+      if (this.isIncomingMessage(anyMessage)) {
+        const message = this.formatIncomingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           createdAt: anyMessage.createdAt,
-        } as Web.IncomingMessage;
+        });
       } else {
-        const outgoingMessage = anyMessage as OutgoingMessage;
-        return {
-          ...this.formatOutgoingHistoryMessage(outgoingMessage),
+        const message = this.formatOutgoingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: outgoingMessage.mid,
-          handover: !!outgoingMessage.handover,
-          createdAt: outgoingMessage.createdAt,
-        } as Web.OutgoingMessage;
+          mid: anyMessage.mid,
+          handover: !!anyMessage.handover,
+          createdAt: anyMessage.createdAt,
+        });
       }
-    });
+    }
+
+    return formattedMessages;
   }
 
   /**
@@ -373,7 +383,8 @@ export default abstract class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     } else if (
-      ('isSocket' in req && !!req.isSocket !== req.session.web.isSocket) ||
+      (this.isSocketRequest(req) &&
+        !!req.isSocket !== req.session.web.isSocket) ||
       !Array.isArray(req.session.web.messageQueue)
     ) {
       this.logger.warn(
@@ -462,7 +473,7 @@ export default abstract class BaseWebChannelHandler<
 
     req.session.web = {
       profile,
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       messageQueue: [],
       polling: false,
     };
@@ -472,12 +483,12 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Return message queue (using by long polling case only)
    *
-   * @param req
-   * @param res
+   * @param req HTTP Express Request
+   * @param res HTTP Express Response
    */
   private getMessageQueue(req: Request, res: Response) {
     // Polling not authorized when using websockets
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       this.logger.warn(
         'Web Channel Handler : Polling not authorized when using websockets',
       );
@@ -548,13 +559,13 @@ export default abstract class BaseWebChannelHandler<
   ) {
     this.logger.debug(
       'Web Channel Handler : subscribe (isSocket=' +
-        ('isSocket' in req && !!req.isSocket) +
+        this.isSocketRequest(req) +
         ')',
     );
     try {
       const profile = await this.getOrCreateSession(req);
       // Join socket room when using websocket
-      if ('isSocket' in req && !!req.isSocket) {
+      if (this.isSocketRequest(req)) {
         try {
           await req.socket.join(profile.foreign_id);
         } catch (err) {
@@ -581,134 +592,99 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Upload file as attachment if provided
    *
-   * @param upload
-   * @param filename
-   */
-  private async storeAttachment(
-    upload: Omit<Web.IncomingAttachmentMessageData, 'url' | 'file'>,
-    filename: string,
-    next: (
-      err: Error | null,
-      payload: { type: string; url: string } | false,
-    ) => void,
-  ): Promise<void> {
-    try {
-      this.logger.debug('Web Channel Handler : Successfully uploaded file');
-
-      const attachment = await this.attachmentService.create({
-        name: upload.name || '',
-        type: upload.type || 'text/txt',
-        size: upload.size || 0,
-        location: filename,
-        channel: { web: {} },
-      });
-
-      this.logger.debug(
-        'Web Channel Handler : Successfully stored file as attachment',
-      );
-
-      next(null, {
-        type: Attachment.getTypeByMime(attachment.type),
-        url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-      });
-    } catch (err) {
-      this.logger.error(
-        'Web Channel Handler : Unable to store uploaded file as attachment',
-        err,
-      );
-      next(err, false);
-    }
-  }
-
-  /**
-   * Upload file as attachment if provided
-   *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
+   * @param next Callback Function
    */
   async handleFilesUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
     next: (
       err: null | Error,
-      result: { type: string; url: string } | false,
+      result?: Web.IncomingAttachmentMessageData,
     ) => void,
   ): Promise<void> {
-    const data: Web.IncomingMessage = req.body;
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('Web Channel Handler : No session provided');
-      return next(null, false);
-    }
-    // Check if any file is provided
-    if (!data || !data.type || data.type !== 'file') {
-      this.logger.debug('Web Channel Handler : No files provided');
-      return next(null, false);
+      return next(null);
     }
 
-    // Parse json form data (in case of content-type multipart/form-data)
-    data.data =
-      typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-
-    // Check max size upload
-    const upload = data.data;
-    if (typeof upload.size === 'undefined') {
-      return next(new Error('File upload probably failed.'), false);
-    }
-
-    // Store file as attachment
-    const dirPath = path.join(config.parameters.uploadDir);
-    const sanitizedFilename = sanitize(
-      `${req.session.web.profile.id}_${+new Date()}_${upload.name}`,
-    );
-    const filePath = path.resolve(dirPath, sanitizedFilename);
-
-    if (!filePath.startsWith(dirPath)) {
-      return next(new Error('Invalid file path!'), false);
-    }
-
-    if ('isSocket' in req && req.isSocket) {
-      // @TODO : test this
+    if (this.isSocketRequest(req)) {
       try {
-        await fsPromises.writeFile(filePath, upload.file);
-        this.storeAttachment(upload, sanitizedFilename, next);
+        const { type, data } = req.body as Web.IncomingMessage;
+
+        // Check if any file is provided
+        if (type !== 'file' || !('file' in data) || !data.file) {
+          this.logger.debug('Web Channel Handler : No files provided');
+          return next(null);
+        }
+
+        const size = Buffer.byteLength(data.file);
+
+        if (size > config.parameters.maxUploadSize) {
+          return next(new Error('Max upload size has been exceeded'));
+        }
+
+        const attachment = await this.attachmentService.store(data.file, {
+          name: data.name,
+          size: Buffer.byteLength(data.file),
+          type: data.type,
+        });
+        next(null, {
+          type: Attachment.getTypeByMime(attachment.type),
+          url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
+        });
       } catch (err) {
         this.logger.error(
           'Web Channel Handler : Unable to write uploaded file',
           err,
         );
-        return next(new Error('Unable to upload file!'), false);
+        return next(new Error('Unable to upload file!'));
       }
     } else {
       const upload = multer({
-        storage: diskStorage({
-          destination: dirPath, // Set the destination directory for file storage
-          filename: (_req, _file, cb) => {
-            cb(null, sanitizedFilename); // Set the file name
-          },
-        }),
+        limits: {
+          fileSize: config.parameters.maxUploadSize,
+        },
+        storage: (() => {
+          if (config.parameters.storageMode === 'memory') {
+            return memoryStorage();
+          } else {
+            return diskStorage({});
+          }
+        })(),
       }).single('file'); // 'file' is the field name in the form
 
-      upload(req as Request, res as Response, (err) => {
+      upload(req as Request, res as Response, async (err?: any) => {
         if (err) {
           this.logger.error(
             'Web Channel Handler : Unable to write uploaded file',
             err,
           );
-          return next(new Error('Unable to upload file!'), false);
+          return next(new Error('Unable to upload file!'));
         }
-        // @TODO : test upload
-        // @ts-expect-error @TODO : This needs to be fixed at a later point
-        const file = req.file;
-        this.storeAttachment(
-          {
-            name: file.filename,
-            type: file.mimetype as FileType, // @Todo : test this
+
+        // Check if any file is provided
+        if (!req.file) {
+          this.logger.debug('Web Channel Handler : No files provided');
+          return next(null);
+        }
+
+        try {
+          const file = req.file;
+          const attachment = await this.attachmentService.store(file, {
+            name: file.originalname,
             size: file.size,
-          },
-          file.path.replace(dirPath, ''),
-          next,
-        );
+            type: file.mimetype,
+          });
+          next(null, {
+            type: Attachment.getTypeByMime(attachment.type),
+            url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
+          });
+        } catch (err) {
+          next(err);
+        }
       });
     }
   }
@@ -716,12 +692,12 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Returns the request client IP address
    *
-   * @param req
+   * @param req Either a HTTP request or a WS Request (Synthetic object)
    *
    * @returns IP Address
    */
   protected getIpAddress(req: Request | SocketRequest): string {
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       return req.socket.handshake.address;
     } else if (Array.isArray(req.ips) && req.ips.length > 0) {
       // If config.http.trustProxy is enabled, this variable contains the IP addresses
@@ -736,7 +712,7 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Return subscriber channel specific attributes
    *
-   * @param req
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    *
    * @returns The subscriber channel's attributes
    */
@@ -744,7 +720,7 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
   ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       ipAddress: this.getIpAddress(req),
       agent: req.headers['user-agent'],
     };
@@ -753,20 +729,31 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Handle channel event (probably a message)
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   _handleEvent(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ): void {
-    const data: Web.IncomingMessage = req.body;
+    // @TODO: perform payload validation
+    if (!req.body) {
+      this.logger.debug('Web Channel Handler : Empty body');
+      res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
+      return;
+    } else {
+      // Parse json form data (in case of content-type multipart/form-data)
+      req.body.data =
+        typeof req.body.data === 'string'
+          ? JSON.parse(req.body.data)
+          : req.body.data;
+    }
+
     this.validateSession(req, res, (profile) => {
       this.handleFilesUpload(
         req,
         res,
-        // @ts-expect-error @TODO : This needs to be fixed at a later point @TODO
-        (err: Error, upload: Web.IncomingMessageData) => {
+        (err: Error, data?: Web.IncomingAttachmentMessageData) => {
           if (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',
@@ -777,14 +764,18 @@ export default abstract class BaseWebChannelHandler<
               .json({ err: 'Web Channel Handler : File upload failed!' });
           }
           // Set data in file upload case
-          if (upload) {
-            data.data = upload;
-          }
+          const body: Web.IncomingMessage = data
+            ? {
+                ...req.body,
+                data,
+              }
+            : req.body;
+
           const channelAttrs = this.getChannelAttributes(req);
-          const event = new WebEventWrapper<N>(this, data, channelAttrs);
+          const event = new WebEventWrapper<N>(this, body, channelAttrs);
           if (event.getEventType() === 'message') {
             // Handler sync message sent by chabbot
-            if (data.sync && data.author === 'chatbot') {
+            if (body.sync && body.author === 'chatbot') {
               const sentMessage: MessageCreateDto = {
                 mid: event.getId(),
                 message: event.getMessage() as StdOutgoingMessage,
@@ -819,10 +810,20 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
+   * Checks if a given request is a socket request
+   *
+   * @param req Either a HTTP express request or a WS request
+   * @returns True if it's a WS request
+   */
+  isSocketRequest(req: Request | SocketRequest): req is SocketRequest {
+    return 'isSocket' in req && req.isSocket;
+  }
+
+  /**
    * Process incoming Web Channel data (finding out its type and assigning it to its proper handler)
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
     const settings = await this.getSettings();
@@ -830,7 +831,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       await this.checkRequest(req, res);
       if (req.method === 'GET') {
-        if (!('isSocket' in req) && req.query._get) {
+        if (!this.isSocketRequest(req) && req.query._get) {
           switch (req.query._get) {
             case 'settings':
               this.logger.debug(

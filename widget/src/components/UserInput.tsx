@@ -11,6 +11,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
+import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { TOutgoingMessageType } from "../types/message.types";
 import { OutgoingMessageState } from "../types/state.types";
@@ -27,6 +28,7 @@ import Suggestions from "./Suggestions";
 import "./UserInput.scss";
 
 const UserInput: React.FC = () => {
+  const { maxUploadSize } = useConfig();
   const { t } = useTranslation();
   const { colors } = useColors();
   const {
@@ -43,7 +45,6 @@ const UserInput: React.FC = () => {
     focusOnOpen,
     autoFlush,
     allowedUploadTypes,
-    allowedUploadSize,
     showEmoji,
     showLocation,
     showFile,
@@ -106,7 +107,7 @@ const UserInput: React.FC = () => {
 
       if (!typeCheck) {
         setFileError(t("messages.file_message.unsupported_file_type"));
-      } else if (file.size > (allowedUploadSize || 0)) {
+      } else if (file.size > maxUploadSize) {
         setFileError(t("messages.file_message.unsupported_file_size"));
       } else {
         send({

@@ -6,20 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import "normalize.css";
+import "./ChatWidget.css";
 import Launcher from "./components/Launcher";
 import UserSubscription from "./components/UserSubscription";
 import ChatProvider from "./providers/ChatProvider";
 import { ColorProvider } from "./providers/ColorProvider";
-import { Config, ConfigProvider } from "./providers/ConfigProvider";
+import { ConfigProvider } from "./providers/ConfigProvider";
 import { CookieProvider } from "./providers/CookieProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider from "./providers/WidgetProvider";
-import "normalize.css";
-import "./ChatWidget.css";
+import { Config } from "./types/config.types";
 
-function ChatWidget(props: Config) {
+function ChatWidget(props: Partial<Config>) {
   return (
     <ConfigProvider {...props}>
       <TranslationProvider>

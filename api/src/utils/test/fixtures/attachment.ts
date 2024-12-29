@@ -18,7 +18,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     size: 3539,
     location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
     channel: {
-      dimelo: {
+      'web-channel': {
         id: '1',
       },
     },
@@ -30,7 +30,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     size: 3539,
     location: '39991e51-55c6-4a26-9176-b6ba04f180dd.jpg',
     channel: {
-      dimelo: {
+      'web-channel': {
         id: '2',
       },
     },

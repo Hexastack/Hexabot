@@ -216,6 +216,10 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
         };
       }
       case IncomingMessageType.attachments:
+        if (!('url' in this._adapter.raw.data)) {
+          throw new Error('Attachment has not been processed');
+        }
+
         return {
           type: PayloadType.attachments,
           attachments: {
@@ -263,6 +267,11 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
 
       case IncomingMessageType.attachments: {
         const attachment = this._adapter.raw.data;
+
+        if (!('url' in attachment)) {
+          throw new Error('Attachment has not been processed');
+        }
+
         return {
           type: PayloadType.attachments,
           serialized_text: `attachment:${attachment.type}:${attachment.url}`,

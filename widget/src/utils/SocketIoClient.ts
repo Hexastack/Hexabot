@@ -8,7 +8,7 @@
 
 import { io, ManagerOptions, Socket, SocketOptions } from "socket.io-client";
 
-import { Config } from "../providers/ConfigProvider";
+import { Config } from "../types/config.types";
 import {
   IOIncomingMessage,
   IOOutgoingMessage,

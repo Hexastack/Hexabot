@@ -9,54 +9,57 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsNotEmpty,
   IsObject,
   IsOptional,
-  MaxLength,
-  IsNotEmpty,
   IsString,
+  MaxLength,
 } from 'class-validator';
 
+import { ChannelName } from '@/channel/types';
 import { ObjectIdDto } from '@/utils/dto/object-id.dto';
 
-export class AttachmentCreateDto {
+export class AttachmentMetadataDto {
   /**
-   * Attachment channel
+   * Attachment original file name
    */
-  @ApiPropertyOptional({ description: 'Attachment channel', type: Object })
-  @IsNotEmpty()
-  @IsObject()
-  channel?: Partial<Record<string, any>>;
-
-  /**
-   * Attachment location
-   */
-  @ApiProperty({ description: 'Attachment location', type: String })
-  @IsNotEmpty()
-  @IsString()
-  location: string;
-
-  /**
-   * Attachment name
-   */
-  @ApiProperty({ description: 'Attachment name', type: String })
+  @ApiProperty({ description: 'Attachment original file name', type: String })
   @IsNotEmpty()
   @IsString()
   name: string;
 
   /**
-   * Attachment size
+   * Attachment size in bytes
    */
-  @ApiProperty({ description: 'Attachment size', type: Number })
+  @ApiProperty({ description: 'Attachment size in bytes', type: Number })
   @IsNotEmpty()
   size: number;
 
   /**
-   * Attachment type
+   * Attachment MIME type
    */
-  @ApiProperty({ description: 'Attachment type', type: String })
+  @ApiProperty({ description: 'Attachment MIME type', type: String })
   @IsNotEmpty()
   @IsString()
   type: string;
+
+  /**
+   * Attachment specia channel(s) metadata
+   */
+  @ApiPropertyOptional({ description: 'Attachment channel', type: Object })
+  @IsNotEmpty()
+  @IsObject()
+  channel?: Partial<Record<ChannelName, any>>;
+}
+
+export class AttachmentCreateDto extends AttachmentMetadataDto {
+  /**
+   * Attachment location (file would/should be stored under a unique name)
+   */
+  @ApiProperty({ description: 'Attachment location', type: String })
+  @IsNotEmpty()
+  @IsString()
+  location: string;
 }
 
 export class AttachmentDownloadDto extends ObjectIdDto {

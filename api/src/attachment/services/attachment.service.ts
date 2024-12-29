@@ -6,8 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs, { createReadStream } from 'fs';
+import fs, { createReadStream, promises as fsPromises } from 'fs';
 import path, { join } from 'path';
+import { Readable } from 'stream';
 
 import {
   Injectable,
@@ -16,6 +17,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import fetch from 'node-fetch';
+import sanitizeFilename from 'sanitize-filename';
 
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
@@ -24,9 +26,14 @@ import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment } from '../schemas/attachment.schema';
-import { fileExists, getStreamableFile } from '../utilities';
+import {
+  fileExists,
+  generateUniqueFilename,
+  getStreamableFile,
+} from '../utilities';
 
 @Injectable()
 export class AttachmentService extends BaseService<Attachment> {
@@ -178,6 +185,57 @@ export class AttachmentService extends BaseService<Attachment> {
     }
 
     return uploadedFiles;
+  }
+
+  /**
+   * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
+   * Otherwise, uploads files to the local directory.
+   *
+   * @param file - The file
+   * @returns A promise that resolves to an array of uploaded attachments.
+   */
+  async store(
+    file: Buffer | Readable | Express.Multer.File,
+    metadata: AttachmentMetadataDto,
+  ): Promise<Attachment> {
+    if (this.getStoragePlugin()) {
+      const storedDto = await this.getStoragePlugin().store(file, metadata);
+      return await this.create(storedDto);
+    } else {
+      const dirPath = path.join(config.parameters.uploadDir);
+      const uniqueFilename = generateUniqueFilename(metadata.name);
+      const filePath = path.resolve(dirPath, sanitizeFilename(uniqueFilename));
+
+      if (!filePath.startsWith(dirPath)) {
+        throw new Error('Invalid file path');
+      }
+
+      if (Buffer.isBuffer(file)) {
+        await fsPromises.writeFile(filePath, file);
+      } else if (file instanceof Readable) {
+        await new Promise((resolve, reject) => {
+          const writeStream = fs.createWriteStream(filePath);
+          file.pipe(writeStream);
+          writeStream.on('finish', resolve);
+          writeStream.on('error', reject);
+        });
+      } else {
+        if (file.path) {
+          // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
+          const srcFilePath = path.resolve(file.path);
+          await fsPromises.copyFile(srcFilePath, filePath);
+          await fsPromises.unlink(srcFilePath);
+        } else {
+          await fsPromises.writeFile(filePath, file.buffer);
+        }
+      }
+
+      const location = filePath.replace(dirPath, '');
+      return await this.create({
+        ...metadata,
+        location,
+      });
+    }
   }
 
   /**
