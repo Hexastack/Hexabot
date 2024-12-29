@@ -59,14 +59,19 @@ export namespace Web {
     };
   };
 
-  export type IncomingAttachmentMessageData = {
-    type: FileType; // mime type in a file case
-    url: string; // file url
-    // Only when uploaded
-    size?: number; // file size
-    name?: string;
-    file?: any;
-  };
+  // Depending if it's has been processed or not
+  export type IncomingAttachmentMessageData =
+    // After upload and attachment is processed
+    | {
+        type: FileType;
+        url: string; // file download url
+      } // Before upload and attachment is processed
+    | {
+        type: string; // mime type
+        size: number; // file size
+        name: string;
+        file: Buffer;
+      };
 
   export type IncomingMessageData =
     | IncomingTextMessageData

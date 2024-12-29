@@ -6,9 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Readable } from 'stream';
+
 import { Injectable, StreamableFile } from '@nestjs/common';
 
-import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
+import {
+  AttachmentCreateDto,
+  AttachmentMetadataDto,
+} from '@/attachment/dto/attachment.dto';
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 
 import { BasePlugin } from './base-plugin.service';
@@ -34,4 +39,9 @@ export abstract class BaseStoragePlugin extends BasePlugin {
   abstract downloadProfilePic(name: string): Promise<StreamableFile>;
 
   readAsBuffer?(attachment: Attachment): Promise<Buffer>;
+
+  store?(
+    file: Buffer | Readable | string,
+    metadata: AttachmentMetadataDto,
+  ): Promise<Attachment>;
 }
