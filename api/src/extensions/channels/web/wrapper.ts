@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import {
@@ -66,14 +67,13 @@ type WebEventAdapter =
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
+      attachment: Attachment;
     };
 
 // eslint-disable-next-line prettier/prettier
-export default class WebEventWrapper<N extends ChannelName> extends EventWrapper<
-  WebEventAdapter,
-  Web.Event,
-  N
-> {
+export default class WebEventWrapper<
+  N extends ChannelName,
+> extends EventWrapper<WebEventAdapter, Web.Event, N> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -97,7 +97,7 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
    *
    * @param event - The message event received
    */
-  _init(event: Web.Event) {
+  async _init(event: Web.Event) {
     switch (event.type) {
       case Web.StatusEventType.delivery:
         this._adapter.eventType = StdEventType.delivery;
@@ -133,7 +133,6 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
         this._adapter.eventType = StdEventType.unknown;
         break;
     }
-    this._adapter.raw = event;
   }
 
   /**
@@ -216,16 +215,16 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
         };
       }
       case IncomingMessageType.attachments:
-        if (!('url' in this._adapter.raw.data)) {
+        if (!this._adapter.attachment) {
           throw new Error('Attachment has not been processed');
         }
 
         return {
           type: PayloadType.attachments,
           attachments: {
-            type: this._adapter.raw.data.type,
+            type: Attachment.getTypeByMime(this._adapter.attachment.type),
             payload: {
-              url: this._adapter.raw.data.url,
+              attachment_id: this._adapter.attachment.id,
             },
           },
         };
@@ -266,19 +265,19 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
       }
 
       case IncomingMessageType.attachments: {
-        const attachment = this._adapter.raw.data;
-
-        if (!('url' in attachment)) {
+        const attachment = this._adapter.attachment;
+        if (!attachment) {
           throw new Error('Attachment has not been processed');
         }
 
+        const type = Attachment.getTypeByMime(attachment.type);
         return {
           type: PayloadType.attachments,
-          serialized_text: `attachment:${attachment.type}:${attachment.url}`,
+          serialized_text: `attachment:${type}:${attachment.name}`,
           attachment: {
-            type: attachment.type,
+            type,
             payload: {
-              url: attachment.url,
+              attachment_id: attachment.id,
             },
           },
         };

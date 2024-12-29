@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
@@ -59,7 +59,7 @@ import { ValidateAccountService } from './services/validate-account.service';
       session: true,
     }),
     JwtModule,
-    AttachmentModule,
+    forwardRef(() => AttachmentModule),
   ],
   providers: [
     PermissionSeeder,
@@ -90,6 +90,6 @@ import { ValidateAccountService } from './services/validate-account.service';
     PermissionController,
     ModelController,
   ],
-  exports: [UserService, PermissionService],
+  exports: [UserService, PermissionService, ModelService],
 })
 export class UserModule {}

@@ -7,28 +7,32 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Transform, Type } from 'class-transformer';
+import { Schema as MongooseSchema } from 'mongoose';
 
+import { ChannelName } from '@/channel/types';
+import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
+import { User } from '@/user/schemas/user.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { buildURL } from '@/utils/helpers/URL';
-import { THydratedDocument } from '@/utils/types/filter.types';
+import {
+  TFilterPopulateFields,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
+import {
+  AttachmentContext,
+  AttachmentOwnerType,
+  TAttachmentContext,
+  TAttachmentOwnerType,
+} from '../types';
 import { MIME_REGEX } from '../utilities';
 
-// TODO: Interface AttachmentAttrs declared, currently not used
-
-export interface AttachmentAttrs {
-  name: string;
-  type: string;
-  size: number;
-  location: string;
-  channel?: Record<string, any>;
-}
-
 @Schema({ timestamps: true })
-export class Attachment extends BaseSchema {
+export class AttachmentStub extends BaseSchema {
   /**
    * The name of the attachment.
    */
@@ -72,11 +76,32 @@ export class Attachment extends BaseSchema {
    * Optional property representing the attachment channel, can hold a partial record of various channel data.
    */
   @Prop({ type: JSON })
-  channel?: Partial<Record<string, any>>;
+  channel?: Partial<Record<ChannelName, any>>;
+
+  /**
+   * Object ID of the owner (depending on the owner type)
+   */
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    refPath: 'ownerType',
+    default: null,
+  })
+  owner?: unknown;
+
+  /**
+   * Type of the owner (depending on the owner type)
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentOwnerType) })
+  ownerType?: TAttachmentOwnerType;
+
+  /**
+   * Context of the attachment
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentContext) })
+  context: TAttachmentContext;
 
   /**
    * Optional property representing the URL of the attachment.
-   *
    */
   url?: string;
 
@@ -114,6 +139,24 @@ export class Attachment extends BaseSchema {
   }
 }
 
+@Schema({ timestamps: true })
+export class Attachment extends AttachmentStub {
+  @Transform(({ obj }) => obj.owner?.toString() || null)
+  owner?: string | null;
+}
+
+@Schema({ timestamps: true })
+export class UserAttachmentFull extends AttachmentStub {
+  @Type(() => User)
+  owner: User | null;
+}
+
+@Schema({ timestamps: true })
+export class SubscriberAttachmentFull extends AttachmentStub {
+  @Type(() => Subscriber)
+  owner: Subscriber | null;
+}
+
 export type AttachmentDocument = THydratedDocument<Attachment>;
 
 export const AttachmentModel: ModelDefinition = LifecycleHookManager.attach({
@@ -132,3 +175,10 @@ AttachmentModel.schema.virtual('url').get(function () {
 });
 
 export default AttachmentModel.schema;
+
+export type AttachmentPopulate = keyof TFilterPopulateFields<
+  Attachment,
+  AttachmentStub
+>;
+
+export const ATTACHMENT_POPULATE: AttachmentPopulate[] = ['owner'];

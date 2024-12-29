@@ -64,11 +64,17 @@ export namespace Web {
     // After upload and attachment is processed
     | {
         type: FileType;
-        url: string; // file download url
-      } // Before upload and attachment is processed
+        // Attachment id
+        id: string;
+        /** @deprecated use id instead */
+        url?: string;
+      }
+    // Before upload and attachment is processed
     | {
-        type: string; // mime type
-        size: number; // file size
+        // MIME Type
+        type: string;
+        // File size
+        size: number;
         name: string;
         file: Buffer;
       };

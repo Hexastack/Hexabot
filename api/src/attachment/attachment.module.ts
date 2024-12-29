@@ -10,8 +10,12 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
+import { UserModule } from '@/user/user.module';
+
 import { AttachmentController } from './controllers/attachment.controller';
 import { AttachmentRepository } from './repositories/attachment.repository';
+import { SubscriberAttachmentRepository } from './repositories/subscriber-attachment.repository';
+import { UserAttachmentRepository } from './repositories/user-attachment.repository';
 import { AttachmentModel } from './schemas/attachment.schema';
 import { AttachmentService } from './services/attachment.service';
 
@@ -21,8 +25,14 @@ import { AttachmentService } from './services/attachment.service';
     PassportModule.register({
       session: true,
     }),
+    UserModule,
   ],
-  providers: [AttachmentRepository, AttachmentService],
+  providers: [
+    AttachmentRepository,
+    UserAttachmentRepository,
+    SubscriberAttachmentRepository,
+    AttachmentService,
+  ],
   controllers: [AttachmentController],
   exports: [AttachmentService],
 })

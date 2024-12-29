@@ -81,6 +81,7 @@ export type Config = {
     storageMode: 'disk' | 'memory';
     maxUploadSize: number;
     appName: string;
+    signedUrl: TJwtOptions;
   };
   pagination: {
     limit: number;

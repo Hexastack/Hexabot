@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { extname } from 'path';
-
 import {
   BadRequestException,
   Controller,
@@ -18,19 +16,21 @@ import {
   Param,
   Post,
   Query,
+  Req,
   StreamableFile,
+  UnauthorizedException,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -38,12 +38,17 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { AttachmentDownloadDto } from '../dto/attachment.dto';
+import {
+  AttachmentContextParamDto,
+  AttachmentDownloadDto,
+} from '../dto/attachment.dto';
+import { AttachmentGuard } from '../guards/attachment-ability.guard';
 import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
+@UseGuards(AttachmentGuard)
 export class AttachmentController extends BaseController<Attachment> {
   constructor(
     private readonly attachmentService: AttachmentService,
@@ -61,7 +66,7 @@ export class AttachmentController extends BaseController<Attachment> {
   async filterCount(
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type'],
+        allowedFields: ['name', 'type', 'context'],
       }),
     )
     filters?: TFilterQuery<Attachment>,
@@ -72,10 +77,12 @@ export class AttachmentController extends BaseController<Attachment> {
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Attachment> {
     const doc = await this.attachmentService.findOne(id);
+
     if (!doc) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
+
     return doc;
   }
 
@@ -90,7 +97,9 @@ export class AttachmentController extends BaseController<Attachment> {
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
     @Query(
-      new SearchFilterPipe<Attachment>({ allowedFields: ['name', 'type'] }),
+      new SearchFilterPipe<Attachment>({
+        allowedFields: ['name', 'type', 'context'],
+      }),
     )
     filters: TFilterQuery<Attachment>,
   ) {
@@ -114,26 +123,41 @@ export class AttachmentController extends BaseController<Attachment> {
         if (config.parameters.storageMode === 'memory') {
           return memoryStorage();
         } else {
-          return diskStorage({
-            destination: config.parameters.uploadDir,
-            filename: (req, file, cb) => {
-              const name = file.originalname.split('.')[0];
-              const extension = extname(file.originalname);
-              cb(null, `${name}-${uuidv4()}${extension}`);
-            },
-          });
+          return diskStorage({});
         }
       })(),
     }),
   )
   async uploadFile(
+    @Req() req: Request,
     @UploadedFiles() files: { file: Express.Multer.File[] },
+    @Query() { context }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
     }
 
-    return await this.attachmentService.uploadFiles(files);
+    const userId = req.session?.passport?.user?.id;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'Unexpected Error: Only authenticated users are allowed to upload',
+      );
+    }
+
+    const attachments = [];
+    for (const file of files.file) {
+      const attachment = await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        context,
+        owner: userId,
+        ownerType: 'User',
+      });
+      attachments.push(attachment);
+    }
+
+    return attachments;
   }
 
   /**
@@ -142,7 +166,6 @@ export class AttachmentController extends BaseController<Attachment> {
    * @param  params - The parameters identifying the attachment to download.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  @Roles('public')
   @Get('download/:id/:filename?')
   async download(
     @Param() params: AttachmentDownloadDto,

@@ -11,7 +11,7 @@ import { forwardRef, useState } from "react";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
+import { IAttachment, TAttachmentContext } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -27,6 +27,7 @@ type MultipleAttachmentInputProps = {
   onChange?: (ids: string[]) => void;
   error?: boolean;
   helperText?: string;
+  context: TAttachmentContext;
 };
 
 const MultipleAttachmentInput = forwardRef<
@@ -44,6 +45,7 @@ const MultipleAttachmentInput = forwardRef<
       onChange,
       error,
       helperText,
+      context,
     },
     ref,
   ) => {
@@ -106,6 +108,7 @@ const MultipleAttachmentInput = forwardRef<
             accept={accept}
             enableMediaLibrary={enableMediaLibrary}
             onChange={(attachment) => handleChange(attachment)}
+            context={context}
           />
         )}
         {helperText && (

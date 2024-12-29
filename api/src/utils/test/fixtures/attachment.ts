@@ -22,8 +22,8 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
         id: '1',
       },
     },
+    context: 'block_attachment',
   },
-
   {
     name: 'store2.jpg',
     type: 'image/jpeg',
@@ -34,6 +34,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
         id: '2',
       },
     },
+    context: 'block_attachment',
   },
 ];
 

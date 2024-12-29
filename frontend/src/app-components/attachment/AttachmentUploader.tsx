@@ -16,7 +16,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
+import { IAttachment, TAttachmentContext } from "@/types/attachment.types";
 
 import { AttachmentDialog } from "./AttachmentDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -67,6 +67,7 @@ export type FileUploadProps = {
   enableMediaLibrary?: boolean;
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
+  context: TAttachmentContext;
 };
 
 const AttachmentUploader: FC<FileUploadProps> = ({
@@ -74,6 +75,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   enableMediaLibrary,
   onChange,
   onUploadComplete,
+  context,
 }) => {
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
@@ -103,10 +105,16 @@ const AttachmentUploader: FC<FileUploadProps> = ({
 
       if (file) {
         const acceptedTypes = accept.split(",");
-        const isValidType = acceptedTypes.some(
-          (type) =>
-            file.type === type || file.name.endsWith(type.replace(".*", "")),
-        );
+        const isValidType = acceptedTypes.some((mimeType) => {
+          const [type, subtype] = mimeType.split("/");
+
+          if (!type || !subtype) return false; // Ensure valid MIME type
+
+          return (
+            file.type === mimeType ||
+            (subtype === "*" && file.type.startsWith(`${type}/`))
+          );
+        });
 
         if (!isValidType) {
           toast.error(t("message.invalid_file_type"));
@@ -114,7 +122,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
           return;
         }
 
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };
@@ -123,7 +131,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       const file = event.dataTransfer.files.item(0);
 
       if (file) {
-        uploadAttachment(file);
+        uploadAttachment({ file, context });
       }
     }
   };

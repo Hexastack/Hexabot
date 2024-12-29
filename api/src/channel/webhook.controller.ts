@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express'; // Import the Express request and response types
 
 import { LoggerService } from '@/logger/logger.service';
@@ -20,6 +20,28 @@ export class WebhookController {
     private readonly channelService: ChannelService,
     private readonly logger: LoggerService,
   ) {}
+
+  /**
+   * Handles GET requests to download a file
+   *
+   * @param channel - The name of the channel for which the request is being sent.
+   * @param filename - The name of the requested file
+   * @param t - The JWT Token query param.
+   * @param req - The HTTP express request object.
+   *
+   * @returns A promise that resolves a streamable file.
+   */
+  @Roles('public')
+  @Get(':channel/download/:name')
+  async handleDownload(
+    @Param('channel') channel: string,
+    @Param('name') name: string,
+    @Query('t') token: string,
+    @Req() req: Request,
+  ) {
+    this.logger.log('Channel download request: ', channel, name);
+    return await this.channelService.download(channel, token, req);
+  }
 
   /**
    * Handles GET requests of a specific channel.
@@ -40,7 +62,7 @@ export class WebhookController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<any> {
-    this.logger.log('Channel notification : ', req.method, channel);
+    this.logger.log('Channel notification: ', req.method, channel);
     return await this.channelService.handle(channel, req, res);
   }
 
@@ -63,7 +85,7 @@ export class WebhookController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    this.logger.log('Channel notification : ', req.method, channel);
+    this.logger.log('Channel notification: ', req.method, channel);
     return await this.channelService.handle(channel, req, res);
   }
 }
