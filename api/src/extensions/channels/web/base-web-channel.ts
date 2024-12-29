@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
@@ -724,17 +724,6 @@ export default abstract class BaseWebChannelHandler<
       ipAddress: this.getIpAddress(req),
       agent: req.headers['user-agent'],
     };
-  }
-
-  /**
-   * Custom channel middleware
-   * @param req
-   * @param res
-   * @param next
-   */
-  async middleware(_req: Request, _res: Response, next: NextFunction) {
-    // Do nothing, override in channel
-    next();
   }
 
   /**
