@@ -16,6 +16,7 @@ import {
   Optional,
   StreamableFile,
 } from '@nestjs/common';
+import { ProjectionType } from 'mongoose';
 import fetch from 'node-fetch';
 import sanitizeFilename from 'sanitize-filename';
 
@@ -25,10 +26,19 @@ import { PluginInstance } from '@/plugins/map-types';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { Attachment } from '../schemas/attachment.schema';
+import { SubscriberAttachmentRepository } from '../repositories/subscriber-attachment.repository';
+import { UserAttachmentRepository } from '../repositories/user-attachment.repository';
+import {
+  Attachment,
+  SubscriberAttachmentFull,
+  UserAttachmentFull,
+} from '../schemas/attachment.schema';
+import { TAttachmentOwnerType } from '../types';
 import {
   fileExists,
   generateUniqueFilename,
@@ -43,6 +53,10 @@ export class AttachmentService extends BaseService<Attachment> {
     readonly repository: AttachmentRepository,
     private readonly logger: LoggerService,
     @Optional() private readonly pluginService: PluginService,
+    @Optional()
+    private readonly userAttachmentRepository: UserAttachmentRepository,
+    @Optional()
+    private readonly subscriberAttachmentRepository: SubscriberAttachmentRepository,
   ) {
     super(repository);
   }
@@ -157,6 +171,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
    * Otherwise, uploads files to the local directory.
    *
+   * @deprecated
    * @param files - An array of files to upload.
    * @returns A promise that resolves to an array of uploaded attachments.
    */
@@ -178,6 +193,7 @@ export class AttachmentService extends BaseService<Attachment> {
             name: filename,
             channel: {},
             location: `/${filename}`,
+            context: 'block_attachment',
           });
           uploadedFiles.push(uploadedFile);
         }
@@ -285,5 +301,95 @@ export class AttachmentService extends BaseService<Attachment> {
       const filePath = join(config.parameters.uploadDir, attachment.location);
       return await fs.promises.readFile(filePath); // Reads the file content as a Buffer
     }
+  }
+
+  /**
+   * @deprecated
+   */
+  async findOneAndPopulate(): Promise<never> {
+    throw new TypeError(
+      'Illegal call, use findOneAndPopulateByOwner() instead',
+    );
+  }
+
+  /**
+   * Finds and populates an attachment based on the provided owner type.
+   *
+   * @param ownerType - Specifies the type of attachment owner, either 'Subscriber' or 'User'.
+   * @param criteria - The criteria to locate the attachment. Can be a string or a filter query.
+   * @param projection - Optional projection to select specific fields of the attachment.
+   * @returns A promise that resolves to the populated attachment of type `A`.
+   */
+  async findOneAndPopulateByOwner<
+    O extends TAttachmentOwnerType = TAttachmentOwnerType,
+    A = O extends 'Subscriber' ? SubscriberAttachmentFull : UserAttachmentFull,
+  >(
+    ownerType: O,
+    criteria: string | TFilterQuery<Attachment>,
+    projection?: ProjectionType<Attachment>,
+  ): Promise<A> {
+    if (ownerType === 'Subscriber') {
+      return (await this.subscriberAttachmentRepository.findOneAndPopulate(
+        criteria,
+        projection,
+      )) as A;
+    } else if (ownerType === 'User') {
+      return (await this.userAttachmentRepository.findOneAndPopulate(
+        criteria,
+        projection,
+      )) as A;
+    } else {
+      throw new TypeError('Unknown owner type.');
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  async findAndPopulate(): Promise<never> {
+    throw new TypeError('Illegal call, use findAndPopulateByOwner() instead');
+  }
+
+  /**
+   * Finds and populates attachments based on the provided owner type.
+   *
+   * @param ownerType - Specifies the type of attachment owner, either 'Subscriber' or 'User'.
+   * @param criteria - The criteria to locate the attachments.
+   * @param projection - Optional projection to select specific fields of the attachment.
+   * @returns A promise that resolves to the populated attachments of type `A`.
+   */
+  async findAndPopulateByOwner<
+    O extends TAttachmentOwnerType = TAttachmentOwnerType,
+    A = O extends 'Subscriber'
+      ? SubscriberAttachmentFull[]
+      : UserAttachmentFull[],
+  >(
+    ownerType: O,
+    criteria: TFilterQuery<Attachment>,
+    pageQuery?: PageQueryDto<Attachment>,
+    projection?: ProjectionType<Attachment>,
+  ): Promise<A> {
+    if (ownerType === 'Subscriber') {
+      return (await this.subscriberAttachmentRepository.findAndPopulate(
+        criteria,
+        pageQuery,
+        projection,
+      )) as A;
+    } else if (ownerType === 'User') {
+      return (await this.userAttachmentRepository.findAndPopulate(
+        criteria,
+        pageQuery,
+        projection,
+      )) as A;
+    } else {
+      throw new TypeError('Unknown owner type.');
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  async findPageAndPopulate(): Promise<never> {
+    throw new TypeError('Illegal call, use findAndPopulateByOwner() instead');
   }
 }

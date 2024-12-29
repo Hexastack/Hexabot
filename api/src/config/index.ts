@@ -112,8 +112,13 @@ export const config: Config = {
     storageMode: 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-      : 50 * 1024 * 1024, // 50 MB in bytes
+      : 20 * 1024 * 1024, // 20 MB in bytes
     appName: 'Hexabot.ai',
+    signedUrl: {
+      salt: parseInt(process.env.SALT_LENGTH || '12'),
+      secret: process.env.SIGNED_URL_SECRET || 'DEFAULT_SIGNED_URL_SECRET',
+      expiresIn: process.env.SIGNED_URL_EXPIRES_IN || '24H',
+    },
   },
   pagination: {
     limit: 10,

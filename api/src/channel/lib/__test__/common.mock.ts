@@ -85,10 +85,11 @@ const attachment: Attachment = {
   size: 3539,
   location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
   channel: {
-    ['dimelo']: {
-      id: 'attachment-id-dimelo',
+    ['some-channel']: {
+      id: 'some-attachment-id',
     },
   },
+  context: 'message_attachment',
   createdAt: new Date(),
   updatedAt: new Date(),
 };

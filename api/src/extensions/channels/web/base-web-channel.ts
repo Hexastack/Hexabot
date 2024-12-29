@@ -630,6 +630,9 @@ export default abstract class BaseWebChannelHandler<
           name: data.name,
           size: Buffer.byteLength(data.file),
           type: data.type,
+          context: 'message_attachment',
+          ownerType: 'Subscriber',
+          owner: req.session.web?.profile?.id,
         });
         next(null, {
           type: Attachment.getTypeByMime(attachment.type),
@@ -677,6 +680,9 @@ export default abstract class BaseWebChannelHandler<
             name: file.originalname,
             size: file.size,
             type: file.mimetype,
+            context: 'message_attachment',
+            ownerType: 'Subscriber',
+            owner: req.session.web?.profile?.id,
           });
           next(null, {
             type: Attachment.getTypeByMime(attachment.type),

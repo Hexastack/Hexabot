@@ -6,14 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Request } from 'express';
 
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
+import { ModelRepository } from '@/user/repositories/model.repository';
+import { PermissionRepository } from '@/user/repositories/permission.repository';
+import { ModelModel } from '@/user/schemas/model.schema';
+import { PermissionModel } from '@/user/schemas/permission.schema';
+import { ModelService } from '@/user/services/model.service';
+import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
@@ -27,7 +35,7 @@ import {
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { AttachmentModel, Attachment } from '../schemas/attachment.schema';
+import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 import { AttachmentController } from './attachment.controller';
@@ -42,14 +50,30 @@ describe('AttachmentController', () => {
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(installAttachmentFixtures),
-        MongooseModule.forFeature([AttachmentModel]),
+        MongooseModule.forFeature([
+          AttachmentModel,
+          PermissionModel,
+          ModelModel,
+        ]),
       ],
       providers: [
         AttachmentService,
         AttachmentRepository,
+        PermissionService,
+        PermissionRepository,
+        ModelService,
+        ModelRepository,
         LoggerService,
         EventEmitter2,
         PluginService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     attachmentController =
@@ -78,29 +102,42 @@ describe('AttachmentController', () => {
 
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
-      const promiseResult = attachmentController.uploadFile({
-        file: undefined,
-      });
+      const promiseResult = attachmentController.uploadFile(
+        {} as Request,
+        {
+          file: undefined,
+        },
+        { context: 'block_attachment' },
+      );
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
       );
     });
 
     it('should upload attachment', async () => {
+      const id = '1'.repeat(24);
       jest.spyOn(attachmentService, 'create');
-      const result = await attachmentController.uploadFile({
-        file: [attachmentFile],
-      });
-      expect(attachmentService.create).toHaveBeenCalledWith({
-        size: attachmentFile.size,
-        type: attachmentFile.mimetype,
-        name: attachmentFile.filename,
-        channel: {},
-        location: `/${attachmentFile.filename}`,
-      });
+      const result = await attachmentController.uploadFile(
+        { session: { passport: { user: { id } } } } as Request,
+        {
+          file: [attachmentFile],
+        },
+        { context: 'block_attachment' },
+      );
+      // const [name, ext] = attachmentFile.filename.split('.');
+      expect(attachmentService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          size: attachmentFile.size,
+          type: attachmentFile.mimetype,
+          name: attachmentFile.filename,
+          ownerType: 'User',
+          owner: id,
+          context: 'block_attachment',
+        }),
+      );
       expect(result).toEqualPayload(
-        [attachment],
-        [...IGNORED_TEST_FIELDS, 'url'],
+        [{ ...attachment, ownerType: 'User', owner: id }],
+        [...IGNORED_TEST_FIELDS, 'url', 'location'],
       );
     });
   });

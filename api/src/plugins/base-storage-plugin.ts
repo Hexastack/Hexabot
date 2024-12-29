@@ -38,6 +38,11 @@ export abstract class BaseStoragePlugin extends BasePlugin {
 
   abstract downloadProfilePic(name: string): Promise<StreamableFile>;
 
+  store?(
+    file: Buffer | Readable,
+    dto: AttachmentCreateDto,
+  ): Promise<AttachmentCreateDto>;
+
   readAsBuffer?(attachment: Attachment): Promise<Buffer>;
 
   store?(
