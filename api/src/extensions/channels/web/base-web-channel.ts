@@ -749,10 +749,7 @@ export default abstract class BaseWebChannelHandler<
               res,
               event._adapter.raw,
             );
-            event._adapter.raw.data = {
-              type: Attachment.getTypeByMime(attachment.type),
-              url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-            };
+            event._adapter.attachment = attachment;
           } catch (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',

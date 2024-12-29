@@ -67,15 +67,13 @@ type WebEventAdapter =
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
-      attachments: Attachment[];
+      attachment: Attachment;
     };
 
 // eslint-disable-next-line prettier/prettier
-export default class WebEventWrapper<N extends ChannelName> extends EventWrapper<
-  WebEventAdapter,
-  Web.Event,
-  N
-> {
+export default class WebEventWrapper<
+  N extends ChannelName,
+> extends EventWrapper<WebEventAdapter, Web.Event, N> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -217,16 +215,16 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
         };
       }
       case IncomingMessageType.attachments:
-        if (!('url' in this._adapter.raw.data)) {
+        if (!this._adapter.attachment) {
           throw new Error('Attachment has not been processed');
         }
 
         return {
           type: PayloadType.attachments,
           attachments: {
-            type: this._adapter.raw.data.type,
+            type: Attachment.getTypeByMime(this._adapter.attachment.type),
             payload: {
-              url: this._adapter.raw.data.url,
+              attachment_id: this._adapter.attachment.id,
             },
           },
         };
@@ -267,19 +265,19 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
       }
 
       case IncomingMessageType.attachments: {
-        const attachment = this._adapter.raw.data;
-
-        if (!('url' in attachment)) {
+        const attachment = this._adapter.attachment;
+        if (!attachment) {
           throw new Error('Attachment has not been processed');
         }
 
+        const type = Attachment.getTypeByMime(attachment.type);
         return {
           type: PayloadType.attachments,
-          serialized_text: `attachment:${attachment.type}:${attachment.url}`,
+          serialized_text: `attachment:${type}:${attachment.name}`,
           attachment: {
-            type: attachment.type,
+            type,
             payload: {
-              url: attachment.url,
+              attachment_id: attachment.id,
             },
           },
         };
