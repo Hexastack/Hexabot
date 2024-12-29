@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelService } from '@/channel/channel.service';
+import { createEventWrapper } from '@/channel/lib/EventWrapper';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
@@ -28,6 +29,7 @@ import {
   AnyMessage,
   ContentElement,
   IncomingMessage,
+  IncomingMessageType,
   OutgoingMessage,
   OutgoingMessageFormat,
   PayloadType,
@@ -275,7 +277,7 @@ export default abstract class BaseWebChannelHandler<
    * @returns Promise to an array of message, rejects into error.
    * Promise to fetch the 'n' new messages since a giving date for the session profile.
    */
-  private async pollMessages(
+  protected async pollMessages(
     req: Request,
     since: Date = new Date(10e14),
     n: number = 30,
@@ -369,33 +371,17 @@ export default abstract class BaseWebChannelHandler<
    * @param req
    * @param res
    */
-  private validateSession(
-    req: Request | SocketRequest,
-    res: Response | SocketResponse,
-    next: (profile: Subscriber) => void,
-  ) {
+  protected validateSession(req: Request | SocketRequest): Subscriber {
     if (!req.session?.web?.profile?.id) {
-      this.logger.warn(
-        'Web Channel Handler : No session ID to be found!',
-        req.session,
-      );
-      return res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
+      throw new Error('No session ID to be found!');
     } else if (
       (this.isSocketRequest(req) &&
         !!req.isSocket !== req.session.web.isSocket) ||
       !Array.isArray(req.session.web.messageQueue)
     ) {
-      this.logger.warn(
-        'Web Channel Handler : Mixed channel request or invalid session data!',
-        req.session,
-      );
-      return res
-        .status(403)
-        .json({ err: 'Web Channel Handler : Unauthorized!' });
+      throw new Error('Mixed channel request or invalid session data!');
     }
-    next(req.session?.web?.profile);
+    return req.session?.web?.profile;
   }
 
   /**
@@ -596,55 +582,32 @@ export default abstract class BaseWebChannelHandler<
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    * @param next Callback Function
    */
-  async handleFilesUpload(
+  protected async handleUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-    next: (
-      err: null | Error,
-      result?: Web.IncomingAttachmentMessageData,
-    ) => void,
-  ): Promise<void> {
-    // Check if any file is provided
-    if (!req.session.web) {
-      this.logger.debug('Web Channel Handler : No session provided');
-      return next(null);
-    }
-
+    message: Web.IncomingMessage<Web.IncomingAttachmentMessage>,
+  ): Promise<Attachment> {
     if (this.isSocketRequest(req)) {
-      try {
-        const { type, data } = req.body as Web.IncomingMessage;
-
-        // Check if any file is provided
-        if (type !== 'file' || !('file' in data) || !data.file) {
-          this.logger.debug('Web Channel Handler : No files provided');
-          return next(null);
-        }
-
-        const size = Buffer.byteLength(data.file);
-
-        if (size > config.parameters.maxUploadSize) {
-          return next(new Error('Max upload size has been exceeded'));
-        }
-
-        const attachment = await this.attachmentService.store(data.file, {
-          name: data.name,
-          size: Buffer.byteLength(data.file),
-          type: data.type,
-          context: 'message_attachment',
-          ownerType: 'Subscriber',
-          owner: req.session.web?.profile?.id,
-        });
-        next(null, {
-          type: Attachment.getTypeByMime(attachment.type),
-          url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-        });
-      } catch (err) {
-        this.logger.error(
-          'Web Channel Handler : Unable to write uploaded file',
-          err,
-        );
-        return next(new Error('Unable to upload file!'));
+      const { type, data } = message;
+      // Check if any file is provided
+      if (type !== 'file' || !('file' in data) || !data.file) {
+        throw new TypeError('Web Channel Handler : No files provided');
       }
+
+      const size = Buffer.byteLength(data.file);
+
+      if (size > config.parameters.maxUploadSize) {
+        throw new TypeError('Web Channel Handler : No files provided');
+      }
+
+      return await this.attachmentService.store(data.file, {
+        name: data.name,
+        size: Buffer.byteLength(data.file),
+        type: data.type,
+        context: 'message_attachment',
+        ownerType: 'Subscriber',
+        owner: req.session.web?.profile?.id,
+      });
     } else {
       const upload = multer({
         limits: {
@@ -659,38 +622,34 @@ export default abstract class BaseWebChannelHandler<
         })(),
       }).single('file'); // 'file' is the field name in the form
 
-      upload(req as Request, res as Response, async (err?: any) => {
-        if (err) {
-          this.logger.error(
-            'Web Channel Handler : Unable to write uploaded file',
-            err,
-          );
-          return next(new Error('Unable to upload file!'));
-        }
+      // Wrap the upload function in a promise to use async/await
+      await new Promise<void>((resolve, reject) => {
+        upload(req, res as Response, (err?: any) => {
+          if (err) {
+            this.logger.error(
+              'Web Channel Handler : Unable to write uploaded file',
+              err,
+            );
+            return reject(new Error('Unable to upload file!'));
+          }
+          resolve();
+        });
+      });
 
-        // Check if any file is provided
-        if (!req.file) {
-          this.logger.debug('Web Channel Handler : No files provided');
-          return next(null);
-        }
+      // Check if any file is provided
+      if (!req.file) {
+        this.logger.debug('Web Channel Handler : No files provided');
+        throw new Error('No files provided');
+      }
 
-        try {
-          const file = req.file;
-          const attachment = await this.attachmentService.store(file, {
-            name: file.originalname,
-            size: file.size,
-            type: file.mimetype,
-            context: 'message_attachment',
-            ownerType: 'Subscriber',
-            owner: req.session.web?.profile?.id,
-          });
-          next(null, {
-            type: Attachment.getTypeByMime(attachment.type),
-            url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-          });
-        } catch (err) {
-          next(err);
-        }
+      const file = req.file;
+      return await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        context: 'message_attachment',
+        ownerType: 'Subscriber',
+        owner: req.session.web?.profile?.id,
       });
     }
   }
@@ -738,81 +697,90 @@ export default abstract class BaseWebChannelHandler<
    * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
-  _handleEvent(
+  protected async handleEvent(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-  ): void {
+  ): Promise<void> {
     // @TODO: perform payload validation
     if (!req.body) {
       this.logger.debug('Web Channel Handler : Empty body');
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
       return;
-    } else {
-      // Parse json form data (in case of content-type multipart/form-data)
-      req.body.data =
-        typeof req.body.data === 'string'
-          ? JSON.parse(req.body.data)
-          : req.body.data;
     }
 
-    this.validateSession(req, res, (profile) => {
-      this.handleFilesUpload(
-        req,
-        res,
-        (err: Error, data?: Web.IncomingAttachmentMessageData) => {
-          if (err) {
+    // Parse json form data (in case of content-type multipart/form-data)
+    req.body.data =
+      typeof req.body.data === 'string'
+        ? JSON.parse(req.body.data)
+        : req.body.data;
+
+    const body = req.body as Web.IncomingMessage;
+
+    const profile = this.validateSession(req);
+    const channelAttrs = this.getChannelAttributes(req);
+    const event = await createEventWrapper(
+      WebEventWrapper<N>,
+      this,
+      body,
+      channelAttrs,
+    );
+    if (event._adapter.eventType === 'message') {
+      // Handler sync message sent by chabbot
+      if (body.sync && body.author === 'chatbot') {
+        const sentMessage: MessageCreateDto = {
+          mid: event.getId(),
+          message: event.getMessage() as StdOutgoingMessage,
+          recipient: profile.id,
+          read: true,
+          delivery: true,
+        };
+        this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+        res.status(200).json(event._adapter.raw);
+        return;
+      } else {
+        // Generate unique ID and handle message
+        event._adapter.raw.mid = this.generateId();
+
+        if (event._adapter.messageType === IncomingMessageType.attachments) {
+          try {
+            // Handle updoad
+            const attachment = await this.handleUpload(
+              req,
+              res,
+              event._adapter.raw,
+            );
+            event._adapter.raw.data = {
+              type: Attachment.getTypeByMime(attachment.type),
+              url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
+            };
+          } catch (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',
               err,
             );
-            return res
+            res
               .status(403)
               .json({ err: 'Web Channel Handler : File upload failed!' });
+            return;
           }
-          // Set data in file upload case
-          const body: Web.IncomingMessage = data
-            ? {
-                ...req.body,
-                data,
-              }
-            : req.body;
+        }
+      }
 
-          const channelAttrs = this.getChannelAttributes(req);
-          const event = new WebEventWrapper<N>(this, body, channelAttrs);
-          if (event.getEventType() === 'message') {
-            // Handler sync message sent by chabbot
-            if (body.sync && body.author === 'chatbot') {
-              const sentMessage: MessageCreateDto = {
-                mid: event.getId(),
-                message: event.getMessage() as StdOutgoingMessage,
-                recipient: profile.id,
-                read: true,
-                delivery: true,
-              };
-              this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
-              return res.status(200).json(event._adapter.raw);
-            } else {
-              // Generate unique ID and handle message
-              event.set('mid', this.generateId());
-            }
-          }
-          // Force author id from session
-          event.set('author', profile.foreign_id);
-          event.setSender(profile);
+      // Force author id from session
+      event._adapter.raw.author = profile.foreign_id;
+      event.setSender(profile);
+    }
 
-          const type = event.getEventType();
-          if (type) {
-            this.eventEmitter.emit(`hook:chatbot:${type}`, event);
-          } else {
-            this.logger.error(
-              'Web Channel Handler : Webhook received unknown event ',
-              event,
-            );
-          }
-          res.status(200).json(event._adapter.raw);
-        },
+    const type = event.getEventType();
+    if (type) {
+      this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+    } else {
+      this.logger.error(
+        'Web Channel Handler : Webhook received unknown event ',
+        event,
       );
-    });
+    }
+    res.status(200).json(event._adapter.raw);
   }
 
   /**
@@ -877,7 +845,7 @@ export default abstract class BaseWebChannelHandler<
         }
       } else {
         // Handle incoming messages (through POST)
-        return this._handleEvent(req, res);
+        return this.handleEvent(req, res);
       }
     } catch (err) {
       this.logger.warn('Web Channel Handler : Request check failed', err);

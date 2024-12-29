@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import {
@@ -66,6 +67,7 @@ type WebEventAdapter =
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
+      attachments: Attachment[];
     };
 
 // eslint-disable-next-line prettier/prettier
@@ -97,7 +99,7 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
    *
    * @param event - The message event received
    */
-  _init(event: Web.Event) {
+  async _init(event: Web.Event) {
     switch (event.type) {
       case Web.StatusEventType.delivery:
         this._adapter.eventType = StdEventType.delivery;
@@ -133,7 +135,6 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
         this._adapter.eventType = StdEventType.unknown;
         break;
     }
-    this._adapter.raw = event;
   }
 
   /**

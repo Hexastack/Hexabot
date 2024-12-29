@@ -58,10 +58,19 @@ export default abstract class EventWrapper<
    * @param event - The message event received
    * @param channelAttrs - Channel's specific data
    */
-  constructor(handler: C, event: A['raw'], channelAttrs: S = {} as S) {
+  constructor(
+    handler: C,
+    event: A['raw'],
+    channelAttrs: S = {} as S,
+    initialize = true,
+  ) {
     this._handler = handler;
-    this._init(event);
+    this._adapter.raw = event;
     this.channelAttrs = channelAttrs;
+
+    if (initialize) {
+      this._init(event);
+    }
   }
 
   toString() {
@@ -94,7 +103,7 @@ export default abstract class EventWrapper<
    *- `_adapter.raw` : Sets a typed object of the event raw data
    * @param event - The message event received from a given channel
    */
-  abstract _init(event: A['raw']): void;
+  abstract _init(event: A['raw']): Promise<void> | void;
 
   /**
    * Retrieves the current channel handler.
@@ -122,30 +131,6 @@ export default abstract class EventWrapper<
    * @returns the message id.
    */
   abstract getId(): string;
-
-  /**
-   * Sets an event attribute value
-   *
-   * @param attr - Event attribute name
-   * @param value - The value to set for the specified attribute.
-   */
-  set(attr: string, value: any) {
-    (this._adapter as any).raw[attr] = value;
-  }
-
-  /**
-   * Returns an event attribute value, default value if it does exist
-   *
-   * @param  attr - Event attribute name
-   * @param  otherwise - Default value if attribute does not exist
-   *
-   * @returns The value of the specified attribute or the default value.
-   */
-  get(attr: string, otherwise: any): any {
-    return attr in (this._adapter as any).raw
-      ? ((this._adapter as any).raw as any)[attr]
-      : otherwise || {};
-  }
 
   /**
    * Returns attached NLP parse results
@@ -400,3 +385,23 @@ export class GenericEventWrapper extends EventWrapper<
     return 0;
   }
 }
+
+export const createEventWrapper = async <
+  A extends {
+    eventType: StdEventType;
+    messageType?: IncomingMessageType;
+    raw: E;
+  },
+  E,
+  N extends ChannelName,
+  C extends ChannelHandler,
+  S,
+  T extends EventWrapper<A, E, N, C, S>,
+>(
+  clz: new (...args: any) => T,
+  ...args: ConstructorParameters<typeof clz>
+) => {
+  const e = new clz(...args, false);
+  await e._init(e._adapter.raw);
+  return e;
+};
