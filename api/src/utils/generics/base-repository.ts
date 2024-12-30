@@ -267,7 +267,7 @@ export abstract class BaseRepository<
   ) {
     if (!criteria) {
       // @TODO : Issue a warning ?
-      return Promise.resolve(null);
+      return null;
     }
 
     const query = this.findOneQuery(criteria, projection);
@@ -344,11 +344,11 @@ export abstract class BaseRepository<
   ): Promise<T[]> {
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filter, pageQuery, projection);
-      return await this.execute(query, this.cls);
+      return this.execute(query, this.cls);
     }
 
     const query = this.findQuery(filter, pageQuery, projection);
-    return await this.execute(query, this.cls);
+    return this.execute(query, this.cls);
   }
 
   private ensureCanPopulate(): void {
@@ -412,26 +412,12 @@ export abstract class BaseRepository<
    */
   protected findPageQuery(
     filters: TFilterQuery<T>,
-    { skip, limit, sort }: PageQueryDto<T>,
+    { skip = 0, limit = 0, sort }: PageQueryDto<T>,
   ): Query<T[], T, object, T, 'find', object> {
-    if (skip && limit) {
-      return this.findQuery(filters)
-        .skip(skip)
-        .limit(limit)
-        .sort([sort] as [string, SortOrder][]);
-    }
-    if (skip) {
-      return this.findQuery(filters)
-        .skip(skip)
-        .sort([sort] as [string, SortOrder][]);
-    }
-
-    if (limit) {
-      return this.findQuery(filters)
-        .limit(limit)
-        .sort([sort] as [string, SortOrder][]);
-    }
-    return this.findQuery(filters).sort([sort] as [string, SortOrder][]);
+    return this.findQuery(filters)
+      .skip(skip)
+      .limit(limit)
+      .sort([sort] as [string, SortOrder][]);
   }
 
   /**
@@ -442,7 +428,7 @@ export abstract class BaseRepository<
     pageQuery: PageQueryDto<T>,
   ): Promise<T[]> {
     const query = this.findPageQuery(filters, pageQuery);
-    return await this.execute(query, this.cls);
+    return this.execute(query, this.cls);
   }
 
   /**
