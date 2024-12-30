@@ -428,7 +428,7 @@ export abstract class BaseRepository<
     pageQuery: PageQueryDto<T>,
   ): Promise<T[]> {
     const query = this.findPageQuery(filters, pageQuery);
-    return this.execute(query, this.cls);
+    return await this.execute(query, this.cls);
   }
 
   /**
