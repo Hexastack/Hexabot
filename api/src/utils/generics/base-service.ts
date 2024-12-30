@@ -33,7 +33,7 @@ export abstract class BaseService<
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
     projection?: ProjectionType<T>,
-  ): Promise<T> {
+  ): Promise<T | null> {
     return await this.repository.findOne(criteria, options, projection);
   }
 
@@ -173,7 +173,7 @@ export abstract class BaseService<
   async updateOne<D extends Partial<Omit<T, keyof BaseSchema>>>(
     criteria: string | TFilterQuery<T>,
     dto: D,
-  ): Promise<T> {
+  ): Promise<T | null> {
     return await this.repository.updateOne(criteria, dto);
   }
 

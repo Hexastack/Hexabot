@@ -241,7 +241,7 @@ export abstract class BaseRepository<
     query: Query<T | null, T>,
     cls: new () => R,
     options?: ClassTransformOptions,
-  ): Promise<R> {
+  ): Promise<R | null> {
     const doc = await query.lean(this.leanOpts).exec();
     return plainToClass(cls, doc, options ?? this.transformOpts);
   }
@@ -256,8 +256,8 @@ export abstract class BaseRepository<
     }
 
     return typeof criteria === 'string'
-      ? this.model.findById(criteria, projection)
-      : this.model.findOne<T>(criteria, projection);
+      ? this.model.findById<HydratedDocument<T>>(criteria, projection)
+      : this.model.findOne<HydratedDocument<T>>(criteria, projection);
   }
 
   async findOne(
@@ -267,7 +267,7 @@ export abstract class BaseRepository<
   ) {
     if (!criteria) {
       // @TODO : Issue a warning ?
-      return Promise.resolve(undefined);
+      return Promise.resolve(null);
     }
 
     const query = this.findOneQuery(criteria, projection);
@@ -277,7 +277,7 @@ export abstract class BaseRepository<
   async findOneAndPopulate(
     criteria: string | TFilterQuery<T>,
     projection?: ProjectionType<T>,
-  ): Promise<TFull> {
+  ): Promise<TFull | null> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
       this.populate,
@@ -474,7 +474,7 @@ export abstract class BaseRepository<
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
     dto: UpdateQuery<D>,
-  ): Promise<T> {
+  ): Promise<T | null> {
     const query = this.model.findOneAndUpdate<T>(
       {
         ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
