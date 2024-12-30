@@ -490,7 +490,7 @@ export abstract class BaseRepository<
     const queryUpdates = query.getUpdate();
 
     if (!queryUpdates) {
-      throw new Error(' Unable to execute updateOne() - No updates');
+      throw new Error('Unable to execute updateOne() - No updates');
     }
 
     await this.preUpdateValidate(filterCriteria, queryUpdates);
