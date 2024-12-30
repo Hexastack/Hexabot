@@ -348,7 +348,7 @@ export abstract class BaseRepository<
     }
 
     const query = this.findQuery(filter, pageQuery, projection);
-    return this.execute(query, this.cls);
+    return await this.execute(query, this.cls);
   }
 
   private ensureCanPopulate(): void {
