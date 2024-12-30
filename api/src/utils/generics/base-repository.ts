@@ -344,7 +344,7 @@ export abstract class BaseRepository<
   ): Promise<T[]> {
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filter, pageQuery, projection);
-      return this.execute(query, this.cls);
+      return await this.execute(query, this.cls);
     }
 
     const query = this.findQuery(filter, pageQuery, projection);
