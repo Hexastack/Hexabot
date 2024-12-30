@@ -141,7 +141,9 @@ describe('TranslationController', () => {
     translationController = module.get<TranslationController>(
       TranslationController,
     );
-    translation = await translationService.findOne({ str: 'Welcome' });
+    translation = (await translationService.findOne({
+      str: 'Welcome',
+    })) as Translation;
   });
 
   afterEach(jest.clearAllMocks);
@@ -164,7 +166,9 @@ describe('TranslationController', () => {
 
       expect(translationService.findOne).toHaveBeenCalledWith(translation.id);
       expect(result).toEqualPayload(
-        translationFixtures.find(({ str }) => str === translation.str),
+        translationFixtures.find(
+          ({ str }) => str === translation.str,
+        ) as Translation,
       );
     });
   });
