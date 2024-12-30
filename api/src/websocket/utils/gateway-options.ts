@@ -53,7 +53,7 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
     ...(config.sockets.onlyAllowOrigins && {
       cors: {
         origin: (origin, cb) => {
-          if (config.sockets.onlyAllowOrigins.includes(origin)) {
+          if (origin && config.sockets.onlyAllowOrigins.includes(origin)) {
             cb(null, true);
           } else {
             // eslint-disable-next-line no-console
