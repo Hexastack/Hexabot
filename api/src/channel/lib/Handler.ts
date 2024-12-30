@@ -8,17 +8,28 @@
 
 import path from 'path';
 
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
 
+import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import {
   StdOutgoingEnvelope,
   StdOutgoingMessage,
 } from '@/chat/schemas/types/message';
+import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
+import { buildURL } from '@/utils/helpers/URL';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -36,6 +47,19 @@ export default abstract class ChannelHandler<
   implements OnModuleInit
 {
   private readonly settings: ChannelSetting<N>[];
+
+  @Inject(AttachmentService)
+  protected readonly attachmentService: AttachmentService;
+
+  @Inject(JwtService)
+  protected readonly jwtService: JwtService;
+
+  protected readonly jwtSignOptions: JwtSignOptions = {
+    secret: config.parameters.signedUrl.secret,
+    expiresIn: config.parameters.signedUrl.expiresIn,
+    algorithm: 'HS256',
+    encoding: 'utf-8',
+  };
 
   constructor(
     name: N,
@@ -199,5 +223,55 @@ export default abstract class ChannelHandler<
   async middleware(_req: Request, _res: Response, next: NextFunction) {
     // Do nothing, override in channel
     next();
+  }
+
+  /**
+   * Generates a signed URL for downloading an attachment.
+   *
+   * This function creates a signed URL for a given attachment using a JWT token.
+   * The signed URL includes the attachment name and a token as query parameters.
+   *
+   * @param attachment The attachment ID or object to generate a signed URL for.
+   * @return A signed URL string for downloading the specified attachment.
+   */
+  protected async getPublicUrl(attachment: string | Attachment) {
+    const resource =
+      typeof attachment === 'string'
+        ? await this.attachmentService.findOne(attachment)
+        : attachment;
+
+    if (!resource) {
+      throw new NotFoundException('Unable to find attachment');
+    }
+
+    const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
+    const [name, _suffix] = this.getName().split('-');
+    return buildURL(
+      config.apiBaseUrl,
+      `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
+    );
+  }
+
+  /**
+   * Downloads an attachment using a signed token.
+   *
+   * This function verifies the provided token and retrieves the corresponding
+   * attachment as a streamable file. If the verification fails or the attachment
+   * cannot be located, it throws a NotFoundException.
+   *
+   * @param token The signed token used to verify and locate the attachment.
+   * @param req - The HTTP express request object.
+   * @return A streamable file of the attachment.
+   * @throws NotFoundException if the attachment cannot be found or the token is invalid.
+   */
+  public async download(token: string, _req: Request) {
+    try {
+      const result = this.jwtService.verify(token, this.jwtSignOptions);
+      const attachment = plainToClass(Attachment, result);
+      return await this.attachmentService.download(attachment);
+    } catch (err) {
+      this.logger.error('Failed to download attachment', err);
+      throw new NotFoundException('Unable to locate attachment');
+    }
   }
 }

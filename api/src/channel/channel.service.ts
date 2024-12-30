@@ -99,6 +99,19 @@ export class ChannelService {
   }
 
   /**
+   * Handles a download request for a specific channel.
+   *
+   * @param channel - The channel for which the request is being handled.
+   * @param token - The file JWT token.
+   * @param req - The HTTP express request object.
+   * @returns A promise that resolves a streamable if the signed url is valid.
+   */
+  async download(channel: string, token: string, req: Request) {
+    const handler = this.getChannelHandler(`${channel}-channel`);
+    return await handler.download(token, req);
+  }
+
+  /**
    * Handles a websocket request for the web channel.
    *
    * @param req - The websocket request object.
