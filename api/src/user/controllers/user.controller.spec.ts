@@ -25,6 +25,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { getUserFixtures, userFixtures } from '@/utils/test/fixtures/user';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -45,8 +46,8 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
-import { UserModel, User } from '../schemas/user.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
+import { User, UserModel } from '../schemas/user.schema';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -71,7 +72,10 @@ describe('UserController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReadWriteUserController],
       imports: [
-        rootMongooseTestModule(installPermissionFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installPermissionFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,

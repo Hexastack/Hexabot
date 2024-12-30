@@ -22,6 +22,7 @@ import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -44,7 +45,10 @@ describe('ValidateAccountService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        rootMongooseTestModule(installUserFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installUserFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,
