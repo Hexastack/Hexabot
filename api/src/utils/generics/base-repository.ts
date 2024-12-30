@@ -193,7 +193,7 @@ export abstract class BaseRepository<
       const criteria = query.getFilter();
       const updates = query.getUpdate();
       if (!updates) {
-        throw new Error('Unable to run run updateMany pre hook');
+        throw new Error('Unable to execute updateMany() pre-hook');
       }
       await repository.preUpdateMany(query, criteria, updates);
       repository.emitter.emit(
