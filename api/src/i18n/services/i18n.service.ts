@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   I18nService as NativeI18nService,
   Path,
@@ -34,6 +34,11 @@ export class I18nService<
       ...options,
     };
     let { lang } = options;
+
+    if (!lang) {
+      throw new InternalServerErrorException('I18nService: lang is undefined');
+    }
+
     lang = this.resolveLanguage(lang);
 
     // Translate block message, button text, ...
