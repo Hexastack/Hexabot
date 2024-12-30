@@ -8,6 +8,7 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
@@ -101,6 +102,7 @@ describe('BlockService', () => {
           ContextVarModel,
           LanguageModel,
         ]),
+        JwtModule,
       ],
       providers: [
         EventEmitter2,
