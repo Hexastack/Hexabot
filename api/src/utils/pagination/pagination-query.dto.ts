@@ -18,5 +18,5 @@ export type QuerySortDto<T> = [
 export type PageQueryDto<T> = {
   skip: number | undefined;
   limit: number | undefined;
-  sort: QuerySortDto<T>;
+  sort?: QuerySortDto<T>;
 };

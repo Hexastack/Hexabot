@@ -267,7 +267,7 @@ export abstract class BaseRepository<
   ) {
     if (!criteria) {
       // @TODO : Issue a warning ?
-      return Promise.resolve(null);
+      return null;
     }
 
     const query = this.findOneQuery(criteria, projection);
@@ -412,7 +412,7 @@ export abstract class BaseRepository<
    */
   protected findPageQuery(
     filters: TFilterQuery<T>,
-    { skip, limit, sort }: PageQueryDto<T>,
+    { skip = 0, limit = 0, sort }: PageQueryDto<T>,
   ): Query<T[], T, object, T, 'find', object> {
     return this.findQuery(filters)
       .skip(skip)
