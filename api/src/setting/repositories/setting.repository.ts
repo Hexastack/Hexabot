@@ -52,11 +52,16 @@ export class SettingRepository extends BaseRepository<Setting> {
       if (payload && 'value' in payload) {
         const hasType = 'type' in payload;
         if (hasType) {
+          // Case when we need to update both the type and value
           this.validateSettingValue(payload.type, payload.value);
         } else {
+          // Case when we only update the setting value
           const setting = await this.findOne(criteria);
-          if (setting && 'type' in setting)
+          if (setting && 'type' in setting) {
             this.validateSettingValue(setting.type, payload.value);
+          } else {
+            throw new Error('Unable to find the setting to be updated');
+          }
         }
       }
     }

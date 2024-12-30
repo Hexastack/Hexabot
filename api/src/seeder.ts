@@ -24,7 +24,6 @@ import { nlpValueModels } from './nlp/seeds/nlp-value.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
 import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { PermissionCreateDto } from './user/dto/permission.dto';
-import { Model } from './user/schemas/model.schema';
 import { Role } from './user/schemas/role.schema';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
@@ -72,8 +71,8 @@ export async function seedDatabase(app: INestApplicationContext) {
     throw e;
   }
 
-  const models = (await modelSeeder.findAll()) as Model[];
-  const roles = (await roleSeeder.findAll()) as Role[];
+  const models = await modelSeeder.findAll();
+  const roles = await roleSeeder.findAll();
   const adminRole = roles.find(({ name }) => name === 'admin') as Role;
   const managerRole = roles.find(({ name }) => name === 'manager') as Role;
   const managerModels = models.filter(
@@ -84,11 +83,11 @@ export async function seedDatabase(app: INestApplicationContext) {
     ...managerModels.map((model) => [model.id, managerRole.id]),
   ] as [string, string][];
 
-  const permissionSeeds = roleModelsCombinations.reduce<PermissionCreateDto[]>(
+  const permissionSeeds = roleModelsCombinations.reduce(
     (acc, [modelId, roleId]) => {
       return acc.concat(permissionModels(modelId, roleId));
     },
-    [],
+    [] as PermissionCreateDto[],
   );
 
   // Seed permissions

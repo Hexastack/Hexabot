@@ -77,7 +77,7 @@ export interface NumberSetting extends Setting {
   type: SettingType.number;
   value: number;
   options: never;
-  config: {
+  config?: {
     min: number;
     max: number;
     step: number;
