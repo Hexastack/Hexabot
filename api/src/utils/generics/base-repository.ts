@@ -414,24 +414,10 @@ export abstract class BaseRepository<
     filters: TFilterQuery<T>,
     { skip = 0, limit = 0, sort }: PageQueryDto<T>,
   ): Query<T[], T, object, T, 'find', object> {
-    if (skip && limit) {
-      return this.findQuery(filters)
-        .skip(skip)
-        .limit(limit)
-        .sort([sort] as [string, SortOrder][]);
-    }
-    if (skip) {
-      return this.findQuery(filters)
-        .skip(skip)
-        .sort([sort] as [string, SortOrder][]);
-    }
-
-    if (limit) {
-      return this.findQuery(filters)
-        .limit(limit)
-        .sort([sort] as [string, SortOrder][]);
-    }
-    return this.findQuery(filters).sort([sort] as [string, SortOrder][]);
+    return this.findQuery(filters)
+      .skip(skip)
+      .limit(limit)
+      .sort([sort] as [string, SortOrder][]);
   }
 
   /**

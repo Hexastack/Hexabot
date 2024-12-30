@@ -7,7 +7,11 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 import {
@@ -53,7 +57,13 @@ export class LanguageService extends BaseService<Language> {
    */
   @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getDefaultLanguage() {
-    return await this.findOne({ isDefault: true });
+    const defaultLanguage = await this.findOne({ isDefault: true });
+    if (!defaultLanguage) {
+      throw new InternalServerErrorException(
+        'Default language not found: getDefaultLanguage()',
+      );
+    }
+    return defaultLanguage;
   }
 
   /**

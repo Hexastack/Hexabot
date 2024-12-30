@@ -109,9 +109,6 @@ export class TranslationController extends BaseController<Translation> {
   @Post('refresh')
   async refresh(): Promise<any> {
     const defaultLanguage = await this.languageService.getDefaultLanguage();
-    if (!defaultLanguage) {
-      throw new NotFoundException('Default language not found refresh()');
-    }
     const languages = await this.languageService.getLanguages();
     const defaultTrans: Translation['translations'] = Object.keys(languages)
       .filter((lang) => lang !== defaultLanguage.code)
