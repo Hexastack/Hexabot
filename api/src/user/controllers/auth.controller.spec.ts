@@ -28,6 +28,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -43,7 +44,7 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
 import { InvitationService } from '../services/invitation.service';
 import { PermissionService } from '../services/permission.service';
@@ -66,7 +67,10 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LocalAuthController],
       imports: [
-        rootMongooseTestModule(installUserFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installUserFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,

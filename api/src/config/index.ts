@@ -73,7 +73,7 @@ export const config: Config = {
     grant3rdPartyCookie: true,
     onlyAllowOrigins: process.env.FRONTEND_ORIGIN
       ? process.env.FRONTEND_ORIGIN.split(',').map((origin) => origin.trim())
-      : [undefined], // ['http://example.com', 'https://example.com'],
+      : [], // ['http://example.com', 'https://example.com'],
   },
   session: {
     secret: process.env.SESSION_SECRET || 'changeme',
@@ -91,7 +91,9 @@ export const config: Config = {
   emails: {
     isEnabled: process.env.EMAIL_SMTP_ENABLED === 'true' || false,
     smtp: {
-      port: parseInt(process.env.EMAIL_SMTP_PORT) || 25,
+      port: process.env.EMAIL_SMTP_PORT
+        ? parseInt(process.env.EMAIL_SMTP_PORT)
+        : 25,
       host: process.env.EMAIL_SMTP_HOST || 'localhost',
       ignoreTLS: false,
       secure: process.env.EMAIL_SMTP_SECURE === 'true' || false,
