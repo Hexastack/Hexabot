@@ -27,7 +27,7 @@ jobs:
         run: cd frontend && npm run typecheck
 
       - name: 🖋️ ESLint checks for widget ...
-        run: cd widget && npx lint-staged
+        run: cd widget && npm run lint
 
       - name: 🖋️ ESLint checks for Frontend ...
         run: cd frontend && npx lint-staged
