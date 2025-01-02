@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -82,10 +82,10 @@ describe('LabelController', () => {
     labelService = module.get<LabelService>(LabelService);
     subscriberService = module.get<SubscriberService>(SubscriberService);
     labelController = module.get<LabelController>(LabelController);
-    label = await labelService.findOne({ name: 'TEST_TITLE_1' });
-    labelToDelete = await labelService.findOne({
+    label = (await labelService.findOne({ name: 'TEST_TITLE_1' })) as Label;
+    labelToDelete = (await labelService.findOne({
       name: 'TEST_TITLE_2',
-    });
+    })) as Label;
   });
 
   afterEach(jest.clearAllMocks);
