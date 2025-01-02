@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -76,7 +76,9 @@ describe('ContentTypeController', () => {
     );
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
     contentService = module.get<ContentService>(ContentService);
-    contentType = await contentTypeService.findOne({ name: 'Product' });
+    contentType = (await contentTypeService.findOne({
+      name: 'Product',
+    })) as ContentType;
   });
 
   afterAll(async () => {
@@ -141,7 +143,9 @@ describe('ContentTypeController', () => {
       const result = await contentTypeController.findOne(contentType.id);
       expect(contentTypeService.findOne).toHaveBeenCalledWith(contentType.id);
       expect(result).toEqualPayload(
-        contentTypeFixtures.find(({ name }) => name === 'Product'),
+        contentTypeFixtures.find(
+          ({ name }) => name === 'Product',
+        ) as ContentType,
       );
     });
 
@@ -187,9 +191,9 @@ describe('ContentTypeController', () => {
   describe('remove', () => {
     it('should delete and return the deletion result', async () => {
       jest.spyOn(contentTypeService, 'deleteCascadeOne');
-      const contentType = await contentTypeService.findOne({
+      const contentType = (await contentTypeService.findOne({
         name: 'Restaurant',
-      });
+      })) as ContentType;
       const result = await contentTypeController.deleteOne(contentType.id);
       expect(contentTypeService.deleteCascadeOne).toHaveBeenCalledWith(
         contentType.id,

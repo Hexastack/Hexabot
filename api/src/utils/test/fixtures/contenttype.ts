@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,10 +9,7 @@
 import mongoose from 'mongoose';
 
 import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
-import {
-  ContentType,
-  ContentTypeModel,
-} from '@/cms/schemas/content-type.schema';
+import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -100,25 +97,27 @@ const contentTypes: ContentTypeCreateDto[] = [
   },
 ];
 
-export const contentTypeDefaultValues: TFixturesDefaultValues<ContentType> = {
-  fields: [
-    {
-      name: 'title',
-      label: 'Title',
-      type: 'text',
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'checkbox',
-    },
-  ],
-};
+export const contentTypeDefaultValues: TFixturesDefaultValues<ContentTypeCreateDto> =
+  {
+    fields: [
+      {
+        name: 'title',
+        label: 'Title',
+        type: 'text',
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'checkbox',
+      },
+    ],
+  };
 
-export const contentTypeFixtures = getFixturesWithDefaultValues<ContentType>({
-  fixtures: contentTypes,
-  defaultValues: contentTypeDefaultValues,
-});
+export const contentTypeFixtures =
+  getFixturesWithDefaultValues<ContentTypeCreateDto>({
+    fixtures: contentTypes,
+    defaultValues: contentTypeDefaultValues,
+  });
 
 export const installContentTypeFixtures = async () => {
   const ContentType = mongoose.model(
