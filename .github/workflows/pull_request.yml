@@ -57,7 +57,7 @@ jobs:
         run: cd api && npm run typecheck
 
       - name: 🖋️ ESLint checks for API ...
-        run: cd api && npx lint-staged
+        run: cd api && npm run lint
 
       - name: 🔬 running unit tests for API ...
         run: cd api && npm run test
