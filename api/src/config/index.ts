@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -145,8 +145,12 @@ export const config: Config = {
   mongo: {
     user: process.env.MONGO_USER || 'dev_only',
     password: process.env.MONGO_PASSWORD || 'dev_only',
-    uri: process.env.MONGO_URI || 'mongodb://dev_only:dev_only@mongo:27017/',
+    uri:
+      process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
     dbName: process.env.MONGO_DB || 'hexabot',
+    autoMigrate: process.env.MONGO_AUTO_MIGRATE
+      ? Boolean(process.env.MONGO_AUTO_MIGRATE)
+      : false,
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {
