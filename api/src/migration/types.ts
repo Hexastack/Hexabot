@@ -16,6 +16,8 @@ enum MigrationAction {
 interface MigrationRunParams {
   name?: string;
   action: MigrationAction;
+  version?: string;
+  isAutoMigrate?: boolean;
 }
 
 interface MigrationSuccessCallback extends MigrationRunParams {

@@ -12,20 +12,27 @@ import { PassportModule } from '@nestjs/passport';
 
 import { SettingController } from './controllers/setting.controller';
 import { SettingRepository } from './repositories/setting.repository';
+import { MetadataModel } from './schemas/metadata.schema';
 import { SettingModel } from './schemas/setting.schema';
 import { SettingSeeder } from './seeds/setting.seed';
+import { MetadataService } from './services/metadata.service';
 import { SettingService } from './services/setting.service';
 
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([SettingModel]),
+    MongooseModule.forFeature([SettingModel, MetadataModel]),
     PassportModule.register({
       session: true,
     }),
   ],
-  providers: [SettingRepository, SettingSeeder, SettingService],
+  providers: [
+    SettingRepository,
+    SettingSeeder,
+    SettingService,
+    MetadataService,
+  ],
   controllers: [SettingController],
-  exports: [SettingService],
+  exports: [SettingService, MetadataService],
 })
 export class SettingModule {}
