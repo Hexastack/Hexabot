@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -60,8 +60,12 @@ describe('ContentRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should find a content and populate its content type', async () => {
       const findSpy = jest.spyOn(contentModel, 'findById');
-      const content = await contentModel.findOne({ title: 'Jean' });
-      const contentType = await contentTypeModel.findById(content.entity);
+      const content = (await contentModel.findOne({
+        title: 'Jean',
+      })) as Content;
+      const contentType = (await contentTypeModel.findById(
+        content.entity,
+      )) as ContentType;
       const result = await contentRepository.findOneAndPopulate(content.id);
       expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
       expect(result).toEqualPayload({

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -33,7 +33,7 @@ import {
 
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
-import { ContentTypeModel } from '../schemas/content-type.schema';
+import { ContentType, ContentTypeModel } from '../schemas/content-type.schema';
 import { Content, ContentModel } from '../schemas/content.schema';
 
 import { ContentTypeService } from './content-type.service';
@@ -81,8 +81,12 @@ describe('ContentService', () => {
   describe('findOneAndPopulate', () => {
     it('should return a content and populate its corresponding content type', async () => {
       const findSpy = jest.spyOn(contentRepository, 'findOneAndPopulate');
-      const content = await contentService.findOne({ title: 'Jean' });
-      const contentType = await contentTypeService.findOne(content.entity);
+      const content = (await contentService.findOne({
+        title: 'Jean',
+      })) as Content;
+      const contentType = (await contentTypeService.findOne(
+        content.entity,
+      )) as ContentType;
       const result = await contentService.findOneAndPopulate(content.id);
       expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
       expect(result).toEqualPayload({
@@ -233,7 +237,9 @@ describe('ContentService', () => {
     });
 
     it('should get content for a specific entity', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
+      const contentType = (await contentTypeService.findOne({
+        name: 'Product',
+      })) as ContentType;
       const actualData = await contentService.findPage(
         { status: true, entity: contentType.id },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
@@ -251,7 +257,9 @@ describe('ContentService', () => {
 
     it('should get content using query', async () => {
       contentOptions.entity = 1;
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
+      const contentType = (await contentTypeService.findOne({
+        name: 'Product',
+      })) as ContentType;
       const actualData = await contentService.findPage(
         { status: true, entity: contentType.id, title: /^Jean/ },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },

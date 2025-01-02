@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,7 +22,10 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common/exceptions';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import Papa from 'papaparse';
 
@@ -80,10 +83,15 @@ export class ContentController extends BaseController<
     const contentType = await this.contentTypeService.findOne(
       contentDto.entity,
     );
+    if (!contentType) {
+      throw new BadRequestException(
+        `ContentType ${contentDto.entity} not found`,
+      );
+    }
     this.validate({
       dto: contentDto,
       allowedIds: {
-        entity: contentType?.id,
+        entity: contentType.id,
       },
     });
     return await this.contentService.create(contentDto);
@@ -126,18 +134,28 @@ export class ContentController extends BaseController<
 
     // Get file location
     const file = await this.attachmentService.findOne(fileToImport);
+    if (!file) {
+      this.logger.warn(
+        `Failed to fetch attachment with id ${fileToImport}. Attachment not found.`,
+      );
+    }
     // Check if file is present
     const filePath = file
       ? path.join(config.parameters.uploadDir, file.location)
       : undefined;
 
-    if (!file || !fs.existsSync(filePath)) {
+    if (!filePath) {
+      throw new InternalServerErrorException('Unexpected value for filePath');
+    }
+
+    if (!fs.existsSync(filePath)) {
       this.logger.warn(`Failed to find file type with id ${fileToImport}.`);
       throw new NotFoundException(`File does not exist`);
     }
     //read file sync
     const data = fs.readFileSync(filePath, 'utf8');
 
+    //TODO: why we have it typed string, string | boolean | number its causing wrong type inference for title
     const result = Papa.parse<Record<string, string | boolean | number>>(data, {
       header: true,
       skipEmptyLines: true,
@@ -159,14 +177,17 @@ export class ContentController extends BaseController<
       (acc, { title, status, ...rest }) => [
         ...acc,
         {
-          title,
+          title: title.toString(),
           status,
           entity: targetContentType,
           dynamicFields: Object.keys(rest)
             .filter((key) =>
               contentType.fields.map((field) => field.name).includes(key),
             )
-            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+            .reduce(
+              (filtered, key) => ({ ...filtered, [key]: rest[key] }),
+              {} as Record<string, any>,
+            ),
         },
       ],
       [],
