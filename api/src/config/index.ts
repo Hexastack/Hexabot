@@ -148,9 +148,10 @@ export const config: Config = {
     uri:
       process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
     dbName: process.env.MONGO_DB || 'hexabot',
-    autoMigrate: process.env.MONGO_AUTO_MIGRATE
-      ? Boolean(process.env.MONGO_AUTO_MIGRATE)
-      : false,
+    autoMigrate:
+      process.env.MONGO_AUTO_MIGRATE === 'true'
+        ? Boolean(process.env.MONGO_AUTO_MIGRATE)
+        : false,
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {
