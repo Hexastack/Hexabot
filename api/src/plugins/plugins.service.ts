@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginInstance } from './map-types';
@@ -44,7 +44,12 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
    * @param plugin The plugin instance to register.
    */
   public setPlugin(type: PluginType, name: PluginName, plugin: T) {
-    const registry = this.registry.get(type);
+    const registry = this.registry.get(type) as Map<PluginName, T>;
+    if (registry.has(name)) {
+      throw new InternalServerErrorException(
+        `setPlugin: Unable to setPlugin with name ${name} of type ${type} (duplicate names)`,
+      );
+    }
     registry.set(name, plugin);
   }
 
@@ -54,7 +59,7 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
    * @returns An array containing all the registered plugins.
    */
   public getAllByType<PT extends PluginType>(type: PT): PluginInstance<PT>[] {
-    const registry = this.registry.get(type);
+    const registry = this.registry.get(type) as Map<PluginName, T>;
     return Array.from(registry.values()) as PluginInstance<PT>[];
   }
 
@@ -76,7 +81,7 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
    * @returns The plugin associated with the given key, or `undefined` if not found.
    */
   public getPlugin<PT extends PluginType>(type: PT, name: PluginName) {
-    const registry = this.registry.get(type);
+    const registry = this.registry.get(type) as Map<PluginName, T>;
     const plugin = registry.get(name);
     return plugin ? (plugin as PluginInstance<PT>) : undefined;
   }
