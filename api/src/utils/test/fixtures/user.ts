@@ -9,13 +9,20 @@
 import mongoose from 'mongoose';
 
 import { UserCreateDto } from '@/user/dto/user.dto';
-import { UserModel, User } from '@/user/schemas/user.schema';
+import { User, UserModel } from '@/user/schemas/user.schema';
 import { hash } from '@/user/utilities/bcryptjs';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
 
 import { installRoleFixtures } from './role';
+
+interface UserFxiture extends User {
+  state?: boolean;
+  language?: string;
+  timezone?: string;
+  avatar?: string | null;
+}
 
 export const users: UserCreateDto[] = [
   {
@@ -28,7 +35,7 @@ export const users: UserCreateDto[] = [
   },
 ];
 
-export const userDefaultValues: TFixturesDefaultValues<User> = {
+export const userDefaultValues: TFixturesDefaultValues<UserFxiture> = {
   state: true,
   language: 'en',
   timezone: 'Europe/Berlin',
@@ -38,7 +45,7 @@ export const userDefaultValues: TFixturesDefaultValues<User> = {
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>
-  getFixturesWithDefaultValues<User>({
+  getFixturesWithDefaultValues<UserCreateDto>({
     fixtures: users,
     defaultValues: userDefaultValues,
   });

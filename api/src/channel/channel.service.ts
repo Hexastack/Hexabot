@@ -9,6 +9,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+import { ChannelName } from '@/channel/types';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
@@ -23,7 +24,6 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import ChannelHandler from './lib/Handler';
-import { ChannelName } from './types';
 
 @Injectable()
 export class ChannelService {
@@ -156,26 +156,36 @@ export class ChannelService {
     }
 
     // Create test subscriber for the current user
-    const testSubscriber = await this.subscriberService.findOneOrCreate(
-      {
-        foreign_id: req.session.passport.user.id,
-      },
-      {
-        id: req.session.passport.user.id,
-        foreign_id: req.session.passport.user.id,
-        first_name: req.session.passport.user.first_name,
-        last_name: req.session.passport.user.last_name,
-        locale: '',
-        language: '',
-        gender: '',
-        country: '',
-        labels: [],
-        channel: {
-          name: CONSOLE_CHANNEL_NAME,
-          isSocket: true,
+    // TODO: check if req.session.passport.user.id can be undefined could cause bugs
+    const testSubscriber =
+      await this.subscriberService.findByIdOrCreateTestSubscriber(
+        {
+          foreign_id: req.session.passport.user.id,
         },
-      },
-    );
+        {
+          id: req.session.passport.user.id,
+          foreign_id: req.session.passport.user.id,
+          first_name: req.session.passport.user.first_name,
+          last_name: req.session.passport.user.last_name,
+          locale: '',
+          language: '',
+          gender: '',
+          country: '',
+          labels: [],
+          channel: {
+            name: CONSOLE_CHANNEL_NAME,
+            isSocket: true,
+          } as {
+            name: ChannelName;
+            isSocket: boolean;
+          },
+          assignedTo: null,
+          avatar: null,
+          assignedAt: null,
+          lastvisit: null,
+          retainedFrom: null,
+        },
+      );
 
     // Update session (end user is both a user + subscriber)
     req.session.web = {

@@ -244,8 +244,24 @@ export class ChatService {
       if (!subscriber) {
         const subscriberData = await handler.getUserData(event);
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
+        const currentDate = new Date();
         subscriberData.channel = event.getChannelData();
-        subscriber = await this.subscriberService.create(subscriberData);
+        subscriber = await this.subscriberService.create({
+          country: subscriberData.country,
+          first_name: subscriberData.first_name,
+          last_name: subscriberData.last_name,
+          gender: subscriberData.gender,
+          language: subscriberData.language,
+          locale: subscriberData.locale,
+          channel: subscriberData.channel,
+          foreign_id: subscriberData.foreign_id,
+          labels: subscriberData.labels,
+          lastvisit: subscriberData.lastvisit || currentDate,
+          retainedFrom: subscriberData.retainedFrom || currentDate,
+          assignedAt: subscriberData.assignedAt || null,
+          assignedTo: subscriberData.assignedTo || null,
+          avatar: subscriberData.avatar || null,
+        });
       } else {
         // Already existing user profile
         // Exec lastvisit hook

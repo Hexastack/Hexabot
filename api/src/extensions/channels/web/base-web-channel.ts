@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
@@ -49,6 +49,7 @@ import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { BaseSchema } from '@/utils/generics/base-schema';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
@@ -227,15 +228,17 @@ export default abstract class BaseWebChannelHandler<
           createdAt: anyMessage.createdAt,
         });
       } else {
-        const message = this.formatOutgoingHistoryMessage(anyMessage);
-        formattedMessages.push({
-          ...message,
+        const baseMessage = this.formatOutgoingHistoryMessage(anyMessage);
+        const outgoingMessage = {
+          ...baseMessage,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
-        });
+        } as Web.OutgoingMessage;
+
+        formattedMessages.push(outgoingMessage);
       }
     }
 
@@ -443,7 +446,7 @@ export default abstract class BaseWebChannelHandler<
       return subscriber;
     }
 
-    const newProfile: SubscriberCreateDto = {
+    const newProfile: Omit<Subscriber, keyof BaseSchema> = {
       foreign_id: this.generateId(),
       first_name: data.first_name ? data.first_name.toString() : 'Anon.',
       last_name: data.last_name ? data.last_name.toString() : 'Web User',
@@ -461,7 +464,9 @@ export default abstract class BaseWebChannelHandler<
       gender: 'male',
       country: '',
       labels: [],
+      avatar: null,
     };
+
     const subscriber = await this.subscriberService.create(newProfile);
     // Init session
     const profile: SubscriberFull = {
@@ -520,6 +525,11 @@ export default abstract class BaseWebChannelHandler<
 
     const fetchMessages = async (req: Request, res: Response, retrials = 1) => {
       try {
+        if (!req.query.since) {
+          throw new BadRequestException(
+            `QueryParam 'since' is missing: Unable to fetchMessages()`,
+          );
+        }
         const since = new Date(req.query.since.toString());
         const messages = await this.pollMessages(req, since);
         if (messages.length === 0 && retrials <= 5) {
@@ -722,7 +732,7 @@ export default abstract class BaseWebChannelHandler<
     return {
       isSocket: this.isSocketRequest(req),
       ipAddress: this.getIpAddress(req),
-      agent: req.headers['user-agent'],
+      agent: req.headers['user-agent']!,
     };
   }
 
@@ -966,7 +976,7 @@ export default abstract class BaseWebChannelHandler<
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: message.attachment.payload.url,
+        url: message.attachment.payload.url!,
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {

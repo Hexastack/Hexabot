@@ -29,6 +29,7 @@ export const subscriberInstance: Subscriber = {
   },
   labels: [],
   ...modelInstance,
+  avatar: null,
 };
 
 export const subscriberWithoutLabels: Subscriber = {

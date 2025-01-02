@@ -111,6 +111,9 @@ export class SubscriberCreateDto {
   @IsNotEmpty()
   @IsChannelData()
   channel: SubscriberChannelData<ChannelName>;
+
+  @IsOptional()
+  avatar?: string | null = null;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
