@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,7 +21,7 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { Permission, PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
+import { Role, RoleFull, RoleModel } from '../schemas/role.schema';
 import { User, UserModel } from '../schemas/user.schema';
 
 import { roleFixtures } from './../../utils/test/fixtures/role';
@@ -55,7 +55,7 @@ describe('RoleService', () => {
     userRepository = module.get<UserRepository>(UserRepository);
     permissionRepository =
       module.get<PermissionRepository>(PermissionRepository);
-    role = await roleRepository.findOne({ name: 'admin' });
+    role = (await roleRepository.findOne({ name: 'admin' })) as Role;
     users = (await userRepository.findAll()).filter((user) =>
       user.roles.includes(role.id),
     );
@@ -105,7 +105,7 @@ describe('RoleService', () => {
         };
         acc.push(roleWithPermissionsAndUsers);
         return acc;
-      }, []);
+      }, [] as RoleFull[]);
 
       expect(roleRepository.findPageAndPopulate).toHaveBeenCalledWith(
         {},
