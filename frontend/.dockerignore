@@ -3,6 +3,8 @@ npm-debug.log
 Dockerfile*
 docker-compose*
 .dockerignore
+.eslintrc.js
+.eslintrc-staged.js
 .git
 .gitignore
 README.md
