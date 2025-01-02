@@ -39,7 +39,7 @@
     "typecheck": "tsc --noEmit",
     "reset": "npm install && npm run containers:restart",
     "reset:hard": "npm clean-install && npm run containers:rebuild",
-    "migrate": "npx ts-migrate-mongoose --config-path ./migrations/config/migrate.ts"
+    "cli": "DEBUG=ts-node* ts-node --files --log-error --compiler-options '{\"diagnostics\": true}' src/cli.ts"
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --fix -c \".eslintrc-staged.js\""
@@ -77,6 +77,7 @@
     "mongoose-lean-getters": "^1.1.0",
     "mongoose-lean-virtuals": "^0.9.1",
     "multer": "^1.4.5-lts.1",
+    "nest-commander": "^3.15.0",
     "nestjs-dynamic-providers": "^0.3.4",
     "nestjs-i18n": "^10.4.0",
     "nodemailer": "^6.9.13",
@@ -143,7 +144,8 @@
   },
   "optionalDependencies": {
     "@css-inline/css-inline-linux-arm64-musl": "^0.14.1",
-    "@resvg/resvg-js-linux-arm64-musl": "^2.6.2"
+    "@resvg/resvg-js-linux-arm64-musl": "^2.6.2",
+    "@resvg/resvg-js-darwin-arm64": "^2.6.2"
   },
   "overrides": {
     "mjml": "5.0.0-alpha.4"
