@@ -65,64 +65,9 @@ $ npm run test:cov
 
 ## Migrations
 
-Hexabot includes a migrations feature to help manage database schema and data changes over time. Migrations allow you to apply or revert changes to the database in a consistent and controlled manner.
+Hexabot includes a migration module to help manage database schema and data changes over time. Migrations allows us to apply or revert changes to the database and keep it in sync with the version release.
 
-### Creating a Migration
-
-To create a new migration, use the following command from the root directory of Hexabot:
-
-```bash
-$ npx hexabot migrate create <migration-name>
-```
-
-Example:
-
-```bash
-$ npx hexabot migrate create all-users-language-fr
-```
-
-This command generates a new migration file in the `/api/migrations` folder. The file will look like this:
-
-```typescript
-import getModels from '@/models/index';
-
-export async function up(): Promise<void> {
-  // Write migration here
-}
-
-export async function down(): Promise<void> {
-  // Write migration here
-}
-```
-
-Within the migration file, you can define the changes to be made in the up() function. For example, if you want to update the language field of all users to 'fr', your migration might look like this:
-
-```typescript
-import getModels from '@/models/index';
-
-export async function up(): Promise<void> {
-  const { UserModel } = await getModels();
-  await UserModel.updateMany({}, { language: 'fr' });
-}
-
-export async function down(): Promise<void> {}
-```
-
-### Running Migrations Up
-
-You can run the following command to run all pending migrations:
-
-```bash
-$ npx hexabot migrate up
-```
-
-### Running Migrations Manually
-
-If you want to run specific actions manually, you can get help by running the following command:
-
-```bash
-$ npx hexabot migrate help
-```
+Check the Migration README file for more : [Migration Module](./src/migration/README.md)
 
 ## Documentation
 
