@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
@@ -24,7 +24,7 @@ export class ContentTypeRepository extends BaseRepository<ContentType> {
     readonly eventEmitter: EventEmitter2,
     @InjectModel(ContentType.name) readonly model: Model<ContentType>,
     @InjectModel(Content.name) private readonly contentModel: Model<Content>,
-    private readonly blockService: BlockService,
+    @Optional() private readonly blockService?: BlockService,
   ) {
     super(eventEmitter, model, ContentType);
   }
@@ -49,7 +49,7 @@ export class ContentTypeRepository extends BaseRepository<ContentType> {
     criteria: TFilterQuery<ContentType>,
   ) {
     const entityId: string = criteria._id as string;
-    const associatedBlocks = await this.blockService.findOne({
+    const associatedBlocks = await this.blockService!.findOne({
       'options.content.entity': entityId,
     });
     if (associatedBlocks) {
