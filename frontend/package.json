@@ -13,6 +13,9 @@
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit --downlevelIteration"
   },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix -c \".eslintrc-staged.js\""
+  },
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^2.0.3",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
@@ -52,7 +55,8 @@
     "eslint": "^8.42.0",
     "eslint-config-next": "14.2.3",
     "eslint-import-resolver-typescript": "~3.6.1",
-    "eslint-plugin-license-header": "^0.6.1",
+    "eslint-plugin-header": "^3.1.1",
+    "lint-staged": "^15.3.0",
     "random-seed": "^0.3.0",
     "typescript": "^5.5.3"
   },

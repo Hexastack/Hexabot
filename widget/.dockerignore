@@ -3,6 +3,8 @@
 .dockerignore
 .gitignore
 .env
+.eslintrc.json
+.eslintrc-staged.json
 config
 build
 dist
