@@ -52,8 +52,8 @@ export class MigrationService implements OnApplicationBootstrap {
     }
     this.logger.log('Mongoose connection established');
 
-    const isProduction = config.env.toLowerCase().includes('prod');
-    if (!isProduction && config.mongo.autoMigrate) {
+    const isCLI = Boolean(process.env.HEXABOT_CLI);
+    if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
       const { value: version = '2.1.9' } =
         await this.metadataService.getMetadata('db-version');

@@ -149,9 +149,11 @@ export const config: Config = {
       process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
     dbName: process.env.MONGO_DB || 'hexabot',
     autoMigrate:
-      process.env.MONGO_AUTO_MIGRATE === 'true'
-        ? Boolean(process.env.MONGO_AUTO_MIGRATE)
-        : false,
+      // Either auto-migration is explicitly enabled and the node is primary (cluster case)
+      (process.env.MONGO_AUTO_MIGRATE === 'true' &&
+        (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
+      // Otherwise, run only in dev mode
+      !(process.env.NODE_ENV || 'development').toLowerCase().includes('prod'),
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {
