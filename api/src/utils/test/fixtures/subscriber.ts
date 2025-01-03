@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
-import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -84,19 +84,21 @@ const subscribers: SubscriberCreateDto[] = [
   },
 ];
 
-export const subscriberDefaultValues: TFixturesDefaultValues<Subscriber> = {
-  timezone: 0,
-  assignedTo: null,
-  assignedAt: null,
-  lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  avatar: null,
-};
+export const subscriberDefaultValues: TFixturesDefaultValues<SubscriberCreateDto> =
+  {
+    timezone: 0,
+    assignedTo: null,
+    assignedAt: null,
+    lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    avatar: null,
+  };
 
-export const subscriberFixtures = getFixturesWithDefaultValues<Subscriber>({
-  fixtures: subscribers,
-  defaultValues: subscriberDefaultValues,
-});
+export const subscriberFixtures =
+  getFixturesWithDefaultValues<SubscriberCreateDto>({
+    fixtures: subscribers,
+    defaultValues: subscriberDefaultValues,
+  });
 
 export const installSubscriberFixtures = async () => {
   const Subscriber = mongoose.model(

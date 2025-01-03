@@ -86,19 +86,19 @@ export class SubscriberStub extends BaseSchema {
     type: Date,
     default: null,
   })
-  assignedAt?: Date;
+  assignedAt: Date | null;
 
   @Prop({
     type: Date,
     default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
   })
-  lastvisit?: Date;
+  lastvisit: Date;
 
   @Prop({
     type: Date,
     default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
   })
-  retainedFrom?: Date;
+  retainedFrom: Date;
 
   @Prop({
     type: Object,
@@ -110,7 +110,7 @@ export class SubscriberStub extends BaseSchema {
     ref: 'Attachment',
     default: null,
   })
-  avatar?: unknown;
+  avatar?: unknown | null;
 
   @Prop({
     type: Object,
@@ -132,10 +132,10 @@ export class Subscriber extends SubscriberStub {
   labels: string[];
 
   @Transform(({ obj }) => (obj.assignedTo ? obj.assignedTo.toString() : null))
-  assignedTo?: string;
+  assignedTo: string | null;
 
   @Transform(({ obj }) => obj.avatar?.toString() || null)
-  avatar?: string;
+  avatar: string | null;
 }
 
 @Schema({ timestamps: true })
@@ -144,7 +144,7 @@ export class SubscriberFull extends SubscriberStub {
   labels: Label[];
 
   @Type(() => User)
-  assignedTo?: User | null;
+  assignedTo: User | null;
 
   @Type(() => Attachment)
   avatar: Attachment | null;

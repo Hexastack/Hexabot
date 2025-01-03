@@ -9,6 +9,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+import { ChannelName } from '@/channel/types';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
@@ -23,7 +24,6 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 
 import ChannelHandler from './lib/Handler';
-import { ChannelName } from './types';
 
 @Injectable()
 export class ChannelService {
@@ -161,10 +161,9 @@ export class ChannelService {
         foreign_id: req.session.passport.user.id,
       },
       {
-        id: req.session.passport.user.id,
         foreign_id: req.session.passport.user.id,
-        first_name: req.session.passport.user.first_name,
-        last_name: req.session.passport.user.last_name,
+        first_name: req.session.passport.user.first_name || 'Anonymous',
+        last_name: req.session.passport.user.last_name || 'Anonymous',
         locale: '',
         language: '',
         gender: '',
@@ -173,7 +172,15 @@ export class ChannelService {
         channel: {
           name: CONSOLE_CHANNEL_NAME,
           isSocket: true,
+        } as {
+          name: ChannelName;
+          isSocket: boolean;
         },
+        assignedTo: null,
+        avatar: null,
+        assignedAt: null,
+        lastvisit: new Date(),
+        retainedFrom: new Date(),
       },
     );
 

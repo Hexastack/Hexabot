@@ -21,10 +21,10 @@ import { StdIncomingMessage, StdOutgoingMessage } from './types/message';
 export class MessageStub extends BaseSchema {
   @Prop({
     type: String,
-    required: false,
+    required: true,
     //TODO : add default value for mid
   })
-  mid?: string;
+  mid: string;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
