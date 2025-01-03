@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import {
   Avatar,
@@ -50,30 +51,26 @@ export const SubscribersList = (props: {
           loadingMore={isFetching}
           onYReachEnd={handleLoadMore}
         >
-          {subscribers.map((conversation) => (
+          {subscribers.map((subscriber) => (
             <Conversation
-              onClick={() => chat.setSubscriberId(conversation.id)}
+              onClick={() => chat.setSubscriberId(subscriber.id)}
               className="changeColor"
-              key={conversation.id}
-              active={chat.subscriber?.id === conversation.id}
+              key={subscriber.id}
+              active={chat.subscriber?.id === subscriber.id}
             >
               <Avatar
-                src={getAvatarSrc(
-                  apiUrl,
-                  EntityType.SUBSCRIBER,
-                  conversation.foreign_id,
-                )}
+                src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
               />
               <Conversation.Content>
                 <div>
-                  {conversation.first_name} {conversation.last_name}
+                  {subscriber.first_name} {subscriber.last_name}
                 </div>
                 <div className="cs-conversation__info">
-                  {conversation.lastvisit?.toLocaleString(i18n.language)}
+                  {subscriber.lastvisit?.toLocaleString(i18n.language)}
                 </div>
               </Conversation.Content>
               <Conversation.Operations visible>
-                <Chip size="small" label={conversation.channel.name} />
+                <Chip size="small" label={subscriber.channel.name} />
               </Conversation.Operations>
             </Conversation>
           ))}
