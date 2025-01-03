@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -15,8 +15,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import {
-  AttachmentModel,
   Attachment,
+  AttachmentModel,
 } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -80,13 +80,15 @@ describe('ContentController', () => {
     contentService = module.get<ContentService>(ContentService);
     attachmentService = module.get<AttachmentService>(AttachmentService);
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    contentType = await contentTypeService.findOne({ name: 'Product' });
-    content = await contentService.findOne({
+    contentType = (await contentTypeService.findOne({
+      name: 'Product',
+    })) as ContentType;
+    content = (await contentService.findOne({
       title: 'Jean',
-    });
-    attachment = await attachmentService.findOne({
+    })) as Content;
+    attachment = (await attachmentService.findOne({
       name: 'store1.jpg',
-    });
+    })) as Attachment;
 
     pageQuery = getPageQuery<Content>({
       limit: 1,
@@ -102,12 +104,17 @@ describe('ContentController', () => {
 
   describe('findOne', () => {
     it('should find content by ID', async () => {
-      const contentType = await contentTypeService.findOne(content.entity);
+      const contentType = (await contentTypeService.findOne(
+        content.entity,
+      )) as ContentType;
       jest.spyOn(contentService, 'findOne');
-      const result = await contentController.findOne(content.id, []);
+      const result = (await contentController.findOne(
+        content.id,
+        [],
+      )) as Content;
       expect(contentService.findOne).toHaveBeenCalledWith(content.id);
       expect(result).toEqualPayload({
-        ...contentFixtures.find(({ title }) => title === 'Jean'),
+        ...(contentFixtures.find(({ title }) => title === 'Jean') as Content),
         entity: contentType.id,
       });
     });
@@ -174,7 +181,9 @@ describe('ContentController', () => {
 
   describe('update', () => {
     it('should update and return the updated content', async () => {
-      const contentType = await contentTypeService.findOne(content.entity);
+      const contentType = (await contentTypeService.findOne(
+        content.entity,
+      )) as ContentType;
       updatedContent = {
         ...contentFixtures.find(({ title }) => title === 'Jean'),
         entity: contentType.id,
@@ -200,7 +209,9 @@ describe('ContentController', () => {
 
   describe('deleteOne', () => {
     it('should delete an existing Content', async () => {
-      const content = await contentService.findOne({ title: 'Adaptateur' });
+      const content = (await contentService.findOne({
+        title: 'Adaptateur',
+      })) as Content;
       const result = await contentService.deleteOne(content.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
@@ -258,9 +269,9 @@ should not appear,store 3,true,image.jpg`;
       jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
       jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvData);
 
-      const contentType = await contentTypeService.findOne({
+      const contentType = (await contentTypeService.findOne({
         name: 'Store',
-      });
+      })) as ContentType;
 
       const result = await contentController.import({
         idFileToImport: attachment.id,
@@ -291,9 +302,9 @@ should not appear,store 3,true,image.jpg`;
     });
 
     it('should throw NotFoundException if file is not found in attachment database', async () => {
-      const contentType = await contentTypeService.findOne({
+      const contentType = (await contentTypeService.findOne({
         name: 'Product',
-      });
+      })) as ContentType;
       jest.spyOn(contentTypeService, 'findOne');
       await expect(
         contentController.import({

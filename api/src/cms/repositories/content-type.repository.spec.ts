@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -77,7 +77,9 @@ describe('ContentTypeRepository', () => {
   describe('deleteCascadeOne', () => {
     it('should delete a contentType by id if no associated block was found', async () => {
       jest.spyOn(blockService, 'findOne').mockResolvedValueOnce(null);
-      const contentType = await contentTypeModel.findOne({ name: 'Store' });
+      const contentType = (await contentTypeModel.findOne({
+        name: 'Store',
+      })) as ContentType;
       const result = await contentTypeRepository.deleteOne(contentType.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       const contents = await contentModel.find({
