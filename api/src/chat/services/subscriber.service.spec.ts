@@ -90,9 +90,9 @@ describe('SubscriberService', () => {
   describe('findOneAndPopulate', () => {
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
       jest.spyOn(subscriberService, 'findOneAndPopulate');
-      const subscriber = await subscriberRepository.findOne({
+      const subscriber = (await subscriberRepository.findOne({
         first_name: 'Jhon',
-      });
+      })) as Subscriber;
       const result = await subscriberService.findOneAndPopulate(subscriber.id);
 
       expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
@@ -133,7 +133,7 @@ describe('SubscriberService', () => {
         await subscriberService.findOneByForeignId('foreign-id-dimelo');
       const subscriber = allSubscribers.find(
         ({ foreign_id }) => foreign_id === 'foreign-id-dimelo',
-      );
+      ) as Subscriber;
 
       expect(subscriberRepository.findOneByForeignId).toHaveBeenCalled();
       expect(result).toEqualPayload({

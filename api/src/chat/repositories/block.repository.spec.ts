@@ -51,13 +51,15 @@ describe('BlockRepository', () => {
     validIds = ['64abc1234def567890fedcba', '64abc1234def567890fedcbc'];
     validCategory = '64def5678abc123490fedcba';
 
-    category = await categoryRepository.findOne({ label: 'default' });
-    hasPreviousBlocks = await blockRepository.findOne({
+    category = (await categoryRepository.findOne({
+      label: 'default',
+    })) as Category;
+    hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
-    });
-    hasNextBlocks = await blockRepository.findOne({
+    })) as Block;
+    hasNextBlocks = (await blockRepository.findOne({
       name: 'hasNextBlocks',
-    });
+    })) as Block;
   });
 
   afterEach(jest.clearAllMocks);
@@ -191,7 +193,7 @@ describe('BlockRepository', () => {
         category: validCategory,
         nextBlocks: [],
         attachedBlock: null,
-      } as Block);
+      } as unknown as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
@@ -233,7 +235,7 @@ describe('BlockRepository', () => {
           attachedBlock: null,
           nextBlocks: [validIds[0], validIds[1]],
         },
-      ] as Block[];
+      ] as unknown[] as Block[];
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 

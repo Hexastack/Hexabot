@@ -142,15 +142,17 @@ describe('BlockController', () => {
     blockController = module.get<BlockController>(BlockController);
     blockService = module.get<BlockService>(BlockService);
     categoryService = module.get<CategoryService>(CategoryService);
-    category = await categoryService.findOne({ label: 'default' });
-    block = await blockService.findOne({ name: 'first' });
-    blockToDelete = await blockService.findOne({ name: 'buttons' });
-    hasNextBlocks = await blockService.findOne({
+    category = (await categoryService.findOne({
+      label: 'default',
+    })) as Category;
+    block = (await blockService.findOne({ name: 'first' })) as Block;
+    blockToDelete = (await blockService.findOne({ name: 'buttons' })) as Block;
+    hasNextBlocks = (await blockService.findOne({
       name: 'hasNextBlocks',
-    });
-    hasPreviousBlocks = await blockService.findOne({
+    })) as Block;
+    hasPreviousBlocks = (await blockService.findOne({
       name: 'hasPreviousBlocks',
-    });
+    })) as Block;
   });
 
   afterEach(jest.clearAllMocks);
@@ -225,11 +227,11 @@ describe('BlockController', () => {
 
     it('should find one block by id, and populate its category and an empty previousBlocks', async () => {
       jest.spyOn(blockService, 'findOneAndPopulate');
-      block = await blockService.findOne({ name: 'attachment' });
-      const result = await blockController.findOne(
+      block = (await blockService.findOne({ name: 'attachment' })) as Block;
+      const result = (await blockController.findOne(
         block.id,
         FIELDS_TO_POPULATE,
-      );
+      )) as Block;
       expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(block.id);
       expect(result).toEqualPayload({
         ...blockFixtures.find(({ name }) => name === 'attachment'),

@@ -62,7 +62,7 @@ import {
 } from '../schemas/conversation.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
@@ -193,9 +193,9 @@ describe('BlockService', () => {
     });
 
     const [block] = await blockService.findAndPopulate({ patterns: ['Hi'] });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
-    });
+    })) as Subscriber;
 
     event.setSender(webSubscriber);
 
@@ -260,9 +260,9 @@ describe('BlockService', () => {
       ipAddress: '1.1.1.1',
       agent: 'Chromium',
     });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
-    });
+    })) as Subscriber;
     event.setSender(webSubscriber);
 
     const clearMock = jest
@@ -314,9 +314,9 @@ describe('BlockService', () => {
       ipAddress: '1.1.1.1',
       agent: 'Chromium',
     });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-2',
-    });
+    })) as Subscriber;
     event.setSender(webSubscriber);
     const captured = await botService.processConversationMessage(event);
 

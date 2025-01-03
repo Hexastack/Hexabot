@@ -98,22 +98,22 @@ export const baseBlockInstance = {
   ...modelInstance,
 };
 
-export const blockEmpty: BlockFull = {
+export const blockEmpty = {
   ...baseBlockInstance,
   name: 'Empty',
   patterns: [],
   message: [''],
-};
+} as unknown as BlockFull;
 
 // Translation Data
 export const textResult = ['Hi back !'];
 
-export const textBlock: BlockFull = {
+export const textBlock = {
   name: 'message',
   patterns: ['Hi'],
   message: textResult,
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const quickRepliesResult = [
   "What's your favorite color?",
@@ -122,7 +122,7 @@ export const quickRepliesResult = [
   'Red',
 ];
 
-export const quickRepliesBlock: BlockFull = {
+export const quickRepliesBlock = {
   name: 'message',
   patterns: ['colors'],
   message: {
@@ -146,7 +146,7 @@ export const quickRepliesBlock: BlockFull = {
     ],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const buttonsResult = [
   'What would you like to know about us?',
@@ -155,7 +155,7 @@ export const buttonsResult = [
   'Approach',
 ];
 
-export const buttonsBlock: BlockFull = {
+export const buttonsBlock = {
   name: 'message',
   patterns: ['about'],
   message: {
@@ -179,9 +179,9 @@ export const buttonsBlock: BlockFull = {
     ],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
-export const attachmentBlock: BlockFull = {
+export const attachmentBlock = {
   name: 'message',
   patterns: ['image'],
   message: {
@@ -195,7 +195,7 @@ export const attachmentBlock: BlockFull = {
     quickReplies: [],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const allBlocksStringsResult = [
   'Hi back !',
@@ -214,7 +214,7 @@ export const allBlocksStringsResult = [
 
 /////////
 
-export const blockGetStarted: BlockFull = {
+export const blockGetStarted = {
   ...baseBlockInstance,
   name: 'Get Started',
   patterns: [
@@ -245,7 +245,7 @@ export const blockGetStarted: BlockFull = {
   ],
   trigger_labels: customerLabelsMock,
   message: ['Welcome! How are you ? '],
-};
+} as unknown as BlockFull;
 
 const patternsProduct: Pattern[] = [
   'produit',
@@ -262,7 +262,7 @@ const patternsProduct: Pattern[] = [
   ],
 ];
 
-export const blockProductListMock: BlockFull = {
+export const blockProductListMock = {
   ...baseBlockInstance,
   name: 'test_list',
   patterns: patternsProduct,
@@ -278,7 +278,7 @@ export const blockProductListMock: BlockFull = {
       limit: 0,
     },
   },
-};
+} as unknown as BlockFull;
 
 export const blockCarouselMock: BlockFull = {
   ...blockProductListMock,

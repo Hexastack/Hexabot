@@ -128,12 +128,14 @@ describe('MessageController', () => {
     userService = module.get<UserService>(UserService);
     subscriberService = module.get<SubscriberService>(SubscriberService);
     messageController = module.get<MessageController>(MessageController);
-    message = await messageService.findOne({ mid: 'mid-1' });
-    sender = await subscriberService.findOne(message.sender);
-    recipient = await subscriberService.findOne(message.recipient);
-    user = await userService.findOne(message.sentBy);
-    allSubscribers = await subscriberService.findAll();
-    allUsers = await userService.findAll();
+    message = (await messageService.findOne({ mid: 'mid-1' })) as Message;
+    sender = (await subscriberService.findOne(message.sender!)) as Subscriber;
+    recipient = (await subscriberService.findOne(
+      message.recipient!,
+    )) as Subscriber;
+    user = (await userService.findOne(message.sentBy!)) as User;
+    allSubscribers = (await subscriberService.findAll()) as Subscriber[];
+    allUsers = (await userService.findAll()) as User[];
     allMessages = await messageService.findAll();
   });
 
@@ -189,10 +191,10 @@ describe('MessageController', () => {
       const result = await messageController.findPage(pageQuery, [], {});
       const messagesWithSenderAndRecipient = allMessages.map((message) => ({
         ...message,
-        sender: allSubscribers.find(({ id }) => id === message['sender']).id,
-        recipient: allSubscribers.find(({ id }) => id === message['recipient'])
+        sender: allSubscribers.find(({ id }) => id === message['sender'])!.id,
+        recipient: allSubscribers.find(({ id }) => id === message['recipient'])!
           .id,
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
       }));
 
       expect(messageService.find).toHaveBeenCalledWith({}, pageQuery);
@@ -210,7 +212,7 @@ describe('MessageController', () => {
         ...message,
         sender: allSubscribers.find(({ id }) => id === message['sender']),
         recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
       }));
 
       expect(messageService.findAndPopulate).toHaveBeenCalledWith(
