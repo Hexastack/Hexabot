@@ -11,8 +11,8 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsObject,
-  IsString,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
@@ -25,9 +25,8 @@ import { IsValidMessageText } from '../validation-rules/is-valid-message-text';
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })
-  @IsOptional()
   @IsString()
-  mid?: string;
+  mid: string;
 
   @ApiProperty({ description: 'Reply to Message id', type: String })
   @IsOptional()
