@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -73,6 +73,7 @@ export class AttachmentService extends BaseService<Attachment> {
   /**
    * Downloads a user's profile picture either from a 3rd party storage system or from a local directory based on configuration.
    *
+   * @deprecated Use AttachmentService.download() instead
    * @param foreign_id The unique identifier of the user, used to locate the profile picture.
    * @returns A `StreamableFile` containing the user's profile picture.
    */
@@ -100,6 +101,7 @@ export class AttachmentService extends BaseService<Attachment> {
   /**
    * Uploads a profile picture to either 3rd party storage system or locally based on the configuration.
    *
+   * @deprecated use store() method instead
    * @param res - The response object from which the profile picture will be buffered or piped.
    * @param filename - The filename
    */
@@ -157,6 +159,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
    * Otherwise, uploads files to the local directory.
    *
+   * @deprecated use store() instead
    * @param files - An array of files to upload.
    * @returns A promise that resolves to an array of uploaded attachments.
    */
@@ -241,18 +244,21 @@ export class AttachmentService extends BaseService<Attachment> {
   /**
    * Downloads an attachment identified by the provided parameters.
    *
-   * @param  attachment - The attachment to download.
+   * @param attachment - The attachment to download.
+   * @param rootDir - The root directory where attachment shoud be located.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  async download(attachment: Attachment) {
+  async download(
+    attachment: Attachment,
+    rootDir = config.parameters.uploadDir,
+  ) {
     if (this.getStoragePlugin()) {
       return await this.getStoragePlugin().download(attachment);
     } else {
-      if (!fileExists(attachment.location)) {
+      const path = join(rootDir, attachment.location);
+      if (!fileExists(path)) {
         throw new NotFoundException('No file was found');
       }
-
-      const path = join(config.parameters.uploadDir, attachment.location);
 
       const disposition = `attachment; filename="${encodeURIComponent(
         attachment.name,
@@ -272,18 +278,22 @@ export class AttachmentService extends BaseService<Attachment> {
   /**
    * Downloads an attachment identified by the provided parameters as a Buffer.
    *
-   * @param  attachment - The attachment to download.
+   * @param attachment - The attachment to download.
+   * @param rootDir - Root folder path where the attachment should be located.
    * @returns A promise that resolves to a Buffer representing the downloaded attachment.
    */
-  async readAsBuffer(attachment: Attachment): Promise<Buffer> {
+  async readAsBuffer(
+    attachment: Attachment,
+    rootDir = config.parameters.uploadDir,
+  ): Promise<Buffer> {
     if (this.getStoragePlugin()) {
       return await this.getStoragePlugin().readAsBuffer(attachment);
     } else {
-      if (!fileExists(attachment.location)) {
+      const path = join(rootDir, attachment.location);
+      if (!fileExists(path)) {
         throw new NotFoundException('No file was found');
       }
-      const filePath = join(config.parameters.uploadDir, attachment.location);
-      return await fs.promises.readFile(filePath); // Reads the file content as a Buffer
+      return await fs.promises.readFile(path); // Reads the file content as a Buffer
     }
   }
 }

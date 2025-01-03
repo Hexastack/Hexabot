@@ -6,22 +6,25 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Model } from 'mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-import { MigrationAction } from './types';
+import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 @Schema({ timestamps: true })
-export class Migration {
+export class Metadata {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 
-  @Prop({ type: String, required: true, enum: MigrationAction })
-  status: string;
+  @Prop({ type: JSON, required: true })
+  value: any;
 }
 
-export const MigrationSchema = SchemaFactory.createForClass(Migration);
+export const MetadataSchema = SchemaFactory.createForClass(Metadata);
 
-export type MigrationDocument = Migration & Document;
+export const MetadataModel: ModelDefinition = LifecycleHookManager.attach({
+  name: Metadata.name,
+  schema: SchemaFactory.createForClass(Metadata),
+});
 
-export type MigrationModel = Model<MigrationDocument>;
+export type MetadataDocument = Metadata & Document;
