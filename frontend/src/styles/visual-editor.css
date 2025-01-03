@@ -124,17 +124,21 @@
   font-size: 20px;
   display: flex;
   flex-direction: row;
-  justify-items: flex-start;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
-  border-radius: 10px 10px 0 0px;
+  border-radius: 10px 10px 0 0;
   width: auto;
   margin-top: -1px;
   margin-left: -1px;
   padding: 12px 20px;
   color: #ffffff;
   font-weight: bolder;
+  white-space: normal;
 }
+
 
 .node-block-field {
   background-color: #f9fbfc;
