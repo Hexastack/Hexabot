@@ -8,6 +8,7 @@
 
 import { join } from 'path';
 
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -23,13 +24,14 @@ import { MigrationService } from './migration.service';
       { name: Migration.name, schema: MigrationSchema },
     ]),
     LoggerModule,
+    HttpModule,
   ],
   providers: [
     MigrationService,
     MigrationCommand,
     {
       provide: 'MONGO_MIGRATION_DIR',
-      useValue: join(process.cwd(), 'src', 'migration', 'migrations'),
+      useValue: join(__dirname, 'migrations'),
     },
   ],
   exports: [MigrationService],

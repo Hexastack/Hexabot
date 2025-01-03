@@ -9,6 +9,7 @@
 import { existsSync, readdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
+import { HttpService } from '@nestjs/axios';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
@@ -40,6 +41,7 @@ export class MigrationService implements OnApplicationBootstrap {
     private moduleRef: ModuleRef,
     private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
+    private readonly httpService: HttpService,
     @InjectModel(Migration.name)
     private readonly migrationModel: MigrationModel,
   ) {
@@ -50,13 +52,13 @@ export class MigrationService implements OnApplicationBootstrap {
     if (mongoose.connection.readyState !== 1) {
       await this.connect();
     }
-    this.logger.log('Mongoose connection established');
+    this.logger.log('Mongoose connection established!');
 
     const isCLI = Boolean(process.env.HEXABOT_CLI);
     if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
-      const { value: version = '2.1.9' } =
-        await this.metadataService.getMetadata('db-version');
+      const metadata = await this.metadataService.getMetadata('db-version');
+      const version = metadata ? metadata.value : '2.1.9';
       await this.run({
         action: MigrationAction.UP,
         version,
@@ -155,11 +157,12 @@ module.exports = {
         await this.metadataService.setMetadata('db-version', newVersion);
       } else {
         await this.runAll(action);
+        this.exit();
       }
     } else {
       await this.runOne({ action, name });
+      this.exit();
     }
-    this.exit();
   }
 
   private async runOne({ name, action }: MigrationRunParams) {
@@ -174,7 +177,7 @@ module.exports = {
 
     try {
       const migration = await this.loadMigrationFile(name);
-      await migration[action]();
+      await migration[action]({ logger: this.logger, http: this.httpService });
       await this.successCallback({
         name,
         action,
