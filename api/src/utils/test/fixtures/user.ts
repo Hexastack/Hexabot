@@ -17,13 +17,6 @@ import { TFixturesDefaultValues } from '../types';
 
 import { installRoleFixtures } from './role';
 
-interface UserFxiture extends User {
-  state?: boolean;
-  language?: string;
-  timezone?: string;
-  avatar?: string | null;
-}
-
 export const users: UserCreateDto[] = [
   {
     username: 'admin',
@@ -35,7 +28,7 @@ export const users: UserCreateDto[] = [
   },
 ];
 
-export const userDefaultValues: TFixturesDefaultValues<UserFxiture> = {
+export const userDefaultValues: TFixturesDefaultValues<User> = {
   state: true,
   language: 'en',
   timezone: 'Europe/Berlin',
@@ -45,7 +38,7 @@ export const userDefaultValues: TFixturesDefaultValues<UserFxiture> = {
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>
-  getFixturesWithDefaultValues<UserCreateDto>({
+  getFixturesWithDefaultValues<User>({
     fixtures: users,
     defaultValues: userDefaultValues,
   });

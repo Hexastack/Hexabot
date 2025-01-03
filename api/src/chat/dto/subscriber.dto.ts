@@ -77,7 +77,7 @@ export class SubscriberCreateDto {
   @IsOptional()
   @IsString()
   @IsObjectId({ message: 'AssignedTo must be a valid ObjectId' })
-  assignedTo?: string | null;
+  assignedTo: string | null = null;
 
   @ApiPropertyOptional({
     description: 'Subscriber assigned at',
@@ -86,23 +86,21 @@ export class SubscriberCreateDto {
   })
   @IsOptional()
   @IsDate()
-  assignedAt?: Date | null;
+  assignedAt: Date | null = null;
 
   @ApiPropertyOptional({
     description: 'Subscriber last visit',
     type: Date,
   })
-  @IsOptional()
   @IsDate()
-  lastvisit?: Date;
+  lastvisit: Date;
 
   @ApiPropertyOptional({
     description: 'Subscriber retained from',
     type: Date,
   })
-  @IsOptional()
   @IsDate()
-  retainedFrom?: Date;
+  retainedFrom: Date;
 
   @ApiProperty({
     description: 'Subscriber channel',
@@ -113,7 +111,7 @@ export class SubscriberCreateDto {
   channel: SubscriberChannelData<ChannelName>;
 
   @IsOptional()
-  avatar?: string | null = null;
+  avatar: string | null = null;
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}

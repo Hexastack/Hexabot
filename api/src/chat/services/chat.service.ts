@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -117,6 +117,11 @@ export class ChatService {
     try {
       const msg = await this.messageService.create(received);
       const populatedMsg = await this.messageService.findOneAndPopulate(msg.id);
+      if (!populatedMsg) {
+        throw new NotFoundException(
+          `Unable to find message ${msg.id} hook:chatbot:received`,
+        );
+      }
       this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
       this.eventEmitter.emit('hook:stats:entry', 'incoming', 'Incoming');
       this.eventEmitter.emit(
@@ -244,24 +249,8 @@ export class ChatService {
       if (!subscriber) {
         const subscriberData = await handler.getUserData(event);
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
-        const currentDate = new Date();
         subscriberData.channel = event.getChannelData();
-        subscriber = await this.subscriberService.create({
-          country: subscriberData.country,
-          first_name: subscriberData.first_name,
-          last_name: subscriberData.last_name,
-          gender: subscriberData.gender,
-          language: subscriberData.language,
-          locale: subscriberData.locale,
-          channel: subscriberData.channel,
-          foreign_id: subscriberData.foreign_id,
-          labels: subscriberData.labels,
-          lastvisit: subscriberData.lastvisit || currentDate,
-          retainedFrom: subscriberData.retainedFrom || currentDate,
-          assignedAt: subscriberData.assignedAt || null,
-          assignedTo: subscriberData.assignedTo || null,
-          avatar: subscriberData.avatar || null,
-        });
+        subscriber = await this.subscriberService.create(subscriberData);
       } else {
         // Already existing user profile
         // Exec lastvisit hook
@@ -304,6 +293,11 @@ export class ChatService {
   @OnEvent('hook:subscriber:postCreate')
   async onSubscriberCreate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
+    if (!subscriber) {
+      throw new NotFoundException(
+        `Unable to find subscriber ${_id} hook:subscriber:postCreate`,
+      );
+    }
     this.websocketGateway.broadcastSubscriberNew(subscriber);
   }
 
@@ -315,6 +309,11 @@ export class ChatService {
   @OnEvent('hook:subscriber:postUpdate')
   async onSubscriberUpdate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
+    if (!subscriber) {
+      throw new NotFoundException(
+        `Unable to find subscriber ${_id} hook:subscriber:postUpdate`,
+      );
+    }
     this.websocketGateway.broadcastSubscriberUpdate(subscriber);
   }
 }

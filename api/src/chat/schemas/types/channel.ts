@@ -9,9 +9,9 @@
 import { ChannelName } from '@/channel/types';
 
 export type SubscriberChannelData<
-  C extends ChannelName = 'undefined-name-channel',
+  C extends ChannelName = 'unknown-channel',
   // K extends keyof SubscriberChannelDict[C] = keyof SubscriberChannelDict[C],
-> = C extends 'undefined-name-channel'
+> = C extends 'unknown-channel'
   ? { name: ChannelName }
   : {
       name: C;
