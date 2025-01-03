@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -34,7 +34,12 @@ export class HelperService {
    * @param name - The helper to be registered.
    */
   public register<H extends BaseHelper>(helper: H) {
-    const helpers = this.registry.get(helper.getType());
+    const helpers = this.registry.get(helper.getType()) as Map<string, H>;
+    if (helpers.has(helper.getName())) {
+      throw new InternalServerErrorException(
+        `Helper with Name ${helper.getName()} and Type ${helper.getType()} already exist`,
+      );
+    }
     helpers.set(helper.getName(), helper);
     this.logger.log(`Helper "${helper.getName()}" has been registered!`);
   }
@@ -48,7 +53,7 @@ export class HelperService {
    * @returns - The helper
    */
   public get<T extends HelperType>(type: T, name: HelperName) {
-    const helpers = this.registry.get(type);
+    const helpers = this.registry.get(type) as Map<string, BaseHelper>;
 
     if (!helpers.has(name)) {
       throw new Error('Uknown type of helpers');
