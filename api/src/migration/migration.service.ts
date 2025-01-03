@@ -13,7 +13,7 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { kebabCase } from 'lodash';
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import leanDefaults from 'mongoose-lean-defaults';
 import leanGetters from 'mongoose-lean-getters';
 import leanVirtuals from 'mongoose-lean-virtuals';
@@ -23,11 +23,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { MetadataService } from '@/setting/services/metadata.service';
 import idPlugin from '@/utils/schema-plugin/id.plugin';
 
-import {
-  Migration,
-  MigrationDocument,
-  MigrationModel,
-} from './migration.schema';
+import { Migration, MigrationDocument } from './migration.schema';
 import {
   MigrationAction,
   MigrationRunParams,
@@ -41,7 +37,7 @@ export class MigrationService implements OnApplicationBootstrap {
     private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
     @InjectModel(Migration.name)
-    private readonly migrationModel: MigrationModel,
+    private readonly migrationModel: Model<Migration>,
   ) {
     this.validateMigrationPath();
   }
@@ -55,8 +51,8 @@ export class MigrationService implements OnApplicationBootstrap {
     const isCLI = Boolean(process.env.HEXABOT_CLI);
     if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
-      const { value: version = '2.1.9' } =
-        await this.metadataService.getMetadata('db-version');
+      const metadata = await this.metadataService.getMetadata('db-version');
+      const version = metadata ? metadata.value : 'v2.1.9';
       await this.run({
         action: MigrationAction.UP,
         version,
@@ -89,8 +85,7 @@ export class MigrationService implements OnApplicationBootstrap {
     // check if file already exists
     const files = await this.getDirFiles();
     const exist = files.some((file) => {
-      const [, ...actualFileName] = file.split('-');
-      const migrationName = actualFileName.join('-');
+      const migrationName = this.getMigrationName(file);
       return migrationName === fileName;
     });
 
@@ -152,14 +147,19 @@ module.exports = {
     if (!name) {
       if (isAutoMigrate) {
         const newVersion = await this.runFromVersion(action, version);
-        await this.metadataService.setMetadata('db-version', newVersion);
+
+        await this.metadataService.findOrCreate({
+          name: 'db-version',
+          value: newVersion,
+        });
       } else {
         await this.runAll(action);
+        this.exit();
       }
     } else {
       await this.runOne({ action, name });
+      this.exit();
     }
-    this.exit();
   }
 
   private async runOne({ name, action }: MigrationRunParams) {
@@ -218,7 +218,7 @@ module.exports = {
   private async runFromVersion(action: MigrationAction, version: string) {
     const files = await this.getDirFiles();
     const migrationFiles = files
-      .filter((fileName) => fileName.includes('migration'))
+      .filter((fileName) => fileName.endsWith('.migration.js'))
       .map((fileName) => {
         const [migrationFileName] = fileName.split('.');
         const [, , ...migrationVersion] = migrationFileName.split('-');
@@ -273,20 +273,26 @@ module.exports = {
     return { exist, migrationDocument };
   }
 
-  private async getMigrationFiles() {
+  async getMigrationFiles() {
     const files = await this.getDirFiles();
     return files.filter((file) => /\.migration\.(js|ts)/.test(file));
   }
 
-  private async findMigrationFileByName(name: string): Promise<string | null> {
+  private getMigrationName(filename: string) {
+    const [, ...migrationNameParts] = filename.split('-');
+    const migrationName = migrationNameParts.join('-');
+
+    return migrationName;
+  }
+
+  async findMigrationFileByName(name: string): Promise<string | null> {
     const files = await this.getMigrationFiles();
     return (
       files.find((file) => {
-        const [, ...migrationNameParts] = file.split('-');
-        const migrationName = migrationNameParts
-          .join('-')
-          .replace(/\.migration\.(js|ts)/, '');
-
+        const migrationName = this.getMigrationName(file).replace(
+          /\.migration\.(js|ts)/,
+          '',
+        );
         return migrationName === kebabCase(name);
       }) || null
     );
@@ -318,7 +324,7 @@ module.exports = {
     }
   }
 
-  private async updateStatus({
+  async updateStatus({
     name,
     action,
     migrationDocument,
