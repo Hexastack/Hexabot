@@ -56,12 +56,12 @@ describe('ContextVarController', () => {
     contextVarController =
       module.get<ContextVarController>(ContextVarController);
     contextVarService = module.get<ContextVarService>(ContextVarService);
-    contextVar = await contextVarService.findOne({
+    contextVar = (await contextVarService.findOne({
       label: 'test context var 1',
-    });
-    contextVarToDelete = await contextVarService.findOne({
+    })) as ContextVar;
+    contextVarToDelete = (await contextVarService.findOne({
       label: 'test context var 2',
-    });
+    })) as ContextVar;
   });
 
   afterEach(jest.clearAllMocks);
@@ -91,11 +91,15 @@ describe('ContextVarController', () => {
   describe('findOne', () => {
     it('should return the existing contextVar', async () => {
       jest.spyOn(contextVarService, 'findOne');
-      const result = await contextVarController.findOne(contextVar.id);
+      const result = (await contextVarController.findOne(
+        contextVar.id,
+      )) as ContextVar;
 
       expect(contextVarService.findOne).toHaveBeenCalledWith(contextVar.id);
       expect(result).toEqualPayload(
-        contextVarFixtures.find(({ label }) => label === contextVar.label),
+        contextVarFixtures.find(
+          ({ label }) => label === contextVar.label,
+        ) as ContextVar,
       );
     });
   });
