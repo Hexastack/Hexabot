@@ -156,36 +156,33 @@ export class ChannelService {
     }
 
     // Create test subscriber for the current user
-    // TODO: check if req.session.passport.user.id can be undefined could cause bugs
-    const testSubscriber =
-      await this.subscriberService.findByIdOrCreateTestSubscriber(
-        {
-          foreign_id: req.session.passport.user.id,
+    const testSubscriber = await this.subscriberService.findOneOrCreate(
+      {
+        foreign_id: req.session.passport.user.id,
+      },
+      {
+        foreign_id: req.session.passport.user.id,
+        first_name: req.session.passport.user.first_name || 'Anonymous',
+        last_name: req.session.passport.user.last_name || 'Anonymous',
+        locale: '',
+        language: '',
+        gender: '',
+        country: '',
+        labels: [],
+        channel: {
+          name: CONSOLE_CHANNEL_NAME,
+          isSocket: true,
+        } as {
+          name: ChannelName;
+          isSocket: boolean;
         },
-        {
-          id: req.session.passport.user.id,
-          foreign_id: req.session.passport.user.id,
-          first_name: req.session.passport.user.first_name,
-          last_name: req.session.passport.user.last_name,
-          locale: '',
-          language: '',
-          gender: '',
-          country: '',
-          labels: [],
-          channel: {
-            name: CONSOLE_CHANNEL_NAME,
-            isSocket: true,
-          } as {
-            name: ChannelName;
-            isSocket: boolean;
-          },
-          assignedTo: null,
-          avatar: null,
-          assignedAt: null,
-          lastvisit: null,
-          retainedFrom: null,
-        },
-      );
+        assignedTo: null,
+        avatar: null,
+        assignedAt: null,
+        lastvisit: new Date(),
+        retainedFrom: new Date(),
+      },
+    );
 
     // Update session (end user is both a user + subscriber)
     req.session.web = {

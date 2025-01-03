@@ -229,14 +229,14 @@ export default abstract class BaseWebChannelHandler<
         });
       } else {
         const baseMessage = this.formatOutgoingHistoryMessage(anyMessage);
-        const outgoingMessage = {
+        const outgoingMessage: Web.OutgoingMessage = {
           ...baseMessage,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
-        } as Web.OutgoingMessage;
+        };
 
         formattedMessages.push(outgoingMessage);
       }

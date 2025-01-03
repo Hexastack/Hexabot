@@ -19,7 +19,6 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   SocketGet,
   SocketPost,
@@ -90,18 +89,6 @@ export class SubscriberService extends BaseService<
    */
   async findOneByForeignId(id: string) {
     return await this.repository.findOneByForeignId(id);
-  }
-
-  // TODO: add tests
-  async findByIdOrCreateTestSubscriber(
-    criteria: TFilterQuery<Subscriber>, // TODO: change to { id : string}
-    subscriber: Omit<Subscriber, 'createdAt' | 'updatedAt'>,
-  ) {
-    const testSubscriber = await this.findOne(criteria);
-    if (!testSubscriber) {
-      return this.repository.create(subscriber);
-    }
-    return testSubscriber;
   }
 
   /**
