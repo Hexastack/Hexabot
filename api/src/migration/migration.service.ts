@@ -13,20 +13,17 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { kebabCase } from 'lodash';
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import leanDefaults from 'mongoose-lean-defaults';
 import leanGetters from 'mongoose-lean-getters';
 import leanVirtuals from 'mongoose-lean-virtuals';
 
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { MetadataService } from '@/setting/services/metadata.service';
 import idPlugin from '@/utils/schema-plugin/id.plugin';
 
-import {
-  Migration,
-  MigrationDocument,
-  MigrationModel,
-} from './migration.schema';
+import { Migration, MigrationDocument } from './migration.schema';
 import {
   MigrationAction,
   MigrationRunParams,
@@ -38,8 +35,9 @@ export class MigrationService implements OnApplicationBootstrap {
   constructor(
     private moduleRef: ModuleRef,
     private readonly logger: LoggerService,
+    private readonly metadataService: MetadataService,
     @InjectModel(Migration.name)
-    private readonly migrationModel: MigrationModel,
+    private readonly migrationModel: Model<Migration>,
   ) {
     this.validateMigrationPath();
   }
@@ -50,10 +48,16 @@ export class MigrationService implements OnApplicationBootstrap {
     }
     this.logger.log('Mongoose connection established');
 
-    const isProduction = config.env.toLowerCase().includes('prod');
-    if (!isProduction && config.mongo.autoMigrate) {
+    const isCLI = Boolean(process.env.HEXABOT_CLI);
+    if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
-      await this.run({ action: MigrationAction.UP });
+      const metadata = await this.metadataService.getMetadata('db-version');
+      const version = metadata ? metadata.value : 'v2.1.9';
+      await this.run({
+        action: MigrationAction.UP,
+        version,
+        isAutoMigrate: true,
+      });
     }
   }
 
@@ -81,8 +85,7 @@ export class MigrationService implements OnApplicationBootstrap {
     // check if file already exists
     const files = await this.getDirFiles();
     const exist = files.some((file) => {
-      const [, ...actualFileName] = file.split('-');
-      const migrationName = actualFileName.join('-');
+      const migrationName = this.getMigrationName(file);
       return migrationName === fileName;
     });
 
@@ -135,13 +138,28 @@ module.exports = {
     }
   }
 
-  public async run({ action, name }: MigrationRunParams) {
+  public async run({
+    action,
+    name,
+    version,
+    isAutoMigrate,
+  }: MigrationRunParams) {
     if (!name) {
-      await this.runAll(action);
+      if (isAutoMigrate) {
+        const newVersion = await this.runFromVersion(action, version);
+
+        await this.metadataService.findOrCreate({
+          name: 'db-version',
+          value: newVersion,
+        });
+      } else {
+        await this.runAll(action);
+        this.exit();
+      }
     } else {
       await this.runOne({ action, name });
+      this.exit();
     }
-    this.exit();
   }
 
   private async runOne({ name, action }: MigrationRunParams) {
@@ -171,14 +189,60 @@ module.exports = {
     }
   }
 
+  isNewerVersion(version1: string, version2: string): boolean {
+    const regex = /^v?(\d+)\.(\d+)\.(\d+)$/;
+    if (!regex.test(version1) || !regex.test(version2)) {
+      throw new TypeError('Invalid version number!');
+    }
+
+    // Split both versions into their numeric components
+    const v1Parts = version1.replace('v', '').split('.').map(Number);
+    const v2Parts = version2.replace('v', '').split('.').map(Number);
+
+    // Compare each part of the version number
+    for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+      const v1Part = v1Parts[i] || 0; // Default to 0 if undefined
+      const v2Part = v2Parts[i] || 0; // Default to 0 if undefined
+
+      if (v1Part > v2Part) {
+        return true;
+      } else if (v1Part < v2Part) {
+        return false;
+      }
+    }
+
+    // If all parts are equal, the versions are the same
+    return false;
+  }
+
+  private async runFromVersion(action: MigrationAction, version: string) {
+    const files = await this.getDirFiles();
+    const migrationFiles = files
+      .filter((fileName) => fileName.endsWith('.migration.js'))
+      .map((fileName) => {
+        const [migrationFileName] = fileName.split('.');
+        const [, , ...migrationVersion] = migrationFileName.split('-');
+        return `v${migrationVersion.join('.')}`;
+      })
+      .filter((v) => this.isNewerVersion(v, version));
+
+    let lastVersion = version;
+    for (const name of migrationFiles) {
+      await this.runOne({ name, action });
+      lastVersion = name;
+    }
+
+    return lastVersion;
+  }
+
   private async runAll(action: MigrationAction) {
     const files = await this.getDirFiles();
     const migrationFiles = files
       .filter((fileName) => fileName.includes('migration'))
       .map((fileName) => {
         const [migrationFileName] = fileName.split('.');
-        const [, ...migrationName] = migrationFileName.split('-');
-        return migrationName.join('-');
+        const [, , ...migrationVersion] = migrationFileName.split('-');
+        return `v${migrationVersion.join('.')}`;
       });
 
     for (const name of migrationFiles) {
@@ -209,20 +273,26 @@ module.exports = {
     return { exist, migrationDocument };
   }
 
-  private async getMigrationFiles() {
+  async getMigrationFiles() {
     const files = await this.getDirFiles();
     return files.filter((file) => /\.migration\.(js|ts)/.test(file));
   }
 
-  private async findMigrationFileByName(name: string): Promise<string | null> {
+  private getMigrationName(filename: string) {
+    const [, ...migrationNameParts] = filename.split('-');
+    const migrationName = migrationNameParts.join('-');
+
+    return migrationName;
+  }
+
+  async findMigrationFileByName(name: string): Promise<string | null> {
     const files = await this.getMigrationFiles();
     return (
       files.find((file) => {
-        const [, ...migrationNameParts] = file.split('-');
-        const migrationName = migrationNameParts
-          .join('-')
-          .replace(/\.migration\.(js|ts)/, '');
-
+        const migrationName = this.getMigrationName(file).replace(
+          /\.migration\.(js|ts)/,
+          '',
+        );
         return migrationName === kebabCase(name);
       }) || null
     );
@@ -254,7 +324,7 @@ module.exports = {
     }
   }
 
-  private async updateStatus({
+  async updateStatus({
     name,
     action,
     migrationDocument,

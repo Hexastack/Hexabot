@@ -6,22 +6,23 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MigrationDocument } from './migration.schema';
+import mongoose from 'mongoose';
 
-enum MigrationAction {
-  UP = 'up',
-  DOWN = 'down',
-}
+import { Migration, MigrationModel } from '@/migration/migration.schema';
+import { MigrationAction } from '@/migration/types';
 
-interface MigrationRunParams {
-  name?: string;
-  action: MigrationAction;
-  version?: string;
-  isAutoMigrate?: boolean;
-}
+const migrationFixtures: Migration[] = [
+  {
+    name: 'v2.1.2',
+    status: MigrationAction.UP,
+  },
+  {
+    name: 'v2.1.1',
+    status: MigrationAction.DOWN,
+  },
+];
 
-interface MigrationSuccessCallback extends MigrationRunParams {
-  migrationDocument: MigrationDocument;
-}
-
-export { MigrationAction, MigrationRunParams, MigrationSuccessCallback };
+export const installMigrationFixtures = async () => {
+  const Migration = mongoose.model(MigrationModel.name, MigrationModel.schema);
+  return await Migration.insertMany(migrationFixtures);
+};

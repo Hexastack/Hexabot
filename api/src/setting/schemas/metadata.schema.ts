@@ -7,26 +7,24 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
-import { THydratedDocument } from '@/utils/types/filter.types';
-
-import { MigrationAction } from './types';
 
 @Schema({ timestamps: true })
-export class Migration {
+export class Metadata {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 
-  @Prop({ type: String, required: true, enum: MigrationAction })
-  status: MigrationAction;
+  @Prop({ type: JSON, required: true })
+  value: any;
 }
 
-export const MigrationModel: ModelDefinition = LifecycleHookManager.attach({
-  name: Migration.name,
-  schema: SchemaFactory.createForClass(Migration),
+export const MetadataSchema = SchemaFactory.createForClass(Metadata);
+
+export const MetadataModel: ModelDefinition = LifecycleHookManager.attach({
+  name: Metadata.name,
+  schema: SchemaFactory.createForClass(Metadata),
 });
 
-export default MigrationModel.schema;
-
-export type MigrationDocument = THydratedDocument<Migration>;
+export type MetadataDocument = Metadata & Document;

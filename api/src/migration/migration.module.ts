@@ -14,22 +14,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { LoggerModule } from '@/logger/logger.module';
 
 import { MigrationCommand } from './migration.command';
-import { Migration, MigrationSchema } from './migration.schema';
+import { MigrationModel } from './migration.schema';
 import { MigrationService } from './migration.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Migration.name, schema: MigrationSchema },
-    ]),
-    LoggerModule,
-  ],
+  imports: [MongooseModule.forFeature([MigrationModel]), LoggerModule],
   providers: [
     MigrationService,
     MigrationCommand,
     {
       provide: 'MONGO_MIGRATION_DIR',
-      useValue: join(process.cwd(), 'src', 'migration', 'migrations'),
+      useValue: join(__dirname, 'migrations'),
     },
   ],
   exports: [MigrationService],
