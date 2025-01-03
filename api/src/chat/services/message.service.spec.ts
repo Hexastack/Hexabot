@@ -90,16 +90,20 @@ describe('MessageService', () => {
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
     allMessages = await messageRepository.findAll();
-    message = await messageRepository.findOne({ mid: 'mid-1' });
-    sender = await subscriberRepository.findOne(message['sender']);
-    recipient = await subscriberRepository.findOne(message['recipient']);
-    user = await userRepository.findOne(message['sentBy']);
+    message = (await messageRepository.findOne({ mid: 'mid-1' })) as Message;
+    sender = (await subscriberRepository.findOne(
+      message['sender']!,
+    )) as Subscriber;
+    recipient = (await subscriberRepository.findOne(
+      message['recipient']!,
+    )) as Subscriber;
+    user = (await userRepository.findOne(message['sentBy']!)) as User;
     messagesWithSenderAndRecipient = allMessages.map((message) => ({
       ...message,
-      sender: allSubscribers.find(({ id }) => id === message['sender']).id,
-      recipient: allSubscribers.find(({ id }) => id === message['recipient'])
+      sender: allSubscribers.find(({ id }) => id === message['sender'])!.id,
+      recipient: allSubscribers.find(({ id }) => id === message['recipient'])!
         .id,
-      sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+      sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
     }));
   });
 
@@ -133,7 +137,7 @@ describe('MessageService', () => {
         ...message,
         sender: allSubscribers.find(({ id }) => id === message['sender']),
         recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
       }));
 
       expect(messageRepository.findPageAndPopulate).toHaveBeenCalledWith(
@@ -172,11 +176,12 @@ describe('MessageService', () => {
       );
       const messagesWithSenderAndRecipient = allMessages.map((message) => ({
         ...message,
-        sender: allSubscribers.find(({ id }) => id === message['sender']).id,
-        recipient: allSubscribers.find(({ id }) => id === message['recipient'])
+        sender: allSubscribers.find(({ id }) => id === message['sender'])!.id,
+        recipient: allSubscribers.find(({ id }) => id === message['recipient'])!
           .id,
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
       }));
+
       const historyMessages = messagesWithSenderAndRecipient.filter(
         (message) => message.createdAt > since,
       );

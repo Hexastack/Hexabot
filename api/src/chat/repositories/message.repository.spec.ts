@@ -12,7 +12,7 @@ import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { UserRepository } from '@/user/repositories/user.repository';
-import { UserModel } from '@/user/schemas/user.schema';
+import { User, UserModel } from '@/user/schemas/user.schema';
 import {
   installMessageFixtures,
   messageFixtures,
@@ -24,7 +24,7 @@ import {
 } from '@/utils/test/test';
 
 import { Message, MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 import { MessageRepository } from './message.repository';
@@ -62,12 +62,16 @@ describe('MessageRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should find one message by id, and populate its sender and recipient', async () => {
       jest.spyOn(messageModel, 'findById');
-      const message = await messageRepository.findOne({ mid: 'mid-1' });
-      const sender = await subscriberRepository.findOne(message['sender']);
+      const message = (await messageRepository.findOne({
+        mid: 'mid-1',
+      })) as Message;
+      const sender = (await subscriberRepository.findOne(
+        message['sender']!,
+      )) as Subscriber;
       const recipient = await subscriberRepository.findOne(
-        message['recipient'],
+        message['recipient']!,
       );
-      const user = await userRepository.findOne(message['sentBy']);
+      const user = (await userRepository.findOne(message['sentBy']!)) as User;
       const result = await messageRepository.findOneAndPopulate(message.id);
 
       expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
@@ -92,7 +96,7 @@ describe('MessageRepository', () => {
         ...message,
         sender: allSubscribers.find(({ id }) => id === message['sender']),
         recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])!.id,
       }));
 
       expect(messageModel.find).toHaveBeenCalledWith({}, undefined);
