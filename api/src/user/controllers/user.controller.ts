@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -28,6 +28,7 @@ import { Request } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
@@ -83,7 +84,7 @@ export class ReadOnlyUserController extends BaseController<
    */
   @Roles('public')
   @Get('bot/profile_pic')
-  async botProfilePic(@Query('color') color: string) {
+  async getBotAvatar(@Query('color') color: string) {
     return await getBotAvatar(color);
   }
 
@@ -96,18 +97,20 @@ export class ReadOnlyUserController extends BaseController<
    */
   @Roles('public')
   @Get(':id/profile_pic')
-  async UserProfilePic(@Param('id') id: string) {
-    try {
-      const res = await this.userService.userProfilePic(id);
-      return res;
-    } catch (e) {
-      const user = await this.userService.findOne(id);
-      if (user) {
-        return await generateInitialsAvatar(user);
-      } else {
-        throw new NotFoundException(`user with ID ${id} not found`);
-      }
+  async getAvatar(@Param('id') id: string) {
+    const user = await this.userService.findOneAndPopulate(id);
+    if (!user) {
+      throw new NotFoundException(`user with ID ${id} not found`);
     }
+
+    if (user.avatar) {
+      return await this.attachmentService.download(
+        user.avatar,
+        config.parameters.avatarDir,
+      );
+    }
+
+    return generateInitialsAvatar(user);
   }
 
   /**

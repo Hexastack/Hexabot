@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,7 +7,7 @@
  */
 
 import { createReadStream, existsSync } from 'fs';
-import { extname, join } from 'path';
+import { extname } from 'path';
 
 import { Logger, StreamableFile } from '@nestjs/common';
 import { StreamableFileOptions } from '@nestjs/common/file-stream/interfaces/streamable-options.interface';
@@ -29,20 +29,18 @@ export const isMime = (type: string): boolean => {
 
 /**
  * Checks if a file exists in the specified upload directory.
- * @param location The relative location of the file.
- * @returns Whether the file exists.
+ * @param filePath The relative location of the file.
+ * @returns True if the file exists.
  */
-export const fileExists = (location: string): boolean => {
+export const fileExists = (filePath: string): boolean => {
   // bypass test env
   if (config.env === 'test') {
     return true;
   }
   try {
-    const dirPath = config.parameters.uploadDir;
-    const fileLocation = join(dirPath, location);
-    return existsSync(fileLocation);
+    return existsSync(filePath);
   } catch (e) {
-    new Logger(`Attachment Model : Unable to locate file: ${location}`);
+    new Logger(`Attachment Model : Unable to locate file: ${filePath}`);
     return false;
   }
 };
