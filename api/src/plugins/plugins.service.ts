@@ -47,7 +47,7 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
     const registry = this.registry.get(type) as Map<PluginName, T>;
     if (registry.has(name)) {
       throw new InternalServerErrorException(
-        `setPlugin: Unable to setPlugin with name ${name} of type ${type} (duplicate names)`,
+        `Unable to setPlugin() with name ${name} of type ${type} (possible duplicate)`,
       );
     }
     registry.set(name, plugin);
