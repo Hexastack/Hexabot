@@ -24,7 +24,11 @@ import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { Model, ModelModel } from '../schemas/model.schema';
-import { Permission, PermissionModel } from '../schemas/permission.schema';
+import {
+  Permission,
+  PermissionFull,
+  PermissionModel,
+} from '../schemas/permission.schema';
 import { Role, RoleModel } from '../schemas/role.schema';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
@@ -79,11 +83,11 @@ describe('PermissionController', () => {
       permissionModuleRef.get<PermissionService>(PermissionService);
 
     allPermissions = await permissionService.findAll();
-    adminRole = await roleService.findOne({ name: 'admin' });
-    contentModel = await modelService.findOne({ name: 'Content' });
-    createPermission = await permissionService.findOne({
+    adminRole = (await roleService.findOne({ name: 'admin' })) as Role;
+    contentModel = (await modelService.findOne({ name: 'Content' })) as Model;
+    createPermission = (await permissionService.findOne({
       action: Action.CREATE,
-    });
+    })) as Permission;
   });
 
   afterAll(closeInMongodConnection);
@@ -110,16 +114,16 @@ describe('PermissionController', () => {
             ...currPermission,
             role: allRoles.find((role) => {
               return role.id === currPermission.role;
-            }),
+            }) as Role,
 
             model: allModels.find((model) => {
               return model.id === currPermission.model;
-            }),
+            }) as Model,
           });
 
           return acc;
         },
-        [],
+        [] as PermissionFull[],
       );
 
       expect(result).toEqualPayload(permissionsWithRolesAndModels);

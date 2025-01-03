@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -23,9 +23,13 @@ import {
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
-import { ModelModel } from '../schemas/model.schema';
-import { Permission, PermissionModel } from '../schemas/permission.schema';
-import { RoleModel } from '../schemas/role.schema';
+import { ModelModel, Model as ModelSchema } from '../schemas/model.schema';
+import {
+  Permission,
+  PermissionFull,
+  PermissionModel,
+} from '../schemas/permission.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
 
 describe('PermissionRepository', () => {
@@ -56,12 +60,12 @@ describe('PermissionRepository', () => {
     permissionModel = module.get<Model<Permission>>(
       getModelToken('Permission'),
     );
-    permission = await permissionRepository.findOne({
+    permission = (await permissionRepository.findOne({
       action: Action.CREATE,
-    });
-    permissionToDelete = await permissionRepository.findOne({
+    })) as Permission;
+    permissionToDelete = (await permissionRepository.findOne({
       action: Action.UPDATE,
-    });
+    })) as Permission;
   });
 
   afterAll(async () => {
@@ -104,16 +108,16 @@ describe('PermissionRepository', () => {
             ...currPermission,
             role: allRoles.find((role) => {
               return role.id === currPermission.role;
-            }),
+            }) as Role,
 
             model: allModels.find((model) => {
               return model.id === currPermission.model;
-            }),
+            }) as ModelSchema,
           });
 
           return acc;
         },
-        [],
+        [] as PermissionFull[],
       );
       expect(permissionModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(permissionsWithRolesAndModels);
