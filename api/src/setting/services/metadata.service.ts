@@ -19,18 +19,10 @@ export class MetadataService {
     private readonly metadataModel: Model<Metadata>,
   ) {}
 
-  async createMetadata(dto: Partial<Metadata>) {
-    return await this.metadataModel.create(dto);
-  }
-
-  async findOrCreate(dto: Partial<Metadata>) {
-    const metadata = await this.metadataModel.findOne({ name: dto.name });
-
-    if (metadata) {
-      await this.setMetadata(dto.name, dto.value);
-    } else {
-      await this.createMetadata(dto);
-    }
+  async createOrUpdate(dto: Metadata) {
+    return await this.metadataModel.findOneAndUpdate({ name: dto.name }, dto, {
+      upsert: true,
+    });
   }
 
   async getMetadata(name: string) {

@@ -13,15 +13,26 @@ enum MigrationAction {
   DOWN = 'down',
 }
 
+enum MigrationTrigger {
+  CLI = 'cli',
+  PROGRAM = 'program',
+}
+
 interface MigrationRunParams {
   name?: string;
   action: MigrationAction;
   version?: string;
   isAutoMigrate?: boolean;
+  trigger?: MigrationTrigger;
 }
 
 interface MigrationSuccessCallback extends MigrationRunParams {
   migrationDocument: MigrationDocument;
 }
 
-export { MigrationAction, MigrationRunParams, MigrationSuccessCallback };
+export {
+  MigrationAction,
+  MigrationRunParams,
+  MigrationSuccessCallback,
+  MigrationTrigger,
+};
