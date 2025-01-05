@@ -358,7 +358,7 @@ module.exports = {
       exist = Boolean(migrationDocument.status === action);
       if (exist) {
         this.logger.warn(
-          `Cannot proceed migration "${name}" is already in "${action}" state`,
+          `Cannot proceed migration "${version}" is already in "${action}" state`,
         );
       }
     }
@@ -407,7 +407,8 @@ module.exports = {
       .map((name) => {
         const [, ...migrationVersion] = name.split('-');
         return `v${migrationVersion.join('.')}` as MigrationVersion;
-      });
+      })
+      .filter((value, index, self) => self.indexOf(value) === index);
   }
 
   /**
