@@ -8,6 +8,7 @@
 
 import { join } from 'path';
 
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -18,7 +19,11 @@ import { MigrationModel } from './migration.schema';
 import { MigrationService } from './migration.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([MigrationModel]), LoggerModule],
+  imports: [
+    MongooseModule.forFeature([MigrationModel]),
+    LoggerModule,
+    HttpModule,
+  ],
   providers: [
     MigrationService,
     MigrationCommand,

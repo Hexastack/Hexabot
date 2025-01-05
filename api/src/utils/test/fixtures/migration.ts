@@ -13,11 +13,11 @@ import { MigrationAction } from '@/migration/types';
 
 const migrationFixtures: Migration[] = [
   {
-    name: 'v2.1.2',
+    version: 'v2.1.2',
     status: MigrationAction.UP,
   },
   {
-    name: 'v2.1.1',
+    version: 'v2.1.1',
     status: MigrationAction.DOWN,
   },
 ];

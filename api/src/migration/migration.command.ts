@@ -11,7 +11,7 @@ import { Command, CommandRunner } from 'nest-commander';
 import { LoggerService } from '@/logger/logger.service';
 
 import { MigrationService } from './migration.service';
-import { MigrationAction } from './types';
+import { MigrationAction, MigrationVersion } from './types';
 
 @Command({
   name: 'migration',
@@ -28,22 +28,34 @@ export class MigrationCommand extends CommandRunner {
   async run(passedParam: string[]): Promise<void> {
     const [subcommand] = passedParam;
     switch (subcommand) {
-      case 'create':
-        const [, filename] = passedParam;
-        return await this.migrationService.create(filename);
-      case 'migrate':
-        const [, action, name] = passedParam;
+      case 'create': {
+        const [, version] = passedParam;
+
+        if (!this.isValidVersion(version)) {
+          throw new TypeError('Invalid version value.');
+        }
+
+        return this.migrationService.create(version);
+      }
+      case 'migrate': {
+        const [, action, version] = passedParam;
+
         if (
           !Object.values(MigrationAction).includes(action as MigrationAction)
         ) {
           this.logger.error('Invalid Operation');
           this.exit();
         }
+
+        if (!this.isValidVersion(version)) {
+          throw new TypeError('Invalid version value.');
+        }
+
         return await this.migrationService.run({
           action: action as MigrationAction,
-          name,
+          version,
         });
-
+      }
       default:
         this.logger.error('No valid command provided');
         this.exit();
@@ -54,5 +66,15 @@ export class MigrationCommand extends CommandRunner {
   exit(): void {
     this.logger.log('Exiting migration process.');
     process.exit(0);
+  }
+
+  /**
+   * Checks if the migration version is in valid format
+   * @param version migration version name
+   * @returns True, if the migration version name is valid
+   */
+  public isValidVersion(version: string): version is MigrationVersion {
+    const regex = /^v?(\d+)\.(\d+)\.(\d+)$/;
+    return regex.test(version);
   }
 }

@@ -8,20 +8,21 @@
 
 import { MigrationDocument } from './migration.schema';
 
-enum MigrationAction {
+export enum MigrationAction {
   UP = 'up',
   DOWN = 'down',
 }
 
-interface MigrationRunParams {
-  name?: string;
+export type MigrationVersion = `v${number}.${number}.${number}`;
+
+export type MigrationName = `v-${number}-${number}-${number}`;
+
+export interface MigrationRunParams {
   action: MigrationAction;
-  version?: string;
+  version?: MigrationVersion;
   isAutoMigrate?: boolean;
 }
 
-interface MigrationSuccessCallback extends MigrationRunParams {
+export interface MigrationSuccessCallback extends MigrationRunParams {
   migrationDocument: MigrationDocument;
 }
-
-export { MigrationAction, MigrationRunParams, MigrationSuccessCallback };

@@ -9,6 +9,7 @@
 import { existsSync, readdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
+import { HttpService } from '@nestjs/axios';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
@@ -26,8 +27,10 @@ import idPlugin from '@/utils/schema-plugin/id.plugin';
 import { Migration, MigrationDocument } from './migration.schema';
 import {
   MigrationAction,
+  MigrationName,
   MigrationRunParams,
   MigrationSuccessCallback,
+  MigrationVersion,
 } from './types';
 
 @Injectable()
@@ -36,6 +39,7 @@ export class MigrationService implements OnApplicationBootstrap {
     private moduleRef: ModuleRef,
     private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
+    private readonly httpService: HttpService,
     @InjectModel(Migration.name)
     private readonly migrationModel: Model<Migration>,
   ) {
@@ -65,11 +69,17 @@ export class MigrationService implements OnApplicationBootstrap {
     process.exit(0);
   }
 
-  // CREATE
+  /**
+   * Get The migrations dir path configured in migration.module.ts
+   * @returns The migrations dir path
+   */
   public get migrationFilePath() {
     return this.moduleRef.get('MONGO_MIGRATION_DIR');
   }
 
+  /**
+   * Checks if the migration path is well set and exists
+   */
   public validateMigrationPath() {
     if (!existsSync(this.migrationFilePath)) {
       this.logger.error(
@@ -79,18 +89,29 @@ export class MigrationService implements OnApplicationBootstrap {
     }
   }
 
-  public async create(name: string) {
-    const fileName: string = kebabCase(name) + '.migration.ts';
+  /**
+   * Creates a new migration file with the specified name.
+   *
+   * The file name is generated in kebab-case format, prefixed with a timestamp.
+   * If a migration file with the same name already exists, an error is logged, and the process exits.
+   *
+   * @param version - The name of the migration to create.
+   * @returns Resolves when the migration file is successfully created.
+   *
+   * @throws If there is an issue writing the migration file.
+   */
+  public create(version: MigrationVersion) {
+    const fileName: string = kebabCase(version) + '.migration.ts';
 
     // check if file already exists
-    const files = await this.getDirFiles();
+    const files = this.getMigrationFiles();
     const exist = files.some((file) => {
       const migrationName = this.getMigrationName(file);
       return migrationName === fileName;
     });
 
     if (exist) {
-      this.logger.error(`Migration file for "${name}" already exists`);
+      this.logger.error(`Migration file for "${version}" already exists`);
       this.exit();
     }
 
@@ -100,7 +121,7 @@ export class MigrationService implements OnApplicationBootstrap {
     try {
       writeFileSync(filePath, template);
       this.logger.log(
-        `Migration file for "${name}" created: ${migrationFileName}`,
+        `Migration file for "${version}" created: ${migrationFileName}`,
       );
     } catch (e) {
       this.logger.error(e.stack);
@@ -109,21 +130,30 @@ export class MigrationService implements OnApplicationBootstrap {
     }
   }
 
+  /**
+   * Get a migration template to be used while creating a new migration
+   * @returns A migration template
+   */
   private getMigrationTemplate() {
     return `import mongoose from 'mongoose';
 
+import { MigrationServices } from '../types';
+
 module.exports = {
-  async up() {
+  async up(services: MigrationServices) {
     // Migration logic
     return false;
   },
-  async down() {
+  async down(services: MigrationServices) {
     // Rollback logic
     return false;
   },
 };`;
   }
 
+  /**
+   * Establishes a MongoDB connection
+   */
   private async connect() {
     try {
       const connection = await mongoose.connect(config.mongo.uri, {
@@ -140,13 +170,21 @@ module.exports = {
     }
   }
 
-  public async run({
-    action,
-    name,
-    version,
-    isAutoMigrate,
-  }: MigrationRunParams) {
-    if (!name) {
+  /**
+   * Executes migration operations based on the provided parameters.
+   *
+   * Determines the migration operation to perform (run all, run a specific migration, or run upgrades)
+   * based on the input parameters. The process may exit after completing the operation.
+   *
+   * @param action - The migration action to perform (e.g., 'up' or 'down').
+   * @param name - The specific migration name to execute. If not provided, all migrations are considered.
+   * @param version - The target version for automatic migration upgrades.
+   * @param isAutoMigrate - A flag indicating whether to perform automatic migration upgrades.
+   *
+   * @returns Resolves when the migration operation is successfully completed.
+   */
+  public async run({ action, version, isAutoMigrate }: MigrationRunParams) {
+    if (!version) {
       if (isAutoMigrate) {
         await this.runUpgrades(action, version);
       } else {
@@ -154,46 +192,67 @@ module.exports = {
         this.exit();
       }
     } else {
-      await this.runOne({ action, name });
+      await this.runOne({ action, version });
       this.exit();
     }
   }
 
-  private async runOne({ name, action }: MigrationRunParams) {
-    // verify DB status
+  /**
+   * Executes a specific migration action for a given version.
+   *
+   * Verifies the migration status in the database before attempting to execute the action.
+   * If the migration has already been executed, the process stops. Otherwise, it loads the
+   * migration file, performs the action, and handles success or failure through callbacks.
+   *
+   * @param version - The version of the migration to run.
+   * @param action - The action to perform (e.g., 'up' or 'down').
+   *
+   * @returns Resolves when the migration action is successfully executed or stops if the migration already exists.
+   */
+  private async runOne({ version, action }: MigrationRunParams) {
+    // Verify DB status
     const { exist, migrationDocument } = await this.verifyStatus({
-      name,
+      version,
       action,
     });
+
     if (exist) {
       return true; // stop exec;
     }
 
     try {
-      const migration = await this.loadMigrationFile(name);
-      const result = await migration[action]();
+      const migration = await this.loadMigrationFile(version);
+      const result = await migration[action]({
+        logger: this.logger,
+        http: this.httpService,
+      });
       if (result) {
         await this.successCallback({
-          name,
+          version,
           action,
           migrationDocument,
         });
       }
     } catch (e) {
       this.failureCallback({
-        name,
+        version,
         action,
       });
       this.logger.log(e.stack);
     }
   }
 
-  isNewerVersion(version1: string, version2: string): boolean {
-    const regex = /^v?(\d+)\.(\d+)\.(\d+)$/;
-    if (!regex.test(version1) || !regex.test(version2)) {
-      throw new TypeError('Invalid version number!');
-    }
-
+  /**
+   * Compares two version strings to determine if the first version is newer than the second.
+   *
+   * @param version1 - The first version string (e.g., 'v1.2.3').
+   * @param version2 - The second version string (e.g., 'v1.2.2').
+   * @returns `true` if the first version is newer than the second, otherwise `false`.
+   */
+  private isNewerVersion(
+    version1: MigrationVersion,
+    version2: MigrationVersion,
+  ): boolean {
     // Split both versions into their numeric components
     const v1Parts = version1.replace('v', '').split('.').map(Number);
     const v2Parts = version2.replace('v', '').split('.').map(Number);
@@ -214,39 +273,65 @@ module.exports = {
     return false;
   }
 
-  private async runUpgrades(action: MigrationAction, version: string) {
-    const versions = await this.getAvailableUpgradeVersions();
+  /**
+   * Executes migration upgrades for all available versions newer than the specified version.
+   *
+   * @param action - The migration action to perform (e.g., 'up').
+   * @param version - The current version to compare against for upgrades.
+   *
+   * @returns The last successfully upgraded version.
+   */
+  private async runUpgrades(
+    action: MigrationAction,
+    version: MigrationVersion,
+  ) {
+    const versions = this.getAvailableUpgradeVersions();
     const filteredVersions = versions.filter((v) =>
       this.isNewerVersion(v, version),
     );
     let lastVersion = version;
 
     for (const version of filteredVersions) {
-      await this.runOne({ name: version, action });
+      await this.runOne({ version, action });
       lastVersion = version;
     }
 
     return lastVersion;
   }
 
+  /**
+   * Executes the specified migration action for all available versions.
+   *
+   * @param action - The migration action to perform (e.g., 'up' or 'down').
+   *
+   * @returns Resolves when all migration actions are successfully completed.
+   */
   private async runAll(action: MigrationAction) {
-    const versions = await this.getAvailableUpgradeVersions();
+    const versions = this.getAvailableUpgradeVersions();
 
     for (const version of versions) {
-      await this.runOne({ name: version, action });
+      await this.runOne({ version, action });
     }
   }
 
-  private async getDirFiles() {
-    return readdirSync(this.migrationFilePath);
-  }
-
-  private async verifyStatus({ name, action }: MigrationRunParams): Promise<{
+  /**
+   * Verifies the migration status for a specific version and action.
+   *
+   * @param version - The version of the migration to verify.
+   * @param action - The migration action to verify (e.g., 'up' or 'down').
+   *
+   * @returns A promise resolving to an object containing:
+   * - `exist`: A boolean indicating if the migration already exists in the specified state.
+   * - `migrationDocument`: The existing migration document, or `null` if not found.
+   */
+  private async verifyStatus({ version, action }: MigrationRunParams): Promise<{
     exist: boolean;
     migrationDocument: MigrationDocument | null;
   }> {
     let exist = false;
-    const migrationDocument = await this.migrationModel.findOne({ name });
+    const migrationDocument = await this.migrationModel.findOne({
+      version,
+    });
 
     if (migrationDocument) {
       exist = Boolean(migrationDocument.status === action);
@@ -260,47 +345,79 @@ module.exports = {
     return { exist, migrationDocument };
   }
 
-  async getMigrationFiles() {
-    const files = await this.getDirFiles();
-    return files.filter((file) => /\.migration\.(js|ts)/.test(file));
+  /**
+   * Retrieves all migration files from the migration directory.
+   *
+   * Reads the files in the migration directory and filters for those matching
+   * the `.migration.js` or `.migration.ts` file extensions.
+   *
+   * @returns A promise resolving to an array of migration file names.
+   */
+  getMigrationFiles() {
+    const files = readdirSync(this.migrationFilePath);
+    return files.filter((file) => /\.migration\.(js|ts)$/.test(file));
   }
 
-  private getMigrationName(filename: string) {
+  /**
+   * Extracts the migration name from a given filename.
+   *
+   * @param filename - The migration file name to process (e.g., '1234567890-my-migration.migration.ts').
+   * @returns The extracted migration name (e.g., 'my-migration').
+   */
+  private getMigrationName(filename: string): MigrationName {
     const [, ...migrationNameParts] = filename.split('-');
     const migrationName = migrationNameParts.join('-');
 
-    return migrationName;
+    return migrationName.replace(/\.migration\.(js|ts)/, '') as MigrationName;
   }
 
-  private async getAvailableUpgradeVersions() {
-    const filenames = await this.getMigrationFiles();
+  /**
+   * Retrieves a list of available migration upgrade versions.
+   *
+   * Processes all migration files to extract and format their version identifiers.
+   *
+   * @returns An array of formatted migration versions (e.g., ['v1.0.0', 'v1.1.0']).
+   */
+  private getAvailableUpgradeVersions() {
+    const filenames = this.getMigrationFiles();
 
-    return filenames.map((filename: string) => {
-      const [migrationFileName] = filename.split('.');
-      const [, , ...migrationVersion] = migrationFileName.split('-');
-      return `v${migrationVersion.join('.')}`;
-    });
+    return filenames
+      .map((filename) => this.getMigrationName(filename))
+      .map((name) => {
+        const [, ...migrationVersion] = name.split('-');
+        return `v${migrationVersion.join('.')}` as MigrationVersion;
+      });
   }
 
-  async findMigrationFileByName(version: string): Promise<string | null> {
-    const files = await this.getMigrationFiles();
+  /**
+   * Finds the migration file corresponding to a specific version.
+   *
+   * @param version - The migration version to search for (e.g., 'v1.0.0').
+   * @returns The file name of the matching migration, or `null` if no match is found.
+   */
+  findMigrationFileByVersion(version: MigrationVersion): string | null {
+    const files = this.getMigrationFiles();
+    const migrationName = kebabCase(version) as MigrationName;
     return (
-      files.find((file) => {
-        const migrationName = this.getMigrationName(file).replace(
-          /\.migration\.(js|ts)/,
-          '',
-        );
-        return migrationName === kebabCase(version);
-      }) || null
+      files
+        .map((file) => this.getMigrationName(file))
+        .find((name) => migrationName === name) || null
     );
   }
 
-  private async loadMigrationFile(name: string) {
+  /**
+   * Loads a migration file for a specific version.
+   *
+   * @param version - The migration version to load.
+   *
+   * @returns The loaded migration object containing `up` and `down` methods.
+   */
+  private async loadMigrationFile(version: MigrationVersion) {
     try {
       // Map the provided name to the actual file with timestamp
-      const fileName = await this.findMigrationFileByName(name);
+      const fileName = this.findMigrationFileByVersion(version);
       if (!fileName) {
-        this.logger.error(`Migration file for "${name}" not found.`);
+        this.logger.error(`Migration file for "${version}" not found.`);
         process.exit(1);
       }
 
@@ -312,48 +429,72 @@ module.exports = {
         typeof migration.down !== 'function'
       ) {
         throw new Error(
-          `Migration file "${name}" must export an object with "up" and "down" methods.`,
+          `Migration file "${version}" must export an object with "up" and "down" methods.`,
         );
       }
       return migration;
     } catch (e) {
-      throw new Error(`Failed to load migration "${name}".\n${e.message}`);
+      throw new Error(`Failed to load migration "${version}".\n${e.message}`);
     }
   }
 
+  /**
+   * Updates the status of a migration in the database.
+   *
+   * @param version - The version of the migration to update.
+   * @param action - The action performed on the migration (e.g., 'up' or 'down').
+   * @param migrationDocument - An optional existing migration document to update. If not provided, a new document is created.
+   *
+   * @returns Resolves when the migration status is successfully updated.
+   */
   async updateStatus({
-    name,
+    version,
     action,
     migrationDocument,
   }: Omit<MigrationSuccessCallback, 'terminal'>) {
     const document =
       migrationDocument ||
       new this.migrationModel({
-        name,
+        version,
       });
     document.status = action;
     await document.save();
   }
 
+  /**
+   * Handles successful completion of a migration operation.
+   *
+   * @param version - The version of the successfully completed migration.
+   * @param action - The action performed (e.g., 'up' or 'down').
+   * @param migrationDocument - The migration document to update.
+   *
+   * @returns Resolves when all success-related operations are completed.
+   */
   private async successCallback({
-    name,
+    version,
     action,
     migrationDocument,
   }: MigrationSuccessCallback) {
-    await this.updateStatus({ name, action, migrationDocument });
-    const migrationDisplayName = `${name} [${action}]`;
+    await this.updateStatus({ version, action, migrationDocument });
+    const migrationDisplayName = `${version} [${action}]`;
     this.logger.log(`"${migrationDisplayName}" migration done`);
     // Update DB version
     const result = await this.metadataService.createOrUpdate({
       name: 'db-version',
-      value: name,
+      value: version,
     });
     const operation = result ? 'updated' : 'created';
     this.logger.log(`db-version metadata ${operation} "${name}"`);
   }
 
-  private failureCallback({ name, action }: MigrationRunParams) {
-    const migrationDisplayName = `${name} [${action}]`;
+  /**
+   * Handles the failure of a migration operation.
+   *
+   * @param version - The version of the migration that failed.
+   * @param action - The action that failed (e.g., 'up' or 'down').
+   */
+  private failureCallback({ version, action }: MigrationRunParams) {
+    const migrationDisplayName = `${version} [${action}]`;
     this.logger.error(`"${migrationDisplayName}" migration failed`);
   }
 }
