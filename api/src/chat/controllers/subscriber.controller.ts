@@ -23,7 +23,6 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -145,7 +144,6 @@ export class SubscriberController extends BaseController<
    * @param id - The unique identifier of the subscriber whose profile picture is to be retrieved.
    * @returns A streamable file containing the avatar image.
    */
-  @Roles('public')
   @Get(':id/profile_pic')
   async getAvatar(@Param('id') id: string): Promise<StreamableFile> {
     const subscriber = await this.subscriberService.findOneAndPopulate(id);

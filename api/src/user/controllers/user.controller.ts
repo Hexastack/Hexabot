@@ -95,7 +95,6 @@ export class ReadOnlyUserController extends BaseController<
    *
    * @returns A promise that resolves to the user's avatar or an avatar generated from initials if not found.
    */
-  @Roles('public')
   @Get(':id/profile_pic')
   async getAvatar(@Param('id') id: string) {
     const user = await this.userService.findOneAndPopulate(id);
