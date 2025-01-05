@@ -18,7 +18,7 @@ export class Migration {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 
-  @Prop({ type: String, required: true, enum: MigrationAction })
+  @Prop({ type: String, required: true, enum: Object.values(MigrationAction) })
   status: MigrationAction;
 }
 

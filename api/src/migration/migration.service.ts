@@ -28,7 +28,6 @@ import {
   MigrationAction,
   MigrationRunParams,
   MigrationSuccessCallback,
-  MigrationTrigger,
 } from './types';
 
 @Injectable()
@@ -116,9 +115,11 @@ export class MigrationService implements OnApplicationBootstrap {
 module.exports = {
   async up() {
     // Migration logic
+    return false;
   },
   async down() {
     // Rollback logic
+    return false;
   },
 };`;
   }
@@ -147,18 +148,18 @@ module.exports = {
   }: MigrationRunParams) {
     if (!name) {
       if (isAutoMigrate) {
-        await this.runFromVersion(action, version);
+        await this.runUpgrades(action, version);
       } else {
         await this.runAll(action);
         this.exit();
       }
     } else {
-      await this.runOne({ action, name, trigger: MigrationTrigger.CLI });
+      await this.runOne({ action, name });
       this.exit();
     }
   }
 
-  private async runOne({ name, action, trigger }: MigrationRunParams) {
+  private async runOne({ name, action }: MigrationRunParams) {
     // verify DB status
     const { exist, migrationDocument } = await this.verifyStatus({
       name,
@@ -170,13 +171,14 @@ module.exports = {
 
     try {
       const migration = await this.loadMigrationFile(name);
-      await migration[action]();
-      await this.successCallback({
-        name,
-        action,
-        migrationDocument,
-        trigger,
-      });
+      const result = await migration[action]();
+      if (result) {
+        await this.successCallback({
+          name,
+          action,
+          migrationDocument,
+        });
+      }
     } catch (e) {
       this.failureCallback({
         name,
@@ -212,11 +214,10 @@ module.exports = {
     return false;
   }
 
-  private async runFromVersion(action: MigrationAction, version: string) {
-    const filenames = await this.getDirFiles();
-    const versions = this.getVersionsFromFilenames(filenames);
-    const filteredVersions = versions.filter(
-      (v) => v === version || this.isNewerVersion(v, version),
+  private async runUpgrades(action: MigrationAction, version: string) {
+    const versions = await this.getAvailableUpgradeVersions();
+    const filteredVersions = versions.filter((v) =>
+      this.isNewerVersion(v, version),
     );
     let lastVersion = version;
 
@@ -229,8 +230,7 @@ module.exports = {
   }
 
   private async runAll(action: MigrationAction) {
-    const filenames = await this.getDirFiles();
-    const versions = this.getVersionsFromFilenames(filenames);
+    const versions = await this.getAvailableUpgradeVersions();
 
     for (const version of versions) {
       await this.runOne({ name: version, action });
@@ -272,17 +272,17 @@ module.exports = {
     return migrationName;
   }
 
-  private getVersionsFromFilenames(filenames: string[]) {
-    return filenames
-      .filter((fileName) => fileName.endsWith('.migration.js'))
-      .map((filename: string) => {
-        const [migrationFileName] = filename.split('.');
-        const [, , ...migrationVersion] = migrationFileName.split('-');
-        return `v${migrationVersion.join('.')}`;
-      });
+  private async getAvailableUpgradeVersions() {
+    const filenames = await this.getMigrationFiles();
+
+    return filenames.map((filename: string) => {
+      const [migrationFileName] = filename.split('.');
+      const [, , ...migrationVersion] = migrationFileName.split('-');
+      return `v${migrationVersion.join('.')}`;
+    });
   }
 
-  async findMigrationFileByName(name: string): Promise<string | null> {
+  async findMigrationFileByName(version: string): Promise<string | null> {
     const files = await this.getMigrationFiles();
     return (
       files.find((file) => {
@@ -290,7 +290,7 @@ module.exports = {
           /\.migration\.(js|ts)/,
           '',
         );
-        return migrationName === kebabCase(name);
+        return migrationName === kebabCase(version);
       }) || null
     );
   }
@@ -339,19 +339,17 @@ module.exports = {
     name,
     action,
     migrationDocument,
-    trigger,
   }: MigrationSuccessCallback) {
     await this.updateStatus({ name, action, migrationDocument });
     const migrationDisplayName = `${name} [${action}]`;
     this.logger.log(`"${migrationDisplayName}" migration done`);
-    if (trigger === MigrationTrigger.CLI) {
-      const result = await this.metadataService.createOrUpdate({
-        name: 'db-version',
-        value: name,
-      });
-      const operation = result ? 'updated' : 'created';
-      this.logger.log(`db-version metadata ${operation} "${name}"`);
-    }
+    // Update DB version
+    const result = await this.metadataService.createOrUpdate({
+      name: 'db-version',
+      value: name,
+    });
+    const operation = result ? 'updated' : 'created';
+    this.logger.log(`db-version metadata ${operation} "${name}"`);
   }
 
   private failureCallback({ name, action }: MigrationRunParams) {
