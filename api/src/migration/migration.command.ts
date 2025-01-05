@@ -74,7 +74,7 @@ export class MigrationCommand extends CommandRunner {
    * @returns True, if the migration version name is valid
    */
   public isValidVersion(version: string): version is MigrationVersion {
-    const regex = /^v?(\d+)\.(\d+)\.(\d+)$/;
+    const regex = /^v(\d+)\.(\d+)\.(\d+)$/;
     return regex.test(version);
   }
 }
