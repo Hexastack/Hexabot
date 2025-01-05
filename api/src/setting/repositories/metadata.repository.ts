@@ -7,15 +7,20 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
-import { MetadataRepository } from '../repositories/metadata.repository';
 import { Metadata } from '../schemas/metadata.schema';
 
 @Injectable()
-export class MetadataService extends BaseService<Metadata> {
-  constructor(readonly repository: MetadataRepository) {
-    super(repository);
+export class MetadataRepository extends BaseRepository<Metadata> {
+  constructor(
+    readonly eventEmitter: EventEmitter2,
+    @InjectModel(Metadata.name) readonly model: Model<Metadata>,
+  ) {
+    super(eventEmitter, model, Metadata);
   }
 }

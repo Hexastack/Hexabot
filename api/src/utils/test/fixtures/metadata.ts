@@ -8,9 +8,10 @@
 
 import mongoose from 'mongoose';
 
-import { Metadata, MetadataModel } from '@/setting/schemas/metadata.schema';
+import { MetadataCreateDto } from '@/setting/dto/metadata.dto';
+import { MetadataModel } from '@/setting/schemas/metadata.schema';
 
-const metadataFixtures: Metadata[] = [
+const metadataFixtures: MetadataCreateDto[] = [
   {
     name: 'app-version',
     value: '2.2.0',

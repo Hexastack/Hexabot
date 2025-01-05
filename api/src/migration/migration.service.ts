@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { existsSync, readdirSync, writeFileSync } from 'fs';
+import fs from 'fs';
 import { join } from 'path';
 
 import { HttpService } from '@nestjs/axios';
@@ -45,13 +45,11 @@ export class MigrationService implements OnApplicationBootstrap {
     private readonly httpService: HttpService,
     @InjectModel(Migration.name)
     private readonly migrationModel: Model<Migration>,
-  ) {
-    if (config.env !== 'test') {
-      this.validateMigrationPath();
-    }
-  }
+  ) {}
 
   async onApplicationBootstrap() {
+    await this.ensureMigrationPathExists();
+
     if (mongoose.connection.readyState !== 1) {
       await this.connect();
     }
@@ -60,11 +58,8 @@ export class MigrationService implements OnApplicationBootstrap {
     const isCLI = Boolean(process.env.HEXABOT_CLI);
     if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
-      const metadata = await this.metadataService.get('db-version');
-      const version = metadata ? metadata.value : INITIAL_DB_VERSION;
       await this.run({
         action: MigrationAction.UP,
-        version,
         isAutoMigrate: true,
       });
     }
@@ -85,12 +80,11 @@ export class MigrationService implements OnApplicationBootstrap {
   /**
    * Checks if the migration path is well set and exists
    */
-  public validateMigrationPath() {
-    if (!existsSync(this.migrationFilePath)) {
-      this.logger.error(
-        `Migration directory "${this.migrationFilePath}" not exists.`,
-      );
-      this.exit();
+  private async ensureMigrationPathExists() {
+    if (config.env !== 'test' && !fs.existsSync(this.migrationFilePath)) {
+      await fs.promises.mkdir(this.migrationFilePath, {
+        recursive: true,
+      });
     }
   }
 
@@ -123,7 +117,7 @@ export class MigrationService implements OnApplicationBootstrap {
     const filePath = join(this.migrationFilePath, migrationFileName);
     const template = this.getMigrationTemplate();
     try {
-      writeFileSync(filePath, template);
+      fs.writeFileSync(filePath, template);
       this.logger.log(
         `Migration file for "${version}" created: ${migrationFileName}`,
       );
@@ -195,6 +189,10 @@ module.exports = {
   public async run({ action, version, isAutoMigrate }: MigrationRunParams) {
     if (!version) {
       if (isAutoMigrate) {
+        const metadata = await this.metadataService.findOne({
+          name: 'db-version',
+        });
+        const version = metadata ? metadata.value : INITIAL_DB_VERSION;
         await this.runUpgrades(action, version);
       } else {
         await this.runAll(action);
@@ -302,6 +300,12 @@ module.exports = {
     const filteredVersions = versions.filter((v) =>
       this.isNewerVersion(v, version),
     );
+
+    if (!filteredVersions.length) {
+      this.logger.log('No migrations to execute ...');
+      return version;
+    }
+
     let lastVersion = version;
 
     for (const version of filteredVersions) {
@@ -371,7 +375,7 @@ module.exports = {
    * @returns A promise resolving to an array of migration file names.
    */
   getMigrationFiles() {
-    const files = readdirSync(this.migrationFilePath);
+    const files = fs.readdirSync(this.migrationFilePath);
     return files.filter((file) => /\.migration\.(js|ts)$/.test(file));
   }
 
@@ -496,13 +500,19 @@ module.exports = {
     await this.updateStatus({ version, action, migrationDocument });
     const migrationDisplayName = `${version} [${action}]`;
     this.logger.log(`"${migrationDisplayName}" migration done`);
-    // Update DB version
-    const result = await this.metadataService.createOrUpdate({
-      name: 'db-version',
-      value: version,
-    });
-    const operation = result ? 'updated' : 'created';
-    this.logger.log(`db-version metadata ${operation} "${name}"`);
+    // Create or Update DB version
+    await this.metadataService.updateOne(
+      { name: 'db-version' },
+      {
+        value: version,
+      },
+      {
+        // Create or update
+        upsert: true,
+        new: true,
+      },
+    );
+    this.logger.log(`db-version metadata "${version}"`);
   }
 
   /**

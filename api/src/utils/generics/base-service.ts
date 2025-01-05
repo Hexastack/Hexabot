@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,7 +9,7 @@
 import { ConflictException } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
-import { ProjectionType } from 'mongoose';
+import { ProjectionType, QueryOptions } from 'mongoose';
 
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -173,8 +173,9 @@ export abstract class BaseService<
   async updateOne<D extends Partial<Omit<T, keyof BaseSchema>>>(
     criteria: string | TFilterQuery<T>,
     dto: D,
+    options?: QueryOptions<D> | null,
   ): Promise<T | null> {
-    return await this.repository.updateOne(criteria, dto);
+    return await this.repository.updateOne(criteria, dto, options);
   }
 
   async updateMany<D extends Partial<Omit<T, keyof BaseSchema>>>(

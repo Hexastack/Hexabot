@@ -6,6 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { HttpService } from '@nestjs/axios';
+
+import { LoggerService } from '@/logger/logger.service';
+
 import { MigrationDocument } from './migration.schema';
 
 export enum MigrationAction {
@@ -26,3 +30,8 @@ export interface MigrationRunParams {
 export interface MigrationSuccessCallback extends MigrationRunParams {
   migrationDocument: MigrationDocument;
 }
+
+export type MigrationServices = {
+  logger: LoggerService;
+  http: HttpService;
+};

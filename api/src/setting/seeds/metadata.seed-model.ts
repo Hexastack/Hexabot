@@ -6,16 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { MetadataCreateDto } from '../dto/metadata.dto';
 
-import { BaseService } from '@/utils/generics/base-service';
-
-import { MetadataRepository } from '../repositories/metadata.repository';
-import { Metadata } from '../schemas/metadata.schema';
-
-@Injectable()
-export class MetadataService extends BaseService<Metadata> {
-  constructor(readonly repository: MetadataRepository) {
-    super(repository);
-  }
-}
+export const DEFAULT_METADATA = [
+  {
+    name: 'db-version',
+    value: process.env.npm_package_version,
+  },
+] as const satisfies MetadataCreateDto[];

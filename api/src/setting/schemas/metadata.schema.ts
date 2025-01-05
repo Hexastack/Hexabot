@@ -9,10 +9,11 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 @Schema({ timestamps: true })
-export class Metadata {
+export class Metadata extends BaseSchema {
   @Prop({ type: String, required: true, unique: true })
   name: string;
 

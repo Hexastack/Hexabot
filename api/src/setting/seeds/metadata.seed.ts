@@ -8,14 +8,14 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseSeeder } from '@/utils/generics/base-seeder';
 
 import { MetadataRepository } from '../repositories/metadata.repository';
 import { Metadata } from '../schemas/metadata.schema';
 
 @Injectable()
-export class MetadataService extends BaseService<Metadata> {
-  constructor(readonly repository: MetadataRepository) {
-    super(repository);
+export class MetadataSeeder extends BaseSeeder<Metadata> {
+  constructor(private readonly metadataRepository: MetadataRepository) {
+    super(metadataRepository);
   }
 }
