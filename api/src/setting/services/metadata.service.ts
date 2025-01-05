@@ -8,7 +8,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { plainToClass } from 'class-transformer';
+import { HydratedDocument, Model } from 'mongoose';
 
 import { Metadata } from '../schemas/metadata.schema';
 
@@ -19,17 +20,35 @@ export class MetadataService {
     private readonly metadataModel: Model<Metadata>,
   ) {}
 
+  private toClassObject(metadata: HydratedDocument<Metadata>) {
+    return plainToClass(
+      Metadata,
+      metadata.toObject({ virtuals: true, getters: true }),
+      { excludePrefixes: ['_'] },
+    );
+  }
+
   async createOrUpdate(dto: Metadata) {
-    return await this.metadataModel.findOneAndUpdate({ name: dto.name }, dto, {
-      upsert: true,
-    });
+    const metadata = await this.metadataModel.findOneAndUpdate(
+      { name: dto.name },
+      dto,
+      {
+        upsert: true,
+      },
+    );
+    return this.toClassObject(metadata);
   }
 
-  async getMetadata(name: string) {
-    return await this.metadataModel.findOne({ name });
+  async get(name: string) {
+    const metadata = await this.metadataModel.findOne({ name });
+    return this.toClassObject(metadata);
   }
 
-  async setMetadata(name: string, value: any) {
-    return await this.metadataModel.updateOne({ name }, { $set: { value } });
+  async set(name: string, value: any) {
+    const metadata = await this.metadataModel.findOneAndUpdate(
+      { name },
+      { $set: { value } },
+    );
+    return this.toClassObject(metadata);
   }
 }

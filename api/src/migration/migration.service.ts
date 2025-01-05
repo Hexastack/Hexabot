@@ -33,6 +33,9 @@ import {
   MigrationVersion,
 } from './types';
 
+// Version starting which we added the migrations
+const INITIAL_DB_VERSION = 'v2.1.9';
+
 @Injectable()
 export class MigrationService implements OnApplicationBootstrap {
   constructor(
@@ -43,7 +46,9 @@ export class MigrationService implements OnApplicationBootstrap {
     @InjectModel(Migration.name)
     private readonly migrationModel: Model<Migration>,
   ) {
-    this.validateMigrationPath();
+    if (config.env !== 'test') {
+      this.validateMigrationPath();
+    }
   }
 
   async onApplicationBootstrap() {
@@ -55,8 +60,8 @@ export class MigrationService implements OnApplicationBootstrap {
     const isCLI = Boolean(process.env.HEXABOT_CLI);
     if (!isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
-      const metadata = await this.metadataService.getMetadata('db-version');
-      const version = metadata ? metadata.value : 'v2.1.9';
+      const metadata = await this.metadataService.get('db-version');
+      const version = metadata ? metadata.value : INITIAL_DB_VERSION;
       await this.run({
         action: MigrationAction.UP,
         version,
@@ -101,13 +106,12 @@ export class MigrationService implements OnApplicationBootstrap {
    * @throws If there is an issue writing the migration file.
    */
   public create(version: MigrationVersion) {
-    const fileName: string = kebabCase(version) + '.migration.ts';
-
+    const name = kebabCase(version) as MigrationName;
     // check if file already exists
     const files = this.getMigrationFiles();
     const exist = files.some((file) => {
       const migrationName = this.getMigrationName(file);
-      return migrationName === fileName;
+      return migrationName === name;
     });
 
     if (exist) {
@@ -115,7 +119,7 @@ export class MigrationService implements OnApplicationBootstrap {
       this.exit();
     }
 
-    const migrationFileName = `${Date.now()}-${fileName}`;
+    const migrationFileName = `${Date.now()}-${name}.migration.ts`;
     const filePath = join(this.migrationFilePath, migrationFileName);
     const template = this.getMigrationTemplate();
     try {
@@ -155,6 +159,11 @@ module.exports = {
    * Establishes a MongoDB connection
    */
   private async connect() {
+    // Disable for unit tests
+    if (config.env === 'test') {
+      return;
+    }
+
     try {
       const connection = await mongoose.connect(config.mongo.uri, {
         dbName: config.mongo.dbName,
@@ -217,7 +226,7 @@ module.exports = {
     });
 
     if (exist) {
-      return true; // stop exec;
+      return false; // stop exec;
     }
 
     try {
@@ -226,6 +235,7 @@ module.exports = {
         logger: this.logger,
         http: this.httpService,
       });
+
       if (result) {
         await this.successCallback({
           version,
@@ -233,12 +243,15 @@ module.exports = {
           migrationDocument,
         });
       }
+
+      return result; // stop exec;
     } catch (e) {
       this.failureCallback({
         version,
         action,
       });
       this.logger.log(e.stack);
+      return false;
     }
   }
 
@@ -309,9 +322,13 @@ module.exports = {
   private async runAll(action: MigrationAction) {
     const versions = this.getAvailableUpgradeVersions();
 
+    let lastVersion: MigrationVersion = INITIAL_DB_VERSION;
     for (const version of versions) {
       await this.runOne({ version, action });
+      lastVersion = version;
     }
+
+    return lastVersion;
   }
 
   /**
@@ -399,9 +416,10 @@ module.exports = {
     const files = this.getMigrationFiles();
     const migrationName = kebabCase(version) as MigrationName;
     return (
-      files
-        .map((file) => this.getMigrationName(file))
-        .find((name) => migrationName === name) || null
+      files.find((file) => {
+        const name = this.getMigrationName(file);
+        return migrationName === name;
+      }) || null
     );
   }
 
