@@ -21,11 +21,14 @@ import {
   Req,
   Session,
   UnauthorizedException,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
 import { Session as ExpressSession } from 'express-session';
+import { diskStorage, memoryStorage } from 'multer';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
@@ -261,17 +264,54 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    * @returns A promise that resolves to the updated user.
    */
   @CsrfCheck(true)
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      limits: {
+        fileSize: config.parameters.maxUploadSize,
+      },
+      storage: (() => {
+        if (config.parameters.storageMode === 'memory') {
+          return memoryStorage();
+        } else {
+          return diskStorage({});
+        }
+      })(),
+    }),
+  )
   @Patch('edit/:id')
   async updateOne(
     @Req() req: Request,
     @Param('id') id: string,
     @Body() userUpdate: UserEditProfileDto,
+    @UploadedFile() avatarFile?: Express.Multer.File,
   ) {
     if (!('id' in req.user && req.user.id) || req.user.id !== id) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
-    const result = await this.userService.updateOne(req.user.id, userUpdate);
+    // Upload Avatar if provided
+    const avatar = avatarFile
+      ? await this.attachmentService.store(
+          avatarFile,
+          {
+            name: avatarFile.originalname,
+            size: avatarFile.size,
+            type: avatarFile.mimetype,
+          },
+          config.parameters.avatarDir,
+        )
+      : undefined;
+
+    const result = await this.userService.updateOne(
+      req.user.id,
+      avatar
+        ? {
+            ...userUpdate,
+            avatar: avatar.id,
+          }
+        : userUpdate,
+    );
+
     if (!result) {
       this.logger.warn(`Unable to update User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
