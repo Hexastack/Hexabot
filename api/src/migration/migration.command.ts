@@ -11,7 +11,7 @@ import { Command, CommandRunner } from 'nest-commander';
 import { LoggerService } from '@/logger/logger.service';
 
 import { MigrationService } from './migration.service';
-import { MigrationAction, MigrationVersion } from './types';
+import { MigrationAction } from './types';
 
 @Command({
   name: 'migration',
@@ -31,7 +31,7 @@ export class MigrationCommand extends CommandRunner {
       case 'create': {
         const [, version] = passedParam;
 
-        if (!this.isValidVersion(version)) {
+        if (!this.migrationService.isValidVersion(version)) {
           throw new TypeError('Invalid version value.');
         }
 
@@ -47,14 +47,17 @@ export class MigrationCommand extends CommandRunner {
           this.exit();
         }
 
-        if (!this.isValidVersion(version)) {
+        if (
+          typeof version === 'undefined' ||
+          this.migrationService.isValidVersion(version)
+        ) {
+          return await this.migrationService.run({
+            action: action as MigrationAction,
+            version,
+          });
+        } else {
           throw new TypeError('Invalid version value.');
         }
-
-        return await this.migrationService.run({
-          action: action as MigrationAction,
-          version,
-        });
       }
       default:
         this.logger.error('No valid command provided');
@@ -66,15 +69,5 @@ export class MigrationCommand extends CommandRunner {
   exit(): void {
     this.logger.log('Exiting migration process.');
     process.exit(0);
-  }
-
-  /**
-   * Checks if the migration version is in valid format
-   * @param version migration version name
-   * @returns True, if the migration version name is valid
-   */
-  public isValidVersion(version: string): version is MigrationVersion {
-    const regex = /^v(\d+)\.(\d+)\.(\d+)$/;
-    return regex.test(version);
   }
 }

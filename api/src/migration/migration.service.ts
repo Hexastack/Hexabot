@@ -55,8 +55,7 @@ export class MigrationService implements OnApplicationBootstrap {
     }
     this.logger.log('Mongoose connection established');
 
-    const isCLI = Boolean(process.env.HEXABOT_CLI);
-    if (!isCLI && config.mongo.autoMigrate) {
+    if (!this.isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
       await this.run({
         action: MigrationAction.UP,
@@ -75,6 +74,24 @@ export class MigrationService implements OnApplicationBootstrap {
    */
   public get migrationFilePath() {
     return this.moduleRef.get('MONGO_MIGRATION_DIR');
+  }
+
+  /**
+   * Checks if current running using CLI
+   * @returns True if using CLI
+   */
+  public get isCLI() {
+    return Boolean(process.env.HEXABOT_CLI);
+  }
+
+  /**
+   * Checks if the migration version is in valid format
+   * @param version migration version name
+   * @returns True, if the migration version name is valid
+   */
+  public isValidVersion(version: string): version is MigrationVersion {
+    const regex = /^v(\d+)\.(\d+)\.(\d+)$/;
+    return regex.test(version);
   }
 
   /**
@@ -187,7 +204,7 @@ module.exports = {
    * @returns Resolves when the migration operation is successfully completed.
    */
   public async run({ action, version, isAutoMigrate }: MigrationRunParams) {
-    if (!version) {
+    if (!this.isCLI) {
       if (isAutoMigrate) {
         const metadata = await this.metadataService.findOne({
           name: 'db-version',
@@ -195,11 +212,15 @@ module.exports = {
         const version = metadata ? metadata.value : INITIAL_DB_VERSION;
         await this.runUpgrades(action, version);
       } else {
-        await this.runAll(action);
-        this.exit();
+        // Do nothing ...
+        return;
       }
     } else {
-      await this.runOne({ action, version });
+      if (!version) {
+        await this.runAll(action);
+      } else {
+        await this.runOne({ action, version });
+      }
       this.exit();
     }
   }
