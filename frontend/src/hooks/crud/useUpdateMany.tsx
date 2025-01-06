@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
