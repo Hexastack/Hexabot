@@ -102,14 +102,22 @@ export class ReadOnlyUserController extends BaseController<
       throw new NotFoundException(`user with ID ${id} not found`);
     }
 
-    if (user.avatar) {
+    try {
+      if (!user.avatar) {
+        throw new Error('User has no avatar');
+      }
+
       return await this.attachmentService.download(
         user.avatar,
         config.parameters.avatarDir,
       );
+    } catch (err) {
+      this.logger.verbose(
+        'User has no avatar, generating initials avatar ...',
+        err,
+      );
+      return await generateInitialsAvatar(user);
     }
-
-    return generateInitialsAvatar(user);
   }
 
   /**

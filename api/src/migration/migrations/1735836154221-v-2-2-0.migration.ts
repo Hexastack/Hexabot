@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { existsSync, promises as fsPromises } from 'fs';
-import { join } from 'path';
+import { existsSync } from 'fs';
+import { join, resolve } from 'path';
 
 import mongoose from 'mongoose';
 
@@ -16,6 +16,8 @@ import attachmentSchema, {
 } from '@/attachment/schemas/attachment.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
+import userSchema, { User } from '@/user/schemas/user.schema';
+import { moveFile, moveFiles } from '@/utils/helpers/fs';
 
 import { MigrationServices } from '../types';
 
@@ -79,22 +81,85 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
 };
 
 const updateOldAvatarsPath = async ({ logger }: MigrationServices) => {
+  // Make sure the old folder is moved
   const oldPath = join(process.cwd(), process.env.AVATAR_DIR || '/avatars');
   if (existsSync(oldPath)) {
-    await fsPromises.copyFile(oldPath, config.parameters.avatarDir);
-    await fsPromises.unlink(oldPath);
+    logger.verbose(
+      `Moving subscriber avatar files from ${oldPath} to ${config.parameters.avatarDir} ...`,
+    );
+    await moveFiles(oldPath, config.parameters.avatarDir);
     logger.log('Avatars folder successfully moved to its new location ...');
   } else {
-    logger.log('No old avatars folder found ...');
+    logger.log(`No old avatars folder found: ${oldPath}`);
+  }
+
+  // Move users avatars to the "uploads/avatars" folder
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const cursor = UserModel.find().cursor();
+
+  for await (const user of cursor) {
+    try {
+      if (user.avatar) {
+        const avatar = await AttachmentModel.findOne({ _id: user.avatar });
+        if (avatar) {
+          const src = resolve(
+            join(config.parameters.uploadDir, avatar.location),
+          );
+          const dst = resolve(
+            join(config.parameters.avatarDir, avatar.location),
+          );
+          logger.verbose(`Moving user avatar file from ${src} to ${dst} ...`);
+          await moveFile(src, dst);
+        }
+      }
+    } catch (err) {
+      logger.error(err);
+      logger.error('Unable to move user avatar to the new folder');
+    }
   }
 };
 
 const restoreOldAvatarsPath = async ({ logger }: MigrationServices) => {
+  // Move users avatars to the "/app/avatars" folder
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const cursor = UserModel.find().cursor();
+
+  for await (const user of cursor) {
+    try {
+      if (user.avatar) {
+        const avatar = await AttachmentModel.findOne({ _id: user.avatar });
+        if (avatar) {
+          const src = resolve(
+            join(config.parameters.avatarDir, avatar.location),
+          );
+          const dst = resolve(
+            join(config.parameters.uploadDir, avatar.location),
+          );
+          logger.verbose(`Moving user avatar file from ${src} to ${dst} ...`);
+          await moveFile(src, dst);
+        }
+      }
+    } catch (err) {
+      logger.error(err);
+      logger.error('Unable to move user avatar to the new folder');
+    }
+  }
+
+  //
   const oldPath = join(process.cwd(), process.env.AVATAR_DIR || '/avatars');
   if (existsSync(config.parameters.avatarDir)) {
-    await fsPromises.copyFile(config.parameters.avatarDir, oldPath);
-    await fsPromises.unlink(config.parameters.avatarDir);
-    logger.log('Avatars folder successfully moved to its old location ...');
+    await moveFiles(config.parameters.avatarDir, oldPath);
+    logger.log('Avatars folder successfully moved to the old location ...');
   } else {
     logger.log('No avatars folder found ...');
   }
