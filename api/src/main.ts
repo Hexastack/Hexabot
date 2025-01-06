@@ -85,7 +85,7 @@ async function bootstrap() {
   }
 
   process.on('uncaughtException', (error) => {
-    if (error.stack.toLowerCase().includes('smtp'))
+    if (error.stack?.toLowerCase().includes('smtp'))
       app.get(LoggerService).error('SMTP error', error.stack);
     else throw error;
   });
