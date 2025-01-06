@@ -14,3 +14,9 @@ export const getDateTimeFormatter = (date: Date) => ({
     val: DATE_TIME_FORMAT,
   },
 });
+
+export const normalizeDate = (locale: string, dateField?: Date | string) =>
+  (typeof dateField === "string"
+    ? new Date(dateField)
+    : dateField
+  )?.toLocaleString(locale);
