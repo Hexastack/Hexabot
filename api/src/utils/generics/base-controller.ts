@@ -44,7 +44,7 @@ export abstract class BaseController<
    * @throws {NotFoundException} Throws a NotFoundException if any invalid IDs are found.
    */
   protected validate({ dto, allowedIds }: TValidateProps<T, TStub>): void {
-    const exceptions = [];
+    const exceptions: string[] = [];
     Object.entries(dto)
       .filter(([key]) => Object.keys(allowedIds).includes(key))
       .forEach(([field]) => {
