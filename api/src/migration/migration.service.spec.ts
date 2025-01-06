@@ -82,6 +82,7 @@ describe('MigrationService', () => {
   describe('create', () => {
     beforeEach(() => {
       jest.spyOn(service, 'exit').mockImplementation(); // Mock exit to avoid Jest process termination
+      process.env.HEXABOT_CLI = 'true';
     });
 
     afterEach(jest.restoreAllMocks);
@@ -163,6 +164,7 @@ describe('MigrationService', () => {
     afterEach(jest.restoreAllMocks);
 
     it('should call runUpgrades when version is not provided and isAutoMigrate is true', async () => {
+      process.env.HEXABOT_CLI = '';
       const runUpgradesSpy = jest
         .spyOn(service as any, 'runUpgrades')
         .mockResolvedValue('v2.2.0');
@@ -177,6 +179,7 @@ describe('MigrationService', () => {
     });
 
     it('should call runAll and exit when version is not provided and isAutoMigrate is false', async () => {
+      process.env.HEXABOT_CLI = 'true';
       const runAllSpy = jest
         .spyOn(service as any, 'runAll')
         .mockResolvedValue('v2.2.0');
@@ -192,6 +195,7 @@ describe('MigrationService', () => {
     });
 
     it('should call runOne and exit when version is provided', async () => {
+      process.env.HEXABOT_CLI = 'true';
       const runOneSpy = jest
         .spyOn(service as any, 'runOne')
         .mockResolvedValue('v2.2.0');
