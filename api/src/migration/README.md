@@ -11,6 +11,7 @@ will apply migrations automatically but only if it's a dev environement and `con
 - Track migration execution status in a MongoDB collection (`migrations`).
 - Run individual or all migrations with ease.
 - Built-in support for rollback logic.
+- Keeps track of the database schema version in the metadata collection (SettingModule).
 
 ## Usage
 

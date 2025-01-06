@@ -28,22 +28,37 @@ export class MigrationCommand extends CommandRunner {
   async run(passedParam: string[]): Promise<void> {
     const [subcommand] = passedParam;
     switch (subcommand) {
-      case 'create':
-        const [, filename] = passedParam;
-        return await this.migrationService.create(filename);
-      case 'migrate':
-        const [, action, name] = passedParam;
+      case 'create': {
+        const [, version] = passedParam;
+
+        if (!this.migrationService.isValidVersion(version)) {
+          throw new TypeError('Invalid version value.');
+        }
+
+        return this.migrationService.create(version);
+      }
+      case 'migrate': {
+        const [, action, version] = passedParam;
+
         if (
           !Object.values(MigrationAction).includes(action as MigrationAction)
         ) {
           this.logger.error('Invalid Operation');
           this.exit();
         }
-        return await this.migrationService.run({
-          action: action as MigrationAction,
-          name,
-        });
 
+        if (
+          typeof version === 'undefined' ||
+          this.migrationService.isValidVersion(version)
+        ) {
+          return await this.migrationService.run({
+            action: action as MigrationAction,
+            version,
+          });
+        } else {
+          throw new TypeError('Invalid version value.');
+        }
+      }
       default:
         this.logger.error('No valid command provided');
         this.exit();
