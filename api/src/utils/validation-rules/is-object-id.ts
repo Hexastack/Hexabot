@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 
 export const IsObjectId =
   (validationOptions?: ValidationOptions) =>
-  (object: unknown, propertyName: string) =>
+  (object: object, propertyName: string) =>
     registerDecorator({
       target: object.constructor,
       propertyName,
