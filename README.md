@@ -55,7 +55,6 @@
 - **frontend:** The admin panel built with React/Next.js for managing chatbot configurations and flows.
 - **api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
 - **widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
-- **nlu:** The NLU Engine built with Python, enabling intent recognition and language detection through machine learning models.
 - **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
 
 ## Getting Started
@@ -107,7 +106,7 @@ npm install -g hexabot-cli
 5. **Run in development mode**:
 
    ```sh
-   hexabot dev --services nlu,ollama
+   hexabot dev --servicesollama
    ```
 
    This starts the required services in development mode.
@@ -128,7 +127,6 @@ You can also find specific documentation for different components of the project
 - [API Documentation](api/README.md)
 - [UI Documentation](frontend/README.md)
 - [Live Chat Widget Documentation](widget/README.md)
-- [NLU Engine Documentation](nlu/README.md)
 
 ## Contributing
 
@@ -175,10 +173,10 @@ Otherwise, you can choose to download docker images rather than building them:
 $ hexabot start 
 ```
 
-You can also enable services such as the NLU engine and Ollama (The services are declared under the `./docker` folder) :
+You can also enable services such as Ollama (The services are declared under the `./docker` folder) :
 
 ```bash
-$ hexabot dev --services ollama,nlu
+$ hexabot dev --services ollama
 ```
 
 **Note:** The first time you run the app, Docker will take some time to download all the required images.
