@@ -106,7 +106,7 @@ npm install -g hexabot-cli
 5. **Run in development mode**:
 
    ```sh
-   hexabot dev --servicesollama
+   hexabot dev --services ollama
    ```
 
    This starts the required services in development mode.
