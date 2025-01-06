@@ -55,7 +55,7 @@ export class BotStats extends BaseSchema {
    */
 
   @Prop({ type: Number, default: 0 })
-  value?: number;
+  value: number;
 
   /**
    *  name of the insight (e.g: incoming messages).
@@ -76,7 +76,7 @@ export class BotStats extends BaseSchema {
         id: index + 1,
         name: type,
         values: [],
-      };
+      } as ToLinesType;
     });
 
     const index: { [dataName: string]: number } = data.reduce(

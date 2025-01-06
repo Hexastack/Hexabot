@@ -92,13 +92,16 @@ export class PermissionController extends BaseController<
   @CsrfCheck(true)
   @Post()
   async create(@Body() permission: PermissionCreateDto) {
-    this.validate({
-      dto: permission,
-      allowedIds: {
-        role: (await this.roleService.findOne(permission.role))?.id,
-        model: (await this.modelService.findOne(permission.model))?.id,
-      },
-    });
+    const role = await this.roleService.findOne(permission.role);
+    if (!role) {
+      throw new NotFoundException('Unable to find role');
+    }
+    const model = await this.modelService.findOne(permission.model);
+
+    if (!model) {
+      throw new NotFoundException('Unable to find model');
+    }
+
     return await this.permissionService.create(permission);
   }
 

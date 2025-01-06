@@ -7,7 +7,6 @@
     "test",
     "dist",
     "**/*spec.ts",
-    "**/*mock.ts",
-    "migrations"
+    "**/*mock.ts"
   ]
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -26,8 +26,8 @@ import {
 } from '@/utils/test/test';
 
 import { LabelRepository } from '../repositories/label.repository';
-import { LabelModel, Label, LabelFull } from '../schemas/label.schema';
-import { SubscriberModel, Subscriber } from '../schemas/subscriber.schema';
+import { Label, LabelFull, LabelModel } from '../schemas/label.schema';
+import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 
 import { SubscriberRepository } from './../repositories/subscriber.repository';
 import { LabelService } from './label.service';
@@ -101,7 +101,9 @@ describe('LabelService', () => {
   describe('findOneAndPopulate', () => {
     it('should find one label by id, and populate its corresponding users', async () => {
       jest.spyOn(labelRepository, 'findOneAndPopulate');
-      const label = await labelRepository.findOne({ name: 'TEST_TITLE_1' });
+      const label = (await labelRepository.findOne({
+        name: 'TEST_TITLE_1',
+      })) as Label;
       const result = await labelService.findOneAndPopulate(label.id);
 
       expect(result).toEqualPayload({

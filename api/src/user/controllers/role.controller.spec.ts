@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -30,7 +30,7 @@ import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
+import { Role, RoleFull, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -83,8 +83,8 @@ describe('RoleController', () => {
     roleService = module.get<RoleService>(RoleService);
     permissionService = module.get<PermissionService>(PermissionService);
     userService = module.get<UserService>(UserService);
-    roleAdmin = await roleService.findOne({ name: 'admin' });
-    rolePublic = await roleService.findOne({ name: 'public' });
+    roleAdmin = (await roleService.findOne({ name: 'admin' })) as Role;
+    rolePublic = (await roleService.findOne({ name: 'public' })) as Role;
   });
 
   afterAll(async () => {
@@ -126,7 +126,7 @@ describe('RoleController', () => {
 
         acc.push(roleWithPermissionsAndUsers);
         return acc;
-      }, []);
+      }, [] as RoleFull[]);
 
       expect(roleService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
@@ -136,10 +136,10 @@ describe('RoleController', () => {
   describe('findOne', () => {
     it('should find one role', async () => {
       jest.spyOn(roleService, 'findOne');
-      const result = await roleController.findOne(roleAdmin.id, []);
+      const result = (await roleController.findOne(roleAdmin.id, [])) as Role;
       expect(roleService.findOne).toHaveBeenCalledWith(roleAdmin.id);
       expect(result).toEqualPayload(
-        roleFixtures.find((role) => role.name === 'admin'),
+        roleFixtures.find((role) => role.name === 'admin') as Role,
       );
     });
 
