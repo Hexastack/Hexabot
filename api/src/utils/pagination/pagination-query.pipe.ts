@@ -22,7 +22,7 @@ export class PageQueryPipe<T>
   transform(value: PageQueryParams) {
     let skip: number | undefined = undefined;
     let limit: number | undefined = undefined;
-    if ('limit' in value) {
+    if (value && 'limit' in value) {
       skip =
         value?.skip && parseInt(value.skip) > -1 ? parseInt(value.skip) : 0;
       limit =
