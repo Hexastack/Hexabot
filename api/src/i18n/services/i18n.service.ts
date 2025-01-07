@@ -1,12 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   I18nService as NativeI18nService,
   Path,
@@ -29,15 +29,11 @@ export class I18nService<
     options?: TranslateOptions,
   ): IfAnyOrNever<R, string, R> {
     options = {
-      lang: this.i18nOptions.fallbackLanguage,
-      defaultValue: key,
       ...options,
+      lang: options.lang || this.i18nOptions.fallbackLanguage,
+      defaultValue: options.defaultValue || key,
     };
     let { lang } = options;
-
-    if (!lang) {
-      throw new InternalServerErrorException('I18nService: lang is undefined');
-    }
 
     lang = this.resolveLanguage(lang);
 
