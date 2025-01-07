@@ -23,10 +23,9 @@ export class PageQueryPipe<T>
     let skip: number | undefined = undefined;
     let limit: number | undefined = undefined;
     if (value && 'limit' in value) {
-      skip =
-        value?.skip && parseInt(value.skip) > -1 ? parseInt(value.skip) : 0;
+      skip = value.skip && parseInt(value.skip) > -1 ? parseInt(value.skip) : 0;
       limit =
-        value?.limit && parseInt(value.limit) > 0
+        value.limit && parseInt(value.limit) > 0
           ? parseInt(value.limit)
           : config.pagination.limit;
     }
