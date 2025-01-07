@@ -51,23 +51,23 @@ describe('ContentRepository', () => {
     );
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
   describe('findOneAndPopulate', () => {
     it('should find a content and populate its content type', async () => {
       const findSpy = jest.spyOn(contentModel, 'findById');
-      const content = await contentModel.findOne({ title: 'Jean' });
-      const contentType = await contentTypeModel.findById(content.entity);
-      const result = await contentRepository.findOneAndPopulate(content.id);
-      expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
+      const content = await contentModel.findOne({
+        title: 'Jean',
+      });
+      const contentType = await contentTypeModel.findById(content!.entity);
+      const result = await contentRepository.findOneAndPopulate(content!.id);
+      expect(findSpy).toHaveBeenCalledWith(content!.id, undefined);
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
         entity: contentTypeFixtures.find(
-          ({ name }) => name === contentType.name,
+          ({ name }) => name === contentType?.name,
         ),
       });
     });

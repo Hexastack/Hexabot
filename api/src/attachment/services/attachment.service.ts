@@ -76,11 +76,13 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param foreign_id The unique identifier of the user, used to locate the profile picture.
    * @returns A `StreamableFile` containing the user's profile picture.
    */
-  async downloadProfilePic(foreign_id: string): Promise<StreamableFile> {
+  async downloadProfilePic(
+    foreign_id: string,
+  ): Promise<StreamableFile | undefined> {
     if (this.getStoragePlugin()) {
       try {
         const pict = foreign_id + '.jpeg';
-        const picture = await this.getStoragePlugin().downloadProfilePic(pict);
+        const picture = await this.getStoragePlugin()?.downloadProfilePic(pict);
         return picture;
       } catch (err) {
         this.logger.error('Error downloading profile picture', err);
@@ -111,16 +113,16 @@ export class AttachmentService extends BaseService<Attachment> {
         buffer: Buffer.isBuffer(data) ? data : await data.buffer(),
       } as Express.Multer.File;
       try {
-        await this.getStoragePlugin().uploadAvatar(picture);
+        await this.getStoragePlugin()?.uploadAvatar(picture);
         this.logger.log(
           `Profile picture uploaded successfully to ${
-            this.getStoragePlugin().name
+            this.getStoragePlugin()?.name
           }`,
         );
       } catch (err) {
         this.logger.error(
           `Error while uploading profile picture to ${
-            this.getStoragePlugin().name
+            this.getStoragePlugin()?.name
           }`,
           err,
         );
@@ -165,9 +167,11 @@ export class AttachmentService extends BaseService<Attachment> {
 
     if (this.getStoragePlugin()) {
       for (const file of files?.file) {
-        const dto = await this.getStoragePlugin().upload(file);
-        const uploadedFile = await this.create(dto);
-        uploadedFiles.push(uploadedFile);
+        const dto = await this.getStoragePlugin()?.upload(file);
+        if (dto) {
+          const uploadedFile = await this.create(dto);
+          uploadedFiles.push(uploadedFile);
+        }
       }
     } else {
       if (Array.isArray(files?.file)) {
@@ -197,10 +201,10 @@ export class AttachmentService extends BaseService<Attachment> {
   async store(
     file: Buffer | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-  ): Promise<Attachment> {
+  ): Promise<Attachment | undefined> {
     if (this.getStoragePlugin()) {
-      const storedDto = await this.getStoragePlugin().store(file, metadata);
-      return await this.create(storedDto);
+      const storedDto = await this.getStoragePlugin()?.store?.(file, metadata);
+      return storedDto ? await this.create(storedDto) : undefined;
     } else {
       const dirPath = path.join(config.parameters.uploadDir);
       const uniqueFilename = generateUniqueFilename(metadata.name);
@@ -246,7 +250,7 @@ export class AttachmentService extends BaseService<Attachment> {
    */
   async download(attachment: Attachment) {
     if (this.getStoragePlugin()) {
-      return await this.getStoragePlugin().download(attachment);
+      return await this.getStoragePlugin()?.download(attachment);
     } else {
       if (!fileExists(attachment.location)) {
         throw new NotFoundException('No file was found');
@@ -275,9 +279,9 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param  attachment - The attachment to download.
    * @returns A promise that resolves to a Buffer representing the downloaded attachment.
    */
-  async readAsBuffer(attachment: Attachment): Promise<Buffer> {
+  async readAsBuffer(attachment: Attachment): Promise<Buffer | undefined> {
     if (this.getStoragePlugin()) {
-      return await this.getStoragePlugin().readAsBuffer(attachment);
+      return await this.getStoragePlugin()?.readAsBuffer?.(attachment);
     } else {
       if (!fileExists(attachment.location)) {
         throw new NotFoundException('No file was found');

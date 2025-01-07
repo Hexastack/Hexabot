@@ -33,7 +33,7 @@ const verifyMenu = (
     return true;
 };
 
-export const verifyTree = (menuTree: MenuTree) => {
+export const verifyTree = (menuTree?: MenuTree) => {
   if (!Array.isArray(menuTree)) return true;
   return !menuTree.some((v) => {
     const valid = verifyMenu(v);

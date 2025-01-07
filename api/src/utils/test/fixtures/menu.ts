@@ -108,7 +108,7 @@ export const installMenuFixtures = async () => {
   const offerDocs = await Menu.insertMany(
     offersMenuFixtures.map((m) => ({
       ...m,
-      parent: docs[parseInt(m.parent)].id,
+      parent: m.parent && docs[parseInt(m.parent)].id,
     })),
   );
 
@@ -117,7 +117,7 @@ export const installMenuFixtures = async () => {
   await Menu.insertMany(
     devicesMenuFixtures.map((m) => ({
       ...m,
-      parent: allDocs[parseInt(m.parent)].id,
+      parent: m.parent && allDocs[parseInt(m.parent)].id,
     })),
   );
 
@@ -125,7 +125,7 @@ export const installMenuFixtures = async () => {
     accountMenuFixtures.map((m) => {
       return {
         ...m,
-        parent: docs[parseInt(m.parent)].id,
+        parent: m.parent && docs[parseInt(m.parent)].id,
       };
     }),
   );

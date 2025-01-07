@@ -29,7 +29,10 @@ export class SearchFilterPipe<T>
 {
   constructor(
     private readonly props: {
-      allowedFields: TFilterNestedKeysOfType<T, string | string[]>[];
+      allowedFields: TFilterNestedKeysOfType<
+        T,
+        undefined | string | string[]
+      >[];
     },
   ) {}
 
@@ -45,7 +48,7 @@ export class SearchFilterPipe<T>
   private isAllowedField(field: string) {
     if (
       this.props.allowedFields.includes(
-        field as TFilterNestedKeysOfType<T, string | string[]>,
+        field as TFilterNestedKeysOfType<T, undefined | string | string[]>,
       )
     )
       return true;
@@ -58,29 +61,39 @@ export class SearchFilterPipe<T>
       if (Types.ObjectId.isValid(String(val))) {
         return {
           _operator: 'eq',
-          [field === 'id' ? '_id' : field]: this.getNullableValue(String(val)),
+          data: {
+            [field === 'id' ? '_id' : field]: this.getNullableValue(
+              String(val),
+            ),
+          },
         };
       }
       return {};
-    } else if (val['contains'] || val[field]?.['contains']) {
+    } else if (val?.['contains'] || val?.[field]?.['contains']) {
       return {
         _operator: 'iLike',
-        [field]: this.getRegexValue(
-          String(val['contains'] || val[field]['contains']),
-        ),
+        data: {
+          [field]: this.getRegexValue(
+            String(val['contains'] || val[field]['contains']),
+          ),
+        },
       };
-    } else if (val['!=']) {
+    } else if (val?.['!=']) {
       return {
         _operator: 'neq',
-        [field]: this.getNullableValue(val['!=']),
+        data: {
+          [field]: this.getNullableValue(val['!=']),
+        },
       };
     }
 
     return {
       _operator: 'eq',
-      [field]: Array.isArray(val)
-        ? val.map((v) => this.getNullableValue(v)).filter((v) => v)
-        : this.getNullableValue(String(val)),
+      data: {
+        [field]: Array.isArray(val)
+          ? val.map((v) => this.getNullableValue(v)).filter((v) => v)
+          : this.getNullableValue(String(val)),
+      },
     };
   }
 
@@ -90,10 +103,11 @@ export class SearchFilterPipe<T>
 
     if (whereParams?.['or']) {
       Object.values(whereParams['or'])
-        .filter((val) => this.isAllowedField(Object.keys(val)[0]))
+        .filter((val) => val && this.isAllowedField(Object.keys(val)[0]))
         .map((val) => {
+          if (!val) return false;
           const [field] = Object.keys(val);
-          const filter = this.transformField(field, val[field]);
+          const filter = this.transformField(field, val?.[field]);
           if (filter._operator)
             filters.push({
               ...filter,
@@ -119,24 +133,24 @@ export class SearchFilterPipe<T>
         });
     }
 
-    return filters.reduce((acc, { _context, _operator, ...filter }) => {
+    return filters.reduce((acc, { _context, _operator, data, ...filter }) => {
       switch (_operator) {
         case 'neq':
           return {
             ...acc,
-            $nor: [...(acc?.$nor || []), filter],
+            $nor: [...(acc?.$nor || []), { ...filter, ...data }],
           };
         default:
           switch (_context) {
             case 'or':
               return {
                 ...acc,
-                $or: [...(acc?.$or || []), filter],
+                $or: [...(acc?.$or || []), { ...filter, ...data }],
               };
             case 'and':
               return {
                 ...acc,
-                $and: [...(acc?.$and || []), filter],
+                $and: [...(acc?.$and || []), { ...filter, ...data }],
               };
             default:
               return acc; // Handle any other cases if necessary

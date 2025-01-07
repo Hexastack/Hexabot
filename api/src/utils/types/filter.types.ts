@@ -69,7 +69,7 @@ export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>;
+  allowedIds: Partial<TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>>;
 };
 
 //populate types
@@ -105,10 +105,12 @@ type TOperator = 'eq' | 'iLike' | 'neq';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {
-  [x: string]: string | RegExp | string[];
   _id?: string;
   _context?: TContext;
   _operator?: TOperator;
+  data?: {
+    [x: string]: undefined | string | RegExp | (string | undefined)[];
+  };
 };
 
 /* mongoose */

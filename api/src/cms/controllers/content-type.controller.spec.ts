@@ -39,7 +39,7 @@ describe('ContentTypeController', () => {
   let contentTypeController: ContentTypeController;
   let contentTypeService: ContentTypeService;
   let contentService: ContentService;
-  let contentType: ContentType;
+  let contentType: ContentType | null;
   let blockService: BlockService;
 
   beforeAll(async () => {
@@ -76,12 +76,10 @@ describe('ContentTypeController', () => {
     );
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
     contentService = module.get<ContentService>(ContentService);
-    contentType = await contentTypeService.findOne({ name: 'Product' });
+    contentType = await contentTypeService.findOne({ name: 'Product' })!;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -138,10 +136,10 @@ describe('ContentTypeController', () => {
   describe('findOne', () => {
     it('should find a content type by id', async () => {
       jest.spyOn(contentTypeService, 'findOne');
-      const result = await contentTypeController.findOne(contentType.id);
-      expect(contentTypeService.findOne).toHaveBeenCalledWith(contentType.id);
+      const result = await contentTypeController.findOne(contentType!.id);
+      expect(contentTypeService.findOne).toHaveBeenCalledWith(contentType!.id);
       expect(result).toEqualPayload(
-        contentTypeFixtures.find(({ name }) => name === 'Product'),
+        contentTypeFixtures.find(({ name }) => name === 'Product')!,
       );
     });
 
@@ -160,10 +158,10 @@ describe('ContentTypeController', () => {
       jest.spyOn(contentTypeService, 'updateOne');
       const result = await contentTypeController.updateOne(
         updatedContent,
-        contentType.id,
+        contentType!.id,
       );
       expect(contentTypeService.updateOne).toHaveBeenCalledWith(
-        contentType.id,
+        contentType!.id,
         updatedContent,
       );
       expect(result).toEqualPayload({
@@ -190,17 +188,19 @@ describe('ContentTypeController', () => {
       const contentType = await contentTypeService.findOne({
         name: 'Restaurant',
       });
-      const result = await contentTypeController.deleteOne(contentType.id);
+      const result = await contentTypeController.deleteOne(contentType!.id);
       expect(contentTypeService.deleteCascadeOne).toHaveBeenCalledWith(
-        contentType.id,
+        contentType!.id,
       );
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
 
       await expect(
-        contentTypeController.findOne(contentType.id),
+        contentTypeController.findOne(contentType!.id),
       ).rejects.toThrow(NotFoundException);
 
-      expect(await contentService.find({ entity: contentType.id })).toEqual([]);
+      expect(await contentService.find({ entity: contentType!.id })).toEqual(
+        [],
+      );
     });
 
     it('should throw NotFoundException if the content type is not found', async () => {

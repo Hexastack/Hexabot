@@ -94,7 +94,9 @@ export class MenuController extends BaseController<
     this.validate({
       dto: body,
       allowedIds: {
-        parent: (await this.menuService.findOne(body.parent))?.id,
+        parent: body?.parent
+          ? (await this.menuService.findOne(body.parent))?.id
+          : undefined,
       },
     });
     return await this.menuService.create(body);

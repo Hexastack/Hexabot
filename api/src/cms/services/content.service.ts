@@ -150,7 +150,7 @@ export class ContentService extends BaseService<
   async getContent(
     options: ContentOptions,
     skip: number,
-  ): Promise<Omit<StdOutgoingListMessage, 'options'> | undefined> {
+  ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
     let query: TFilterQuery<Content> = { status: true };
     const limit = options.limit;
 

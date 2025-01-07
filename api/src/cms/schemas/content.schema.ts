@@ -44,7 +44,7 @@ export class ContentStub extends BaseSchema {
   status?: boolean;
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
-  dynamicFields?: Record<string, any>;
+  dynamicFields: Record<string, any>;
 
   @Prop({ type: String })
   rag?: string;
