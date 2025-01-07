@@ -21,6 +21,12 @@ import { moveFile, moveFiles } from '@/utils/helpers/fs';
 
 import { MigrationServices } from '../types';
 
+/**
+ * Updates subscriber documents with their corresponding avatar attachments
+ * and moves avatar files to a new directory.
+ *
+ * @returns Resolves when the migration process is complete.
+ */
 const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
@@ -50,17 +56,48 @@ const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
         { $set: { avatar: attachment._id } },
       );
       logger.log(
-        `Avatar attachment successfully updated for subscriber ${subscriber._id}`,
+        `Subscriber ${subscriber._id} avatar attachment successfully updated for  `,
       );
+
+      const src = resolve(
+        join(config.parameters.uploadDir, attachment.location),
+      );
+      if (existsSync(src)) {
+        try {
+          const dst = resolve(
+            join(config.parameters.avatarDir, attachment.location),
+          );
+          await moveFile(src, dst);
+          logger.log(
+            `Subscriber ${subscriber._id} avatar file successfully moved to the new "avatars" folder`,
+          );
+        } catch (err) {
+          logger.error(err);
+          logger.warn(`Unable to move subscriber ${subscriber._id} avatar!`);
+        }
+      } else {
+        logger.warn(
+          `Subscriber ${subscriber._id} avatar attachment file was not found!`,
+        );
+      }
     } else {
-      logger.debug(
+      logger.warn(
         `No avatar attachment found for subscriber ${subscriber._id}`,
       );
     }
   }
 };
 
+/**
+ * Reverts what the previous function does
+ *
+ * @returns Resolves when the migration process is complete.
+ */
 const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
   const SubscriberModel = mongoose.model<Subscriber>(
     Subscriber.name,
     subscriberSchema,
@@ -70,16 +107,57 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
   const cursor = SubscriberModel.find({ avatar: { $exists: true } }).cursor();
 
   for await (const subscriber of cursor) {
-    await SubscriberModel.updateOne(
-      { _id: subscriber._id },
-      { $set: { avatar: null } },
-    );
-    logger.log(
-      `Avatar attachment successfully updated for subscriber ${subscriber._id}`,
-    );
+    if (subscriber.avatar) {
+      const attachment = await AttachmentModel.findOne({
+        _id: subscriber.avatar,
+      });
+
+      if (attachment) {
+        // Move file to the old folder
+        const src = resolve(
+          join(config.parameters.avatarDir, attachment.location),
+        );
+        if (existsSync(src)) {
+          try {
+            const dst = resolve(
+              join(config.parameters.uploadDir, attachment.location),
+            );
+            await moveFile(src, dst);
+            logger.log(
+              `Avatar attachment successfully moved back to the old "avatars" folder`,
+            );
+          } catch (err) {
+            logger.error(err);
+            logger.warn(
+              `Unable to move back subscriber ${subscriber._id} avatar to the old folder!`,
+            );
+          }
+        } else {
+          logger.warn('Avatar attachment file was not found!');
+        }
+
+        // Reset avatar to null
+        await SubscriberModel.updateOne(
+          { _id: subscriber._id },
+          { $set: { avatar: null } },
+        );
+        logger.log(
+          `Avatar attachment successfully updated for subscriber ${subscriber._id}`,
+        );
+      } else {
+        logger.warn(
+          `No avatar attachment found for subscriber ${subscriber._id}`,
+        );
+      }
+    }
   }
 };
 
+/**
+ * Migrates and updates the paths of old folder "avatars" files for subscribers and users.
+ *
+ * @returns Resolves when the migration process is complete.
+ */
 const updateOldAvatarsPath = async ({ logger }: MigrationServices) => {
   // Make sure the old folder is moved
   const oldPath = join(process.cwd(), process.env.AVATAR_DIR || '/avatars');
@@ -87,8 +165,13 @@ const updateOldAvatarsPath = async ({ logger }: MigrationServices) => {
     logger.verbose(
       `Moving subscriber avatar files from ${oldPath} to ${config.parameters.avatarDir} ...`,
     );
-    await moveFiles(oldPath, config.parameters.avatarDir);
-    logger.log('Avatars folder successfully moved to its new location ...');
+    try {
+      await moveFiles(oldPath, config.parameters.avatarDir);
+      logger.log('Avatars folder successfully moved to its new location ...');
+    } catch (err) {
+      logger.error(err);
+      logger.error('Unable to move files from the old "avatars" folder');
+    }
   } else {
     logger.log(`No old avatars folder found: ${oldPath}`);
   }
@@ -124,6 +207,11 @@ const updateOldAvatarsPath = async ({ logger }: MigrationServices) => {
   }
 };
 
+/**
+ * Reverts what the previous function does
+ *
+ * @returns Resolves when the migration process is complete.
+ */
 const restoreOldAvatarsPath = async ({ logger }: MigrationServices) => {
   // Move users avatars to the "/app/avatars" folder
   const AttachmentModel = mongoose.model<Attachment>(
@@ -156,10 +244,17 @@ const restoreOldAvatarsPath = async ({ logger }: MigrationServices) => {
   }
 
   //
-  const oldPath = join(process.cwd(), process.env.AVATAR_DIR || '/avatars');
+  const oldPath = resolve(
+    join(process.cwd(), process.env.AVATAR_DIR || '/avatars'),
+  );
   if (existsSync(config.parameters.avatarDir)) {
-    await moveFiles(config.parameters.avatarDir, oldPath);
-    logger.log('Avatars folder successfully moved to the old location ...');
+    try {
+      await moveFiles(config.parameters.avatarDir, oldPath);
+      logger.log('Avatars folder successfully moved to the old location ...');
+    } catch (err) {
+      logger.error(err);
+      logger.log('Unable to move avatar files to the old folder ...');
+    }
   } else {
     logger.log('No avatars folder found ...');
   }

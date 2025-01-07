@@ -152,13 +152,22 @@ export class SubscriberController extends BaseController<
       throw new NotFoundException(`Subscriber with ID ${id} not found`);
     }
 
-    if (subscriber.avatar) {
-      return this.attachmentService.download(
+    try {
+      if (!subscriber.avatar) {
+        throw new Error('User has no avatar');
+      }
+
+      return await this.attachmentService.download(
         subscriber.avatar,
         config.parameters.avatarDir,
       );
+    } catch (err) {
+      this.logger.verbose(
+        'Subscriber has no avatar, generating initials avatar ...',
+        err,
+      );
+      return await generateInitialsAvatar(subscriber);
     }
-    return generateInitialsAvatar(subscriber);
   }
 
   @CsrfCheck(true)
