@@ -105,10 +105,12 @@ type TOperator = 'eq' | 'iLike' | 'neq';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {
-  [x: string]: string | RegExp | string[];
   _id?: string;
   _context?: TContext;
   _operator?: TOperator;
+  data?: {
+    [x: string]: undefined | string | RegExp | (string | undefined)[];
+  };
 };
 
 /* mongoose */
