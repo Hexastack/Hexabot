@@ -48,22 +48,19 @@ export async function moveFiles(
   const files = await fs.promises.readdir(sourceFolder);
 
   // Filter only files (skip directories)
-  const filePaths = await Promise.all(
-    files.map(async (file) => {
-      const filePath = join(sourceFolder, file);
-      const stat = await fs.promises.stat(filePath);
-      return stat.isFile() ? filePath : null;
-    }),
-  );
+  const filePaths = [];
+  for (const file of files) {
+    const filePath = join(sourceFolder, file);
+    const stat = await fs.promises.stat(filePath);
+    if (stat.isFile()) {
+      filePaths.push(filePath);
+    }
+  }
 
   // Move each file to the destination folder
-  const movePromises = filePaths
-    .filter((filePath): filePath is string => filePath !== null)
-    .map((filePath) => {
-      const fileName = basename(filePath);
-      const destination = resolve(join(destinationFolder, fileName));
-      return moveFile(filePath, destination, overwrite);
-    });
-
-  await Promise.all(movePromises);
+  for (const filePath of filePaths) {
+    const fileName = basename(filePath);
+    const destination = resolve(join(destinationFolder, fileName));
+    await moveFile(filePath, destination, overwrite);
+  }
 }
