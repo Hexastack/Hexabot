@@ -59,7 +59,7 @@ export class MenuStub extends BaseSchema {
 @Schema({ timestamps: true })
 export class Menu extends MenuStub {
   @Transform(({ obj }) => obj.parent?.toString())
-  parent?: string | undefined;
+  parent?: string;
 }
 
 @Schema({ timestamps: true })

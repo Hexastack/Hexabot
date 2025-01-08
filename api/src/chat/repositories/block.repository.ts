@@ -179,13 +179,13 @@ export class BlockRepository extends BaseRepository<
   ): Promise<void> {
     for (const id of ids) {
       const oldState = await this.findOne(id);
-      if (oldState?.category !== category) {
-        const updatedNextBlocks = oldState?.nextBlocks?.filter((nextBlock) =>
+      if (oldState && oldState.category !== category) {
+        const updatedNextBlocks = oldState.nextBlocks?.filter((nextBlock) =>
           ids.includes(nextBlock),
         );
 
-        const updatedAttachedBlock = ids.includes(oldState?.attachedBlock || '')
-          ? oldState?.attachedBlock
+        const updatedAttachedBlock = ids.includes(oldState.attachedBlock || '')
+          ? oldState.attachedBlock
           : null;
 
         await this.updateOne(id, {
@@ -209,7 +209,7 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      if (ids.includes(block.attachedBlock || '')) {
+      if (block.attachedBlock && ids.includes(block.attachedBlock)) {
         await this.updateOne(block.id, { attachedBlock: null });
       }
 

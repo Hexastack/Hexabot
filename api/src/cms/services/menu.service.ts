@@ -126,7 +126,9 @@ export class MenuService extends BaseService<Menu, MenuPopulate, MenuFull> {
     parent: string | symbol = this.RootSymbol,
   ): MenuTree {
     const item = parents.get(parent);
-    if (!item) return [];
+    if (!item) {
+      return [];
+    }
     const children: MenuTree = item.map((menu) => {
       return {
         ...menu,
