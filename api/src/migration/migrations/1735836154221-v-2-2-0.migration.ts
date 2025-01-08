@@ -44,8 +44,83 @@ const getAdminUser = async () => {
 };
 
 /**
- * Updates subscriber documents with their corresponding avatar attachments
- * and moves avatar files to a new directory.
+ * Updates user attachment documents to populate new attributes (context, owner, ownerType)
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateUserAvatar = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const cursor = UserModel.find({
+    avatar: { $exists: true, $ne: null },
+  }).cursor();
+
+  for await (const user of cursor) {
+    try {
+      await AttachmentModel.updateOne(
+        { _id: user.avatar },
+        {
+          $set: {
+            context: AttachmentContext.UserAvatar,
+            ownerType: AttachmentOwnerType.User,
+            owner: user._id,
+          },
+        },
+      );
+      logger.log(`User ${user._id} avatar attributes successfully populated`);
+    } catch (error) {
+      logger.error(
+        `Failed to populate avatar attributes for user ${user._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
+ * Reverts what the previous function does
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const unpopulateUserAvatar = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const cursor = UserModel.find({
+    avatar: { $exists: true, $ne: null },
+  }).cursor();
+
+  for await (const user of cursor) {
+    try {
+      // Undo the updates made by populateUserAvatar
+      await AttachmentModel.updateOne(
+        { _id: user.avatar },
+        {
+          $unset: {
+            context: '',
+            ownerType: '',
+            owner: '',
+          },
+        },
+      );
+      logger.log(`User ${user._id} avatar attributes successfully reverted`);
+    } catch (error) {
+      logger.error(
+        `Failed to revert avatar attributes for user ${user._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
+ * Updates subscriber documents with their corresponding avatar attachments,
+ * populate new attributes (context, owner, ownerType) and moves avatar files to a new directory.
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -539,6 +614,7 @@ const migrateAttachmentMessages = async ({
 
 module.exports = {
   async up(services: MigrationServices) {
+    await populateUserAvatar(services);
     await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.UP, services);
@@ -549,6 +625,7 @@ module.exports = {
     return true;
   },
   async down(services: MigrationServices) {
+    await unpopulateUserAvatar(services);
     await unpopulateSubscriberAvatar(services);
     await restoreOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.DOWN, services);
