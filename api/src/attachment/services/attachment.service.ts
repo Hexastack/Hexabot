@@ -6,8 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs, { createReadStream, promises as fsPromises } from 'fs';
-import { join, resolve } from 'path';
+import fs from 'fs';
+import os from 'os';
+import { join, normalize, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
 import {
@@ -95,7 +96,7 @@ export class AttachmentService extends BaseService<Attachment> {
         join(config.parameters.avatarDir, `${foreign_id}.jpeg`),
       );
       if (fs.existsSync(path)) {
-        const picturetream = createReadStream(path);
+        const picturetream = fs.createReadStream(path);
         return new StreamableFile(picturetream);
       } else {
         throw new NotFoundException('Profile picture not found');
@@ -181,7 +182,7 @@ export class AttachmentService extends BaseService<Attachment> {
       const filePath = resolve(join(rootDir, sanitizeFilename(uniqueFilename)));
 
       if (Buffer.isBuffer(file)) {
-        await fsPromises.writeFile(filePath, file);
+        await fs.promises.writeFile(filePath, file);
       } else if (file instanceof Readable || file instanceof Stream) {
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(filePath);
@@ -193,11 +194,19 @@ export class AttachmentService extends BaseService<Attachment> {
       } else {
         if (file.path) {
           // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
-          const srcFilePath = resolve(file.path);
-          await fsPromises.copyFile(srcFilePath, filePath);
-          await fsPromises.unlink(srcFilePath);
+          const srcFilePath = fs.realpathSync(resolve(file.path));
+          // Get the system's temporary directory in a cross-platform way
+          const tempDir = os.tmpdir();
+          const normalizedTempDir = normalize(tempDir);
+
+          if (!srcFilePath.startsWith(normalizedTempDir)) {
+            throw new Error('Invalid file path');
+          }
+
+          await fs.promises.copyFile(srcFilePath, filePath);
+          await fs.promises.unlink(srcFilePath);
         } else {
-          await fsPromises.writeFile(filePath, file.buffer);
+          await fs.promises.writeFile(filePath, file.buffer);
         }
       }
 

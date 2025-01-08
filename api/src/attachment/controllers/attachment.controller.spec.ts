@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import fs from 'fs';
+
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
@@ -86,7 +88,10 @@ describe('AttachmentController', () => {
 
   afterAll(closeInMongodConnection);
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
 
   describe('count', () => {
     it('should count attachments', async () => {
@@ -113,6 +118,8 @@ describe('AttachmentController', () => {
     });
 
     it('should upload attachment', async () => {
+      jest.spyOn(fs.promises, 'writeFile').mockResolvedValue();
+
       jest.spyOn(attachmentService, 'create');
       const result = await attachmentController.uploadFile(
         {
