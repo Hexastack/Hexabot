@@ -9,6 +9,7 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
+import { TAttachmentContext } from "@/types/attachment.types";
 import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -23,7 +24,12 @@ export const useUpload = <
 >(
   entity: TEntity,
   options?: Omit<
-    TMutationOptions<TBasic, Error, File, TBasic>,
+    TMutationOptions<
+      TBasic,
+      Error,
+      { file: File; context: TAttachmentContext },
+      TBasic
+    >,
     "mutationFn" | "mutationKey"
   >,
 ) => {
@@ -33,8 +39,8 @@ export const useUpload = <
   const { invalidate = true, ...otherOptions } = options || {};
 
   return useMutation({
-    mutationFn: async (variables: File) => {
-      const data = await api.upload(variables);
+    mutationFn: async ({ file, context }) => {
+      const data = await api.upload(file, context);
       const { entities, result } = normalizeAndCache(data);
 
       // Invalidate all counts & collections

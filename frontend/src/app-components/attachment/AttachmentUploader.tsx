@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FolderCopyIcon from "@mui/icons-material/FolderCopy";
@@ -16,7 +17,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IAttachment } from "@/types/attachment.types";
+import { IAttachment, TAttachmentContext } from "@/types/attachment.types";
 
 import { AttachmentDialog } from "./AttachmentDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -67,6 +68,7 @@ export type FileUploadProps = {
   enableMediaLibrary?: boolean;
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
+  context: TAttachmentContext;
 };
 
 const AttachmentUploader: FC<FileUploadProps> = ({
@@ -74,6 +76,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   enableMediaLibrary,
   onChange,
   onUploadComplete,
+  context,
 }) => {
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
@@ -97,34 +100,40 @@ const AttachmentUploader: FC<FileUploadProps> = ({
     e.stopPropagation();
     e.preventDefault();
   };
+  const handleUpload = (file: File | null) => {
+    if (file) {
+      const acceptedTypes = accept.split(",");
+      const isValidType = acceptedTypes.some((mimeType) => {
+        const [type, subtype] = mimeType.split("/");
+
+        if (!type || !subtype) return false; // Ensure valid MIME type
+
+        return (
+          file.type === mimeType ||
+          (subtype === "*" && file.type.startsWith(`${type}/`))
+        );
+      });
+
+      if (!isValidType) {
+        toast.error(t("message.invalid_file_type"));
+
+        return;
+      }
+      uploadAttachment({ file, context });
+    }
+  };
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files.item(0);
 
-      if (file) {
-        const acceptedTypes = accept.split(",");
-        const isValidType = acceptedTypes.some(
-          (type) =>
-            file.type === type || file.name.endsWith(type.replace(".*", "")),
-        );
-
-        if (!isValidType) {
-          toast.error(t("message.invalid_file_type"));
-
-          return;
-        }
-
-        uploadAttachment(file);
-      }
+      handleUpload(file);
     }
   };
   const onDrop = (event: DragEvent<HTMLElement>) => {
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files.item(0);
 
-      if (file) {
-        uploadAttachment(file);
-      }
+      handleUpload(file);
     }
   };
 

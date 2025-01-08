@@ -116,6 +116,7 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
           value={field.value?.payload?.id}
           accept={MIME_TYPES["images"].join(",")}
           format="full"
+          context="content_attachment"
         />
       );
     default:
