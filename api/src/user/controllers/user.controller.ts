@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,13 +21,17 @@ import {
   Req,
   Session,
   UnauthorizedException,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
 import { Session as ExpressSession } from 'express-session';
+import { diskStorage, memoryStorage } from 'multer';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
@@ -83,7 +87,7 @@ export class ReadOnlyUserController extends BaseController<
    */
   @Roles('public')
   @Get('bot/profile_pic')
-  async botProfilePic(@Query('color') color: string) {
+  async getBotAvatar(@Query('color') color: string) {
     return await getBotAvatar(color);
   }
 
@@ -94,19 +98,28 @@ export class ReadOnlyUserController extends BaseController<
    *
    * @returns A promise that resolves to the user's avatar or an avatar generated from initials if not found.
    */
-  @Roles('public')
   @Get(':id/profile_pic')
-  async UserProfilePic(@Param('id') id: string) {
+  async getAvatar(@Param('id') id: string) {
+    const user = await this.userService.findOneAndPopulate(id);
+    if (!user) {
+      throw new NotFoundException(`user with ID ${id} not found`);
+    }
+
     try {
-      const res = await this.userService.userProfilePic(id);
-      return res;
-    } catch (e) {
-      const user = await this.userService.findOne(id);
-      if (user) {
-        return await generateInitialsAvatar(user);
-      } else {
-        throw new NotFoundException(`user with ID ${id} not found`);
+      if (!user.avatar) {
+        throw new Error('User has no avatar');
       }
+
+      return await this.attachmentService.download(
+        user.avatar,
+        config.parameters.avatarDir,
+      );
+    } catch (err) {
+      this.logger.verbose(
+        'User has no avatar, generating initials avatar ...',
+        err,
+      );
+      return await generateInitialsAvatar(user);
     }
   }
 
@@ -251,17 +264,54 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    * @returns A promise that resolves to the updated user.
    */
   @CsrfCheck(true)
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      limits: {
+        fileSize: config.parameters.maxUploadSize,
+      },
+      storage: (() => {
+        if (config.parameters.storageMode === 'memory') {
+          return memoryStorage();
+        } else {
+          return diskStorage({});
+        }
+      })(),
+    }),
+  )
   @Patch('edit/:id')
   async updateOne(
     @Req() req: Request,
     @Param('id') id: string,
     @Body() userUpdate: UserEditProfileDto,
+    @UploadedFile() avatarFile?: Express.Multer.File,
   ) {
     if (!('id' in req.user && req.user.id) || req.user.id !== id) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
-    const result = await this.userService.updateOne(req.user.id, userUpdate);
+    // Upload Avatar if provided
+    const avatar = avatarFile
+      ? await this.attachmentService.store(
+          avatarFile,
+          {
+            name: avatarFile.originalname,
+            size: avatarFile.size,
+            type: avatarFile.mimetype,
+          },
+          config.parameters.avatarDir,
+        )
+      : undefined;
+
+    const result = await this.userService.updateOne(
+      req.user.id,
+      avatar
+        ? {
+            ...userUpdate,
+            avatar: avatar.id,
+          }
+        : userUpdate,
+    );
+
     if (!result) {
       this.logger.warn(`Unable to update User by id ${id}`);
       throw new NotFoundException(`User with ID ${id} not found`);
