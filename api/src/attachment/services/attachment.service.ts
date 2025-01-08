@@ -159,43 +159,6 @@ export class AttachmentService extends BaseService<Attachment> {
    * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
    * Otherwise, uploads files to the local directory.
    *
-   * @deprecated use store() instead
-   * @param files - An array of files to upload.
-   * @returns A promise that resolves to an array of uploaded attachments.
-   */
-  async uploadFiles(files: { file: Express.Multer.File[] }) {
-    const uploadedFiles: Attachment[] = [];
-
-    if (this.getStoragePlugin()) {
-      for (const file of files?.file) {
-        const dto = await this.getStoragePlugin()?.upload?.(file);
-        if (dto) {
-          const uploadedFile = await this.create(dto);
-          uploadedFiles.push(uploadedFile);
-        }
-      }
-    } else {
-      if (Array.isArray(files?.file)) {
-        for (const { size, mimetype, filename } of files?.file) {
-          const uploadedFile = await this.create({
-            size,
-            type: mimetype,
-            name: filename,
-            channel: {},
-            location: `/${filename}`,
-          });
-          uploadedFiles.push(uploadedFile);
-        }
-      }
-    }
-
-    return uploadedFiles;
-  }
-
-  /**
-   * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
-   * Otherwise, uploads files to the local directory.
-   *
    * @param file - The file
    * @param metadata - The attachment metadata informations.
    * @param rootDir - The root directory where attachment shoud be located.

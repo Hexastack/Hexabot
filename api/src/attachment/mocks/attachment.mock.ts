@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -16,9 +16,12 @@ export const attachment: Attachment = {
   size: 343370,
   location:
     '/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
+  context: 'block_attachment',
   id: '65940d115178607da65c82b6',
   createdAt: new Date(),
   updatedAt: new Date(),
+  owner: '1',
+  ownerType: 'User',
 };
 
 export const attachmentFile: Express.Multer.File = {
@@ -28,7 +31,7 @@ export const attachmentFile: Express.Multer.File = {
   buffer: Buffer.from(new Uint8Array([])),
   destination: '',
   fieldname: '',
-  originalname: '',
+  originalname: attachment.name,
   path: '',
   stream: new Stream.Readable(),
   encoding: '7bit',
@@ -42,10 +45,13 @@ export const attachments: Attachment[] = [
     size: 343370,
     location:
       '/app/src/attachment/uploads/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
-    channel: { 'web-channel': {} },
+    channel: { ['some-channel']: {} },
+    context: 'block_attachment',
     id: '65940d115178607da65c82b7',
     createdAt: new Date(),
     updatedAt: new Date(),
+    owner: '1',
+    ownerType: 'User',
   },
   {
     name: 'Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
@@ -53,9 +59,12 @@ export const attachments: Attachment[] = [
     size: 33829,
     location:
       '/app/src/attachment/uploads/Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
-    channel: { 'web-channel': {} },
+    channel: { ['some-channel']: {} },
+    context: 'block_attachment',
     id: '65940d115178607da65c82b8',
     createdAt: new Date(),
     updatedAt: new Date(),
+    owner: '1',
+    ownerType: 'User',
   },
 ];

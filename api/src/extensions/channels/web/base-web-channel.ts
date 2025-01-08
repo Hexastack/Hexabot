@@ -616,17 +616,14 @@ export default abstract class BaseWebChannelHandler<
         throw new Error('Max upload size has been exceeded');
       }
 
-      const attachment = await this.attachmentService.store(data.file, {
+      return await this.attachmentService.store(data.file, {
         name: data.name,
         size: Buffer.byteLength(data.file),
         type: data.type,
+        context: 'message_attachment',
+        ownerType: 'Subscriber',
+        owner: req.session.web.profile?.id,
       });
-
-      if (attachment) {
-        return attachment;
-      } else {
-        throw new Error('Unable to retrieve stored attachment');
-      }
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',
@@ -685,18 +682,14 @@ export default abstract class BaseWebChannelHandler<
         return null;
       }
 
-      if (file) {
-        const attachment = await this.attachmentService.store(file, {
-          name: file.originalname,
-          size: file.size,
-          type: file.mimetype,
-        });
-        if (attachment) {
-          return attachment;
-        }
-
-        throw new Error('Unable to store uploaded file');
-      }
+      return await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        context: 'message_attachment',
+        ownerType: 'Subscriber',
+        owner: req.session.web.profile?.id,
+      });
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',

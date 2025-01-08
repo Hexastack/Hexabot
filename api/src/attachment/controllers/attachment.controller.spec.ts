@@ -1,19 +1,27 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Request } from 'express';
 
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
+import { ModelRepository } from '@/user/repositories/model.repository';
+import { PermissionRepository } from '@/user/repositories/permission.repository';
+import { ModelModel } from '@/user/schemas/model.schema';
+import { PermissionModel } from '@/user/schemas/permission.schema';
+import { ModelService } from '@/user/services/model.service';
+import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
@@ -42,14 +50,30 @@ describe('AttachmentController', () => {
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(installAttachmentFixtures),
-        MongooseModule.forFeature([AttachmentModel]),
+        MongooseModule.forFeature([
+          AttachmentModel,
+          PermissionModel,
+          ModelModel,
+        ]),
       ],
       providers: [
         AttachmentService,
         AttachmentRepository,
+        PermissionService,
+        PermissionRepository,
+        ModelService,
+        ModelRepository,
         LoggerService,
         EventEmitter2,
         PluginService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     }).compile();
     attachmentController =
@@ -76,9 +100,13 @@ describe('AttachmentController', () => {
 
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
-      const promiseResult = attachmentController.uploadFile({
-        file: [],
-      });
+      const promiseResult = attachmentController.uploadFile(
+        {
+          file: [],
+        },
+        {} as Request,
+        { context: 'block_attachment' },
+      );
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
       );
@@ -86,19 +114,35 @@ describe('AttachmentController', () => {
 
     it('should upload attachment', async () => {
       jest.spyOn(attachmentService, 'create');
-      const result = await attachmentController.uploadFile({
-        file: [attachmentFile],
-      });
+      const result = await attachmentController.uploadFile(
+        {
+          file: [attachmentFile],
+        },
+        {
+          session: { passport: { user: { id: '9'.repeat(24) } } },
+        } as unknown as Request,
+        { context: 'block_attachment' },
+      );
+      const [name] = attachmentFile.filename.split('.');
       expect(attachmentService.create).toHaveBeenCalledWith({
         size: attachmentFile.size,
         type: attachmentFile.mimetype,
-        name: attachmentFile.filename,
-        channel: {},
-        location: `/${attachmentFile.filename}`,
+        name: attachmentFile.originalname,
+        location: expect.stringMatching(new RegExp(`^/${name}`)),
+        context: 'block_attachment',
+        ownerType: 'User',
+        owner: '9'.repeat(24),
       });
       expect(result).toEqualPayload(
-        [attachment],
-        [...IGNORED_TEST_FIELDS, 'url'],
+        [
+          {
+            ...attachment,
+            context: 'block_attachment',
+            ownerType: 'User',
+            owner: '9'.repeat(24),
+          },
+        ],
+        [...IGNORED_TEST_FIELDS, 'location', 'url'],
       );
     });
   });

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,7 +9,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsIn,
+  IsMimeType,
   IsNotEmpty,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -18,6 +21,14 @@ import {
 
 import { ChannelName } from '@/channel/types';
 import { ObjectIdDto } from '@/utils/dto/object-id.dto';
+import { IsObjectId } from '@/utils/validation-rules/is-object-id';
+
+import {
+  AttachmentContext,
+  AttachmentOwnerType,
+  TAttachmentContext,
+  TAttachmentOwnerType,
+} from '../types';
 
 export class AttachmentMetadataDto {
   /**
@@ -33,6 +44,7 @@ export class AttachmentMetadataDto {
    */
   @ApiProperty({ description: 'Attachment size in bytes', type: Number })
   @IsNotEmpty()
+  @IsNumber()
   size: number;
 
   /**
@@ -41,6 +53,7 @@ export class AttachmentMetadataDto {
   @ApiProperty({ description: 'Attachment MIME type', type: String })
   @IsNotEmpty()
   @IsString()
+  @IsMimeType()
   type: string;
 
   /**
@@ -50,6 +63,42 @@ export class AttachmentMetadataDto {
   @IsNotEmpty()
   @IsObject()
   channel?: Partial<Record<ChannelName, any>>;
+
+  /**
+   * Attachment context
+   */
+  @ApiPropertyOptional({
+    description: 'Attachment Context',
+    enum: Object.values(AttachmentContext),
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(Object.values(AttachmentContext))
+  context: TAttachmentContext;
+
+  /**
+   * Attachment Owner Type
+   */
+  @ApiPropertyOptional({
+    description: 'Attachment Owner Type',
+    enum: Object.values(AttachmentOwnerType),
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(Object.values(AttachmentOwnerType))
+  ownerType: TAttachmentOwnerType;
+
+  /**
+   * Attachment Owner : Subscriber or User ID
+   */
+  @ApiPropertyOptional({
+    description: 'Attachment Owner : Subscriber / User ID',
+    enum: Object.values(AttachmentContext),
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsObjectId({ message: 'Owner must be a valid ObjectId' })
+  owner: string;
 }
 
 export class AttachmentCreateDto extends AttachmentMetadataDto {
@@ -74,4 +123,14 @@ export class AttachmentDownloadDto extends ObjectIdDto {
   @MaxLength(255)
   @IsOptional()
   filename?: string;
+}
+
+export class AttachmentContextParamDto {
+  @ApiPropertyOptional({
+    description: 'Attachment Context',
+    enum: Object.values(AttachmentContext),
+  })
+  @IsString()
+  @IsIn(Object.values(AttachmentContext))
+  context?: TAttachmentContext;
 }

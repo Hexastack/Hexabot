@@ -299,6 +299,9 @@ export class ReadWriteUserController extends ReadOnlyUserController {
             name: avatarFile.originalname,
             size: avatarFile.size,
             type: avatarFile.mimetype,
+            context: 'user_avatar',
+            ownerType: 'User',
+            owner: req.user.id,
           },
           config.parameters.avatarDir,
         )

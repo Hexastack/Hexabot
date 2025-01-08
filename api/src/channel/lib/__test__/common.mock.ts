@@ -88,6 +88,9 @@ const attachment: Attachment = {
       id: 'any-channel-attachment-id',
     },
   },
+  context: 'block_attachment',
+  ownerType: 'User',
+  owner: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
