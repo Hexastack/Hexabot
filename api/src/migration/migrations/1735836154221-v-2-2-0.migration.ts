@@ -15,16 +15,33 @@ import { v4 as uuidv4 } from 'uuid';
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
+import { AttachmentContext, AttachmentOwnerType } from '@/attachment/types';
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import { config } from '@/config';
+import roleSchema, { Role } from '@/user/schemas/role.schema';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';
 
 import { MigrationAction, MigrationServices } from '../types';
+
+/**
+ * @returns The admin user or null
+ */
+const getAdminUser = async () => {
+  const RoleModel = mongoose.model<Role>(Role.name, roleSchema);
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const adminRole = await RoleModel.findOne({ name: 'admin' });
+  const user = await UserModel.findOne({ roles: [adminRole._id] }).sort({
+    createdAt: 'asc',
+  });
+
+  return user;
+};
 
 /**
  * Updates subscriber documents with their corresponding avatar attachments
@@ -58,10 +75,29 @@ const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
     if (attachment) {
       await SubscriberModel.updateOne(
         { _id: subscriber._id },
-        { $set: { avatar: attachment._id } },
+        {
+          $set: {
+            avatar: attachment._id,
+          },
+        },
       );
       logger.log(
-        `Subscriber ${subscriber._id} avatar attachment successfully updated for  `,
+        `Subscriber ${subscriber._id} avatar attribute successfully updated`,
+      );
+
+      await AttachmentModel.updateOne(
+        { _id: attachment._id },
+        {
+          $set: {
+            context: AttachmentContext.SubscriberAvatar,
+            ownerType: AttachmentOwnerType.Subscriber,
+            owner: subscriber._id,
+          },
+        },
+      );
+
+      logger.log(
+        `Subscriber ${subscriber._id} avatar attachment attributes successfully populated`,
       );
 
       const src = resolve(
@@ -144,10 +180,30 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
         // Reset avatar to null
         await SubscriberModel.updateOne(
           { _id: subscriber._id },
-          { $set: { avatar: null } },
+          {
+            $set: { avatar: null },
+            $unset: {
+              context: 1,
+              ownerType: 1,
+              owner: 1,
+            },
+          },
         );
         logger.log(
-          `Avatar attachment successfully updated for subscriber ${subscriber._id}`,
+          `Subscriber ${subscriber._id} avatar attribute successfully reverted to null`,
+        );
+        await AttachmentModel.updateOne(
+          { _id: attachment._id },
+          {
+            $unset: {
+              context: 1,
+              ownerType: 1,
+              owner: 1,
+            },
+          },
+        );
+        logger.log(
+          `Subscriber ${subscriber._id} avatar attachment attributes successfully unpopulated`,
         );
       } else {
         logger.warn(
@@ -407,6 +463,8 @@ const migrateAttachmentMessages = async ({
     );
   };
 
+  const adminUser = await getAdminUser();
+
   for await (const msg of cursor) {
     try {
       if (
@@ -441,6 +499,9 @@ const migrateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
+              owner: msg.sender ? msg.sender : adminUser.id,
+              ownerType: msg.sender ? 'Subscriber' : 'User',
+              context: 'message_attachment',
             });
 
             if (attachment) {

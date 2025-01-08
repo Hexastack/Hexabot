@@ -90,6 +90,6 @@ import { ValidateAccountService } from './services/validate-account.service';
     PermissionController,
     ModelController,
   ],
-  exports: [UserService, PermissionService],
+  exports: [UserService, PermissionService, ModelService],
 })
 export class UserModule {}
