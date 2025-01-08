@@ -53,7 +53,7 @@ export class MigrationService implements OnApplicationBootstrap {
     if (mongoose.connection.readyState !== 1) {
       await this.connect();
     }
-    this.logger.log('Mongoose connection established');
+    this.logger.log('Mongoose connection established!');
 
     if (!this.isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');

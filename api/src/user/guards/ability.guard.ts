@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -53,9 +53,18 @@ export class Ability implements CanActivate {
 
     if (user?.roles?.length) {
       if (
-        ['/auth/logout', '/logout', '/auth/me', '/channel', '/i18n'].includes(
-          _parsedUrl.pathname,
-        )
+        [
+          // Allow access to all routes available for authenticated users
+          '/auth/logout',
+          '/logout',
+          '/auth/me',
+          '/channel',
+          '/i18n',
+          // Allow to update own profile
+          `/user/edit/${user.id}`,
+          // Allow access to own avatar
+          `/user/${user.id}/profile_pic`,
+        ].includes(_parsedUrl.pathname)
       ) {
         return true;
       }
