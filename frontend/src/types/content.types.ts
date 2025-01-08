@@ -15,13 +15,13 @@ export interface IContentAttributes {
   entity: string;
   title: string;
   status: boolean;
-  dynamicFields?: Record<string, any>;
+  dynamicFields: Record<string, any>;
 }
 
 export interface IContentStub extends IBaseSchema {
   title: string;
   status: boolean;
-  dynamicFields?: Record<string, any>;
+  dynamicFields: Record<string, any>;
 }
 
 export interface IContent extends IContentStub, IFormat<Format.BASIC> {
