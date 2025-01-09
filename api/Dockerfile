@@ -38,6 +38,8 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY add-extra-deps.js ./
+
 COPY --from=builder /app/src/extensions ./src/extensions
 
 COPY --from=builder /app/patches ./patches
