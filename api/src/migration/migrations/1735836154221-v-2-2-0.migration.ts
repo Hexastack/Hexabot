@@ -14,7 +14,9 @@ import mongoose from 'mongoose';
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
+import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
+import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';
@@ -260,15 +262,101 @@ const restoreOldAvatarsPath = async ({ logger }: MigrationServices) => {
   }
 };
 
+/**
+ * Updates attachment documents for blocks that contain "message.attachment":
+ * - Rename 'attachment_id' to 'id'
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const updateAttachmentBlocks = async ({ logger }: MigrationServices) => {
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  // Find blocks where "message.attachment" exists
+  const cursor = BlockModel.find({
+    'message.attachment': { $exists: true },
+  }).cursor();
+
+  for await (const block of cursor) {
+    try {
+      const blockMessage = block.message as StdOutgoingAttachmentMessage;
+      const attachmentId =
+        blockMessage.attachment?.payload &&
+        'attachment_id' in blockMessage.attachment?.payload
+          ? blockMessage.attachment?.payload?.attachment_id
+          : null;
+
+      await BlockModel.updateOne(
+        { _id: block._id },
+        {
+          $set: {
+            'message.attachment.payload.id': attachmentId,
+          },
+          $unset: {
+            'message.attachment.payload.attachment_id': '',
+          },
+        },
+      );
+      logger.log(
+        `Attachment ${attachmentId} attributes successfully updated for block ${block._id}`,
+      );
+    } catch (error) {
+      logger.error(`Failed to update block ${block._id}: ${error.message}`);
+    }
+  }
+};
+
+/**
+ * Revert updates on attachment documents for blocks that contain "message.attachment":
+ * - Rename 'id' back to 'attachment_id'
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const revertAttachmentBlocks = async ({ logger }: MigrationServices) => {
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  // Find blocks where "message.attachment" exists
+  const cursor = BlockModel.find({
+    'message.attachment': { $exists: true },
+  }).cursor();
+
+  for await (const block of cursor) {
+    try {
+      const blockMessage = block.message as StdOutgoingAttachmentMessage;
+      const attachmentId =
+        blockMessage.attachment?.payload &&
+        'id' in blockMessage.attachment?.payload
+          ? blockMessage.attachment?.payload?.id
+          : null;
+
+      await BlockModel.updateOne(
+        { _id: block._id },
+        {
+          $set: {
+            'message.attachment.payload.attachment_id': attachmentId,
+          },
+          $unset: {
+            'message.attachment.payload.id': '',
+          },
+        },
+      );
+      logger.log(
+        `Attachment ${attachmentId} attributes successfully reverted for block ${block._id}`,
+      );
+    } catch (error) {
+      logger.error(`Failed to revert block ${block._id}: ${error.message}`);
+    }
+  }
+};
+
 module.exports = {
   async up(services: MigrationServices) {
     await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
+    await updateAttachmentBlocks(services);
     return true;
   },
   async down(services: MigrationServices) {
     await unpopulateSubscriberAvatar(services);
     await restoreOldAvatarsPath(services);
+    await revertAttachmentBlocks(services);
     return true;
   },
 };
