@@ -35,6 +35,6 @@ export class AuthSerializer extends PassportSerializer {
     done: (err: Error | null, user: SessionUser | null) => void,
   ) {
     const user = payload.id ? await this.userService.findOne(payload.id) : null;
-    user ? done(null, user) : done(null, null);
+    done(null, user);
   }
 }

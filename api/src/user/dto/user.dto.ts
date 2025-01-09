@@ -60,7 +60,7 @@ export class UserCreateDto {
   @IsOptional()
   @IsString()
   @IsObjectId({ message: 'Avatar must be a valid ObjectId' })
-  avatar?: string;
+  avatar: string | null = null;
 }
 
 export class UserEditProfileDto extends OmitType(PartialType(UserCreateDto), [
