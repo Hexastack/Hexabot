@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -13,9 +13,6 @@ import {
 } from '@/chat/schemas/types/message';
 
 import { Web } from '../types';
-
-const img_url =
-  'http://demo.hexabot.ai/attachment/download/5c334078e2c41d11206bd152/myimage.png';
 
 // Web events
 const webEventPayload: Web.Event = {
@@ -55,9 +52,10 @@ const webEventLocation: Web.IncomingMessage = {
 const webEventFile: Web.Event = {
   type: Web.IncomingMessageType.file,
   data: {
-    type: FileType.image,
-    url: img_url,
+    type: 'image/png',
     size: 500,
+    name: 'filename.extension',
+    file: Buffer.from('my-image', 'utf-8'),
   },
   author: 'web-9be8ac09-b43a-432d-bca0-f11b98cec1ad',
   mid: 'web-event-file',
@@ -151,18 +149,18 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
         attachments: {
           type: FileType.image,
           payload: {
-            url: img_url,
+            attachment_id: '9'.repeat(24),
           },
         },
       },
       message: {
         attachment: {
           payload: {
-            url: img_url,
+            attachment_id: '9'.repeat(24),
           },
           type: FileType.image,
         },
-        serialized_text: `attachment:image:${img_url}`,
+        serialized_text: 'attachment:image:filename.extension',
         type: IncomingMessageType.attachments,
       },
     },

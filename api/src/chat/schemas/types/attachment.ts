@@ -17,8 +17,9 @@ export enum FileType {
 }
 
 export type AttachmentForeignKey = {
-  url?: string;
   attachment_id: string;
+  /** @deprecated use "attachment_id" instead */
+  url?: string;
 };
 
 export interface AttachmentPayload<
@@ -30,7 +31,5 @@ export interface AttachmentPayload<
 
 export interface IncomingAttachmentPayload {
   type: FileType;
-  payload: {
-    url: string;
-  };
+  payload: AttachmentForeignKey;
 }

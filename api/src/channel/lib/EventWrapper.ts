@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -126,6 +126,7 @@ export default abstract class EventWrapper<
   /**
    * Sets an event attribute value
    *
+   * @deprecated
    * @param attr - Event attribute name
    * @param value - The value to set for the specified attribute.
    */
@@ -136,6 +137,7 @@ export default abstract class EventWrapper<
   /**
    * Returns an event attribute value, default value if it does exist
    *
+   * @deprecated
    * @param  attr - Event attribute name
    * @param  otherwise - Default value if attribute does not exist
    *

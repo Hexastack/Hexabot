@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -234,7 +234,7 @@ export default abstract class ChannelHandler<
    * @param attachment The attachment ID or object to generate a signed URL for.
    * @return A signed URL string for downloading the specified attachment.
    */
-  protected async getPublicUrl(attachment: string | Attachment) {
+  public async getPublicUrl(attachment: string | Attachment) {
     const resource =
       typeof attachment === 'string'
         ? await this.attachmentService.findOne(attachment)
