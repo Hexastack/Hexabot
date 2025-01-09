@@ -112,14 +112,58 @@ export default abstract class BaseNlpHelper<
   }
 
   /**
-   * Returns training dataset in NLP provider compatible format
+   * Returns training dataset in NLP provider compatible format.
+   * Can be overridden in child classes for custom formatting logic.
    *
    * @param samples - Sample to train
    * @param entities - All available entities
    *
    * @returns The formatted NLP training set
    */
-  format?(samples: NlpSampleFull[], entities: NlpEntityFull[]): unknown;
+  async format(samples: NlpSampleFull[], entities: NlpEntityFull[]) {
+    const entityMap = NlpEntity.getEntityMap(entities);
+    const valueMap = NlpValue.getValueMap(
+      NlpValue.getValuesFromEntities(entities),
+    );
+    const examples = samples
+      .filter((s) => s.entities.length > 0)
+      .map((s) => {
+        const intent = s.entities.find(
+          (e) => entityMap[e.entity].name === 'intent',
+        );
+        if (!intent) {
+          throw new Error('Unable to find the `intent` nlp entity.');
+        }
+        const sampleEntities = s.entities
+          .filter((e) => entityMap[<string>e.entity].name !== 'intent')
+          .map((e) => {
+            const res = {
+              entity: entityMap[<string>e.entity].name,
+              value: valueMap[<string>e.value].value,
+            };
+            if ('start' in e && 'end' in e) {
+              Object.assign(res, {
+                start: e.start,
+                end: e.end,
+              });
+            }
+            return res;
+          })
+          // TODO : place language at the same level as the intent
+          .concat({
+            entity: 'language',
+            value: s.language.code,
+          });
+
+        return {
+          text: s.text,
+          intent: valueMap[intent.value].value,
+          entities: sampleEntities,
+        };
+      });
+
+    return examples;
+  }
 
   /**
    * Perform training request
