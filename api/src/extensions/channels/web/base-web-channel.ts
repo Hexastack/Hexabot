@@ -985,14 +985,14 @@ export default abstract class BaseWebChannelHandler<
    * @returns A ready to be sent attachment message
    */
   async _attachmentFormat(
-    message: StdOutgoingAttachmentMessage<Attachment>,
+    message: StdOutgoingAttachmentMessage,
     _options?: BlockOptions,
   ): Promise<Web.OutgoingMessageBase> {
     const payload: Web.OutgoingMessageBase = {
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: await this.getPublicUrl(message.attachment.payload.id),
+        url: await this.getPublicUrl(message.attachment.payload.attachment_id),
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
@@ -1034,14 +1034,7 @@ export default abstract class BaseWebChannelHandler<
       if (fields.image_url && item[fields.image_url]) {
         const attachmentPayload = item[fields.image_url]
           .payload as AttachmentForeignKey;
-        if (attachmentPayload.url) {
-          if (!attachmentPayload.attachment_id) {
-            // @deprecated
-            this.logger.warn(
-              'Web Channel Handler: Attachment remote url has been deprecated',
-              item,
-            );
-          }
+        if (attachmentPayload.attachment_id) {
           element.image_url = await this.getPublicUrl(
             attachmentPayload.attachment_id,
           );

@@ -9,10 +9,7 @@
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-} from '@/chat/schemas/types/attachment';
+import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import {
   IncomingMessageType,
   PayloadType,
@@ -71,9 +68,11 @@ type WebEventAdapter =
     };
 
 // eslint-disable-next-line prettier/prettier
-export default class WebEventWrapper<
-  N extends ChannelName,
-> extends EventWrapper<WebEventAdapter, Web.Event, N> {
+export default class WebEventWrapper<N extends ChannelName> extends EventWrapper<
+  WebEventAdapter,
+  Web.Event,
+  N
+> {
   /**
    * Constructor : channel's event wrapper
    *
@@ -298,7 +297,7 @@ export default class WebEventWrapper<
    * @deprecated
    * @returns Received attachments message
    */
-  getAttachments(): AttachmentPayload<AttachmentForeignKey>[] {
+  getAttachments(): AttachmentPayload[] {
     const message = this.getMessage() as any;
     return 'attachment' in message ? [].concat(message.attachment) : [];
   }

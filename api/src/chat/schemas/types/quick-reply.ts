@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { AttachmentForeignKey, AttachmentPayload } from './attachment';
+import { AttachmentPayload } from './attachment';
 import { PayloadType } from './message';
 
 export type Payload =
@@ -19,7 +19,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: AttachmentPayload<AttachmentForeignKey>;
+      attachments: AttachmentPayload;
     };
 
 export enum QuickReplyType {

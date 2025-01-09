@@ -7,10 +7,7 @@
  */
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-} from '@/chat/schemas/types/attachment';
+import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
@@ -251,7 +248,7 @@ export default abstract class EventWrapper<
    *
    * @returns Received attachments message
    */
-  abstract getAttachments(): AttachmentPayload<AttachmentForeignKey>[];
+  abstract getAttachments(): AttachmentPayload[];
 
   /**
    * Returns the list of delivered messages
@@ -380,7 +377,7 @@ export class GenericEventWrapper extends EventWrapper<
    * @returns A list of received attachments
    * @deprecated - This method is deprecated
    */
-  getAttachments(): AttachmentPayload<AttachmentForeignKey>[] {
+  getAttachments(): AttachmentPayload[] {
     return [];
   }
 

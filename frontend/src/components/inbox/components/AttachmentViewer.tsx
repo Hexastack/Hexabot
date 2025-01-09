@@ -15,7 +15,6 @@ import { DialogTitle } from "@/app-components/dialogs";
 import { useDialog } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
-  AttachmentAttrs,
   FileType,
   StdIncomingAttachmentMessage,
   StdOutgoingAttachmentMessage,
@@ -93,9 +92,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
 };
 
 export const AttachmentViewer = (props: {
-  message:
-    | StdIncomingAttachmentMessage
-    | StdOutgoingAttachmentMessage<AttachmentAttrs>;
+  message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
   const message = props.message;
 

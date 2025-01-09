@@ -526,24 +526,12 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         throw new Error('Remote attachments are no longer supported!');
       }
 
-      const attachment = await this.attachmentService.findOne(
-        attachmentPayload.attachment_id,
-      );
-
-      if (!attachment) {
-        this.logger.debug(
-          'Unable to locate the attachment for the given block',
-          block,
-        );
-        throw new Error('Unable to find attachment.');
-      }
-
       const envelope: StdOutgoingEnvelope = {
         format: OutgoingMessageFormat.attachment,
         message: {
           attachment: {
             type: blockMessage.attachment.type,
-            payload: attachment,
+            payload: blockMessage.attachment.payload,
           },
           quickReplies: blockMessage.quickReplies
             ? [...blockMessage.quickReplies]
