@@ -18,7 +18,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { NlpEntityModel, NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
@@ -29,7 +29,7 @@ import { NlpValueRepository } from './nlp-value.repository';
 describe('NlpEntityRepository', () => {
   let nlpEntityRepository: NlpEntityRepository;
   let nlpValueRepository: NlpValueRepository;
-  let firstNameNlpEntity: NlpEntity;
+  let firstNameNlpEntity: NlpEntity | null;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -66,12 +66,12 @@ describe('NlpEntityRepository', () => {
       const intentNlpEntity = await nlpEntityRepository.findOne({
         name: 'intent',
       });
-      const result = await nlpEntityRepository.deleteOne(intentNlpEntity.id);
+      const result = await nlpEntityRepository.deleteOne(intentNlpEntity!.id);
 
       expect(result.deletedCount).toEqual(1);
 
       const intentNlpValues = await nlpValueRepository.find({
-        entity: intentNlpEntity.id,
+        entity: intentNlpEntity!.id,
       });
 
       expect(intentNlpValues.length).toEqual(0);
@@ -81,10 +81,10 @@ describe('NlpEntityRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should return a nlp entity with populate', async () => {
       const firstNameValues = await nlpValueRepository.find({
-        entity: firstNameNlpEntity.id,
+        entity: firstNameNlpEntity!.id,
       });
       const result = await nlpEntityRepository.findOneAndPopulate(
-        firstNameNlpEntity.id,
+        firstNameNlpEntity!.id,
       );
       expect(result).toEqualPayload({
         ...nlpEntityFixtures[1],
@@ -99,15 +99,15 @@ describe('NlpEntityRepository', () => {
         sort: ['name', 'desc'],
       });
       const firstNameValues = await nlpValueRepository.find({
-        entity: firstNameNlpEntity.id,
+        entity: firstNameNlpEntity!.id,
       });
       const result = await nlpEntityRepository.findPageAndPopulate(
-        { _id: firstNameNlpEntity.id },
+        { _id: firstNameNlpEntity!.id },
         pageQuery,
       );
       expect(result).toEqualPayload([
         {
-          id: firstNameNlpEntity.id,
+          id: firstNameNlpEntity!.id,
           ...nlpEntityFixtures[1],
           values: firstNameValues,
         },

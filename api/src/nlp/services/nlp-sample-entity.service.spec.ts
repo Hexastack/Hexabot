@@ -23,17 +23,23 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntityModel, NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
-  NlpSampleEntityModel,
   NlpSampleEntity,
+  NlpSampleEntityFull,
+  NlpSampleEntityModel,
 } from '../schemas/nlp-sample-entity.schema';
 import { NlpSample, NlpSampleModel } from '../schemas/nlp-sample.schema';
-import { NlpValue, NlpValueModel } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueModel,
+  NlpValueStub,
+} from '../schemas/nlp-value.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
@@ -91,9 +97,7 @@ describe('NlpSampleEntityService', () => {
     languages = await languageRepository.findAll();
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -108,7 +112,7 @@ describe('NlpSampleEntityService', () => {
         value: { ...nlpValueFixtures[0], entity: nlpEntities[0].id },
         sample: {
           ...nlpSampleFixtures[0],
-          language: languages[nlpSampleFixtures[0].language].id,
+          language: languages[nlpSampleFixtures[0].language!].id,
         },
       };
       expect(result).toEqualPayload(sampleEntityWithPopulate);
@@ -133,7 +137,7 @@ describe('NlpSampleEntityService', () => {
           acc.push(ValueWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpValueStub>[],
       );
       nlpValueFixturesWithEntities[2] = {
         ...nlpValueFixturesWithEntities[2],
@@ -153,7 +157,7 @@ describe('NlpSampleEntityService', () => {
           };
           acc.push(sampleEntityWithPopulate);
           return acc;
-        }, []);
+        }, [] as TFixtures<NlpSampleEntityFull>[]);
       expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate);
     });
   });

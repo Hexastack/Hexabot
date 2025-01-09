@@ -91,7 +91,7 @@ export class NlpSampleController extends BaseController<
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
     const helper = await this.helperService.getDefaultNluHelper();
-    const result = await helper.format(samples, entities);
+    const result = await helper.format?.(samples, entities);
 
     // Sending the JSON data as a file
     const buffer = Buffer.from(JSON.stringify(result));
@@ -128,15 +128,23 @@ export class NlpSampleController extends BaseController<
     }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
+
+    if (!language)
+      throw new NotFoundException(
+        `Language with code ${languageCode} not found`,
+      );
+
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
       language: language.id,
     });
 
-    const entities = await this.nlpSampleEntityService.storeSampleEntities(
-      nlpSample,
-      nlpEntities,
-    );
+    const entities = nlpEntities
+      ? await this.nlpSampleEntityService.storeSampleEntities(
+          nlpSample,
+          nlpEntities,
+        )
+      : [];
 
     return {
       ...nlpSample,
@@ -202,7 +210,7 @@ export class NlpSampleController extends BaseController<
 
     try {
       const helper = await this.helperService.getDefaultNluHelper();
-      const response = await helper.train(samples, entities);
+      const response = await helper.train?.(samples, entities);
       // Mark samples as trained
       await this.nlpSampleService.updateMany(
         { type: 'train' },
@@ -228,7 +236,7 @@ export class NlpSampleController extends BaseController<
       await this.getSamplesAndEntitiesByType('test');
 
     const helper = await this.helperService.getDefaultNluHelper();
-    return await helper.evaluate(samples, entities);
+    return await helper.evaluate?.(samples, entities);
   }
 
   /**
@@ -294,6 +302,14 @@ export class NlpSampleController extends BaseController<
     @Body() { entities, language: languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
+
+    if (!language) {
+      this.logger.warn(`Unable to Language by languageCode ${languageCode}`);
+      throw new NotFoundException(
+        `Language with languageCode ${languageCode} not found`,
+      );
+    }
+
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
       language: language.id,
@@ -308,7 +324,10 @@ export class NlpSampleController extends BaseController<
     await this.nlpSampleEntityService.deleteMany({ sample: id });
 
     const updatedSampleEntities =
-      await this.nlpSampleEntityService.storeSampleEntities(sample, entities);
+      await this.nlpSampleEntityService.storeSampleEntities(
+        sample,
+        entities || [],
+      );
 
     return {
       ...sample,

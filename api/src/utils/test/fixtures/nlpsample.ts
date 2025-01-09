@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
-import { NlpSampleModel, NlpSample } from '@/nlp/schemas/nlp-sample.schema';
+import { NlpSample, NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/schemas/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -56,7 +56,7 @@ export const installNlpSampleFixtures = async () => {
     nlpSampleFixtures.map((v) => {
       return {
         ...v,
-        language: languages[parseInt(v.language)].id,
+        language: v.language ? languages[parseInt(v.language)].id : null,
       };
     }),
   );
