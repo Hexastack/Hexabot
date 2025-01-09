@@ -22,6 +22,8 @@ import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import { config } from '@/config';
+import settingSchema, { Setting } from '@/setting/schemas/setting.schema';
+import { SettingType } from '@/setting/schemas/types';
 import roleSchema, { Role } from '@/user/schemas/role.schema';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';
@@ -41,6 +43,50 @@ const getAdminUser = async () => {
   });
 
   return user;
+};
+
+/**
+ * Updates setting attachment documents to populate new attributes (context, owner, ownerType)
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateSettingAttachment = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const SettingModel = mongoose.model<Setting>(Setting.name, settingSchema);
+  const user = await getAdminUser();
+
+  if (!user) {
+    logger.warn('Unable to populate setting attachments, no admin user found');
+  }
+
+  const cursor = SettingModel.find({
+    type: SettingType.attachment,
+  }).cursor();
+
+  for await (const setting of cursor) {
+    try {
+      if (setting.value) {
+        await AttachmentModel.updateOne(
+          { _id: setting.value },
+          {
+            $set: {
+              context: AttachmentContext.SettingAttachment,
+              ownerType: AttachmentOwnerType.User,
+              owner: user._id,
+            },
+          },
+        );
+        logger.log(`User ${user._id} avatar attributes successfully populated`);
+      }
+    } catch (error) {
+      logger.error(
+        `Failed to populate avatar attributes for user ${user._id}: ${error.message}`,
+      );
+    }
+  }
 };
 
 /**
@@ -75,44 +121,6 @@ const populateUserAvatar = async ({ logger }: MigrationServices) => {
     } catch (error) {
       logger.error(
         `Failed to populate avatar attributes for user ${user._id}: ${error.message}`,
-      );
-    }
-  }
-};
-
-/**
- * Reverts what the previous function does
- *
- * @returns Resolves when the migration process is complete.
- */
-const unpopulateUserAvatar = async ({ logger }: MigrationServices) => {
-  const AttachmentModel = mongoose.model<Attachment>(
-    Attachment.name,
-    attachmentSchema,
-  );
-  const UserModel = mongoose.model<User>(User.name, userSchema);
-
-  const cursor = UserModel.find({
-    avatar: { $exists: true, $ne: null },
-  }).cursor();
-
-  for await (const user of cursor) {
-    try {
-      // Undo the updates made by populateUserAvatar
-      await AttachmentModel.updateOne(
-        { _id: user.avatar },
-        {
-          $unset: {
-            context: '',
-            ownerType: '',
-            owner: '',
-          },
-        },
-      );
-      logger.log(`User ${user._id} avatar attributes successfully reverted`);
-    } catch (error) {
-      logger.error(
-        `Failed to revert avatar attributes for user ${user._id}: ${error.message}`,
       );
     }
   }
@@ -257,28 +265,10 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
           { _id: subscriber._id },
           {
             $set: { avatar: null },
-            $unset: {
-              context: 1,
-              ownerType: 1,
-              owner: 1,
-            },
           },
         );
         logger.log(
           `Subscriber ${subscriber._id} avatar attribute successfully reverted to null`,
-        );
-        await AttachmentModel.updateOne(
-          { _id: attachment._id },
-          {
-            $unset: {
-              context: 1,
-              ownerType: 1,
-              owner: 1,
-            },
-          },
-        );
-        logger.log(
-          `Subscriber ${subscriber._id} avatar attachment attributes successfully unpopulated`,
         );
       } else {
         logger.warn(
@@ -286,6 +276,47 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
         );
       }
     }
+  }
+};
+
+/**
+ * Reverts the attachments additional attribute populate
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const undoPopulateAttachment = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+
+  try {
+    const result = await AttachmentModel.updateMany(
+      {
+        context: {
+          $in: [
+            AttachmentContext.SettingAttachment,
+            AttachmentContext.UserAvatar,
+            AttachmentContext.SubscriberAvatar,
+          ],
+        },
+      },
+      {
+        $unset: {
+          context: '',
+          ownerType: '',
+          owner: '',
+        },
+      },
+    );
+
+    logger.log(
+      `Successfully reverted attributes for ${result.modifiedCount} attachments with context 'setting_attachment'`,
+    );
+  } catch (error) {
+    logger.error(
+      `Failed to revert attributes for attachments with context 'setting_attachment': ${error.message}`,
+    );
   }
 };
 
@@ -614,6 +645,7 @@ const migrateAttachmentMessages = async ({
 
 module.exports = {
   async up(services: MigrationServices) {
+    await populateSettingAttachment(services);
     await populateUserAvatar(services);
     await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
@@ -625,8 +657,8 @@ module.exports = {
     return true;
   },
   async down(services: MigrationServices) {
-    await unpopulateUserAvatar(services);
     await unpopulateSubscriberAvatar(services);
+    await undoPopulateAttachment(services);
     await restoreOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.DOWN, services);
     await migrateAttachmentContents(MigrationAction.DOWN, services);
