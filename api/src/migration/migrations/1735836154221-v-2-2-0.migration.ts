@@ -46,11 +46,67 @@ const getAdminUser = async () => {
 };
 
 /**
+ * Updates attachment documents for blocks that contain "message.attachment".
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateBlockAttachments = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  const user = await getAdminUser();
+
+  if (!user) {
+    logger.warn('Unable to process block attachments, no admin user found');
+    return;
+  }
+
+  // Find blocks where "message.attachment" exists
+  const cursor = BlockModel.find({
+    'message.attachment': { $exists: true },
+  }).cursor();
+
+  for await (const block of cursor) {
+    try {
+      const msgPayload = (block.message as StdOutgoingAttachmentMessage)
+        .attachment.payload;
+      if (msgPayload && 'id' in msgPayload && msgPayload.id) {
+        const attachmentId = msgPayload.id;
+        // Update the corresponding attachment document
+        await AttachmentModel.updateOne(
+          { _id: attachmentId },
+          {
+            $set: {
+              context: AttachmentContext.BlockAttachment,
+              ownerType: AttachmentOwnerType.User,
+              owner: user._id,
+            },
+          },
+        );
+        logger.log(
+          `Attachment ${attachmentId} attributes successfully updated for block ${block._id}`,
+        );
+      } else {
+        logger.warn(
+          `Block ${block._id} has a "message.attachment" but no "id" found`,
+        );
+      }
+    } catch (error) {
+      logger.error(
+        `Failed to update attachment for block ${block._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
  * Updates setting attachment documents to populate new attributes (context, owner, ownerType)
  *
  * @returns Resolves when the migration process is complete.
  */
-const populateSettingAttachment = async ({ logger }: MigrationServices) => {
+const populateSettingAttachments = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
@@ -94,7 +150,7 @@ const populateSettingAttachment = async ({ logger }: MigrationServices) => {
  *
  * @returns Resolves when the migration process is complete.
  */
-const populateUserAvatar = async ({ logger }: MigrationServices) => {
+const populateUserAvatars = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
@@ -132,7 +188,7 @@ const populateUserAvatar = async ({ logger }: MigrationServices) => {
  *
  * @returns Resolves when the migration process is complete.
  */
-const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
+const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
@@ -284,7 +340,7 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
  *
  * @returns Resolves when the migration process is complete.
  */
-const undoPopulateAttachment = async ({ logger }: MigrationServices) => {
+const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
@@ -295,6 +351,7 @@ const undoPopulateAttachment = async ({ logger }: MigrationServices) => {
       {
         context: {
           $in: [
+            AttachmentContext.BlockAttachment,
             AttachmentContext.SettingAttachment,
             AttachmentContext.UserAvatar,
             AttachmentContext.SubscriberAvatar,
@@ -645,20 +702,21 @@ const migrateAttachmentMessages = async ({
 
 module.exports = {
   async up(services: MigrationServices) {
-    await populateSettingAttachment(services);
-    await populateUserAvatar(services);
-    await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.UP, services);
     await migrateAttachmentContents(MigrationAction.UP, services);
     // Given the complexity and inconsistency data, this method does not have
     // a revert equivalent, at the same time, thus, it doesn't "unset" any attribute
     await migrateAttachmentMessages(services);
+    await populateBlockAttachments(services);
+    await populateSettingAttachments(services);
+    await populateUserAvatars(services);
+    await populateSubscriberAvatars(services);
     return true;
   },
   async down(services: MigrationServices) {
+    await undoPopulateAttachments(services);
     await unpopulateSubscriberAvatar(services);
-    await undoPopulateAttachment(services);
     await restoreOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.DOWN, services);
     await migrateAttachmentContents(MigrationAction.DOWN, services);
