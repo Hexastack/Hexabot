@@ -36,10 +36,10 @@ export class ValidateAccountService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     private readonly userService: UserService,
-    @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     private readonly i18n: I18nService,
     private readonly languageService: LanguageService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {}
 
   /**
