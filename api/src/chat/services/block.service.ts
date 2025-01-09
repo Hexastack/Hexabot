@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,6 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
@@ -25,7 +24,6 @@ import { getRandom } from '@/utils/helpers/safeRandom';
 
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
-import { WithUrl } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import {
   BlockMessage,
@@ -545,7 +543,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         message: {
           attachment: {
             type: blockMessage.attachment.type,
-            payload: attachment as WithUrl<Attachment>,
+            payload: attachment,
           },
           quickReplies: blockMessage.quickReplies
             ? [...blockMessage.quickReplies]
