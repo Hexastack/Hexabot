@@ -60,7 +60,7 @@ describe('AuthController', () => {
   let invitationService: InvitationService;
   let roleService: RoleService;
   let jwtService: JwtService;
-  let role: Role;
+  let role: Role | null;
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
@@ -136,7 +136,8 @@ describe('AuthController', () => {
       username: 'test',
       first_name: 'test',
       last_name: 'test',
-      roles: [role.id],
+      roles: [role!.id],
+      avatar: null,
     };
     await invitationService.create(baseUser);
   });
@@ -157,6 +158,7 @@ describe('AuthController', () => {
         email: 'test@test.test',
         password: 'test',
         roles: ['invalid role value'],
+        avatar: null,
       };
 
       await expect(authController.signup(userCreateDto)).rejects.toThrow(
@@ -174,6 +176,7 @@ describe('AuthController', () => {
         email: 'test@test.test',
         password: 'test',
         roles: ['659564cb4aa383c0d0dbc688'],
+        avatar: null,
       };
       const result = await authController.signup(userCreateDto);
       expect(userService.create).toHaveBeenCalledWith(userCreateDto);

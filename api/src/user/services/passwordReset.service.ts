@@ -32,11 +32,11 @@ import { UserService } from './user.service';
 export class PasswordResetService {
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
-    @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     private readonly userService: UserService,
     public readonly i18n: I18nService,
     public readonly languageService: LanguageService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {
@@ -105,7 +105,7 @@ export class PasswordResetService {
     // first step is to check if the token has been used
     const user = await this.userService.findOne({ email: payload.email });
 
-    if (!user.resetToken || compareSync(user.resetToken, token)) {
+    if (!user?.resetToken || compareSync(user.resetToken, token)) {
       throw new UnauthorizedException('Invalid token');
     }
 

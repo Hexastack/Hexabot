@@ -29,7 +29,7 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { Role, RoleModel } from '../schemas/role.schema';
-import { User, UserModel } from '../schemas/user.schema';
+import { User, UserFull, UserModel } from '../schemas/user.schema';
 
 import { PermissionService } from './permission.service';
 import { RoleService } from './role.service';
@@ -39,7 +39,7 @@ describe('UserService', () => {
   let userService: UserService;
   let roleRepository: RoleRepository;
   let userRepository: UserRepository;
-  let user: User;
+  let user: User | null;
   let allRoles: Role[];
   const FIELDS_TO_IGNORE: string[] = [
     ...IGNORED_TEST_FIELDS,
@@ -99,15 +99,15 @@ describe('UserService', () => {
   describe('findOneAndPopulate', () => {
     it('should find one user and populate its role', async () => {
       jest.spyOn(userRepository, 'findOneAndPopulate');
-      const result = await userService.findOneAndPopulate(user.id);
+      const result = await userService.findOneAndPopulate(user!.id);
       expect(userRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        user.id,
+        user!.id,
         undefined,
       );
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: allRoles.filter(({ id }) => user.roles.includes(id)),
+          roles: allRoles.filter(({ id }) => user!.roles.includes(id)),
         },
         FIELDS_TO_IGNORE,
       );
@@ -120,13 +120,17 @@ describe('UserService', () => {
       jest.spyOn(userRepository, 'findPageAndPopulate');
       const allUsers = await userRepository.findAll();
       const result = await userService.findPageAndPopulate({}, pageQuery);
-      const usersWithRoles = allUsers.reduce((acc, currUser) => {
-        acc.push({
-          ...currUser,
-          roles: allRoles.filter(({ id }) => user.roles.includes(id)),
-        });
-        return acc;
-      }, []);
+      const usersWithRoles = allUsers.reduce(
+        (acc, { avatar: _avatar, roles: _roles, ...rest }) => {
+          acc.push({
+            ...rest,
+            roles: allRoles.filter(({ id }) => user?.roles?.includes(id)),
+            avatar: null,
+          });
+          return acc;
+        },
+        [] as UserFull[],
+      );
 
       expect(userRepository.findPageAndPopulate).toHaveBeenCalledWith(
         {},

@@ -28,7 +28,7 @@ import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
-import { ModelModel } from '../schemas/model.schema';
+import { ModelFull, ModelModel } from '../schemas/model.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
@@ -104,21 +104,24 @@ describe('ModelController', () => {
 
     it('should find models, and for each model populate the corresponding permissions', async () => {
       jest.spyOn(modelService, 'findAndPopulate');
-      const allRoles = await modelService.findAll();
+      const allModels = await modelService.findAll();
       const allPermissions = await permissionService.findAll();
       const result = await modelController.find(['permissions'], {});
 
-      const modelsWithPermissionsAndUsers = allRoles.reduce((acc, currRole) => {
-        const modelWithPermissionsAndUsers = {
-          ...currRole,
-          permissions: allPermissions.filter((currPermission) => {
-            return currPermission.role === currRole.id;
-          }),
-        };
+      const modelsWithPermissionsAndUsers = allModels.reduce(
+        (acc, currRole) => {
+          const modelWithPermissionsAndUsers = {
+            ...currRole,
+            permissions: allPermissions.filter((currPermission) => {
+              return currPermission.role === currRole.id;
+            }),
+          };
 
-        acc.push(modelWithPermissionsAndUsers);
-        return acc;
-      }, []);
+          acc.push(modelWithPermissionsAndUsers);
+          return acc;
+        },
+        [] as ModelFull[],
+      );
 
       expect(modelService.findAndPopulate).toHaveBeenCalledWith({});
       expect(result).toEqualPayload(modelsWithPermissionsAndUsers);

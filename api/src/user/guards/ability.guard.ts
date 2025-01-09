@@ -53,6 +53,7 @@ export class Ability implements CanActivate {
 
     if (user?.roles?.length) {
       if (
+        _parsedUrl.pathname &&
         [
           // Allow access to all routes available for authenticated users
           '/auth/logout',
@@ -68,9 +69,9 @@ export class Ability implements CanActivate {
       ) {
         return true;
       }
-      const modelFromPathname = _parsedUrl.pathname
-        .split('/')[1]
-        .toLowerCase() as TModel;
+      const modelFromPathname = _parsedUrl?.pathname
+        ?.split('/')[1]
+        .toLowerCase() as TModel | undefined;
 
       const permissions = await this.permissionService.getPermissions();
 
@@ -80,6 +81,7 @@ export class Ability implements CanActivate {
           .map(([_, value]) => value);
 
         if (
+          modelFromPathname &&
           permissionsFromRoles.some((permission) =>
             permission[modelFromPathname]?.includes(MethodToAction[method]),
           )
