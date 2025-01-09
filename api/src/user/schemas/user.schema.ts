@@ -112,7 +112,7 @@ export class User extends UserStub {
   roles: string[];
 
   @Transform(({ obj }) => obj.avatar?.toString() || null)
-  avatar?: string;
+  avatar?: string | null;
 }
 
 @Schema({ timestamps: true })

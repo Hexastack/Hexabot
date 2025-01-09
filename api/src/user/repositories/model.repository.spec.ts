@@ -20,7 +20,7 @@ import {
 
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
-import { ModelModel } from '../schemas/model.schema';
+import { ModelFull, ModelModel } from '../schemas/model.schema';
 import { Permission, PermissionModel } from '../schemas/permission.schema';
 
 import { Model as ModelType } from './../schemas/model.schema';
@@ -29,7 +29,7 @@ describe('ModelRepository', () => {
   let modelRepository: ModelRepository;
   let permissionRepository: PermissionRepository;
   let modelModel: Model<ModelType>;
-  let model: ModelType;
+  let model: ModelType | null;
   let permissions: Permission[];
 
   beforeAll(async () => {
@@ -45,7 +45,7 @@ describe('ModelRepository', () => {
     modelRepository = module.get<ModelRepository>(ModelRepository);
     modelModel = module.get<Model<ModelType>>(getModelToken('Model'));
     model = await modelRepository.findOne({ name: 'ContentType' });
-    permissions = await permissionRepository.find({ model: model.id });
+    permissions = await permissionRepository.find({ model: model!.id });
   });
 
   afterAll(closeInMongodConnection);
@@ -55,8 +55,8 @@ describe('ModelRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should find a model and populate its permissions', async () => {
       jest.spyOn(modelModel, 'findById');
-      const result = await modelRepository.findOneAndPopulate(model.id);
-      expect(modelModel.findById).toHaveBeenCalledWith(model.id, undefined);
+      const result = await modelRepository.findOneAndPopulate(model!.id);
+      expect(modelModel.findById).toHaveBeenCalledWith(model!.id, undefined);
       expect(result).toEqualPayload({
         ...modelFixtures.find(({ name }) => name === 'ContentType'),
         permissions,
@@ -73,12 +73,12 @@ describe('ModelRepository', () => {
       const modelsWithPermissions = allModels.reduce((acc, currModel) => {
         acc.push({
           ...currModel,
-          permissions: allPermissions.filter((permission) => {
-            return permission.model === currModel.id;
-          }),
+          permissions: allPermissions.filter(
+            (permission) => permission.model === currModel.id,
+          ),
         });
         return acc;
-      }, []);
+      }, [] as ModelFull[]);
       expect(modelModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(modelsWithPermissions);
     });

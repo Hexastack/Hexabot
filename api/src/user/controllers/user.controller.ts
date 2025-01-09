@@ -142,12 +142,12 @@ export class ReadOnlyUserController extends BaseController<
     );
     const currentPermissions = await this.permissionService.findAndPopulate({
       role: {
-        $in: currentUser.roles.map(({ id }) => id),
+        $in: currentUser?.roles.map(({ id }) => id),
       },
     });
 
     return {
-      roles: currentUser.roles,
+      roles: currentUser?.roles,
       permissions: currentPermissions.map((permission) => {
         if (permission.model) {
           return {
@@ -248,7 +248,9 @@ export class ReadWriteUserController extends ReadOnlyUserController {
         roles: (await this.roleService.findAll())
           .filter((role) => user.roles.includes(role.id))
           .map((role) => role.id),
-        avatar: (await this.attachmentService.findOne(user.avatar))?.id,
+        avatar: user.avatar
+          ? (await this.attachmentService.findOne(user.avatar))?.id
+          : undefined,
       },
     });
     return await this.userService.create(user);
@@ -285,7 +287,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     @Body() userUpdate: UserEditProfileDto,
     @UploadedFile() avatarFile?: Express.Multer.File,
   ) {
-    if (!('id' in req.user && req.user.id) || req.user.id !== id) {
+    if (!(req.user && 'id' in req.user && req.user.id) || req.user.id !== id) {
       throw new ForbiddenException();
     }
 
@@ -339,18 +341,20 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     @Body() body: UserUpdateStateAndRolesDto,
     @Session() session: ExpressSession,
   ) {
-    const oldRoles = (await this.userService.findOne(id)).roles;
+    const oldRoles = (await this.userService.findOne(id))?.roles;
     const newRoles = body.roles;
-    const { id: adminRoleId } = await this.roleService.findOne({
-      name: 'admin',
-    });
+    const { id: adminRoleId } =
+      (await this.roleService.findOne({
+        name: 'admin',
+      })) || {};
     if (id === session.passport?.user?.id && body.state === false) {
       throw new ForbiddenException('Your account state is protected');
     }
     if (
+      adminRoleId &&
       session?.passport?.user?.id === id &&
-      oldRoles.includes(adminRoleId) &&
-      !newRoles.includes(adminRoleId)
+      oldRoles?.includes(adminRoleId) &&
+      !newRoles?.includes(adminRoleId)
     ) {
       throw new ForbiddenException('Admin privileges are protected');
     }

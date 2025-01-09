@@ -103,16 +103,15 @@ describe('PasswordResetService', () => {
     }).compile();
     passwordResetService =
       module.get<PasswordResetService>(PasswordResetService);
-
     mailerService = module.get<MailerService>(MailerService);
     jwtService = module.get<JwtService>(JwtService);
     userModel = module.get<Model<User>>(getModelToken('User'));
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
+
   describe('requestReset', () => {
     it('should send an email with a token', async () => {
       const sendMailSpy = jest.spyOn(mailerService, 'sendMail');
@@ -152,8 +151,8 @@ describe('PasswordResetService', () => {
       expect(verifySpy).toHaveBeenCalled();
 
       const user = await userModel.findOne({ email: users[0].email });
-      expect(user.resetToken).toBeNull();
-      expect(compareSync('newPassword', user.password)).toBeTruthy();
+      expect(user!.resetToken).toBeNull();
+      expect(compareSync('newPassword', user!.password)).toBeTruthy();
     });
   });
 });

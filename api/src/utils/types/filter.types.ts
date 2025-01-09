@@ -55,7 +55,7 @@ export type RecursivePartial<T> = {
       : T[P];
 };
 //base controller validator types
-type TAllowedKeys<T, TStub, TValue = string[]> = {
+type TAllowedKeys<T, TStub, TValue = (string | null | undefined)[]> = {
   [key in keyof Record<
     TFilterKeysOfType<
       TFilterPopulateFields<TFilterKeysOfNeverType<T>, TStub>,
@@ -69,13 +69,17 @@ export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: Partial<TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>>;
+  allowedIds: TAllowedKeys<T, TStub> &
+    TAllowedKeys<T, TStub, string | null | undefined>;
 };
 
 //populate types
 export type TFilterPopulateFields<T, TStub> = Omit<
   T,
-  TFilterKeysOfType<TStub, string | number | boolean | object>
+  TFilterKeysOfType<
+    TStub,
+    null | undefined | string | number | boolean | object
+  >
 >;
 
 //search filter types

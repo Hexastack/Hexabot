@@ -60,7 +60,7 @@ describe('AuthController', () => {
   let invitationService: InvitationService;
   let roleService: RoleService;
   let jwtService: JwtService;
-  let role: Role;
+  let role: Role | null;
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
@@ -136,7 +136,7 @@ describe('AuthController', () => {
       username: 'test',
       first_name: 'test',
       last_name: 'test',
-      roles: [role.id],
+      roles: [role!.id],
     };
     await invitationService.create(baseUser);
   });

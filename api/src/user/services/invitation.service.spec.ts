@@ -150,7 +150,7 @@ describe('InvitationService', () => {
       const role = await roleRepository.findOne({});
       const newInvitation: InvitationCreateDto = {
         email: 'test@testland.tst',
-        roles: [role.id.toString()],
+        roles: [role!.id.toString()],
       };
 
       jest.spyOn(invitationRepository, 'create');
