@@ -149,7 +149,6 @@ export default abstract class BaseNlpHelper<
             }
             return res;
           })
-          // TODO : place language at the same level as the intent
           .concat({
             entity: 'language',
             value: s.language.code,
