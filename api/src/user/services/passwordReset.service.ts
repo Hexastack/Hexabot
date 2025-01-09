@@ -36,7 +36,7 @@ export class PasswordResetService {
     private readonly userService: UserService,
     public readonly i18n: I18nService,
     public readonly languageService: LanguageService,
-    @Optional() private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {
