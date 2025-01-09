@@ -19,7 +19,10 @@ export class AuthSerializer extends PassportSerializer {
     super();
   }
 
-  serializeUser(user: User, done: (err: Error, user: SessionUser) => void) {
+  serializeUser(
+    user: User,
+    done: (err: Error | null, user: SessionUser) => void,
+  ) {
     done(null, {
       id: user.id,
       first_name: user.first_name,
@@ -29,9 +32,9 @@ export class AuthSerializer extends PassportSerializer {
 
   async deserializeUser(
     payload: SessionUser,
-    done: (err: Error, user: SessionUser) => void,
+    done: (err: Error | null, user: SessionUser | null) => void,
   ) {
-    const user = await this.userService.findOne(payload.id);
-    user ? done(null, user) : done(null, null);
+    const user = payload.id ? await this.userService.findOne(payload.id) : null;
+    done(null, user);
   }
 }

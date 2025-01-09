@@ -94,17 +94,20 @@ export class MenuService extends BaseService<Menu, MenuPopulate, MenuFull> {
     const parents: Map<string | symbol, AnyMenu[]> = new Map();
 
     parents.set(this.RootSymbol, []);
-    menuItems.forEach((m) => {
-      const menuParent = m.parent?.toString();
-      if (!m.parent) {
-        parents.get(this.RootSymbol).push(m);
+    menuItems.forEach((menuItem) => {
+      const menuParent = menuItem.parent?.toString();
+      if (!menuItem.parent) {
+        parents.get(this.RootSymbol)!.push(menuItem);
         return;
       }
-      if (parents.has(menuParent)) {
-        parents.get(menuParent).push(m);
-        return;
+      if (menuParent) {
+        if (parents.has(menuParent)) {
+          parents.get(menuParent)!.push(menuItem);
+          return;
+        }
+
+        parents.set(menuParent, [menuItem]);
       }
-      parents.set(menuParent, [m]);
     });
 
     return parents;
@@ -122,8 +125,11 @@ export class MenuService extends BaseService<Menu, MenuPopulate, MenuFull> {
     parents: Map<string | symbol, AnyMenu[]>,
     parent: string | symbol = this.RootSymbol,
   ): MenuTree {
-    if (!parents.has(parent)) return undefined;
-    const children: MenuTree = parents.get(parent).map((menu) => {
+    const item = parents.get(parent);
+    if (!item) {
+      return [];
+    }
+    const children: MenuTree = item.map((menu) => {
       return {
         ...menu,
         call_to_actions:

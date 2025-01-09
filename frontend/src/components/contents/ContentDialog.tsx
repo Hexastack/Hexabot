@@ -234,9 +234,7 @@ export const ContentDialog: FC<ContentDialogProps> = ({
                   name={contentField.name}
                   control={control}
                   defaultValue={
-                    content
-                      ? content?.["dynamicFields"]?.[contentField.name]
-                      : null
+                    content ? content["dynamicFields"][contentField.name] : null
                   }
                   rules={
                     contentField.name === "title"

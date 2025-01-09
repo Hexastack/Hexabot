@@ -60,9 +60,7 @@ describe('MenuController', () => {
     menuService = module.get<MenuService>(MenuService);
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
   describe('create', () => {
@@ -81,7 +79,7 @@ describe('MenuController', () => {
       const websiteMenu = await menuService.findOne({
         title: websiteMenuFixture.title,
       });
-      const search = await menuController.findOne(websiteMenu.id);
+      const search = await menuController.findOne(websiteMenu!.id);
       expect(search).toEqualPayload(websiteMenuFixture);
     });
   });
@@ -98,12 +96,12 @@ describe('MenuController', () => {
       const offersEntry = await menuService.findOne({
         title: offerMenuFixture.title,
       });
-      await menuController.delete(offersEntry.id);
+      await menuController.delete(offersEntry!.id);
 
       const offersChildren = await menuService.find({
         title: {
           $in: [
-            offersEntry.title,
+            offersEntry!.title,
             ...offersMenuFixtures.map((menu) => menu.title),
           ],
         },

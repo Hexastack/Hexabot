@@ -23,7 +23,11 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
-import { Invitation, InvitationModel } from '../schemas/invitation.schema';
+import {
+  Invitation,
+  InvitationFull,
+  InvitationModel,
+} from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 
@@ -79,10 +83,10 @@ describe('InvitationRepository', () => {
       );
 
       const result = await invitationRepository.findOneAndPopulate(
-        invitation.id,
+        invitation!.id,
       );
       expect(invitationModel.findById).toHaveBeenCalledWith(
-        invitation.id,
+        invitation!.id,
         undefined,
       );
       expect(result).toEqualPayload({
@@ -111,7 +115,7 @@ describe('InvitationRepository', () => {
           roles: allRoles.filter((role) => currInv.roles.includes(role.id)),
         });
         return acc;
-      }, []);
+      }, [] as InvitationFull[]);
 
       expect(invitationModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(invitationsWithRoles);

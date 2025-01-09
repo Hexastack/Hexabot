@@ -1,13 +1,13 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import CheckIcon from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
 import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
 import LanguageIcon from "@mui/icons-material/Language";
@@ -16,10 +16,10 @@ import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 
-import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { ContentItem } from "@/app-components/dialogs";
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
 import { Adornment } from "@/app-components/inputs/Adornment";
+import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
@@ -27,10 +27,8 @@ import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
-import { IUser, IUserAttributes } from "@/types/user.types";
+import { IProfileAttributes, IUser } from "@/types/user.types";
 import { MIME_TYPES } from "@/utils/attachment";
-
-type TUserProfileExtendedPayload = IUserAttributes & { password2: string };
 
 type ProfileFormProps = { user: IUser };
 
@@ -55,14 +53,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     formState: { errors },
     register,
     setValue,
-    getValues,
-  } = useForm<TUserProfileExtendedPayload>({
+  } = useForm<IProfileAttributes>({
     defaultValues: {
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
       language: user.language,
-      avatar: user.avatar,
     },
   });
   const rules = useValidationRules();
@@ -89,7 +85,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     password,
     password2: _password2,
     ...rest
-  }: TUserProfileExtendedPayload) => {
+  }: IProfileAttributes) => {
     await updateProfile({
       ...rest,
       password: password || undefined,
@@ -106,32 +102,13 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             render={({ field }) => (
               <>
                 <Box sx={{ position: "relative" }}>
-                  <AttachmentInput
+                  <AvatarInput
                     label={t("label.avatar")}
-                    format="small"
                     accept={MIME_TYPES["images"].join(",")}
-                    enableMediaLibrary={false}
                     size={256}
                     {...field}
-                    onChange={(attachment) => setValue("avatar", attachment)}
+                    onChange={(file) => setValue("avatar", file)}
                   />
-                  {getValues("avatar") ? (
-                    <Button
-                      startIcon={<DeleteIcon />}
-                      onClick={() => setValue("avatar", null)}
-                      color="error"
-                      variant="contained"
-                      size="small"
-                      sx={{
-                        position: "absolute",
-                        right: "50%",
-                        bottom: "1rem",
-                        transform: "translateX(50%)",
-                      }}
-                    >
-                      {t("button.remove")}
-                    </Button>
-                  ) : null}
                 </Box>
                 <Typography
                   variant="body2"

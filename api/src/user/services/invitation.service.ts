@@ -39,10 +39,10 @@ export class InvitationService extends BaseService<
     @Inject(InvitationRepository)
     readonly repository: InvitationRepository,
     @Inject(JwtService) private readonly jwtService: JwtService,
-    @Optional() private readonly mailerService: MailerService | undefined,
     private logger: LoggerService,
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {
     super(repository);
   }

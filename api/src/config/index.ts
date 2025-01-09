@@ -105,12 +105,12 @@ export const config: Config = {
     from: process.env.EMAIL_SMTP_FROM || 'noreply@example.com',
   },
   parameters: {
-    uploadDir: process.env.UPLOAD_DIR
-      ? join(process.cwd(), process.env.UPLOAD_DIR)
-      : join(process.cwd(), 'uploads'),
-    avatarDir: process.env.AVATAR_DIR
-      ? join(process.cwd(), process.env.AVATAR_DIR)
-      : join(process.cwd(), 'avatars'),
+    uploadDir: join(process.cwd(), process.env.UPLOAD_DIR || '/uploads'),
+    avatarDir: join(
+      process.cwd(),
+      process.env.UPLOAD_DIR || '/uploads',
+      '/avatars',
+    ),
     storageMode: 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)

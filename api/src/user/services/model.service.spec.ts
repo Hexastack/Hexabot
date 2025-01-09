@@ -19,7 +19,7 @@ import {
 
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
-import { Model, ModelModel } from '../schemas/model.schema';
+import { Model, ModelFull, ModelModel } from '../schemas/model.schema';
 import { Permission, PermissionModel } from '../schemas/permission.schema';
 
 import { ModelService } from './model.service';
@@ -28,7 +28,7 @@ describe('ModelService', () => {
   let modelService: ModelService;
   let modelRepository: ModelRepository;
   let permissionRepository: PermissionRepository;
-  let model: Model;
+  let model: Model | null;
   let permissions: Permission[];
 
   beforeAll(async () => {
@@ -49,7 +49,7 @@ describe('ModelService', () => {
       module.get<PermissionRepository>(PermissionRepository);
     modelRepository = module.get<ModelRepository>(ModelRepository);
     model = await modelRepository.findOne({ name: 'ContentType' });
-    permissions = await permissionRepository.find({ model: model.id });
+    permissions = await permissionRepository.find({ model: model!.id });
   });
 
   afterAll(closeInMongodConnection);
@@ -58,7 +58,7 @@ describe('ModelService', () => {
 
   describe('findOneAndPopulate', () => {
     it('should find a model and populate its permissions', async () => {
-      const result = await modelService.findOneAndPopulate(model.id);
+      const result = await modelService.findOneAndPopulate(model!.id);
       expect(result).toEqualPayload({
         ...modelFixtures.find(({ name }) => name === 'ContentType'),
         permissions,
@@ -74,12 +74,12 @@ describe('ModelService', () => {
       const modelsWithPermissions = models.reduce((acc, currModel) => {
         acc.push({
           ...currModel,
-          permissions: permissions.filter((permission) => {
-            return permission.model === currModel.id;
-          }),
+          permissions: permissions.filter(
+            (permission) => permission.model === currModel.id,
+          ),
         });
         return acc;
-      }, []);
+      }, [] as ModelFull[]);
       expect(modelRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         undefined,

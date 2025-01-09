@@ -56,7 +56,7 @@ export class BlockRepository extends BaseRepository<
       block.message.attachment.payload &&
       'url' in block.message.attachment.payload
     ) {
-      this.logger.error(
+      this.logger?.error(
         'NOTE: `url` payload has been deprecated in favor of `attachment_id`',
         block.name,
       );
@@ -97,7 +97,7 @@ export class BlockRepository extends BaseRepository<
     const update: BlockUpdateDto = updates?.['$set'];
 
     if (update?.category) {
-      const movedBlock: Block = await this.findOne(criteria);
+      const movedBlock = await this.findOne(criteria);
 
       if (!movedBlock) {
         return;
@@ -177,11 +177,13 @@ export class BlockRepository extends BaseRepository<
     category: string,
     ids: string[],
   ): Promise<void> {
+
     const oldStates: Block[] = await this.find({ _id: { $in: ids } });
 
     for (const oldState of oldStates) {
       if (oldState.category !== category) {
         const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+
           ids.includes(nextBlock),
         );
 
@@ -210,15 +212,15 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      if (ids.includes(block.attachedBlock)) {
+      if (block.attachedBlock && ids.includes(block.attachedBlock)) {
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const nextBlocks = block.nextBlocks.filter(
+      const nextBlocks = block.nextBlocks?.filter(
         (nextBlock) => !ids.includes(nextBlock),
       );
 
-      if (nextBlocks.length > 0) {
+      if (nextBlocks?.length) {
         await this.updateOne(block.id, { nextBlocks });
       }
     }

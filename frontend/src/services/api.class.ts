@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { AxiosInstance, AxiosResponse } from "axios";
 
@@ -15,7 +16,12 @@ import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
 import { INlpDatasetSampleAttributes } from "@/types/nlp-sample.types";
 import { IResetPayload, IResetRequest } from "@/types/reset.types";
-import { IUser, IUserAttributes, IUserStub } from "@/types/user.types";
+import {
+  IProfileAttributes,
+  IUser,
+  IUserAttributes,
+  IUserStub,
+} from "@/types/user.types";
 
 import { EntityType, Format, TCount, TypeByFormat } from "./types";
 
@@ -100,15 +106,27 @@ export class ApiClient {
     return data;
   }
 
-  async updateProfile(id: string, payload: Partial<IUserAttributes>) {
+  async updateProfile(id: string, payload: Partial<IProfileAttributes>) {
     const { _csrf } = await this.getCsrf();
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(payload)) {
+      if (value !== undefined) {
+        formData.append(key, value as string | Blob);
+      }
+    }
+
+    // Append the CSRF token
+    formData.append("_csrf", _csrf);
+
     const { data } = await this.request.patch<
       IUserStub,
       AxiosResponse<IUserStub>,
-      Partial<IUserAttributes> & ICsrf
-    >(`${ROUTES.PROFILE}/${id}`, {
-      ...payload,
-      _csrf,
+      Partial<IProfileAttributes>
+    >(`${ROUTES.PROFILE}/${id}?_csrf=${_csrf}`, payload, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
     return data;

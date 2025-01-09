@@ -68,9 +68,7 @@ describe('ContentTypeRepository', () => {
     contentModel = module.get<Model<Content>>(getModelToken('Content'));
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -78,10 +76,10 @@ describe('ContentTypeRepository', () => {
     it('should delete a contentType by id if no associated block was found', async () => {
       jest.spyOn(blockService, 'findOne').mockResolvedValueOnce(null);
       const contentType = await contentTypeModel.findOne({ name: 'Store' });
-      const result = await contentTypeRepository.deleteOne(contentType.id);
+      const result = await contentTypeRepository.deleteOne(contentType!.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
       const contents = await contentModel.find({
-        entity: contentType.id,
+        entity: contentType!.id,
       });
       expect(contents).toEqual([]);
     });

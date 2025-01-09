@@ -82,7 +82,7 @@ describe('AuthService', () => {
         {},
         undefined,
       );
-      expect(result.id).toBe(user.id);
+      expect(result!.id).toBe(user!.id);
     });
     it('should not validate user if the provided password is incorrect', async () => {
       const result = await authService.validateUser(
