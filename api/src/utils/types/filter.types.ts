@@ -69,7 +69,7 @@ export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>;
+  allowedIds: Partial<TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>>;
 };
 
 //populate types

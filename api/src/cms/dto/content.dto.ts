@@ -7,7 +7,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { IsString, IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
@@ -30,7 +30,7 @@ export class ContentCreateDto {
 
   @ApiPropertyOptional({ description: 'Content dynamic fields', type: Object })
   @IsOptional()
-  dynamicFields?: Record<string, any>;
+  dynamicFields: Record<string, any>;
 }
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}

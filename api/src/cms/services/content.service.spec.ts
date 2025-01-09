@@ -82,9 +82,10 @@ describe('ContentService', () => {
     it('should return a content and populate its corresponding content type', async () => {
       const findSpy = jest.spyOn(contentRepository, 'findOneAndPopulate');
       const content = await contentService.findOne({ title: 'Jean' });
-      const contentType = await contentTypeService.findOne(content.entity);
-      const result = await contentService.findOneAndPopulate(content.id);
-      expect(findSpy).toHaveBeenCalledWith(content.id, undefined);
+
+      const contentType = await contentTypeService.findOne(content!.entity);
+      const result = await contentService.findOneAndPopulate(content!.id);
+      expect(findSpy).toHaveBeenCalledWith(content!.id, undefined);
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
         entity: contentType,
@@ -235,14 +236,14 @@ describe('ContentService', () => {
     it('should get content for a specific entity', async () => {
       const contentType = await contentTypeService.findOne({ name: 'Product' });
       const actualData = await contentService.findPage(
-        { status: true, entity: contentType.id },
+        { status: true, entity: contentType!.id },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
       const flattenedElements = actualData.map(Content.toElement);
       const content = await contentService.getContent(
         {
           ...contentOptions,
-          entity: contentType.id,
+          entity: contentType!.id,
         },
         0,
       );
@@ -253,7 +254,7 @@ describe('ContentService', () => {
       contentOptions.entity = 1;
       const contentType = await contentTypeService.findOne({ name: 'Product' });
       const actualData = await contentService.findPage(
-        { status: true, entity: contentType.id, title: /^Jean/ },
+        { status: true, entity: contentType!.id, title: /^Jean/ },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
       const flattenedElements = actualData.map(Content.toElement);

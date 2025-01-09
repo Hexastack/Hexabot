@@ -30,12 +30,12 @@ export class I18nService<
   ): IfAnyOrNever<R, string, R> {
     options = {
       ...options,
-      lang: options.lang || this.i18nOptions.fallbackLanguage,
-      defaultValue: options.defaultValue || key,
+      lang: options?.lang || this.i18nOptions.fallbackLanguage,
+      defaultValue: options?.defaultValue || key,
     };
     let { lang } = options;
 
-    lang = this.resolveLanguage(lang);
+    lang = this.resolveLanguage(lang!);
 
     // Translate block message, button text, ...
     if (lang in this.dynamicTranslations) {
