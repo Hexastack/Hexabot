@@ -9,7 +9,7 @@
 import { existsSync } from 'fs';
 import { join, resolve } from 'path';
 
-import mongoose from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 import attachmentSchema, {
   Attachment,
@@ -17,11 +17,12 @@ import attachmentSchema, {
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
+import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import { config } from '@/config';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';
 
-import { MigrationServices } from '../types';
+import { MigrationAction, MigrationServices } from '../types';
 
 /**
  * Updates subscriber documents with their corresponding avatar attachments
@@ -263,14 +264,20 @@ const restoreOldAvatarsPath = async ({ logger }: MigrationServices) => {
 };
 
 /**
- * Updates attachment documents for blocks that contain "message.attachment":
- * - Rename 'attachment_id' to 'id'
+ * Handles updates on block documents for blocks that contain "message.attachment".
  *
- * @returns Resolves when the migration process is complete.
+ * @param updateField - Field to set during the update operation.
+ * @param unsetField - Field to unset during the update operation.
+ * @param logger - Logger service for logging messages.
  */
-const updateAttachmentBlocks = async ({ logger }: MigrationServices) => {
+const migrateAttachmentBlocks = async (
+  action: MigrationAction,
+  { logger }: MigrationServices,
+) => {
+  const updateField = action === MigrationAction.UP ? 'id' : 'attachment_id';
+  const unsetField = action === MigrationAction.UP ? 'attachment_id' : 'id';
   const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
-  // Find blocks where "message.attachment" exists
+
   const cursor = BlockModel.find({
     'message.attachment': { $exists: true },
   }).cursor();
@@ -278,70 +285,89 @@ const updateAttachmentBlocks = async ({ logger }: MigrationServices) => {
   for await (const block of cursor) {
     try {
       const blockMessage = block.message as StdOutgoingAttachmentMessage;
-      const attachmentId =
+      const fieldValue =
         blockMessage.attachment?.payload &&
-        'attachment_id' in blockMessage.attachment?.payload
-          ? blockMessage.attachment?.payload?.attachment_id
+        unsetField in blockMessage.attachment?.payload
+          ? blockMessage.attachment?.payload[unsetField]
           : null;
 
       await BlockModel.updateOne(
         { _id: block._id },
         {
           $set: {
-            'message.attachment.payload.id': attachmentId,
+            [`message.attachment.payload.${updateField}`]: fieldValue,
           },
           $unset: {
-            'message.attachment.payload.attachment_id': '',
+            [`message.attachment.payload.${unsetField}`]: '',
           },
         },
       );
-      logger.log(
-        `Attachment ${attachmentId} attributes successfully updated for block ${block._id}`,
-      );
     } catch (error) {
-      logger.error(`Failed to update block ${block._id}: ${error.message}`);
+      logger.error(`Failed to process block ${block._id}: ${error.message}`);
     }
   }
 };
 
 /**
- * Revert updates on attachment documents for blocks that contain "message.attachment":
- * - Rename 'id' back to 'attachment_id'
+ * Generates a function that renames a given attribute
+ * @param source Source name
+ * @param target Target name
+ * @returns Function to perform the renaming
+ */
+const buildRenameAttributeCallback =
+  <A extends string, D extends Record<A, string>>(source: A, target: A) =>
+  (obj: D) => {
+    obj[target] = obj[source];
+    delete obj[source];
+    return obj;
+  };
+
+/**
+ * Traverses an content document to search for any attachment object
+ * @param obj
+ * @param callback
+ * @returns
+ */
+const updateAttachmentPayload = (
+  obj: HydratedDocument<Content>['dynamicFields'],
+  callback: ReturnType<typeof buildRenameAttributeCallback>,
+) => {
+  if (obj && typeof obj === 'object') {
+    for (const key in obj) {
+      if (obj[key] && typeof obj[key] === 'object' && 'payload' in obj[key]) {
+        obj[key].payload = callback(obj[key].payload);
+      }
+    }
+  }
+  return obj;
+};
+
+/**
+ * Updates content documents for blocks that contain attachment "*.payload":
+ * - Rename 'attachment_id' to 'id'
  *
  * @returns Resolves when the migration process is complete.
  */
-const revertAttachmentBlocks = async ({ logger }: MigrationServices) => {
-  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+const migrateAttachmentContents = async (
+  action: MigrationAction,
+  { logger }: MigrationServices,
+) => {
+  const updateField = action === MigrationAction.UP ? 'id' : 'attachment_id';
+  const unsetField = action === MigrationAction.UP ? 'attachment_id' : 'id';
+  const ContentModel = mongoose.model<Content>(Content.name, contentSchema);
   // Find blocks where "message.attachment" exists
-  const cursor = BlockModel.find({
-    'message.attachment': { $exists: true },
-  }).cursor();
+  const cursor = ContentModel.find({}).cursor();
 
-  for await (const block of cursor) {
+  for await (const content of cursor) {
     try {
-      const blockMessage = block.message as StdOutgoingAttachmentMessage;
-      const attachmentId =
-        blockMessage.attachment?.payload &&
-        'id' in blockMessage.attachment?.payload
-          ? blockMessage.attachment?.payload?.id
-          : null;
+      content.dynamicFields = updateAttachmentPayload(
+        content.dynamicFields,
+        buildRenameAttributeCallback(unsetField, updateField),
+      );
 
-      await BlockModel.updateOne(
-        { _id: block._id },
-        {
-          $set: {
-            'message.attachment.payload.attachment_id': attachmentId,
-          },
-          $unset: {
-            'message.attachment.payload.id': '',
-          },
-        },
-      );
-      logger.log(
-        `Attachment ${attachmentId} attributes successfully reverted for block ${block._id}`,
-      );
+      await ContentModel.replaceOne({ _id: content._id }, content);
     } catch (error) {
-      logger.error(`Failed to revert block ${block._id}: ${error.message}`);
+      logger.error(`Failed to update content ${content._id}: ${error.message}`);
     }
   }
 };
@@ -350,13 +376,15 @@ module.exports = {
   async up(services: MigrationServices) {
     await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
-    await updateAttachmentBlocks(services);
+    await migrateAttachmentBlocks(MigrationAction.UP, services);
+    await migrateAttachmentContents(MigrationAction.UP, services);
     return true;
   },
   async down(services: MigrationServices) {
     await unpopulateSubscriberAvatar(services);
     await restoreOldAvatarsPath(services);
-    await revertAttachmentBlocks(services);
+    await migrateAttachmentBlocks(MigrationAction.DOWN, services);
+    await migrateAttachmentContents(MigrationAction.DOWN, services);
     return true;
   },
 };
