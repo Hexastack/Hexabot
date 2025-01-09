@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { UserCreateDto } from '@/user/dto/user.dto';
-import { UserModel, User } from '@/user/schemas/user.schema';
+import { User, UserModel } from '@/user/schemas/user.schema';
 import { hash } from '@/user/utilities/bcryptjs';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
@@ -25,6 +25,7 @@ export const users: UserCreateDto[] = [
     email: 'admin@admin.admin',
     password: 'adminadmin',
     roles: ['0', '1'],
+    avatar: null,
   },
 ];
 
@@ -34,7 +35,6 @@ export const userDefaultValues: TFixturesDefaultValues<User> = {
   timezone: 'Europe/Berlin',
   sendEmail: false,
   resetCount: 0,
-  avatar: null,
 };
 
 export const getUserFixtures = (users: UserCreateDto[]) =>

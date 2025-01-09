@@ -250,7 +250,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
           .map((role) => role.id),
         avatar: user.avatar
           ? (await this.attachmentService.findOne(user.avatar))?.id
-          : undefined,
+          : null,
       },
     });
     return await this.userService.create(user);

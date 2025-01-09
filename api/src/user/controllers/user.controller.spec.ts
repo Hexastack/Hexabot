@@ -210,6 +210,7 @@ describe('UserController', () => {
         email: 'test@test.test',
         password: 'test',
         roles: [role!.id],
+        avatar: null,
       };
       const result = await userController.create(userDto);
       expect(userService.create).toHaveBeenCalledWith(userDto);
