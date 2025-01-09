@@ -48,11 +48,11 @@ describe('MessageService', () => {
   let allMessages: Message[];
   let allSubscribers: Subscriber[];
   let allUsers: User[];
-  let message: Message;
-  let sender: Subscriber;
-  let recipient: Subscriber;
+  let message: Message | null;
+  let sender: Subscriber | null;
+  let recipient: Subscriber | null;
   let messagesWithSenderAndRecipient: Message[];
-  let user: User;
+  let user: User | null;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -91,15 +91,14 @@ describe('MessageService', () => {
     allUsers = await userRepository.findAll();
     allMessages = await messageRepository.findAll();
     message = await messageRepository.findOne({ mid: 'mid-1' });
-    sender = await subscriberRepository.findOne(message['sender']);
-    recipient = await subscriberRepository.findOne(message['recipient']);
-    user = await userRepository.findOne(message['sentBy']);
+    sender = await subscriberRepository.findOne(message!.sender!);
+    recipient = await subscriberRepository.findOne(message!.recipient!);
+    user = await userRepository.findOne(message!.sentBy!);
     messagesWithSenderAndRecipient = allMessages.map((message) => ({
       ...message,
-      sender: allSubscribers.find(({ id }) => id === message['sender']).id,
-      recipient: allSubscribers.find(({ id }) => id === message['recipient'])
-        .id,
-      sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+      sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
+      recipient: allSubscribers.find(({ id }) => id === message.recipient)?.id,
+      sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
     }));
   });
 
@@ -109,17 +108,17 @@ describe('MessageService', () => {
   describe('findOneAndPopulate', () => {
     it('should find message by id, and populate its corresponding sender and recipient', async () => {
       jest.spyOn(messageRepository, 'findOneAndPopulate');
-      const result = await messageService.findOneAndPopulate(message.id);
+      const result = await messageService.findOneAndPopulate(message!.id);
 
       expect(messageRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        message.id,
+        message!.id,
         undefined,
       );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...messageFixtures.find(({ mid }) => mid === message!.mid),
         sender,
         recipient,
-        sentBy: user.id,
+        sentBy: user!.id,
       });
     });
   });
@@ -131,9 +130,9 @@ describe('MessageService', () => {
       const result = await messageService.findPageAndPopulate({}, pageQuery);
       const messagesWithSenderAndRecipient = allMessages.map((message) => ({
         ...message,
-        sender: allSubscribers.find(({ id }) => id === message['sender']),
-        recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sender: allSubscribers.find(({ id }) => id === message.sender),
+        recipient: allSubscribers.find(({ id }) => id === message.recipient),
+        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
       }));
 
       expect(messageRepository.findPageAndPopulate).toHaveBeenCalledWith(
@@ -150,7 +149,7 @@ describe('MessageService', () => {
         new Date().setMonth(new Date().getMonth() + 1),
       );
       const result = await messageService.findHistoryUntilDate(
-        sender,
+        sender!,
         until,
         30,
       );
@@ -166,16 +165,16 @@ describe('MessageService', () => {
     it('should return history since given date', async () => {
       const since: Date = new Date();
       const result = await messageService.findHistorySinceDate(
-        sender,
+        sender!,
         since,
         30,
       );
       const messagesWithSenderAndRecipient = allMessages.map((message) => ({
         ...message,
-        sender: allSubscribers.find(({ id }) => id === message['sender']).id,
-        recipient: allSubscribers.find(({ id }) => id === message['recipient'])
-          .id,
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
+        recipient: allSubscribers.find(({ id }) => id === message.recipient)
+          ?.id,
+        sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
       }));
       const historyMessages = messagesWithSenderAndRecipient.filter(
         (message) => message.createdAt > since,

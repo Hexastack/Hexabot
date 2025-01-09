@@ -31,9 +31,9 @@ describe('BlockRepository', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
   let blockModel: Model<Block>;
-  let category: Category;
-  let hasPreviousBlocks: Block;
-  let hasNextBlocks: Block;
+  let category: Category | null;
+  let hasPreviousBlocks: Block | null;
+  let hasNextBlocks: Block | null;
   let validIds: string[];
   let validCategory: string;
 
@@ -67,16 +67,19 @@ describe('BlockRepository', () => {
     it('should find one block by id, and populate its  trigger_labels, assign_labels, nextBlocks, attachedBlock, category,previousBlocks', async () => {
       jest.spyOn(blockModel, 'findById');
 
-      const result = await blockRepository.findOneAndPopulate(hasNextBlocks.id);
+      const result = await blockRepository.findOneAndPopulate(
+        hasNextBlocks!.id,
+      );
       expect(blockModel.findById).toHaveBeenCalledWith(
-        hasNextBlocks.id,
+        hasNextBlocks!.id,
         undefined,
       );
       expect(result).toEqualPayload({
-        ...blockFixtures.find(({ name }) => name === hasNextBlocks.name),
+        ...blockFixtures.find(({ name }) => name === hasNextBlocks!.name),
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],
+        attachedToBlock: null,
       });
     });
   });
@@ -93,6 +96,7 @@ describe('BlockRepository', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockModel.find).toHaveBeenCalledWith({}, undefined);
@@ -110,6 +114,7 @@ describe('BlockRepository', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockModel.find).toHaveBeenCalledWith({}, undefined);
@@ -191,7 +196,7 @@ describe('BlockRepository', () => {
         category: validCategory,
         nextBlocks: [],
         attachedBlock: null,
-      } as Block);
+      } as unknown as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
@@ -233,7 +238,7 @@ describe('BlockRepository', () => {
           attachedBlock: null,
           nextBlocks: [validIds[0], validIds[1]],
         },
-      ] as Block[];
+      ] as unknown as Block[];
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 

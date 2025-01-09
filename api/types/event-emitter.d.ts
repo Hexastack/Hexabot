@@ -93,7 +93,7 @@ declare module '@nestjs/event-emitter' {
       object,
       {
         block: BlockFull;
-        passation: Subscriber;
+        passation: Subscriber | null;
         'fallback-local': BlockFull;
         'fallback-global': EventWrapper<any, any>;
         intervention: Subscriber;

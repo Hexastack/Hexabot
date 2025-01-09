@@ -36,8 +36,8 @@ import { ContextVarController } from './context-var.controller';
 describe('ContextVarController', () => {
   let contextVarController: ContextVarController;
   let contextVarService: ContextVarService;
-  let contextVar: ContextVar;
-  let contextVarToDelete: ContextVar;
+  let contextVar: ContextVar | null;
+  let contextVarToDelete: ContextVar | null;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -91,11 +91,11 @@ describe('ContextVarController', () => {
   describe('findOne', () => {
     it('should return the existing contextVar', async () => {
       jest.spyOn(contextVarService, 'findOne');
-      const result = await contextVarController.findOne(contextVar.id);
+      const result = await contextVarController.findOne(contextVar!.id);
 
-      expect(contextVarService.findOne).toHaveBeenCalledWith(contextVar.id);
+      expect(contextVarService.findOne).toHaveBeenCalledWith(contextVar!.id);
       expect(result).toEqualPayload(
-        contextVarFixtures.find(({ label }) => label === contextVar.label),
+        contextVarFixtures.find(({ label }) => label === contextVar!.label)!,
       );
     });
   });
@@ -121,11 +121,11 @@ describe('ContextVarController', () => {
     it('should delete a contextVar by id', async () => {
       jest.spyOn(contextVarService, 'deleteOne');
       const result = await contextVarController.deleteOne(
-        contextVarToDelete.id,
+        contextVarToDelete!.id,
       );
 
       expect(contextVarService.deleteOne).toHaveBeenCalledWith(
-        contextVarToDelete.id,
+        contextVarToDelete!.id,
       );
       expect(result).toEqual({
         acknowledged: true,
@@ -135,10 +135,10 @@ describe('ContextVarController', () => {
 
     it('should throw a NotFoundException when attempting to delete a contextVar by id', async () => {
       await expect(
-        contextVarController.deleteOne(contextVarToDelete.id),
+        contextVarController.deleteOne(contextVarToDelete!.id),
       ).rejects.toThrow(
         new NotFoundException(
-          `Context var with ID ${contextVarToDelete.id} not found.`,
+          `Context var with ID ${contextVarToDelete!.id} not found.`,
         ),
       );
     });
@@ -152,12 +152,12 @@ describe('ContextVarController', () => {
         .spyOn(contextVarService, 'deleteMany')
         .mockResolvedValue(deleteResult);
       const result = await contextVarController.deleteMany([
-        contextVarToDelete.id,
-        contextVar.id,
+        contextVarToDelete!.id,
+        contextVar!.id,
       ]);
 
       expect(contextVarService.deleteMany).toHaveBeenCalledWith({
-        _id: { $in: [contextVarToDelete.id, contextVar.id] },
+        _id: { $in: [contextVarToDelete!.id, contextVar!.id] },
       });
       expect(result).toEqual(deleteResult);
     });
@@ -175,7 +175,10 @@ describe('ContextVarController', () => {
       });
 
       await expect(
-        contextVarController.deleteMany([contextVarToDelete.id, contextVar.id]),
+        contextVarController.deleteMany([
+          contextVarToDelete!.id,
+          contextVar!.id,
+        ]),
       ).rejects.toThrow(
         new NotFoundException('Context vars with provided IDs not found'),
       );
@@ -189,16 +192,16 @@ describe('ContextVarController', () => {
     it('should return updated contextVar', async () => {
       jest.spyOn(contextVarService, 'updateOne');
       const result = await contextVarController.updateOne(
-        contextVar.id,
+        contextVar!.id,
         contextVarUpdatedDto,
       );
 
       expect(contextVarService.updateOne).toHaveBeenCalledWith(
-        contextVar.id,
+        contextVar!.id,
         contextVarUpdatedDto,
       );
       expect(result).toEqualPayload({
-        ...contextVarFixtures.find(({ label }) => label === contextVar.label),
+        ...contextVarFixtures.find(({ label }) => label === contextVar!.label),
         ...contextVarUpdatedDto,
       });
     });
@@ -206,12 +209,12 @@ describe('ContextVarController', () => {
     it('should throw a NotFoundException when attempting to update an non existing contextVar by id', async () => {
       await expect(
         contextVarController.updateOne(
-          contextVarToDelete.id,
+          contextVarToDelete!.id,
           contextVarUpdatedDto,
         ),
       ).rejects.toThrow(
         new NotFoundException(
-          `ContextVar with ID ${contextVarToDelete.id} not found`,
+          `ContextVar with ID ${contextVarToDelete!.id} not found`,
         ),
       );
     });

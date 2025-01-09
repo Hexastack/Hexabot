@@ -86,7 +86,7 @@ export class SubscriberStub extends BaseSchema {
     type: Date,
     default: null,
   })
-  assignedAt?: Date;
+  assignedAt?: Date | null;
 
   @Prop({
     type: Date,
@@ -132,10 +132,10 @@ export class Subscriber extends SubscriberStub {
   labels: string[];
 
   @Transform(({ obj }) => (obj.assignedTo ? obj.assignedTo.toString() : null))
-  assignedTo?: string;
+  assignedTo?: string | null;
 
   @Transform(({ obj }) => obj.avatar?.toString() || null)
-  avatar?: string;
+  avatar?: string | null;
 }
 
 @Schema({ timestamps: true })

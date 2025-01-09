@@ -134,7 +134,7 @@ export class SubscriberRepository extends BaseRepository<
    */
   async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
     const query = this.findByForeignIdQuery(id).populate(this.populate);
-    const [result] = await this.execute(query, this.clsPopulate);
+    const [result] = await this.execute(query, SubscriberFull);
     return result;
   }
 
@@ -149,7 +149,7 @@ export class SubscriberRepository extends BaseRepository<
   async updateOneByForeignIdQuery(
     id: string,
     updates: SubscriberUpdateDto,
-  ): Promise<Subscriber> {
+  ): Promise<Subscriber | null> {
     return await this.updateOne({ foreign_id: id }, updates);
   }
 
@@ -160,7 +160,9 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @returns The updated subscriber entity.
    */
-  async handBackByForeignIdQuery(foreignId: string): Promise<Subscriber> {
+  async handBackByForeignIdQuery(
+    foreignId: string,
+  ): Promise<Subscriber | null> {
     return await this.updateOne(
       {
         foreign_id: foreignId,
@@ -183,7 +185,7 @@ export class SubscriberRepository extends BaseRepository<
   async handOverByForeignIdQuery(
     foreignId: string,
     userId: string,
-  ): Promise<Subscriber> {
+  ): Promise<Subscriber | null> {
     return await this.updateOne(
       {
         foreign_id: foreignId,

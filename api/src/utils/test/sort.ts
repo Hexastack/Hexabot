@@ -13,14 +13,16 @@ type TSortProps<T> = {
   order?: 'desc' | 'asc';
 };
 
-const sort = <R, S, T extends { createdAt?: string } = R & S>({
+type TCreateAt = { createdAt?: string | Date };
+
+const sort = <R extends TCreateAt, S, T extends TCreateAt = R & S>({
   row1,
   row2,
   field = 'createdAt',
   order = 'desc',
 }: TSortProps<T>) => (order === 'asc' && row1[field] > row2[field] ? 1 : -1);
 
-export const sortRowsBy = <R, S, T = R & S>(
+export const sortRowsBy = <R extends TCreateAt, S, T extends TCreateAt = R & S>(
   row1: T,
   row2: T,
   field?: keyof T,

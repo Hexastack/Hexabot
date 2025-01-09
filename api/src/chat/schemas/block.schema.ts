@@ -143,13 +143,13 @@ export class Block extends BlockStub {
   attachedBlock?: string;
 
   @Transform(({ obj }) => obj.category.toString())
-  category: string;
+  category: string | null;
 
   @Exclude()
   previousBlocks?: never;
 
   @Exclude()
-  attachedToBlock?: never | null;
+  attachedToBlock?: never;
 }
 
 @Schema({ timestamps: true })
@@ -161,7 +161,7 @@ export class BlockFull extends BlockStub {
   assign_labels: Label[];
 
   @Type(() => Block)
-  nextBlocks?: Block[];
+  nextBlocks: Block[];
 
   @Type(() => Block)
   attachedBlock?: Block;

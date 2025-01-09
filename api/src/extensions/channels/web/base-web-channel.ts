@@ -1,12 +1,12 @@
 /*
- * Copyright © 2025 Hexastack. All rights reserved.
+ * Copyright © 2024 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
@@ -231,7 +231,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid,
+          mid: anyMessage.mid || 'DEFAULT_MID',
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
         });
@@ -519,6 +519,9 @@ export default abstract class BaseWebChannelHandler<
 
     const fetchMessages = async (req: Request, res: Response, retrials = 1) => {
       try {
+        if (!req.query.since)
+          throw new BadRequestException(`QueryParam 'since' is missing`);
+
         const since = new Date(req.query.since.toString());
         const messages = await this.pollMessages(req, since);
         if (messages.length === 0 && retrials <= 5) {
@@ -630,10 +633,12 @@ export default abstract class BaseWebChannelHandler<
           size: Buffer.byteLength(data.file),
           type: data.type,
         });
-        next(null, {
-          type: Attachment.getTypeByMime(attachment.type),
-          url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-        });
+
+        if (attachment)
+          next(null, {
+            type: Attachment.getTypeByMime(attachment.type),
+            url: Attachment.getAttachmentUrl(attachment.id, attachment?.name),
+          });
       } catch (err) {
         this.logger.error(
           'Web Channel Handler : Unable to write uploaded file',
@@ -677,6 +682,12 @@ export default abstract class BaseWebChannelHandler<
             size: file.size,
             type: file.mimetype,
           });
+          if (!attachment) {
+            this.logger.debug(
+              'Web Channel Handler : failed to store attachment',
+            );
+            return next(null);
+          }
           next(null, {
             type: Attachment.getTypeByMime(attachment.type),
             url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
@@ -721,7 +732,7 @@ export default abstract class BaseWebChannelHandler<
     return {
       isSocket: this.isSocketRequest(req),
       ipAddress: this.getIpAddress(req),
-      agent: req.headers['user-agent'],
+      agent: req.headers['user-agent'] || 'browser',
     };
   }
 
@@ -965,11 +976,17 @@ export default abstract class BaseWebChannelHandler<
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: message.attachment.payload.url,
+        url: message.attachment.payload.url!,
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
-      payload.data.quick_replies = message.quickReplies;
+      return {
+        ...payload,
+        data: {
+          ...payload.data,
+          quick_replies: message.quickReplies,
+        } as Web.OutgoingFileMessageData,
+      };
     }
     return payload;
   }

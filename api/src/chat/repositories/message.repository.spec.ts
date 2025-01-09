@@ -63,19 +63,22 @@ describe('MessageRepository', () => {
     it('should find one message by id, and populate its sender and recipient', async () => {
       jest.spyOn(messageModel, 'findById');
       const message = await messageRepository.findOne({ mid: 'mid-1' });
-      const sender = await subscriberRepository.findOne(message['sender']);
+      const sender = await subscriberRepository.findOne(message!['sender']);
       const recipient = await subscriberRepository.findOne(
-        message['recipient'],
+        message!['recipient'],
       );
-      const user = await userRepository.findOne(message['sentBy']);
-      const result = await messageRepository.findOneAndPopulate(message.id);
+      const user = await userRepository.findOne(message!['sentBy']);
+      const result = await messageRepository.findOneAndPopulate(message!.id);
 
-      expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
+      expect(messageModel.findById).toHaveBeenCalledWith(
+        message!.id,
+        undefined,
+      );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...messageFixtures.find(({ mid }) => mid === message!.mid),
         sender,
         recipient,
-        sentBy: user.id,
+        sentBy: user!.id,
       });
     });
   });
@@ -92,7 +95,7 @@ describe('MessageRepository', () => {
         ...message,
         sender: allSubscribers.find(({ id }) => id === message['sender']),
         recipient: allSubscribers.find(({ id }) => id === message['recipient']),
-        sentBy: allUsers.find(({ id }) => id === message['sentBy']).id,
+        sentBy: allUsers.find(({ id }) => id === message['sentBy'])?.id,
       }));
 
       expect(messageModel.find).toHaveBeenCalledWith({}, undefined);

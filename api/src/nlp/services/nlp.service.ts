@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { HelperService } from '@/helper/helper.service';
@@ -77,9 +77,14 @@ export class NlpService {
   async handleEntityDelete(entity: NlpEntity) {
     // Synchonize new entity with NLP provider
     try {
-      const helper = await this.helperService.getDefaultNluHelper();
-      await helper.deleteEntity(entity.foreign_id);
-      this.logger.debug('Deleted entity successfully synced!', entity);
+      if (entity.foreign_id) {
+        const helper = await this.helperService.getDefaultNluHelper();
+        await helper.deleteEntity(entity.foreign_id);
+        this.logger.debug('Deleted entity successfully synced!', entity);
+      } else {
+        this.logger.error(`Entity ${entity} is missing foreign_id`);
+        throw new NotFoundException(`Entity ${entity} is missing foreign_id`);
+      }
     } catch (err) {
       this.logger.error('Unable to sync deleted entity', err);
     }
@@ -138,8 +143,10 @@ export class NlpService {
       const populatedValue = await this.nlpValueService.findOneAndPopulate(
         value.id,
       );
-      await helper.deleteValue(populatedValue);
-      this.logger.debug('Deleted value successfully synced!', value);
+      if (populatedValue) {
+        await helper.deleteValue(populatedValue);
+        this.logger.debug('Deleted value successfully synced!', value);
+      }
     } catch (err) {
       this.logger.error('Unable to sync deleted value', err);
     }

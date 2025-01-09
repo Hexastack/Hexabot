@@ -197,7 +197,7 @@ describe('BlockService', () => {
       foreign_id: 'foreign-id-web-1',
     });
 
-    event.setSender(webSubscriber);
+    event.setSender(webSubscriber!);
 
     let hasBotSpoken = false;
     const clearMock = jest
@@ -210,15 +210,15 @@ describe('BlockService', () => {
           isFallback: boolean,
         ) => {
           expect(actualConversation).toEqualPayload({
-            sender: webSubscriber.id,
+            sender: webSubscriber!.id,
             active: true,
             next: [],
             context: {
               user: {
-                first_name: webSubscriber.first_name,
-                last_name: webSubscriber.last_name,
+                first_name: webSubscriber!.first_name,
+                last_name: webSubscriber!.last_name,
                 language: 'en',
-                id: webSubscriber.id,
+                id: webSubscriber!.id,
               },
               user_location: {
                 lat: 0,
@@ -263,7 +263,7 @@ describe('BlockService', () => {
     const webSubscriber = await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
     });
-    event.setSender(webSubscriber);
+    event.setSender(webSubscriber!);
 
     const clearMock = jest
       .spyOn(botService, 'handleIncomingMessage')
@@ -278,10 +278,10 @@ describe('BlockService', () => {
             active: true,
             context: {
               user: {
-                first_name: webSubscriber.first_name,
-                last_name: webSubscriber.last_name,
+                first_name: webSubscriber!.first_name,
+                last_name: webSubscriber!.last_name,
                 language: 'en',
-                id: webSubscriber.id,
+                id: webSubscriber!.id,
               },
               user_location: { lat: 0, lon: 0 },
               vars: {},
@@ -317,7 +317,7 @@ describe('BlockService', () => {
     const webSubscriber = await subscriberService.findOne({
       foreign_id: 'foreign-id-web-2',
     });
-    event.setSender(webSubscriber);
+    event.setSender(webSubscriber!);
     const captured = await botService.processConversationMessage(event);
 
     expect(captured).toBe(false);

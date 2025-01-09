@@ -93,17 +93,17 @@ describe('SubscriberService', () => {
       const subscriber = await subscriberRepository.findOne({
         first_name: 'Jhon',
       });
-      const result = await subscriberService.findOneAndPopulate(subscriber.id);
+      const result = await subscriberService.findOneAndPopulate(subscriber!.id);
 
       expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
-        subscriber.id,
+        subscriber!.id,
       );
       expect(result).toEqualPayload({
         ...subscriber,
         labels: allLabels.filter((label) =>
-          subscriber.labels.includes(label.id),
+          subscriber!.labels.includes(label.id),
         ),
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
       });
     });
   });
@@ -139,7 +139,7 @@ describe('SubscriberService', () => {
       expect(result).toEqualPayload({
         ...subscriber,
         labels: allLabels
-          .filter((label) => subscriber.labels.includes(label.id))
+          .filter((label) => subscriber!.labels.includes(label.id))
           .map((label) => label.id),
       });
     });

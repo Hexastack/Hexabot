@@ -107,20 +107,20 @@ describe('SubscriberRepository', () => {
       });
       const allLabels = await labelRepository.findAll();
       const result = await subscriberRepository.findOneAndPopulate(
-        subscriber.id,
+        subscriber!.id,
       );
       const subscriberWithLabels = {
         ...subscriberFixtures.find(
-          ({ first_name }) => first_name === subscriber.first_name,
+          ({ first_name }) => first_name === subscriber!.first_name,
         ),
         labels: allLabels.filter((label) =>
-          subscriber.labels.includes(label.id),
+          subscriber!.labels.includes(label.id),
         ),
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
       };
 
       expect(subscriberModel.findById).toHaveBeenCalledWith(
-        subscriber.id,
+        subscriber!.id,
         undefined,
       );
       expect(result).toEqualPayload(subscriberWithLabels);

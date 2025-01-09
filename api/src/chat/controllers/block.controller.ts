@@ -219,9 +219,12 @@ export class BlockController extends BaseController<
     this.validate({
       dto: block,
       allowedIds: {
-        category: (await this.categoryService.findOne(block.category))?.id,
-        attachedBlock: (await this.blockService.findOne(block.attachedBlock))
-          ?.id,
+        category: block.category
+          ? (await this.categoryService.findOne(block.category))?.id
+          : null,
+        attachedBlock: block.attachedBlock
+          ? (await this.blockService.findOne(block.attachedBlock))?.id
+          : null,
         nextBlocks: (
           await this.blockService.find({
             _id: {

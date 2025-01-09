@@ -74,10 +74,10 @@ import { CategoryService } from './category.service';
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
-  let category: Category;
-  let block: Block;
+  let category: Category | null;
+  let block: Block | null;
   let blockService: BlockService;
-  let hasPreviousBlocks: Block;
+  let hasPreviousBlocks: Block | null;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
   let settingService: SettingService;
@@ -168,10 +168,10 @@ describe('BlockService', () => {
   describe('findOneAndPopulate', () => {
     it('should find one block by id, and populate its trigger_labels, assign_labels,attachedBlock,category,nextBlocks', async () => {
       jest.spyOn(blockRepository, 'findOneAndPopulate');
-      const result = await blockService.findOneAndPopulate(block.id);
+      const result = await blockService.findOneAndPopulate(block!.id);
 
       expect(blockRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        block.id,
+        block!.id,
         undefined,
       );
       expect(result).toEqualPayload({
@@ -179,6 +179,7 @@ describe('BlockService', () => {
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],
+        attachedToBlock: null,
       });
     });
   });
@@ -194,6 +195,7 @@ describe('BlockService', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [block] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockRepository.findAndPopulate).toHaveBeenCalledWith(
@@ -380,7 +382,7 @@ describe('BlockService', () => {
         },
         blockGetStarted,
       );
-      expect(result).toEqual(blockGetStarted.patterns[3]);
+      expect(result).toEqual(blockGetStarted.patterns?.[3]);
     });
 
     it("should match payload when it's an attachment file", () => {
@@ -396,7 +398,7 @@ describe('BlockService', () => {
         },
         blockGetStarted,
       );
-      expect(result).toEqual(blockGetStarted.patterns[4]);
+      expect(result).toEqual(blockGetStarted.patterns?.[4]);
     });
   });
 
@@ -439,7 +441,7 @@ describe('BlockService', () => {
   describe('processMessage', () => {
     it('should process list message (with limit = 2 and skip = 0)', async () => {
       const contentType = await contentTypeService.findOne({ name: 'Product' });
-      blockProductListMock.options.content.entity = contentType.id;
+      blockProductListMock.options!.content!.entity = contentType!.id;
       const result = await blockService.processMessage(
         blockProductListMock,
         {
@@ -451,27 +453,27 @@ describe('BlockService', () => {
         'conv_id',
       );
       const elements = await contentService.findPage(
-        { status: true, entity: contentType.id },
+        { status: true, entity: contentType!.id },
         { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
       );
       const flattenedElements = elements.map(Content.toElement);
-      expect(result.format).toEqualPayload(
-        blockProductListMock.options.content?.display,
+      expect(result!.format).toEqualPayload(
+        blockProductListMock.options!.content!.display,
       );
       expect(
-        (result.message as StdOutgoingListMessage).elements,
+        (result!.message as StdOutgoingListMessage).elements,
       ).toEqualPayload(flattenedElements);
-      expect((result.message as StdOutgoingListMessage).options).toEqualPayload(
-        blockProductListMock.options.content,
-      );
       expect(
-        (result.message as StdOutgoingListMessage).pagination,
+        (result!.message as StdOutgoingListMessage).options,
+      ).toEqualPayload(blockProductListMock.options!.content!);
+      expect(
+        (result!.message as StdOutgoingListMessage).pagination,
       ).toEqualPayload({ total: 4, skip: 0, limit: 2 });
     });
 
     it('should process list message (with limit = 2 and skip = 2)', async () => {
       const contentType = await contentTypeService.findOne({ name: 'Product' });
-      blockProductListMock.options.content.entity = contentType.id;
+      blockProductListMock.options!.content!.entity = contentType!.id;
       const result = await blockService.processMessage(
         blockProductListMock,
         {
@@ -483,20 +485,20 @@ describe('BlockService', () => {
         'conv_id',
       );
       const elements = await contentService.findPage(
-        { status: true, entity: contentType.id },
+        { status: true, entity: contentType!.id },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );
       const flattenedElements = elements.map(Content.toElement);
-      expect(result.format).toEqual(
-        blockProductListMock.options.content?.display,
+      expect(result!.format).toEqual(
+        blockProductListMock.options!.content?.display,
       );
-      expect((result.message as StdOutgoingListMessage).elements).toEqual(
+      expect((result!.message as StdOutgoingListMessage).elements).toEqual(
         flattenedElements,
       );
-      expect((result.message as StdOutgoingListMessage).options).toEqual(
-        blockProductListMock.options.content,
+      expect((result!.message as StdOutgoingListMessage).options).toEqual(
+        blockProductListMock.options!.content,
       );
-      expect((result.message as StdOutgoingListMessage).pagination).toEqual({
+      expect((result!.message as StdOutgoingListMessage).pagination).toEqual({
         total: 4,
         skip: 2,
         limit: 2,

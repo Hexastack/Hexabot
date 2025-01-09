@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { BlockCreateDto } from '@/chat/dto/block.dto';
-import { BlockModel, Block } from '@/chat/schemas/block.schema';
+import { Block, BlockModel } from '@/chat/schemas/block.schema';
 import { CategoryModel } from '@/chat/schemas/category.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
@@ -171,7 +171,6 @@ export const blockDefaultValues: TFixturesDefaultValues<Block> = {
   assign_labels: [],
   trigger_labels: [],
   starts_conversation: false,
-  attachedToBlock: null,
 };
 
 export const blockFixtures = getFixturesWithDefaultValues<Block>({
