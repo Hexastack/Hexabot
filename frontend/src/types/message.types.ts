@@ -63,15 +63,7 @@ export interface AttachmentPayload<
   payload?: A;
 }
 
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: {
-    url: string;
-  };
-}
-
 // Content
-
 export interface ContentOptions {
   display: OutgoingMessageFormat.list | OutgoingMessageFormat.carousel;
   fields: {
@@ -104,7 +96,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: IncomingAttachmentPayload;
+      attachments: AttachmentPayload<AttachmentForeignKey>;
     };
 
 export enum QuickReplyType {
@@ -198,7 +190,9 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
+  attachment:
+    | AttachmentPayload<AttachmentForeignKey>
+    | AttachmentPayload<AttachmentForeignKey>[];
 };
 
 export type StdPluginMessage = {

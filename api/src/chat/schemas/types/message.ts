@@ -11,11 +11,7 @@ import { PluginName } from '@/plugins/types';
 
 import { Message } from '../message.schema';
 
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-  IncomingAttachmentPayload,
-} from './attachment';
+import { AttachmentForeignKey, AttachmentPayload } from './attachment';
 import { Button } from './button';
 import { ContentOptions } from './options';
 import { StdQuickReply } from './quick-reply';
@@ -146,7 +142,9 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
+  attachment:
+    | AttachmentPayload<AttachmentForeignKey>
+    | AttachmentPayload<AttachmentForeignKey>[];
 };
 
 export type StdIncomingMessage =

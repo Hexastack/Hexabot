@@ -28,8 +28,3 @@ export interface AttachmentPayload<
   type: FileType;
   payload: A;
 }
-
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: AttachmentForeignKey;
-}
