@@ -787,6 +787,10 @@ export default abstract class BaseWebChannelHandler<
             const attachment = await this.handleUpload(req, res);
             if (attachment) {
               event._adapter.attachment = attachment;
+              event._adapter.raw.data = {
+                type: Attachment.getTypeByMime(attachment.type),
+                url: await this.getPublicUrl(attachment),
+              };
             }
           } catch (err) {
             this.logger.warn(
