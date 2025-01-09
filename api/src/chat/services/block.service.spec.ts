@@ -390,7 +390,7 @@ describe('BlockService', () => {
           attachments: {
             type: FileType.file,
             payload: {
-              attachment_id: '9'.repeat(24),
+              id: '9'.repeat(24),
               url: 'http://link.to/the/file',
             },
           },

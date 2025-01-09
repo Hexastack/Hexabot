@@ -52,8 +52,8 @@ export interface AttachmentAttrs {
 }
 
 export type AttachmentForeignKey = {
-  attachment_id: string | null;
-  /** @deprecated use attachment_id instead */
+  id: string | null;
+  /** @deprecated use id instead */
   url?: string;
 };
 

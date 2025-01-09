@@ -224,7 +224,7 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
           attachments: {
             type: Attachment.getTypeByMime(this._adapter.raw.data.type),
             payload: {
-              attachment_id: this._adapter.attachment.id,
+              id: this._adapter.attachment.id,
             },
           },
         };
@@ -278,7 +278,7 @@ export default class WebEventWrapper<N extends ChannelName> extends EventWrapper
           attachment: {
             type: fileType,
             payload: {
-              attachment_id: this._adapter.attachment.id,
+              id: this._adapter.attachment.id,
             },
           },
         };

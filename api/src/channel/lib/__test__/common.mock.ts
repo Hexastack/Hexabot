@@ -117,7 +117,7 @@ export const contentMessage: StdOutgoingListMessage = {
       desc: 'About being first',
       thumbnail: {
         type: 'image',
-        payload: { attachment_id: attachment.id },
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -133,7 +133,7 @@ export const contentMessage: StdOutgoingListMessage = {
       desc: 'About being second',
       thumbnail: {
         type: 'image',
-        payload: { attachment_id: attachment.id },
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -153,7 +153,7 @@ export const contentMessage: StdOutgoingListMessage = {
 export const attachmentMessage: StdOutgoingAttachmentMessage = {
   attachment: {
     type: FileType.image,
-    payload: { attachment_id: attachment.id },
+    payload: { id: attachment.id },
   },
   quickReplies: [
     {

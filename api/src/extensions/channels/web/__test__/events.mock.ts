@@ -149,14 +149,14 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
         attachments: {
           type: FileType.image,
           payload: {
-            attachment_id: '9'.repeat(24),
+            id: '9'.repeat(24),
           },
         },
       },
       message: {
         attachment: {
           payload: {
-            attachment_id: '9'.repeat(24),
+            id: '9'.repeat(24),
           },
           type: FileType.image,
         },

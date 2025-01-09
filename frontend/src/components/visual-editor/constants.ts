@@ -36,7 +36,7 @@ export const ATTACHMENT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   message: {
     attachment: {
       type: FileType.unknown,
-      payload: { attachment_id: null },
+      payload: { id: null },
     },
     quickReplies: [],
   },

@@ -155,9 +155,7 @@ export default abstract class BaseWebChannelHandler<
           type: Web.IncomingMessageType.file,
           data: {
             type: attachmentPayload.type,
-            url: await this.getPublicUrl(
-              attachmentPayload.payload.attachment_id,
-            ),
+            url: await this.getPublicUrl(attachmentPayload.payload.id),
           },
         };
       }
@@ -992,7 +990,7 @@ export default abstract class BaseWebChannelHandler<
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: await this.getPublicUrl(message.attachment.payload.attachment_id),
+        url: await this.getPublicUrl(message.attachment.payload.id),
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
@@ -1034,10 +1032,8 @@ export default abstract class BaseWebChannelHandler<
       if (fields.image_url && item[fields.image_url]) {
         const attachmentPayload = item[fields.image_url]
           .payload as AttachmentForeignKey;
-        if (attachmentPayload.attachment_id) {
-          element.image_url = await this.getPublicUrl(
-            attachmentPayload.attachment_id,
-          );
+        if (attachmentPayload.id) {
+          element.image_url = await this.getPublicUrl(attachmentPayload.id);
         }
       }
 
