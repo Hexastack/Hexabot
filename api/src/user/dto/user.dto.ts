@@ -62,12 +62,21 @@ export class UserCreateDto {
   @IsString()
   @IsObjectId({ message: 'Avatar must be a valid ObjectId' })
   avatar: string | null = null;
+
+  @ApiPropertyOptional({
+    description: 'User state',
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  state?: boolean;
 }
 
 export class UserEditProfileDto extends OmitType(PartialType(UserCreateDto), [
   'username',
   'roles',
   'avatar',
+  'state',
 ]) {
   @ApiPropertyOptional({ description: 'User language', type: String })
   @IsOptional()
