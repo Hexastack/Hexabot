@@ -23,10 +23,10 @@ export abstract class BaseService<
   T extends BaseSchema,
   P extends string = never,
   TFull extends Omit<T, P> = never,
-  DTO extends DtoProps<any> = unknown,
+  DTOCruds extends DtoProps<any> = unknown,
 > {
   constructor(
-    protected readonly repository: BaseRepository<T, P, TFull, DTO>,
+    protected readonly repository: BaseRepository<T, P, TFull, DTOCruds>,
   ) {}
 
   getRepository() {
@@ -145,7 +145,11 @@ export abstract class BaseService<
   }
 
   async create<
-    D extends DtoInfer<DtoOperations.Create, DTO, Omit<T, keyof BaseSchema>>,
+    D extends DtoInfer<
+      DtoOperations.Create,
+      DTOCruds,
+      Omit<T, keyof BaseSchema>
+    >,
   >(dto: D): Promise<T> {
     try {
       return await this.repository.create(dto);
@@ -160,7 +164,11 @@ export abstract class BaseService<
   }
 
   async findOneOrCreate<
-    D extends DtoInfer<DtoOperations.Create, DTO, Omit<T, keyof BaseSchema>>,
+    D extends DtoInfer<
+      DtoOperations.Create,
+      DTOCruds,
+      Omit<T, keyof BaseSchema>
+    >,
   >(criteria: string | TFilterQuery<T>, dto: D): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {

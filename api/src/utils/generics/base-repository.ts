@@ -71,7 +71,7 @@ export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
   P extends string = never,
   TFull extends Omit<T, P> = never,
-  DTO extends DtoProps<T> = unknown,
+  DTOCruds extends DtoProps<T> = unknown,
   U = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
@@ -456,7 +456,7 @@ export abstract class BaseRepository<
     return await this.model.countDocuments(criteria).exec();
   }
 
-  async create(dto: DtoInfer<DtoOperations.Create, DTO, U>): Promise<T> {
+  async create(dto: DtoInfer<DtoOperations.Create, DTOCruds, U>): Promise<T> {
     const doc = await this.model.create(dto);
 
     return plainToClass(

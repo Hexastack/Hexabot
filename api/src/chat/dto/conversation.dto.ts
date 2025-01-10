@@ -58,6 +58,6 @@ export class ConversationCreateDto {
   next?: string[];
 }
 
-export type ConversationCrudsDto = DtoConfig<{
+export type ConversationDTOCruds = DtoConfig<{
   create: ConversationCreateDto;
 }>;
