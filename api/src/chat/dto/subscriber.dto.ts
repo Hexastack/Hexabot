@@ -17,6 +17,7 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { SubscriberChannelData } from '../schemas/types/channel';
@@ -36,7 +37,7 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber locale', type: String })
   @IsOptional()
   @IsString()
-  locale: string;
+  locale?: string;
 
   @ApiPropertyOptional({ description: 'Subscriber timezone', type: Number })
   @IsOptional()
@@ -51,17 +52,17 @@ export class SubscriberCreateDto {
   @ApiPropertyOptional({ description: 'Subscriber gender', type: String })
   @IsOptional()
   @IsString()
-  gender: string;
+  gender?: string;
 
   @ApiPropertyOptional({ description: 'Subscriber country', type: String })
   @IsOptional()
   @IsString()
-  country: string;
+  country?: string;
 
   @ApiPropertyOptional({ description: 'Subscriber foreign id', type: String })
   @IsOptional()
   @IsString()
-  foreign_id: string;
+  foreign_id?: string;
 
   @ApiProperty({ description: 'Subscriber labels', type: Array })
   @IsNotEmpty()
@@ -114,3 +115,7 @@ export class SubscriberCreateDto {
 }
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
+
+export type UserDtoMapActions = DtoConfig<{
+  create: SubscriberCreateDto;
+}>;

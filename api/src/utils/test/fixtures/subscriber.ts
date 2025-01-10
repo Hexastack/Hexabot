@@ -8,8 +8,8 @@
 
 import mongoose from 'mongoose';
 
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -17,7 +17,22 @@ import { TFixturesDefaultValues } from '../types';
 import { installLabelFixtures } from './label';
 import { installUserFixtures } from './user';
 
-const subscribers: SubscriberCreateDto[] = [
+export const fieldsWithDefaultValues = {
+  context: {},
+  avatar: null,
+  assignedAt: null,
+  assignedTo: null,
+  timezone: 0,
+} satisfies Partial<Subscriber>;
+
+type TFieldWithDefaultValues =
+  | keyof typeof fieldsWithDefaultValues
+  | keyof BaseSchema;
+type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
+  Partial<Pick<Subscriber, TFieldWithDefaultValues>>;
+type TSubscriber = TTransformedField<Subscriber>;
+
+const subscribers: TSubscriber[] = [
   {
     foreign_id: 'foreign-id-messenger',
     first_name: 'Jhon',
@@ -30,7 +45,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'messenger-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2020-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2020-01-01T20:40:03.249Z'),
   },
@@ -46,7 +60,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2021-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2021-01-02T20:40:03.249Z'),
   },
@@ -62,7 +75,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2022-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2022-01-02T20:40:03.249Z'),
   },
@@ -78,7 +90,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2024-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2024-01-02T20:40:03.249Z'),
   },
