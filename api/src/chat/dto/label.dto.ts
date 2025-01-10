@@ -9,11 +9,13 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
-  IsObject,
 } from 'class-validator';
+
+import { DtoConfig } from '@/utils/types/dto.types';
 
 export class LabelCreateDto {
   @ApiProperty({ description: 'Label title', type: String })
@@ -39,3 +41,7 @@ export class LabelCreateDto {
 }
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
+
+export type LabelDtoMapActions = DtoConfig<{
+  create: LabelCreateDto;
+}>;
