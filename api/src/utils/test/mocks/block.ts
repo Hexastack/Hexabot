@@ -95,6 +95,7 @@ export const baseBlockInstance = {
   category: undefined,
   previousBlocks: [],
   trigger_channels: [],
+  nextBlocks: [],
   ...modelInstance,
 };
 
@@ -103,6 +104,7 @@ export const blockEmpty: BlockFull = {
   name: 'Empty',
   patterns: [],
   message: [''],
+  nextBlocks: [],
 };
 
 // Translation Data

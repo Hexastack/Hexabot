@@ -21,6 +21,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { CaptureVar } from '../schemas/types/capture-var';
@@ -146,3 +147,7 @@ export class BlockUpdateDto extends PartialType(
   @IsOptional()
   trigger_channels?: string[];
 }
+
+export type BlockDTOMap = DtoConfig<{
+  create: BlockCreateDto;
+}>;

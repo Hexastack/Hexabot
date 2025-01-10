@@ -154,6 +154,7 @@ describe('TranslationService', () => {
         },
       },
       options: {},
+      attachedBlock: null,
     };
 
     const mockedPlugin: any = {

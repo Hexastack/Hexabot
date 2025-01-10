@@ -22,7 +22,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import { BlockCreateDto, BlockDTOMap, BlockUpdateDto } from '../dto/block.dto';
 import {
   Block,
   BLOCK_POPULATE,
@@ -34,7 +34,8 @@ import {
 export class BlockRepository extends BaseRepository<
   Block,
   BlockPopulate,
-  BlockFull
+  BlockFull,
+  BlockDTOMap
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
