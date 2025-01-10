@@ -10,11 +10,17 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
+import { TUserCrudsDto } from '../dto/user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { User, UserFull, UserPopulate } from '../schemas/user.schema';
 
 @Injectable()
-export class UserService extends BaseService<User, UserPopulate, UserFull> {
+export class UserService extends BaseService<
+  User,
+  UserPopulate,
+  UserFull,
+  TUserCrudsDto
+> {
   constructor(readonly repository: UserRepository) {
     super(repository);
   }

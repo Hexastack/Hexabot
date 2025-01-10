@@ -22,6 +22,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class UserCreateDto {
@@ -98,3 +99,7 @@ export class UserResetPasswordDto extends PickType(UserCreateDto, [
 ]) {}
 
 export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
+
+export type TUserCrudsDto = DtoConfig<{
+  create: UserCreateDto;
+}>;
