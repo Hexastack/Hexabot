@@ -10,12 +10,18 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
+import { ContextVarDTOMapActions } from '../dto/context-var.dto';
 import { ContextVarRepository } from '../repositories/context-var.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
 import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
-export class ContextVarService extends BaseService<ContextVar> {
+export class ContextVarService extends BaseService<
+  ContextVar,
+  never,
+  never,
+  ContextVarDTOMapActions
+> {
   constructor(readonly repository: ContextVarRepository) {
     super(repository);
   }

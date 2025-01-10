@@ -8,26 +8,36 @@
 
 import mongoose from 'mongoose';
 
-import { ContextVarCreateDto } from '@/chat/dto/context-var.dto';
-import { ContextVarModel, ContextVar } from '@/chat/schemas/context-var.schema';
+import { ContextVar, ContextVarModel } from '@/chat/schemas/context-var.schema';
+import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 
-const contextVars: ContextVarCreateDto[] = [
+export const fieldsWithDefaultValues = {
+  permanent: false,
+} satisfies Partial<ContextVar>;
+
+type TFieldWithDefaultValues =
+  | keyof typeof fieldsWithDefaultValues
+  | keyof BaseSchema;
+type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
+  Partial<Pick<ContextVar, TFieldWithDefaultValues>>;
+type TContextVar = TTransformedField<ContextVar>;
+
+const contextVars: TContextVar[] = [
   {
     label: 'test context var 1',
     name: 'test1',
-    permanent: false,
   },
   {
     label: 'test context var 2',
     name: 'test2',
-    permanent: false,
   },
 ];
 
-export const contextVarFixtures = getFixturesWithDefaultValues<ContextVar>({
+export const contextVarFixtures = getFixturesWithDefaultValues<TContextVar>({
   fixtures: contextVars,
+  defaultValues: fieldsWithDefaultValues,
 });
 
 export const installContextVarFixtures = async () => {

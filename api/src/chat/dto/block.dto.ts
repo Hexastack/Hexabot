@@ -148,6 +148,6 @@ export class BlockUpdateDto extends PartialType(
   trigger_channels?: string[];
 }
 
-export type BlockDTOMap = DtoConfig<{
+export type BlockDTOMapActions = DtoConfig<{
   create: BlockCreateDto;
 }>;

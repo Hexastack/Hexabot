@@ -10,11 +10,17 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
+import { ContextVarDTOMapActions } from '../dto/context-var.dto';
 import { ContextVarRepository } from '../repositories/context-var.repository';
 import { ContextVar } from '../schemas/context-var.schema';
 
 @Injectable()
-export class ContextVarSeeder extends BaseSeeder<ContextVar> {
+export class ContextVarSeeder extends BaseSeeder<
+  ContextVar,
+  never,
+  never,
+  ContextVarDTOMapActions
+> {
   constructor(private readonly contextVarRepository: ContextVarRepository) {
     super(contextVarRepository);
   }

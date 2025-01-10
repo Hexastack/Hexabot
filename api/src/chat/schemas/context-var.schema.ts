@@ -38,7 +38,7 @@ export class ContextVar extends BaseSchema {
     type: Boolean,
     default: false,
   })
-  permanent?: boolean;
+  permanent: boolean;
 }
 
 export const ContextVarModel: ModelDefinition = LifecycleHookManager.attach({
