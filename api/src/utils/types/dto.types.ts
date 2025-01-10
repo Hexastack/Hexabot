@@ -6,17 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export enum DtoOperations {
+export enum DtoActions {
   Create = 'create',
   Read = 'read',
   Update = 'update',
   Delete = 'delete',
 }
 
-export type DtoConfig<T extends Partial<Record<DtoOperations, object>>> = T;
+export type DtoConfig<T extends Partial<Record<DtoActions, object>>> = T;
 
 export type DtoProps<T extends Record<string, unknown>> = {
-  [K in DtoOperations]?: T[K];
+  [K in DtoActions]?: T[K];
 };
 
 export type DtoInfer<K extends keyof DTO, DTO, T> = DTO[K] extends object
