@@ -25,7 +25,9 @@ export abstract class BaseService<
   TFull extends Omit<T, P> = never,
   DTO extends DtoProps<any> = unknown,
 > {
-  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
+  constructor(
+    protected readonly repository: BaseRepository<T, P, TFull, DTO>,
+  ) {}
 
   getRepository() {
     return this.repository;
