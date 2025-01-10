@@ -19,7 +19,9 @@ export abstract class BaseSeeder<
   TFull extends Omit<T, P> = never,
   DTOCruds extends DtoProps<any> = unknown,
 > {
-  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
+  constructor(
+    protected readonly repository: BaseRepository<T, P, TFull, DTOCruds>,
+  ) {}
 
   async findAll(): Promise<T[]> {
     return await this.repository.findAll();

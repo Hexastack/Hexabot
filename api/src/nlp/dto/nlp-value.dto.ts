@@ -9,14 +9,15 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsBoolean,
   IsArray,
-  IsObject,
+  IsBoolean,
   IsNotEmpty,
+  IsObject,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class NlpValueCreateDto {
@@ -52,3 +53,7 @@ export class NlpValueCreateDto {
 }
 
 export class NlpValueUpdateDto extends PartialType(NlpValueCreateDto) {}
+
+export type NlpValueDTOMapActions = DtoConfig<{
+  create: NlpValueCreateDto;
+}>;

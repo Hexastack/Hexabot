@@ -11,7 +11,11 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
+import {
+  NlpValueCreateDto,
+  NlpValueDTOMapActions,
+  NlpValueUpdateDto,
+} from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -27,7 +31,8 @@ import { NlpEntityService } from './nlp-entity.service';
 export class NlpValueService extends BaseService<
   NlpValue,
   NlpValuePopulate,
-  NlpValueFull
+  NlpValueFull,
+  NlpValueDTOMapActions
 > {
   constructor(
     readonly repository: NlpValueRepository,

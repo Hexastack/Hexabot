@@ -8,14 +8,16 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsBoolean,
   IsArray,
-  Matches,
+  IsBoolean,
   IsIn,
   IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
 } from 'class-validator';
+
+import { DtoConfig } from '@/utils/types/dto.types';
 
 export type Lookup = 'keywords' | 'trait' | 'free-text';
 
@@ -46,3 +48,7 @@ export class NlpEntityCreateDto {
   @IsOptional()
   builtin?: boolean;
 }
+
+export type NlpEntityDTOMapActions = DtoConfig<{
+  create: NlpEntityCreateDto;
+}>;
