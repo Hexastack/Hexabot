@@ -13,6 +13,7 @@ import { Model } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
+import { RoleDTOMapActions } from '../dto/role.dto';
 import { Permission } from '../schemas/permission.schema';
 import {
   Role,
@@ -25,7 +26,8 @@ import {
 export class RoleRepository extends BaseRepository<
   Role,
   RolePopulate,
-  RoleFull
+  RoleFull,
+  RoleDTOMapActions
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

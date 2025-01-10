@@ -9,6 +9,8 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
+
 export class RoleCreateDto {
   @ApiProperty({ description: 'Name of the role', type: String })
   @IsNotEmpty()
@@ -26,3 +28,7 @@ export class RoleCreateDto {
 }
 
 export class RoleUpdateDto extends PartialType(RoleCreateDto) {}
+
+export type RoleDTOMapActions = DtoConfig<{
+  create: RoleCreateDto;
+}>;
