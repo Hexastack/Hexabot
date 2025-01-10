@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
+import { PermissionDTOMapActions } from '../dto/permission.dto';
 import { PermissionRepository } from '../repositories/permission.repository';
 import {
   Permission,
@@ -21,7 +22,8 @@ import {
 export class PermissionSeeder extends BaseSeeder<
   Permission,
   PermissionPopulate,
-  PermissionFull
+  PermissionFull,
+  PermissionDTOMapActions
 > {
   constructor(private readonly permissionRepository: PermissionRepository) {
     super(permissionRepository);

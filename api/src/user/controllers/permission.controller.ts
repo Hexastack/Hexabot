@@ -47,10 +47,10 @@ export class PermissionController extends BaseController<
   PermissionFull
 > {
   constructor(
-    private readonly permissionService: PermissionService,
-    private readonly logger: LoggerService,
-    private readonly roleService: RoleService,
-    private readonly modelService: ModelService,
+    protected readonly permissionService: PermissionService,
+    protected readonly logger: LoggerService,
+    protected readonly roleService: RoleService,
+    protected readonly modelService: ModelService,
   ) {
     super(permissionService);
   }
