@@ -13,6 +13,7 @@ import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
+import { IConversationDto } from '../dto/conversation.dto';
 import {
   Conversation,
   CONVERSATION_POPULATE,
@@ -24,7 +25,8 @@ import {
 export class ConversationRepository extends BaseRepository<
   Conversation,
   ConversationPopulate,
-  ConversationFull
+  ConversationFull,
+  IConversationDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

@@ -14,6 +14,7 @@ import { ProjectionType, QueryOptions } from 'mongoose';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+import { DtoInfer, DtoOperations, DtoProps } from '../types/dto.types';
 
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
@@ -22,6 +23,7 @@ export abstract class BaseService<
   T extends BaseSchema,
   P extends string = never,
   TFull extends Omit<T, P> = never,
+  DTO extends DtoProps<any> = unknown,
 > {
   constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
 
@@ -140,7 +142,9 @@ export abstract class BaseService<
     return await this.repository.count(criteria);
   }
 
-  async create<D extends Omit<T, keyof BaseSchema>>(dto: D): Promise<T> {
+  async create<
+    D extends DtoInfer<DtoOperations.Create, DTO, Omit<T, keyof BaseSchema>>,
+  >(dto: D): Promise<T> {
     try {
       return await this.repository.create(dto);
     } catch (error) {
@@ -153,10 +157,9 @@ export abstract class BaseService<
     }
   }
 
-  async findOneOrCreate<D extends Omit<T, keyof BaseSchema>>(
-    criteria: string | TFilterQuery<T>,
-    dto: D,
-  ): Promise<T> {
+  async findOneOrCreate<
+    D extends DtoInfer<DtoOperations.Create, DTO, Omit<T, keyof BaseSchema>>,
+  >(criteria: string | TFilterQuery<T>, dto: D): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {
       return await this.create(dto);

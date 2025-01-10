@@ -16,6 +16,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { Context } from './../schemas/types/context';
@@ -45,7 +46,7 @@ export class ConversationCreateDto {
   @IsObjectId({
     message: 'Current must be a valid objectId',
   })
-  current: string;
+  current?: string;
 
   @ApiProperty({ description: 'next conversation', type: Array })
   @IsOptional()
@@ -54,5 +55,9 @@ export class ConversationCreateDto {
     each: true,
     message: 'next must be a valid objectId',
   })
-  next: string[];
+  next?: string[];
 }
+
+export type IConversationDto = DtoConfig<{
+  create: ConversationCreateDto;
+}>;

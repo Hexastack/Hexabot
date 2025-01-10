@@ -30,6 +30,7 @@ import {
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+import { DtoInfer, DtoOperations, DtoProps } from '../types/dto.types';
 
 import { BaseSchema } from './base-schema';
 import { LifecycleHookManager } from './lifecycle-hook-manager';
@@ -70,6 +71,7 @@ export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
   P extends string = never,
   TFull extends Omit<T, P> = never,
+  DTO extends DtoProps<T> = unknown,
   U = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
@@ -454,7 +456,7 @@ export abstract class BaseRepository<
     return await this.model.countDocuments(criteria).exec();
   }
 
-  async create(dto: U): Promise<T> {
+  async create(dto: DtoInfer<DtoOperations.Create, DTO, U>): Promise<T> {
     const doc = await this.model.create(dto);
 
     return plainToClass(

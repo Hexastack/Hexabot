@@ -12,6 +12,7 @@ import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { IConversationDto } from '../dto/conversation.dto';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
@@ -30,7 +31,8 @@ import { SubscriberService } from './subscriber.service';
 export class ConversationService extends BaseService<
   Conversation,
   ConversationPopulate,
-  ConversationFull
+  ConversationFull,
+  IConversationDto
 > {
   constructor(
     readonly repository: ConversationRepository,
