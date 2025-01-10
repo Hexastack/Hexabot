@@ -16,6 +16,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { MenuType } from '../schemas/types/menu';
@@ -53,3 +54,7 @@ export class MenuCreateDto {
 }
 
 export class MenuQueryDto extends PartialType(MenuCreateDto) {}
+
+export type MenuDTOMapActions = DtoConfig<{
+  create: MenuCreateDto;
+}>;
