@@ -151,7 +151,7 @@ export default abstract class BaseNlpHelper<
           })
           .concat({
             entity: 'language',
-            value: s.language.code,
+            value: s.language!.code,
           });
 
         return {

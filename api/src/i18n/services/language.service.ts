@@ -11,9 +11,11 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
+import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
@@ -29,6 +31,7 @@ export class LanguageService extends BaseService<Language> {
   constructor(
     readonly repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -72,6 +75,15 @@ export class LanguageService extends BaseService<Language> {
    * @returns A promise that resolves to the `Language` object.
    */
   async getLanguageByCode(code: string) {
-    return await this.findOne({ code });
+    const language = await this.findOne({ code });
+
+    if (!language) {
+      this.logger.warn(`Unable to Language by languageCode ${code}`);
+      throw new NotFoundException(
+        `Language with languageCode ${code} not found`,
+      );
+    }
+
+    return language;
   }
 }
