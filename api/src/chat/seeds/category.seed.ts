@@ -10,11 +10,17 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
+import { CategoryDTOMapActions } from '../dto/category.dto';
 import { CategoryRepository } from '../repositories/category.repository';
 import { Category } from '../schemas/category.schema';
 
 @Injectable()
-export class CategorySeeder extends BaseSeeder<Category> {
+export class CategorySeeder extends BaseSeeder<
+  Category,
+  never,
+  never,
+  CategoryDTOMapActions
+> {
   constructor(private readonly categoryRepository: CategoryRepository) {
     super(categoryRepository);
   }

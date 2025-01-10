@@ -8,13 +8,15 @@
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  IsNumber,
-  IsArray,
 } from 'class-validator';
+
+import { DtoConfig } from '@/utils/types/dto.types';
 
 export class CategoryCreateDto {
   @ApiProperty({ description: 'Category label', type: String })
@@ -39,3 +41,7 @@ export class CategoryCreateDto {
 }
 
 export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {}
+
+export type CategoryDTOMapActions = DtoConfig<{
+  create: CategoryCreateDto;
+}>;

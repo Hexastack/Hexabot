@@ -8,13 +8,25 @@
 
 import mongoose from 'mongoose';
 
-import { CategoryCreateDto } from '@/chat/dto/category.dto';
-import { CategoryModel, Category } from '@/chat/schemas/category.schema';
+import { Category, CategoryModel } from '@/chat/schemas/category.schema';
+import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
 
-export const categories: CategoryCreateDto[] = [
+export const fieldsWithDefaultValues = {
+  builtin: false,
+  zoom: 100,
+  offset: [0, 0],
+} satisfies Partial<Category>;
+
+type TFieldWithDefaultValues =
+  | keyof typeof fieldsWithDefaultValues
+  | keyof BaseSchema;
+type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
+  Partial<Pick<Category, TFieldWithDefaultValues>>;
+type TCategory = TTransformedField<Category>;
+
+export const categories: TCategory[] = [
   {
     label: 'test category 1',
   },
@@ -23,15 +35,9 @@ export const categories: CategoryCreateDto[] = [
   },
 ];
 
-export const categoryDefaultValues: TFixturesDefaultValues<Category> = {
-  builtin: false,
-  zoom: 100,
-  offset: [0, 0],
-};
-
-export const categoryFixtures = getFixturesWithDefaultValues<Category>({
+export const categoryFixtures = getFixturesWithDefaultValues<TCategory>({
   fixtures: categories,
-  defaultValues: categoryDefaultValues,
+  defaultValues: fieldsWithDefaultValues,
 });
 
 export const installCategoryFixtures = async () => {
