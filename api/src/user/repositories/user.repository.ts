@@ -20,7 +20,7 @@ import {
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { UserEditProfileDto } from '../dto/user.dto';
+import { UserCrudsDto, UserEditProfileDto } from '../dto/user.dto';
 import {
   User,
   USER_POPULATE,
@@ -34,7 +34,8 @@ import { hash } from '../utilities/bcryptjs';
 export class UserRepository extends BaseRepository<
   User,
   UserPopulate,
-  UserFull
+  UserFull,
+  UserCrudsDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

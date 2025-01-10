@@ -100,6 +100,6 @@ export class UserResetPasswordDto extends PickType(UserCreateDto, [
 
 export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
 
-export type TUserCrudsDto = DtoConfig<{
+export type UserCrudsDto = DtoConfig<{
   create: UserCreateDto;
 }>;
