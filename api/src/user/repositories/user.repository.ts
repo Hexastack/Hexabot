@@ -20,7 +20,7 @@ import {
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { UserDTOCruds, UserEditProfileDto } from '../dto/user.dto';
+import { UserDtoMapActions, UserEditProfileDto } from '../dto/user.dto';
 import {
   User,
   USER_POPULATE,
@@ -35,7 +35,7 @@ export class UserRepository extends BaseRepository<
   User,
   UserPopulate,
   UserFull,
-  UserDTOCruds
+  UserDtoMapActions
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
