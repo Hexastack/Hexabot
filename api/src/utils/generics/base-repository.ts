@@ -466,7 +466,9 @@ export abstract class BaseRepository<
     );
   }
 
-  async createMany(dtoArray: U[]): Promise<T[]> {
+  async createMany(
+    dtoArray: DtoInfer<DtoOperations.Create, DTOCruds, U>[],
+  ): Promise<T[]> {
     const docs = await this.model.create(dtoArray);
 
     return docs.map((doc) =>

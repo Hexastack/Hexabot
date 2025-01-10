@@ -144,13 +144,9 @@ export abstract class BaseService<
     return await this.repository.count(criteria);
   }
 
-  async create<
-    D extends DtoInfer<
-      DtoOperations.Create,
-      DTOCruds,
-      Omit<T, keyof BaseSchema>
-    >,
-  >(dto: D): Promise<T> {
+  async create<D extends Omit<T, keyof BaseSchema>>(
+    dto: DtoInfer<DtoOperations.Create, DTOCruds, D>,
+  ): Promise<T> {
     try {
       return await this.repository.create(dto);
     } catch (error) {
@@ -163,13 +159,10 @@ export abstract class BaseService<
     }
   }
 
-  async findOneOrCreate<
-    D extends DtoInfer<
-      DtoOperations.Create,
-      DTOCruds,
-      Omit<T, keyof BaseSchema>
-    >,
-  >(criteria: string | TFilterQuery<T>, dto: D): Promise<T> {
+  async findOneOrCreate<D extends Omit<T, keyof BaseSchema>>(
+    criteria: string | TFilterQuery<T>,
+    dto: DtoInfer<DtoOperations.Create, DTOCruds, D>,
+  ): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {
       return await this.create(dto);
@@ -178,7 +171,7 @@ export abstract class BaseService<
   }
 
   async createMany<D extends Omit<T, keyof BaseSchema>>(
-    dtoArray: D[],
+    dtoArray: DtoInfer<DtoOperations.Create, DTOCruds, D>[],
   ): Promise<T[]> {
     return await this.repository.createMany(dtoArray);
   }
