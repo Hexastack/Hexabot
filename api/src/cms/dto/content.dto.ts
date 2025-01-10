@@ -9,6 +9,7 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class ContentCreateDto {
@@ -34,3 +35,7 @@ export class ContentCreateDto {
 }
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}
+
+export type ContentDTOMapActions = DtoConfig<{
+  create: ContentCreateDto;
+}>;

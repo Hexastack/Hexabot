@@ -21,6 +21,7 @@ import {
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { ContentDTOMapActions } from '../dto/content.dto';
 import {
   Content,
   CONTENT_POPULATE,
@@ -32,7 +33,8 @@ import {
 export class ContentRepository extends BaseRepository<
   Content,
   ContentPopulate,
-  ContentFull
+  ContentFull,
+  ContentDTOMapActions
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

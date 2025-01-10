@@ -8,16 +8,26 @@
 
 import mongoose from 'mongoose';
 
-import { ContentCreateDto } from '@/cms/dto/content.dto';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
+import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
 
 import { installAttachmentFixtures } from './attachment';
 import { installContentTypeFixtures } from './contenttype';
 
-const contents: ContentCreateDto[] = [
+export const fieldsWithDefaultValues = {
+  status: true,
+} satisfies Partial<Content>;
+
+type TFieldWithDefaultValues =
+  | keyof typeof fieldsWithDefaultValues
+  | keyof BaseSchema;
+type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
+  Partial<Pick<Content, TFieldWithDefaultValues>>;
+type TContent = TTransformedField<Content>;
+
+const contents: TContent[] = [
   {
     title: 'Jean',
     dynamicFields: {
@@ -131,14 +141,9 @@ const contents: ContentCreateDto[] = [
   },
 ];
 
-export const categoryDefaultValues: TFixturesDefaultValues<Content> = {
-  status: true,
-  createdAt: undefined,
-};
-
-export const contentFixtures = getFixturesWithDefaultValues<Content>({
+export const contentFixtures = getFixturesWithDefaultValues<TContent>({
   fixtures: contents,
-  defaultValues: categoryDefaultValues,
+  defaultValues: fieldsWithDefaultValues,
 });
 
 export const installContentFixtures = async () => {
