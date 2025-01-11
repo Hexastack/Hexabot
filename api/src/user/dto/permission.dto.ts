@@ -42,6 +42,6 @@ export class PermissionCreateDto {
   relation?: TRelation;
 }
 
-export type PermissionDTOMapActions = DtoConfig<{
+export type PermissionDto = DtoConfig<{
   create: PermissionCreateDto;
 }>;

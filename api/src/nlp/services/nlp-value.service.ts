@@ -13,7 +13,7 @@ import { BaseService } from '@/utils/generics/base-service';
 
 import {
   NlpValueCreateDto,
-  NlpValueDTOMapActions,
+  NlpValueDto,
   NlpValueUpdateDto,
 } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -32,7 +32,7 @@ export class NlpValueService extends BaseService<
   NlpValue,
   NlpValuePopulate,
   NlpValueFull,
-  NlpValueDTOMapActions
+  NlpValueDto
 > {
   constructor(
     readonly repository: NlpValueRepository,

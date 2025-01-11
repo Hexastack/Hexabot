@@ -30,6 +30,6 @@ export class ContextVarCreateDto {
 
 export class ContextVarUpdateDto extends PartialType(ContextVarCreateDto) {}
 
-export type ContextVarDTOMapActions = DtoConfig<{
+export type ContextVarDto = DtoConfig<{
   create: ContextVarCreateDto;
 }>;

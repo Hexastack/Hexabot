@@ -14,7 +14,7 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpSampleDTOMapActions } from '../dto/nlp-sample.dto';
+import { TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
   NLP_SAMPLE_POPULATE,
   NlpSample,
@@ -29,7 +29,7 @@ export class NlpSampleRepository extends BaseRepository<
   NlpSample,
   NlpSamplePopulate,
   NlpSampleFull,
-  NlpSampleDTOMapActions
+  TNlpSampleDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

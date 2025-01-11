@@ -65,6 +65,6 @@ export class NlpSampleDto extends NlpSampleCreateDto {
 
 export class NlpSampleUpdateDto extends PartialType(NlpSampleCreateDto) {}
 
-export type NlpSampleDTOMapActions = DtoConfig<{
+export type TNlpSampleDto = DtoConfig<{
   create: NlpSampleCreateDto;
 }>;

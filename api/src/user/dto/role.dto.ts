@@ -29,6 +29,6 @@ export class RoleCreateDto {
 
 export class RoleUpdateDto extends PartialType(RoleCreateDto) {}
 
-export type RoleDTOMapActions = DtoConfig<{
+export type RoleDto = DtoConfig<{
   create: RoleCreateDto;
 }>;

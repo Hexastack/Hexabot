@@ -36,6 +36,6 @@ export class ContentCreateDto {
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}
 
-export type ContentDTOMapActions = DtoConfig<{
+export type ContentDto = DtoConfig<{
   create: ContentCreateDto;
 }>;

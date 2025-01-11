@@ -14,7 +14,7 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { CategoryDTOMapActions } from '../dto/category.dto';
+import { CategoryDto } from '../dto/category.dto';
 import { Category } from '../schemas/category.schema';
 import { BlockService } from '../services/block.service';
 
@@ -23,7 +23,7 @@ export class CategoryRepository extends BaseRepository<
   Category,
   never,
   never,
-  CategoryDTOMapActions
+  CategoryDto
 > {
   private readonly blockService: BlockService;
 

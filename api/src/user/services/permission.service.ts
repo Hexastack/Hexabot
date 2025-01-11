@@ -15,7 +15,7 @@ import { PERMISSION_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { PermissionDTOMapActions } from '../dto/permission.dto';
+import { PermissionDto } from '../dto/permission.dto';
 import { PermissionRepository } from '../repositories/permission.repository';
 import {
   Permission,
@@ -29,7 +29,7 @@ export class PermissionService extends BaseService<
   Permission,
   PermissionPopulate,
   PermissionFull,
-  PermissionDTOMapActions
+  PermissionDto
 > {
   constructor(
     readonly repository: PermissionRepository,

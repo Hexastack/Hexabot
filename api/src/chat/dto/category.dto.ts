@@ -42,6 +42,6 @@ export class CategoryCreateDto {
 
 export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {}
 
-export type CategoryDTOMapActions = DtoConfig<{
+export type CategoryDto = DtoConfig<{
   create: CategoryCreateDto;
 }>;

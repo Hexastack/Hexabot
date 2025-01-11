@@ -30,7 +30,7 @@ import {
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
-import { DtoActions, DtoInfer, DtoProps } from '../types/dto.types';
+import { DtoAction, DtoInfer, DtoProps } from '../types/dto.types';
 
 import { BaseSchema } from './base-schema';
 import { LifecycleHookManager } from './lifecycle-hook-manager';
@@ -456,7 +456,7 @@ export abstract class BaseRepository<
     return await this.model.countDocuments(criteria).exec();
   }
 
-  async create(dto: DtoInfer<DtoActions.Create, DTOCruds, U>): Promise<T> {
+  async create(dto: DtoInfer<DtoAction.Create, DTOCruds, U>): Promise<T> {
     const doc = await this.model.create(dto);
 
     return plainToClass(
@@ -467,7 +467,7 @@ export abstract class BaseRepository<
   }
 
   async createMany(
-    dtoArray: DtoInfer<DtoActions.Create, DTOCruds, U>[],
+    dtoArray: DtoInfer<DtoAction.Create, DTOCruds, U>[],
   ): Promise<T[]> {
     const docs = await this.model.create(dtoArray);
 

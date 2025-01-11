@@ -49,6 +49,6 @@ export class NlpEntityCreateDto {
   builtin?: boolean;
 }
 
-export type NlpEntityDTOMapActions = DtoConfig<{
+export type NlpEntityDto = DtoConfig<{
   create: NlpEntityCreateDto;
 }>;

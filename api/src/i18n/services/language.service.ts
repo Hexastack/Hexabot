@@ -21,7 +21,7 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { LanguageDTOMapActions } from '../dto/language.dto';
+import { LanguageDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { Language } from '../schemas/language.schema';
 
@@ -30,7 +30,7 @@ export class LanguageService extends BaseService<
   Language,
   never,
   never,
-  LanguageDTOMapActions
+  LanguageDto
 > {
   constructor(
     readonly repository: LanguageRepository,

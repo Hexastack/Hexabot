@@ -54,6 +54,6 @@ export class NlpValueCreateDto {
 
 export class NlpValueUpdateDto extends PartialType(NlpValueCreateDto) {}
 
-export type NlpValueDTOMapActions = DtoConfig<{
+export type NlpValueDto = DtoConfig<{
   create: NlpValueCreateDto;
 }>;

@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
-import { ContentTypeDtoMapActions } from '../dto/contentType.dto';
+import { ContentTypeDto } from '../dto/contentType.dto';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentType } from '../schemas/content-type.schema';
 
@@ -19,7 +19,7 @@ export class ContentTypeService extends BaseService<
   ContentType,
   never,
   never,
-  ContentTypeDtoMapActions
+  ContentTypeDto
 > {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);

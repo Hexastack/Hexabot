@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
-import { LanguageDTOMapActions } from '../dto/language.dto';
+import { LanguageDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { Language } from '../schemas/language.schema';
 
@@ -19,7 +19,7 @@ export class LanguageSeeder extends BaseSeeder<
   Language,
   never,
   never,
-  LanguageDTOMapActions
+  LanguageDto
 > {
   constructor(private readonly languageRepository: LanguageRepository) {
     super(languageRepository);

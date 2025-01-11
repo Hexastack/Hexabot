@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
-import { CategoryDTOMapActions } from '../dto/category.dto';
+import { CategoryDto } from '../dto/category.dto';
 import { CategoryRepository } from '../repositories/category.repository';
 import { Category } from '../schemas/category.schema';
 
@@ -19,7 +19,7 @@ export class CategoryService extends BaseService<
   Category,
   never,
   never,
-  CategoryDTOMapActions
+  CategoryDto
 > {
   constructor(readonly repository: CategoryRepository) {
     super(repository);

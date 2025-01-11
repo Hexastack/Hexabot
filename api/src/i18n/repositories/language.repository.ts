@@ -14,7 +14,7 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { LanguageDTOMapActions } from '../dto/language.dto';
+import { LanguageDto } from '../dto/language.dto';
 import { Language } from '../schemas/language.schema';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class LanguageRepository extends BaseRepository<
   Language,
   never,
   never,
-  LanguageDTOMapActions
+  LanguageDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

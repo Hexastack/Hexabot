@@ -35,6 +35,6 @@ export class LanguageCreateDto {
 
 export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}
 
-export type LanguageDTOMapActions = DtoConfig<{
+export type LanguageDto = DtoConfig<{
   create: LanguageCreateDto;
 }>;

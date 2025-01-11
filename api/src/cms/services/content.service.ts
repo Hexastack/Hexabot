@@ -19,7 +19,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentDTOMapActions } from '../dto/content.dto';
+import { ContentDto } from '../dto/content.dto';
 import { ContentRepository } from '../repositories/content.repository';
 import {
   Content,
@@ -32,7 +32,7 @@ export class ContentService extends BaseService<
   Content,
   ContentPopulate,
   ContentFull,
-  ContentDTOMapActions
+  ContentDto
 > {
   constructor(
     readonly repository: ContentRepository,

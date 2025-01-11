@@ -20,7 +20,7 @@ import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { MenuCreateDto, MenuDTOMapActions } from '../dto/menu.dto';
+import { MenuCreateDto, MenuDto } from '../dto/menu.dto';
 import { MenuRepository } from '../repositories/menu.repository';
 import { Menu, MenuFull, MenuPopulate } from '../schemas/menu.schema';
 import { AnyMenu, MenuTree, MenuType } from '../schemas/types/menu';
@@ -30,7 +30,7 @@ export class MenuService extends BaseService<
   Menu,
   MenuPopulate,
   MenuFull,
-  MenuDTOMapActions
+  MenuDto
 > {
   private RootSymbol: symbol = Symbol('RootMenu');
 

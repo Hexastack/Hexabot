@@ -8,7 +8,7 @@
 
 import { FlattenMaps } from 'mongoose';
 
-import { DtoActions, DtoInfer, DtoProps } from '../types/dto.types';
+import { DtoAction, DtoInfer, DtoProps } from '../types/dto.types';
 
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
@@ -33,7 +33,7 @@ export abstract class BaseSeeder<
   }
 
   async seed<D extends Omit<T, keyof BaseSchema>>(
-    models: DtoInfer<DtoActions.Create, DTOCruds, D>[],
+    models: DtoInfer<DtoAction.Create, DTOCruds, D>[],
   ): Promise<boolean> {
     if (await this.isEmpty()) {
       await this.repository.createMany(models);

@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
-import { NlpValueCreateDto, NlpValueDTOMapActions } from '../dto/nlp-value.dto';
+import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import {
@@ -24,7 +24,7 @@ export class NlpValueSeeder extends BaseSeeder<
   NlpValue,
   NlpValuePopulate,
   NlpValueFull,
-  NlpValueDTOMapActions
+  NlpValueDto
 > {
   constructor(
     nlpValueRepository: NlpValueRepository,

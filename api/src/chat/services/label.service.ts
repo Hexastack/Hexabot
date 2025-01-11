@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
-import { LabelDtoMapActions } from '../dto/label.dto';
+import { LabelDto } from '../dto/label.dto';
 import { LabelRepository } from '../repositories/label.repository';
 import { Label, LabelFull, LabelPopulate } from '../schemas/label.schema';
 
@@ -19,7 +19,7 @@ export class LabelService extends BaseService<
   Label,
   LabelPopulate,
   LabelFull,
-  LabelDtoMapActions
+  LabelDto
 > {
   constructor(readonly repository: LabelRepository) {
     super(repository);

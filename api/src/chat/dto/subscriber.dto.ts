@@ -116,6 +116,6 @@ export class SubscriberCreateDto {
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
-export type UserDtoMapActions = DtoConfig<{
+export type UserDto = DtoConfig<{
   create: SubscriberCreateDto;
 }>;

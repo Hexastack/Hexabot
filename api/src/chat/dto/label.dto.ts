@@ -42,6 +42,6 @@ export class LabelCreateDto {
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
 
-export type LabelDtoMapActions = DtoConfig<{
+export type LabelDto = DtoConfig<{
   create: LabelCreateDto;
 }>;

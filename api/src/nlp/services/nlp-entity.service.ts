@@ -10,7 +10,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
-import { Lookup, NlpEntityDTOMapActions } from '../dto/nlp-entity.dto';
+import { Lookup, NlpEntityDto } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import {
   NlpEntity,
@@ -26,7 +26,7 @@ export class NlpEntityService extends BaseService<
   NlpEntity,
   NlpEntityPopulate,
   NlpEntityFull,
-  NlpEntityDTOMapActions
+  NlpEntityDto
 > {
   constructor(
     readonly repository: NlpEntityRepository,

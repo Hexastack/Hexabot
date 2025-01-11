@@ -55,6 +55,6 @@ export class MenuCreateDto {
 
 export class MenuQueryDto extends PartialType(MenuCreateDto) {}
 
-export type MenuDTOMapActions = DtoConfig<{
+export type MenuDto = DtoConfig<{
   create: MenuCreateDto;
 }>;

@@ -22,7 +22,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
-import { BlockDTOMapActions } from '../dto/block.dto';
+import { BlockDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
 import { Context } from '../schemas/types/context';
@@ -40,7 +40,7 @@ export class BlockService extends BaseService<
   Block,
   BlockPopulate,
   BlockFull,
-  BlockDTOMapActions
+  BlockDto
 > {
   constructor(
     readonly repository: BlockRepository,

@@ -15,7 +15,7 @@ import { BlockService } from '@/chat/services/block.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentTypeDtoMapActions } from '../dto/contentType.dto';
+import { ContentTypeDto } from '../dto/contentType.dto';
 import { ContentType } from '../schemas/content-type.schema';
 import { Content } from '../schemas/content.schema';
 
@@ -24,7 +24,7 @@ export class ContentTypeRepository extends BaseRepository<
   ContentType,
   never,
   never,
-  ContentTypeDtoMapActions
+  ContentTypeDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
