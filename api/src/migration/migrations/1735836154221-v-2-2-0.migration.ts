@@ -10,11 +10,13 @@ import { existsSync } from 'fs';
 import { join, resolve } from 'path';
 
 import mongoose, { HydratedDocument } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
+import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
@@ -372,12 +374,114 @@ const migrateAttachmentContents = async (
   }
 };
 
+/**
+ * Updates message documents that contain attachment "message.attachment"
+ * to apply one of the following operation:
+ * - Rename 'attachment_id' to 'id'
+ * - Parse internal url for to get the  'id'
+ * - Fetch external url, stores the attachment and store the 'id'
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const migrateAttachmentMessages = async ({
+  logger,
+  http,
+  attachmentService,
+}: MigrationServices) => {
+  const MessageModel = mongoose.model<Message>(Message.name, messageSchema);
+
+  // Find blocks where "message.attachment" exists
+  const cursor = MessageModel.find({
+    'message.attachment.payload': { $exists: true },
+    'message.attachment.payload.id': { $exists: false },
+  }).cursor();
+
+  // Helper function to update the attachment ID in the database
+  const updateAttachmentId = async (
+    messageId: mongoose.Types.ObjectId,
+    attachmentId: string | null,
+  ) => {
+    await MessageModel.updateOne(
+      { _id: messageId },
+      { $set: { 'message.attachment.payload.id': attachmentId } },
+    );
+  };
+
+  for await (const msg of cursor) {
+    try {
+      if (
+        'attachment' in msg.message &&
+        'payload' in msg.message.attachment &&
+        msg.message.attachment.payload
+      ) {
+        if ('attachment_id' in msg.message.attachment.payload) {
+          await updateAttachmentId(
+            msg._id,
+            msg.message.attachment.payload.attachment_id as string,
+          );
+        } else if ('url' in msg.message.attachment.payload) {
+          const url = msg.message.attachment.payload.url;
+          const regex =
+            /^https?:\/\/[\w.-]+\/attachment\/download\/([a-f\d]{24})\/.+$/;
+          // Test the URL and extract the ID
+          const match = url.match(regex);
+          if (match) {
+            const [, attachmentId] = match;
+            await updateAttachmentId(msg._id, attachmentId);
+          } else if (url) {
+            logger.log(
+              `Migrate message ${msg._id}: Handling an external url ...`,
+            );
+            const response = await http.axiosRef.get(url, {
+              responseType: 'arraybuffer', // Ensures the response is returned as a Buffer
+            });
+            const fileBuffer = Buffer.from(response.data);
+            const attachment = await attachmentService.store(fileBuffer, {
+              name: uuidv4(),
+              size: fileBuffer.length,
+              type: response.headers['content-type'],
+              channel: {},
+            });
+            await updateAttachmentId(msg._id, attachment.id);
+          }
+        } else {
+          logger.warn(
+            `Unable to migrate message ${msg._id}: No ID nor URL was found`,
+          );
+
+          throw new Error(
+            'Unable to process message attachment: No ID or URL to be processed',
+          );
+        }
+      } else {
+        throw new Error(
+          'Unable to process message attachment: Invalid Payload',
+        );
+      }
+    } catch (error) {
+      logger.error(
+        `Failed to update message ${msg._id}: ${error.message}, defaulting to null`,
+      );
+      try {
+        await updateAttachmentId(msg._id, null);
+      } catch (err) {
+        logger.error(
+          `Failed to update message ${msg._id}: ${error.message}, unable to default to null`,
+        );
+      }
+    }
+  }
+};
+
 module.exports = {
   async up(services: MigrationServices) {
     await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.UP, services);
     await migrateAttachmentContents(MigrationAction.UP, services);
+    // Given the complexity and inconsistency data, this method does not have
+    // a revert equivalent, at the same time, thus, it doesn't "unset" any attribute
+    await migrateAttachmentMessages(services);
     return true;
   },
   async down(services: MigrationServices) {
