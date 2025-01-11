@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -454,7 +454,8 @@ export class BotService {
           this.logger.debug('No message blocks available!');
           if (
             settings.chatbot_settings &&
-            settings.chatbot_settings.global_fallback
+            settings.chatbot_settings.global_fallback &&
+            settings.chatbot_settings.fallback_block
           ) {
             this.eventEmitter.emit('hook:analytics:fallback-global', event);
             this.logger.debug('Sending global fallback message ...');
@@ -485,7 +486,22 @@ export class BotService {
               } as any as BlockFull);
             }
           }
-          // Do nothing ...
+          this.sendMessageToSubscriber(event, {
+            id: 'global-fallback',
+            name: 'Global Fallback',
+            message: settings.chatbot_settings.fallback_message,
+            options: {},
+            patterns: [],
+            assign_labels: [],
+            starts_conversation: false,
+            position: { x: 0, y: 0 },
+            capture_vars: [],
+            builtin: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            attachedBlock: null,
+          } as any as BlockFull);
+
           return;
         }
 
