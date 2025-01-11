@@ -8,15 +8,21 @@
 
 import mongoose from 'mongoose';
 
+import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
 import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
-export const fieldsWithDefaultValues = {
+type TContentTypeFixtures = FixturesTypeBuilder<
+  ContentType,
+  ContentTypeCreateDto
+>;
+
+export const fieldsWithDefaultValues: TContentTypeFixtures['defaultValues'] = {
   fields: [
     {
       name: 'title',
@@ -29,16 +35,9 @@ export const fieldsWithDefaultValues = {
       type: 'checkbox',
     },
   ],
-} satisfies Partial<ContentType>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<ContentType, TFieldWithDefaultValues>>;
-type TContentType = TTransformedField<ContentType>;
-
-const contentTypes: TContentType[] = [
+const contentTypes: TContentTypeFixtures['values'][] = [
   {
     name: 'Product',
     fields: [
@@ -121,7 +120,9 @@ const contentTypes: TContentType[] = [
   },
 ];
 
-export const contentTypeFixtures = getFixturesWithDefaultValues<TContentType>({
+export const contentTypeFixtures = getFixturesWithDefaultValues<
+  TContentTypeFixtures['values']
+>({
   fixtures: contentTypes,
   defaultValues: fieldsWithDefaultValues,
 });

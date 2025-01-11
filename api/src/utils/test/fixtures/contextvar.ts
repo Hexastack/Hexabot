@@ -8,23 +8,19 @@
 
 import mongoose from 'mongoose';
 
+import { ContextVarCreateDto } from '@/chat/dto/context-var.dto';
 import { ContextVar, ContextVarModel } from '@/chat/schemas/context-var.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
-export const fieldsWithDefaultValues = {
+type TContentVarFixtures = FixturesTypeBuilder<ContextVar, ContextVarCreateDto>;
+
+export const fieldsWithDefaultValues: TContentVarFixtures['defaultValues'] = {
   permanent: false,
-} satisfies Partial<ContextVar>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<ContextVar, TFieldWithDefaultValues>>;
-type TContextVar = TTransformedField<ContextVar>;
-
-const contextVars: TContextVar[] = [
+const contextVars: TContentVarFixtures['values'][] = [
   {
     label: 'test context var 1',
     name: 'test1',
@@ -35,7 +31,9 @@ const contextVars: TContextVar[] = [
   },
 ];
 
-export const contextVarFixtures = getFixturesWithDefaultValues<TContextVar>({
+export const contextVarFixtures = getFixturesWithDefaultValues<
+  TContentVarFixtures['values']
+>({
   fixtures: contextVars,
   defaultValues: fieldsWithDefaultValues,
 });

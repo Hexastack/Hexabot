@@ -8,25 +8,24 @@
 
 import mongoose from 'mongoose';
 
+import { CategoryCreateDto } from '@/chat/dto/category.dto';
 import { Category, CategoryModel } from '@/chat/schemas/category.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
-export const fieldsWithDefaultValues = {
+export type TCategoryFixtures = FixturesTypeBuilder<
+  Category,
+  CategoryCreateDto
+>;
+
+export const fieldsWithDefaultValues: TCategoryFixtures['defaultValues'] = {
   builtin: false,
   zoom: 100,
   offset: [0, 0],
-} satisfies Partial<Category>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<Category, TFieldWithDefaultValues>>;
-type TCategory = TTransformedField<Category>;
-
-export const categories: TCategory[] = [
+export const categories: TCategoryFixtures['values'][] = [
   {
     label: 'test category 1',
   },
@@ -35,7 +34,9 @@ export const categories: TCategory[] = [
   },
 ];
 
-export const categoryFixtures = getFixturesWithDefaultValues<TCategory>({
+export const categoryFixtures = getFixturesWithDefaultValues<
+  TCategoryFixtures['values']
+>({
   fixtures: categories,
   defaultValues: fieldsWithDefaultValues,
 });

@@ -8,16 +8,19 @@
 
 import mongoose from 'mongoose';
 
+import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block, BlockModel } from '@/chat/schemas/block.schema';
 import { CategoryModel } from '@/chat/schemas/category.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
-export const fieldsWithDefaultValues = {
+type TBlockFixtures = FixturesTypeBuilder<Block, BlockCreateDto>;
+
+export const blockDefaultValues: TBlockFixtures['defaultValues'] = {
   options: {},
   nextBlocks: [],
   capture_vars: [],
@@ -27,16 +30,9 @@ export const fieldsWithDefaultValues = {
   starts_conversation: false,
   attachedBlock: null,
   attachedToBlock: null,
-} satisfies Partial<Block>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<Block, TFieldWithDefaultValues>>;
-type TBlock = TTransformedField<Block>;
-
-export const blocks: TBlock[] = [
+export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasNextBlocks',
     patterns: ['Hi'],
@@ -181,9 +177,11 @@ export const blocks: TBlock[] = [
   },
 ];
 
-export const blockFixtures = getFixturesWithDefaultValues<TBlock>({
+export const blockFixtures = getFixturesWithDefaultValues<
+  TBlockFixtures['values']
+>({
   fixtures: blocks,
-  defaultValues: fieldsWithDefaultValues,
+  defaultValues: blockDefaultValues,
 });
 
 export const installBlockFixtures = async () => {

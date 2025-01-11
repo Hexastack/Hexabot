@@ -8,27 +8,23 @@
 
 import mongoose from 'mongoose';
 
+import { NlpSampleCreateDto } from '@/nlp/dto/nlp-sample.dto';
 import { NlpSample, NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/schemas/types';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
 import { installLanguageFixtures } from './language';
 
-export const fieldsWithDefaultValues = {
+type TNlpSampleFixtures = FixturesTypeBuilder<NlpSample, NlpSampleCreateDto>;
+
+export const fieldsWithDefaultValues: TNlpSampleFixtures['defaultValues'] = {
   type: NlpSampleState.train,
   trained: false,
-} satisfies Partial<NlpSample>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<NlpSample, TFieldWithDefaultValues>>;
-type TNlpSample = TTransformedField<NlpSample>;
-
-const nlpSamples: TNlpSample[] = [
+const nlpSamples: TNlpSampleFixtures['values'][] = [
   {
     text: 'yess',
     language: '0',
@@ -49,7 +45,9 @@ const nlpSamples: TNlpSample[] = [
   },
 ];
 
-export const nlpSampleFixtures = getFixturesWithDefaultValues<TNlpSample>({
+export const nlpSampleFixtures = getFixturesWithDefaultValues<
+  TNlpSampleFixtures['values']
+>({
   fixtures: nlpSamples,
   defaultValues: fieldsWithDefaultValues,
 });

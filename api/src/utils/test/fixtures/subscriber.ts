@@ -8,31 +8,26 @@
 
 import mongoose from 'mongoose';
 
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder, TFixturesDefaultValues } from '../types';
 
 import { installLabelFixtures } from './label';
 import { installUserFixtures } from './user';
 
-export const fieldsWithDefaultValues = {
+type TSubscriberFixtures = FixturesTypeBuilder<Subscriber, SubscriberCreateDto>;
+
+export const fieldsWithDefaultValues: TSubscriberFixtures['defaultValues'] = {
   context: {},
   avatar: null,
   assignedAt: null,
   assignedTo: null,
   timezone: 0,
-} satisfies Partial<Subscriber>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<Subscriber, TFieldWithDefaultValues>>;
-type TSubscriber = TTransformedField<Subscriber>;
-
-const subscribers: TSubscriber[] = [
+const subscribers: TSubscriberFixtures['values'][] = [
   {
     foreign_id: 'foreign-id-messenger',
     first_name: 'Jhon',
@@ -104,7 +99,9 @@ export const subscriberDefaultValues: TFixturesDefaultValues<Subscriber> = {
   avatar: null,
 };
 
-export const subscriberFixtures = getFixturesWithDefaultValues<Subscriber>({
+export const subscriberFixtures = getFixturesWithDefaultValues<
+  TSubscriberFixtures['values']
+>({
   fixtures: subscribers,
   defaultValues: subscriberDefaultValues,
 });

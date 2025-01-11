@@ -8,23 +8,19 @@
 
 import mongoose from 'mongoose';
 
+import { LabelCreateDto } from '@/chat/dto/label.dto';
 import { Label, LabelModel } from '@/chat/schemas/label.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
-export const fieldsWithDefaultValues = {
+type TLabelFixtures = FixturesTypeBuilder<Label, LabelCreateDto>;
+
+export const fieldsWithDefaultValues: TLabelFixtures['defaultValues'] = {
   builtin: false,
-} satisfies Partial<Label>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<Label, TFieldWithDefaultValues>>;
-type TLabel = TTransformedField<Label>;
-
-export const labels: TLabel[] = [
+export const labels: TLabelFixtures['values'][] = [
   {
     description: 'test description 1',
     label_id: {
@@ -49,7 +45,9 @@ export const labels: TLabel[] = [
   },
 ];
 
-export const labelFixtures = getFixturesWithDefaultValues<TLabel>({
+export const labelFixtures = getFixturesWithDefaultValues<
+  TLabelFixtures['values']
+>({
   fixtures: labels,
   defaultValues: fieldsWithDefaultValues,
 });

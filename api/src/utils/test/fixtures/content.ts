@@ -8,26 +8,22 @@
 
 import mongoose from 'mongoose';
 
+import { ContentCreateDto } from '@/cms/dto/content.dto';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
-import { BaseSchema } from '@/utils/generics/base-schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
+import { FixturesTypeBuilder } from '../types';
 
 import { installAttachmentFixtures } from './attachment';
 import { installContentTypeFixtures } from './contenttype';
 
-export const fieldsWithDefaultValues = {
+type TContentFixtures = FixturesTypeBuilder<Content, ContentCreateDto>;
+
+export const fieldsWithDefaultValues: TContentFixtures['defaultValues'] = {
   status: true,
-} satisfies Partial<Content>;
+};
 
-type TFieldWithDefaultValues =
-  | keyof typeof fieldsWithDefaultValues
-  | keyof BaseSchema;
-type TTransformedField<T> = Omit<T, TFieldWithDefaultValues> &
-  Partial<Pick<Content, TFieldWithDefaultValues>>;
-type TContent = TTransformedField<Content>;
-
-const contents: TContent[] = [
+const contents: TContentFixtures['values'][] = [
   {
     title: 'Jean',
     dynamicFields: {
@@ -141,7 +137,9 @@ const contents: TContent[] = [
   },
 ];
 
-export const contentFixtures = getFixturesWithDefaultValues<TContent>({
+export const contentFixtures = getFixturesWithDefaultValues<
+  TContentFixtures['values']
+>({
   fixtures: contents,
   defaultValues: fieldsWithDefaultValues,
 });
