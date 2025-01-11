@@ -165,14 +165,12 @@ describe('BlockRepository', () => {
 
   describe('prepareBlocksInCategoryUpdateScope', () => {
     it('should update blocks within the scope based on category and ids', async () => {
-      const mockFind = jest.spyOn(blockRepository, 'find').mockResolvedValue([
-        {
-          id: validIds[0],
-          category: 'oldCategory',
-          nextBlocks: [validIds[1]],
-          attachedBlock: validIds[1],
-        },
-      ] as Block[]);
+      jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
+        id: validIds[0],
+        category: 'oldCategory',
+        nextBlocks: [validIds[1]],
+        attachedBlock: validIds[1],
+      } as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
@@ -180,7 +178,6 @@ describe('BlockRepository', () => {
         validCategory,
         validIds,
       );
-      expect(mockFind).toHaveBeenCalled();
 
       expect(mockUpdateOne).toHaveBeenCalledWith(validIds[0], {
         nextBlocks: [validIds[1]],
@@ -189,14 +186,12 @@ describe('BlockRepository', () => {
     });
 
     it('should not update blocks if the category already matches', async () => {
-      const mockFind = jest.spyOn(blockRepository, 'find').mockResolvedValue([
-        {
-          id: validIds[0],
-          category: validCategory,
-          nextBlocks: [],
-          attachedBlock: null,
-        },
-      ] as Block[]);
+      jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
+        id: validIds[0],
+        category: validCategory,
+        nextBlocks: [],
+        attachedBlock: null,
+      } as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
@@ -204,8 +199,6 @@ describe('BlockRepository', () => {
         validCategory,
         validIds,
       );
-
-      expect(mockFind).toHaveBeenCalled();
 
       expect(mockUpdateOne).not.toHaveBeenCalled();
     });
