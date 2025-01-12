@@ -24,6 +24,7 @@ export abstract class BaseService<
   P extends string = never,
   TFull extends Omit<T, P> = never,
   Dto extends DtoConfig = object,
+  U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
 > {
   constructor(
     protected readonly repository: BaseRepository<T, P, TFull, Dto>,
@@ -144,9 +145,7 @@ export abstract class BaseService<
     return await this.repository.count(criteria);
   }
 
-  async create<D extends Omit<T, keyof BaseSchema>>(
-    dto: DtoInfer<DtoAction.Create, Dto, D>,
-  ): Promise<T> {
+  async create(dto: DtoInfer<DtoAction.Create, Dto, U>): Promise<T> {
     try {
       return await this.repository.create(dto);
     } catch (error) {
@@ -159,9 +158,9 @@ export abstract class BaseService<
     }
   }
 
-  async findOneOrCreate<D extends Omit<T, keyof BaseSchema>>(
+  async findOneOrCreate(
     criteria: string | TFilterQuery<T>,
-    dto: DtoInfer<DtoAction.Create, Dto, D>,
+    dto: DtoInfer<DtoAction.Create, Dto, U>,
   ): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {
@@ -170,24 +169,21 @@ export abstract class BaseService<
     return result;
   }
 
-  async createMany<D extends Omit<T, keyof BaseSchema>>(
-    dtoArray: DtoInfer<DtoAction.Create, Dto, D>[],
+  async createMany(
+    dtoArray: DtoInfer<DtoAction.Create, Dto, U>[],
   ): Promise<T[]> {
     return await this.repository.createMany(dtoArray);
   }
 
-  async updateOne<D extends Partial<Omit<T, keyof BaseSchema>>>(
+  async updateOne(
     criteria: string | TFilterQuery<T>,
-    dto: D,
-    options?: QueryOptions<D> | null,
+    dto: Partial<U>,
+    options?: QueryOptions<Partial<U>> | null,
   ): Promise<T | null> {
     return await this.repository.updateOne(criteria, dto, options);
   }
 
-  async updateMany<D extends Partial<Omit<T, keyof BaseSchema>>>(
-    filter: TFilterQuery<T>,
-    dto: D,
-  ) {
+  async updateMany(filter: TFilterQuery<T>, dto: Partial<U>) {
     return await this.repository.updateMany(filter, dto);
   }
 

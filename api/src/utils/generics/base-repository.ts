@@ -72,7 +72,7 @@ export abstract class BaseRepository<
   P extends string = never,
   TFull extends Omit<T, P> = never,
   Dto extends DtoConfig = object,
-  U = Omit<T, keyof BaseSchema>,
+  U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
   private readonly transformOpts = { excludePrefixes: ['_', 'password'] };
