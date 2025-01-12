@@ -26,6 +26,7 @@ export const blockDefaultValues: TBlockFixtures['defaultValues'] = {
   capture_vars: [],
   assign_labels: [],
   trigger_labels: [],
+  trigger_channels: [],
   builtin: false,
   starts_conversation: false,
   attachedBlock: null,
@@ -36,7 +37,6 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasNextBlocks',
     patterns: ['Hi'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -55,7 +55,6 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasPreviousBlocks',
     patterns: ['colors'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -93,7 +92,6 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'buttons',
     patterns: ['about'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -131,7 +129,6 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'attachment',
     patterns: ['image'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -158,7 +155,6 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'test',
     patterns: ['yes'],
-    trigger_channels: [],
     category: null,
     //to be verified
     options: {
