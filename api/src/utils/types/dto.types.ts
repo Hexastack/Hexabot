@@ -13,12 +13,12 @@ export enum DtoAction {
   Delete = 'delete',
 }
 
-export type DtoConfig<T extends Partial<Record<DtoAction, object>>> = T;
+export type DtoConfig<
+  C extends Partial<Record<DtoAction, object>> = Partial<
+    Record<DtoAction, object>
+  >,
+> = C;
 
-export type DtoProps<T extends Record<string, unknown>> = {
-  [K in DtoAction]?: T[K];
-};
-
-export type DtoInfer<K extends keyof DTO, DTO, T> = DTO[K] extends object
-  ? DTO[K]
-  : T;
+export type DtoInfer<K extends keyof Dto, Dto, I> = Dto[K] extends object
+  ? Dto[K]
+  : I;
