@@ -42,7 +42,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpSampleDto } from '../dto/nlp-sample.dto';
+import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
   NlpSample,
   NlpSampleFull,
@@ -60,7 +60,8 @@ export class NlpSampleController extends BaseController<
   NlpSample,
   NlpSampleStub,
   NlpSamplePopulate,
-  NlpSampleFull
+  NlpSampleFull,
+  TNlpSampleDto
 > {
   constructor(
     private readonly nlpSampleService: NlpSampleService,

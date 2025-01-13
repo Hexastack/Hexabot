@@ -133,6 +133,9 @@ describe('NlpSampleEntityService', () => {
           const ValueWithEntities = {
             ...curr,
             entity: nlpEntities[0].id,
+            expressions: curr.expressions!,
+            builtin: curr.builtin!,
+            metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
           return acc;
