@@ -223,6 +223,7 @@ export class AttachmentService extends BaseService<Attachment> {
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(filePath);
           file.pipe(writeStream);
+          // @TODO: Calc size here?
           writeStream.on('finish', resolve);
           writeStream.on('error', reject);
         });
