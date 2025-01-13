@@ -13,6 +13,7 @@ import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
+import { PermissionDto } from '../dto/permission.dto';
 import {
   Permission,
   PERMISSION_POPULATE,
@@ -24,7 +25,8 @@ import {
 export class PermissionRepository extends BaseRepository<
   Permission,
   PermissionPopulate,
-  PermissionFull
+  PermissionFull,
+  PermissionDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

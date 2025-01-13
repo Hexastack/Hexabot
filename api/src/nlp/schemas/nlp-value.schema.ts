@@ -38,19 +38,19 @@ export class NlpValueStub extends BaseSchema {
    * An array of synonyms or equivalent words that fits this value.
    */
   @Prop({ type: [String], default: [] })
-  expressions?: string[];
+  expressions: string[];
 
   /**
    * Metadata are additional data that can be associated to this values, most of the time, the metadata contains system values or ids (e.g: value: "coffee", metadata: "item_11") .
    */
   @Prop({ type: JSON, default: {} })
-  metadata?: Record<string, any>;
+  metadata: Record<string, any>;
 
   /**
    * Either or not this value a built-in (either fixtures or shipped along with the 3rd party ai).
    */
   @Prop({ type: Boolean, default: false })
-  builtin?: boolean;
+  builtin: boolean;
 
   /**
    * The entity to which this value belongs to.

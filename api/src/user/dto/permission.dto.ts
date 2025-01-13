@@ -7,8 +7,9 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { Action } from '../types/action.type';
@@ -40,3 +41,7 @@ export class PermissionCreateDto {
   @IsOptional()
   relation?: TRelation;
 }
+
+export type PermissionDto = DtoConfig<{
+  create: PermissionCreateDto;
+}>;

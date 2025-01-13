@@ -43,13 +43,13 @@ export class LabelStub extends BaseSchema {
   @Prop({
     type: String,
   })
-  description?: string;
+  description: string;
 
   @Prop({
     type: Boolean,
     default: false,
   })
-  builtin?: boolean;
+  builtin: boolean;
 }
 
 @Schema({ timestamps: true })

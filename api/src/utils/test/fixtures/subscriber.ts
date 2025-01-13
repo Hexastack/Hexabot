@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,12 +12,23 @@ import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { Subscriber, SubscriberModel } from '@/chat/schemas/subscriber.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder } from '../types';
 
 import { installLabelFixtures } from './label';
 import { installUserFixtures } from './user';
 
-const subscribers: SubscriberCreateDto[] = [
+type TSubscriberFixtures = FixturesTypeBuilder<Subscriber, SubscriberCreateDto>;
+
+export const subscriberDefaultValues: TSubscriberFixtures['defaultValues'] = {
+  timezone: 0,
+  assignedTo: null,
+  assignedAt: null,
+  lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  avatar: null,
+};
+
+const subscribers: TSubscriberFixtures['values'][] = [
   {
     foreign_id: 'foreign-id-messenger',
     first_name: 'Jhon',
@@ -30,7 +41,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'messenger-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2020-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2020-01-01T20:40:03.249Z'),
   },
@@ -46,7 +56,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2021-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2021-01-02T20:40:03.249Z'),
   },
@@ -62,7 +71,6 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2022-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2022-01-02T20:40:03.249Z'),
   },
@@ -78,22 +86,14 @@ const subscribers: SubscriberCreateDto[] = [
       name: 'web-channel',
     },
     labels: [],
-    assignedAt: null,
     lastvisit: new Date('2024-01-01T20:40:03.249Z'),
     retainedFrom: new Date('2024-01-02T20:40:03.249Z'),
   },
 ];
 
-export const subscriberDefaultValues: TFixturesDefaultValues<Subscriber> = {
-  timezone: 0,
-  assignedTo: null,
-  assignedAt: null,
-  lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  avatar: null,
-};
-
-export const subscriberFixtures = getFixturesWithDefaultValues<Subscriber>({
+export const subscriberFixtures = getFixturesWithDefaultValues<
+  TSubscriberFixtures['values']
+>({
   fixtures: subscribers,
   defaultValues: subscriberDefaultValues,
 });

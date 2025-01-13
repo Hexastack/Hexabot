@@ -14,11 +14,17 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { CategoryDto } from '../dto/category.dto';
 import { Category } from '../schemas/category.schema';
 import { BlockService } from '../services/block.service';
 
 @Injectable()
-export class CategoryRepository extends BaseRepository<Category> {
+export class CategoryRepository extends BaseRepository<
+  Category,
+  never,
+  never,
+  CategoryDto
+> {
   private readonly blockService: BlockService;
 
   constructor(

@@ -14,6 +14,7 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import {
   NLP_ENTITY_POPULATE,
   NlpEntity,
@@ -29,7 +30,8 @@ import { NlpValueRepository } from './nlp-value.repository';
 export class NlpEntityRepository extends BaseRepository<
   NlpEntity,
   NlpEntityPopulate,
-  NlpEntityFull
+  NlpEntityFull,
+  NlpEntityDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

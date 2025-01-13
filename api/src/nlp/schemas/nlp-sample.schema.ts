@@ -33,7 +33,7 @@ export class NlpSampleStub extends BaseSchema {
    * Either or not this sample was used for traning already.
    */
   @Prop({ type: Boolean, default: false })
-  trained?: boolean;
+  trained: boolean;
 
   /**
    * From where this sample was provided.
@@ -43,7 +43,7 @@ export class NlpSampleStub extends BaseSchema {
     enum: Object.values(NlpSampleState),
     default: NlpSampleState.train,
   })
-  type?: keyof typeof NlpSampleState;
+  type: keyof typeof NlpSampleState;
 
   /**
    * The language of the sample.

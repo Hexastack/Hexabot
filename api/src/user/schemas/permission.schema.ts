@@ -18,6 +18,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { Action } from '../types/action.type';
+import { TRelation } from '../types/index.type';
 
 import { Model } from './model.schema';
 import { Role } from './role.schema';
@@ -41,7 +42,7 @@ export class PermissionStub extends BaseSchema {
     type: String,
     default: 'role',
   })
-  relation?: string;
+  relation: TRelation;
 }
 
 @Schema({ timestamps: true })

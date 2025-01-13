@@ -51,19 +51,19 @@ class ConversationStub extends BaseSchema {
     type: Boolean,
     default: true,
   })
-  active?: boolean;
+  active: boolean;
 
   @Prop({
     type: Object,
     default: getDefaultConversationContext(),
   })
-  context?: Context;
+  context: Context;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Block',
   })
-  current?: unknown;
+  current: unknown;
 
   @Prop([
     {
@@ -72,7 +72,7 @@ class ConversationStub extends BaseSchema {
       default: [],
     },
   ])
-  next?: unknown;
+  next: unknown;
 }
 
 @Schema({ timestamps: true })
@@ -80,11 +80,11 @@ export class Conversation extends ConversationStub {
   @Transform(({ obj }) => obj.sender.toString())
   sender: string;
 
-  @Transform(({ obj }) => obj.current.toString())
-  current?: string;
+  @Transform(({ obj }) => (obj.current ? obj.current.toString() : null))
+  current: string | null;
 
   @Transform(({ obj }) => obj.next.map((elem) => elem.toString()))
-  next?: string[];
+  next: string[];
 }
 
 @Schema({ timestamps: true })

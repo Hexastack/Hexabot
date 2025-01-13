@@ -8,9 +8,9 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseSchema } from '@/utils/generics/base-schema';
 import { BaseSeeder } from '@/utils/generics/base-seeder';
 
+import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import {
@@ -23,7 +23,8 @@ import {
 export class NlpValueSeeder extends BaseSeeder<
   NlpValue,
   NlpValuePopulate,
-  NlpValueFull
+  NlpValueFull,
+  NlpValueDto
 > {
   constructor(
     nlpValueRepository: NlpValueRepository,
@@ -32,7 +33,7 @@ export class NlpValueSeeder extends BaseSeeder<
     super(nlpValueRepository);
   }
 
-  async seed(models: Omit<NlpValue, keyof BaseSchema>[]): Promise<boolean> {
+  async seed(models: NlpValueCreateDto[]): Promise<boolean> {
     if (await this.isEmpty()) {
       const entities = await this.nlpEntityRepository.findAll();
       const modelDtos = models.map((v) => ({

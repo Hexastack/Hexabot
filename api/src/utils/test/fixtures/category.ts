@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,12 +9,23 @@
 import mongoose from 'mongoose';
 
 import { CategoryCreateDto } from '@/chat/dto/category.dto';
-import { CategoryModel, Category } from '@/chat/schemas/category.schema';
+import { Category, CategoryModel } from '@/chat/schemas/category.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder } from '../types';
 
-export const categories: CategoryCreateDto[] = [
+export type TCategoryFixtures = FixturesTypeBuilder<
+  Category,
+  CategoryCreateDto
+>;
+
+export const categoryDefaultValues: TCategoryFixtures['defaultValues'] = {
+  builtin: false,
+  zoom: 100,
+  offset: [0, 0],
+};
+
+export const categories: TCategoryFixtures['values'][] = [
   {
     label: 'test category 1',
   },
@@ -23,13 +34,9 @@ export const categories: CategoryCreateDto[] = [
   },
 ];
 
-export const categoryDefaultValues: TFixturesDefaultValues<Category> = {
-  builtin: false,
-  zoom: 100,
-  offset: [0, 0],
-};
-
-export const categoryFixtures = getFixturesWithDefaultValues<Category>({
+export const categoryFixtures = getFixturesWithDefaultValues<
+  TCategoryFixtures['values']
+>({
   fixtures: categories,
   defaultValues: categoryDefaultValues,
 });

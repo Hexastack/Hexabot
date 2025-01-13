@@ -9,20 +9,34 @@
 import mongoose from 'mongoose';
 
 import { BlockCreateDto } from '@/chat/dto/block.dto';
-import { BlockModel, Block } from '@/chat/schemas/block.schema';
+import { Block, BlockModel } from '@/chat/schemas/block.schema';
 import { CategoryModel } from '@/chat/schemas/category.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { ButtonType } from '@/chat/schemas/types/button';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder } from '../types';
 
-export const blocks: BlockCreateDto[] = [
+type TBlockFixtures = FixturesTypeBuilder<Block, BlockCreateDto>;
+
+export const blockDefaultValues: TBlockFixtures['defaultValues'] = {
+  options: {},
+  nextBlocks: [],
+  capture_vars: [],
+  assign_labels: [],
+  trigger_labels: [],
+  trigger_channels: [],
+  builtin: false,
+  starts_conversation: false,
+  attachedBlock: null,
+  attachedToBlock: null,
+};
+
+export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasNextBlocks',
     patterns: ['Hi'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -41,7 +55,6 @@ export const blocks: BlockCreateDto[] = [
   {
     name: 'hasPreviousBlocks',
     patterns: ['colors'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -79,7 +92,6 @@ export const blocks: BlockCreateDto[] = [
   {
     name: 'buttons',
     patterns: ['about'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -117,7 +129,6 @@ export const blocks: BlockCreateDto[] = [
   {
     name: 'attachment',
     patterns: ['image'],
-    trigger_channels: [],
     category: null,
     options: {
       typing: 0,
@@ -144,7 +155,6 @@ export const blocks: BlockCreateDto[] = [
   {
     name: 'test',
     patterns: ['yes'],
-    trigger_channels: [],
     category: null,
     //to be verified
     options: {
@@ -163,18 +173,9 @@ export const blocks: BlockCreateDto[] = [
   },
 ];
 
-export const blockDefaultValues: TFixturesDefaultValues<Block> = {
-  options: {},
-  builtin: false,
-  nextBlocks: [],
-  capture_vars: [],
-  assign_labels: [],
-  trigger_labels: [],
-  starts_conversation: false,
-  attachedToBlock: null,
-};
-
-export const blockFixtures = getFixturesWithDefaultValues<Block>({
+export const blockFixtures = getFixturesWithDefaultValues<
+  TBlockFixtures['values']
+>({
   fixtures: blocks,
   defaultValues: blockDefaultValues,
 });

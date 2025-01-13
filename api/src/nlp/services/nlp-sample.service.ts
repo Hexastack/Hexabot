@@ -21,7 +21,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
-import { NlpSampleCreateDto } from '../dto/nlp-sample.dto';
+import { NlpSampleCreateDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import {
   NlpSample,
@@ -37,7 +37,8 @@ import { NlpSampleEntityService } from './nlp-sample-entity.service';
 export class NlpSampleService extends BaseService<
   NlpSample,
   NlpSamplePopulate,
-  NlpSampleFull
+  NlpSampleFull,
+  TNlpSampleDto
 > {
   constructor(
     readonly repository: NlpSampleRepository,

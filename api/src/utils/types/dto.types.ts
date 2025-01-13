@@ -6,22 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
-
-import { BaseService } from '@/utils/generics/base-service';
-
-import { UserDto } from '../dto/user.dto';
-import { UserRepository } from '../repositories/user.repository';
-import { User, UserFull, UserPopulate } from '../schemas/user.schema';
-
-@Injectable()
-export class UserService extends BaseService<
-  User,
-  UserPopulate,
-  UserFull,
-  UserDto
-> {
-  constructor(readonly repository: UserRepository) {
-    super(repository);
-  }
+export enum DtoAction {
+  Create = 'create',
+  Read = 'read',
+  Update = 'update',
+  Delete = 'delete',
 }
+
+export type DtoConfig<
+  C extends Partial<Record<DtoAction, object>> = Partial<
+    Record<DtoAction, object>
+  >,
+> = C;
+
+export type DtoInfer<K extends keyof Dto, Dto, I> = Dto[K] extends object
+  ? Dto[K]
+  : I;

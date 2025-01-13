@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -13,11 +13,18 @@ import { NlpSample, NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
 import { NlpSampleState } from '@/nlp/schemas/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder } from '../types';
 
 import { installLanguageFixtures } from './language';
 
-const nlpSamples: NlpSampleCreateDto[] = [
+type TNlpSampleFixtures = FixturesTypeBuilder<NlpSample, NlpSampleCreateDto>;
+
+export const nlpSampleDefaultValues: TNlpSampleFixtures['defaultValues'] = {
+  type: NlpSampleState.train,
+  trained: false,
+};
+
+const nlpSamples: TNlpSampleFixtures['values'][] = [
   {
     text: 'yess',
     language: '0',
@@ -38,12 +45,9 @@ const nlpSamples: NlpSampleCreateDto[] = [
   },
 ];
 
-export const nlpSampleDefaultValues: TFixturesDefaultValues<NlpSample> = {
-  type: NlpSampleState.train,
-  trained: false,
-};
-
-export const nlpSampleFixtures = getFixturesWithDefaultValues<NlpSample>({
+export const nlpSampleFixtures = getFixturesWithDefaultValues<
+  TNlpSampleFixtures['values']
+>({
   fixtures: nlpSamples,
   defaultValues: nlpSampleDefaultValues,
 });
