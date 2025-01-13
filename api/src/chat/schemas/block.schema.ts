@@ -139,10 +139,12 @@ export class Block extends BlockStub {
   @Transform(({ obj }) => obj.nextBlocks.map((elem) => elem.toString()))
   nextBlocks: string[];
 
-  @Transform(({ obj }) => obj.attachedBlock?.toString() || null)
-  attachedBlock: string;
+  @Transform(({ obj }) =>
+    obj.attachedBlock ? obj.attachedBlock.toString() : null,
+  )
+  attachedBlock: string | null;
 
-  @Transform(({ obj }) => obj.category.toString())
+  @Transform(({ obj }) => (obj.category ? obj.category.toString() : null))
   category: string | null;
 
   @Exclude()
@@ -164,10 +166,10 @@ export class BlockFull extends BlockStub {
   nextBlocks: Block[];
 
   @Type(() => Block)
-  attachedBlock: Block;
+  attachedBlock: Block | null;
 
   @Type(() => Category)
-  category: Category;
+  category: Category | null;
 
   @Type(() => Block)
   previousBlocks?: Block[];

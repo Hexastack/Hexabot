@@ -84,7 +84,7 @@ export class BlockCreateDto {
   @IsObjectId({
     message: 'Attached block must be a valid objectId',
   })
-  attachedBlock?: string;
+  attachedBlock?: string | null;
 
   @ApiProperty({ description: 'Block category', type: String })
   @IsNotEmpty()

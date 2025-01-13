@@ -29,7 +29,6 @@ export const blockDefaultValues: TBlockFixtures['defaultValues'] = {
   trigger_channels: [],
   builtin: false,
   starts_conversation: false,
-  attachedBlock: null,
 };
 
 export const blocks: TBlockFixtures['values'][] = [

@@ -251,7 +251,7 @@ export class BotService {
           // If there's labels, they should be already have been assigned
           assign_labels: [],
           trigger_labels: [],
-          attachedBlock: undefined,
+          attachedBlock: null,
           category: undefined as any,
           previousBlocks: [],
         };

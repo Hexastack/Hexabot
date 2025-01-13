@@ -105,7 +105,7 @@ export const blockEmpty = {
   patterns: [],
   message: [''],
   nextBlocks: [],
-};
+} as unknown as BlockFull;
 
 // Translation Data
 export const textResult = ['Hi back !'];
