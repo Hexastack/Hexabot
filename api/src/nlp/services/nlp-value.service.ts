@@ -11,11 +11,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 
-import {
-  NlpValueCreateDto,
-  NlpValueDto,
-  NlpValueUpdateDto,
-} from '../dto/nlp-value.dto';
+import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -139,7 +135,7 @@ export class NlpValueService extends BaseService<
           expressions: vMap[e.value].expressions?.concat([
             sampleText.slice(e.start, e.end),
           ]),
-        } as NlpValueUpdateDto);
+        });
       });
 
     await Promise.all(synonymsToAdd);

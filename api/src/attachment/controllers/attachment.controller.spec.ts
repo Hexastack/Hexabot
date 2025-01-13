@@ -27,7 +27,7 @@ import {
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { AttachmentModel, Attachment } from '../schemas/attachment.schema';
+import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 import { AttachmentController } from './attachment.controller';
@@ -35,7 +35,7 @@ import { AttachmentController } from './attachment.controller';
 describe('AttachmentController', () => {
   let attachmentController: AttachmentController;
   let attachmentService: AttachmentService;
-  let attachmentToDelete: Attachment;
+  let attachmentToDelete: Attachment | null;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -79,7 +79,7 @@ describe('AttachmentController', () => {
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
       const promiseResult = attachmentController.uploadFile({
-        file: undefined,
+        file: [],
       });
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
@@ -121,17 +121,17 @@ describe('AttachmentController', () => {
         name: 'store1.jpg',
       });
       const result = await attachmentController.download({
-        id: storedAttachment.id,
+        id: storedAttachment!.id,
       });
 
       expect(attachmentService.findOne).toHaveBeenCalledWith(
-        storedAttachment.id,
+        storedAttachment!.id,
       );
-      expect(result.options).toEqual({
-        type: storedAttachment.type,
-        length: storedAttachment.size,
+      expect(result?.options).toEqual({
+        type: storedAttachment!.type,
+        length: storedAttachment!.size,
         disposition: `attachment; filename="${encodeURIComponent(
-          storedAttachment.name,
+          storedAttachment!.name,
         )}"`,
       });
     });
@@ -141,11 +141,11 @@ describe('AttachmentController', () => {
     it('should delete an attachment by id', async () => {
       jest.spyOn(attachmentService, 'deleteOne');
       const result = await attachmentController.deleteOne(
-        attachmentToDelete.id,
+        attachmentToDelete!.id,
       );
 
       expect(attachmentService.deleteOne).toHaveBeenCalledWith(
-        attachmentToDelete.id,
+        attachmentToDelete!.id,
       );
       expect(result).toEqual({
         acknowledged: true,
@@ -155,10 +155,10 @@ describe('AttachmentController', () => {
 
     it('should throw a NotFoundException when attempting to delete an attachment by id', async () => {
       await expect(
-        attachmentController.deleteOne(attachmentToDelete.id),
+        attachmentController.deleteOne(attachmentToDelete!.id),
       ).rejects.toThrow(
         new NotFoundException(
-          `Attachment with ID ${attachmentToDelete.id} not found`,
+          `Attachment with ID ${attachmentToDelete!.id} not found`,
         ),
       );
     });

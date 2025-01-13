@@ -100,32 +100,31 @@ export default class LlmNluHelper
    *
    * @returns An array of objects representing the found entities, with their `value`, `start`, and `end` positions.
    */
-  private findKeywordEntities(
-    text: string,
-    entity: NlpEntityFull,
-  ): NLU.ParseEntity[] {
-    return entity.values
-      .flatMap(({ value, expressions }) => {
-        const allValues = [value, ...expressions];
+  private findKeywordEntities(text: string, entity: NlpEntityFull) {
+    return (
+      entity.values
+        .flatMap(({ value, expressions }) => {
+          const allValues = [value, ...expressions];
 
-        // Filter the terms that are found in the text
-        return allValues
-          .flatMap((term) => {
-            const regex = new RegExp(`\\b${term}\\b`, 'g');
-            const matches = [...text.matchAll(regex)];
+          // Filter the terms that are found in the text
+          return allValues
+            .flatMap((term) => {
+              const regex = new RegExp(`\\b${term}\\b`, 'g');
+              const matches = [...text.matchAll(regex)];
 
-            // Map matches to FoundEntity format
-            return matches.map((match) => ({
-              entity: entity.name,
-              value: term,
-              start: match.index!,
-              end: match.index! + term.length,
-              confidence: 1,
-            }));
-          })
-          .shift();
-      })
-      .filter((v) => !!v);
+              // Map matches to FoundEntity format
+              return matches.map((match) => ({
+                entity: entity.name,
+                value: term,
+                start: match.index!,
+                end: match.index! + term.length,
+                confidence: 1,
+              }));
+            })
+            .shift();
+        })
+        .filter((v) => !!v) || []
+    );
   }
 
   async predict(text: string): Promise<NLU.ParseEntities> {
@@ -133,7 +132,7 @@ export default class LlmNluHelper
     const helper = await this.helperService.getDefaultLlmHelper();
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     // Detect language
-    const language = await helper.generateStructuredResponse<string>(
+    const language = await helper.generateStructuredResponse<string>?.(
       `input text: ${text}`,
       settings.model,
       this.languageClassifierPrompt,
@@ -147,13 +146,13 @@ export default class LlmNluHelper
       {
         entity: 'language',
         value: language || defaultLanguage.code,
-        confidence: undefined,
+        confidence: 0.0,
       },
     ];
     for await (const { name, doc, prompt, values } of this
       .traitClassifierPrompts) {
       const allowedValues = values.map(({ value }) => value);
-      const result = await helper.generateStructuredResponse<string>(
+      const result = await helper.generateStructuredResponse<string>?.(
         `input text: ${text}`,
         settings.model,
         prompt,
@@ -163,12 +162,13 @@ export default class LlmNluHelper
           enum: allowedValues.concat('unknown'),
         },
       );
-      const safeValue = result.toLowerCase().trim();
-      const value = allowedValues.includes(safeValue) ? safeValue : '';
+      const safeValue = result?.toLowerCase().trim();
+      const value =
+        safeValue && allowedValues.includes(safeValue) ? safeValue : '';
       traits.push({
         entity: name,
         value,
-        confidence: undefined,
+        confidence: 0.0,
       });
     }
 
@@ -179,7 +179,7 @@ export default class LlmNluHelper
     });
     const entities = keywordEntities.flatMap((keywordEntity) =>
       this.findKeywordEntities(text, keywordEntity),
-    );
+    ) as NLU.ParseEntity[];
 
     return { entities: traits.concat(entities) };
   }

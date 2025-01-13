@@ -146,7 +146,7 @@ export class AttachmentController extends BaseController<Attachment> {
   @Get('download/:id/:filename?')
   async download(
     @Param() params: AttachmentDownloadDto,
-  ): Promise<StreamableFile> {
+  ): Promise<StreamableFile | undefined> {
     const attachment = await this.attachmentService.findOne(params.id);
 
     if (!attachment) {

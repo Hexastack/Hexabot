@@ -48,7 +48,7 @@ export async function moveFiles(
   const files = await fs.promises.readdir(sourceFolder);
 
   // Filter only files (skip directories)
-  const filePaths = [];
+  const filePaths: string[] = [];
   for (const file of files) {
     const filePath = join(sourceFolder, file);
     const stat = await fs.promises.stat(filePath);

@@ -27,6 +27,10 @@ export interface MigrationRunParams {
   isAutoMigrate?: boolean;
 }
 
+export interface MigrationRunOneParams extends MigrationRunParams {
+  version: MigrationVersion;
+}
+
 export interface MigrationSuccessCallback extends MigrationRunParams {
   migrationDocument: MigrationDocument;
 }

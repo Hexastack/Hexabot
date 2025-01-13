@@ -7,10 +7,10 @@
  */
 
 import {
-  Injectable,
-  PipeTransform,
   ArgumentMetadata,
   BadRequestException,
+  Injectable,
+  PipeTransform,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
@@ -33,7 +33,7 @@ export class ObjectIdPipe implements PipeTransform<string, Promise<string>> {
   async transform(value: string, { type, data }: ArgumentMetadata) {
     if (typeof value === 'string' && data === 'id' && type === 'param') {
       const errors = await this.getErrors(value);
-      if (errors)
+      if (errors.constraints)
         throw new BadRequestException(Object.values(errors.constraints)[0]);
     } else if (
       typeof value === 'object' &&
@@ -45,7 +45,7 @@ export class ObjectIdPipe implements PipeTransform<string, Promise<string>> {
           if (param.startsWith('id')) {
             const errors = await this.getErrors(String(paramValue));
 
-            if (errors)
+            if (errors.constraints)
               throw new BadRequestException(
                 Object.values(errors.constraints)[0],
               );

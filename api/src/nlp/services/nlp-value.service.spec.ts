@@ -69,9 +69,7 @@ describe('NlpValueService', () => {
     nlpValues = await nlpValueRepository.findAll();
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -94,9 +92,7 @@ describe('NlpValueService', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntityFixtures[
-              parseInt(curr.entity)
-            ] as NlpValueFull['entity'],
+            entity: nlpEntityFixtures[parseInt(curr.entity!)] as NlpEntity,
             expressions: curr.expressions!,
             metadata: curr.metadata!,
             builtin: curr.builtin!,

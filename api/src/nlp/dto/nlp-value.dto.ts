@@ -49,7 +49,7 @@ export class NlpValueCreateDto {
   @IsString()
   @IsNotEmpty()
   @IsObjectId({ message: 'Entity must be a valid ObjectId' })
-  entity: string;
+  entity: string | null;
 }
 
 export class NlpValueUpdateDto extends PartialType(NlpValueCreateDto) {}

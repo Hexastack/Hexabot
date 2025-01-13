@@ -98,7 +98,7 @@ describe('NlpValueController', () => {
           acc.push({
             ...curr,
             entity: nlpEntityFixtures[
-              parseInt(curr.entity)
+              parseInt(curr.entity!)
             ] as NlpValueFull['entity'],
             builtin: curr.builtin!,
             expressions: curr.expressions!,
@@ -125,7 +125,7 @@ describe('NlpValueController', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntities[parseInt(curr.entity)].id,
+            entity: nlpEntities[parseInt(curr.entity!)].id,
             expressions: curr.expressions!,
             metadata: curr.metadata!,
             builtin: curr.builtin!,

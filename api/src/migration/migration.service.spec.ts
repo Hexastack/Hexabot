@@ -186,7 +186,7 @@ describe('MigrationService', () => {
 
       await service.run({
         action: MigrationAction.UP,
-        version: null,
+        version: undefined,
         isAutoMigrate: false,
       });
 
