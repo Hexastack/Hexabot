@@ -20,6 +20,7 @@ import { Conversation } from '../schemas/conversation.schema';
 import { SubscriberDocument } from '../schemas/subscriber.schema';
 import { OutgoingMessage } from '../schemas/types/message';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { BotService } from './bot.service';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
@@ -243,9 +244,14 @@ export class ChatService {
 
       if (!subscriber) {
         const subscriberData = await handler.getUserData(event);
-        this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          BotStatsType.new_users,
+          'New users',
+          subscriber,
+        );
       } else {
         // Already existing user profile
         // Exec lastvisit hook
