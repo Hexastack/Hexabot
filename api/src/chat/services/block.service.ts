@@ -411,7 +411,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       'url' in block.message.attachment.payload
     ) {
       this.logger.error(
-        'Attachment Model : `url` payload has been deprecated in favor of `id`',
+        'Attachment Block : `url` payload has been deprecated in favor of `id`',
         block.id,
         block.message,
       );
@@ -521,9 +521,11 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       }
     } else if (blockMessage && 'attachment' in blockMessage) {
       const attachmentPayload = blockMessage.attachment.payload;
-      if (!attachmentPayload.id) {
+      if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
-        throw new Error('Remote attachments are no longer supported!');
+        throw new Error(
+          'Remote attachments in blocks are no longer supported!',
+        );
       }
 
       const envelope: StdOutgoingEnvelope = {

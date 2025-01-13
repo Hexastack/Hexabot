@@ -22,7 +22,7 @@ import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
-import { AttachmentForeignKey } from '@/chat/schemas/types/attachment';
+import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
@@ -155,7 +155,7 @@ export default abstract class BaseWebChannelHandler<
           type: Web.IncomingMessageType.file,
           data: {
             type: attachmentPayload.type,
-            url: await this.getPublicUrl(attachmentPayload.payload.id),
+            url: await this.getPublicUrl(attachmentPayload.payload),
           },
         };
       }
@@ -994,7 +994,7 @@ export default abstract class BaseWebChannelHandler<
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: await this.getPublicUrl(message.attachment.payload.id),
+        url: await this.getPublicUrl(message.attachment.payload),
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
@@ -1034,11 +1034,11 @@ export default abstract class BaseWebChannelHandler<
       }
 
       if (fields.image_url && item[fields.image_url]) {
-        const attachmentPayload = item[fields.image_url]
-          .payload as AttachmentForeignKey;
-        if (attachmentPayload.id) {
-          element.image_url = await this.getPublicUrl(attachmentPayload.id);
-        }
+        const attachmentRef =
+          typeof item[fields.image_url] === 'string'
+            ? { url: item[fields.image_url] }
+            : (item[fields.image_url].payload as AttachmentRef);
+        element.image_url = await this.getPublicUrl(attachmentRef);
       }
 
       buttons.forEach((button: Button, index) => {

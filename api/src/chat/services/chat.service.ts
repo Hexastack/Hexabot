@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -255,6 +255,8 @@ export class ChatService {
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
       event.setSender(subscriber);
+
+      await event.preprocess();
 
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);

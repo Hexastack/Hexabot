@@ -78,14 +78,14 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
 };
 
 const attachment: Attachment = {
-  id: '1',
+  id: '1'.repeat(24),
   name: 'attachment.jpg',
   type: 'image/jpeg',
   size: 3539,
   location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
   channel: {
-    ['dimelo']: {
-      id: 'attachment-id-dimelo',
+    ['any-channel']: {
+      id: 'any-channel-attachment-id',
     },
   },
   createdAt: new Date(),

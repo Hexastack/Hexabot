@@ -98,7 +98,7 @@ export default abstract class EventWrapper<
    *
    * @returns The current instance of the channel handler.
    */
-  getHandler(): ChannelHandler {
+  getHandler(): C {
     return this._handler;
   }
 
@@ -187,6 +187,16 @@ export default abstract class EventWrapper<
    */
   setSender(profile: Subscriber) {
     this._profile = profile;
+  }
+
+  /**
+   * Pre-Process messageevent
+   *
+   * Child class can perform operations such as storing files as attachments.
+   */
+  preprocess() {
+    // Nothing ...
+    return Promise.resolve();
   }
 
   /**
