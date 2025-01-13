@@ -21,11 +21,17 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { LanguageDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { Language } from '../schemas/language.schema';
 
 @Injectable()
-export class LanguageService extends BaseService<Language> {
+export class LanguageService extends BaseService<
+  Language,
+  never,
+  never,
+  LanguageDto
+> {
   constructor(
     readonly repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,

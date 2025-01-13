@@ -137,12 +137,16 @@ describe('BaseNlpHelper', () => {
           name: 'intent',
           createdAt: new Date(),
           updatedAt: new Date(),
+          builtin: false,
+          lookups: [],
         },
         entity2: {
           id: new ObjectId().toString(),
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
+          builtin: false,
+          lookups: [],
         },
       });
       jest.spyOn(NlpValue, 'getValueMap').mockReturnValue({
@@ -152,6 +156,9 @@ describe('BaseNlpHelper', () => {
           entity: 'entity1', // Add the required entity field
           createdAt: new Date(),
           updatedAt: new Date(),
+          builtin: false,
+          expressions: [],
+          metadata: [],
         },
         value2: {
           id: new ObjectId().toString(),
@@ -159,6 +166,9 @@ describe('BaseNlpHelper', () => {
           entity: 'entity2', // Add the required entity field
           createdAt: new Date(),
           updatedAt: new Date(),
+          builtin: false,
+          expressions: [],
+          metadata: [],
         },
       });
 
@@ -195,6 +205,8 @@ describe('BaseNlpHelper', () => {
           name: 'test-entity',
           createdAt: new Date(),
           updatedAt: new Date(),
+          builtin: false,
+          lookups: [],
         },
       });
 

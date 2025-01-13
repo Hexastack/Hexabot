@@ -13,6 +13,7 @@ import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
+import { MenuDto } from '../dto/menu.dto';
 import {
   Menu,
   MENU_POPULATE,
@@ -26,7 +27,8 @@ import { MenuType } from '../schemas/types/menu';
 export class MenuRepository extends BaseRepository<
   Menu,
   MenuPopulate,
-  MenuFull
+  MenuFull,
+  MenuDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

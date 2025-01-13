@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Prop, Schema, SchemaFactory, ModelDefinition } from '@nestjs/mongoose';
+import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
@@ -39,7 +39,7 @@ export class ContentType extends BaseSchema {
       },
     ],
   })
-  fields?: {
+  fields: {
     name: string;
     label: string;
     type: string;

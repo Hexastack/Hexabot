@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,9 +12,15 @@ import { LabelCreateDto } from '@/chat/dto/label.dto';
 import { Label, LabelModel } from '@/chat/schemas/label.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
-import { TFixturesDefaultValues } from '../types';
+import { FixturesTypeBuilder } from '../types';
 
-export const labels: LabelCreateDto[] = [
+type TLabelFixtures = FixturesTypeBuilder<Label, LabelCreateDto>;
+
+export const contentLabelDefaultValues: TLabelFixtures['defaultValues'] = {
+  builtin: false,
+};
+
+export const labels: TLabelFixtures['values'][] = [
   {
     description: 'test description 1',
     label_id: {
@@ -39,13 +45,11 @@ export const labels: LabelCreateDto[] = [
   },
 ];
 
-export const labelDefaultValues: TFixturesDefaultValues<Label> = {
-  builtin: false,
-};
-
-export const labelFixtures = getFixturesWithDefaultValues<Label>({
+export const labelFixtures = getFixturesWithDefaultValues<
+  TLabelFixtures['values']
+>({
   fixtures: labels,
-  defaultValues: labelDefaultValues,
+  defaultValues: contentLabelDefaultValues,
 });
 
 export const installLabelFixtures = async () => {

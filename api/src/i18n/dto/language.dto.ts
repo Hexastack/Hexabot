@@ -7,8 +7,10 @@
  */
 
 import { PartialType } from '@nestjs/mapped-types';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { DtoConfig } from '@/utils/types/dto.types';
 
 export class LanguageCreateDto {
   @ApiProperty({ description: 'Language Title', type: String })
@@ -25,10 +27,14 @@ export class LanguageCreateDto {
   @IsBoolean()
   isRTL: boolean;
 
-  @ApiProperty({ description: 'Is Default Language ?', type: Boolean })
+  @ApiPropertyOptional({ description: 'Is Default Language ?', type: Boolean })
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean;
 }
 
 export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}
+
+export type LanguageDto = DtoConfig<{
+  create: LanguageCreateDto;
+}>;
