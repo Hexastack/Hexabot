@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,6 +22,7 @@ import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
+import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
@@ -43,12 +44,38 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
   app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+  // Retrieve the SettingService instance
+  const settingService = app.get<SettingService>(SettingService);
+
+  // Fetch allowed domains from the settings collection
+  const settingsAllowedDomains = await settingService.getAllowedDomains();
+
+  // Get allowed origins from .env configuration
+  const configAllowedOrigins = config.security.cors.allowOrigins
+    ? config.security.cors.allowOrigins.map((origin) => origin.trim())
+    : [];
+
+  // Combine both settings and config allowed domains
+  const combinedAllowedDomains = [
+    ...settingsAllowedDomains,
+    ...configAllowedOrigins,
+  ];
+  const allowedDomains = Array.from(new Set(combinedAllowedDomains));
+
+  // Enable CORS with the combined allowed domains
   app.enableCors({
-    origin: config.security.cors.allowOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedDomains.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: config.security.cors.methods,
     credentials: config.security.cors.allowCredentials,
     allowedHeaders: config.security.cors.headers.split(','),
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
