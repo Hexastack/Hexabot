@@ -18,10 +18,15 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpValue, NlpValueModel } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValueModel,
+} from '../schemas/nlp-value.schema';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpValueRepository } from './nlp-value.repository';
@@ -81,12 +86,17 @@ describe('NlpValueRepository', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntityFixtures[parseInt(curr.entity)],
+            entity: nlpEntityFixtures[
+              parseInt(curr.entity)
+            ] as NlpValueFull['entity'],
+            builtin: curr.builtin!,
+            expressions: curr.expressions!,
+            metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpValueFull>[],
       );
       expect(result).toEqualPayload(nlpValueFixturesWithEntities);
     });

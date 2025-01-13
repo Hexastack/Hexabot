@@ -30,6 +30,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -38,7 +39,11 @@ import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleModel } from '../schemas/nlp-sample.schema';
+import {
+  NlpSample,
+  NlpSampleFull,
+  NlpSampleModel,
+} from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 import { NlpSampleState } from '../schemas/types';
 import { NlpEntityService } from '../services/nlp-entity.service';
@@ -55,7 +60,7 @@ describe('NlpSampleController', () => {
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
   let languageService: LanguageService;
-  let byeJhonSampleId: string;
+  let byeJhonSampleId: string | null;
   let languages: Language[];
 
   beforeAll(async () => {
@@ -115,11 +120,12 @@ describe('NlpSampleController', () => {
     nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
     nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
     nlpValueService = module.get<NlpValueService>(NlpValueService);
-    byeJhonSampleId = (
-      await nlpSampleService.findOne({
-        text: 'Bye Jhon',
-      })
-    ).id;
+    byeJhonSampleId =
+      (
+        await nlpSampleService.findOne({
+          text: 'Bye Jhon',
+        })
+      )?.id || null;
     languageService = module.get<LanguageService>(LanguageService);
     languages = await languageService.findAll();
   });
@@ -143,15 +149,16 @@ describe('NlpSampleController', () => {
         (acc, currSample) => {
           const sampleWithEntities = {
             ...currSample,
-            entities: nlpSampleEntities.filter((currSampleEntity) => {
-              return currSampleEntity.sample === currSample.id;
-            }),
-            language: languages.find((lang) => lang.id === currSample.language),
+            entities: nlpSampleEntities.filter(
+              (currSampleEntity) => currSampleEntity.sample === currSample.id,
+            ),
+            language:
+              languages.find((lang) => lang.id === currSample.language) || null,
           };
           acc.push(sampleWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpSampleFull>[],
       );
 
       expect(result).toEqualPayload(nlpSampleFixturesWithEntities);
@@ -167,7 +174,7 @@ describe('NlpSampleController', () => {
       expect(result).toEqualPayload(
         nlpSampleFixtures.map((sample) => ({
           ...sample,
-          language: languages[sample.language].id,
+          language: sample.language ? languages[sample.language].id : null,
         })),
       );
     });
@@ -201,13 +208,13 @@ describe('NlpSampleController', () => {
 
   describe('deleteOne', () => {
     it('should delete a nlp sample', async () => {
-      const result = await nlpSampleController.deleteOne(byeJhonSampleId);
+      const result = await nlpSampleController.deleteOne(byeJhonSampleId!);
       expect(result.deletedCount).toEqual(1);
     });
 
     it('should throw exception when nlp sample id not found', async () => {
       await expect(
-        nlpSampleController.deleteOne(byeJhonSampleId),
+        nlpSampleController.deleteOne(byeJhonSampleId!),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -217,12 +224,14 @@ describe('NlpSampleController', () => {
       const yessSample = await nlpSampleService.findOne({
         text: 'yess',
       });
-      const result = await nlpSampleController.findOne(yessSample.id, [
+      const result = await nlpSampleController.findOne(yessSample!.id, [
         'invalidCreteria',
       ]);
       expect(result).toEqualPayload({
         ...nlpSampleFixtures[0],
-        language: languages[nlpSampleFixtures[0].language].id,
+        language: nlpSampleFixtures[0].language
+          ? languages[nlpSampleFixtures?.[0]?.language]?.id
+          : null,
       });
     });
 
@@ -231,22 +240,24 @@ describe('NlpSampleController', () => {
         text: 'yess',
       });
       const yessSampleEntity = await nlpSampleEntityService.findOne({
-        sample: yessSample.id,
+        sample: yessSample!.id,
       });
-      const result = await nlpSampleController.findOne(yessSample.id, [
+      const result = await nlpSampleController.findOne(yessSample!.id, [
         'entities',
       ]);
       const samplesWithEntities = {
         ...nlpSampleFixtures[0],
         entities: [yessSampleEntity],
-        language: languages[nlpSampleFixtures[0].language],
+        language: nlpSampleFixtures[0].language
+          ? languages[nlpSampleFixtures[0].language]
+          : null,
       };
       expect(result).toEqualPayload(samplesWithEntities);
     });
 
     it('should throw NotFoundException when Id does not exist', async () => {
       await expect(
-        nlpSampleController.findOne(byeJhonSampleId, ['entities']),
+        nlpSampleController.findOne(byeJhonSampleId!, ['entities']),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -259,7 +270,7 @@ describe('NlpSampleController', () => {
       const frLang = await languageService.findOne({
         code: 'fr',
       });
-      const result = await nlpSampleController.updateOne(yessSample.id, {
+      const result = await nlpSampleController.updateOne(yessSample!.id, {
         text: 'updated',
         trained: true,
         type: NlpSampleState.test,
@@ -288,12 +299,12 @@ describe('NlpSampleController', () => {
       expect(result.type).toEqual(updatedSample.type);
       expect(result.trained).toEqual(updatedSample.trained);
       expect(result.entities).toMatchObject(updatedSample.entities);
-      expect(result.language).toEqualPayload(updatedSample.language);
+      expect(result.language).toEqualPayload(updatedSample.language!);
     });
 
     it('should throw exception when nlp sample id not found', async () => {
       await expect(
-        nlpSampleController.updateOne(byeJhonSampleId, {
+        nlpSampleController.updateOne(byeJhonSampleId!, {
           text: 'updated',
           trained: true,
           type: NlpSampleState.test,
@@ -366,13 +377,13 @@ describe('NlpSampleController', () => {
         value: 'price',
         expressions: [],
         builtin: false,
-        entity: priceValueEntity.id,
+        entity: priceValueEntity!.id,
       };
       const textSample = {
         text: 'How much does a BMW cost?',
         trained: false,
         type: 'train',
-        language: language.id,
+        language: language!.id,
       };
 
       expect(intentEntityResult).toEqualPayload(intentEntity);
@@ -389,13 +400,13 @@ describe('NlpSampleController', () => {
           await nlpSampleService.findOne({
             text: 'How much does a BMW cost?',
           })
-        ).id,
+        )?.id,
         (
           await nlpSampleService.findOne({
             text: 'text1',
           })
-        ).id,
-      ];
+        )?.id,
+      ] as string[];
 
       const result = await nlpSampleController.deleteMany(samplesToDelete);
 

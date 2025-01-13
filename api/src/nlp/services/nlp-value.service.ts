@@ -128,7 +128,7 @@ export class NlpValueService extends BaseService<
         if ('start' in e && 'end' in e) {
           const word = sampleText.slice(e.start, e.end);
           return (
-            word !== e.value && vMap[e.value].expressions.indexOf(word) === -1
+            word !== e.value && vMap[e.value].expressions?.indexOf(word) === -1
           );
         }
         return false;
@@ -136,7 +136,7 @@ export class NlpValueService extends BaseService<
       .map((e) => {
         return this.updateOne(vMap[e.value].id, {
           ...vMap[e.value],
-          expressions: vMap[e.value].expressions.concat([
+          expressions: vMap[e.value].expressions?.concat([
             sampleText.slice(e.start, e.end),
           ]),
         } as NlpValueUpdateDto);
@@ -207,9 +207,11 @@ export class NlpValueService extends BaseService<
     const promises = valuesToAdd.map(async (v) => {
       const createdOrFound = await this.findOneOrCreate({ value: v.value }, v);
       // If value is found in database, then update it's synonyms
-      const expressions = createdOrFound.expressions
-        .concat(v.expressions) // Add new synonyms
-        .filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
+      const expressions = v.expressions
+        ? createdOrFound.expressions
+            ?.concat(v.expressions) // Add new synonyms
+            .filter((v, i, a) => a.indexOf(v) === i)
+        : createdOrFound.expressions?.filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
 
       // Update expressions
       const result = await this.updateOne({ value: v.value }, { expressions });

@@ -33,7 +33,11 @@ import {
   NlpSampleEntity,
   NlpSampleEntityModel,
 } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleModel } from '../schemas/nlp-sample.schema';
+import {
+  NlpSample,
+  NlpSampleFull,
+  NlpSampleModel,
+} from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
@@ -49,8 +53,8 @@ describe('NlpSampleService', () => {
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleRepository: NlpSampleRepository;
   let languageRepository: LanguageRepository;
-  let noNlpSample: NlpSample;
-  let nlpSampleEntity: NlpSampleEntity;
+  let noNlpSample: NlpSample | null;
+  let nlpSampleEntity: NlpSampleEntity | null;
   let languages: Language[];
 
   beforeAll(async () => {
@@ -104,7 +108,7 @@ describe('NlpSampleService', () => {
     languageRepository = module.get<LanguageRepository>(LanguageRepository);
     noNlpSample = await nlpSampleService.findOne({ text: 'No' });
     nlpSampleEntity = await nlpSampleEntityRepository.findOne({
-      sample: noNlpSample.id,
+      sample: noNlpSample!.id,
     });
     languages = await languageRepository.findAll();
   });
@@ -117,11 +121,11 @@ describe('NlpSampleService', () => {
 
   describe('findOneAndPopulate', () => {
     it('should return a nlp Sample with populate', async () => {
-      const result = await nlpSampleService.findOneAndPopulate(noNlpSample.id);
+      const result = await nlpSampleService.findOneAndPopulate(noNlpSample!.id);
       const sampleWithEntities = {
         ...nlpSampleFixtures[1],
         entities: [nlpSampleEntity],
-        language: languages[nlpSampleFixtures[1].language],
+        language: languages[nlpSampleFixtures[1].language!],
       };
       expect(result).toEqualPayload(sampleWithEntities);
     });
@@ -141,12 +145,13 @@ describe('NlpSampleService', () => {
             entities: nlpSampleEntities.filter((currSampleEntity) => {
               return currSampleEntity.sample === currSample.id;
             }),
-            language: languages.find((lang) => lang.id === currSample.language),
+            language:
+              languages.find((lang) => lang.id === currSample.language) || null,
           };
           acc.push(sampleWithEntities);
           return acc;
         },
-        [],
+        [] as NlpSampleFull[],
       );
       expect(result).toEqualPayload(nlpSampleFixturesWithEntities);
     });
@@ -167,7 +172,7 @@ describe('NlpSampleService', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp Sample', async () => {
-      const result = await nlpSampleService.deleteOne(noNlpSample.id);
+      const result = await nlpSampleService.deleteOne(noNlpSample!.id);
       expect(result.deletedCount).toEqual(1);
     });
   });

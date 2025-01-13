@@ -60,7 +60,7 @@ export const installNlpSampleFixtures = async () => {
     nlpSampleFixtures.map((v) => {
       return {
         ...v,
-        language: languages[parseInt(v.language)].id,
+        language: v.language ? languages[parseInt(v.language)].id : null,
       };
     }),
   );

@@ -31,7 +31,7 @@ export class SearchFilterPipe<T>
     private readonly props: {
       allowedFields: TFilterNestedKeysOfType<
         T,
-        undefined | string | string[]
+        null | undefined | string | string[]
       >[];
     },
   ) {}
@@ -48,7 +48,10 @@ export class SearchFilterPipe<T>
   private isAllowedField(field: string) {
     if (
       this.props.allowedFields.includes(
-        field as TFilterNestedKeysOfType<T, undefined | string | string[]>,
+        field as TFilterNestedKeysOfType<
+          T,
+          null | undefined | string | string[]
+        >,
       )
     )
       return true;

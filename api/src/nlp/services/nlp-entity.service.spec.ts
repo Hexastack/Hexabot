@@ -21,7 +21,7 @@ import {
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntityModel, NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
@@ -69,7 +69,7 @@ describe('nlpEntityService', () => {
         name: 'intent',
       });
       const result = await nlpEntityService.deleteCascadeOne(
-        intentNlpEntity.id,
+        intentNlpEntity!.id,
       );
       expect(result.deletedCount).toEqual(1);
     });
@@ -81,13 +81,13 @@ describe('nlpEntityService', () => {
         name: 'first_name',
       });
       const result = await nlpEntityService.findOneAndPopulate(
-        firstNameNlpEntity.id,
+        firstNameNlpEntity!.id,
       );
       const firstNameValues = await nlpValueRepository.findOne({
-        entity: firstNameNlpEntity.id,
+        entity: firstNameNlpEntity!.id,
       });
       const entityWithValues = {
-        id: firstNameNlpEntity.id,
+        id: firstNameNlpEntity!.id,
         ...nlpEntityFixtures[1],
         values: [firstNameValues],
       };
@@ -102,15 +102,15 @@ describe('nlpEntityService', () => {
         name: 'first_name',
       });
       const result = await nlpEntityService.findPageAndPopulate(
-        { _id: firstNameNlpEntity.id },
+        { _id: firstNameNlpEntity!.id },
         pageQuery,
       );
       const firstNameValues = await nlpValueRepository.findOne({
-        entity: firstNameNlpEntity.id,
+        entity: firstNameNlpEntity!.id,
       });
       const entitiesWithValues = [
         {
-          id: firstNameNlpEntity.id,
+          id: firstNameNlpEntity!.id,
           ...nlpEntityFixtures[1],
           values: [firstNameValues],
         },
@@ -139,12 +139,12 @@ describe('nlpEntityService', () => {
       const deValue = await nlpValueRepository.findOne({ value: 'de' });
       const storedEntites = [
         {
-          entity: intentEntity.id,
-          value: nameValue.id,
+          entity: intentEntity!.id,
+          value: nameValue!.id,
         },
         {
-          entity: languageEntity.id,
-          value: deValue.id,
+          entity: languageEntity!.id,
+          value: deValue!.id,
         },
       ];
 

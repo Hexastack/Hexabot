@@ -23,14 +23,16 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
-import { NlpEntityModel, NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
-  NlpSampleEntityModel,
   NlpSampleEntity,
+  NlpSampleEntityFull,
+  NlpSampleEntityModel,
 } from '../schemas/nlp-sample-entity.schema';
 import { NlpSampleModel } from '../schemas/nlp-sample.schema';
-import { NlpValueModel } from '../schemas/nlp-value.schema';
+import { NlpValueModel, NlpValueStub } from '../schemas/nlp-value.schema';
 
 import { NlpEntityRepository } from './nlp-entity.repository';
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
@@ -91,7 +93,7 @@ describe('NlpSampleEntityRepository', () => {
         value: { ...nlpValueFixtures[0], entity: nlpEntities[0].id },
         sample: {
           ...nlpSampleFixtures[0],
-          language: languages[nlpSampleFixtures[0].language].id,
+          language: languages[nlpSampleFixtures[0].language!].id,
         },
       });
     });
@@ -111,11 +113,14 @@ describe('NlpSampleEntityRepository', () => {
           const ValueWithEntities = {
             ...curr,
             entity: nlpEntities[0].id,
+            expressions: curr.expressions!,
+            builtin: curr.builtin!,
+            metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpValueStub>[],
       );
       nlpValueFixturesWithEntities[2] = {
         ...nlpValueFixturesWithEntities[2],
@@ -135,7 +140,7 @@ describe('NlpSampleEntityRepository', () => {
           };
           acc.push(sampleEntityWithPopulate);
           return acc;
-        }, []);
+        }, [] as TFixtures<NlpSampleEntityFull>[]);
       expect(result).toEqualPayload(nlpSampleEntityFixturesWithPopulate);
     });
   });
