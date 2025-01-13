@@ -252,7 +252,7 @@ export class BotService {
           assign_labels: [],
           trigger_labels: [],
           attachedBlock: null,
-          category: undefined as any,
+          category: null,
           previousBlocks: [],
         };
         convo.context.attempt++;
