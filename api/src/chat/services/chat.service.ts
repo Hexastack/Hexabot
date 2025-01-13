@@ -117,6 +117,12 @@ export class ChatService {
     try {
       const msg = await this.messageService.create(received);
       const populatedMsg = await this.messageService.findOneAndPopulate(msg.id);
+
+      if (!populatedMsg) {
+        this.logger.warn('Unable to find populated message.', event);
+        throw new Error(`Unable to find Message by ID ${msg.id} not found`);
+      }
+
       this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
       this.eventEmitter.emit('hook:stats:entry', 'incoming', 'Incoming');
       this.eventEmitter.emit(
@@ -288,7 +294,7 @@ export class ChatService {
   @OnEvent('hook:subscriber:postCreate')
   async onSubscriberCreate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    this.websocketGateway.broadcastSubscriberNew(subscriber);
+    if (subscriber) this.websocketGateway.broadcastSubscriberNew(subscriber);
   }
 
   /**
@@ -299,6 +305,6 @@ export class ChatService {
   @OnEvent('hook:subscriber:postUpdate')
   async onSubscriberUpdate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+    if (subscriber) this.websocketGateway.broadcastSubscriberUpdate(subscriber);
   }
 }
