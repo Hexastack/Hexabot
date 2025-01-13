@@ -20,7 +20,7 @@ import {
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { SubscriberUpdateDto } from '../dto/subscriber.dto';
+import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
   SUBSCRIBER_POPULATE,
@@ -33,7 +33,8 @@ import {
 export class SubscriberRepository extends BaseRepository<
   Subscriber,
   SubscriberPopulate,
-  SubscriberFull
+  SubscriberFull,
+  SubscriberDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

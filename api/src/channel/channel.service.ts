@@ -161,7 +161,6 @@ export class ChannelService {
         foreign_id: req.session.passport.user.id,
       },
       {
-        id: req.session.passport.user.id,
         foreign_id: req.session.passport.user.id,
         first_name: req.session.passport.user.first_name || 'Anonymous',
         last_name: req.session.passport.user.last_name || 'Anonymous',

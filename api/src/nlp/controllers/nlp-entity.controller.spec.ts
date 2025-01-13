@@ -111,6 +111,8 @@ describe('NlpEntityController', () => {
             values: nlpValueFixtures.filter(
               ({ entity }) => parseInt(entity) === index,
             ) as NlpEntityFull['values'],
+            lookups: curr.lookups!,
+            builtin: curr.builtin!,
           });
           return acc;
         },
@@ -214,6 +216,8 @@ describe('NlpEntityController', () => {
         id: firstNameEntity!.id,
         createdAt: firstNameEntity!.createdAt,
         updatedAt: firstNameEntity!.updatedAt,
+        lookups: firstNameEntity!.lookups,
+        builtin: firstNameEntity!.builtin,
       };
       const result = await nlpEntityController.findOne(firstNameEntity!.id, [
         'values',

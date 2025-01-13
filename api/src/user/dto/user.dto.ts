@@ -22,6 +22,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class UserCreateDto {
@@ -61,12 +62,21 @@ export class UserCreateDto {
   @IsString()
   @IsObjectId({ message: 'Avatar must be a valid ObjectId' })
   avatar: string | null = null;
+
+  @ApiPropertyOptional({
+    description: 'User state',
+    type: Boolean,
+  })
+  @IsOptional()
+  @IsBoolean()
+  state?: boolean;
 }
 
 export class UserEditProfileDto extends OmitType(PartialType(UserCreateDto), [
   'username',
   'roles',
   'avatar',
+  'state',
 ]) {
   @ApiPropertyOptional({ description: 'User language', type: String })
   @IsOptional()
@@ -98,3 +108,7 @@ export class UserResetPasswordDto extends PickType(UserCreateDto, [
 ]) {}
 
 export class UserRequestResetDto extends PickType(UserCreateDto, ['email']) {}
+
+export type UserDto = DtoConfig<{
+  create: UserCreateDto;
+}>;

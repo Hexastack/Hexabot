@@ -6,22 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { HelperSetting } from '@/helper/types';
+import { SettingType } from '@/setting/schemas/types';
 
-import { BaseService } from '@/utils/generics/base-service';
+export const TEST_HELPER_NAME = 'test-helper';
 
-import { UserDto } from '../dto/user.dto';
-import { UserRepository } from '../repositories/user.repository';
-import { User, UserFull, UserPopulate } from '../schemas/user.schema';
+export const TEST_HELPER_NAMESPACE = 'test_helper';
 
-@Injectable()
-export class UserService extends BaseService<
-  User,
-  UserPopulate,
-  UserFull,
-  UserDto
-> {
-  constructor(readonly repository: UserRepository) {
-    super(repository);
-  }
-}
+export default [
+  {
+    group: TEST_HELPER_NAMESPACE,
+    label: 'test',
+    value: 'test',
+    type: SettingType.text,
+  },
+] as const satisfies HelperSetting<typeof TEST_HELPER_NAME>[];

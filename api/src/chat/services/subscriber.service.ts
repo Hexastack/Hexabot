@@ -28,7 +28,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { SubscriberUpdateDto } from '../dto/subscriber.dto';
+import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import {
   Subscriber,
@@ -40,7 +40,8 @@ import {
 export class SubscriberService extends BaseService<
   Subscriber,
   SubscriberPopulate,
-  SubscriberFull
+  SubscriberFull,
+  SubscriberDto
 > {
   private readonly gateway: WebsocketGateway;
 

@@ -14,6 +14,7 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { LabelDto } from '../dto/label.dto';
 import {
   Label,
   LABEL_POPULATE,
@@ -26,7 +27,8 @@ import {
 export class LabelRepository extends BaseRepository<
   Label,
   LabelPopulate,
-  LabelFull
+  LabelFull,
+  LabelDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,

@@ -31,7 +31,7 @@ export class RoleStub extends BaseSchema {
   name: string;
 
   @Prop({ type: Boolean, default: true })
-  active?: boolean;
+  active: boolean;
 }
 
 @Schema({ timestamps: true })

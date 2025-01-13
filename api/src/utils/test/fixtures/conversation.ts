@@ -9,10 +9,7 @@
 import mongoose from 'mongoose';
 
 import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
-import {
-  Conversation,
-  ConversationModel,
-} from '@/chat/schemas/conversation.schema';
+import { ConversationModel } from '@/chat/schemas/conversation.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -116,14 +113,16 @@ const conversations: ConversationCreateDto[] = [
   },
 ];
 
-export const conversationDefaultValues: TFixturesDefaultValues<Conversation> = {
-  active: false,
-};
+export const conversationDefaultValues: TFixturesDefaultValues<ConversationCreateDto> =
+  {
+    active: false,
+  };
 
-export const conversationFixtures = getFixturesWithDefaultValues<Conversation>({
-  fixtures: conversations,
-  defaultValues: conversationDefaultValues,
-});
+export const conversationFixtures =
+  getFixturesWithDefaultValues<ConversationCreateDto>({
+    fixtures: conversations,
+    defaultValues: conversationDefaultValues,
+  });
 
 export const installConversationTypeFixtures = async () => {
   const subscribers = await installSubscriberFixtures();

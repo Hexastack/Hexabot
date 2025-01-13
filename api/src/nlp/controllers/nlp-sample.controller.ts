@@ -42,7 +42,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpSampleDto } from '../dto/nlp-sample.dto';
+import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
   NlpSample,
   NlpSampleFull,
@@ -60,7 +60,8 @@ export class NlpSampleController extends BaseController<
   NlpSample,
   NlpSampleStub,
   NlpSamplePopulate,
-  NlpSampleFull
+  NlpSampleFull,
+  TNlpSampleDto
 > {
   constructor(
     private readonly nlpSampleService: NlpSampleService,
@@ -91,7 +92,7 @@ export class NlpSampleController extends BaseController<
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
     const helper = await this.helperService.getDefaultNluHelper();
-    const result = await helper.format?.(samples, entities);
+    const result = await helper.format(samples, entities);
 
     // Sending the JSON data as a file
     const buffer = Buffer.from(JSON.stringify(result));
@@ -128,11 +129,6 @@ export class NlpSampleController extends BaseController<
     }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
-    if (!language)
-      throw new NotFoundException(
-        `Language with code ${languageCode} not found`,
-      );
 
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
@@ -302,13 +298,6 @@ export class NlpSampleController extends BaseController<
     @Body() { entities, language: languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
-
-    if (!language) {
-      this.logger.warn(`Unable to Language by languageCode ${languageCode}`);
-      throw new NotFoundException(
-        `Language with languageCode ${languageCode} not found`,
-      );
-    }
 
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,

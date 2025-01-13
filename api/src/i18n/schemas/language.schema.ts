@@ -32,13 +32,13 @@ export class Language extends BaseSchema {
     type: Boolean,
     default: false,
   })
-  isDefault?: boolean;
+  isDefault: boolean;
 
   @Prop({
     type: Boolean,
     default: false,
   })
-  isRTL?: boolean;
+  isRTL: boolean;
 }
 
 export const LanguageModel: ModelDefinition = LifecycleHookManager.attach({

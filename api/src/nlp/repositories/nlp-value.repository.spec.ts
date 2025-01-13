@@ -89,6 +89,9 @@ describe('NlpValueRepository', () => {
             entity: nlpEntityFixtures[
               parseInt(curr.entity)
             ] as NlpValueFull['entity'],
+            builtin: curr.builtin!,
+            expressions: curr.expressions!,
+            metadata: curr.metadata!,
           };
           acc.push(ValueWithEntities);
           return acc;
