@@ -46,7 +46,7 @@ export class ConversationCreateDto {
   @IsObjectId({
     message: 'Current must be a valid objectId',
   })
-  current?: string;
+  current?: string | null;
 
   @ApiProperty({ description: 'next conversation', type: Array })
   @IsOptional()

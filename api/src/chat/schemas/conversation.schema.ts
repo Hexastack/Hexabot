@@ -80,8 +80,8 @@ export class Conversation extends ConversationStub {
   @Transform(({ obj }) => obj.sender.toString())
   sender: string;
 
-  @Transform(({ obj }) => obj.current.toString())
-  current: string;
+  @Transform(({ obj }) => (obj.current ? obj.current.toString() : null))
+  current: string | null;
 
   @Transform(({ obj }) => obj.next.map((elem) => elem.toString()))
   next: string[];
