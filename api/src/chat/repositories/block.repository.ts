@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -178,10 +178,13 @@ export class BlockRepository extends BaseRepository<
     category: string,
     ids: string[],
   ): Promise<void> {
-    for (const id of ids) {
-      const oldState = await this.findOne(id);
-      if (oldState && oldState.category !== category) {
-        const updatedNextBlocks = oldState.nextBlocks?.filter((nextBlock) =>
+
+    const oldStates: Block[] = await this.find({ _id: { $in: ids } });
+
+    for (const oldState of oldStates) {
+      if (oldState.category !== category) {
+        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+
           ids.includes(nextBlock),
         );
 
@@ -189,7 +192,7 @@ export class BlockRepository extends BaseRepository<
           ? oldState.attachedBlock
           : null;
 
-        await this.updateOne(id, {
+        await this.updateOne(oldState.id, {
           nextBlocks: updatedNextBlocks,
           attachedBlock: updatedAttachedBlock,
         });
