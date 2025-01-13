@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,7 +9,9 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
+import { Model } from 'mongoose';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
@@ -30,6 +32,7 @@ export class SettingService extends BaseService<Setting> {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly logger: LoggerService,
     private readonly seeder: SettingSeeder,
+    @InjectModel(Setting.name) private settingModel: Model<Setting>,
   ) {
     super(repository);
   }
@@ -131,5 +134,18 @@ export class SettingService extends BaseService<Setting> {
   async getSettings(): Promise<Settings> {
     const settings = await this.findAll();
     return this.buildTree(settings);
+  }
+
+  /**
+   * Fetches all settings labeled as 'allowed_domains'.
+   * @returns An array of allowed domains.
+   */
+  async getAllowedDomains(): Promise<string[]> {
+    const settings = await this.settingModel
+      .find({ label: 'allowed_domains' })
+      .exec();
+    return settings
+      .map((setting) => setting.value.split(',').map((domain) => domain.trim()))
+      .flat();
   }
 }
