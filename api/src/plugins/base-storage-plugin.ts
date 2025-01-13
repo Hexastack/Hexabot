@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Readable } from 'stream';
+import { Readable, Stream } from 'stream';
 
 import { Injectable, StreamableFile } from '@nestjs/common';
 
@@ -48,7 +48,7 @@ export abstract class BaseStoragePlugin extends BasePlugin {
   readAsBuffer?(attachment: Attachment): Promise<Buffer>;
 
   store?(
-    file: Buffer | Readable | Express.Multer.File,
+    file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
     rootDir?: string,
   ): Promise<Attachment>;

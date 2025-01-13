@@ -27,7 +27,7 @@ export type AttachmentRef =
       id: string | null;
     }
   | {
-      /** To be used only for external URLs (plugins), for attachments use "id" instead */
+      /** @deprecated To be used only for external URLs (plugins), for stored attachments use "id" instead */
       url: string;
     };
 

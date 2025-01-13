@@ -277,7 +277,11 @@ export default abstract class ChannelHandler<
    */
   public async download(token: string, _req: Request) {
     try {
-      const result = this.jwtService.verify(token, this.jwtSignOptions);
+      const {
+        exp: _exp,
+        iat: _iat,
+        ...result
+      } = this.jwtService.verify(token, this.jwtSignOptions);
       const attachment = plainToClass(Attachment, result);
       return await this.attachmentService.download(attachment);
     } catch (err) {

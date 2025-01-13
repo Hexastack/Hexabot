@@ -8,7 +8,7 @@
 
 import fs, { createReadStream, promises as fsPromises } from 'fs';
 import { join, resolve } from 'path';
-import { Readable } from 'stream';
+import { Readable, Stream } from 'stream';
 
 import {
   Injectable,
@@ -202,7 +202,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * @returns A promise that resolves to an array of uploaded attachments.
    */
   async store(
-    file: Buffer | Readable | Express.Multer.File,
+    file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
     rootDir = config.parameters.uploadDir,
   ): Promise<Attachment | undefined> {
@@ -219,7 +219,7 @@ export class AttachmentService extends BaseService<Attachment> {
 
       if (Buffer.isBuffer(file)) {
         await fsPromises.writeFile(filePath, file);
-      } else if (file instanceof Readable) {
+      } else if (file instanceof Readable || file instanceof Stream) {
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(filePath);
           file.pipe(writeStream);
