@@ -9,6 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -20,7 +21,6 @@ import { Conversation } from '../schemas/conversation.schema';
 import { SubscriberDocument } from '../schemas/subscriber.schema';
 import { OutgoingMessage } from '../schemas/types/message';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { BotService } from './bot.service';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
