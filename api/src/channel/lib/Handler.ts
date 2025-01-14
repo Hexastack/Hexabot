@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,6 +21,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import {
   StdOutgoingEnvelope,
   StdOutgoingMessage,
@@ -234,22 +235,32 @@ export default abstract class ChannelHandler<
    * @param attachment The attachment ID or object to generate a signed URL for.
    * @return A signed URL string for downloading the specified attachment.
    */
-  protected async getPublicUrl(attachment: string | Attachment) {
-    const resource =
-      typeof attachment === 'string'
-        ? await this.attachmentService.findOne(attachment)
-        : attachment;
+  public async getPublicUrl(attachment: AttachmentRef | Attachment) {
+    if ('id' in attachment) {
+      if (!attachment.id) {
+        throw new TypeError(
+          'Attachment ID is empty, unable to generate public URL.',
+        );
+      }
 
-    if (!resource) {
-      throw new NotFoundException('Unable to find attachment');
+      const resource = await this.attachmentService.findOne(attachment.id);
+
+      if (!resource) {
+        throw new NotFoundException('Unable to find attachment');
+      }
+
+      const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
+      const [name, _suffix] = this.getName().split('-');
+      return buildURL(
+        config.apiBaseUrl,
+        `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
+      );
+    } else if ('url' in attachment && attachment.url) {
+      // In case the url is external
+      return attachment.url;
+    } else {
+      throw new TypeError('Unable to resolve the attachment public URL.');
     }
-
-    const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
-    const [name, _suffix] = this.getName().split('-');
-    return buildURL(
-      config.apiBaseUrl,
-      `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
-    );
   }
 
   /**
@@ -266,7 +277,11 @@ export default abstract class ChannelHandler<
    */
   public async download(token: string, _req: Request) {
     try {
-      const result = this.jwtService.verify(token, this.jwtSignOptions);
+      const {
+        exp: _exp,
+        iat: _iat,
+        ...result
+      } = this.jwtService.verify(token, this.jwtSignOptions);
       const attachment = plainToClass(Attachment, result);
       return await this.attachmentService.download(attachment);
     } catch (err) {
