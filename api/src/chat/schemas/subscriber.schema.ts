@@ -80,13 +80,13 @@ export class SubscriberStub extends BaseSchema {
     ref: 'User',
     default: null,
   })
-  assignedTo?: unknown;
+  assignedTo: unknown;
 
   @Prop({
     type: Date,
     default: null,
   })
-  assignedAt?: Date | null;
+  assignedAt: Date | null;
 
   @Prop({
     type: Date,
@@ -110,13 +110,13 @@ export class SubscriberStub extends BaseSchema {
     ref: 'Attachment',
     default: null,
   })
-  avatar?: unknown;
+  avatar: unknown;
 
   @Prop({
     type: Object,
     default: { vars: {} },
   })
-  context?: SubscriberContext;
+  context: SubscriberContext;
 
   static getChannelData<
     C extends ChannelName,
@@ -131,11 +131,11 @@ export class Subscriber extends SubscriberStub {
   @Transform(({ obj }) => obj.labels.map((label) => label.toString()))
   labels: string[];
 
-  @Transform(({ obj }) => (obj.assignedTo ? obj.assignedTo.toString() : null))
-  assignedTo?: string | null;
+  @Transform(({ obj }) => obj.assignedTo?.toString() || null)
+  assignedTo: string | null;
 
   @Transform(({ obj }) => obj.avatar?.toString() || null)
-  avatar?: string | null;
+  avatar: string | null;
 }
 
 @Schema({ timestamps: true })
@@ -144,7 +144,7 @@ export class SubscriberFull extends SubscriberStub {
   labels: Label[];
 
   @Type(() => User)
-  assignedTo?: User | null;
+  assignedTo: User | null;
 
   @Type(() => Attachment)
   avatar: Attachment | null;

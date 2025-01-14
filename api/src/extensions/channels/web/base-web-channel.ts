@@ -236,7 +236,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid || 'DEFAULT_MID',
+          mid: anyMessage.mid || this.generateId(),
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
         });
@@ -621,7 +621,12 @@ export default abstract class BaseWebChannelHandler<
         size: Buffer.byteLength(data.file),
         type: data.type,
       });
-      return attachment;
+
+      if (attachment) {
+        return attachment;
+      } else {
+        throw new Error('Unable to retrieve stored attachment');
+      }
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',
@@ -639,7 +644,7 @@ export default abstract class BaseWebChannelHandler<
   async handleWebUpload(
     req: Request,
     res: Response,
-  ): Promise<Attachment | null> {
+  ): Promise<Attachment | null | undefined> {
     try {
       const upload = multer({
         limits: {
@@ -665,7 +670,9 @@ export default abstract class BaseWebChannelHandler<
               reject(new Error('Unable to upload file!'));
             }
 
-            resolve(req.file);
+            if (req.file) {
+              resolve(req.file);
+            }
           });
         },
       );
@@ -678,12 +685,18 @@ export default abstract class BaseWebChannelHandler<
         return null;
       }
 
-      const attachment = await this.attachmentService.store(file, {
-        name: file.originalname,
-        size: file.size,
-        type: file.mimetype,
-      });
-      return attachment;
+      if (file) {
+        const attachment = await this.attachmentService.store(file, {
+          name: file.originalname,
+          size: file.size,
+          type: file.mimetype,
+        });
+        if (attachment) {
+          return attachment;
+        }
+
+        throw new Error('Unable to store uploaded file');
+      }
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',
@@ -703,7 +716,7 @@ export default abstract class BaseWebChannelHandler<
   async handleUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-  ): Promise<Attachment | null> {
+  ): Promise<Attachment | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('Web Channel Handler : No session provided');
