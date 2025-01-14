@@ -96,6 +96,7 @@ export class SubscriberRepository extends BaseRepository<
           !!subscriberUpdates?.assignedTo,
         );
       }
+      subscriberUpdates.assignedAt = new Date();
     }
   }
 
