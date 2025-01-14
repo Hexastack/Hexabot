@@ -8,7 +8,7 @@
 
 import fs, { createReadStream, promises as fsPromises } from 'fs';
 import { join, resolve } from 'path';
-import { Readable } from 'stream';
+import { Readable, Stream } from 'stream';
 
 import {
   Injectable,
@@ -202,7 +202,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * @returns A promise that resolves to an array of uploaded attachments.
    */
   async store(
-    file: Buffer | Readable | Express.Multer.File,
+    file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
     rootDir = config.parameters.uploadDir,
   ): Promise<Attachment | undefined> {
@@ -219,10 +219,11 @@ export class AttachmentService extends BaseService<Attachment> {
 
       if (Buffer.isBuffer(file)) {
         await fsPromises.writeFile(filePath, file);
-      } else if (file instanceof Readable) {
+      } else if (file instanceof Readable || file instanceof Stream) {
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(filePath);
           file.pipe(writeStream);
+          // @TODO: Calc size here?
           writeStream.on('finish', resolve);
           writeStream.on('error', reject);
         });
@@ -285,7 +286,7 @@ export class AttachmentService extends BaseService<Attachment> {
    *
    * @param attachment - The attachment to download.
    * @param rootDir - Root folder path where the attachment should be located.
-   * @returns A promise that resolves to a Buffer representing the downloaded attachment.
+   * @returns A promise that resolves to a Buffer representing the attachment file.
    */
   async readAsBuffer(
     attachment: Attachment,
@@ -301,6 +302,30 @@ export class AttachmentService extends BaseService<Attachment> {
       }
 
       return await fs.promises.readFile(path); // Reads the file content as a Buffer
+    }
+  }
+
+  /**
+   * Returns an attachment identified by the provided parameters as a Stream.
+   *
+   * @param attachment - The attachment to download.
+   * @param rootDir - Root folder path where the attachment should be located.
+   * @returns A promise that resolves to a Stream representing the attachment file.
+   */
+  async readAsStream(
+    attachment: Attachment,
+    rootDir = config.parameters.uploadDir,
+  ): Promise<Stream | undefined> {
+    if (this.getStoragePlugin()) {
+      return await this.getStoragePlugin()?.readAsStream?.(attachment);
+    } else {
+      const path = resolve(join(rootDir, attachment.location));
+
+      if (!fileExists(path)) {
+        throw new NotFoundException('No file was found');
+      }
+
+      return fs.createReadStream(path); // Reads the file content as a Buffer
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,10 +7,7 @@
  */
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-} from '@/chat/schemas/types/attachment';
+import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
@@ -101,7 +98,7 @@ export default abstract class EventWrapper<
    *
    * @returns The current instance of the channel handler.
    */
-  getHandler(): ChannelHandler {
+  getHandler(): C {
     return this._handler;
   }
 
@@ -126,6 +123,7 @@ export default abstract class EventWrapper<
   /**
    * Sets an event attribute value
    *
+   * @deprecated
    * @param attr - Event attribute name
    * @param value - The value to set for the specified attribute.
    */
@@ -136,6 +134,7 @@ export default abstract class EventWrapper<
   /**
    * Returns an event attribute value, default value if it does exist
    *
+   * @deprecated
    * @param  attr - Event attribute name
    * @param  otherwise - Default value if attribute does not exist
    *
@@ -188,6 +187,16 @@ export default abstract class EventWrapper<
    */
   setSender(profile: Subscriber) {
     this._profile = profile;
+  }
+
+  /**
+   * Pre-Process the message event
+   *
+   * Child class can perform operations such as storing files as attachments.
+   */
+  preprocess() {
+    // Nothing ...
+    return Promise.resolve();
   }
 
   /**
@@ -249,7 +258,7 @@ export default abstract class EventWrapper<
    *
    * @returns Received attachments message
    */
-  abstract getAttachments(): AttachmentPayload<AttachmentForeignKey>[];
+  abstract getAttachments(): AttachmentPayload[];
 
   /**
    * Returns the list of delivered messages
@@ -378,7 +387,7 @@ export class GenericEventWrapper extends EventWrapper<
    * @returns A list of received attachments
    * @deprecated - This method is deprecated
    */
-  getAttachments(): AttachmentPayload<AttachmentForeignKey>[] {
+  getAttachments(): AttachmentPayload[] {
     return [];
   }
 

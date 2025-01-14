@@ -78,23 +78,18 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
 };
 
 const attachment: Attachment = {
-  id: '1',
+  id: '1'.repeat(24),
   name: 'attachment.jpg',
   type: 'image/jpeg',
   size: 3539,
   location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
   channel: {
-    ['dimelo']: {
-      id: 'attachment-id-dimelo',
+    ['any-channel']: {
+      id: 'any-channel-attachment-id',
     },
   },
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-
-const attachmentWithUrl: Attachment = {
-  ...attachment,
-  url: 'http://localhost:4000/attachment/download/1/attachment.jpg',
 };
 
 export const contentMessage: StdOutgoingListMessage = {
@@ -121,7 +116,8 @@ export const contentMessage: StdOutgoingListMessage = {
       title: 'First',
       desc: 'About being first',
       thumbnail: {
-        payload: attachmentWithUrl,
+        type: 'image',
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -136,7 +132,8 @@ export const contentMessage: StdOutgoingListMessage = {
       title: 'Second',
       desc: 'About being second',
       thumbnail: {
-        payload: attachmentWithUrl,
+        type: 'image',
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -149,14 +146,14 @@ export const contentMessage: StdOutgoingListMessage = {
   pagination: {
     total: 3,
     skip: 0,
-    limit: 1,
+    limit: 2,
   },
 };
 
-export const attachmentMessage: StdOutgoingAttachmentMessage<Attachment> = {
+export const attachmentMessage: StdOutgoingAttachmentMessage = {
   attachment: {
     type: FileType.image,
-    payload: attachmentWithUrl,
+    payload: { id: attachment.id },
   },
   quickReplies: [
     {

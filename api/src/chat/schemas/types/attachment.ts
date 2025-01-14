@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
-
 export enum FileType {
   image = 'image',
   video = 'video',
@@ -16,21 +14,24 @@ export enum FileType {
   unknown = 'unknown',
 }
 
-export type AttachmentForeignKey = {
-  url?: string;
-  attachment_id: string;
-};
+/**
+ * The `AttachmentRef` type defines two possible ways to reference an attachment:
+ * 1. By `id`: This is used when the attachment is uploaded and stored in the Hexabot system.
+ * The `id` field represents the unique identifier of the uploaded attachment in the system.
+ * 2. By `url`: This is used when the attachment is externally hosted, especially when
+ * the content is generated or retrieved by a plugin that consumes a third-party API.
+ * In this case, the `url` field contains the direct link to the external resource.
+ */
+export type AttachmentRef =
+  | {
+      id: string | null;
+    }
+  | {
+      /** @deprecated To be used only for external URLs (plugins), for stored attachments use "id" instead */
+      url: string;
+    };
 
-export interface AttachmentPayload<
-  A extends Attachment | AttachmentForeignKey,
-> {
+export interface AttachmentPayload {
   type: FileType;
-  payload: A;
-}
-
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: {
-    url: string;
-  };
+  payload: AttachmentRef;
 }

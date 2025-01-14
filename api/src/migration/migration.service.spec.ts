@@ -14,6 +14,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataRepository } from '@/setting/repositories/metadata.repository';
 import { Metadata, MetadataModel } from '@/setting/schemas/metadata.schema';
@@ -52,6 +53,10 @@ describe('MigrationService', () => {
         },
         {
           provide: HttpService,
+          useValue: {},
+        },
+        {
+          provide: AttachmentService,
           useValue: {},
         },
         {
@@ -278,6 +283,7 @@ describe('MigrationService', () => {
       });
       expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
       expect(migrationMock.up).toHaveBeenCalledWith({
+        attachmentService: service['attachmentService'],
         logger: service['logger'],
         http: service['httpService'],
       });
@@ -308,6 +314,7 @@ describe('MigrationService', () => {
       });
       expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
       expect(migrationMock.up).toHaveBeenCalledWith({
+        attachmentService: service['attachmentService'],
         logger: service['logger'],
         http: service['httpService'],
       });
@@ -338,6 +345,7 @@ describe('MigrationService', () => {
       });
       expect(loadMigrationFileSpy).toHaveBeenCalledWith('v2.1.9');
       expect(migrationMock.up).toHaveBeenCalledWith({
+        attachmentService: service['attachmentService'],
         logger: service['logger'],
         http: service['httpService'],
       });

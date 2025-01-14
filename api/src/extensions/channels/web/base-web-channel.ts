@@ -22,11 +22,13 @@ import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
   ContentElement,
   IncomingMessage,
+  IncomingMessageType,
   OutgoingMessage,
   OutgoingMessageFormat,
   PayloadType,
@@ -127,9 +129,9 @@ export default abstract class BaseWebChannelHandler<
    * @param incoming - Incoming message
    * @returns Formatted web message
    */
-  private formatIncomingHistoryMessage(
+  private async formatIncomingHistoryMessage(
     incoming: IncomingMessage,
-  ): Web.IncomingMessageBase {
+  ): Promise<Web.IncomingMessageBase> {
     // Format incoming message
     if ('type' in incoming.message) {
       if (incoming.message.type === PayloadType.location) {
@@ -145,14 +147,15 @@ export default abstract class BaseWebChannelHandler<
         };
       } else {
         // @TODO : handle multiple files
-        const attachment = Array.isArray(incoming.message.attachment)
+        const attachmentPayload = Array.isArray(incoming.message.attachment)
           ? incoming.message.attachment[0]
           : incoming.message.attachment;
+
         return {
           type: Web.IncomingMessageType.file,
           data: {
-            type: attachment.type,
-            url: attachment.payload.url,
+            type: attachmentPayload.type,
+            url: await this.getPublicUrl(attachmentPayload.payload),
           },
         };
       }
@@ -170,9 +173,9 @@ export default abstract class BaseWebChannelHandler<
    * @param outgoing - The outgoing message
    * @returns Formatted web message
    */
-  private formatOutgoingHistoryMessage(
+  private async formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     // Format outgoing message
     if ('buttons' in outgoing.message) {
       return this._buttonsFormat(outgoing.message);
@@ -182,11 +185,11 @@ export default abstract class BaseWebChannelHandler<
       return this._quickRepliesFormat(outgoing.message);
     } else if ('options' in outgoing.message) {
       if (outgoing.message.options.display === 'carousel') {
-        return this._carouselFormat(outgoing.message, {
+        return await this._carouselFormat(outgoing.message, {
           content: outgoing.message.options,
         });
       } else {
-        return this._listFormat(outgoing.message, {
+        return await this._listFormat(outgoing.message, {
           content: outgoing.message.options,
         });
       }
@@ -212,12 +215,14 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns Formatted message
    */
-  protected formatMessages(messages: AnyMessage[]): Web.Message[] {
+  protected async formatMessages(
+    messages: AnyMessage[],
+  ): Promise<Web.Message[]> {
     const formattedMessages: Web.Message[] = [];
 
     for (const anyMessage of messages) {
       if (this.isIncomingMessage(anyMessage)) {
-        const message = this.formatIncomingHistoryMessage(anyMessage);
+        const message = await this.formatIncomingHistoryMessage(anyMessage);
         formattedMessages.push({
           ...message,
           author: anyMessage.sender,
@@ -226,7 +231,7 @@ export default abstract class BaseWebChannelHandler<
           createdAt: anyMessage.createdAt,
         });
       } else {
-        const message = this.formatOutgoingHistoryMessage(anyMessage);
+        const message = await this.formatOutgoingHistoryMessage(anyMessage);
         formattedMessages.push({
           ...message,
           author: 'chatbot',
@@ -261,7 +266,7 @@ export default abstract class BaseWebChannelHandler<
         until,
         n,
       );
-      return this.formatMessages(messages.reverse());
+      return await this.formatMessages(messages.reverse());
     }
     return [];
   }
@@ -286,7 +291,7 @@ export default abstract class BaseWebChannelHandler<
         since,
         n,
       );
-      return this.formatMessages(messages);
+      return await this.formatMessages(messages);
     }
     return [];
   }
@@ -579,9 +584,8 @@ export default abstract class BaseWebChannelHandler<
         'since' in req.query
           ? req.query.since // Long polling case
           : req.body?.since || undefined; // Websocket case
-      return this.fetchHistory(req, criteria).then((messages) => {
-        return res.status(200).json({ profile, messages });
-      });
+      const messages = await this.fetchHistory(req, criteria);
+      return res.status(200).json({ profile, messages });
     } catch (err) {
       this.logger.warn('Web Channel Handler : Unable to subscribe ', err);
       return res.status(500).json({ err: 'Unable to subscribe' });
@@ -589,59 +593,51 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Upload file as attachment if provided
+   * Handle upload via WebSocket
    *
-   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
-   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
-   * @param next Callback Function
+   * @returns The stored attachment or null
    */
-  async handleFilesUpload(
-    req: Request | SocketRequest,
-    res: Response | SocketResponse,
-    next: (
-      err: null | Error,
-      result?: Web.IncomingAttachmentMessageData,
-    ) => void,
-  ): Promise<void> {
-    // Check if any file is provided
-    if (!req.session.web) {
-      this.logger.debug('Web Channel Handler : No session provided');
-      return next(null);
-    }
+  async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
+    try {
+      const { type, data } = req.body as Web.IncomingMessage;
 
-    if (this.isSocketRequest(req)) {
-      try {
-        const { type, data } = req.body as Web.IncomingMessage;
-
-        // Check if any file is provided
-        if (type !== 'file' || !('file' in data) || !data.file) {
-          this.logger.debug('Web Channel Handler : No files provided');
-          return next(null);
-        }
-
-        const size = Buffer.byteLength(data.file);
-
-        if (size > config.parameters.maxUploadSize) {
-          return next(new Error('Max upload size has been exceeded'));
-        }
-
-        const attachment = await this.attachmentService.store(data.file, {
-          name: data.name,
-          size: Buffer.byteLength(data.file),
-          type: data.type,
-        });
-        next(null, {
-          type: Attachment.getTypeByMime(attachment.type),
-          url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-        });
-      } catch (err) {
-        this.logger.error(
-          'Web Channel Handler : Unable to write uploaded file',
-          err,
-        );
-        return next(new Error('Unable to upload file!'));
+      // Check if any file is provided
+      if (type !== 'file' || !('file' in data) || !data.file) {
+        this.logger.debug('Web Channel Handler : No files provided');
+        return null;
       }
-    } else {
+
+      const size = Buffer.byteLength(data.file);
+
+      if (size > config.parameters.maxUploadSize) {
+        throw new Error('Max upload size has been exceeded');
+      }
+
+      const attachment = await this.attachmentService.store(data.file, {
+        name: data.name,
+        size: Buffer.byteLength(data.file),
+        type: data.type,
+      });
+      return attachment;
+    } catch (err) {
+      this.logger.error(
+        'Web Channel Handler : Unable to store uploaded file',
+        err,
+      );
+      throw new Error('Unable to upload file!');
+    }
+  }
+
+  /**
+   * Handle multipart/form-data upload
+   *
+   * @returns The stored attachment or null
+   */
+  async handleWebUpload(
+    req: Request,
+    res: Response,
+  ): Promise<Attachment | null> {
+    try {
       const upload = multer({
         limits: {
           fileSize: config.parameters.maxUploadSize,
@@ -655,36 +651,66 @@ export default abstract class BaseWebChannelHandler<
         })(),
       }).single('file'); // 'file' is the field name in the form
 
-      upload(req as Request, res as Response, async (err?: any) => {
-        if (err) {
-          this.logger.error(
-            'Web Channel Handler : Unable to write uploaded file',
-            err,
-          );
-          return next(new Error('Unable to upload file!'));
-        }
+      const multerUpload = new Promise<Express.Multer.File | null>(
+        (resolve, reject) => {
+          upload(req as Request, res as Response, async (err?: any) => {
+            if (err) {
+              this.logger.error(
+                'Web Channel Handler : Unable to store uploaded file',
+                err,
+              );
+              reject(new Error('Unable to upload file!'));
+            }
 
-        // Check if any file is provided
-        if (!req.file) {
-          this.logger.debug('Web Channel Handler : No files provided');
-          return next(null);
-        }
+            resolve(req.file);
+          });
+        },
+      );
 
-        try {
-          const file = req.file;
-          const attachment = await this.attachmentService.store(file, {
-            name: file.originalname,
-            size: file.size,
-            type: file.mimetype,
-          });
-          next(null, {
-            type: Attachment.getTypeByMime(attachment.type),
-            url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
-          });
-        } catch (err) {
-          next(err);
-        }
+      const file = await multerUpload;
+
+      // Check if any file is provided
+      if (!req.file) {
+        this.logger.debug('Web Channel Handler : No files provided');
+        return null;
+      }
+
+      const attachment = await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
       });
+      return attachment;
+    } catch (err) {
+      this.logger.error(
+        'Web Channel Handler : Unable to store uploaded file',
+        err,
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Upload file as attachment if provided
+   *
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
+   * @param next Callback Function
+   */
+  async handleUpload(
+    req: Request | SocketRequest,
+    res: Response | SocketResponse,
+  ): Promise<Attachment | null> {
+    // Check if any file is provided
+    if (!req.session.web) {
+      this.logger.debug('Web Channel Handler : No session provided');
+      return null;
+    }
+
+    if (this.isSocketRequest(req)) {
+      return this.handleWsUpload(req);
+    } else {
+      return this.handleWebUpload(req, res as Response);
     }
   }
 
@@ -748,12 +774,25 @@ export default abstract class BaseWebChannelHandler<
           : req.body.data;
     }
 
-    this.validateSession(req, res, (profile) => {
-      this.handleFilesUpload(
-        req,
-        res,
-        (err: Error, data?: Web.IncomingAttachmentMessageData) => {
-          if (err) {
+    this.validateSession(req, res, async (profile) => {
+      // Set data in file upload case
+      const body: Web.IncomingMessage = req.body;
+
+      const channelAttrs = this.getChannelAttributes(req);
+      const event = new WebEventWrapper<N>(this, body, channelAttrs);
+      if (event._adapter.eventType === StdEventType.message) {
+        // Handle upload when files are provided
+        if (event._adapter.messageType === IncomingMessageType.attachments) {
+          try {
+            const attachment = await this.handleUpload(req, res);
+            if (attachment) {
+              event._adapter.attachment = attachment;
+              event._adapter.raw.data = {
+                type: Attachment.getTypeByMime(attachment.type),
+                url: await this.getPublicUrl(attachment),
+              };
+            }
+          } catch (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',
               err,
@@ -762,49 +801,39 @@ export default abstract class BaseWebChannelHandler<
               .status(403)
               .json({ err: 'Web Channel Handler : File upload failed!' });
           }
-          // Set data in file upload case
-          const body: Web.IncomingMessage = data
-            ? {
-                ...req.body,
-                data,
-              }
-            : req.body;
+        }
 
-          const channelAttrs = this.getChannelAttributes(req);
-          const event = new WebEventWrapper<N>(this, body, channelAttrs);
-          if (event.getEventType() === 'message') {
-            // Handler sync message sent by chabbot
-            if (body.sync && body.author === 'chatbot') {
-              const sentMessage: MessageCreateDto = {
-                mid: event.getId(),
-                message: event.getMessage() as StdOutgoingMessage,
-                recipient: profile.id,
-                read: true,
-                delivery: true,
-              };
-              this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
-              return res.status(200).json(event._adapter.raw);
-            } else {
-              // Generate unique ID and handle message
-              event.set('mid', this.generateId());
-            }
-          }
+        // Handler sync message sent by chabbot
+        if (body.sync && body.author === 'chatbot') {
+          const sentMessage: MessageCreateDto = {
+            mid: event.getId(),
+            message: event.getMessage() as StdOutgoingMessage,
+            recipient: profile.id,
+            read: true,
+            delivery: true,
+          };
+          this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+          return res.status(200).json(event._adapter.raw);
+        } else {
+          // Generate unique ID and handle message
+          event._adapter.raw.mid = this.generateId();
           // Force author id from session
-          event.set('author', profile.foreign_id);
-          event.setSender(profile);
+          event._adapter.raw.author = profile.foreign_id;
+        }
+      }
 
-          const type = event.getEventType();
-          if (type) {
-            this.eventEmitter.emit(`hook:chatbot:${type}`, event);
-          } else {
-            this.logger.error(
-              'Web Channel Handler : Webhook received unknown event ',
-              event,
-            );
-          }
-          res.status(200).json(event._adapter.raw);
-        },
-      );
+      event.setSender(profile);
+
+      const type = event.getEventType();
+      if (type) {
+        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+      } else {
+        this.logger.error(
+          'Web Channel Handler : Webhook received unknown event ',
+          event,
+        );
+      }
+      res.status(200).json(event._adapter.raw);
     });
   }
 
@@ -957,15 +986,15 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A ready to be sent attachment message
    */
-  _attachmentFormat(
-    message: StdOutgoingAttachmentMessage<Attachment>,
+  async _attachmentFormat(
+    message: StdOutgoingAttachmentMessage,
     _options?: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const payload: Web.OutgoingMessageBase = {
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: message.attachment.payload.url,
+        url: await this.getPublicUrl(message.attachment.payload),
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
@@ -982,36 +1011,34 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns An array of elements object
    */
-  _formatElements(
+  async _formatElements(
     data: ContentElement[],
     options: BlockOptions,
-  ): Web.MessageElement[] {
+  ): Promise<Web.MessageElement[]> {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
     }
 
     const fields = options.content.fields;
     const buttons: Button[] = options.content.buttons;
-    return data.map((item) => {
+    const result: Web.MessageElement[] = [];
+
+    for (const item of data) {
       const element: Web.MessageElement = {
         title: item[fields.title],
         buttons: item.buttons || [],
       };
+
       if (fields.subtitle && item[fields.subtitle]) {
         element.subtitle = item[fields.subtitle];
       }
+
       if (fields.image_url && item[fields.image_url]) {
-        const attachmentPayload = item[fields.image_url].payload;
-        if (attachmentPayload.url) {
-          if (!attachmentPayload.id) {
-            // @deprecated
-            this.logger.warn(
-              'Web Channel Handler: Attachment remote url has been deprecated',
-              item,
-            );
-          }
-          element.image_url = attachmentPayload.url;
-        }
+        const attachmentRef =
+          typeof item[fields.image_url] === 'string'
+            ? { url: item[fields.image_url] }
+            : (item[fields.image_url].payload as AttachmentRef);
+        element.image_url = await this.getPublicUrl(attachmentRef);
       }
 
       buttons.forEach((button: Button, index) => {
@@ -1047,11 +1074,15 @@ export default abstract class BaseWebChannelHandler<
         }
         element.buttons?.push(btn);
       });
+
       if (Array.isArray(element.buttons) && element.buttons.length === 0) {
         delete element.buttons;
       }
-      return element;
-    });
+
+      result.push(element);
+    }
+
+    return result;
   }
 
   /**
@@ -1062,10 +1093,10 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A ready to be sent list template message
    */
-  _listFormat(
+  async _listFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     const pagination = message.pagination;
     let buttons: Button[] = [],
@@ -1091,7 +1122,7 @@ export default abstract class BaseWebChannelHandler<
     }
 
     // Populate items (elements/cards) with content
-    elements = this._formatElements(data, options);
+    elements = await this._formatElements(data, options);
     const topElementStyle = options.content?.top_element_style
       ? {
           top_element_style: options.content?.top_element_style,
@@ -1115,10 +1146,10 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A carousel ready to be sent as a message
    */
-  _carouselFormat(
+  async _carouselFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     // Items count min check
     if (data.length === 0) {
@@ -1129,7 +1160,7 @@ export default abstract class BaseWebChannelHandler<
     }
 
     // Populate items (elements/cards) with content
-    const elements = this._formatElements(data, options);
+    const elements = await this._formatElements(data, options);
     return {
       type: Web.OutgoingMessageType.carousel,
       data: {
@@ -1146,19 +1177,19 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A template filled with its payload
    */
-  _formatMessage(
+  async _formatMessage(
     envelope: StdOutgoingEnvelope,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     switch (envelope.format) {
       case OutgoingMessageFormat.attachment:
-        return this._attachmentFormat(envelope.message, options);
+        return await this._attachmentFormat(envelope.message, options);
       case OutgoingMessageFormat.buttons:
         return this._buttonsFormat(envelope.message, options);
       case OutgoingMessageFormat.carousel:
-        return this._carouselFormat(envelope.message, options);
+        return await this._carouselFormat(envelope.message, options);
       case OutgoingMessageFormat.list:
-        return this._listFormat(envelope.message, options);
+        return await this._listFormat(envelope.message, options);
       case OutgoingMessageFormat.quickReplies:
         return this._quickRepliesFormat(envelope.message, options);
       case OutgoingMessageFormat.text:
@@ -1206,7 +1237,7 @@ export default abstract class BaseWebChannelHandler<
     options: BlockOptions,
     _context?: any,
   ): Promise<{ mid: string }> {
-    const messageBase: Web.OutgoingMessageBase = this._formatMessage(
+    const messageBase: Web.OutgoingMessageBase = await this._formatMessage(
       envelope,
       options,
     );

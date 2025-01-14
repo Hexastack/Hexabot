@@ -105,7 +105,7 @@ const contents: TContentFixtures['values'][] = [
       image: {
         type: 'image',
         payload: {
-          attachment_id: null,
+          id: null,
         },
       },
     },
@@ -117,7 +117,7 @@ const contents: TContentFixtures['values'][] = [
       image: {
         type: 'image',
         payload: {
-          attachment_id: null,
+          id: null,
         },
       },
     },
@@ -154,8 +154,7 @@ export const installContentFixtures = async () => {
         ({ name }) => name === `${contentFixture.title.replace(' ', '')}.jpg`,
       );
       if (attachment) {
-        contentFixture.dynamicFields.image.payload.attachment_id =
-          attachment.id;
+        contentFixture.dynamicFields.image.payload.id = attachment.id;
       }
       return {
         ...contentFixture,
