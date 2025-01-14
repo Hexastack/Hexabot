@@ -231,7 +231,7 @@ export class ChatService {
    */
   @OnEvent('hook:chatbot:message')
   async handleNewMessage(event: EventWrapper<any, any>) {
-    this.logger.debug('New message received', event);
+    this.logger.debug('New message received', event._adapter.raw);
 
     const foreignId = event.getSenderForeignId();
     const handler = event.getHandler();

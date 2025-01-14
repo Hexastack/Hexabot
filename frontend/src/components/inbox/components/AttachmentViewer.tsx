@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import DownloadIcon from "@mui/icons-material/Download";
 import { Button, Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
 
 import { DialogTitle } from "@/app-components/dialogs";
+import { useConfig } from "@/hooks/useConfig";
 import { useDialog } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
@@ -95,6 +95,7 @@ export const AttachmentViewer = (props: {
   message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
   const message = props.message;
+  const { apiUrl } = useConfig();
 
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
@@ -103,6 +104,10 @@ export const AttachmentViewer = (props: {
     return <>Not yet Implemented</>;
   }
   const AttachmentViewerForType = componentMap[message.attachment.type];
+  const url =
+    "id" in message.attachment?.payload && message.attachment?.payload.id
+      ? `${apiUrl}attachment/download/${message.attachment?.payload.id}`
+      : message.attachment?.payload?.url;
 
-  return <AttachmentViewerForType url={message.attachment?.payload?.url} />;
+  return <AttachmentViewerForType url={url} />;
 };

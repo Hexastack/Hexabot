@@ -190,7 +190,7 @@ export default abstract class EventWrapper<
   }
 
   /**
-   * Pre-Process messageevent
+   * Pre-Process the message event
    *
    * Child class can perform operations such as storing files as attachments.
    */

@@ -47,6 +47,8 @@ export abstract class BaseStoragePlugin extends BasePlugin {
 
   readAsBuffer?(attachment: Attachment): Promise<Buffer>;
 
+  readAsStream?(attachment: Attachment): Promise<Stream>;
+
   store?(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
