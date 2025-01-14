@@ -52,26 +52,17 @@ export interface AttachmentAttrs {
 }
 
 export type AttachmentForeignKey = {
+  id: string | null;
+  /** @deprecated use id instead */
   url?: string;
-  attachment_id: string | undefined;
 };
 
-export interface AttachmentPayload<
-  A extends AttachmentAttrs | AttachmentForeignKey,
-> {
+export interface AttachmentPayload {
   type: FileType;
-  payload?: A;
-}
-
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: {
-    url: string;
-  };
+  payload: AttachmentForeignKey;
 }
 
 // Content
-
 export interface ContentOptions {
   display: OutgoingMessageFormat.list | OutgoingMessageFormat.carousel;
   fields: {
@@ -104,7 +95,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: IncomingAttachmentPayload;
+      attachments: AttachmentPayload;
     };
 
 export enum QuickReplyType {
@@ -171,11 +162,9 @@ export type StdOutgoingListMessage = {
     limit: number;
   };
 };
-export type StdOutgoingAttachmentMessage<
-  A extends AttachmentAttrs | AttachmentForeignKey,
-> = {
+export type StdOutgoingAttachmentMessage = {
   // Stored in DB as `AttachmentPayload`, `Attachment` when populated for channels relaying
-  attachment: AttachmentPayload<A>;
+  attachment: AttachmentPayload;
   quickReplies?: StdQuickReply[];
 };
 
@@ -198,7 +187,7 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
+  attachment: AttachmentPayload | AttachmentPayload[];
 };
 
 export type StdPluginMessage = {
@@ -217,7 +206,7 @@ export type StdOutgoingMessage =
   | StdOutgoingQuickRepliesMessage
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage<AttachmentAttrs>;
+  | StdOutgoingAttachmentMessage;
 
 export interface IMessageAttributes {
   mid?: string;

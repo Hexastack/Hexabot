@@ -19,6 +19,7 @@ import leanDefaults from 'mongoose-lean-defaults';
 import leanGetters from 'mongoose-lean-getters';
 import leanVirtuals from 'mongoose-lean-virtuals';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { MetadataService } from '@/setting/services/metadata.service';
@@ -44,6 +45,7 @@ export class MigrationService implements OnApplicationBootstrap {
     private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
     private readonly httpService: HttpService,
+    private readonly attachmentService: AttachmentService,
     @InjectModel(Migration.name)
     private readonly migrationModel: Model<Migration>,
   ) {}
@@ -254,6 +256,7 @@ module.exports = {
       const result = await migration[action]({
         logger: this.logger,
         http: this.httpService,
+        attachmentService: this.attachmentService,
       });
 
       if (result && migrationDocument) {

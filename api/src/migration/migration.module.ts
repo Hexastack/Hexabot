@@ -12,6 +12,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AttachmentModule } from '@/attachment/attachment.module';
 import { LoggerModule } from '@/logger/logger.module';
 
 import { MigrationCommand } from './migration.command';
@@ -23,6 +24,7 @@ import { MigrationService } from './migration.service';
     MongooseModule.forFeature([MigrationModel]),
     LoggerModule,
     HttpModule,
+    AttachmentModule,
   ],
   providers: [
     MigrationService,

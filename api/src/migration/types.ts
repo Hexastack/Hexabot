@@ -8,6 +8,7 @@
 
 import { HttpService } from '@nestjs/axios';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 
 import { MigrationDocument } from './migration.schema';
@@ -38,4 +39,5 @@ export interface MigrationSuccessCallback extends MigrationRunParams {
 export type MigrationServices = {
   logger: LoggerService;
   http: HttpService;
+  attachmentService: AttachmentService;
 };

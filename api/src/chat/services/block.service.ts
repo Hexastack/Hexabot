@@ -417,7 +417,7 @@ export class BlockService extends BaseService<
       'url' in block.message.attachment.payload
     ) {
       this.logger.error(
-        'Attachment Model : `url` payload has been deprecated in favor of `attachment_id`',
+        'Attachment Block : `url` payload has been deprecated in favor of `id`',
         block.id,
         block.message,
       );
@@ -527,21 +527,11 @@ export class BlockService extends BaseService<
       }
     } else if (blockMessage && 'attachment' in blockMessage) {
       const attachmentPayload = blockMessage.attachment.payload;
-      if (!attachmentPayload.attachment_id) {
+      if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
-        throw new Error('Remote attachments are no longer supported!');
-      }
-
-      const attachment = await this.attachmentService.findOne(
-        attachmentPayload.attachment_id,
-      );
-
-      if (!attachment) {
-        this.logger.debug(
-          'Unable to locate the attachment for the given block',
-          block,
+        throw new Error(
+          'Remote attachments in blocks are no longer supported!',
         );
-        throw new Error('Unable to find attachment.');
       }
 
       const envelope: StdOutgoingEnvelope = {
@@ -549,7 +539,7 @@ export class BlockService extends BaseService<
         message: {
           attachment: {
             type: blockMessage.attachment.type,
-            payload: attachment,
+            payload: blockMessage.attachment.payload,
           },
           quickReplies: blockMessage.quickReplies
             ? [...blockMessage.quickReplies]
