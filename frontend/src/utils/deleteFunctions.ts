@@ -1,6 +1,5 @@
 // Simulated delete functions for blocks and links
 export const deleteBlock = async (id: string): Promise<void> => {
-  console.log(`Deleting block: ${id}`);
   // Replace with your backend API logic
   await new Promise((resolve) => setTimeout(resolve, 500));
 };
