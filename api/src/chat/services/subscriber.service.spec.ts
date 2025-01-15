@@ -90,20 +90,20 @@ describe('SubscriberService', () => {
   describe('findOneAndPopulate', () => {
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
       jest.spyOn(subscriberService, 'findOneAndPopulate');
-      const subscriber = await subscriberRepository.findOne({
+      const subscriber = (await subscriberRepository.findOne({
         first_name: 'Jhon',
-      });
-      const result = await subscriberService.findOneAndPopulate(subscriber!.id);
+      }))!;
+      const result = await subscriberService.findOneAndPopulate(subscriber.id);
 
       expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
-        subscriber!.id,
+        subscriber.id,
       );
       expect(result).toEqualPayload({
         ...subscriber,
         labels: allLabels.filter((label) =>
-          subscriber!.labels.includes(label.id),
+          subscriber.labels.includes(label.id),
         ),
-        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       });
     });
   });
@@ -133,13 +133,13 @@ describe('SubscriberService', () => {
         await subscriberService.findOneByForeignId('foreign-id-dimelo');
       const subscriber = allSubscribers.find(
         ({ foreign_id }) => foreign_id === 'foreign-id-dimelo',
-      );
+      )!;
 
       expect(subscriberRepository.findOneByForeignId).toHaveBeenCalled();
       expect(result).toEqualPayload({
         ...subscriber,
         labels: allLabels
-          .filter((label) => subscriber!.labels.includes(label.id))
+          .filter((label) => subscriber.labels.includes(label.id))
           .map((label) => label.id),
       });
     });

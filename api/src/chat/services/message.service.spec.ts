@@ -48,11 +48,11 @@ describe('MessageService', () => {
   let allMessages: Message[];
   let allSubscribers: Subscriber[];
   let allUsers: User[];
-  let message: Message | null;
-  let sender: Subscriber | null;
-  let recipient: Subscriber | null;
+  let message: Message;
+  let sender: Subscriber;
+  let recipient: Subscriber;
   let messagesWithSenderAndRecipient: Message[];
-  let user: User | null;
+  let user: User;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -90,10 +90,10 @@ describe('MessageService', () => {
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
     allMessages = await messageRepository.findAll();
-    message = await messageRepository.findOne({ mid: 'mid-1' });
-    sender = await subscriberRepository.findOne(message!.sender!);
-    recipient = await subscriberRepository.findOne(message!.recipient!);
-    user = await userRepository.findOne(message!.sentBy!);
+    message = (await messageRepository.findOne({ mid: 'mid-1' }))!;
+    sender = (await subscriberRepository.findOne(message.sender!))!;
+    recipient = (await subscriberRepository.findOne(message.recipient!))!;
+    user = (await userRepository.findOne(message.sentBy!))!;
     messagesWithSenderAndRecipient = allMessages.map((message) => ({
       ...message,
       sender: allSubscribers.find(({ id }) => id === message.sender)?.id,
@@ -108,17 +108,17 @@ describe('MessageService', () => {
   describe('findOneAndPopulate', () => {
     it('should find message by id, and populate its corresponding sender and recipient', async () => {
       jest.spyOn(messageRepository, 'findOneAndPopulate');
-      const result = await messageService.findOneAndPopulate(message!.id);
+      const result = await messageService.findOneAndPopulate(message.id);
 
       expect(messageRepository.findOneAndPopulate).toHaveBeenCalledWith(
-        message!.id,
+        message.id,
         undefined,
       );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message!.mid),
+        ...messageFixtures.find(({ mid }) => mid === message.mid),
         sender,
         recipient,
-        sentBy: user!.id,
+        sentBy: user.id,
       });
     });
   });

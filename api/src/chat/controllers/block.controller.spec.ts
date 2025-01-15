@@ -61,11 +61,11 @@ describe('BlockController', () => {
   let blockController: BlockController;
   let blockService: BlockService;
   let categoryService: CategoryService;
-  let category: Category | null;
-  let block: Block | null;
-  let blockToDelete: Block | null;
-  let hasNextBlocks: Block | null;
-  let hasPreviousBlocks: Block | null;
+  let category: Category;
+  let block: Block;
+  let blockToDelete: Block;
+  let hasNextBlocks: Block;
+  let hasPreviousBlocks: Block;
   const FIELDS_TO_POPULATE = [
     'trigger_labels',
     'assign_labels',
@@ -142,18 +142,19 @@ describe('BlockController', () => {
     blockController = module.get<BlockController>(BlockController);
     blockService = module.get<BlockService>(BlockService);
     categoryService = module.get<CategoryService>(CategoryService);
-    category = await categoryService.findOne({ label: 'default' });
-    block = await blockService.findOne({ name: 'first' });
-    blockToDelete = await blockService.findOne({ name: 'buttons' });
-    hasNextBlocks = await blockService.findOne({
+    category = (await categoryService.findOne({ label: 'default' }))!;
+    block = (await blockService.findOne({ name: 'first' }))!;
+    blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
+    hasNextBlocks = (await blockService.findOne({
       name: 'hasNextBlocks',
-    });
-    hasPreviousBlocks = await blockService.findOne({
+    }))!;
+    hasPreviousBlocks = (await blockService.findOne({
       name: 'hasPreviousBlocks',
-    });
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('find', () => {
@@ -162,9 +163,9 @@ describe('BlockController', () => {
       const result = await blockController.find([], {});
       const blocksWithCategory = blockFixtures.map((blockFixture) => ({
         ...blockFixture,
-        category: category!.id,
+        category: category.id,
         nextBlocks:
-          blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks!.id] : [],
+          blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks.id] : [],
       }));
 
       expect(blockService.find).toHaveBeenCalledWith({}, undefined);
@@ -196,13 +197,13 @@ describe('BlockController', () => {
   describe('findOne', () => {
     it('should find one block by id', async () => {
       jest.spyOn(blockService, 'findOne');
-      const result = await blockController.findOne(hasNextBlocks!.id, []);
-      expect(blockService.findOne).toHaveBeenCalledWith(hasNextBlocks!.id);
+      const result = await blockController.findOne(hasNextBlocks.id, []);
+      expect(blockService.findOne).toHaveBeenCalledWith(hasNextBlocks.id);
       expect(result).toEqualPayload(
         {
-          ...blockFixtures.find(({ name }) => name === hasNextBlocks!.name),
-          category: category!.id,
-          nextBlocks: [hasPreviousBlocks!.id],
+          ...blockFixtures.find(({ name }) => name === hasNextBlocks.name),
+          category: category.id,
+          nextBlocks: [hasPreviousBlocks.id],
         },
         [...IGNORED_TEST_FIELDS, 'attachedToBlock'],
       );
@@ -211,11 +212,11 @@ describe('BlockController', () => {
     it('should find one block by id, and populate its category and previousBlocks', async () => {
       jest.spyOn(blockService, 'findOneAndPopulate');
       const result = await blockController.findOne(
-        hasPreviousBlocks!.id,
+        hasPreviousBlocks.id,
         FIELDS_TO_POPULATE,
       );
       expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(
-        hasPreviousBlocks!.id,
+        hasPreviousBlocks.id,
       );
       expect(result).toEqualPayload({
         ...blockFixtures.find(({ name }) => name === 'hasPreviousBlocks'),
@@ -227,12 +228,12 @@ describe('BlockController', () => {
 
     it('should find one block by id, and populate its category and an empty previousBlocks', async () => {
       jest.spyOn(blockService, 'findOneAndPopulate');
-      block = await blockService.findOne({ name: 'attachment' });
+      block = (await blockService.findOne({ name: 'attachment' }))!;
       const result = await blockController.findOne(
-        block!.id,
+        block.id,
         FIELDS_TO_POPULATE,
       );
-      expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(block!.id);
+      expect(blockService.findOneAndPopulate).toHaveBeenCalledWith(block.id);
       expect(result).toEqualPayload({
         ...blockFixtures.find(({ name }) => name === 'attachment'),
         category,
@@ -247,12 +248,12 @@ describe('BlockController', () => {
       jest.spyOn(blockService, 'create');
       const mockedBlockCreateDto: BlockCreateDto = {
         name: 'block with nextBlocks',
-        nextBlocks: [hasNextBlocks!.id],
+        nextBlocks: [hasNextBlocks.id],
         patterns: ['Hi'],
         trigger_labels: [],
         assign_labels: [],
         trigger_channels: [],
-        category: category!.id,
+        category: category.id,
         options: {
           typing: 0,
           fallback: {
@@ -284,17 +285,15 @@ describe('BlockController', () => {
   describe('deleteOne', () => {
     it('should delete block', async () => {
       jest.spyOn(blockService, 'deleteOne');
-      const result = await blockController.deleteOne(blockToDelete!.id);
+      const result = await blockController.deleteOne(blockToDelete.id);
 
-      expect(blockService.deleteOne).toHaveBeenCalledWith(blockToDelete!.id);
+      expect(blockService.deleteOne).toHaveBeenCalledWith(blockToDelete.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
 
     it('should throw NotFoundException when attempting to delete a block by id', async () => {
-      await expect(
-        blockController.deleteOne(blockToDelete!.id),
-      ).rejects.toThrow(
-        new NotFoundException(`Block with ID ${blockToDelete!.id} not found`),
+      await expect(blockController.deleteOne(blockToDelete.id)).rejects.toThrow(
+        new NotFoundException(`Block with ID ${blockToDelete.id} not found`),
       );
     });
   });
@@ -305,16 +304,16 @@ describe('BlockController', () => {
       const updateBlock: BlockUpdateDto = {
         name: 'modified block name',
       };
-      const result = await blockController.updateOne(block!.id, updateBlock);
+      const result = await blockController.updateOne(block.id, updateBlock);
 
       expect(blockService.updateOne).toHaveBeenCalledWith(
-        block!.id,
+        block.id,
         updateBlock,
       );
       expect(result).toEqualPayload(
         {
-          ...blockFixtures.find(({ name }) => name === block!.name),
-          category: category!.id,
+          ...blockFixtures.find(({ name }) => name === block.name),
+          category: category.id,
           ...updateBlock,
         },
         [...IGNORED_TEST_FIELDS, 'attachedToBlock'],
@@ -327,9 +326,9 @@ describe('BlockController', () => {
       };
 
       await expect(
-        blockController.updateOne(blockToDelete!.id, updateBlock),
+        blockController.updateOne(blockToDelete.id, updateBlock),
       ).rejects.toThrow(
-        new NotFoundException(`Block with ID ${blockToDelete!.id} not found`),
+        new NotFoundException(`Block with ID ${blockToDelete.id} not found`),
       );
     });
   });

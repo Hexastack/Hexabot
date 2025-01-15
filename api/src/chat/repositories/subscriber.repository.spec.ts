@@ -97,30 +97,31 @@ describe('SubscriberRepository', () => {
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('findOneAndPopulate', () => {
     it('should find one subscriber by id,and populate its labels', async () => {
       jest.spyOn(subscriberModel, 'findById');
-      const subscriber = await subscriberRepository.findOne({
+      const subscriber = (await subscriberRepository.findOne({
         first_name: 'Jhon',
-      });
+      }))!;
       const allLabels = await labelRepository.findAll();
       const result = await subscriberRepository.findOneAndPopulate(
-        subscriber!.id,
+        subscriber.id,
       );
       const subscriberWithLabels = {
         ...subscriberFixtures.find(
-          ({ first_name }) => first_name === subscriber!.first_name,
+          ({ first_name }) => first_name === subscriber.first_name,
         ),
         labels: allLabels.filter((label) =>
-          subscriber!.labels.includes(label.id),
+          subscriber.labels.includes(label.id),
         ),
-        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       };
 
       expect(subscriberModel.findById).toHaveBeenCalledWith(
-        subscriber!.id,
+        subscriber.id,
         undefined,
       );
       expect(result).toEqualPayload(subscriberWithLabels);
