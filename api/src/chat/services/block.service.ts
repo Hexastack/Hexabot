@@ -440,7 +440,7 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     fallback = false,
     conversationId?: string,
-  ) {
+  ): Promise<StdOutgoingEnvelope> {
     const settings = await this.settingService.getSettings();
     const blockMessage: BlockMessage =
       fallback && block.options?.fallback
@@ -592,13 +592,18 @@ export class BlockService extends BaseService<
       );
       // Process custom plugin block
       try {
-        return await plugin?.process(block, context, conversationId);
+        const envelope = await plugin?.process(block, context, conversationId);
+
+        if (!envelope) {
+          throw new Error('Unable to find envelope');
+        }
+
+        return envelope;
       } catch (e) {
         this.logger.error('Plugin was unable to load/process ', e);
         throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
       }
-    } else {
-      throw new Error('Invalid message format.');
     }
+    throw new Error('Invalid message format.');
   }
 }

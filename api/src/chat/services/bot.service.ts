@@ -21,10 +21,7 @@ import {
   getDefaultConversationContext,
 } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
-import {
-  IncomingMessageType,
-  StdOutgoingEnvelope,
-} from '../schemas/types/message';
+import { IncomingMessageType } from '../schemas/types/message';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { BlockService } from './block.service';
@@ -71,13 +68,13 @@ export class BotService {
     );
     // Process message : Replace tokens with context data and then send the message
     const recipient = event.getSender();
-    const envelope = (await this.blockService.processMessage(
+    const envelope = await this.blockService.processMessage(
       block,
       context,
       recipient?.context as SubscriberContext,
       fallback,
       conservationId,
-    )) as StdOutgoingEnvelope;
+    );
     // Send message through the right channel
 
     const response = await event
