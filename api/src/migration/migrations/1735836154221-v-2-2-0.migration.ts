@@ -602,7 +602,7 @@ const migrateAttachmentContents = async (
  *
  * @returns Resolves when the migration process is complete.
  */
-const migrateAttachmentMessages = async ({
+const migrateAndPopulateAttachmentMessages = async ({
   logger,
   http,
   attachmentService,
@@ -636,6 +636,16 @@ const migrateAttachmentMessages = async ({
         msg.message.attachment.payload
       ) {
         if ('attachment_id' in msg.message.attachment.payload) {
+          // Add extra attrs
+          await attachmentService.updateOne(
+            msg.message.attachment.payload.attachment_id,
+            {
+              ownerType: msg.sender ? 'Subscriber' : 'User',
+              owner: msg.sender ? msg.sender : adminUser.id,
+              context: 'message_attachment',
+            },
+          );
+          // Rename `attachment_id` to `id`
           await updateAttachmentId(
             msg._id,
             msg.message.attachment.payload.attachment_id as string,
@@ -707,7 +717,7 @@ module.exports = {
     await migrateAttachmentContents(MigrationAction.UP, services);
     // Given the complexity and inconsistency data, this method does not have
     // a revert equivalent, at the same time, thus, it doesn't "unset" any attribute
-    await migrateAttachmentMessages(services);
+    await migrateAndPopulateAttachmentMessages(services);
     await populateBlockAttachments(services);
     await populateSettingAttachments(services);
     await populateUserAvatars(services);
