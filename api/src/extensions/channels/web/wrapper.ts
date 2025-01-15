@@ -27,26 +27,31 @@ type WebEventAdapter =
       eventType: StdEventType.unknown;
       messageType: never;
       raw: Web.Event;
+      attachment: never;
     }
   | {
       eventType: StdEventType.read;
       messageType: never;
       raw: Web.StatusReadEvent;
+      attachment: never;
     }
   | {
       eventType: StdEventType.delivery;
       messageType: never;
       raw: Web.StatusDeliveryEvent;
+      attachment: never;
     }
   | {
       eventType: StdEventType.typing;
       messageType: never;
       raw: Web.StatusTypingEvent;
+      attachment: never;
     }
   | {
       eventType: StdEventType.message;
       messageType: IncomingMessageType.message;
       raw: Web.IncomingMessage<Web.IncomingTextMessage>;
+      attachment: never;
     }
   | {
       eventType: StdEventType.message;
@@ -54,11 +59,13 @@ type WebEventAdapter =
         | IncomingMessageType.postback
         | IncomingMessageType.quick_reply;
       raw: Web.IncomingMessage<Web.IncomingPayloadMessage>;
+      attachment: never;
     }
   | {
       eventType: StdEventType.message;
       messageType: IncomingMessageType.location;
       raw: Web.IncomingMessage<Web.IncomingLocationMessage>;
+      attachment: never;
     }
   | {
       eventType: StdEventType.message;
@@ -68,11 +75,9 @@ type WebEventAdapter =
     };
 
 // eslint-disable-next-line prettier/prettier
-export default class WebEventWrapper<N extends ChannelName> extends EventWrapper<
-  WebEventAdapter,
-  Web.Event,
-  N
-> {
+export default class WebEventWrapper<
+  N extends ChannelName,
+> extends EventWrapper<WebEventAdapter, Web.Event, N> {
   /**
    * Constructor : channel's event wrapper
    *

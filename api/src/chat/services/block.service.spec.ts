@@ -154,11 +154,11 @@ describe('BlockService', () => {
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
     categoryRepository = module.get<CategoryRepository>(CategoryRepository);
     blockRepository = module.get<BlockRepository>(BlockRepository);
-    category = await categoryRepository.findOne({ label: 'default' });
-    hasPreviousBlocks = await blockRepository.findOne({
+    category = (await categoryRepository.findOne({ label: 'default' }))!;
+    hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
-    });
-    block = await blockRepository.findOne({ name: 'hasNextBlocks' });
+    }))!;
+    block = (await blockRepository.findOne({ name: 'hasNextBlocks' }))!;
     settings = await settingService.getSettings();
   });
 
@@ -179,6 +179,7 @@ describe('BlockService', () => {
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],
+        attachedToBlock: null,
       });
     });
   });
@@ -194,6 +195,7 @@ describe('BlockService', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [block] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockRepository.findAndPopulate).toHaveBeenCalledWith(
@@ -380,7 +382,7 @@ describe('BlockService', () => {
         },
         blockGetStarted,
       );
-      expect(result).toEqual(blockGetStarted.patterns[3]);
+      expect(result).toEqual(blockGetStarted.patterns?.[3]);
     });
 
     it("should match payload when it's an attachment file", () => {
@@ -397,7 +399,7 @@ describe('BlockService', () => {
         },
         blockGetStarted,
       );
-      expect(result).toEqual(blockGetStarted.patterns[4]);
+      expect(result).toEqual(blockGetStarted.patterns?.[4]);
     });
   });
 
@@ -439,8 +441,10 @@ describe('BlockService', () => {
 
   describe('processMessage', () => {
     it('should process list message (with limit = 2 and skip = 0)', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      blockProductListMock.options.content.entity = contentType.id;
+      const contentType = (await contentTypeService.findOne({
+        name: 'Product',
+      }))!;
+      blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
         blockProductListMock,
         {
@@ -457,13 +461,13 @@ describe('BlockService', () => {
       );
       const flattenedElements = elements.map(Content.toElement);
       expect(result.format).toEqualPayload(
-        blockProductListMock.options.content?.display,
+        blockProductListMock.options.content!.display,
       );
       expect(
         (result.message as StdOutgoingListMessage).elements,
       ).toEqualPayload(flattenedElements);
       expect((result.message as StdOutgoingListMessage).options).toEqualPayload(
-        blockProductListMock.options.content,
+        blockProductListMock.options.content!,
       );
       expect(
         (result.message as StdOutgoingListMessage).pagination,
@@ -471,8 +475,10 @@ describe('BlockService', () => {
     });
 
     it('should process list message (with limit = 2 and skip = 2)', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      blockProductListMock.options.content.entity = contentType.id;
+      const contentType = (await contentTypeService.findOne({
+        name: 'Product',
+      }))!;
+      blockProductListMock.options.content!.entity = contentType.id;
       const result = await blockService.processMessage(
         blockProductListMock,
         {

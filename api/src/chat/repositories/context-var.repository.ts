@@ -38,7 +38,7 @@ export class ContextVarRepository extends BaseRepository<
     @Optional() blockService?: BlockService,
   ) {
     super(eventEmitter, model, ContextVar);
-    this.blockService = blockService;
+    if (blockService) this.blockService = blockService;
   }
 
   /**

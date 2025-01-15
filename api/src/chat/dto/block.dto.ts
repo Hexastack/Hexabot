@@ -84,13 +84,13 @@ export class BlockCreateDto {
   @IsObjectId({
     message: 'Attached block must be a valid objectId',
   })
-  attachedBlock?: string;
+  attachedBlock?: string | null;
 
   @ApiProperty({ description: 'Block category', type: String })
   @IsNotEmpty()
   @IsString()
   @IsObjectId({ message: 'Category must be a valid objectId' })
-  category: string;
+  category: string | null;
 
   @ApiPropertyOptional({
     description: 'Block has started conversation',

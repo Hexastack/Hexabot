@@ -70,6 +70,7 @@ export class ConversationService extends BaseService<
   ) {
     const msgType = event.getMessageType();
     const profile = event.getSender();
+
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getName();
     convo.context.text = event.getText();
@@ -83,7 +84,7 @@ export class ConversationService extends BaseService<
     // Capture user entry in context vars
     if (captureVars && next.capture_vars && next.capture_vars.length > 0) {
       next.capture_vars.forEach((capture) => {
-        let contextValue: string | Payload;
+        let contextValue: string | Payload | undefined;
 
         const nlp = event.getNLP();
 
@@ -105,7 +106,7 @@ export class ConversationService extends BaseService<
         if (capture.entity === -1) {
           // Capture the whole message
           contextValue =
-            ['message', 'quick_reply'].indexOf(msgType) !== -1
+            msgType && ['message', 'quick_reply'].indexOf(msgType) !== -1
               ? event.getText()
               : event.getPayload();
         } else if (capture.entity === -2) {
@@ -115,13 +116,16 @@ export class ConversationService extends BaseService<
         contextValue =
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
-        if (contextVars[capture.context_var]?.permanent) {
+        if (
+          profile.context?.vars &&
+          contextVars[capture.context_var]?.permanent
+        ) {
           Logger.debug(
             `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
           );
           profile.context.vars[capture.context_var] = contextValue;
         } else {
-          convo.context.vars[capture.context_var] = contextValue;
+          convo.context!.vars[capture.context_var] = contextValue;
         }
       });
     }
@@ -160,6 +164,7 @@ export class ConversationService extends BaseService<
 
     // Deal with load more in the case of a list display
     if (
+      next.options &&
       next.options.content &&
       (next.options.content.display === OutgoingMessageFormat.list ||
         next.options.content.display === OutgoingMessageFormat.carousel)

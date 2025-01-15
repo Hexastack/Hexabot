@@ -56,15 +56,16 @@ describe('ContextVarController', () => {
     contextVarController =
       module.get<ContextVarController>(ContextVarController);
     contextVarService = module.get<ContextVarService>(ContextVarService);
-    contextVar = await contextVarService.findOne({
+    contextVar = (await contextVarService.findOne({
       label: 'test context var 1',
-    });
-    contextVarToDelete = await contextVarService.findOne({
+    }))!;
+    contextVarToDelete = (await contextVarService.findOne({
       label: 'test context var 2',
-    });
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('count', () => {
@@ -95,7 +96,7 @@ describe('ContextVarController', () => {
 
       expect(contextVarService.findOne).toHaveBeenCalledWith(contextVar.id);
       expect(result).toEqualPayload(
-        contextVarFixtures.find(({ label }) => label === contextVar.label),
+        contextVarFixtures.find(({ label }) => label === contextVar.label)!,
       );
     });
   });

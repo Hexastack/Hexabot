@@ -52,7 +52,7 @@ export class SubscriberService extends BaseService<
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(repository);
-    this.gateway = gateway;
+    if (gateway) this.gateway = gateway;
   }
 
   /**

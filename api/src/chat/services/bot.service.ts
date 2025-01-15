@@ -21,10 +21,8 @@ import {
   getDefaultConversationContext,
 } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
-import {
-  IncomingMessageType,
-  StdOutgoingEnvelope,
-} from '../schemas/types/message';
+import { IncomingMessageType } from '../schemas/types/message';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -70,14 +68,13 @@ export class BotService {
     );
     // Process message : Replace tokens with context data and then send the message
     const recipient = event.getSender();
-    const envelope: StdOutgoingEnvelope =
-      await this.blockService.processMessage(
-        block,
-        context,
-        recipient?.context,
-        fallback,
-        conservationId,
-      );
+    const envelope = await this.blockService.processMessage(
+      block,
+      context,
+      recipient?.context as SubscriberContext,
+      fallback,
+      conservationId,
+    );
     // Send message through the right channel
 
     const response = await event
@@ -251,8 +248,8 @@ export class BotService {
           // If there's labels, they should be already have been assigned
           assign_labels: [],
           trigger_labels: [],
-          attachedBlock: undefined,
-          category: undefined,
+          attachedBlock: null,
+          category: null,
           previousBlocks: [],
         };
         convo.context.attempt++;

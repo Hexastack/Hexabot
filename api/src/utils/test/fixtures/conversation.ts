@@ -58,6 +58,9 @@ const conversations: ConversationCreateDto[] = [
         labels: [],
         assignedTo: null,
         channel: { name: 'messenger-channel' },
+        avatar: null,
+        context: {},
+        assignedAt: new Date(),
       },
       skip: {},
       attempt: 0,
@@ -104,6 +107,9 @@ const conversations: ConversationCreateDto[] = [
         labels: [],
         assignedTo: null,
         channel: { name: 'web-channel' },
+        avatar: null,
+        context: {},
+        assignedAt: new Date(),
       },
       skip: {},
       attempt: 0,
@@ -136,8 +142,10 @@ export const installConversationTypeFixtures = async () => {
     conversationFixtures.map((conversationFixture) => ({
       ...conversationFixture,
       sender: subscribers[parseInt(conversationFixture.sender)].id,
-      current: blocks[parseInt(conversationFixture.current)].id,
-      next: conversationFixture.next.map((n) => blocks[parseInt(n)].id),
+      current: conversationFixture?.current
+        ? blocks[parseInt(conversationFixture.current)]?.id
+        : undefined,
+      next: conversationFixture.next?.map((n) => blocks[parseInt(n)].id),
     })),
   );
 };

@@ -46,8 +46,8 @@ export class MessageService extends BaseService<
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(messageRepository);
-    this.logger = logger;
-    this.gateway = gateway;
+    if (logger) this.logger = logger;
+    if (gateway) this.gateway = gateway;
   }
 
   /**

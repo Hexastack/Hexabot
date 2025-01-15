@@ -97,14 +97,15 @@ describe('SubscriberRepository', () => {
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('findOneAndPopulate', () => {
     it('should find one subscriber by id,and populate its labels', async () => {
       jest.spyOn(subscriberModel, 'findById');
-      const subscriber = await subscriberRepository.findOne({
+      const subscriber = (await subscriberRepository.findOne({
         first_name: 'Jhon',
-      });
+      }))!;
       const allLabels = await labelRepository.findAll();
       const result = await subscriberRepository.findOneAndPopulate(
         subscriber.id,

@@ -65,12 +65,16 @@ type TAllowedKeys<T, TStub, TValue = (string | null | undefined)[]> = {
   >]: TValue;
 };
 
+type TVirtualFields<T> = Pick<T, TFilterKeysOfType<T, undefined>>;
+
 export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: TAllowedKeys<T, TStub> &
-    TAllowedKeys<T, TStub, string | null | undefined>;
+  allowedIds: Omit<
+    TAllowedKeys<T, TStub, null | undefined | string | string[]>,
+    keyof TVirtualFields<T>
+  >;
 };
 
 //populate types

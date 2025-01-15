@@ -90,15 +90,16 @@ describe('SubscriberController', () => {
 
     subscriberController =
       module.get<SubscriberController>(SubscriberController);
-    subscriber = await subscriberService.findOne({
+    subscriber = (await subscriberService.findOne({
       first_name: 'Jhon',
-    });
+    }))!;
     allLabels = await labelService.findAll();
     allSubscribers = await subscriberService.findAll();
     allUsers = await userService.findAll();
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('count', () => {
@@ -125,7 +126,7 @@ describe('SubscriberController', () => {
           ({ first_name }) => first_name === subscriber.first_name,
         ),
         labels: labelIDs,
-        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id).id,
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id)?.id,
       });
     });
 

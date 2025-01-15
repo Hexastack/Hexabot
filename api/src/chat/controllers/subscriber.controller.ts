@@ -145,7 +145,9 @@ export class SubscriberController extends BaseController<
    * @returns A streamable file containing the avatar image.
    */
   @Get(':id/profile_pic')
-  async getAvatar(@Param('id') id: string): Promise<StreamableFile> {
+  async getAvatar(
+    @Param('id') id: string,
+  ): Promise<StreamableFile | undefined> {
     const subscriber = await this.subscriberService.findOneAndPopulate(id);
 
     if (!subscriber) {
