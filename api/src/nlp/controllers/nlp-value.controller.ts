@@ -168,7 +168,10 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const result = await this.nlpValueService.updateOne(id, updateNlpValueDto);
+    const result = await this.nlpValueService.updateOne(id, {
+      ...updateNlpValueDto,
+      entity: updateNlpValueDto.entity || undefined,
+    });
     if (!result) {
       this.logger.warn(`Unable to update NLP Value by id ${id}`);
       throw new NotFoundException(`NLP Value with ID ${id} not found`);
