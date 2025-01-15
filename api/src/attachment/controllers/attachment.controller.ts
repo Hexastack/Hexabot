@@ -150,8 +150,8 @@ export class AttachmentController extends BaseController<Attachment> {
         size: file.size,
         type: file.mimetype,
         context,
-        owner: userId,
-        ownerType: 'User',
+        createdBy: userId,
+        createdByRef: 'User',
       });
       attachments.push(attachment);
     }

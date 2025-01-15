@@ -277,8 +277,8 @@ export class ChatService {
               size,
               type,
               context: 'subscriber_avatar',
-              ownerType: 'Subscriber',
-              owner: subscriber.id,
+              createdByRef: 'Subscriber',
+              createdBy: subscriber.id,
             });
 
             if (avatar) {

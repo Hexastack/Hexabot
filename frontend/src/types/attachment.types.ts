@@ -17,12 +17,12 @@ import { IUser } from "./user.types";
  * Defines the types of owners for an attachment,
  * indicating whether the file belongs to a User or a Subscriber.
  */
-export enum AttachmentOwnerType {
+export enum AttachmentCreatedByRef {
   User = "User",
   Subscriber = "Subscriber",
 }
 
-export type TAttachmentOwnerType = `${AttachmentOwnerType}`;
+export type TAttachmentCreatedByRef = `${AttachmentCreatedByRef}`;
 
 /**
  * Defines the various contexts in which an attachment can exist.
@@ -47,8 +47,8 @@ export interface IAttachmentAttributes {
   url: string;
   channel?: Record<string, any>;
   context: TAttachmentContext;
-  ownerType: TAttachmentOwnerType;
-  owner: string | null;
+  createdByRef: TAttachmentCreatedByRef;
+  createdBy: string | null;
 }
 
 export interface IAttachmentStub
@@ -56,11 +56,11 @@ export interface IAttachmentStub
     OmitPopulate<IAttachmentAttributes, EntityType.ATTACHMENT> {}
 
 export interface IAttachment extends IAttachmentStub, IFormat<Format.BASIC> {
-  owner: string | null;
+  createdBy: string | null;
 }
 
 export interface ISubscriberAttachmentFull
   extends IAttachmentStub,
     IFormat<Format.FULL> {
-  owner: (ISubscriber | IUser)[];
+  createdBy: (ISubscriber | IUser)[];
 }

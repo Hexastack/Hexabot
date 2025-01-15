@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
-import { AttachmentContext, AttachmentOwnerType } from '@/attachment/types';
+import { AttachmentContext, AttachmentCreatedByRef } from '@/attachment/types';
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
@@ -80,8 +80,8 @@ const populateBlockAttachments = async ({ logger }: MigrationServices) => {
           {
             $set: {
               context: AttachmentContext.BlockAttachment,
-              ownerType: AttachmentOwnerType.User,
-              owner: user._id,
+              createdByRef: AttachmentCreatedByRef.User,
+              createdBy: user._id,
             },
           },
         );
@@ -102,7 +102,7 @@ const populateBlockAttachments = async ({ logger }: MigrationServices) => {
 };
 
 /**
- * Updates setting attachment documents to populate new attributes (context, owner, ownerType)
+ * Updates setting attachment documents to populate new attributes (context, createdBy, createdByRef)
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -130,8 +130,8 @@ const populateSettingAttachments = async ({ logger }: MigrationServices) => {
           {
             $set: {
               context: AttachmentContext.SettingAttachment,
-              ownerType: AttachmentOwnerType.User,
-              owner: user._id,
+              createdByRef: AttachmentCreatedByRef.User,
+              createdBy: user._id,
             },
           },
         );
@@ -146,7 +146,7 @@ const populateSettingAttachments = async ({ logger }: MigrationServices) => {
 };
 
 /**
- * Updates user attachment documents to populate new attributes (context, owner, ownerType)
+ * Updates user attachment documents to populate new attributes (context, createdBy, createdByRef)
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -168,8 +168,8 @@ const populateUserAvatars = async ({ logger }: MigrationServices) => {
         {
           $set: {
             context: AttachmentContext.UserAvatar,
-            ownerType: AttachmentOwnerType.User,
-            owner: user._id,
+            createdByRef: AttachmentCreatedByRef.User,
+            createdBy: user._id,
           },
         },
       );
@@ -184,7 +184,7 @@ const populateUserAvatars = async ({ logger }: MigrationServices) => {
 
 /**
  * Updates subscriber documents with their corresponding avatar attachments,
- * populate new attributes (context, owner, ownerType) and moves avatar files to a new directory.
+ * populate new attributes (context, createdBy, createdByRef) and moves avatar files to a new directory.
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -229,8 +229,8 @@ const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
         {
           $set: {
             context: AttachmentContext.SubscriberAvatar,
-            ownerType: AttachmentOwnerType.Subscriber,
-            owner: subscriber._id,
+            createdByRef: AttachmentCreatedByRef.Subscriber,
+            createdBy: subscriber._id,
           },
         },
       );
@@ -361,8 +361,8 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
       {
         $unset: {
           context: '',
-          ownerType: '',
-          owner: '',
+          createdByRef: '',
+          createdBy: '',
         },
       },
     );
@@ -640,8 +640,8 @@ const migrateAndPopulateAttachmentMessages = async ({
           await attachmentService.updateOne(
             msg.message.attachment.payload.attachment_id,
             {
-              ownerType: msg.sender ? 'Subscriber' : 'User',
-              owner: msg.sender ? msg.sender : adminUser.id,
+              createdByRef: msg.sender ? 'Subscriber' : 'User',
+              createdBy: msg.sender ? msg.sender : adminUser.id,
               context: 'message_attachment',
             },
           );
@@ -672,8 +672,8 @@ const migrateAndPopulateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
-              owner: msg.sender ? msg.sender : adminUser.id,
-              ownerType: msg.sender ? 'Subscriber' : 'User',
+              createdBy: msg.sender ? msg.sender : adminUser.id,
+              createdByRef: msg.sender ? 'Subscriber' : 'User',
               context: 'message_attachment',
             });
 

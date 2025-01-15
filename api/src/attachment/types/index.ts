@@ -9,15 +9,15 @@
 import { Readable, Stream } from 'stream';
 
 /**
- * Defines the types of owners for an attachment,
+ * Defines the types of createdBys for an attachment,
  * indicating whether the file belongs to a User or a Subscriber.
  */
-export enum AttachmentOwnerType {
+export enum AttachmentCreatedByRef {
   User = 'User',
   Subscriber = 'Subscriber',
 }
 
-export type TAttachmentOwnerType = `${AttachmentOwnerType}`;
+export type TAttachmentCreatedByRef = `${AttachmentCreatedByRef}`;
 
 /**
  * Defines the various contexts in which an attachment can exist.

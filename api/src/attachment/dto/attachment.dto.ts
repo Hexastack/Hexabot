@@ -25,9 +25,9 @@ import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
   AttachmentContext,
-  AttachmentOwnerType,
+  AttachmentCreatedByRef,
   TAttachmentContext,
-  TAttachmentOwnerType,
+  TAttachmentCreatedByRef,
 } from '../types';
 
 export class AttachmentMetadataDto {
@@ -81,12 +81,12 @@ export class AttachmentMetadataDto {
    */
   @ApiPropertyOptional({
     description: 'Attachment Owner Type',
-    enum: Object.values(AttachmentOwnerType),
+    enum: Object.values(AttachmentCreatedByRef),
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(Object.values(AttachmentOwnerType))
-  ownerType: TAttachmentOwnerType;
+  @IsIn(Object.values(AttachmentCreatedByRef))
+  createdByRef: TAttachmentCreatedByRef;
 
   /**
    * Attachment Owner : Subscriber or User ID
@@ -98,7 +98,7 @@ export class AttachmentMetadataDto {
   @IsString()
   @IsNotEmpty()
   @IsObjectId({ message: 'Owner must be a valid ObjectId' })
-  owner: string;
+  createdBy: string;
 }
 
 export class AttachmentCreateDto extends AttachmentMetadataDto {

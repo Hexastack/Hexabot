@@ -621,8 +621,8 @@ export default abstract class BaseWebChannelHandler<
         size: Buffer.byteLength(data.file),
         type: data.type,
         context: 'message_attachment',
-        ownerType: 'Subscriber',
-        owner: req.session.web.profile?.id,
+        createdByRef: 'Subscriber',
+        createdBy: req.session.web.profile?.id,
       });
     } catch (err) {
       this.logger.error(
@@ -687,8 +687,8 @@ export default abstract class BaseWebChannelHandler<
         size: file.size,
         type: file.mimetype,
         context: 'message_attachment',
-        ownerType: 'Subscriber',
-        owner: req.session.web.profile?.id,
+        createdByRef: 'Subscriber',
+        createdBy: req.session.web.profile?.id,
       });
     } catch (err) {
       this.logger.error(

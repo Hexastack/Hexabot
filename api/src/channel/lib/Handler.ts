@@ -259,8 +259,8 @@ export default abstract class ChannelHandler<
             type,
             size,
             context: 'message_attachment',
-            ownerType: 'Subscriber',
-            owner: subscriber.id,
+            createdByRef: 'Subscriber',
+            createdBy: subscriber.id,
           });
         }),
       );

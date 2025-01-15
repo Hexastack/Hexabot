@@ -137,16 +137,16 @@ describe('AttachmentController', () => {
         name: attachmentFile.originalname,
         location: expect.stringMatching(new RegExp(`^/${name}`)),
         context: 'block_attachment',
-        ownerType: 'User',
-        owner: '9'.repeat(24),
+        createdByRef: 'User',
+        createdBy: '9'.repeat(24),
       });
       expect(result).toEqualPayload(
         [
           {
             ...attachment,
             context: 'block_attachment',
-            ownerType: 'User',
-            owner: '9'.repeat(24),
+            createdByRef: 'User',
+            createdBy: '9'.repeat(24),
           },
         ],
         [...IGNORED_TEST_FIELDS, 'location', 'url'],

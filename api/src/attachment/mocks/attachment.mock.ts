@@ -20,8 +20,8 @@ export const attachment: Attachment = {
   id: '65940d115178607da65c82b6',
   createdAt: new Date(),
   updatedAt: new Date(),
-  owner: '1',
-  ownerType: 'User',
+  createdBy: '1',
+  createdByRef: 'User',
 };
 
 export const attachmentFile: Express.Multer.File = {
@@ -50,8 +50,8 @@ export const attachments: Attachment[] = [
     id: '65940d115178607da65c82b7',
     createdAt: new Date(),
     updatedAt: new Date(),
-    owner: '1',
-    ownerType: 'User',
+    createdBy: '1',
+    createdByRef: 'User',
   },
   {
     name: 'Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
@@ -64,7 +64,7 @@ export const attachments: Attachment[] = [
     id: '65940d115178607da65c82b8',
     createdAt: new Date(),
     updatedAt: new Date(),
-    owner: '1',
-    ownerType: 'User',
+    createdBy: '1',
+    createdByRef: 'User',
   },
 ];

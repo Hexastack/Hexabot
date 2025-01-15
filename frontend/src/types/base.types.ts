@@ -110,7 +110,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.MENUTREE]: [],
   [EntityType.LANGUAGE]: [],
   [EntityType.TRANSLATION]: [],
-  [EntityType.ATTACHMENT]: ["owner"],
+  [EntityType.ATTACHMENT]: ["createdBy"],
   [EntityType.CUSTOM_BLOCK]: [],
   [EntityType.CUSTOM_BLOCK_SETTINGS]: [],
   [EntityType.CHANNEL]: [],

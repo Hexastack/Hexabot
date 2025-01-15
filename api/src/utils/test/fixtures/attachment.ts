@@ -23,8 +23,8 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
       },
     },
     context: 'content_attachment',
-    ownerType: 'User',
-    owner: null,
+    createdByRef: 'User',
+    createdBy: null,
   },
   {
     name: 'store2.jpg',
@@ -37,8 +37,8 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
       },
     },
     context: 'content_attachment',
-    ownerType: 'User',
-    owner: null,
+    createdByRef: 'User',
+    createdBy: null,
   },
 ];
 

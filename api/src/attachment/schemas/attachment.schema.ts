@@ -25,9 +25,9 @@ import {
 
 import {
   AttachmentContext,
-  AttachmentOwnerType,
+  AttachmentCreatedByRef,
   TAttachmentContext,
-  TAttachmentOwnerType,
+  TAttachmentCreatedByRef,
 } from '../types';
 import { MIME_REGEX } from '../utilities';
 
@@ -79,20 +79,20 @@ export class AttachmentStub extends BaseSchema {
   channel?: Partial<Record<ChannelName, any>>;
 
   /**
-   * Object ID of the owner (depending on the owner type)
+   * Object ID of the createdBy (depending on the createdBy type)
    */
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    refPath: 'ownerType',
+    refPath: 'createdByRef',
     default: null,
   })
-  owner: unknown;
+  createdBy: unknown;
 
   /**
-   * Type of the owner (depending on the owner type)
+   * Type of the createdBy (depending on the createdBy type)
    */
-  @Prop({ type: String, enum: Object.values(AttachmentOwnerType) })
-  ownerType: TAttachmentOwnerType;
+  @Prop({ type: String, enum: Object.values(AttachmentCreatedByRef) })
+  createdByRef: TAttachmentCreatedByRef;
 
   /**
    * Context of the attachment
@@ -142,20 +142,20 @@ export class AttachmentStub extends BaseSchema {
 
 @Schema({ timestamps: true })
 export class Attachment extends AttachmentStub {
-  @Transform(({ obj }) => obj.owner?.toString() || null)
-  owner: string | null;
+  @Transform(({ obj }) => obj.createdBy?.toString() || null)
+  createdBy: string | null;
 }
 
 @Schema({ timestamps: true })
 export class UserAttachmentFull extends AttachmentStub {
   @Type(() => User)
-  owner: User | undefined;
+  createdBy: User | undefined;
 }
 
 @Schema({ timestamps: true })
 export class SubscriberAttachmentFull extends AttachmentStub {
   @Type(() => Subscriber)
-  owner: Subscriber | undefined;
+  createdBy: Subscriber | undefined;
 }
 
 export type AttachmentDocument = THydratedDocument<Attachment>;
@@ -182,4 +182,4 @@ export type AttachmentPopulate = keyof TFilterPopulateFields<
   AttachmentStub
 >;
 
-export const ATTACHMENT_POPULATE: AttachmentPopulate[] = ['owner'];
+export const ATTACHMENT_POPULATE: AttachmentPopulate[] = ['createdBy'];

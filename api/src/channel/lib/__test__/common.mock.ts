@@ -89,8 +89,8 @@ const attachment: Attachment = {
     },
   },
   context: 'block_attachment',
-  ownerType: 'User',
-  owner: null,
+  createdByRef: 'User',
+  createdBy: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
