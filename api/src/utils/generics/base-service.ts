@@ -177,7 +177,7 @@ export abstract class BaseService<
 
   async updateOne(
     criteria: string | TFilterQuery<T>,
-    dto: Partial<U>,
+    dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
     options?: QueryOptions<Partial<U>> | null,
   ): Promise<T | null> {
     return await this.repository.updateOne(criteria, dto, options);
