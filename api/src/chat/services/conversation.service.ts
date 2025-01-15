@@ -71,8 +71,6 @@ export class ConversationService extends BaseService<
     const msgType = event.getMessageType();
     const profile = event.getSender();
 
-    if (!convo.context) throw new Error('Missing conversation context');
-
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getName();
     convo.context.text = event.getText();

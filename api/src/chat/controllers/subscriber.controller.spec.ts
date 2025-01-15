@@ -48,7 +48,7 @@ describe('SubscriberController', () => {
   let subscriberService: SubscriberService;
   let labelService: LabelService;
   let userService: UserService;
-  let subscriber: Subscriber | null;
+  let subscriber: Subscriber;
   let allLabels: Label[];
   let allSubscribers: Subscriber[];
   let allUsers: User[];
@@ -90,15 +90,16 @@ describe('SubscriberController', () => {
 
     subscriberController =
       module.get<SubscriberController>(SubscriberController);
-    subscriber = await subscriberService.findOne({
+    subscriber = (await subscriberService.findOne({
       first_name: 'Jhon',
-    });
+    }))!;
     allLabels = await labelService.findAll();
     allSubscribers = await subscriberService.findAll();
     allUsers = await userService.findAll();
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('count', () => {
@@ -114,39 +115,38 @@ describe('SubscriberController', () => {
   describe('findOne', () => {
     it('should find one subscriber by id', async () => {
       jest.spyOn(subscriberService, 'findOne');
-      const result = await subscriberService.findOne(subscriber!.id);
+      const result = await subscriberService.findOne(subscriber.id);
       const labelIDs = allLabels
-        .filter((label) => subscriber!.labels.includes(label.id))
+        .filter((label) => subscriber.labels.includes(label.id))
         .map(({ id }) => id);
 
-      expect(subscriberService.findOne).toHaveBeenCalledWith(subscriber!.id);
+      expect(subscriberService.findOne).toHaveBeenCalledWith(subscriber.id);
       expect(result).toEqualPayload({
         ...subscriberFixtures.find(
-          ({ first_name }) => first_name === subscriber!.first_name,
+          ({ first_name }) => first_name === subscriber.first_name,
         ),
         labels: labelIDs,
-        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id)
-          ?.id,
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id)?.id,
       });
     });
 
     it('should find one subscriber by id, and populate its corresponding labels', async () => {
       jest.spyOn(subscriberService, 'findOneAndPopulate');
-      const result = await subscriberController.findOne(subscriber!.id, [
+      const result = await subscriberController.findOne(subscriber.id, [
         'labels',
       ]);
 
       expect(subscriberService.findOneAndPopulate).toHaveBeenCalledWith(
-        subscriber!.id,
+        subscriber.id,
       );
       expect(result).toEqualPayload({
         ...subscriberFixtures.find(
-          ({ first_name }) => first_name === subscriber!.first_name,
+          ({ first_name }) => first_name === subscriber.first_name,
         ),
         labels: allLabels.filter((label) =>
-          subscriber!.labels.includes(label.id),
+          subscriber.labels.includes(label.id),
         ),
-        assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
+        assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       });
     });
   });
@@ -178,7 +178,7 @@ describe('SubscriberController', () => {
         ({ labels, ...rest }) => ({
           ...rest,
           labels: allLabels.filter((label) => labels.includes(label.id)),
-          assignedTo: allUsers.find(({ id }) => subscriber!.assignedTo === id),
+          assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
         }),
       );
 

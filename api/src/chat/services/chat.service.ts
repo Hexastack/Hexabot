@@ -296,7 +296,9 @@ export class ChatService {
   @OnEvent('hook:subscriber:postCreate')
   async onSubscriberCreate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    if (subscriber) this.websocketGateway.broadcastSubscriberNew(subscriber);
+    if (subscriber) {
+      this.websocketGateway.broadcastSubscriberNew(subscriber);
+    }
   }
 
   /**
@@ -307,6 +309,8 @@ export class ChatService {
   @OnEvent('hook:subscriber:postUpdate')
   async onSubscriberUpdate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    if (subscriber) this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+    if (subscriber) {
+      this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+    }
   }
 }

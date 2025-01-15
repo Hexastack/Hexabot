@@ -31,9 +31,9 @@ describe('BlockRepository', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
   let blockModel: Model<Block>;
-  let category: Category | null;
-  let hasPreviousBlocks: Block | null;
-  let hasNextBlocks: Block | null;
+  let category: Category;
+  let hasPreviousBlocks: Block;
+  let hasNextBlocks: Block;
   let validIds: string[];
   let validCategory: string;
 
@@ -51,13 +51,13 @@ describe('BlockRepository', () => {
     validIds = ['64abc1234def567890fedcba', '64abc1234def567890fedcbc'];
     validCategory = '64def5678abc123490fedcba';
 
-    category = await categoryRepository.findOne({ label: 'default' });
-    hasPreviousBlocks = await blockRepository.findOne({
+    category = (await categoryRepository.findOne({ label: 'default' }))!;
+    hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
-    });
-    hasNextBlocks = await blockRepository.findOne({
+    }))!;
+    hasNextBlocks = (await blockRepository.findOne({
       name: 'hasNextBlocks',
-    });
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
@@ -67,15 +67,13 @@ describe('BlockRepository', () => {
     it('should find one block by id, and populate its  trigger_labels, assign_labels, nextBlocks, attachedBlock, category,previousBlocks', async () => {
       jest.spyOn(blockModel, 'findById');
 
-      const result = await blockRepository.findOneAndPopulate(
-        hasNextBlocks!.id,
-      );
+      const result = await blockRepository.findOneAndPopulate(hasNextBlocks.id);
       expect(blockModel.findById).toHaveBeenCalledWith(
-        hasNextBlocks!.id,
+        hasNextBlocks.id,
         undefined,
       );
       expect(result).toEqualPayload({
-        ...blockFixtures.find(({ name }) => name === hasNextBlocks!.name),
+        ...blockFixtures.find(({ name }) => name === hasNextBlocks.name),
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],

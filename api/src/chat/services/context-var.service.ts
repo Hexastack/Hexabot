@@ -36,7 +36,7 @@ export class ContextVarService extends BaseService<
     block: Block | BlockFull,
   ): Promise<Record<string, ContextVar>> {
     const vars = await this.find({
-      name: { $in: block.capture_vars?.map(({ context_var }) => context_var) },
+      name: { $in: block.capture_vars.map(({ context_var }) => context_var) },
     });
     return vars.reduce((acc, cv) => {
       acc[cv.name] = cv;
