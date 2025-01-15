@@ -70,7 +70,7 @@ export default abstract class BaseWebChannelHandler<
     protected readonly eventEmitter: EventEmitter2,
     protected readonly i18n: I18nService,
     protected readonly subscriberService: SubscriberService,
-    protected readonly attachmentService: AttachmentService,
+    public readonly attachmentService: AttachmentService,
     protected readonly messageService: MessageService,
     protected readonly menuService: MenuService,
     protected readonly websocketGateway: WebsocketGateway,
@@ -1321,7 +1321,9 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns The web's response, otherwise an error
    */
-  async getUserData(event: WebEventWrapper<N>): Promise<SubscriberCreateDto> {
+  async getSubscriberData(
+    event: WebEventWrapper<N>,
+  ): Promise<SubscriberCreateDto> {
     const sender = event.getSender();
     const {
       id: _id,

@@ -37,10 +37,7 @@ export abstract class BaseStoragePlugin extends BasePlugin {
   /** @deprecated use store() instead */
   uploadAvatar?(file: Express.Multer.File): Promise<any>;
 
-  abstract download(
-    attachment: Attachment,
-    rootLocation?: string,
-  ): Promise<StreamableFile>;
+  abstract download(attachment: Attachment): Promise<StreamableFile>;
 
   /** @deprecated use download() instead */
   downloadProfilePic?(name: string): Promise<StreamableFile>;
@@ -52,6 +49,5 @@ export abstract class BaseStoragePlugin extends BasePlugin {
   store?(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-    rootDir?: string,
   ): Promise<Attachment>;
 }

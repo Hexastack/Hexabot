@@ -17,12 +17,17 @@ import {
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { AttachmentFile } from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import {
+  IncomingMessageType,
+  StdEventType,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
 } from '@/chat/schemas/types/message';
@@ -50,7 +55,7 @@ export default abstract class ChannelHandler<
   private readonly settings: ChannelSetting<N>[];
 
   @Inject(AttachmentService)
-  protected readonly attachmentService: AttachmentService;
+  public readonly attachmentService: AttachmentService;
 
   @Inject(JwtService)
   protected readonly jwtService: JwtService;
@@ -206,14 +211,61 @@ export default abstract class ChannelHandler<
   ): Promise<{ mid: string }>;
 
   /**
-   * Fetch the end user profile data
+   * Calls the channel handler to fetch attachments and stores them
+   *
+   * @param event
+   * @returns An attachment array
+   */
+  getMessageAttachments?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile[]>;
+
+  /**
+   * Fetch the subscriber profile data
    * @param event - The message event received
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
-   
    */
-  abstract getUserData(
+  getSubscriberAvatar?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile | undefined>;
+
+  /**
+   * Fetch the subscriber profile data
+   *
+   * @param event - The message event received
+   * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
+   */
+  abstract getSubscriberData(
     event: EventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto>;
+
+  /**
+   * Persist Message attachments
+   *
+   * @returns Resolves the promise once attachments are fetched and stored
+   */
+  async persistMessageAttachments(event: EventWrapper<any, any, N>) {
+    if (
+      event._adapter.eventType === StdEventType.message &&
+      event._adapter.messageType === IncomingMessageType.attachments &&
+      this.getMessageAttachments
+    ) {
+      const metadatas = await this.getMessageAttachments(event);
+      const subscriber = event.getSender();
+      event._adapter.attachments = await Promise.all(
+        metadatas.map(({ file, name, type, size }) => {
+          return this.attachmentService.store(file, {
+            name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
+            type,
+            size,
+            context: 'message_attachment',
+            ownerType: 'Subscriber',
+            owner: subscriber.id,
+          });
+        }),
+      );
+    }
+  }
 
   /**
    * Custom channel middleware

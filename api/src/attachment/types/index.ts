@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Readable, Stream } from 'stream';
+
 /**
  * Defines the types of owners for an attachment,
  * indicating whether the file belongs to a User or a Subscriber.
@@ -31,3 +33,25 @@ export enum AttachmentContext {
 }
 
 export type TAttachmentContext = `${AttachmentContext}`;
+
+export class AttachmentFile {
+  /**
+   * File original file name
+   */
+  file: Buffer | Stream | Readable | Express.Multer.File;
+
+  /**
+   * File original file name
+   */
+  name?: string;
+
+  /**
+   * File size in bytes
+   */
+  size: number;
+
+  /**
+   * File MIME type
+   */
+  type: string;
+}

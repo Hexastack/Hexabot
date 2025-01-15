@@ -30,6 +30,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment } from '../schemas/attachment.schema';
+import { TAttachmentContext } from '../types';
 import {
   fileExists,
   generateUniqueFilename,
@@ -157,6 +158,18 @@ export class AttachmentService extends BaseService<Attachment> {
   }
 
   /**
+   * Get the attachment root directory given the context
+   *
+   * @param context The attachment context
+   * @returns The root directory path
+   */
+  getRootDirByContext(context: TAttachmentContext) {
+    return context === 'subscriber_avatar' || context === 'user_avatar'
+      ? config.parameters.avatarDir
+      : config.parameters.uploadDir;
+  }
+
+  /**
    * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
    * Otherwise, uploads files to the local directory.
    *
@@ -168,16 +181,12 @@ export class AttachmentService extends BaseService<Attachment> {
   async store(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-    rootDir = config.parameters.uploadDir,
   ): Promise<Attachment | undefined> {
     if (this.getStoragePlugin()) {
-      const storedDto = await this.getStoragePlugin()?.store?.(
-        file,
-        metadata,
-        rootDir,
-      );
+      const storedDto = await this.getStoragePlugin()?.store?.(file, metadata);
       return storedDto ? await this.create(storedDto) : undefined;
     } else {
+      const rootDir = this.getRootDirByContext(metadata.context);
       const uniqueFilename = generateUniqueFilename(metadata.name);
       const filePath = resolve(join(rootDir, sanitizeFilename(uniqueFilename)));
 
@@ -225,10 +234,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param rootDir - The root directory where attachment shoud be located.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  async download(
-    attachment: Attachment,
-    rootDir = config.parameters.uploadDir,
-  ): Promise<StreamableFile> {
+  async download(attachment: Attachment): Promise<StreamableFile> {
     if (this.getStoragePlugin()) {
       const streamableFile =
         await this.getStoragePlugin()?.download(attachment);
@@ -238,6 +244,7 @@ export class AttachmentService extends BaseService<Attachment> {
 
       return streamableFile;
     } else {
+      const rootDir = this.getRootDirByContext(attachment.context);
       const path = resolve(join(rootDir, attachment.location));
 
       if (!fileExists(path)) {

@@ -110,10 +110,7 @@ export class ReadOnlyUserController extends BaseController<
         throw new Error('User has no avatar');
       }
 
-      return await this.attachmentService.download(
-        user.avatar,
-        config.parameters.avatarDir,
-      );
+      return await this.attachmentService.download(user.avatar);
     } catch (err) {
       this.logger.verbose(
         'User has no avatar, generating initials avatar ...',
@@ -293,18 +290,14 @@ export class ReadWriteUserController extends ReadOnlyUserController {
 
     // Upload Avatar if provided
     const avatar = avatarFile
-      ? await this.attachmentService.store(
-          avatarFile,
-          {
-            name: avatarFile.originalname,
-            size: avatarFile.size,
-            type: avatarFile.mimetype,
-            context: 'user_avatar',
-            ownerType: 'User',
-            owner: req.user.id,
-          },
-          config.parameters.avatarDir,
-        )
+      ? await this.attachmentService.store(avatarFile, {
+          name: avatarFile.originalname,
+          size: avatarFile.size,
+          type: avatarFile.mimetype,
+          context: 'user_avatar',
+          ownerType: 'User',
+          owner: req.user.id,
+        })
       : undefined;
 
     const result = await this.userService.updateOne(

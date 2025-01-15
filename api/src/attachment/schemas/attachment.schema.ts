@@ -149,13 +149,13 @@ export class Attachment extends AttachmentStub {
 @Schema({ timestamps: true })
 export class UserAttachmentFull extends AttachmentStub {
   @Type(() => User)
-  owner: User | null;
+  owner: User | undefined;
 }
 
 @Schema({ timestamps: true })
 export class SubscriberAttachmentFull extends AttachmentStub {
   @Type(() => Subscriber)
-  owner: Subscriber | null;
+  owner: Subscriber | undefined;
 }
 
 export type AttachmentDocument = THydratedDocument<Attachment>;
