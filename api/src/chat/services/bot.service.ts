@@ -255,7 +255,7 @@ export class BotService {
         convo.context.attempt++;
         fallback = true;
       } else {
-        if (convo.context) convo.context.attempt = 0;
+        convo.context.attempt = 0;
         fallbackBlock = undefined;
       }
 
