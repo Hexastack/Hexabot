@@ -142,8 +142,10 @@ export const installConversationTypeFixtures = async () => {
     conversationFixtures.map((conversationFixture) => ({
       ...conversationFixture,
       sender: subscribers[parseInt(conversationFixture.sender)].id,
-      current: blocks[parseInt(conversationFixture.current)].id,
-      next: conversationFixture.next.map((n) => blocks[parseInt(n)].id),
+      current: conversationFixture?.current
+        ? blocks[parseInt(conversationFixture.current)]?.id
+        : undefined,
+      next: conversationFixture.next?.map((n) => blocks[parseInt(n)].id),
     })),
   );
 };
