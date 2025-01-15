@@ -6,7 +6,6 @@ export const deleteBlock = async (id: string): Promise<void> => {
 };
 
 export const deleteLink = async (id: string): Promise<void> => {
-  console.log(`Deleting link: ${id}`);
   // Replace with your backend API logic
   await new Promise((resolve) => setTimeout(resolve, 500));
 };
