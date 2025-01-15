@@ -72,6 +72,7 @@ export class NlpValueUpdateDto {
   expressions?: string[];
 
   @ApiPropertyOptional({ description: 'Nlp value entity', type: String })
+  @IsOptional()
   @IsString()
   @IsObjectId({ message: 'Entity must be a valid ObjectId' })
   entity?: string | null;
