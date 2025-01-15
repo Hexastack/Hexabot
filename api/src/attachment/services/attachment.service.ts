@@ -181,10 +181,10 @@ export class AttachmentService extends BaseService<Attachment> {
   async store(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-  ): Promise<Attachment | undefined> {
+  ): Promise<Attachment | null> {
     if (this.getStoragePlugin()) {
       const storedDto = await this.getStoragePlugin()?.store?.(file, metadata);
-      return storedDto ? await this.create(storedDto) : undefined;
+      return storedDto ? await this.create(storedDto) : null;
     } else {
       const rootDir = this.getRootDirByContext(metadata.context);
       const uniqueFilename = generateUniqueFilename(metadata.name);

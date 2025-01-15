@@ -143,7 +143,7 @@ export class AttachmentController extends BaseController<Attachment> {
       );
     }
 
-    const attachments = [];
+    const attachments: Attachment[] = [];
     for (const file of files.file) {
       const attachment = await this.attachmentService.store(file, {
         name: file.originalname,
@@ -153,7 +153,10 @@ export class AttachmentController extends BaseController<Attachment> {
         createdBy: userId,
         createdByRef: 'User',
       });
-      attachments.push(attachment);
+
+      if (attachment) {
+        attachments.push(attachment);
+      }
     }
 
     return attachments;

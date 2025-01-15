@@ -24,7 +24,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     },
     context: 'content_attachment',
     createdByRef: 'User',
-    createdBy: null,
+    createdBy: '9'.repeat(24),
   },
   {
     name: 'store2.jpg',
@@ -38,7 +38,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
     },
     context: 'content_attachment',
     createdByRef: 'User',
-    createdBy: null,
+    createdBy: '9'.repeat(24),
   },
 ];
 

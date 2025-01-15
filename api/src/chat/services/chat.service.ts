@@ -256,6 +256,10 @@ export class ChatService {
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
+
+        if (!subscriber) {
+          throw new Error('Unable to create a new subscriber');
+        }
       } else {
         // Already existing user profile
         // Exec lastvisit hook
@@ -288,18 +292,22 @@ export class ChatService {
                   avatar: avatar.id,
                 },
               );
+
+              if (!subscriber) {
+                throw new Error('Unable to update the subscriber avatar');
+              }
             }
           }
         } catch (err) {
           this.logger.error(
-            `Unable to retrieve avatar for subscriber ${subscriber.id}`,
+            `Unable to retrieve avatar for subscriber ${event.getSenderForeignId()}`,
             err,
           );
         }
       }
 
       // Set the subscriber object
-      event.setSender(subscriber);
+      event.setSender(subscriber!);
 
       // Preprocess the event (persist attachments, ...)
       if (event.preprocess) {
@@ -309,7 +317,7 @@ export class ChatService {
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);
 
-      if (subscriber.assignedTo) {
+      if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
         return;
       }

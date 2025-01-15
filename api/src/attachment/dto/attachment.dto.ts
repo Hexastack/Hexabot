@@ -132,5 +132,6 @@ export class AttachmentContextParamDto {
   })
   @IsString()
   @IsIn(Object.values(AttachmentContext))
-  context?: TAttachmentContext;
+  @IsNotEmpty()
+  context: TAttachmentContext;
 }

@@ -604,6 +604,11 @@ export default abstract class BaseWebChannelHandler<
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
+      if (!req.session?.web?.profile?.id) {
+        this.logger.debug('Web Channel Handler : No session');
+        return null;
+      }
+
       // Check if any file is provided
       if (type !== 'file' || !('file' in data) || !data.file) {
         this.logger.debug('Web Channel Handler : No files provided');
@@ -622,7 +627,7 @@ export default abstract class BaseWebChannelHandler<
         type: data.type,
         context: 'message_attachment',
         createdByRef: 'Subscriber',
-        createdBy: req.session.web.profile?.id,
+        createdBy: req.session?.web?.profile?.id,
       });
     } catch (err) {
       this.logger.error(
@@ -677,7 +682,7 @@ export default abstract class BaseWebChannelHandler<
       const file = await multerUpload;
 
       // Check if any file is provided
-      if (!req.file) {
+      if (!file) {
         this.logger.debug('Web Channel Handler : No files provided');
         return null;
       }

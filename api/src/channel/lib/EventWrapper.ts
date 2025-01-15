@@ -8,7 +8,6 @@
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
@@ -78,7 +77,6 @@ export default abstract class EventWrapper<
         messageType: this.getMessageType(),
         payload: this.getPayload(),
         message: this.getMessage(),
-        attachments: this.getAttachments(),
         deliveredMessages: this.getDeliveredMessages(),
         watermark: this.getWatermark(),
       },
@@ -205,7 +203,15 @@ export default abstract class EventWrapper<
       this._adapter.eventType === StdEventType.message &&
       this._adapter.messageType === IncomingMessageType.attachments
     ) {
-      await this._handler.persistMessageAttachments(this);
+      await this._handler.persistMessageAttachments(
+        this as EventWrapper<
+          any,
+          any,
+          ChannelName,
+          ChannelHandler<ChannelName>,
+          Record<string, any>
+        >,
+      );
     }
   }
 
@@ -262,13 +268,6 @@ export default abstract class EventWrapper<
     }
     return '';
   }
-
-  /**
-   * Returns the list of received attachments
-   *
-   * @returns Received attachments message
-   */
-  abstract getAttachments(): AttachmentPayload[];
 
   /**
    * Returns the list of delivered messages
@@ -391,14 +390,6 @@ export class GenericEventWrapper extends EventWrapper<
    */
   getMessage(): StdIncomingMessage {
     throw new Error('Unknown incoming message type');
-  }
-
-  /**
-   * @returns A list of received attachments
-   * @deprecated - This method is deprecated
-   */
-  getAttachments(): AttachmentPayload[] {
-    return [];
   }
 
   /**

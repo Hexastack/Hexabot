@@ -38,11 +38,11 @@ const getAdminUser = async () => {
   const UserModel = mongoose.model<User>(User.name, userSchema);
 
   const adminRole = await RoleModel.findOne({ name: 'admin' });
-  const user = await UserModel.findOne({ roles: [adminRole._id] }).sort({
+  const user = await UserModel.findOne({ roles: [adminRole!._id] }).sort({
     createdAt: 'asc',
   });
 
-  return user;
+  return user!;
 };
 
 /**
@@ -638,7 +638,7 @@ const migrateAndPopulateAttachmentMessages = async ({
         if ('attachment_id' in msg.message.attachment.payload) {
           // Add extra attrs
           await attachmentService.updateOne(
-            msg.message.attachment.payload.attachment_id,
+            msg.message.attachment.payload.attachment_id as string,
             {
               createdByRef: msg.sender ? 'Subscriber' : 'User',
               createdBy: msg.sender ? msg.sender : adminUser.id,
@@ -679,6 +679,8 @@ const migrateAndPopulateAttachmentMessages = async ({
 
             if (attachment) {
               await updateAttachmentId(msg._id, attachment.id);
+            } else {
+              logger.warn(`Unable to store attachment for message ${msg._id}`);
             }
           }
         } else {
