@@ -256,9 +256,15 @@ export class AttachmentService extends BaseService<Attachment> {
   async download(
     attachment: Attachment,
     rootDir = config.parameters.uploadDir,
-  ) {
+  ): Promise<StreamableFile> {
     if (this.getStoragePlugin()) {
-      return await this.getStoragePlugin()?.download(attachment);
+      const streamableFile =
+        await this.getStoragePlugin()?.download(attachment);
+      if (!streamableFile) {
+        throw new NotFoundException('No file was found');
+      }
+
+      return streamableFile;
     } else {
       const path = resolve(join(rootDir, attachment.location));
 

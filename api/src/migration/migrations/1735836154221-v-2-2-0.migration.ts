@@ -442,7 +442,10 @@ const migrateAttachmentMessages = async ({
               type: response.headers['content-type'],
               channel: {},
             });
-            await updateAttachmentId(msg._id, attachment.id);
+
+            if (attachment) {
+              await updateAttachmentId(msg._id, attachment.id);
+            }
           }
         } else {
           logger.warn(

@@ -29,6 +29,7 @@ import { Migration, MigrationDocument } from './migration.schema';
 import {
   MigrationAction,
   MigrationName,
+  MigrationRunOneParams,
   MigrationRunParams,
   MigrationSuccessCallback,
   MigrationVersion,
@@ -239,7 +240,7 @@ module.exports = {
    *
    * @returns Resolves when the migration action is successfully executed or stops if the migration already exists.
    */
-  private async runOne({ version, action }: MigrationRunParams) {
+  private async runOne({ version, action }: MigrationRunOneParams) {
     // Verify DB status
     const { exist, migrationDocument } = await this.verifyStatus({
       version,
@@ -258,7 +259,7 @@ module.exports = {
         attachmentService: this.attachmentService,
       });
 
-      if (result) {
+      if (result && migrationDocument) {
         await this.successCallback({
           version,
           action,

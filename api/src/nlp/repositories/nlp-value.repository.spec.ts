@@ -87,7 +87,7 @@ describe('NlpValueRepository', () => {
           const ValueWithEntities = {
             ...curr,
             entity: nlpEntityFixtures[
-              parseInt(curr.entity)
+              parseInt(curr.entity!)
             ] as NlpValueFull['entity'],
             builtin: curr.builtin!,
             expressions: curr.expressions!,

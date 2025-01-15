@@ -478,7 +478,7 @@ export abstract class BaseRepository<
 
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
-    dto: UpdateQuery<D>,
+    dto: UpdateQuery<DtoInfer<DtoAction.Update, Dto, D>>,
     options: QueryOptions<D> | null = {
       new: true,
     },

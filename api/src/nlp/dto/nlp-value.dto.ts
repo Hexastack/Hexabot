@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
@@ -49,11 +48,42 @@ export class NlpValueCreateDto {
   @IsString()
   @IsNotEmpty()
   @IsObjectId({ message: 'Entity must be a valid ObjectId' })
-  entity: string;
+  entity: string | null;
 }
 
-export class NlpValueUpdateDto extends PartialType(NlpValueCreateDto) {}
+export class NlpValueUpdateDto {
+  @ApiPropertyOptional({ description: 'Foreign ID', type: String })
+  @IsOptional()
+  @IsString()
+  foreign_id?: string;
+
+  @ApiPropertyOptional({ description: 'Nlp value', type: String })
+  @IsOptional()
+  @IsString()
+  value?: string;
+
+  @ApiPropertyOptional({
+    description: 'Nlp value expressions',
+    isArray: true,
+    type: Array,
+  })
+  @IsOptional()
+  @IsArray()
+  expressions?: string[];
+
+  @ApiPropertyOptional({ description: 'Nlp value entity', type: String })
+  @IsOptional()
+  @IsString()
+  @IsObjectId({ message: 'Entity must be a valid ObjectId' })
+  entity?: string | null;
+
+  @ApiPropertyOptional({ description: 'Nlp value is builtin', type: Boolean })
+  @IsOptional()
+  @IsBoolean()
+  builtin?: boolean;
+}
 
 export type NlpValueDto = DtoConfig<{
   create: NlpValueCreateDto;
+  update: NlpValueUpdateDto;
 }>;

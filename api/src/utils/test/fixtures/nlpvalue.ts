@@ -51,12 +51,10 @@ export const installNlpValueFixtures = async () => {
 
   const NlpValue = mongoose.model(NlpValueModel.name, NlpValueModel.schema);
   const nlpValues = await NlpValue.insertMany(
-    nlpValueFixtures.map((v) => {
-      return {
-        ...v,
-        entity: nlpEntities[parseInt(v.entity)].id,
-      };
-    }),
+    nlpValueFixtures.map((v) => ({
+      ...v,
+      entity: v?.entity ? nlpEntities[parseInt(v.entity)].id : null,
+    })),
   );
   return { nlpEntities, nlpValues };
 };

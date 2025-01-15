@@ -27,7 +27,7 @@ import {
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { AttachmentModel, Attachment } from '../schemas/attachment.schema';
+import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 
 import { AttachmentController } from './attachment.controller';
@@ -55,14 +55,12 @@ describe('AttachmentController', () => {
     attachmentController =
       module.get<AttachmentController>(AttachmentController);
     attachmentService = module.get<AttachmentService>(AttachmentService);
-    attachmentToDelete = await attachmentService.findOne({
+    attachmentToDelete = (await attachmentService.findOne({
       name: 'store1.jpg',
-    });
+    }))!;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -79,7 +77,7 @@ describe('AttachmentController', () => {
   describe('Upload', () => {
     it('should throw BadRequestException if no file is selected to be uploaded', async () => {
       const promiseResult = attachmentController.uploadFile({
-        file: undefined,
+        file: [],
       });
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
@@ -117,9 +115,9 @@ describe('AttachmentController', () => {
 
     it('should download the attachment by id', async () => {
       jest.spyOn(attachmentService, 'findOne');
-      const storedAttachment = await attachmentService.findOne({
+      const storedAttachment = (await attachmentService.findOne({
         name: 'store1.jpg',
-      });
+      }))!;
       const result = await attachmentController.download({
         id: storedAttachment.id,
       });
@@ -127,7 +125,7 @@ describe('AttachmentController', () => {
       expect(attachmentService.findOne).toHaveBeenCalledWith(
         storedAttachment.id,
       );
-      expect(result.options).toEqual({
+      expect(result?.options).toEqual({
         type: storedAttachment.type,
         length: storedAttachment.size,
         disposition: `attachment; filename="${encodeURIComponent(

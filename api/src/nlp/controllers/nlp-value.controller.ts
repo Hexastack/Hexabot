@@ -75,8 +75,9 @@ export class NlpValueController extends BaseController<
     this.validate({
       dto: createNlpValueDto,
       allowedIds: {
-        entity: (await this.nlpEntityService.findOne(createNlpValueDto.entity))
-          ?.id,
+        entity: createNlpValueDto.entity
+          ? (await this.nlpEntityService.findOne(createNlpValueDto.entity))?.id
+          : null,
       },
     });
     return await this.nlpValueService.create(createNlpValueDto);

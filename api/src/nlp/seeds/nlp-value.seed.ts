@@ -38,7 +38,7 @@ export class NlpValueSeeder extends BaseSeeder<
       const entities = await this.nlpEntityRepository.findAll();
       const modelDtos = models.map((v) => ({
         ...v,
-        entity: entities.find(({ name }) => name === v.entity)?.id,
+        entity: entities.find(({ name }) => name === v.entity)?.id || null,
       }));
       await this.repository.createMany(modelDtos);
       return true;

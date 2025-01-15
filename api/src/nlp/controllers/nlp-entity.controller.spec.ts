@@ -109,7 +109,7 @@ describe('NlpEntityController', () => {
           acc.push({
             ...curr,
             values: nlpValueFixtures.filter(
-              ({ entity }) => parseInt(entity) === index,
+              ({ entity }) => parseInt(entity!) === index,
             ) as NlpEntityFull['values'],
             lookups: curr.lookups!,
             builtin: curr.builtin!,
