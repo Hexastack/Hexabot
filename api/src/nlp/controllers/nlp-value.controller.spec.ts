@@ -125,7 +125,7 @@ describe('NlpValueController', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntities[parseInt(curr.entity!)].id,
+            entity: curr.entity ? nlpEntities[parseInt(curr.entity!)].id : null,
             expressions: curr.expressions!,
             metadata: curr.metadata!,
             builtin: curr.builtin!,
@@ -133,7 +133,7 @@ describe('NlpValueController', () => {
           acc.push(ValueWithEntities);
           return acc;
         },
-        [] as TFixtures<NlpValue>[],
+        [] as TFixtures<NlpValueCreateDto>[],
       );
       expect(result).toEqualPayload(nlpValueFixturesWithEntities);
     });

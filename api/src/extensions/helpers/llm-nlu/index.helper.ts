@@ -146,7 +146,7 @@ export default class LlmNluHelper
       {
         entity: 'language',
         value: language || defaultLanguage.code,
-        confidence: 0.0,
+        confidence: 100,
       },
     ];
     for await (const { name, doc, prompt, values } of this

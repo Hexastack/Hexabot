@@ -33,8 +33,13 @@ export class ObjectIdPipe implements PipeTransform<string, Promise<string>> {
   async transform(value: string, { type, data }: ArgumentMetadata) {
     if (typeof value === 'string' && data === 'id' && type === 'param') {
       const errors = await this.getErrors(value);
-      if (errors?.constraints)
-        throw new BadRequestException(Object.values(errors.constraints)[0]);
+      if (errors) {
+        throw new BadRequestException(
+          errors?.constraints
+            ? Object.values(errors.constraints)[0]
+            : errors.toString(),
+        );
+      }
     } else if (
       typeof value === 'object' &&
       Object.keys(value).length > 1 &&
@@ -45,10 +50,13 @@ export class ObjectIdPipe implements PipeTransform<string, Promise<string>> {
           if (param.startsWith('id')) {
             const errors = await this.getErrors(String(paramValue));
 
-            if (errors?.constraints)
+            if (errors) {
               throw new BadRequestException(
-                Object.values(errors.constraints)[0],
+                errors?.constraints
+                  ? Object.values(errors.constraints)[0]
+                  : errors.toString(),
               );
+            }
           }
         }),
       );
