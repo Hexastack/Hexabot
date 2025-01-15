@@ -75,7 +75,7 @@ export class BotStatsService extends BaseService<BotStats> {
       if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          'returning_users',
+          BotStatsType.returning_users,
           'Loyalty',
           subscriber,
         );
@@ -85,8 +85,9 @@ export class BotStatsService extends BaseService<BotStats> {
       if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          'returning_users',
+          BotStatsType.returning_users,
           'Returning users',
+          subscriber,
         );
       }
     }
