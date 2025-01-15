@@ -168,7 +168,7 @@ export default class LlmNluHelper
       traits.push({
         entity: name,
         value,
-        confidence: 0.0,
+        confidence: 100,
       });
     }
 
