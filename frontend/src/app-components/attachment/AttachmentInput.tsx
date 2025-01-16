@@ -13,7 +13,7 @@ import { forwardRef } from "react";
 import { useGet } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IAttachment, TAttachmentResourceRef } from "@/types/attachment.types";
+import { AttachmentResourceRef, IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -29,7 +29,7 @@ type AttachmentThumbnailProps = {
   onChange?: (id: string | null, mimeType: string | null) => void;
   error?: boolean;
   helperText?: string;
-  resourceRef: TAttachmentResourceRef;
+  resourceRef: AttachmentResourceRef;
 };
 
 const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(

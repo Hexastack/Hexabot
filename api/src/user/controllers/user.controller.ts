@@ -31,7 +31,11 @@ import { Session as ExpressSession } from 'express-session';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { AttachmentResourceRef } from '@/attachment/types';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
@@ -296,8 +300,8 @@ export class ReadWriteUserController extends ReadOnlyUserController {
           size: avatarFile.size,
           type: avatarFile.mimetype,
           resourceRef: AttachmentResourceRef.UserAvatar,
-          access: 'private',
-          createdByRef: 'User',
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.User,
           createdBy: req.user.id,
         })
       : undefined;

@@ -22,8 +22,6 @@ export enum AttachmentCreatedByRef {
   Subscriber = "Subscriber",
 }
 
-export type TAttachmentCreatedByRef = `${AttachmentCreatedByRef}`;
-
 /**
  * Defines the various resource references in which an attachment can exist.
  * These references influence how the attachment is uploaded, stored, and accessed:
@@ -37,7 +35,10 @@ export enum AttachmentResourceRef {
   MessageAttachment = "Message", // Files sent or received via messages, uploaded programmatically, accessible to users with inbox permissions.;
 }
 
-export type TAttachmentResourceRef = `${AttachmentResourceRef}`;
+export enum AttachmentAccess {
+  Public = "public",
+  Private = "private",
+}
 
 export interface IAttachmentAttributes {
   name: string;
@@ -46,8 +47,9 @@ export interface IAttachmentAttributes {
   location: string;
   url: string;
   channel?: Record<string, any>;
-  resourceRef: TAttachmentResourceRef;
-  createdByRef: TAttachmentCreatedByRef;
+  resourceRef: AttachmentResourceRef;
+  access: AttachmentAccess;
+  createdByRef: AttachmentCreatedByRef;
   createdBy: string | null;
 }
 

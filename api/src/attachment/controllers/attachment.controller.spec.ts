@@ -39,7 +39,11 @@ import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
-import { AttachmentResourceRef } from '../types';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '../types';
 
 import { AttachmentController } from './attachment.controller';
 
@@ -138,8 +142,8 @@ describe('AttachmentController', () => {
         name: attachmentFile.originalname,
         location: expect.stringMatching(new RegExp(`^/${name}`)),
         resourceRef: AttachmentResourceRef.BlockAttachment,
-        access: 'public',
-        createdByRef: 'User',
+        access: AttachmentAccess.Public,
+        createdByRef: AttachmentCreatedByRef.User,
         createdBy: '9'.repeat(24),
       });
       expect(result).toEqualPayload(
@@ -147,7 +151,7 @@ describe('AttachmentController', () => {
           {
             ...attachment,
             resourceRef: AttachmentResourceRef.BlockAttachment,
-            createdByRef: 'User',
+            createdByRef: AttachmentCreatedByRef.User,
             createdBy: '9'.repeat(24),
           },
         ],

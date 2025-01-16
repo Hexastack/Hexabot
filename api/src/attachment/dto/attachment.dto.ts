@@ -27,9 +27,6 @@ import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
-  TAttachmentAccess,
-  TAttachmentCreatedByRef,
-  TAttachmentResourceRef,
 } from '../types';
 
 export class AttachmentMetadataDto {
@@ -76,7 +73,7 @@ export class AttachmentMetadataDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(Object.values(AttachmentResourceRef))
-  resourceRef: TAttachmentResourceRef;
+  resourceRef: AttachmentResourceRef;
 
   /**
    * Attachment Owner Type
@@ -88,7 +85,7 @@ export class AttachmentMetadataDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(Object.values(AttachmentCreatedByRef))
-  createdByRef: TAttachmentCreatedByRef;
+  createdByRef: AttachmentCreatedByRef;
 
   /**
    * Attachment Access
@@ -100,7 +97,7 @@ export class AttachmentMetadataDto {
   @IsString()
   @IsNotEmpty()
   @IsIn(Object.values(AttachmentAccess))
-  access: TAttachmentAccess;
+  access: AttachmentAccess;
 
   /**
    * Attachment Owner : Subscriber or User ID
@@ -147,7 +144,7 @@ export class AttachmentContextParamDto {
   @IsString()
   @IsIn(Object.values(AttachmentResourceRef))
   @IsNotEmpty()
-  resourceRef: TAttachmentResourceRef;
+  resourceRef: AttachmentResourceRef;
 
   @ApiPropertyOptional({
     description: 'Attachment Access',
@@ -156,5 +153,5 @@ export class AttachmentContextParamDto {
   @IsString()
   @IsIn(Object.values(AttachmentAccess))
   @IsOptional()
-  access?: TAttachmentAccess;
+  access?: AttachmentAccess;
 }

@@ -15,7 +15,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { AttachmentResourceRef } from '@/attachment/types';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
@@ -627,8 +631,8 @@ export default abstract class BaseWebChannelHandler<
         size: Buffer.byteLength(data.file),
         type: data.type,
         resourceRef: AttachmentResourceRef.MessageAttachment,
-        access: 'private',
-        createdByRef: 'Subscriber',
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
         createdBy: req.session?.web?.profile?.id,
       });
     } catch (err) {
@@ -694,8 +698,8 @@ export default abstract class BaseWebChannelHandler<
         size: file.size,
         type: file.mimetype,
         resourceRef: AttachmentResourceRef.MessageAttachment,
-        access: 'private',
-        createdByRef: 'Subscriber',
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
         createdBy: req.session.web.profile?.id,
       });
     } catch (err) {
@@ -1355,7 +1359,7 @@ export default abstract class BaseWebChannelHandler<
    */
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
     const subscriberId = req.session?.web?.profile?.id as string;
-    if (attachment.access === 'public') {
+    if (attachment.access === AttachmentAccess.Public) {
       return true;
     } else if (!subscriberId) {
       this.logger.warn(
@@ -1363,7 +1367,7 @@ export default abstract class BaseWebChannelHandler<
       );
       return false;
     } else if (
-      attachment.createdByRef === 'Subscriber' &&
+      attachment.createdByRef === AttachmentCreatedByRef.Subscriber &&
       subscriberId === attachment.createdBy
     ) {
       // Either subscriber wants to access the attachment he sent

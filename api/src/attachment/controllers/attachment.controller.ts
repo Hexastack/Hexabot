@@ -46,6 +46,7 @@ import {
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
 import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
+import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
@@ -131,7 +132,10 @@ export class AttachmentController extends BaseController<Attachment> {
     @UploadedFiles() files: { file: Express.Multer.File[] },
     @Req() req: Request,
     @Query()
-    { resourceRef, access = 'public' }: AttachmentContextParamDto,
+    {
+      resourceRef,
+      access = AttachmentAccess.Public,
+    }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
@@ -153,7 +157,7 @@ export class AttachmentController extends BaseController<Attachment> {
         resourceRef,
         access,
         createdBy: userId,
-        createdByRef: 'User',
+        createdByRef: AttachmentCreatedByRef.User,
       });
 
       if (attachment) {

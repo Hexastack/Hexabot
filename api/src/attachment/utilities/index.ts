@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 
-import { AttachmentResourceRef, TAttachmentResourceRef } from '../types';
+import { AttachmentResourceRef } from '../types';
 
 export const MIME_REGEX = /^[a-z-]+\/[0-9a-z\-.]+$/gm;
 
@@ -84,13 +84,13 @@ export const generateUniqueFilename = (originalname: string) => {
 /**
  * Checks if the given ref is of type TAttachmentResourceRef.
  *
- * @param ref - The ref to check.
+ * @param resourceRef - The ref to check.
  * @returns True if the ref is of type TAttachmentResourceRef, otherwise false.
  */
 export const isAttachmentResourceRef = (
-  ref: any,
-): ref is TAttachmentResourceRef => {
-  return Object.values(AttachmentResourceRef).includes(ref);
+  resourceRef: any,
+): resourceRef is AttachmentResourceRef => {
+  return Object.values(AttachmentResourceRef).includes(resourceRef);
 };
 AttachmentResourceRef;
 
@@ -102,7 +102,7 @@ AttachmentResourceRef;
  */
 export const isAttachmentResourceRefArray = (
   refList: any,
-): refList is TAttachmentResourceRef[] => {
+): refList is AttachmentResourceRef[] => {
   return (
     Array.isArray(refList) &&
     refList.length > 0 &&

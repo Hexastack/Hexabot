@@ -27,9 +27,6 @@ import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
-  TAttachmentAccess,
-  TAttachmentCreatedByRef,
-  TAttachmentResourceRef,
 } from '../types';
 import { MIME_REGEX } from '../utilities';
 
@@ -94,19 +91,19 @@ export class AttachmentStub extends BaseSchema {
    * Type of the createdBy (depending on the createdBy type)
    */
   @Prop({ type: String, enum: Object.values(AttachmentCreatedByRef) })
-  createdByRef: TAttachmentCreatedByRef;
+  createdByRef: AttachmentCreatedByRef;
 
   /**
    * Resource reference of the attachment
    */
   @Prop({ type: String, enum: Object.values(AttachmentResourceRef) })
-  resourceRef: TAttachmentResourceRef;
+  resourceRef: AttachmentResourceRef;
 
   /**
    * Access level of the attachment
    */
   @Prop({ type: String, enum: Object.values(AttachmentAccess) })
-  access: TAttachmentAccess;
+  access: AttachmentAccess;
 
   /**
    * Optional property representing the URL of the attachment.

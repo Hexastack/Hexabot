@@ -16,6 +16,7 @@ import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
 import {
+  AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '@/attachment/types';
@@ -619,8 +620,8 @@ const migrateAttachmentContents = async (
               $set: {
                 resourceRef: AttachmentResourceRef.ContentAttachment,
                 createdBy: adminUser.id,
-                createdByRef: 'User',
-                access: 'public',
+                createdByRef: AttachmentCreatedByRef.User,
+                access: AttachmentAccess.Public,
               },
             },
           );
@@ -682,8 +683,10 @@ const migrateAndPopulateAttachmentMessages = async ({
             msg.message.attachment.payload.attachment_id as string,
             {
               resourceRef: AttachmentResourceRef.MessageAttachment,
-              access: 'private',
-              createdByRef: msg.sender ? 'Subscriber' : 'User',
+              access: AttachmentAccess.Private,
+              createdByRef: msg.sender
+                ? AttachmentCreatedByRef.Subscriber
+                : AttachmentCreatedByRef.User,
               createdBy: msg.sender ? msg.sender : adminUser.id,
             },
           );
@@ -715,9 +718,13 @@ const migrateAndPopulateAttachmentMessages = async ({
               type: response.headers['content-type'],
               channel: {},
               resourceRef: AttachmentResourceRef.MessageAttachment,
-              access: msg.sender ? 'private' : 'public',
+              access: msg.sender
+                ? AttachmentAccess.Private
+                : AttachmentAccess.Public,
               createdBy: msg.sender ? msg.sender : adminUser.id,
-              createdByRef: msg.sender ? 'Subscriber' : 'User',
+              createdByRef: msg.sender
+                ? AttachmentCreatedByRef.Subscriber
+                : AttachmentCreatedByRef.User,
             });
 
             if (attachment) {

@@ -23,7 +23,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { AttachmentFile, AttachmentResourceRef } from '@/attachment/types';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentFile,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import {
@@ -260,8 +265,8 @@ export default abstract class ChannelHandler<
             type,
             size,
             resourceRef: AttachmentResourceRef.MessageAttachment,
-            access: 'private',
-            createdByRef: 'Subscriber',
+            access: AttachmentAccess.Private,
+            createdByRef: AttachmentCreatedByRef.Subscriber,
             createdBy: subscriber.id,
           });
         }),
@@ -327,7 +332,7 @@ export default abstract class ChannelHandler<
    * @return True, if requester is authorized to download the attachment
    */
   public async hasDownloadAccess(attachment: Attachment, _req: Request) {
-    return attachment.access === 'public';
+    return attachment.access === AttachmentAccess.Public;
   }
 
   /**

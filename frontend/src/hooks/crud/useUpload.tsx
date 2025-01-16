@@ -9,7 +9,7 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
-import { TAttachmentResourceRef } from "@/types/attachment.types";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -27,7 +27,7 @@ export const useUpload = <
     TMutationOptions<
       TBasic,
       Error,
-      { file: File; resourceRef: TAttachmentResourceRef },
+      { file: File; resourceRef: AttachmentResourceRef },
       TBasic
     >,
     "mutationFn" | "mutationKey"

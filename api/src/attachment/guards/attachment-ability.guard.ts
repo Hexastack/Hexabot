@@ -26,7 +26,7 @@ import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 
 import { AttachmentService } from '../services/attachment.service';
-import { AttachmentResourceRef, TAttachmentResourceRef } from '../types';
+import { AttachmentResourceRef } from '../types';
 import {
   isAttachmentResourceRef,
   isAttachmentResourceRefArray,
@@ -42,7 +42,7 @@ export class AttachmentGuard implements CanActivate {
 
   private permissionMap: Record<
     Action,
-    Record<TAttachmentResourceRef, [TModel, Action][]>
+    Record<AttachmentResourceRef, [TModel, Action][]>
   > = {
     // Read attachments by ref
     [Action.READ]: {
@@ -169,7 +169,7 @@ export class AttachmentGuard implements CanActivate {
   private async isAuthorized(
     action: Action,
     user: Express.User & User,
-    resourceRef: TAttachmentResourceRef,
+    resourceRef: AttachmentResourceRef,
   ): Promise<boolean> {
     if (!action) {
       throw new TypeError('Invalid action');

@@ -12,7 +12,7 @@ import { forwardRef, useState } from "react";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IAttachment, TAttachmentResourceRef } from "@/types/attachment.types";
+import { AttachmentResourceRef, IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -28,7 +28,7 @@ type MultipleAttachmentInputProps = {
   onChange?: (ids: string[]) => void;
   error?: boolean;
   helperText?: string;
-  resourceRef: TAttachmentResourceRef;
+  resourceRef: AttachmentResourceRef;
 };
 
 const MultipleAttachmentInput = forwardRef<

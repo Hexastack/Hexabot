@@ -10,7 +10,11 @@ import mongoose from 'mongoose';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentResourceRef } from '@/attachment/types';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 
 export const attachmentFixtures: AttachmentCreateDto[] = [
   {
@@ -24,8 +28,8 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
       },
     },
     resourceRef: AttachmentResourceRef.ContentAttachment,
-    access: 'public',
-    createdByRef: 'User',
+    access: AttachmentAccess.Public,
+    createdByRef: AttachmentCreatedByRef.User,
     createdBy: '9'.repeat(24),
   },
   {
@@ -39,8 +43,8 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
       },
     },
     resourceRef: AttachmentResourceRef.ContentAttachment,
-    access: 'public',
-    createdByRef: 'User',
+    access: AttachmentAccess.Public,
+    createdByRef: AttachmentCreatedByRef.User,
     createdBy: '9'.repeat(24),
   },
 ];
