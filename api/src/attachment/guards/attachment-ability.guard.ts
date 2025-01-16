@@ -26,7 +26,7 @@ import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 
 import { AttachmentService } from '../services/attachment.service';
-import { TAttachmentResourceRef } from '../types';
+import { AttachmentResourceRef, TAttachmentResourceRef } from '../types';
 import {
   isAttachmentResourceRef,
   isAttachmentResourceRefArray,
@@ -46,46 +46,46 @@ export class AttachmentGuard implements CanActivate {
   > = {
     // Read attachments by ref
     [Action.READ]: {
-      setting_attachment: [
+      [AttachmentResourceRef.SettingAttachment]: [
         ['setting', Action.READ],
         ['attachment', Action.READ],
       ],
-      user_avatar: [['user', Action.READ]],
-      block_attachment: [
+      [AttachmentResourceRef.UserAvatar]: [['user', Action.READ]],
+      [AttachmentResourceRef.BlockAttachment]: [
         ['block', Action.READ],
         ['attachment', Action.READ],
       ],
-      content_attachment: [
+      [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.READ],
         ['attachment', Action.READ],
       ],
-      subscriber_avatar: [['subscriber', Action.READ]],
-      message_attachment: [
+      [AttachmentResourceRef.SubscriberAvatar]: [['subscriber', Action.READ]],
+      [AttachmentResourceRef.MessageAttachment]: [
         ['message', Action.READ],
         ['attachment', Action.READ],
       ],
     },
     // Create attachments by ref
     [Action.CREATE]: {
-      setting_attachment: [
+      [AttachmentResourceRef.SettingAttachment]: [
         ['setting', Action.UPDATE],
         ['attachment', Action.CREATE],
       ],
-      user_avatar: [
+      [AttachmentResourceRef.UserAvatar]: [
         // Not authorized, done via /user/:id/edit endpoint
       ],
-      block_attachment: [
+      [AttachmentResourceRef.BlockAttachment]: [
         ['block', Action.UPDATE],
         ['attachment', Action.CREATE],
       ],
-      content_attachment: [
+      [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.UPDATE],
         ['attachment', Action.CREATE],
       ],
-      subscriber_avatar: [
+      [AttachmentResourceRef.SubscriberAvatar]: [
         // Not authorized, done programmatically by the channel
       ],
-      message_attachment: [
+      [AttachmentResourceRef.MessageAttachment]: [
         // Unless we're in case of a handover, done programmatically by the channel
         ['message', Action.CREATE],
         ['attachment', Action.CREATE],
@@ -93,36 +93,36 @@ export class AttachmentGuard implements CanActivate {
     },
     // Delete attachments by ref
     [Action.DELETE]: {
-      setting_attachment: [
+      [AttachmentResourceRef.SettingAttachment]: [
         ['setting', Action.UPDATE],
         ['attachment', Action.DELETE],
       ],
-      user_avatar: [
+      [AttachmentResourceRef.UserAvatar]: [
         // Not authorized
       ],
-      block_attachment: [
+      [AttachmentResourceRef.BlockAttachment]: [
         ['block', Action.UPDATE],
         ['attachment', Action.DELETE],
       ],
-      content_attachment: [
+      [AttachmentResourceRef.ContentAttachment]: [
         ['content', Action.UPDATE],
         ['attachment', Action.DELETE],
       ],
-      subscriber_avatar: [
+      [AttachmentResourceRef.SubscriberAvatar]: [
         // Not authorized, done programmatically by the channel
       ],
-      message_attachment: [
+      [AttachmentResourceRef.MessageAttachment]: [
         // Not authorized
       ],
     },
     // Update attachments is not possible
     [Action.UPDATE]: {
-      setting_attachment: [],
-      user_avatar: [],
-      block_attachment: [],
-      content_attachment: [],
-      subscriber_avatar: [],
-      message_attachment: [],
+      [AttachmentResourceRef.SettingAttachment]: [],
+      [AttachmentResourceRef.UserAvatar]: [],
+      [AttachmentResourceRef.BlockAttachment]: [],
+      [AttachmentResourceRef.ContentAttachment]: [],
+      [AttachmentResourceRef.SubscriberAvatar]: [],
+      [AttachmentResourceRef.MessageAttachment]: [],
     },
   };
 
@@ -163,7 +163,7 @@ export class AttachmentGuard implements CanActivate {
    *
    * @param action - The action on the attachment.
    * @param user - The current user.
-   * @param resourceRef - The resource ref of the attachment (e.g., user_avatar, setting_attachment).
+   * @param resourceRef - The resource ref of the attachment (e.g., [AttachmentResourceRef.UserAvatar], [AttachmentResourceRef.SettingAttachment]).
    * @returns A promise that resolves to `true` if the user has the required upload permission, otherwise `false`.
    */
   private async isAuthorized(

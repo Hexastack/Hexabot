@@ -13,6 +13,7 @@ import AttachmentInput from "@/app-components/attachment/AttachmentInput";
 import { ContentItem } from "@/app-components/dialogs";
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
 import { useTranslate } from "@/hooks/useTranslate";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IBlockAttributes } from "@/types/block.types";
 import { FileType } from "@/types/message.types";
 import { MIME_TYPES, getFileType } from "@/utils/attachment";
@@ -69,7 +70,7 @@ const AttachmentMessageForm = () => {
                   },
                 });
               }}
-              resourceRef="block_attachment"
+              resourceRef={AttachmentResourceRef.BlockAttachment}
             />
           );
         }}

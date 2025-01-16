@@ -20,6 +20,7 @@ import { useApiClient } from "@/hooks/useApiClient";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IContentType } from "@/types/content-type.types";
 
 export type ContentImportDialogProps = DialogControlProps<{
@@ -81,7 +82,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
               }}
               label=""
               value={attachmentId}
-              resourceRef="content_attachment"
+              resourceRef={AttachmentResourceRef.ContentAttachment}
             />
           </ContentItem>
         </ContentContainer>

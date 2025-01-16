@@ -20,6 +20,7 @@ import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IBlock } from "@/types/block.types";
 import { IHelper } from "@/types/helper.types";
 import { ISetting, SettingType } from "@/types/setting.types";
@@ -186,7 +187,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           accept={MIME_TYPES["images"].join(",")}
           format="full"
           size={128}
-          resourceRef="setting_attachment"
+          resourceRef={AttachmentResourceRef.SettingAttachment}
         />
       );
 
@@ -199,7 +200,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
           accept={MIME_TYPES["images"].join(",")}
           format="full"
           size={128}
-          resourceRef="setting_attachment"
+          resourceRef={AttachmentResourceRef.SettingAttachment}
         />
       );
     default:

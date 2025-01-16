@@ -22,7 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { AttachmentFile } from '@/attachment/types';
+import { AttachmentFile, AttachmentResourceRef } from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import {
@@ -258,7 +258,7 @@ export default abstract class ChannelHandler<
             name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
             type,
             size,
-            resourceRef: 'message_attachment',
+            resourceRef: AttachmentResourceRef.MessageAttachment,
             access: 'private',
             createdByRef: 'Subscriber',
             createdBy: subscriber.id,

@@ -7,6 +7,7 @@
  */
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { AttachmentResourceRef } from '@/attachment/types';
 import { ButtonType } from '@/chat/schemas/types/button';
 import {
   FileType,
@@ -88,7 +89,7 @@ const attachment: Attachment = {
       id: 'any-channel-attachment-id',
     },
   },
-  resourceRef: 'block_attachment',
+  resourceRef: AttachmentResourceRef.BlockAttachment,
   access: 'public',
   createdByRef: 'User',
   createdBy: null,

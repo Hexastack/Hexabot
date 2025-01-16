@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import { AttachmentResourceRef } from '@/attachment/types';
 
 export const attachmentFixtures: AttachmentCreateDto[] = [
   {
@@ -22,7 +23,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
         id: '1',
       },
     },
-    resourceRef: 'content_attachment',
+    resourceRef: AttachmentResourceRef.ContentAttachment,
     access: 'public',
     createdByRef: 'User',
     createdBy: '9'.repeat(24),
@@ -37,7 +38,7 @@ export const attachmentFixtures: AttachmentCreateDto[] = [
         id: '2',
       },
     },
-    resourceRef: 'content_attachment',
+    resourceRef: AttachmentResourceRef.ContentAttachment,
     access: 'public',
     createdByRef: 'User',
     createdBy: '9'.repeat(24),

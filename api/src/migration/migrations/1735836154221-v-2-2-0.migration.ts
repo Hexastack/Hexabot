@@ -362,6 +362,8 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
             AttachmentResourceRef.SettingAttachment,
             AttachmentResourceRef.UserAvatar,
             AttachmentResourceRef.SubscriberAvatar,
+            AttachmentResourceRef.ContentAttachment,
+            AttachmentResourceRef.MessageAttachment,
           ],
         },
       },
@@ -376,11 +378,11 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
     );
 
     logger.log(
-      `Successfully reverted attributes for ${result.modifiedCount} attachments with ref 'setting_attachment'`,
+      `Successfully reverted attributes for ${result.modifiedCount} attachments with ref AttachmentResourceRef.SettingAttachment`,
     );
   } catch (error) {
     logger.error(
-      `Failed to revert attributes for attachments with ref 'setting_attachment': ${error.message}`,
+      `Failed to revert attributes for attachments with ref AttachmentResourceRef.SettingAttachment: ${error.message}`,
     );
   }
 };
@@ -552,7 +554,7 @@ const buildRenameAttributeCallback =
   };
 
 /**
- * Traverses an content document to search for any attachment object
+ * Traverses a content document to search for any attachment object
  * @param obj
  * @param callback
  * @returns
@@ -584,7 +586,14 @@ const migrateAttachmentContents = async (
   const updateField = action === MigrationAction.UP ? 'id' : 'attachment_id';
   const unsetField = action === MigrationAction.UP ? 'attachment_id' : 'id';
   const ContentModel = mongoose.model<Content>(Content.name, contentSchema);
-  // Find blocks where "message.attachment" exists
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+
+  const adminUser = await getAdminUser();
+
+  // Process all contents
   const cursor = ContentModel.find({}).cursor();
 
   for await (const content of cursor) {
@@ -593,6 +602,30 @@ const migrateAttachmentContents = async (
         content.dynamicFields,
         buildRenameAttributeCallback(unsetField, updateField),
       );
+
+      for (const key in content.dynamicFields) {
+        if (
+          content.dynamicFields[key] &&
+          typeof content.dynamicFields[key] === 'object' &&
+          'payload' in content.dynamicFields[key] &&
+          'id' in content.dynamicFields[key].payload &&
+          content.dynamicFields[key].payload.id
+        ) {
+          await AttachmentModel.updateOne(
+            {
+              _id: content.dynamicFields[key].payload.id,
+            },
+            {
+              $set: {
+                resourceRef: AttachmentResourceRef.ContentAttachment,
+                createdBy: adminUser.id,
+                createdByRef: 'User',
+                access: 'public',
+              },
+            },
+          );
+        }
+      }
 
       await ContentModel.replaceOne({ _id: content._id }, content);
     } catch (error) {
@@ -648,7 +681,7 @@ const migrateAndPopulateAttachmentMessages = async ({
           await attachmentService.updateOne(
             msg.message.attachment.payload.attachment_id as string,
             {
-              resourceRef: 'message_attachment',
+              resourceRef: AttachmentResourceRef.MessageAttachment,
               access: 'private',
               createdByRef: msg.sender ? 'Subscriber' : 'User',
               createdBy: msg.sender ? msg.sender : adminUser.id,
@@ -681,7 +714,7 @@ const migrateAndPopulateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
-              resourceRef: 'message_attachment',
+              resourceRef: AttachmentResourceRef.MessageAttachment,
               access: msg.sender ? 'private' : 'public',
               createdBy: msg.sender ? msg.sender : adminUser.id,
               createdByRef: msg.sender ? 'Subscriber' : 'User',

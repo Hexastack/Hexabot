@@ -12,6 +12,7 @@ import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { AttachmentResourceRef } from '@/attachment/types';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -280,7 +281,7 @@ export class ChatService {
               name: `avatar-${uuidv4()}.${extension}`,
               size,
               type,
-              resourceRef: 'subscriber_avatar',
+              resourceRef: AttachmentResourceRef.SubscriberAvatar,
               access: 'private',
               createdByRef: 'Subscriber',
               createdBy: subscriber.id,

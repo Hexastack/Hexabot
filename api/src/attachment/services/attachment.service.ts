@@ -30,7 +30,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment } from '../schemas/attachment.schema';
-import { TAttachmentResourceRef } from '../types';
+import { AttachmentResourceRef, TAttachmentResourceRef } from '../types';
 import {
   fileExists,
   generateUniqueFilename,
@@ -164,7 +164,8 @@ export class AttachmentService extends BaseService<Attachment> {
    * @returns The root directory path
    */
   getRootDirByResourceRef(ref: TAttachmentResourceRef) {
-    return ref === 'subscriber_avatar' || ref === 'user_avatar'
+    return ref === AttachmentResourceRef.SubscriberAvatar ||
+      ref === AttachmentResourceRef.UserAvatar
       ? config.parameters.avatarDir
       : config.parameters.uploadDir;
   }

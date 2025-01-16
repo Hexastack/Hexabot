@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { AttachmentResourceRef } from '@/attachment/types';
 import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
@@ -625,7 +626,7 @@ export default abstract class BaseWebChannelHandler<
         name: data.name,
         size: Buffer.byteLength(data.file),
         type: data.type,
-        resourceRef: 'message_attachment',
+        resourceRef: AttachmentResourceRef.MessageAttachment,
         access: 'private',
         createdByRef: 'Subscriber',
         createdBy: req.session?.web?.profile?.id,
@@ -692,7 +693,7 @@ export default abstract class BaseWebChannelHandler<
         name: file.originalname,
         size: file.size,
         type: file.mimetype,
-        resourceRef: 'message_attachment',
+        resourceRef: AttachmentResourceRef.MessageAttachment,
         access: 'private',
         createdByRef: 'Subscriber',
         createdBy: req.session.web.profile?.id,
