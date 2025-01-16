@@ -90,15 +90,7 @@ export class TranslationController extends BaseController<Translation> {
     @Param('id') id: string,
     @Body() translationUpdate: TranslationUpdateDto,
   ) {
-    const result = await this.translationService.updateOne(
-      id,
-      translationUpdate,
-    );
-    if (!result) {
-      this.logger.warn(`Unable to update Translation by id ${id}`);
-      throw new NotFoundException(`Translation with ID ${id} not found`);
-    }
-    return result;
+    return await this.translationService.updateOne(id, translationUpdate);
   }
 
   /**

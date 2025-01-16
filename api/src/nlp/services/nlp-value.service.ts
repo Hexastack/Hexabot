@@ -63,7 +63,7 @@ export class NlpValueService extends BaseService<
     sampleText: string,
     sampleEntities: NlpSampleEntityValue[],
     storedEntities: NlpEntity[],
-  ) {
+  ): Promise<NlpSampleEntityValue[]> {
     const eMap: Record<string, NlpEntity> = storedEntities.reduce(
       (acc, curr) => {
         if (curr.name) acc[curr?.name] = curr;

@@ -522,7 +522,7 @@ module.exports = {
     version,
     action,
     migrationDocument,
-  }: MigrationSuccessCallback) {
+  }: MigrationSuccessCallback): Promise<void> {
     await this.updateStatus({ version, action, migrationDocument });
     const migrationDisplayName = `${version} [${action}]`;
     this.logger.log(`"${migrationDisplayName}" migration done`);

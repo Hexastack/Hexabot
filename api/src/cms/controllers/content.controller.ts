@@ -300,13 +300,6 @@ export class ContentController extends BaseController<
     @Body() contentDto: ContentUpdateDto,
     @Param('id') id: string,
   ): Promise<Content> {
-    const updatedContent = await this.contentService.updateOne(id, contentDto);
-    if (!updatedContent) {
-      this.logger.warn(
-        `Failed to update content with id ${id}. Content not found.`,
-      );
-      throw new NotFoundException(`Content of id ${id} not found`);
-    }
-    return updatedContent;
+    return await this.contentService.updateOne(id, contentDto);
   }
 }

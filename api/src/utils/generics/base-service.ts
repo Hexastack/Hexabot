@@ -179,7 +179,7 @@ export abstract class BaseService<
     criteria: string | TFilterQuery<T>,
     dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
     options?: QueryOptions<Partial<U>> | null,
-  ): Promise<T | null> {
+  ): Promise<T> {
     return await this.repository.updateOne(criteria, dto, options);
   }
 

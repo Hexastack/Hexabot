@@ -184,11 +184,6 @@ export class ConversationService extends BaseService<
       const updatedConversation = await this.updateOne(convo.id, {
         context: convo.context,
       });
-      if (!updatedConversation) {
-        throw new Error(
-          'Conversation Model : No conversation has been updated',
-        );
-      }
 
       //TODO: add check if nothing changed don't update
       const criteria =

@@ -17,6 +17,7 @@ import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
 import { contentTypeFixtures } from '@/utils/test/fixtures/contenttype';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -174,7 +175,7 @@ describe('ContentTypeController', () => {
       jest.spyOn(contentTypeService, 'updateOne');
       await expect(
         contentTypeController.updateOne(updatedContent, NOT_FOUND_ID),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(ContentType.name, NOT_FOUND_ID));
       expect(contentTypeService.updateOne).toHaveBeenCalledWith(
         NOT_FOUND_ID,
         updatedContent,

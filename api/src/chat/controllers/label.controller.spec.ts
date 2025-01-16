@@ -23,6 +23,7 @@ import { UserModel } from '@/user/schemas/user.schema';
 import { RoleService } from '@/user/services/role.service';
 import { UserService } from '@/user/services/user.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { labelFixtures } from '@/utils/test/fixtures/label';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -223,12 +224,10 @@ describe('LabelController', () => {
       );
     });
 
-    it('should throw  a NotFoundException when attempting to update a non existing label by id', async () => {
+    it('should throw a NotFoundException when attempting to update a non existing label by id', async () => {
       await expect(
         labelController.updateOne(labelToDelete.id, labelUpdateDto),
-      ).rejects.toThrow(
-        new NotFoundException(`Label with ID ${labelToDelete.id} not found`),
-      );
+      ).rejects.toThrow(getUpdateOneError(Label.name, labelToDelete.id));
     });
   });
 });

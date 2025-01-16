@@ -165,7 +165,10 @@ export class MenuController extends BaseController<
    */
   @CsrfCheck(true)
   @Patch(':id')
-  async updateOne(@Body() body: MenuCreateDto, @Param('id') id: string) {
+  async updateOne(
+    @Body() body: MenuCreateDto,
+    @Param('id') id: string,
+  ): Promise<Menu> {
     if (!id) return await this.create(body);
     return await this.menuService.updateOne(id, body);
   }

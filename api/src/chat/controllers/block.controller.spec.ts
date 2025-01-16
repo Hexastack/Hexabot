@@ -35,6 +35,7 @@ import { PermissionService } from '@/user/services/permission.service';
 import { RoleService } from '@/user/services/role.service';
 import { UserService } from '@/user/services/user.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   blockFixtures,
   installBlockFixtures,
@@ -327,9 +328,7 @@ describe('BlockController', () => {
 
       await expect(
         blockController.updateOne(blockToDelete.id, updateBlock),
-      ).rejects.toThrow(
-        new NotFoundException(`Block with ID ${blockToDelete.id} not found`),
-      );
+      ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
     });
   });
 });

@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
   installNlpValueFixtures,
@@ -241,7 +242,7 @@ describe('NlpValueController', () => {
           expressions: [],
           builtin: true,
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(NlpValue.name, jhonNlpValue!.id));
     });
   });
   describe('deleteMany', () => {

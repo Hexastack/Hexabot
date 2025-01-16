@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   contextVarFixtures,
   installContextVarFixtures,
@@ -211,9 +212,7 @@ describe('ContextVarController', () => {
           contextVarUpdatedDto,
         ),
       ).rejects.toThrow(
-        new NotFoundException(
-          `ContextVar with ID ${contextVarToDelete.id} not found`,
-        ),
+        getUpdateOneError(ContextVar.name, contextVarToDelete.id),
       );
     });
   });
