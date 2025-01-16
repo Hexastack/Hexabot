@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -13,6 +13,7 @@ import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
+import { getSessionStore } from '@/utils/constants/session-store';
 import {
   SocketGet,
   SocketPost,
@@ -155,34 +156,43 @@ export class ChannelService {
       );
     }
 
-    // Create test subscriber for the current user
-    const testSubscriber = await this.subscriberService.findOneOrCreate(
-      {
-        foreign_id: req.session.passport.user.id,
-      },
-      {
-        foreign_id: req.session.passport.user.id,
-        first_name: req.session.passport.user.first_name || 'Anonymous',
-        last_name: req.session.passport.user.last_name || 'Anonymous',
-        locale: '',
-        language: '',
-        gender: '',
-        country: '',
-        labels: [],
-        channel: {
-          name: CONSOLE_CHANNEL_NAME,
-          isSocket: true,
+    if (!req.session.web?.profile?.id) {
+      // Create test subscriber for the current user
+      const testSubscriber = await this.subscriberService.findOneOrCreate(
+        {
+          foreign_id: req.session.passport.user.id,
         },
-      },
-    );
+        {
+          foreign_id: req.session.passport.user.id,
+          first_name: req.session.passport.user.first_name || 'Anonymous',
+          last_name: req.session.passport.user.last_name || 'Anonymous',
+          locale: '',
+          language: '',
+          gender: '',
+          country: '',
+          labels: [],
+          channel: {
+            name: CONSOLE_CHANNEL_NAME,
+            isSocket: true,
+          },
+        },
+      );
 
-    // Update session (end user is both a user + subscriber)
-    req.session.web = {
-      profile: testSubscriber,
-      isSocket: true,
-      messageQueue: [],
-      polling: false,
-    };
+      // Update session (end user is both a user + subscriber)
+      req.session.web = {
+        profile: testSubscriber,
+        isSocket: true,
+        messageQueue: [],
+        polling: false,
+      };
+
+      // @TODO: temporary fix until it's fixed properly: https://github.com/Hexastack/Hexabot/issues/578
+      getSessionStore().set(req.sessionID, req.session, (err) => {
+        if (err) {
+          this.logger.warn('Unable to store WS Console session', err);
+        }
+      });
+    }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
     return handler.handle(req, res);
