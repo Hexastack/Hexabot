@@ -626,6 +626,7 @@ export default abstract class BaseWebChannelHandler<
         size: Buffer.byteLength(data.file),
         type: data.type,
         context: 'message_attachment',
+        access: 'private',
         createdByRef: 'Subscriber',
         createdBy: req.session?.web?.profile?.id,
       });
@@ -692,6 +693,7 @@ export default abstract class BaseWebChannelHandler<
         size: file.size,
         type: file.mimetype,
         context: 'message_attachment',
+        access: 'private',
         createdByRef: 'Subscriber',
         createdBy: req.session.web.profile?.id,
       });

@@ -24,8 +24,10 @@ import { ObjectIdDto } from '@/utils/dto/object-id.dto';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
+  AttachmentAccess,
   AttachmentContext,
   AttachmentCreatedByRef,
+  TAttachmentAccess,
   TAttachmentContext,
   TAttachmentCreatedByRef,
 } from '../types';
@@ -67,7 +69,7 @@ export class AttachmentMetadataDto {
   /**
    * Attachment context
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Attachment Context',
     enum: Object.values(AttachmentContext),
   })
@@ -79,7 +81,7 @@ export class AttachmentMetadataDto {
   /**
    * Attachment Owner Type
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Attachment Owner Type',
     enum: Object.values(AttachmentCreatedByRef),
   })
@@ -89,11 +91,23 @@ export class AttachmentMetadataDto {
   createdByRef: TAttachmentCreatedByRef;
 
   /**
+   * Attachment Access
+   */
+  @ApiProperty({
+    description: 'Attachment Access',
+    enum: Object.values(AttachmentAccess),
+  })
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(Object.values(AttachmentAccess))
+  access: TAttachmentAccess;
+
+  /**
    * Attachment Owner : Subscriber or User ID
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Attachment Owner : Subscriber / User ID',
-    enum: Object.values(AttachmentContext),
+    type: String,
   })
   @IsString()
   @IsNotEmpty()
@@ -126,7 +140,7 @@ export class AttachmentDownloadDto extends ObjectIdDto {
 }
 
 export class AttachmentContextParamDto {
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Attachment Context',
     enum: Object.values(AttachmentContext),
   })
@@ -134,4 +148,13 @@ export class AttachmentContextParamDto {
   @IsIn(Object.values(AttachmentContext))
   @IsNotEmpty()
   context: TAttachmentContext;
+
+  @ApiPropertyOptional({
+    description: 'Attachment Access',
+    enum: Object.values(AttachmentAccess),
+  })
+  @IsString()
+  @IsIn(Object.values(AttachmentAccess))
+  @IsOptional()
+  access?: TAttachmentAccess;
 }

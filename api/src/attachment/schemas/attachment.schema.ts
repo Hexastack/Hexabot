@@ -24,8 +24,10 @@ import {
 } from '@/utils/types/filter.types';
 
 import {
+  AttachmentAccess,
   AttachmentContext,
   AttachmentCreatedByRef,
+  TAttachmentAccess,
   TAttachmentContext,
   TAttachmentCreatedByRef,
 } from '../types';
@@ -99,6 +101,12 @@ export class AttachmentStub extends BaseSchema {
    */
   @Prop({ type: String, enum: Object.values(AttachmentContext) })
   context: TAttachmentContext;
+
+  /**
+   * Context of the attachment
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentAccess) })
+  access: TAttachmentAccess;
 
   /**
    * Optional property representing the URL of the attachment.

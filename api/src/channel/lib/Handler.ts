@@ -259,6 +259,7 @@ export default abstract class ChannelHandler<
             type,
             size,
             context: 'message_attachment',
+            access: 'private',
             createdByRef: 'Subscriber',
             createdBy: subscriber.id,
           });

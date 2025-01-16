@@ -80,6 +80,7 @@ const populateBlockAttachments = async ({ logger }: MigrationServices) => {
           {
             $set: {
               context: AttachmentContext.BlockAttachment,
+              access: 'public',
               createdByRef: AttachmentCreatedByRef.User,
               createdBy: user._id,
             },
@@ -130,6 +131,7 @@ const populateSettingAttachments = async ({ logger }: MigrationServices) => {
           {
             $set: {
               context: AttachmentContext.SettingAttachment,
+              access: 'public',
               createdByRef: AttachmentCreatedByRef.User,
               createdBy: user._id,
             },
@@ -168,6 +170,7 @@ const populateUserAvatars = async ({ logger }: MigrationServices) => {
         {
           $set: {
             context: AttachmentContext.UserAvatar,
+            access: 'private',
             createdByRef: AttachmentCreatedByRef.User,
             createdBy: user._id,
           },
@@ -229,6 +232,7 @@ const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
         {
           $set: {
             context: AttachmentContext.SubscriberAvatar,
+            access: 'private',
             createdByRef: AttachmentCreatedByRef.Subscriber,
             createdBy: subscriber._id,
           },
@@ -361,6 +365,7 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
       {
         $unset: {
           context: '',
+          access: '',
           createdByRef: '',
           createdBy: '',
         },
@@ -640,9 +645,10 @@ const migrateAndPopulateAttachmentMessages = async ({
           await attachmentService.updateOne(
             msg.message.attachment.payload.attachment_id as string,
             {
+              context: 'message_attachment',
+              access: 'private',
               createdByRef: msg.sender ? 'Subscriber' : 'User',
               createdBy: msg.sender ? msg.sender : adminUser.id,
-              context: 'message_attachment',
             },
           );
           // Rename `attachment_id` to `id`
@@ -672,9 +678,10 @@ const migrateAndPopulateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
+              context: 'message_attachment',
+              access: msg.sender ? 'private' : 'public',
               createdBy: msg.sender ? msg.sender : adminUser.id,
               createdByRef: msg.sender ? 'Subscriber' : 'User',
-              context: 'message_attachment',
             });
 
             if (attachment) {

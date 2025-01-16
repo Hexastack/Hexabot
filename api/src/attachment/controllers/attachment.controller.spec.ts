@@ -137,6 +137,7 @@ describe('AttachmentController', () => {
         name: attachmentFile.originalname,
         location: expect.stringMatching(new RegExp(`^/${name}`)),
         context: 'block_attachment',
+        access: 'public',
         createdByRef: 'User',
         createdBy: '9'.repeat(24),
       });

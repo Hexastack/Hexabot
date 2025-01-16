@@ -34,6 +34,13 @@ export enum AttachmentContext {
 
 export type TAttachmentContext = `${AttachmentContext}`;
 
+export enum AttachmentAccess {
+  Public = 'public',
+  Private = 'private',
+}
+
+export type TAttachmentAccess = `${AttachmentAccess}`;
+
 export class AttachmentFile {
   /**
    * File original file name

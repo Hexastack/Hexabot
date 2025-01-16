@@ -281,6 +281,7 @@ export class ChatService {
               size,
               type,
               context: 'subscriber_avatar',
+              access: 'private',
               createdByRef: 'Subscriber',
               createdBy: subscriber.id,
             });

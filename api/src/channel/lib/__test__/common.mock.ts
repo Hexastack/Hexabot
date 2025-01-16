@@ -89,6 +89,7 @@ const attachment: Attachment = {
     },
   },
   context: 'block_attachment',
+  access: 'public',
   createdByRef: 'User',
   createdBy: null,
   createdAt: new Date(),
