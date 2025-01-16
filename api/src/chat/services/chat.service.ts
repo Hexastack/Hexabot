@@ -280,7 +280,7 @@ export class ChatService {
               name: `avatar-${uuidv4()}.${extension}`,
               size,
               type,
-              context: 'subscriber_avatar',
+              resourceRef: 'subscriber_avatar',
               access: 'private',
               createdByRef: 'Subscriber',
               createdBy: subscriber.id,

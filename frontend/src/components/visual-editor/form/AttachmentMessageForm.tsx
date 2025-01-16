@@ -69,7 +69,7 @@ const AttachmentMessageForm = () => {
                   },
                 });
               }}
-              context="block_attachment"
+              resourceRef="block_attachment"
             />
           );
         }}

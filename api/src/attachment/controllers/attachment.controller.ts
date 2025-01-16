@@ -67,7 +67,7 @@ export class AttachmentController extends BaseController<Attachment> {
   async filterCount(
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type', 'context'],
+        allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
     filters?: TFilterQuery<Attachment>,
@@ -97,7 +97,7 @@ export class AttachmentController extends BaseController<Attachment> {
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type', 'context'],
+        allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
     filters: TFilterQuery<Attachment>,
@@ -130,7 +130,8 @@ export class AttachmentController extends BaseController<Attachment> {
   async uploadFile(
     @UploadedFiles() files: { file: Express.Multer.File[] },
     @Req() req: Request,
-    @Query() { context, access = 'public' }: AttachmentContextParamDto,
+    @Query()
+    { resourceRef, access = 'public' }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
@@ -149,7 +150,7 @@ export class AttachmentController extends BaseController<Attachment> {
         name: file.originalname,
         size: file.size,
         type: file.mimetype,
-        context,
+        resourceRef,
         access,
         createdBy: userId,
         createdByRef: 'User',

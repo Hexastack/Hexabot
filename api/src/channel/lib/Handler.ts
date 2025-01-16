@@ -258,7 +258,7 @@ export default abstract class ChannelHandler<
             name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
             type,
             size,
-            context: 'message_attachment',
+            resourceRef: 'message_attachment',
             access: 'private',
             createdByRef: 'Subscriber',
             createdBy: subscriber.id,

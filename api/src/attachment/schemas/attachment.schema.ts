@@ -25,11 +25,11 @@ import {
 
 import {
   AttachmentAccess,
-  AttachmentContext,
   AttachmentCreatedByRef,
+  AttachmentResourceRef,
   TAttachmentAccess,
-  TAttachmentContext,
   TAttachmentCreatedByRef,
+  TAttachmentResourceRef,
 } from '../types';
 import { MIME_REGEX } from '../utilities';
 
@@ -97,13 +97,13 @@ export class AttachmentStub extends BaseSchema {
   createdByRef: TAttachmentCreatedByRef;
 
   /**
-   * Context of the attachment
+   * Resource reference of the attachment
    */
-  @Prop({ type: String, enum: Object.values(AttachmentContext) })
-  context: TAttachmentContext;
+  @Prop({ type: String, enum: Object.values(AttachmentResourceRef) })
+  resourceRef: TAttachmentResourceRef;
 
   /**
-   * Context of the attachment
+   * Access level of the attachment
    */
   @Prop({ type: String, enum: Object.values(AttachmentAccess) })
   access: TAttachmentAccess;

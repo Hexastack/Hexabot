@@ -30,7 +30,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment } from '../schemas/attachment.schema';
-import { TAttachmentContext } from '../types';
+import { TAttachmentResourceRef } from '../types';
 import {
   fileExists,
   generateUniqueFilename,
@@ -158,13 +158,13 @@ export class AttachmentService extends BaseService<Attachment> {
   }
 
   /**
-   * Get the attachment root directory given the context
+   * Get the attachment root directory given the resource reference
    *
-   * @param context The attachment context
+   * @param ref The attachment resource reference
    * @returns The root directory path
    */
-  getRootDirByContext(context: TAttachmentContext) {
-    return context === 'subscriber_avatar' || context === 'user_avatar'
+  getRootDirByResourceRef(ref: TAttachmentResourceRef) {
+    return ref === 'subscriber_avatar' || ref === 'user_avatar'
       ? config.parameters.avatarDir
       : config.parameters.uploadDir;
   }
@@ -186,7 +186,7 @@ export class AttachmentService extends BaseService<Attachment> {
       const storedDto = await this.getStoragePlugin()?.store?.(file, metadata);
       return storedDto ? await this.create(storedDto) : null;
     } else {
-      const rootDir = this.getRootDirByContext(metadata.context);
+      const rootDir = this.getRootDirByResourceRef(metadata.resourceRef);
       const uniqueFilename = generateUniqueFilename(metadata.name);
       const filePath = resolve(join(rootDir, sanitizeFilename(uniqueFilename)));
 
@@ -244,7 +244,7 @@ export class AttachmentService extends BaseService<Attachment> {
 
       return streamableFile;
     } else {
-      const rootDir = this.getRootDirByContext(attachment.context);
+      const rootDir = this.getRootDirByResourceRef(attachment.resourceRef);
       const path = resolve(join(rootDir, attachment.location));
 
       if (!fileExists(path)) {

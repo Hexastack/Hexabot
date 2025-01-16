@@ -26,8 +26,11 @@ import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
 
 import { AttachmentService } from '../services/attachment.service';
-import { TAttachmentContext } from '../types';
-import { isAttachmentContext, isAttachmentContextArray } from '../utilities';
+import { TAttachmentResourceRef } from '../types';
+import {
+  isAttachmentResourceRef,
+  isAttachmentResourceRefArray,
+} from '../utilities';
 
 @Injectable()
 export class AttachmentGuard implements CanActivate {
@@ -39,9 +42,9 @@ export class AttachmentGuard implements CanActivate {
 
   private permissionMap: Record<
     Action,
-    Record<TAttachmentContext, [TModel, Action][]>
+    Record<TAttachmentResourceRef, [TModel, Action][]>
   > = {
-    // Read attachments by context
+    // Read attachments by ref
     [Action.READ]: {
       setting_attachment: [
         ['setting', Action.READ],
@@ -62,7 +65,7 @@ export class AttachmentGuard implements CanActivate {
         ['attachment', Action.READ],
       ],
     },
-    // Create attachments by context
+    // Create attachments by ref
     [Action.CREATE]: {
       setting_attachment: [
         ['setting', Action.UPDATE],
@@ -88,7 +91,7 @@ export class AttachmentGuard implements CanActivate {
         ['attachment', Action.CREATE],
       ],
     },
-    // Delete attachments by context
+    // Delete attachments by ref
     [Action.DELETE]: {
       setting_attachment: [
         ['setting', Action.UPDATE],
@@ -156,27 +159,27 @@ export class AttachmentGuard implements CanActivate {
   }
 
   /**
-   * Checks if the user is authorized to perform a given action on a attachment based on its context and user roles.
+   * Checks if the user is authorized to perform a given action on a attachment based on the resource reference and user roles.
    *
    * @param action - The action on the attachment.
    * @param user - The current user.
-   * @param context - The context of the attachment (e.g., user_avatar, setting_attachment).
+   * @param resourceRef - The resource ref of the attachment (e.g., user_avatar, setting_attachment).
    * @returns A promise that resolves to `true` if the user has the required upload permission, otherwise `false`.
    */
   private async isAuthorized(
     action: Action,
     user: Express.User & User,
-    context: TAttachmentContext,
+    resourceRef: TAttachmentResourceRef,
   ): Promise<boolean> {
     if (!action) {
       throw new TypeError('Invalid action');
     }
 
-    if (!context) {
-      throw new TypeError('Invalid context');
+    if (!resourceRef) {
+      throw new TypeError('Invalid resource ref');
     }
 
-    const permissions = this.permissionMap[action][context];
+    const permissions = this.permissionMap[action][resourceRef];
 
     if (!permissions.length) {
       return false;
@@ -214,17 +217,21 @@ export class AttachmentGuard implements CanActivate {
             throw new NotFoundException('Attachment not found!');
           }
 
-          return await this.isAuthorized(Action.READ, user, attachment.context);
+          return await this.isAuthorized(
+            Action.READ,
+            user,
+            attachment.resourceRef,
+          );
         } else if (query.where) {
-          const { context = [] } = query.where as qs.ParsedQs;
+          const { resourceRef = [] } = query.where as qs.ParsedQs;
 
-          if (!isAttachmentContextArray(context)) {
-            throw new BadRequestException('Invalid context param');
+          if (!isAttachmentResourceRefArray(resourceRef)) {
+            throw new BadRequestException('Invalid resource ref');
           }
 
           return (
             await Promise.all(
-              context.map((c) => this.isAuthorized(Action.READ, user, c)),
+              resourceRef.map((c) => this.isAuthorized(Action.READ, user, c)),
             )
           ).every(Boolean);
         } else {
@@ -233,12 +240,12 @@ export class AttachmentGuard implements CanActivate {
       }
       // upload() endpoint
       case 'POST': {
-        const { context = '' } = query;
-        if (!isAttachmentContext(context)) {
-          throw new BadRequestException('Invalid context param');
+        const { resourceRef = '' } = query;
+        if (!isAttachmentResourceRef(resourceRef)) {
+          throw new BadRequestException('Invalid resource ref');
         }
 
-        return await this.isAuthorized(Action.CREATE, user, context);
+        return await this.isAuthorized(Action.CREATE, user, resourceRef);
       }
       // deleteOne() endpoint
       case 'DELETE': {
@@ -252,7 +259,7 @@ export class AttachmentGuard implements CanActivate {
           return await this.isAuthorized(
             Action.DELETE,
             user,
-            attachment.context,
+            attachment.resourceRef,
           );
         } else {
           throw new BadRequestException('Invalid params');

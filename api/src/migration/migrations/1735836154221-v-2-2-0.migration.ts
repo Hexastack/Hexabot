@@ -15,7 +15,10 @@ import { v4 as uuidv4 } from 'uuid';
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
-import { AttachmentContext, AttachmentCreatedByRef } from '@/attachment/types';
+import {
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
@@ -79,7 +82,7 @@ const populateBlockAttachments = async ({ logger }: MigrationServices) => {
           { _id: attachmentId },
           {
             $set: {
-              context: AttachmentContext.BlockAttachment,
+              resourceRef: AttachmentResourceRef.BlockAttachment,
               access: 'public',
               createdByRef: AttachmentCreatedByRef.User,
               createdBy: user._id,
@@ -103,7 +106,7 @@ const populateBlockAttachments = async ({ logger }: MigrationServices) => {
 };
 
 /**
- * Updates setting attachment documents to populate new attributes (context, createdBy, createdByRef)
+ * Updates setting attachment documents to populate new attributes (resourceRef, createdBy, createdByRef)
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -130,7 +133,7 @@ const populateSettingAttachments = async ({ logger }: MigrationServices) => {
           { _id: setting.value },
           {
             $set: {
-              context: AttachmentContext.SettingAttachment,
+              resourceRef: AttachmentResourceRef.SettingAttachment,
               access: 'public',
               createdByRef: AttachmentCreatedByRef.User,
               createdBy: user._id,
@@ -148,7 +151,7 @@ const populateSettingAttachments = async ({ logger }: MigrationServices) => {
 };
 
 /**
- * Updates user attachment documents to populate new attributes (context, createdBy, createdByRef)
+ * Updates user attachment documents to populate new attributes (resourceRef, createdBy, createdByRef)
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -169,7 +172,7 @@ const populateUserAvatars = async ({ logger }: MigrationServices) => {
         { _id: user.avatar },
         {
           $set: {
-            context: AttachmentContext.UserAvatar,
+            resourceRef: AttachmentResourceRef.UserAvatar,
             access: 'private',
             createdByRef: AttachmentCreatedByRef.User,
             createdBy: user._id,
@@ -187,7 +190,7 @@ const populateUserAvatars = async ({ logger }: MigrationServices) => {
 
 /**
  * Updates subscriber documents with their corresponding avatar attachments,
- * populate new attributes (context, createdBy, createdByRef) and moves avatar files to a new directory.
+ * populate new attributes (resourceRef, createdBy, createdByRef) and moves avatar files to a new directory.
  *
  * @returns Resolves when the migration process is complete.
  */
@@ -231,7 +234,7 @@ const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
         { _id: attachment._id },
         {
           $set: {
-            context: AttachmentContext.SubscriberAvatar,
+            resourceRef: AttachmentResourceRef.SubscriberAvatar,
             access: 'private',
             createdByRef: AttachmentCreatedByRef.Subscriber,
             createdBy: subscriber._id,
@@ -353,18 +356,18 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
   try {
     const result = await AttachmentModel.updateMany(
       {
-        context: {
+        resourceRef: {
           $in: [
-            AttachmentContext.BlockAttachment,
-            AttachmentContext.SettingAttachment,
-            AttachmentContext.UserAvatar,
-            AttachmentContext.SubscriberAvatar,
+            AttachmentResourceRef.BlockAttachment,
+            AttachmentResourceRef.SettingAttachment,
+            AttachmentResourceRef.UserAvatar,
+            AttachmentResourceRef.SubscriberAvatar,
           ],
         },
       },
       {
         $unset: {
-          context: '',
+          resourceRef: '',
           access: '',
           createdByRef: '',
           createdBy: '',
@@ -373,11 +376,11 @@ const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
     );
 
     logger.log(
-      `Successfully reverted attributes for ${result.modifiedCount} attachments with context 'setting_attachment'`,
+      `Successfully reverted attributes for ${result.modifiedCount} attachments with ref 'setting_attachment'`,
     );
   } catch (error) {
     logger.error(
-      `Failed to revert attributes for attachments with context 'setting_attachment': ${error.message}`,
+      `Failed to revert attributes for attachments with ref 'setting_attachment': ${error.message}`,
     );
   }
 };
@@ -645,7 +648,7 @@ const migrateAndPopulateAttachmentMessages = async ({
           await attachmentService.updateOne(
             msg.message.attachment.payload.attachment_id as string,
             {
-              context: 'message_attachment',
+              resourceRef: 'message_attachment',
               access: 'private',
               createdByRef: msg.sender ? 'Subscriber' : 'User',
               createdBy: msg.sender ? msg.sender : adminUser.id,
@@ -678,7 +681,7 @@ const migrateAndPopulateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
-              context: 'message_attachment',
+              resourceRef: 'message_attachment',
               access: msg.sender ? 'private' : 'public',
               createdBy: msg.sender ? msg.sender : adminUser.id,
               createdByRef: msg.sender ? 'Subscriber' : 'User',

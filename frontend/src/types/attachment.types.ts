@@ -25,10 +25,10 @@ export enum AttachmentCreatedByRef {
 export type TAttachmentCreatedByRef = `${AttachmentCreatedByRef}`;
 
 /**
- * Defines the various contexts in which an attachment can exist.
- * These contexts influence how the attachment is uploaded, stored, and accessed:
+ * Defines the various resource references in which an attachment can exist.
+ * These references influence how the attachment is uploaded, stored, and accessed:
  */
-export enum AttachmentContext {
+export enum AttachmentResourceRef {
   SettingAttachment = "setting_attachment", // Attachments related to app settings, restricted to users with specific permissions.
   UserAvatar = "user_avatar", // Avatar files for users, only the current user can upload, accessible to those with appropriate permissions.
   SubscriberAvatar = "subscriber_avatar", // Avatar files for subscribers, uploaded programmatically, accessible to authorized users.
@@ -37,7 +37,7 @@ export enum AttachmentContext {
   MessageAttachment = "message_attachment", // Files sent or received via messages, uploaded programmatically, accessible to users with inbox permissions.;
 }
 
-export type TAttachmentContext = `${AttachmentContext}`;
+export type TAttachmentResourceRef = `${AttachmentResourceRef}`;
 
 export interface IAttachmentAttributes {
   name: string;
@@ -46,7 +46,7 @@ export interface IAttachmentAttributes {
   location: string;
   url: string;
   channel?: Record<string, any>;
-  context: TAttachmentContext;
+  resourceRef: TAttachmentResourceRef;
   createdByRef: TAttachmentCreatedByRef;
   createdBy: string | null;
 }

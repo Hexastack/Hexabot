@@ -53,9 +53,9 @@ describe('AttachmentGuard', () => {
   });
 
   describe('canActivate', () => {
-    it('should allow GET requests with valid context', async () => {
+    it('should allow GET requests with valid ref', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
-      const mockContext = ['user_avatar'];
+      const mockRef = ['user_avatar'];
 
       jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
         return typeof criteria === 'string' ||
@@ -84,7 +84,7 @@ describe('AttachmentGuard', () => {
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue({
-            query: { where: { context: mockContext } },
+            query: { where: { resourceRef: mockRef } },
             method: 'GET',
             user: mockUser,
           }),
@@ -95,11 +95,11 @@ describe('AttachmentGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should throw BadRequestException for GET requests with invalid context', async () => {
+    it('should throw BadRequestException for GET requests with invalid ref', async () => {
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue({
-            query: { where: { context: 'invalid_context' } },
+            query: { where: { resourceRef: 'invalid_ref' } },
             method: 'GET',
           }),
         }),
@@ -120,7 +120,7 @@ describe('AttachmentGuard', () => {
             ? Promise.reject('Invalid ID')
             : Promise.resolve({
                 id: '9'.repeat(24),
-                context: `user_avatar`,
+                resourceRef: `user_avatar`,
               } as Attachment);
         });
 
@@ -162,7 +162,7 @@ describe('AttachmentGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should allow POST requests with valid context', async () => {
+    it('should allow POST requests with a valid ref', async () => {
       const mockUser = { roles: ['editor-id'] } as any;
 
       jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
@@ -191,7 +191,7 @@ describe('AttachmentGuard', () => {
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
           getRequest: jest.fn().mockReturnValue({
-            query: { context: 'block_attachment' },
+            query: { resourceRef: 'block_attachment' },
             method: 'POST',
             user: mockUser,
           }),

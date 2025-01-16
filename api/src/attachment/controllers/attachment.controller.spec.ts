@@ -110,7 +110,7 @@ describe('AttachmentController', () => {
           file: [],
         },
         {} as Request,
-        { context: 'block_attachment' },
+        { resourceRef: 'block_attachment' },
       );
       await expect(promiseResult).rejects.toThrow(
         new BadRequestException('No file was selected'),
@@ -128,7 +128,7 @@ describe('AttachmentController', () => {
         {
           session: { passport: { user: { id: '9'.repeat(24) } } },
         } as unknown as Request,
-        { context: 'block_attachment' },
+        { resourceRef: 'block_attachment' },
       );
       const [name] = attachmentFile.filename.split('.');
       expect(attachmentService.create).toHaveBeenCalledWith({
@@ -136,7 +136,7 @@ describe('AttachmentController', () => {
         type: attachmentFile.mimetype,
         name: attachmentFile.originalname,
         location: expect.stringMatching(new RegExp(`^/${name}`)),
-        context: 'block_attachment',
+        resourceRef: 'block_attachment',
         access: 'public',
         createdByRef: 'User',
         createdBy: '9'.repeat(24),
@@ -145,7 +145,7 @@ describe('AttachmentController', () => {
         [
           {
             ...attachment,
-            context: 'block_attachment',
+            resourceRef: 'block_attachment',
             createdByRef: 'User',
             createdBy: '9'.repeat(24),
           },

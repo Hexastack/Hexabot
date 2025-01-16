@@ -13,7 +13,7 @@ import { forwardRef } from "react";
 import { useGet } from "@/hooks/crud/useGet";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IAttachment, TAttachmentContext } from "@/types/attachment.types";
+import { IAttachment, TAttachmentResourceRef } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -29,7 +29,7 @@ type AttachmentThumbnailProps = {
   onChange?: (id: string | null, mimeType: string | null) => void;
   error?: boolean;
   helperText?: string;
-  context: TAttachmentContext;
+  resourceRef: TAttachmentResourceRef;
 };
 
 const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
@@ -44,7 +44,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
       onChange,
       error,
       helperText,
-      context,
+      resourceRef,
     },
     ref,
   ) => {
@@ -84,7 +84,7 @@ const AttachmentInput = forwardRef<HTMLDivElement, AttachmentThumbnailProps>(
             accept={accept}
             enableMediaLibrary={enableMediaLibrary}
             onChange={handleChange}
-            context={context}
+            resourceRef={resourceRef}
           />
         ) : null}
         {helperText ? (

@@ -16,7 +16,7 @@ export const attachment: Attachment = {
   size: 343370,
   location:
     '/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
-  context: 'block_attachment',
+  resourceRef: 'block_attachment',
   access: 'public',
   id: '65940d115178607da65c82b6',
   createdAt: new Date(),
@@ -47,7 +47,7 @@ export const attachments: Attachment[] = [
     location:
       '/app/src/attachment/uploads/Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
     channel: { ['some-channel']: {} },
-    context: 'block_attachment',
+    resourceRef: 'block_attachment',
     access: 'public',
     id: '65940d115178607da65c82b7',
     createdAt: new Date(),
@@ -62,7 +62,7 @@ export const attachments: Attachment[] = [
     location:
       '/app/src/attachment/uploads/Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
     channel: { ['some-channel']: {} },
-    context: 'block_attachment',
+    resourceRef: 'block_attachment',
     access: 'public',
     id: '65940d115178607da65c82b8',
     createdAt: new Date(),

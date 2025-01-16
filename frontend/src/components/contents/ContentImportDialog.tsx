@@ -81,7 +81,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
               }}
               label=""
               value={attachmentId}
-              context="content_attachment"
+              resourceRef="content_attachment"
             />
           </ContentItem>
         </ContentContainer>

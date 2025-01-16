@@ -25,11 +25,11 @@ import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
   AttachmentAccess,
-  AttachmentContext,
   AttachmentCreatedByRef,
+  AttachmentResourceRef,
   TAttachmentAccess,
-  TAttachmentContext,
   TAttachmentCreatedByRef,
+  TAttachmentResourceRef,
 } from '../types';
 
 export class AttachmentMetadataDto {
@@ -67,16 +67,16 @@ export class AttachmentMetadataDto {
   channel?: Partial<Record<ChannelName, any>>;
 
   /**
-   * Attachment context
+   * Attachment resource reference
    */
   @ApiProperty({
-    description: 'Attachment Context',
-    enum: Object.values(AttachmentContext),
+    description: 'Attachment Resource Ref',
+    enum: Object.values(AttachmentResourceRef),
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(Object.values(AttachmentContext))
-  context: TAttachmentContext;
+  @IsIn(Object.values(AttachmentResourceRef))
+  resourceRef: TAttachmentResourceRef;
 
   /**
    * Attachment Owner Type
@@ -141,13 +141,13 @@ export class AttachmentDownloadDto extends ObjectIdDto {
 
 export class AttachmentContextParamDto {
   @ApiProperty({
-    description: 'Attachment Context',
-    enum: Object.values(AttachmentContext),
+    description: 'Attachment Resource Reference',
+    enum: Object.values(AttachmentResourceRef),
   })
   @IsString()
-  @IsIn(Object.values(AttachmentContext))
+  @IsIn(Object.values(AttachmentResourceRef))
   @IsNotEmpty()
-  context: TAttachmentContext;
+  resourceRef: TAttachmentResourceRef;
 
   @ApiPropertyOptional({
     description: 'Attachment Access',

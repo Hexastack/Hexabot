@@ -88,7 +88,7 @@ const attachment: Attachment = {
       id: 'any-channel-attachment-id',
     },
   },
-  context: 'block_attachment',
+  resourceRef: 'block_attachment',
   access: 'public',
   createdByRef: 'User',
   createdBy: null,

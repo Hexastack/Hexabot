@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 
-import { AttachmentContext, TAttachmentContext } from '../types';
+import { AttachmentResourceRef, TAttachmentResourceRef } from '../types';
 
 export const MIME_REGEX = /^[a-z-]+\/[0-9a-z\-.]+$/gm;
 
@@ -82,27 +82,30 @@ export const generateUniqueFilename = (originalname: string) => {
 };
 
 /**
- * Checks if the given context is of type TAttachmentContext.
+ * Checks if the given ref is of type TAttachmentResourceRef.
  *
- * @param ctx - The context to check.
- * @returns True if the context is of type TAttachmentContext, otherwise false.
+ * @param ref - The ref to check.
+ * @returns True if the ref is of type TAttachmentResourceRef, otherwise false.
  */
-export const isAttachmentContext = (ctx: any): ctx is TAttachmentContext => {
-  return Object.values(AttachmentContext).includes(ctx);
+export const isAttachmentResourceRef = (
+  ref: any,
+): ref is TAttachmentResourceRef => {
+  return Object.values(AttachmentResourceRef).includes(ref);
 };
+AttachmentResourceRef;
 
 /**
- * Checks if the given list is an array of TAttachmentContext.
+ * Checks if the given list is an array of TAttachmentResourceRef.
  *
- * @param ctxList - The list of contexts to check.
- * @returns True if all items in the list are of type TAttachmentContext, otherwise false.
+ * @param refList - The list of resource references to check.
+ * @returns True if all items in the list are of type TAttachmentResourceRef, otherwise false.
  */
-export const isAttachmentContextArray = (
-  ctxList: any,
-): ctxList is TAttachmentContext[] => {
+export const isAttachmentResourceRefArray = (
+  refList: any,
+): refList is TAttachmentResourceRef[] => {
   return (
-    Array.isArray(ctxList) &&
-    ctxList.length > 0 &&
-    ctxList.every(isAttachmentContext)
+    Array.isArray(refList) &&
+    refList.length > 0 &&
+    refList.every(isAttachmentResourceRef)
   );
 };

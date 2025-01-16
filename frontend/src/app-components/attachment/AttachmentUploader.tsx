@@ -17,7 +17,7 @@ import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IAttachment, TAttachmentContext } from "@/types/attachment.types";
+import { IAttachment, TAttachmentResourceRef } from "@/types/attachment.types";
 
 import { AttachmentDialog } from "./AttachmentDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
@@ -68,7 +68,7 @@ export type FileUploadProps = {
   enableMediaLibrary?: boolean;
   onChange?: (data?: IAttachment | null) => void;
   onUploadComplete?: () => void;
-  context: TAttachmentContext;
+  resourceRef: TAttachmentResourceRef;
 };
 
 const AttachmentUploader: FC<FileUploadProps> = ({
@@ -76,7 +76,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   enableMediaLibrary,
   onChange,
   onUploadComplete,
-  context,
+  resourceRef,
 }) => {
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
@@ -119,7 +119,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
 
         return;
       }
-      uploadAttachment({ file, context });
+      uploadAttachment({ file, resourceRef });
     }
   };
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
