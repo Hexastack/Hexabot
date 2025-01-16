@@ -9,6 +9,7 @@
 import path from 'path';
 
 import {
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -317,6 +318,19 @@ export default abstract class ChannelHandler<
   }
 
   /**
+   * Checks if the request is authorized to download a given attachment file.
+   * Can be overriden by the channel handler to customize, by default it shouldn't
+   * allow any client to download a subscriber attachment for example.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
+    return attachment.access === 'public';
+  }
+
+  /**
    * Downloads an attachment using a signed token.
    *
    * This function verifies the provided token and retrieves the corresponding
@@ -326,9 +340,8 @@ export default abstract class ChannelHandler<
    * @param token The signed token used to verify and locate the attachment.
    * @param req - The HTTP express request object.
    * @return A streamable file of the attachment.
-   * @throws NotFoundException if the attachment cannot be found or the token is invalid.
    */
-  public async download(token: string, _req: Request) {
+  public async download(token: string, req: Request) {
     try {
       const {
         exp: _exp,
@@ -336,6 +349,15 @@ export default abstract class ChannelHandler<
         ...result
       } = this.jwtService.verify(token, this.jwtSignOptions);
       const attachment = plainToClass(Attachment, result);
+
+      // Check access
+      const canDownload = await this.hasDownloadAccess(attachment, req);
+      if (!canDownload) {
+        throw new ForbiddenException(
+          'You are not authorized to download the attachment',
+        );
+      }
+
       return await this.attachmentService.download(attachment);
     } catch (err) {
       this.logger.error('Failed to download attachment', err);

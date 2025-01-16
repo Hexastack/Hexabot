@@ -1345,4 +1345,44 @@ export default abstract class BaseWebChannelHandler<
     };
     return subscriber;
   }
+
+  /**
+   * Checks if the request is authorized to download a given attachment file.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, req: Request) {
+    const subscriberId = req.session?.web?.profile?.id as string;
+    if (attachment.access === 'public') {
+      return true;
+    } else if (!subscriberId) {
+      this.logger.warn(
+        `Unauthorized access attempt to attachment ${attachment.id}`,
+      );
+      return false;
+    } else if (
+      attachment.createdByRef === 'Subscriber' &&
+      subscriberId === attachment.createdBy
+    ) {
+      // Either subscriber wants to access the attachment he sent
+      return true;
+    } else {
+      // Or, he would like to access an attachment sent to him privately
+      const message = await this.messageService.findOne({
+        ['recipient' as any]: subscriberId,
+        $or: [
+          { 'message.attachment.payload.id': attachment.id },
+          {
+            'message.attachment': {
+              $elemMatch: { 'payload.id': attachment.id },
+            },
+          },
+        ],
+      });
+
+      return !!message;
+    }
+  }
 }
