@@ -111,7 +111,7 @@ export const config: Config = {
       process.env.UPLOAD_DIR || '/uploads',
       '/avatars',
     ),
-    storageMode: 'disk',
+    storageMode: (process.env.STORAGE_MODE as 'disk' | 'memory') || 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
       : 50 * 1024 * 1024, // 50 MB in bytes
