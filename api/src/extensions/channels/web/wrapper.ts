@@ -225,7 +225,7 @@ export default class WebEventWrapper<
 
         return {
           type: PayloadType.attachments,
-          attachments: {
+          attachment: {
             type: Attachment.getTypeByMime(this._adapter.raw.data.type),
             payload: {
               id: this._adapter.attachment.id,

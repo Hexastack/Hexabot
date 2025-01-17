@@ -19,7 +19,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: AttachmentPayload;
+      attachment: AttachmentPayload;
     };
 
 export enum QuickReplyType {
