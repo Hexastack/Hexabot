@@ -9,7 +9,6 @@
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
-import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import {
   IncomingMessageType,
   PayloadType,
@@ -226,7 +225,7 @@ export default class WebEventWrapper<
 
         return {
           type: PayloadType.attachments,
-          attachments: {
+          attachment: {
             type: Attachment.getTypeByMime(this._adapter.raw.data.type),
             payload: {
               id: this._adapter.attachment.id,
@@ -294,17 +293,6 @@ export default class WebEventWrapper<
           text: '',
         };
     }
-  }
-
-  /**
-   * Return the list of recieved attachments
-   *
-   * @deprecated
-   * @returns Received attachments message
-   */
-  getAttachments(): AttachmentPayload[] {
-    const message = this.getMessage() as any;
-    return 'attachment' in message ? [].concat(message.attachment) : [];
   }
 
   /**

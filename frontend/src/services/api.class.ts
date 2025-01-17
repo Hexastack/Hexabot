@@ -9,6 +9,7 @@
 
 import { AxiosInstance, AxiosResponse } from "axios";
 
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
 import { StatsType } from "@/types/bot-stat.types";
@@ -301,7 +302,7 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     return data;
   }
 
-  async upload(file: File) {
+  async upload(file: File, resourceRef?: AttachmentResourceRef) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
@@ -311,11 +312,17 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
       TBasic[],
       AxiosResponse<TBasic[]>,
       FormData
-    >(`${ROUTES[this.type]}/upload?_csrf=${_csrf}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    >(
+      `${ROUTES[this.type]}/upload?_csrf=${_csrf}${
+        resourceRef ? `&resourceRef=${resourceRef}` : ""
+      }`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       },
-    });
+    );
 
     return data[0];
   }

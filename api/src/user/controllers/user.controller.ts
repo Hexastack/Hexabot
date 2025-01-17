@@ -31,6 +31,11 @@ import { Session as ExpressSession } from 'express-session';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
@@ -110,10 +115,7 @@ export class ReadOnlyUserController extends BaseController<
         throw new Error('User has no avatar');
       }
 
-      return await this.attachmentService.download(
-        user.avatar,
-        config.parameters.avatarDir,
-      );
+      return await this.attachmentService.download(user.avatar);
     } catch (err) {
       this.logger.verbose(
         'User has no avatar, generating initials avatar ...',
@@ -293,15 +295,15 @@ export class ReadWriteUserController extends ReadOnlyUserController {
 
     // Upload Avatar if provided
     const avatar = avatarFile
-      ? await this.attachmentService.store(
-          avatarFile,
-          {
-            name: avatarFile.originalname,
-            size: avatarFile.size,
-            type: avatarFile.mimetype,
-          },
-          config.parameters.avatarDir,
-        )
+      ? await this.attachmentService.store(avatarFile, {
+          name: avatarFile.originalname,
+          size: avatarFile.size,
+          type: avatarFile.mimetype,
+          resourceRef: AttachmentResourceRef.UserAvatar,
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.User,
+          createdBy: req.user.id,
+        })
       : undefined;
 
     const result = await this.userService.updateOne(

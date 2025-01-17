@@ -38,6 +38,7 @@ import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import {
   ContentField,
   ContentFieldType,
@@ -116,6 +117,8 @@ const ContentFieldInput: React.FC<ContentFieldInput> = ({
           value={field.value?.payload?.id}
           accept={MIME_TYPES["images"].join(",")}
           format="full"
+          size={256}
+          resourceRef={AttachmentResourceRef.ContentAttachment}
         />
       );
     default:

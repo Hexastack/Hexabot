@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
 import { config } from '@/config';
+import { UserModule } from '@/user/user.module';
 
 import { AttachmentController } from './controllers/attachment.controller';
 import { AttachmentRepository } from './repositories/attachment.repository';
@@ -25,6 +26,7 @@ import { AttachmentService } from './services/attachment.service';
     PassportModule.register({
       session: true,
     }),
+    UserModule,
   ],
   providers: [AttachmentRepository, AttachmentService],
   controllers: [AttachmentController],

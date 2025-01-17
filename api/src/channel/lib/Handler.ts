@@ -9,6 +9,7 @@
 import path from 'path';
 
 import {
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -17,12 +18,22 @@ import {
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentFile,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import {
+  IncomingMessageType,
+  StdEventType,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
 } from '@/chat/schemas/types/message';
@@ -50,7 +61,7 @@ export default abstract class ChannelHandler<
   private readonly settings: ChannelSetting<N>[];
 
   @Inject(AttachmentService)
-  protected readonly attachmentService: AttachmentService;
+  public readonly attachmentService: AttachmentService;
 
   @Inject(JwtService)
   protected readonly jwtService: JwtService;
@@ -206,14 +217,62 @@ export default abstract class ChannelHandler<
   ): Promise<{ mid: string }>;
 
   /**
-   * Fetch the end user profile data
+   * Calls the channel handler to fetch attachments and stores them
+   *
+   * @param event
+   * @returns An attachment array
+   */
+  getMessageAttachments?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile[]>;
+
+  /**
+   * Fetch the subscriber profile data
    * @param event - The message event received
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
-   
    */
-  abstract getUserData(
+  getSubscriberAvatar?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile | undefined>;
+
+  /**
+   * Fetch the subscriber profile data
+   *
+   * @param event - The message event received
+   * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
+   */
+  abstract getSubscriberData(
     event: EventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto>;
+
+  /**
+   * Persist Message attachments
+   *
+   * @returns Resolves the promise once attachments are fetched and stored
+   */
+  async persistMessageAttachments(event: EventWrapper<any, any, N>) {
+    if (
+      event._adapter.eventType === StdEventType.message &&
+      event._adapter.messageType === IncomingMessageType.attachments &&
+      this.getMessageAttachments
+    ) {
+      const metadatas = await this.getMessageAttachments(event);
+      const subscriber = event.getSender();
+      event._adapter.attachments = await Promise.all(
+        metadatas.map(({ file, name, type, size }) => {
+          return this.attachmentService.store(file, {
+            name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
+            type,
+            size,
+            resourceRef: AttachmentResourceRef.MessageAttachment,
+            access: AttachmentAccess.Private,
+            createdByRef: AttachmentCreatedByRef.Subscriber,
+            createdBy: subscriber.id,
+          });
+        }),
+      );
+    }
+  }
 
   /**
    * Custom channel middleware
@@ -264,6 +323,19 @@ export default abstract class ChannelHandler<
   }
 
   /**
+   * Checks if the request is authorized to download a given attachment file.
+   * Can be overriden by the channel handler to customize, by default it shouldn't
+   * allow any client to download a subscriber attachment for example.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
+    return attachment.access === AttachmentAccess.Public;
+  }
+
+  /**
    * Downloads an attachment using a signed token.
    *
    * This function verifies the provided token and retrieves the corresponding
@@ -273,9 +345,8 @@ export default abstract class ChannelHandler<
    * @param token The signed token used to verify and locate the attachment.
    * @param req - The HTTP express request object.
    * @return A streamable file of the attachment.
-   * @throws NotFoundException if the attachment cannot be found or the token is invalid.
    */
-  public async download(token: string, _req: Request) {
+  public async download(token: string, req: Request) {
     try {
       const {
         exp: _exp,
@@ -283,6 +354,15 @@ export default abstract class ChannelHandler<
         ...result
       } = this.jwtService.verify(token, this.jwtSignOptions);
       const attachment = plainToClass(Attachment, result);
+
+      // Check access
+      const canDownload = await this.hasDownloadAccess(attachment, req);
+      if (!canDownload) {
+        throw new ForbiddenException(
+          'You are not authorized to download the attachment',
+        );
+      }
+
       return await this.attachmentService.download(attachment);
     } catch (err) {
       this.logger.error('Failed to download attachment', err);

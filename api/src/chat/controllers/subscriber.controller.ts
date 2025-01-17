@@ -20,7 +20,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
@@ -159,10 +158,7 @@ export class SubscriberController extends BaseController<
         throw new Error('User has no avatar');
       }
 
-      return await this.attachmentService.download(
-        subscriber.avatar,
-        config.parameters.avatarDir,
-      );
+      return await this.attachmentService.download(subscriber.avatar);
     } catch (err) {
       this.logger.verbose(
         'Subscriber has no avatar, generating initials avatar ...',

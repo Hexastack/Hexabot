@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,28 +7,31 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Transform, Type } from 'class-transformer';
+import { Schema as MongooseSchema } from 'mongoose';
 
+import { ChannelName } from '@/channel/types';
+import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
 import { config } from '@/config';
+import { User } from '@/user/schemas/user.schema';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 import { buildURL } from '@/utils/helpers/URL';
-import { THydratedDocument } from '@/utils/types/filter.types';
+import {
+  TFilterPopulateFields,
+  THydratedDocument,
+} from '@/utils/types/filter.types';
 
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '../types';
 import { MIME_REGEX } from '../utilities';
 
-// TODO: Interface AttachmentAttrs declared, currently not used
-
-export interface AttachmentAttrs {
-  name: string;
-  type: string;
-  size: number;
-  location: string;
-  channel?: Record<string, any>;
-}
-
 @Schema({ timestamps: true })
-export class Attachment extends BaseSchema {
+export class AttachmentStub extends BaseSchema {
   /**
    * The name of the attachment.
    */
@@ -72,7 +75,35 @@ export class Attachment extends BaseSchema {
    * Optional property representing the attachment channel, can hold a partial record of various channel data.
    */
   @Prop({ type: JSON })
-  channel?: Partial<Record<string, any>>;
+  channel?: Partial<Record<ChannelName, any>>;
+
+  /**
+   * Object ID of the createdBy (depending on the createdBy type)
+   */
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    refPath: 'createdByRef',
+    default: null,
+  })
+  createdBy: unknown;
+
+  /**
+   * Type of the createdBy (depending on the createdBy type)
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentCreatedByRef) })
+  createdByRef: AttachmentCreatedByRef;
+
+  /**
+   * Resource reference of the attachment
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentResourceRef) })
+  resourceRef: AttachmentResourceRef;
+
+  /**
+   * Access level of the attachment
+   */
+  @Prop({ type: String, enum: Object.values(AttachmentAccess) })
+  access: AttachmentAccess;
 
   /**
    * Optional property representing the URL of the attachment.
@@ -114,6 +145,24 @@ export class Attachment extends BaseSchema {
   }
 }
 
+@Schema({ timestamps: true })
+export class Attachment extends AttachmentStub {
+  @Transform(({ obj }) => obj.createdBy?.toString() || null)
+  createdBy: string | null;
+}
+
+@Schema({ timestamps: true })
+export class UserAttachmentFull extends AttachmentStub {
+  @Type(() => User)
+  createdBy: User | undefined;
+}
+
+@Schema({ timestamps: true })
+export class SubscriberAttachmentFull extends AttachmentStub {
+  @Type(() => Subscriber)
+  createdBy: Subscriber | undefined;
+}
+
 export type AttachmentDocument = THydratedDocument<Attachment>;
 
 export const AttachmentModel: ModelDefinition = LifecycleHookManager.attach({
@@ -132,3 +181,10 @@ AttachmentModel.schema.virtual('url').get(function () {
 });
 
 export default AttachmentModel.schema;
+
+export type AttachmentPopulate = keyof TFilterPopulateFields<
+  Attachment,
+  AttachmentStub
+>;
+
+export const ATTACHMENT_POPULATE: AttachmentPopulate[] = ['createdBy'];

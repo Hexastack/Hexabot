@@ -6,8 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs, { createReadStream, promises as fsPromises } from 'fs';
-import { join, resolve } from 'path';
+import fs from 'fs';
+import os from 'os';
+import { join, normalize, resolve } from 'path';
 import { Readable, Stream } from 'stream';
 
 import {
@@ -29,6 +30,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
 import { Attachment } from '../schemas/attachment.schema';
+import { AttachmentResourceRef } from '../types';
 import {
   fileExists,
   generateUniqueFilename,
@@ -95,7 +97,7 @@ export class AttachmentService extends BaseService<Attachment> {
         join(config.parameters.avatarDir, `${foreign_id}.jpeg`),
       );
       if (fs.existsSync(path)) {
-        const picturetream = createReadStream(path);
+        const picturetream = fs.createReadStream(path);
         return new StreamableFile(picturetream);
       } else {
         throw new NotFoundException('Profile picture not found');
@@ -156,40 +158,16 @@ export class AttachmentService extends BaseService<Attachment> {
   }
 
   /**
-   * Uploads files to the server. If a storage plugin is configured it uploads files accordingly.
-   * Otherwise, uploads files to the local directory.
+   * Get the attachment root directory given the resource reference
    *
-   * @deprecated use store() instead
-   * @param files - An array of files to upload.
-   * @returns A promise that resolves to an array of uploaded attachments.
+   * @param ref The attachment resource reference
+   * @returns The root directory path
    */
-  async uploadFiles(files: { file: Express.Multer.File[] }) {
-    const uploadedFiles: Attachment[] = [];
-
-    if (this.getStoragePlugin()) {
-      for (const file of files?.file) {
-        const dto = await this.getStoragePlugin()?.upload?.(file);
-        if (dto) {
-          const uploadedFile = await this.create(dto);
-          uploadedFiles.push(uploadedFile);
-        }
-      }
-    } else {
-      if (Array.isArray(files?.file)) {
-        for (const { size, mimetype, filename } of files?.file) {
-          const uploadedFile = await this.create({
-            size,
-            type: mimetype,
-            name: filename,
-            channel: {},
-            location: `/${filename}`,
-          });
-          uploadedFiles.push(uploadedFile);
-        }
-      }
-    }
-
-    return uploadedFiles;
+  getRootDirByResourceRef(ref: AttachmentResourceRef) {
+    return ref === AttachmentResourceRef.SubscriberAvatar ||
+      ref === AttachmentResourceRef.UserAvatar
+      ? config.parameters.avatarDir
+      : config.parameters.uploadDir;
   }
 
   /**
@@ -204,21 +182,17 @@ export class AttachmentService extends BaseService<Attachment> {
   async store(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-    rootDir = config.parameters.uploadDir,
-  ): Promise<Attachment | undefined> {
+  ): Promise<Attachment | null> {
     if (this.getStoragePlugin()) {
-      const storedDto = await this.getStoragePlugin()?.store?.(
-        file,
-        metadata,
-        rootDir,
-      );
-      return storedDto ? await this.create(storedDto) : undefined;
+      const storedDto = await this.getStoragePlugin()?.store?.(file, metadata);
+      return storedDto ? await this.create(storedDto) : null;
     } else {
+      const rootDir = this.getRootDirByResourceRef(metadata.resourceRef);
       const uniqueFilename = generateUniqueFilename(metadata.name);
       const filePath = resolve(join(rootDir, sanitizeFilename(uniqueFilename)));
 
       if (Buffer.isBuffer(file)) {
-        await fsPromises.writeFile(filePath, file);
+        await fs.promises.writeFile(filePath, file);
       } else if (file instanceof Readable || file instanceof Stream) {
         await new Promise((resolve, reject) => {
           const writeStream = fs.createWriteStream(filePath);
@@ -230,11 +204,19 @@ export class AttachmentService extends BaseService<Attachment> {
       } else {
         if (file.path) {
           // For example, if the file is an instance of `Express.Multer.File` (diskStorage case)
-          const srcFilePath = resolve(file.path);
-          await fsPromises.copyFile(srcFilePath, filePath);
-          await fsPromises.unlink(srcFilePath);
+          const srcFilePath = fs.realpathSync(resolve(file.path));
+          // Get the system's temporary directory in a cross-platform way
+          const tempDir = os.tmpdir();
+          const normalizedTempDir = normalize(tempDir);
+
+          if (!srcFilePath.startsWith(normalizedTempDir)) {
+            throw new Error('Invalid file path');
+          }
+
+          await fs.promises.copyFile(srcFilePath, filePath);
+          await fs.promises.unlink(srcFilePath);
         } else {
-          await fsPromises.writeFile(filePath, file.buffer);
+          await fs.promises.writeFile(filePath, file.buffer);
         }
       }
 
@@ -253,10 +235,7 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param rootDir - The root directory where attachment shoud be located.
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
-  async download(
-    attachment: Attachment,
-    rootDir = config.parameters.uploadDir,
-  ): Promise<StreamableFile> {
+  async download(attachment: Attachment): Promise<StreamableFile> {
     if (this.getStoragePlugin()) {
       const streamableFile =
         await this.getStoragePlugin()?.download(attachment);
@@ -266,6 +245,7 @@ export class AttachmentService extends BaseService<Attachment> {
 
       return streamableFile;
     } else {
+      const rootDir = this.getRootDirByResourceRef(attachment.resourceRef);
       const path = resolve(join(rootDir, attachment.location));
 
       if (!fileExists(path)) {

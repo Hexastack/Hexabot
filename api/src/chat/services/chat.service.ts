@@ -8,7 +8,15 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -36,6 +44,7 @@ export class ChatService {
     private readonly botService: BotService,
     private readonly websocketGateway: WebsocketGateway,
     private readonly helperService: HelperService,
+    private readonly attachmentService: AttachmentService,
   ) {}
 
   /**
@@ -248,10 +257,14 @@ export class ChatService {
       });
 
       if (!subscriber) {
-        const subscriberData = await handler.getUserData(event);
+        const subscriberData = await handler.getSubscriberData(event);
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
+
+        if (!subscriber) {
+          throw new Error('Unable to create a new subscriber');
+        }
       } else {
         // Already existing user profile
         // Exec lastvisit hook
@@ -260,14 +273,57 @@ export class ChatService {
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
-      event.setSender(subscriber);
+      // Retrieve and store the subscriber avatar
+      if (handler.getSubscriberAvatar) {
+        try {
+          const metadata = await handler.getSubscriberAvatar(event);
+          if (metadata) {
+            const { file, type, size } = metadata;
+            const extension = mime.extension(type);
 
-      await event.preprocess();
+            const avatar = await this.attachmentService.store(file, {
+              name: `avatar-${uuidv4()}.${extension}`,
+              size,
+              type,
+              resourceRef: AttachmentResourceRef.SubscriberAvatar,
+              access: AttachmentAccess.Private,
+              createdByRef: AttachmentCreatedByRef.Subscriber,
+              createdBy: subscriber.id,
+            });
+
+            if (avatar) {
+              subscriber = await this.subscriberService.updateOne(
+                subscriber.id,
+                {
+                  avatar: avatar.id,
+                },
+              );
+
+              if (!subscriber) {
+                throw new Error('Unable to update the subscriber avatar');
+              }
+            }
+          }
+        } catch (err) {
+          this.logger.error(
+            `Unable to retrieve avatar for subscriber ${event.getSenderForeignId()}`,
+            err,
+          );
+        }
+      }
+
+      // Set the subscriber object
+      event.setSender(subscriber!);
+
+      // Preprocess the event (persist attachments, ...)
+      if (event.preprocess) {
+        await event.preprocess();
+      }
 
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);
 
-      if (subscriber.assignedTo) {
+      if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
         return;
       }

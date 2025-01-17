@@ -15,6 +15,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
@@ -70,7 +75,7 @@ export default abstract class BaseWebChannelHandler<
     protected readonly eventEmitter: EventEmitter2,
     protected readonly i18n: I18nService,
     protected readonly subscriberService: SubscriberService,
-    protected readonly attachmentService: AttachmentService,
+    public readonly attachmentService: AttachmentService,
     protected readonly messageService: MessageService,
     protected readonly menuService: MenuService,
     protected readonly websocketGateway: WebsocketGateway,
@@ -604,6 +609,11 @@ export default abstract class BaseWebChannelHandler<
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
+      if (!req.session?.web?.profile?.id) {
+        this.logger.debug('Web Channel Handler : No session');
+        return null;
+      }
+
       // Check if any file is provided
       if (type !== 'file' || !('file' in data) || !data.file) {
         this.logger.debug('Web Channel Handler : No files provided');
@@ -616,17 +626,15 @@ export default abstract class BaseWebChannelHandler<
         throw new Error('Max upload size has been exceeded');
       }
 
-      const attachment = await this.attachmentService.store(data.file, {
+      return await this.attachmentService.store(data.file, {
         name: data.name,
         size: Buffer.byteLength(data.file),
         type: data.type,
+        resourceRef: AttachmentResourceRef.MessageAttachment,
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
+        createdBy: req.session?.web?.profile?.id,
       });
-
-      if (attachment) {
-        return attachment;
-      } else {
-        throw new Error('Unable to retrieve stored attachment');
-      }
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',
@@ -680,23 +688,20 @@ export default abstract class BaseWebChannelHandler<
       const file = await multerUpload;
 
       // Check if any file is provided
-      if (!req.file) {
+      if (!file) {
         this.logger.debug('Web Channel Handler : No files provided');
         return null;
       }
 
-      if (file) {
-        const attachment = await this.attachmentService.store(file, {
-          name: file.originalname,
-          size: file.size,
-          type: file.mimetype,
-        });
-        if (attachment) {
-          return attachment;
-        }
-
-        throw new Error('Unable to store uploaded file');
-      }
+      return await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        resourceRef: AttachmentResourceRef.MessageAttachment,
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
+        createdBy: req.session.web.profile?.id,
+      });
     } catch (err) {
       this.logger.error(
         'Web Channel Handler : Unable to store uploaded file',
@@ -1328,7 +1333,9 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns The web's response, otherwise an error
    */
-  async getUserData(event: WebEventWrapper<N>): Promise<SubscriberCreateDto> {
+  async getSubscriberData(
+    event: WebEventWrapper<N>,
+  ): Promise<SubscriberCreateDto> {
     const sender = event.getSender();
     const {
       id: _id,
@@ -1341,5 +1348,45 @@ export default abstract class BaseWebChannelHandler<
       channel: Subscriber.getChannelData(sender),
     };
     return subscriber;
+  }
+
+  /**
+   * Checks if the request is authorized to download a given attachment file.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, req: Request) {
+    const subscriberId = req.session?.web?.profile?.id as string;
+    if (attachment.access === AttachmentAccess.Public) {
+      return true;
+    } else if (!subscriberId) {
+      this.logger.warn(
+        `Unauthorized access attempt to attachment ${attachment.id}`,
+      );
+      return false;
+    } else if (
+      attachment.createdByRef === AttachmentCreatedByRef.Subscriber &&
+      subscriberId === attachment.createdBy
+    ) {
+      // Either subscriber wants to access the attachment he sent
+      return true;
+    } else {
+      // Or, he would like to access an attachment sent to him privately
+      const message = await this.messageService.findOne({
+        ['recipient' as any]: subscriberId,
+        $or: [
+          { 'message.attachment.payload.id': attachment.id },
+          {
+            'message.attachment': {
+              $elemMatch: { 'payload.id': attachment.id },
+            },
+          },
+        ],
+      });
+
+      return !!message;
+    }
   }
 }

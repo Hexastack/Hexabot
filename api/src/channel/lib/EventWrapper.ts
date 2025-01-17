@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import { AttachmentPayload } from '@/chat/schemas/types/attachment';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
@@ -29,19 +29,24 @@ export default abstract class EventWrapper<
     eventType: StdEventType;
     messageType?: IncomingMessageType;
     raw: E;
+    attachments?: Attachment[];
   },
   E,
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
 > {
-  _adapter: A = { raw: {}, eventType: StdEventType.unknown } as A;
+  _adapter: A = {
+    raw: {},
+    eventType: StdEventType.unknown,
+    attachments: undefined,
+  } as A;
 
   _handler: C;
 
   channelAttrs: S;
 
-  _profile!: Subscriber;
+  subscriber!: Subscriber;
 
   _nlp!: NLU.ParseEntities;
 
@@ -72,7 +77,6 @@ export default abstract class EventWrapper<
         messageType: this.getMessageType(),
         payload: this.getPayload(),
         message: this.getMessage(),
-        attachments: this.getAttachments(),
         deliveredMessages: this.getDeliveredMessages(),
         watermark: this.getWatermark(),
       },
@@ -177,7 +181,7 @@ export default abstract class EventWrapper<
    * @returns event sender data
    */
   getSender(): Subscriber {
-    return this._profile;
+    return this.subscriber;
   }
 
   /**
@@ -186,7 +190,7 @@ export default abstract class EventWrapper<
    * @param profile - Sender data
    */
   setSender(profile: Subscriber) {
-    this._profile = profile;
+    this.subscriber = profile;
   }
 
   /**
@@ -194,9 +198,21 @@ export default abstract class EventWrapper<
    *
    * Child class can perform operations such as storing files as attachments.
    */
-  preprocess() {
-    // Nothing ...
-    return Promise.resolve();
+  async preprocess() {
+    if (
+      this._adapter.eventType === StdEventType.message &&
+      this._adapter.messageType === IncomingMessageType.attachments
+    ) {
+      await this._handler.persistMessageAttachments(
+        this as EventWrapper<
+          any,
+          any,
+          ChannelName,
+          ChannelHandler<ChannelName>,
+          Record<string, any>
+        >,
+      );
+    }
   }
 
   /**
@@ -252,13 +268,6 @@ export default abstract class EventWrapper<
     }
     return '';
   }
-
-  /**
-   * Returns the list of received attachments
-   *
-   * @returns Received attachments message
-   */
-  abstract getAttachments(): AttachmentPayload[];
 
   /**
    * Returns the list of delivered messages
@@ -381,14 +390,6 @@ export class GenericEventWrapper extends EventWrapper<
    */
   getMessage(): StdIncomingMessage {
     throw new Error('Unknown incoming message type');
-  }
-
-  /**
-   * @returns A list of received attachments
-   * @deprecated - This method is deprecated
-   */
-  getAttachments(): AttachmentPayload[] {
-    return [];
   }
 
   /**

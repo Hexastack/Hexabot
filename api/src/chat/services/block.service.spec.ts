@@ -389,7 +389,7 @@ describe('BlockService', () => {
       const result = blockService.matchPayload(
         {
           type: PayloadType.attachments,
-          attachments: {
+          attachment: {
             type: FileType.file,
             payload: {
               id: '9'.repeat(24),

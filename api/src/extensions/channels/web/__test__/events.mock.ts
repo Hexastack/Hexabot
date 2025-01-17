@@ -146,7 +146,7 @@ export const webEvents: [string, Web.IncomingMessage, any][] = [
       messageType: IncomingMessageType.attachments,
       payload: {
         type: IncomingMessageType.attachments,
-        attachments: {
+        attachment: {
           type: FileType.image,
           payload: {
             id: '9'.repeat(24),

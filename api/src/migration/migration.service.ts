@@ -259,7 +259,7 @@ module.exports = {
         attachmentService: this.attachmentService,
       });
 
-      if (result && migrationDocument) {
+      if (result) {
         await this.successCallback({
           version,
           action,

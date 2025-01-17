@@ -15,24 +15,187 @@ import { v4 as uuidv4 } from 'uuid';
 import attachmentSchema, {
   Attachment,
 } from '@/attachment/schemas/attachment.schema';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import blockSchema, { Block } from '@/chat/schemas/block.schema';
 import messageSchema, { Message } from '@/chat/schemas/message.schema';
 import subscriberSchema, { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import { config } from '@/config';
+import settingSchema, { Setting } from '@/setting/schemas/setting.schema';
+import { SettingType } from '@/setting/schemas/types';
+import roleSchema, { Role } from '@/user/schemas/role.schema';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';
 
 import { MigrationAction, MigrationServices } from '../types';
 
 /**
- * Updates subscriber documents with their corresponding avatar attachments
- * and moves avatar files to a new directory.
+ * @returns The admin user or null
+ */
+const getAdminUser = async () => {
+  const RoleModel = mongoose.model<Role>(Role.name, roleSchema);
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const adminRole = await RoleModel.findOne({ name: 'admin' });
+  const user = await UserModel.findOne({ roles: [adminRole!._id] }).sort({
+    createdAt: 'asc',
+  });
+
+  return user!;
+};
+
+/**
+ * Updates attachment documents for blocks that contain "message.attachment".
  *
  * @returns Resolves when the migration process is complete.
  */
-const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
+const populateBlockAttachments = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  const user = await getAdminUser();
+
+  if (!user) {
+    logger.warn('Unable to process block attachments, no admin user found');
+    return;
+  }
+
+  // Find blocks where "message.attachment" exists
+  const cursor = BlockModel.find({
+    'message.attachment': { $exists: true },
+  }).cursor();
+
+  for await (const block of cursor) {
+    try {
+      const msgPayload = (block.message as StdOutgoingAttachmentMessage)
+        .attachment.payload;
+      if (msgPayload && 'id' in msgPayload && msgPayload.id) {
+        const attachmentId = msgPayload.id;
+        // Update the corresponding attachment document
+        await AttachmentModel.updateOne(
+          { _id: attachmentId },
+          {
+            $set: {
+              resourceRef: AttachmentResourceRef.BlockAttachment,
+              access: 'public',
+              createdByRef: AttachmentCreatedByRef.User,
+              createdBy: user._id,
+            },
+          },
+        );
+        logger.log(
+          `Attachment ${attachmentId} attributes successfully updated for block ${block._id}`,
+        );
+      } else {
+        logger.warn(
+          `Block ${block._id} has a "message.attachment" but no "id" found`,
+        );
+      }
+    } catch (error) {
+      logger.error(
+        `Failed to update attachment for block ${block._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
+ * Updates setting attachment documents to populate new attributes (resourceRef, createdBy, createdByRef)
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateSettingAttachments = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const SettingModel = mongoose.model<Setting>(Setting.name, settingSchema);
+  const user = await getAdminUser();
+
+  if (!user) {
+    logger.warn('Unable to populate setting attachments, no admin user found');
+  }
+
+  const cursor = SettingModel.find({
+    type: SettingType.attachment,
+  }).cursor();
+
+  for await (const setting of cursor) {
+    try {
+      if (setting.value) {
+        await AttachmentModel.updateOne(
+          { _id: setting.value },
+          {
+            $set: {
+              resourceRef: AttachmentResourceRef.SettingAttachment,
+              access: 'public',
+              createdByRef: AttachmentCreatedByRef.User,
+              createdBy: user._id,
+            },
+          },
+        );
+        logger.log(`User ${user._id} avatar attributes successfully populated`);
+      }
+    } catch (error) {
+      logger.error(
+        `Failed to populate avatar attributes for user ${user._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
+ * Updates user attachment documents to populate new attributes (resourceRef, createdBy, createdByRef)
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateUserAvatars = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+  const UserModel = mongoose.model<User>(User.name, userSchema);
+
+  const cursor = UserModel.find({
+    avatar: { $exists: true, $ne: null },
+  }).cursor();
+
+  for await (const user of cursor) {
+    try {
+      await AttachmentModel.updateOne(
+        { _id: user.avatar },
+        {
+          $set: {
+            resourceRef: AttachmentResourceRef.UserAvatar,
+            access: 'private',
+            createdByRef: AttachmentCreatedByRef.User,
+            createdBy: user._id,
+          },
+        },
+      );
+      logger.log(`User ${user._id} avatar attributes successfully populated`);
+    } catch (error) {
+      logger.error(
+        `Failed to populate avatar attributes for user ${user._id}: ${error.message}`,
+      );
+    }
+  }
+};
+
+/**
+ * Updates subscriber documents with their corresponding avatar attachments,
+ * populate new attributes (resourceRef, createdBy, createdByRef) and moves avatar files to a new directory.
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
   const AttachmentModel = mongoose.model<Attachment>(
     Attachment.name,
     attachmentSchema,
@@ -45,50 +208,75 @@ const populateSubscriberAvatar = async ({ logger }: MigrationServices) => {
   const cursor = SubscriberModel.find().cursor();
 
   for await (const subscriber of cursor) {
-    const foreignId = subscriber.foreign_id;
-    if (!foreignId) {
-      logger.debug(`No foreign id found for subscriber ${subscriber._id}`);
-      continue;
-    }
+    try {
+      const foreignId = subscriber.foreign_id;
+      if (!foreignId) {
+        logger.debug(`No foreign id found for subscriber ${subscriber._id}`);
+        continue;
+      }
 
-    const attachment = await AttachmentModel.findOne({
-      name: RegExp(`^${foreignId}.jpe?g$`),
-    });
+      const attachment = await AttachmentModel.findOne({
+        name: RegExp(`^${foreignId}.jpe?g$`),
+      });
 
-    if (attachment) {
-      await SubscriberModel.updateOne(
-        { _id: subscriber._id },
-        { $set: { avatar: attachment._id } },
-      );
-      logger.log(
-        `Subscriber ${subscriber._id} avatar attachment successfully updated for  `,
-      );
+      if (attachment) {
+        await SubscriberModel.updateOne(
+          { _id: subscriber._id },
+          {
+            $set: {
+              avatar: attachment._id,
+            },
+          },
+        );
+        logger.log(
+          `Subscriber ${subscriber._id} avatar attribute successfully updated`,
+        );
 
-      const src = resolve(
-        join(config.parameters.uploadDir, attachment.location),
-      );
-      if (existsSync(src)) {
-        try {
-          const dst = resolve(
-            join(config.parameters.avatarDir, attachment.location),
+        await AttachmentModel.updateOne(
+          { _id: attachment._id },
+          {
+            $set: {
+              resourceRef: AttachmentResourceRef.SubscriberAvatar,
+              access: 'private',
+              createdByRef: AttachmentCreatedByRef.Subscriber,
+              createdBy: subscriber._id,
+            },
+          },
+        );
+
+        logger.log(
+          `Subscriber ${subscriber._id} avatar attachment attributes successfully populated`,
+        );
+
+        const src = resolve(
+          join(config.parameters.uploadDir, attachment.location),
+        );
+        if (existsSync(src)) {
+          try {
+            const dst = resolve(
+              join(config.parameters.avatarDir, attachment.location),
+            );
+            await moveFile(src, dst);
+            logger.log(
+              `Subscriber ${subscriber._id} avatar file successfully moved to the new "avatars" folder`,
+            );
+          } catch (err) {
+            logger.error(err);
+            logger.warn(`Unable to move subscriber ${subscriber._id} avatar!`);
+          }
+        } else {
+          logger.warn(
+            `Subscriber ${subscriber._id} avatar attachment file was not found!`,
           );
-          await moveFile(src, dst);
-          logger.log(
-            `Subscriber ${subscriber._id} avatar file successfully moved to the new "avatars" folder`,
-          );
-        } catch (err) {
-          logger.error(err);
-          logger.warn(`Unable to move subscriber ${subscriber._id} avatar!`);
         }
       } else {
         logger.warn(
-          `Subscriber ${subscriber._id} avatar attachment file was not found!`,
+          `No avatar attachment found for subscriber ${subscriber._id}`,
         );
       }
-    } else {
-      logger.warn(
-        `No avatar attachment found for subscriber ${subscriber._id}`,
-      );
+    } catch (err) {
+      logger.error(err);
+      logger.error(`Unable to populate subscriber avatar ${subscriber._id}`);
     }
   }
 };
@@ -112,49 +300,101 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
   const cursor = SubscriberModel.find({ avatar: { $exists: true } }).cursor();
 
   for await (const subscriber of cursor) {
-    if (subscriber.avatar) {
-      const attachment = await AttachmentModel.findOne({
-        _id: subscriber.avatar,
-      });
+    try {
+      if (subscriber.avatar) {
+        const attachment = await AttachmentModel.findOne({
+          _id: subscriber.avatar,
+        });
 
-      if (attachment) {
-        // Move file to the old folder
-        const src = resolve(
-          join(config.parameters.avatarDir, attachment.location),
-        );
-        if (existsSync(src)) {
-          try {
-            const dst = resolve(
-              join(config.parameters.uploadDir, attachment.location),
-            );
-            await moveFile(src, dst);
-            logger.log(
-              `Avatar attachment successfully moved back to the old "avatars" folder`,
-            );
-          } catch (err) {
-            logger.error(err);
-            logger.warn(
-              `Unable to move back subscriber ${subscriber._id} avatar to the old folder!`,
-            );
+        if (attachment) {
+          // Move file to the old folder
+          const src = resolve(
+            join(config.parameters.avatarDir, attachment.location),
+          );
+          if (existsSync(src)) {
+            try {
+              const dst = resolve(
+                join(config.parameters.uploadDir, attachment.location),
+              );
+              await moveFile(src, dst);
+              logger.log(
+                `Avatar attachment successfully moved back to the old "avatars" folder`,
+              );
+            } catch (err) {
+              logger.error(err);
+              logger.warn(
+                `Unable to move back subscriber ${subscriber._id} avatar to the old folder!`,
+              );
+            }
+          } else {
+            logger.warn('Avatar attachment file was not found!');
           }
-        } else {
-          logger.warn('Avatar attachment file was not found!');
-        }
 
-        // Reset avatar to null
-        await SubscriberModel.updateOne(
-          { _id: subscriber._id },
-          { $set: { avatar: null } },
-        );
-        logger.log(
-          `Avatar attachment successfully updated for subscriber ${subscriber._id}`,
-        );
-      } else {
-        logger.warn(
-          `No avatar attachment found for subscriber ${subscriber._id}`,
-        );
+          // Reset avatar to null
+          await SubscriberModel.updateOne(
+            { _id: subscriber._id },
+            {
+              $set: { avatar: null },
+            },
+          );
+          logger.log(
+            `Subscriber ${subscriber._id} avatar attribute successfully reverted to null`,
+          );
+        } else {
+          logger.warn(
+            `No avatar attachment found for subscriber ${subscriber._id}`,
+          );
+        }
       }
+    } catch (err) {
+      logger.error(err);
+      logger.error(`Unable to unpopulate subscriber ${subscriber._id} avatar`);
     }
+  }
+};
+
+/**
+ * Reverts the attachments additional attribute populate
+ *
+ * @returns Resolves when the migration process is complete.
+ */
+const undoPopulateAttachments = async ({ logger }: MigrationServices) => {
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+
+  try {
+    const result = await AttachmentModel.updateMany(
+      {
+        resourceRef: {
+          $in: [
+            AttachmentResourceRef.BlockAttachment,
+            AttachmentResourceRef.SettingAttachment,
+            AttachmentResourceRef.UserAvatar,
+            AttachmentResourceRef.SubscriberAvatar,
+            AttachmentResourceRef.ContentAttachment,
+            AttachmentResourceRef.MessageAttachment,
+          ],
+        },
+      },
+      {
+        $unset: {
+          resourceRef: '',
+          access: '',
+          createdByRef: '',
+          createdBy: '',
+        },
+      },
+    );
+
+    logger.log(
+      `Successfully reverted attributes for ${result.modifiedCount} attachments with ref AttachmentResourceRef.SettingAttachment`,
+    );
+  } catch (error) {
+    logger.error(
+      `Failed to revert attributes for attachments with ref AttachmentResourceRef.SettingAttachment: ${error.message}`,
+    );
   }
 };
 
@@ -325,7 +565,7 @@ const buildRenameAttributeCallback =
   };
 
 /**
- * Traverses an content document to search for any attachment object
+ * Traverses a content document to search for any attachment object
  * @param obj
  * @param callback
  * @returns
@@ -357,7 +597,14 @@ const migrateAttachmentContents = async (
   const updateField = action === MigrationAction.UP ? 'id' : 'attachment_id';
   const unsetField = action === MigrationAction.UP ? 'attachment_id' : 'id';
   const ContentModel = mongoose.model<Content>(Content.name, contentSchema);
-  // Find blocks where "message.attachment" exists
+  const AttachmentModel = mongoose.model<Attachment>(
+    Attachment.name,
+    attachmentSchema,
+  );
+
+  const adminUser = await getAdminUser();
+
+  // Process all contents
   const cursor = ContentModel.find({}).cursor();
 
   for await (const content of cursor) {
@@ -366,6 +613,30 @@ const migrateAttachmentContents = async (
         content.dynamicFields,
         buildRenameAttributeCallback(unsetField, updateField),
       );
+
+      for (const key in content.dynamicFields) {
+        if (
+          content.dynamicFields[key] &&
+          typeof content.dynamicFields[key] === 'object' &&
+          'payload' in content.dynamicFields[key] &&
+          'id' in content.dynamicFields[key].payload &&
+          content.dynamicFields[key].payload.id
+        ) {
+          await AttachmentModel.updateOne(
+            {
+              _id: content.dynamicFields[key].payload.id,
+            },
+            {
+              $set: {
+                resourceRef: AttachmentResourceRef.ContentAttachment,
+                createdBy: adminUser.id,
+                createdByRef: AttachmentCreatedByRef.User,
+                access: AttachmentAccess.Public,
+              },
+            },
+          );
+        }
+      }
 
       await ContentModel.replaceOne({ _id: content._id }, content);
     } catch (error) {
@@ -383,7 +654,7 @@ const migrateAttachmentContents = async (
  *
  * @returns Resolves when the migration process is complete.
  */
-const migrateAttachmentMessages = async ({
+const migrateAndPopulateAttachmentMessages = async ({
   logger,
   http,
   attachmentService,
@@ -407,6 +678,8 @@ const migrateAttachmentMessages = async ({
     );
   };
 
+  const adminUser = await getAdminUser();
+
   for await (const msg of cursor) {
     try {
       if (
@@ -415,6 +688,19 @@ const migrateAttachmentMessages = async ({
         msg.message.attachment.payload
       ) {
         if ('attachment_id' in msg.message.attachment.payload) {
+          // Add extra attrs
+          await attachmentService.updateOne(
+            msg.message.attachment.payload.attachment_id as string,
+            {
+              resourceRef: AttachmentResourceRef.MessageAttachment,
+              access: AttachmentAccess.Private,
+              createdByRef: msg.sender
+                ? AttachmentCreatedByRef.Subscriber
+                : AttachmentCreatedByRef.User,
+              createdBy: msg.sender ? msg.sender : adminUser.id,
+            },
+          );
+          // Rename `attachment_id` to `id`
           await updateAttachmentId(
             msg._id,
             msg.message.attachment.payload.attachment_id as string,
@@ -441,10 +727,20 @@ const migrateAttachmentMessages = async ({
               size: fileBuffer.length,
               type: response.headers['content-type'],
               channel: {},
+              resourceRef: AttachmentResourceRef.MessageAttachment,
+              access: msg.sender
+                ? AttachmentAccess.Private
+                : AttachmentAccess.Public,
+              createdBy: msg.sender ? msg.sender : adminUser.id,
+              createdByRef: msg.sender
+                ? AttachmentCreatedByRef.Subscriber
+                : AttachmentCreatedByRef.User,
             });
 
             if (attachment) {
               await updateAttachmentId(msg._id, attachment.id);
+            } else {
+              logger.warn(`Unable to store attachment for message ${msg._id}`);
             }
           }
         } else {
@@ -478,16 +774,20 @@ const migrateAttachmentMessages = async ({
 
 module.exports = {
   async up(services: MigrationServices) {
-    await populateSubscriberAvatar(services);
     await updateOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.UP, services);
     await migrateAttachmentContents(MigrationAction.UP, services);
     // Given the complexity and inconsistency data, this method does not have
     // a revert equivalent, at the same time, thus, it doesn't "unset" any attribute
-    await migrateAttachmentMessages(services);
+    await migrateAndPopulateAttachmentMessages(services);
+    await populateBlockAttachments(services);
+    await populateSettingAttachments(services);
+    await populateUserAvatars(services);
+    await populateSubscriberAvatars(services);
     return true;
   },
   async down(services: MigrationServices) {
+    await undoPopulateAttachments(services);
     await unpopulateSubscriberAvatar(services);
     await restoreOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.DOWN, services);

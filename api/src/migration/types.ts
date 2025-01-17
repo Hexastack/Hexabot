@@ -33,7 +33,7 @@ export interface MigrationRunOneParams extends MigrationRunParams {
 }
 
 export interface MigrationSuccessCallback extends MigrationRunParams {
-  migrationDocument: MigrationDocument;
+  migrationDocument: MigrationDocument | null;
 }
 
 export type MigrationServices = {
