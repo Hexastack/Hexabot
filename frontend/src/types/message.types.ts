@@ -42,7 +42,7 @@ export enum FileType {
 }
 
 // Attachments
-export interface AttachmentAttrs {
+export interface IAttachmentAttrs {
   name: string;
   type: string;
   size: number;
@@ -51,15 +51,15 @@ export interface AttachmentAttrs {
   url?: string;
 }
 
-export type AttachmentForeignKey = {
+export type TAttachmentForeignKey = {
   id: string | null;
   /** @deprecated use id instead */
   url?: string;
 };
 
-export interface AttachmentPayload {
+export interface IAttachmentPayload {
   type: FileType;
-  payload: AttachmentForeignKey;
+  payload: TAttachmentForeignKey;
 }
 
 // Content
@@ -95,7 +95,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: AttachmentPayload;
+      attachments: IAttachmentPayload;
     };
 
 export enum QuickReplyType {
@@ -164,7 +164,7 @@ export type StdOutgoingListMessage = {
 };
 export type StdOutgoingAttachmentMessage = {
   // Stored in DB as `AttachmentPayload`, `Attachment` when populated for channels relaying
-  attachment: AttachmentPayload;
+  attachment: IAttachmentPayload;
   quickReplies?: StdQuickReply[];
 };
 
@@ -187,7 +187,7 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: AttachmentPayload | AttachmentPayload[];
+  attachment: IAttachmentPayload | IAttachmentPayload[];
 };
 
 export type StdPluginMessage = {

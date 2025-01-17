@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
-import { useGetAttachmentUrl } from "@/hooks/useGetAttachmentUrl";
+import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
 import {
   AnyButton as ButtonType,
   OutgoingPopulatedListMessage,
@@ -190,7 +190,7 @@ const ListCard = forwardRef<
     buttons: ButtonType[];
   }
 >(function ListCardRef(props, ref) {
-  const getUrl = useGetAttachmentUrl();
+  const metadata = useGetAttachmentMetadata(props.content.image_url?.payload);
 
   return (
     <Card
@@ -205,9 +205,9 @@ const ListCard = forwardRef<
       ref={ref}
       id={"A" + props.id}
     >
-      {props.content.image_url ? (
+      {metadata ? (
         <CardMedia
-          image={getUrl(props.content.image_url.payload)}
+          image={metadata.url}
           sx={{ height: "185px" }}
           title={props.content.title}
         />

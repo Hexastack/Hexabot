@@ -7,7 +7,8 @@
  */
 
 
-import { AttachmentForeignKey, FileType } from "@/types/message.types";
+import { IAttachment } from "@/types/attachment.types";
+import { FileType, TAttachmentForeignKey } from "@/types/message.types";
 
 import { buildURL } from "./URL";
 
@@ -40,9 +41,31 @@ export function getFileType(mimeType: string): FileType {
 
 export function getAttachmentDownloadUrl(
   baseUrl: string,
-  attachment: AttachmentForeignKey,
+  attachment: TAttachmentForeignKey | IAttachment,
 ) {
   return "id" in attachment && attachment.id
     ? buildURL(baseUrl, `/attachment/download/${attachment.id}`)
     : attachment.url;
+}
+
+export function extractFilenameFromUrl(url: string) {
+  try {
+    // Parse the URL to ensure it is valid
+    const parsedUrl = new URL(url);
+    // Extract the pathname (part after the domain)
+    const pathname = parsedUrl.pathname;
+    // Extract the last segment of the pathname
+    const filename = pathname.substring(pathname.lastIndexOf("/") + 1);
+
+    // Check if a valid filename exists
+    if (filename && filename.includes(".")) {
+      return filename;
+    }
+
+    // If no valid filename, return the full URL
+    return url;
+  } catch (error) {
+    // If the URL is invalid, return the input as-is
+    return url;
+  }
 }
