@@ -9,6 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -249,9 +250,14 @@ export class ChatService {
 
       if (!subscriber) {
         const subscriberData = await handler.getUserData(event);
-        this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          BotStatsType.new_users,
+          'New users',
+          subscriber,
+        );
       } else {
         // Already existing user profile
         // Exec lastvisit hook
