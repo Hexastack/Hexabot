@@ -15,6 +15,7 @@ import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
+import { useFind } from "@/hooks/crud/useFind";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
