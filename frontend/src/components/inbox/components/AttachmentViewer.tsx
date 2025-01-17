@@ -11,8 +11,8 @@ import { Button, Dialog, DialogContent } from "@mui/material";
 import { FC } from "react";
 
 import { DialogTitle } from "@/app-components/dialogs";
-import { useConfig } from "@/hooks/useConfig";
 import { useDialog } from "@/hooks/useDialog";
+import { useGetAttachmentUrl } from "@/hooks/useGetAttachmentUrl";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
   FileType,
@@ -95,19 +95,19 @@ export const AttachmentViewer = (props: {
   message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
   const message = props.message;
-  const { apiUrl } = useConfig();
+  const getUrl = useGetAttachmentUrl();
 
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
   // TODO: Implenent this
-  if (Array.isArray(message.attachment)) {
+  if (!message.attachment) {
+    return <>No attachment to display</>;
+  } else if (Array.isArray(message.attachment)) {
     return <>Not yet Implemented</>;
   }
+
   const AttachmentViewerForType = componentMap[message.attachment.type];
-  const url =
-    "id" in message.attachment?.payload && message.attachment?.payload.id
-      ? `${apiUrl}attachment/download/${message.attachment?.payload.id}`
-      : message.attachment?.payload?.url;
+  const url = getUrl(message.attachment?.payload);
 
   return <AttachmentViewerForType url={url} />;
 };
