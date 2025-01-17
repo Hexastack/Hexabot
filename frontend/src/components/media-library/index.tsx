@@ -47,7 +47,6 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const deleteDialogCtl = useDialog<string>(false);
   const formatFileSize = useFormattedFileSize();
   const { onSearch, searchPayload } = useSearch<IAttachment>({
     $iLike: ["name"],
@@ -77,26 +76,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       },
     },
   );
-  const { mutateAsync: deleteCategory } = useDelete(EntityType.ATTACHMENT, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const actionColumns = useActionColumns<IAttachment>(
-    EntityType.ATTACHMENT,
-    [
-      {
-        label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
-        requires: [PermissionAction.DELETE],
-      },
-    ],
-    t("label.operations"),
-  );
+
   const columns: GridColDef<IAttachment>[] = [
     { field: "id", headerName: "ID" },
     {
@@ -169,17 +149,10 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
       valueGetter: (params) =>
         t("datetime.updated_at", getDateTimeFormatter(params)),
     },
-    actionColumns,
   ];
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteCategory(deleteDialogCtl.data);
-        }}
-      />
       <PageHeader title={t("title.media_library")} icon={DriveFolderUploadIcon}>
         <Grid
           justifyContent="flex-end"
