@@ -515,7 +515,7 @@ export abstract class BaseRepository<
     const result = await this.executeOne(query, this.cls);
 
     if (!result) {
-      const errorMessage = `Unable to update ${this.cls.name}${typeof criteria === 'string' ? ` with ID ${criteria}` : ''}`;
+      const errorMessage = `Unable to update ${this.cls.name} with ${typeof criteria === 'string' ? 'ID' : 'criteria'} ${JSON.stringify(criteria)}`;
       throw new Error(errorMessage);
     }
 

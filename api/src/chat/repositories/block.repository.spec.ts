@@ -169,7 +169,6 @@ describe('BlockRepository', () => {
   });
 
   describe('prepareBlocksInCategoryUpdateScope', () => {
-    /******/
     it('should update blocks within the scope based on category and ids', async () => {
       jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
         id: blockValidIds[0],
@@ -211,7 +210,6 @@ describe('BlockRepository', () => {
   });
 
   describe('prepareBlocksOutOfCategoryUpdateScope', () => {
-    /******/
     it('should update blocks outside the scope by removing references from attachedBlock', async () => {
       const otherBlocks = [
         {
@@ -233,7 +231,6 @@ describe('BlockRepository', () => {
       });
     });
 
-    /******/
     it('should update blocks outside the scope by removing references from nextBlocks', async () => {
       const otherBlocks = [
         {
@@ -256,7 +253,6 @@ describe('BlockRepository', () => {
   });
 
   describe('preUpdateMany', () => {
-    /******/
     it('should update blocks in and out of the scope', async () => {
       const mockFind = jest.spyOn(blockRepository, 'find').mockResolvedValue([
         {

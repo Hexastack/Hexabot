@@ -7,4 +7,4 @@
  */
 
 export const getUpdateOneError = (entity: string, id?: string) =>
-  new Error(`Unable to update ${entity}${id ? ` with ID ${id}` : ''}`);
+  new Error(`Unable to update ${entity}${id ? ` with ID \"${id}\"` : ''}`);
