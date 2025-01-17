@@ -208,70 +208,75 @@ const populateSubscriberAvatars = async ({ logger }: MigrationServices) => {
   const cursor = SubscriberModel.find().cursor();
 
   for await (const subscriber of cursor) {
-    const foreignId = subscriber.foreign_id;
-    if (!foreignId) {
-      logger.debug(`No foreign id found for subscriber ${subscriber._id}`);
-      continue;
-    }
+    try {
+      const foreignId = subscriber.foreign_id;
+      if (!foreignId) {
+        logger.debug(`No foreign id found for subscriber ${subscriber._id}`);
+        continue;
+      }
 
-    const attachment = await AttachmentModel.findOne({
-      name: RegExp(`^${foreignId}.jpe?g$`),
-    });
+      const attachment = await AttachmentModel.findOne({
+        name: RegExp(`^${foreignId}.jpe?g$`),
+      });
 
-    if (attachment) {
-      await SubscriberModel.updateOne(
-        { _id: subscriber._id },
-        {
-          $set: {
-            avatar: attachment._id,
+      if (attachment) {
+        await SubscriberModel.updateOne(
+          { _id: subscriber._id },
+          {
+            $set: {
+              avatar: attachment._id,
+            },
           },
-        },
-      );
-      logger.log(
-        `Subscriber ${subscriber._id} avatar attribute successfully updated`,
-      );
+        );
+        logger.log(
+          `Subscriber ${subscriber._id} avatar attribute successfully updated`,
+        );
 
-      await AttachmentModel.updateOne(
-        { _id: attachment._id },
-        {
-          $set: {
-            resourceRef: AttachmentResourceRef.SubscriberAvatar,
-            access: 'private',
-            createdByRef: AttachmentCreatedByRef.Subscriber,
-            createdBy: subscriber._id,
+        await AttachmentModel.updateOne(
+          { _id: attachment._id },
+          {
+            $set: {
+              resourceRef: AttachmentResourceRef.SubscriberAvatar,
+              access: 'private',
+              createdByRef: AttachmentCreatedByRef.Subscriber,
+              createdBy: subscriber._id,
+            },
           },
-        },
-      );
+        );
 
-      logger.log(
-        `Subscriber ${subscriber._id} avatar attachment attributes successfully populated`,
-      );
+        logger.log(
+          `Subscriber ${subscriber._id} avatar attachment attributes successfully populated`,
+        );
 
-      const src = resolve(
-        join(config.parameters.uploadDir, attachment.location),
-      );
-      if (existsSync(src)) {
-        try {
-          const dst = resolve(
-            join(config.parameters.avatarDir, attachment.location),
+        const src = resolve(
+          join(config.parameters.uploadDir, attachment.location),
+        );
+        if (existsSync(src)) {
+          try {
+            const dst = resolve(
+              join(config.parameters.avatarDir, attachment.location),
+            );
+            await moveFile(src, dst);
+            logger.log(
+              `Subscriber ${subscriber._id} avatar file successfully moved to the new "avatars" folder`,
+            );
+          } catch (err) {
+            logger.error(err);
+            logger.warn(`Unable to move subscriber ${subscriber._id} avatar!`);
+          }
+        } else {
+          logger.warn(
+            `Subscriber ${subscriber._id} avatar attachment file was not found!`,
           );
-          await moveFile(src, dst);
-          logger.log(
-            `Subscriber ${subscriber._id} avatar file successfully moved to the new "avatars" folder`,
-          );
-        } catch (err) {
-          logger.error(err);
-          logger.warn(`Unable to move subscriber ${subscriber._id} avatar!`);
         }
       } else {
         logger.warn(
-          `Subscriber ${subscriber._id} avatar attachment file was not found!`,
+          `No avatar attachment found for subscriber ${subscriber._id}`,
         );
       }
-    } else {
-      logger.warn(
-        `No avatar attachment found for subscriber ${subscriber._id}`,
-      );
+    } catch (err) {
+      logger.error(err);
+      logger.error(`Unable to populate subscriber avatar ${subscriber._id}`);
     }
   }
 };
@@ -295,50 +300,55 @@ const unpopulateSubscriberAvatar = async ({ logger }: MigrationServices) => {
   const cursor = SubscriberModel.find({ avatar: { $exists: true } }).cursor();
 
   for await (const subscriber of cursor) {
-    if (subscriber.avatar) {
-      const attachment = await AttachmentModel.findOne({
-        _id: subscriber.avatar,
-      });
+    try {
+      if (subscriber.avatar) {
+        const attachment = await AttachmentModel.findOne({
+          _id: subscriber.avatar,
+        });
 
-      if (attachment) {
-        // Move file to the old folder
-        const src = resolve(
-          join(config.parameters.avatarDir, attachment.location),
-        );
-        if (existsSync(src)) {
-          try {
-            const dst = resolve(
-              join(config.parameters.uploadDir, attachment.location),
-            );
-            await moveFile(src, dst);
-            logger.log(
-              `Avatar attachment successfully moved back to the old "avatars" folder`,
-            );
-          } catch (err) {
-            logger.error(err);
-            logger.warn(
-              `Unable to move back subscriber ${subscriber._id} avatar to the old folder!`,
-            );
+        if (attachment) {
+          // Move file to the old folder
+          const src = resolve(
+            join(config.parameters.avatarDir, attachment.location),
+          );
+          if (existsSync(src)) {
+            try {
+              const dst = resolve(
+                join(config.parameters.uploadDir, attachment.location),
+              );
+              await moveFile(src, dst);
+              logger.log(
+                `Avatar attachment successfully moved back to the old "avatars" folder`,
+              );
+            } catch (err) {
+              logger.error(err);
+              logger.warn(
+                `Unable to move back subscriber ${subscriber._id} avatar to the old folder!`,
+              );
+            }
+          } else {
+            logger.warn('Avatar attachment file was not found!');
           }
-        } else {
-          logger.warn('Avatar attachment file was not found!');
-        }
 
-        // Reset avatar to null
-        await SubscriberModel.updateOne(
-          { _id: subscriber._id },
-          {
-            $set: { avatar: null },
-          },
-        );
-        logger.log(
-          `Subscriber ${subscriber._id} avatar attribute successfully reverted to null`,
-        );
-      } else {
-        logger.warn(
-          `No avatar attachment found for subscriber ${subscriber._id}`,
-        );
+          // Reset avatar to null
+          await SubscriberModel.updateOne(
+            { _id: subscriber._id },
+            {
+              $set: { avatar: null },
+            },
+          );
+          logger.log(
+            `Subscriber ${subscriber._id} avatar attribute successfully reverted to null`,
+          );
+        } else {
+          logger.warn(
+            `No avatar attachment found for subscriber ${subscriber._id}`,
+          );
+        }
       }
+    } catch (err) {
+      logger.error(err);
+      logger.error(`Unable to unpopulate subscriber ${subscriber._id} avatar`);
     }
   }
 };
