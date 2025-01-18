@@ -210,7 +210,7 @@ const NlpEntity = () => {
               startIcon={<DeleteIcon />}
               variant="contained"
               color="error"
-              onClick={() => deleteDialogCtl.openDialog(undefined)}
+              onClick={() => deleteDialogCtl.openDialog()}
             >
               {t("button.delete")}
             </Button>
