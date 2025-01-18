@@ -10,9 +10,9 @@ import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -153,9 +153,7 @@ export const Labels = () => {
       <LabelDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteLabel)}
       />
       <PageHeader icon={faTags} title={t("title.labels")}>
         <Grid

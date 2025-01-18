@@ -6,13 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import { Box, Grid, Paper } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -176,9 +176,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
     <Grid container gap={3} flexDirection="column">
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteCategory(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteCategory)}
       />
       <PageHeader title={t("title.media_library")} icon={DriveFolderUploadIcon}>
         <Grid

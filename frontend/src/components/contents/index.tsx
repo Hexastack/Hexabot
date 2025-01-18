@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -169,9 +170,7 @@ export const Contents = () => {
           />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data) deleteContent(deleteDialogCtl.data);
-            }}
+            callback={deleteCallbackHandler(deleteContent)}
           />
 
           <Grid padding={2} container>

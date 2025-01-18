@@ -11,9 +11,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -38,15 +38,16 @@ import { NlpEntityDialog } from "../NlpEntityDialog";
 
 const NlpEntity = () => {
   const router = useRouter();
-  const deleteEntityDialogCtl = useDialog<string>(false);
+  const addDialogCtl = useDialog<INlpEntity>(false);
+  const editDialogCtl = useDialog<INlpEntity>(false);
+  const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
-  const editEntityDialogCtl = useDialog<INlpEntity>(false);
   const { mutateAsync: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      deleteEntityDialogCtl.closeDialog();
+      deleteDialogCtl.closeDialog(undefined, "postDelete");
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -57,14 +58,11 @@ const NlpEntity = () => {
         toast.error(error);
       },
       onSuccess: () => {
-        deleteEntityDialogCtl.closeDialog();
-        setSelectedNlpEntities([]);
+        deleteDialogCtl.closeDialog(undefined, "postDelete");
         toast.success(t("message.item_delete_success"));
       },
     },
   );
-  const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
-  const addDialogCtl = useDialog<INlpEntity>(false);
   const { t } = useTranslate();
   const { toast } = useToast();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
@@ -100,12 +98,12 @@ const NlpEntity = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editEntityDialogCtl.openDialog(row),
+        action: (row) => editDialogCtl.openDialog(row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteEntityDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog(row.id),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -171,27 +169,19 @@ const NlpEntity = () => {
     },
     actionEntityColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedNlpEntities(selection as string[]);
-  };
+  const handleSelectionChange = (selection: GridRowSelectionModel) =>
+    deleteDialogCtl.saveData?.(
+      selection.length ? selection.toString() : undefined,
+    );
 
   return (
     <Grid item xs={12}>
       <NlpEntityDialog {...getDisplayDialogs(addDialogCtl)} />
-      <NlpEntityDialog {...editEntityDialogCtl} />
+      <NlpEntityDialog {...editDialogCtl} />
       <DeleteDialog
-        {...deleteEntityDialogCtl}
-        callback={() => {
-          if (selectedNlpEntities.length > 0) {
-            deleteNlpEntities(selectedNlpEntities);
-            setSelectedNlpEntities([]);
-            deleteEntityDialogCtl.closeDialog();
-          } else if (deleteEntityDialogCtl.data) {
-            deleteNlpEntity(deleteEntityDialogCtl.data);
-          }
-        }}
+        {...deleteDialogCtl}
+        callback={deleteCallbackHandler(deleteNlpEntity, deleteNlpEntities)}
       />
-
       <Grid
         justifyContent="flex-end"
         gap={1}
@@ -202,7 +192,6 @@ const NlpEntity = () => {
         <Grid item>
           <FilterTextfield onChange={onSearch} />
         </Grid>
-
         {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
           <Grid item>
             <Button
@@ -215,20 +204,19 @@ const NlpEntity = () => {
             </Button>
           </Grid>
         ) : null}
-        {selectedNlpEntities.length > 0 && (
+        {deleteDialogCtl?.data && (
           <Grid item>
             <Button
               startIcon={<DeleteIcon />}
               variant="contained"
               color="error"
-              onClick={() => deleteEntityDialogCtl.openDialog(undefined)}
+              onClick={() => deleteDialogCtl.openDialog(undefined)}
             >
               {t("button.delete")}
             </Button>
           </Grid>
         )}
       </Grid>
-
       <Grid mt={3}>
         <DataGrid
           columns={nlpEntityColumns}

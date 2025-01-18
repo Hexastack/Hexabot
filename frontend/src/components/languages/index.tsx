@@ -13,6 +13,7 @@ import { GridColDef } from "@mui/x-data-grid";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -186,9 +187,7 @@ export const Languages = () => {
       <LanguageDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLanguage(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteLanguage)}
       />
       <PageHeader icon={Flag} title={t("title.languages")}>
         <Grid

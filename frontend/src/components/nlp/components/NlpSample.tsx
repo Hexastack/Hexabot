@@ -27,6 +27,7 @@ import { useState } from "react";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import FileUploadButton from "@/app-components/inputs/FileInput";
@@ -73,8 +74,10 @@ const NLP_SAMPLE_TYPE_COLORS = {
 
 export default function NlpSample() {
   const { apiUrl } = useConfig();
-  const { toast } = useToast();
   const { t } = useTranslate();
+  const { toast } = useToast();
+  const editDialogCtl = useDialog<INlpDatasetSample>(false);
+  const deleteDialogCtl = useDialog<string>(false);
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
@@ -97,7 +100,7 @@ export default function NlpSample() {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
+      deleteDialogCtl.closeDialog(undefined, "postDelete");
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -108,8 +111,7 @@ export default function NlpSample() {
         toast.error(error);
       },
       onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedNlpSamples([]);
+        deleteDialogCtl.closeDialog(undefined, "postDelete");
         toast.success(t("message.item_delete_success"));
       },
     },
@@ -140,15 +142,12 @@ export default function NlpSample() {
       },
     },
   );
-  const [selectedNlpSamples, setSelectedNlpSamples] = useState<string[]>([]);
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_SAMPLE, format: Format.FULL },
     {
       params: searchPayload,
     },
   );
-  const deleteDialogCtl = useDialog<string>(false);
-  const editDialogCtl = useDialog<INlpDatasetSample>(false);
   const actionColumns = getActionsColumn<INlpSample>(
     [
       {
@@ -291,9 +290,10 @@ export default function NlpSample() {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedNlpSamples(selection as string[]);
-  };
+  const handleSelectionChange = (selection: GridRowSelectionModel) =>
+    deleteDialogCtl.saveData?.(
+      selection.length ? selection.toString() : undefined,
+    );
   const handleImportChange = async (file: File) => {
     await importDataset(file);
   };
@@ -303,15 +303,7 @@ export default function NlpSample() {
       <NlpSampleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (selectedNlpSamples.length > 0) {
-            deleteNlpSamples(selectedNlpSamples);
-            setSelectedNlpSamples([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl.data) {
-            deleteNlpSample(deleteDialogCtl.data);
-          }
-        }}
+        callback={deleteCallbackHandler(deleteNlpSample, deleteNlpSamples)}
       />
       <Grid container alignItems="center">
         <Grid
@@ -406,7 +398,7 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            {selectedNlpSamples.length > 0 && (
+            {deleteDialogCtl.data && (
               <Grid item>
                 <Button
                   startIcon={<DeleteIcon />}
