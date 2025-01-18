@@ -27,7 +27,7 @@ import { useState } from "react";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandles";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import FileUploadButton from "@/app-components/inputs/FileInput";
