@@ -13,27 +13,33 @@ export type DialogControlProps<T, C = never> = Omit<
   DialogControl<T, C>,
   "openDialog"
 >;
+type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
+  e?: E,
+  reason?: "backdropClick" | "escapeKeyDown" | "postDelete",
+) => void;
+type TFnVoid<T> = (data?: T) => void;
 export type DialogControl<T = null, C = never> = DialogProps & {
   data?: T;
-  callback?: (data?: C) => void;
-  openDialog: (data?: T) => void;
-  closeDialog: () => void;
+  saveData?: TFnVoid<T>;
+  callback?: TFnVoid<C>;
+  openDialog: TFnVoid<T>;
+  closeDialog: TCloseDialog;
 };
 
 export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
   const [open, setOpen] = useState(initialState);
   const [data, setData] = useState<T | undefined>(undefined);
-  const openDialog = (data?: T) => {
+  const openDialog: TFnVoid<T> = (data) => {
     if (data) setData(data);
     setOpen(true);
   };
-  const closeDialog = (event?: React.MouseEvent | Event, reason?: string) => {
-    if (reason !== "backdropClick") {
-      setOpen(false);
-    }
+  const closeDialog: TCloseDialog = (event, reason) => {
+    if (reason === "postDelete") setData(undefined);
+    if (reason !== "backdropClick") setOpen(false);
   };
+  const saveData: TFnVoid<T> = (data) => setData(data);
 
-  return { open, openDialog, closeDialog, data };
+  return { open, openDialog, closeDialog, data, saveData };
 };
 
 export const getDisplayDialogs = <T,>({
