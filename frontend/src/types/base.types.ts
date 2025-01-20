@@ -117,6 +117,7 @@ export const POPULATE_BY_TYPE = {
   [EntityType.HELPER]: [],
   [EntityType.NLU_HELPER]: [],
   [EntityType.LLM_HELPER]: [],
+  [EntityType.STORAGE_HELPER]: [],
 } as const;
 
 export type Populate<C extends EntityType> =
@@ -208,6 +209,7 @@ export interface IEntityMapTypes {
   [EntityType.HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
   [EntityType.NLU_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
   [EntityType.LLM_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
+  [EntityType.STORAGE_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
 }
 
 export type TType<TParam extends keyof IEntityMapTypes> =

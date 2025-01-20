@@ -160,6 +160,23 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             {...rest}
           />
         );
+      } else if (setting.label === "default_storage_helper") {
+        const { onChange, ...rest } = field;
+
+        return (
+          <AutoCompleteEntitySelect<IHelper, "name", false>
+            searchFields={["name"]}
+            entity={EntityType.STORAGE_HELPER}
+            format={Format.BASIC}
+            labelKey="name"
+            idKey="name"
+            label={t("label.default_storage_helper")}
+            helperText={t("help.default_storage_helper")}
+            multiple={false}
+            onChange={(_e, selected, ..._) => onChange(selected?.name)}
+            {...rest}
+          />
+        );
       }
 
       return (

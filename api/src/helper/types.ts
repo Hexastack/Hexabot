@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,6 +12,7 @@ import { HyphenToUnderscore } from '@/utils/types/extension';
 import BaseHelper from './lib/base-helper';
 import BaseLlmHelper from './lib/base-llm-helper';
 import BaseNlpHelper from './lib/base-nlp-helper';
+import BaseStorageHelper from './lib/base-storage-helper';
 
 export namespace NLU {
   export interface ParseEntity {
@@ -84,16 +85,20 @@ export namespace LLM {
 export enum HelperType {
   NLU = 'nlu',
   LLM = 'llm',
+  STORAGE = 'storage',
   UTIL = 'util',
 }
 
 export type HelperName = `${string}-helper`;
 
-export type TypeOfHelper<T extends HelperType> = T extends HelperType.LLM
-  ? BaseLlmHelper<HelperName>
-  : T extends HelperType.NLU
-    ? BaseNlpHelper<HelperName>
-    : BaseHelper;
+interface HelperTypeMap {
+  [HelperType.NLU]: BaseNlpHelper<HelperName>;
+  [HelperType.LLM]: BaseLlmHelper<HelperName>;
+  [HelperType.STORAGE]: BaseStorageHelper<HelperName>;
+  [HelperType.UTIL]: BaseHelper;
+}
+
+export type TypeOfHelper<T extends HelperType> = HelperTypeMap[T];
 
 export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
   HelperType,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -108,6 +108,7 @@ export class HelperService {
   /**
    * Get default NLU helper.
    *
+   * @deprecated Use getDefaultHelper() instead
    * @returns - The helper
    */
   async getDefaultNluHelper() {
@@ -128,6 +129,7 @@ export class HelperService {
   /**
    * Get default LLM helper.
    *
+   * @deprecated Use getDefaultHelper() instead
    * @returns - The helper
    */
   async getDefaultLlmHelper() {
@@ -140,6 +142,33 @@ export class HelperService {
 
     if (!defaultHelper) {
       throw new Error(`Unable to find default LLM helper`);
+    }
+
+    return defaultHelper;
+  }
+
+  /**
+   * Get default helper for a specific type.
+   *
+   * @param type - The type of the helper (e.g., NLU, LLM, STORAGE).
+   * @returns - The helper
+   */
+  async getDefaultHelper<T extends HelperType>(type: T) {
+    if (type === HelperType.UTIL) {
+      throw new Error(
+        `Default helpers are not available for type: ${HelperType.UTIL}`,
+      );
+    }
+
+    const settings = await this.settingService.getSettings();
+    const defaultHelperName = settings.chatbot_settings[
+      `default_${type}_helper` as any
+    ] as HelperName;
+
+    const defaultHelper = this.get<T>(type, defaultHelperName);
+
+    if (!defaultHelper) {
+      throw new Error(`Unable to find default ${type.toUpperCase()} helper`);
     }
 
     return defaultHelper;

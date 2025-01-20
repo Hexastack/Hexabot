@@ -74,6 +74,7 @@ export const ROUTES = {
   [EntityType.HELPER]: "/helper",
   [EntityType.NLU_HELPER]: "/helper/nlu",
   [EntityType.LLM_HELPER]: "/helper/llm",
+  [EntityType.STORAGE_HELPER]: "/helper/storage",
 } as const;
 
 export class ApiClient {
