@@ -30,7 +30,7 @@ EMAIL_SMTP_FROM=noreply@example.com
 
 ## **Production Environment**
 
-In production, use a third-party SMTP service by configuring the environment variables before running `make start`, here is an example:
+In production, use a third-party SMTP service by configuring the environment variables before running `hexabot start`, here is an example:
 
 ```makefile
 EMAIL_SMTP_ENABLED=true
