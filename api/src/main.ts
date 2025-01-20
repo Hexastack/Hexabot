@@ -47,25 +47,10 @@ async function bootstrap() {
   // Retrieve the SettingService instance
   const settingService = app.get<SettingService>(SettingService);
 
-  // Fetch allowed domains from the settings collection
-  const settingsAllowedDomains = await settingService.getAllowedDomains();
-
-  // Get allowed origins from .env configuration
-  const configAllowedOrigins = config.security.cors.allowOrigins
-    ? config.security.cors.allowOrigins.map((origin) => origin.trim())
-    : [];
-
-  // Combine both settings and config allowed domains
-  const combinedAllowedDomains = [
-    ...settingsAllowedDomains,
-    ...configAllowedOrigins,
-  ];
-  const allowedDomains = Array.from(new Set(combinedAllowedDomains));
-
   // Enable CORS with the combined allowed domains
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedDomains.includes(origin)) {
+      if (!origin || settingService.isOriginAllowed(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));

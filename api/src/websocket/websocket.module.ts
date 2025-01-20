@@ -8,12 +8,20 @@
 
 import { Global, Module } from '@nestjs/common';
 
+import { SettingModule } from '@/setting/setting.module';
+
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
+import { WebSocketGatewayOptionsService } from './utils/gateway-options';
 import { WebsocketGateway } from './websocket.gateway';
 
 @Global()
 @Module({
-  providers: [WebsocketGateway, SocketEventDispatcherService],
+  imports: [SettingModule],
+  providers: [
+    WebsocketGateway,
+    SocketEventDispatcherService,
+    WebSocketGatewayOptionsService,
+  ],
   exports: [WebsocketGateway],
 })
 export class WebsocketModule {}

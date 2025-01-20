@@ -35,24 +35,35 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 
+import { OnModuleInit } from '@nestjs/common';
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';
-import { buildWebSocketGatewayOptions } from './utils/gateway-options';
+import { WebSocketGatewayOptionsService } from './utils/gateway-options';
 import { SocketRequest } from './utils/socket-request';
 import { SocketResponse } from './utils/socket-response';
 
-@WebSocketGateway(buildWebSocketGatewayOptions())
+@WebSocketGateway()
 export class WebsocketGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+  implements
+    OnGatewayInit,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnModuleInit
 {
   constructor(
     private readonly logger: LoggerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
+    private readonly gatewayOptionsService: WebSocketGatewayOptionsService,
   ) {}
 
   @WebSocketServer() io: Server;
+
+  onModuleInit() {
+    const options = this.gatewayOptionsService.buildWebSocketGatewayOptions();
+    this.io = new Server(options);
+  }
 
   broadcastMessageSent(message: OutgoingMessage): void {
     this.io.to(Room.MESSAGE).emit('message', {

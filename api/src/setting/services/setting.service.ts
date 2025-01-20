@@ -7,7 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Cache } from 'cache-manager';
@@ -25,8 +25,16 @@ import { SettingRepository } from '../repositories/setting.repository';
 import { Setting } from '../schemas/setting.schema';
 import { SettingSeeder } from '../seeds/setting.seed';
 
+//TODO : change to enum?
+type Channels = 'console-channel' | 'web-channel';
+
 @Injectable()
-export class SettingService extends BaseService<Setting> {
+export class SettingService
+  extends BaseService<Setting>
+  implements OnModuleInit
+{
+  private allowedOrigins: Map<Channels, Set<string>> = new Map();
+
   constructor(
     readonly repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -35,6 +43,75 @@ export class SettingService extends BaseService<Setting> {
     @InjectModel(Setting.name) private settingModel: Model<Setting>,
   ) {
     super(repository);
+    const origins: Channels[] = ['console-channel', 'web-channel'];
+    origins.forEach((channelType) => {
+      this.allowedOrigins.set(channelType, new Set<string>());
+    });
+  }
+
+  async onModuleInit() {
+    try {
+      //TODO: refactor into initialize methods
+      const webChannelAllowedDomains = await this.find({
+        group: 'web_channel',
+        label: 'allowed_domains',
+      });
+      const consoleChannelAllowedDomains = await this.find({
+        group: 'console_channel',
+        label: 'allowed_domains',
+      });
+
+      webChannelAllowedDomains.forEach((webChannelSettings) => {
+        (webChannelSettings.value.split(',') || []).forEach(
+          (allowedDomain: string) => {
+            this.allowedOrigins.get('web-channel').add(allowedDomain);
+          },
+        );
+      });
+
+      consoleChannelAllowedDomains.forEach((consoleChannelSettings) => {
+        (consoleChannelSettings.value.split(',') || []).forEach(
+          (allowedDomain: string) => {
+            this.allowedOrigins.get('console-channel').add(allowedDomain);
+          },
+        );
+      });
+      this.logger.log('allowed domains initialiazed successfully');
+    } catch (error) {
+      this.logger.error('Failed to initialiazed allowed domains', error);
+    }
+  }
+
+  @OnEvent('hook:web_channel:allowed_domains')
+  handleUpdateWebChannelAllowedDomains(settings: Setting) {
+    this.allowedOrigins.get('web-channel').clear();
+    (settings.value.split(',') || []).forEach((allowedDomain: string) => {
+      this.allowedOrigins.get('web-channel').add(allowedDomain);
+    });
+  }
+
+  @OnEvent('hook:console_channel:allowed_domains')
+  handleUpdateConsoleChannelAllowedDomains(settings: Setting) {
+    this.allowedOrigins.get('console-channel').clear();
+
+    (settings.value.split(',') || []).forEach((allowedDomain: string) => {
+      this.allowedOrigins.get('console-channel').add(allowedDomain);
+    });
+  }
+
+  private isOriginAllowedConsoleChannel(requesterOrigin: string) {
+    return this.allowedOrigins.get('console-channel').has(requesterOrigin);
+  }
+
+  private isOriginAllowedWebChannel(requesterOrigin: string) {
+    return this.allowedOrigins.get('web-channel').has(requesterOrigin);
+  }
+
+  public isOriginAllowed(requesterOrigin: string) {
+    return (
+      this.isOriginAllowedConsoleChannel(requesterOrigin) ||
+      this.isOriginAllowedWebChannel(requesterOrigin)
+    );
   }
 
   /**
