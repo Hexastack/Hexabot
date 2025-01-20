@@ -775,20 +775,29 @@ const migrateAndPopulateAttachmentMessages = async ({
 const addDefaultStorageHelper = async ({ logger }: MigrationServices) => {
   const SettingModel = mongoose.model<Setting>(Setting.name, settingSchema);
   try {
-    await SettingModel.create({
-      group: 'chatbot_settings',
-      label: 'default_storage_helper',
-      value: 'local-storage-helper',
-      type: SettingType.select,
-      config: {
-        multiple: false,
-        allowCreate: false,
-        entity: 'Helper',
-        idKey: 'name',
-        labelKey: 'name',
+    await SettingModel.updateOne(
+      {
+        group: 'chatbot_settings',
+        label: 'default_storage_helper',
       },
-      weight: 2,
-    });
+      {
+        group: 'chatbot_settings',
+        label: 'default_storage_helper',
+        value: 'local-storage-helper',
+        type: SettingType.select,
+        config: {
+          multiple: false,
+          allowCreate: false,
+          entity: 'Helper',
+          idKey: 'name',
+          labelKey: 'name',
+        },
+        weight: 2,
+      },
+      {
+        upsert: true,
+      },
+    );
     logger.log('Successfuly added the default local storage helper setting');
   } catch (err) {
     logger.error('Unable to add the default local storage helper setting');

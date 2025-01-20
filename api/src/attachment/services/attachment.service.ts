@@ -61,7 +61,7 @@ export class AttachmentService extends BaseService<Attachment> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
-    return storageHelper.download(attachment);
+    return await storageHelper.download(attachment);
   }
 
   /**
@@ -74,7 +74,7 @@ export class AttachmentService extends BaseService<Attachment> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
-    return storageHelper.readAsBuffer(attachment);
+    return await storageHelper.readAsBuffer(attachment);
   }
 
   /**
