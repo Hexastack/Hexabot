@@ -54,7 +54,7 @@
 
 ## FAQ
 
-* [How can I deploy my Hexabot Project?](faq/how-can-i-deploy-my-hexabot-project.md)
+* [How can I deploy my Hexabot using NGINX ?](faq/how-can-i-deploy-my-hexabot-using-nginx.md)
 * [How can I add the Chatbot Widget to my Website?](faq/how-can-i-add-the-chatbot-widget-to-my-website.md)
 
 ## Developer Guide

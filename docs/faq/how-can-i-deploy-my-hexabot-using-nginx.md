@@ -1,11 +1,11 @@
-# How can I deploy my Hexabot Project?
+# How can I deploy my Hexabot using NGINX ?
 
 ### Introduction
 
-This documentation explains how to deploy your Hexabot project using two different methods:
+This documentation outlines two methods for deploying your Hexabot project in a production environment using NGINX and Let's Encrypt for SSL certificate :&#x20;
 
-1. [**Method 1: Using Nginx as a service and Certbot for SSL**](how-can-i-deploy-my-hexabot-project.md#method-1-using-nginx-as-a-service-and-certbot-for-ssl)
-2. [**Method 2: Using Dockerized Nginx and Certbot services**](how-can-i-deploy-my-hexabot-project.md#method-2-using-dockerized-nginx-and-certbot-services)
+1. [**Method 1: Using Nginx as a service and Certbot for SSL**](how-can-i-deploy-my-hexabot-using-nginx.md#method-1-using-nginx-as-a-service-and-certbot-for-ssl)
+2. [**Method 2: Using Dockerized Nginx and Certbot services**](how-can-i-deploy-my-hexabot-using-nginx.md#method-2-using-dockerized-nginx-and-certbot-services)
 
 ### Pre-requisites
 
@@ -75,6 +75,10 @@ To be able to send email you will need to configure SMTP. Learn how to configure
 ### **Method 1 : Using Nginx as a service and Certbot for SSL**
 
 #### Step 1: Run your Hexabot project in production mode:
+
+{% hint style="info" %}
+If you're starting with a fresh installation and not using a DB backup, it's recommended to run Hexabot in development mode the first time. This allows for automatic seeding of essential data into the DB.
+{% endhint %}
 
 ```bash
 hexabot start
