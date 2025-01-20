@@ -11,9 +11,7 @@ export const deleteCallbackHandler =
     deleteOne: (id: string) => Promise<string>,
     deleteMany?: (ids: string[]) => Promise<string>,
   ) =>
-  async (data: string = ""): Promise<void> => {
-    const selectedIds = data.split(",");
-
-    if (selectedIds.length === 1) await deleteOne(selectedIds[0]);
-    else if (selectedIds.length > 1) await deleteMany?.(selectedIds);
+  async (data: string[] = []): Promise<void> => {
+    if (data.length === 1) await deleteOne(data[0]);
+    else if (data.length > 1) await deleteMany?.(data);
   };

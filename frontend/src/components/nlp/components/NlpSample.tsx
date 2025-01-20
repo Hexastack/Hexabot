@@ -77,7 +77,7 @@ export default function NlpSample() {
   const { t } = useTranslate();
   const { toast } = useToast();
   const editDialogCtl = useDialog<INlpDatasetSample>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
@@ -178,7 +178,7 @@ export default function NlpSample() {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -291,9 +291,7 @@ export default function NlpSample() {
     actionColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(
-      selection.length ? selection.toString() : undefined,
-    );
+    deleteDialogCtl.saveData?.(selection as string[]);
   const handleImportChange = async (file: File) => {
     await importDataset(file);
   };

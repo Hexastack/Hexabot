@@ -45,7 +45,7 @@ export const Translations = () => {
     },
   );
   const editDialogCtl = useDialog<ITranslation>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
     $iLike: ["str"],
   });
@@ -84,7 +84,7 @@ export const Translations = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],

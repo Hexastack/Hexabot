@@ -43,7 +43,7 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<IContextVar>(false);
   const editDialogCtl = useDialog<IContextVar>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IContextVar>({
     $iLike: ["label"],
@@ -93,7 +93,7 @@ export const ContextVars = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -158,9 +158,7 @@ export const ContextVars = () => {
     actionColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(
-      selection.length ? selection.toString() : undefined,
-    );
+    deleteDialogCtl.saveData?.(selection as string[]);
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -195,7 +193,7 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
-          {deleteDialogCtl?.data && (
+          {deleteDialogCtl?.data?.length && (
             <Grid item>
               <Button
                 startIcon={<DeleteIcon />}

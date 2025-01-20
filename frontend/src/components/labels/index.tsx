@@ -40,7 +40,7 @@ export const Labels = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<ILabel>(false);
   const editDialogCtl = useDialog<ILabel>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILabel>({
     $or: ["name", "title"],
@@ -70,7 +70,7 @@ export const Labels = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],

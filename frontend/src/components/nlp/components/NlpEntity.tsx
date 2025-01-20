@@ -40,7 +40,7 @@ const NlpEntity = () => {
   const router = useRouter();
   const addDialogCtl = useDialog<INlpEntity>(false);
   const editDialogCtl = useDialog<INlpEntity>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const { mutateAsync: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
@@ -103,7 +103,7 @@ const NlpEntity = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -170,9 +170,7 @@ const NlpEntity = () => {
     actionEntityColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(
-      selection.length ? selection.toString() : undefined,
-    );
+    deleteDialogCtl.saveData?.(selection as string[]);
 
   return (
     <Grid item xs={12}>
@@ -204,7 +202,7 @@ const NlpEntity = () => {
             </Button>
           </Grid>
         ) : null}
-        {deleteDialogCtl?.data && (
+        {deleteDialogCtl?.data?.length && (
           <Grid item>
             <Button
               startIcon={<DeleteIcon />}

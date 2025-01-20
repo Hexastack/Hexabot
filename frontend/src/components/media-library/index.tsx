@@ -47,7 +47,7 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const formatFileSize = useFormattedFileSize();
   const { onSearch, searchPayload } = useSearch<IAttachment>({
     $iLike: ["name"],
@@ -91,7 +91,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
     [
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],

@@ -42,7 +42,7 @@ export const ContentTypes = () => {
   const router = useRouter();
   // Dialog Controls
   const addDialogCtl = useDialog<IContentType>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const fieldsDialogCtl = useDialog<IContentType>(false);
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContentType>({
@@ -81,7 +81,7 @@ export const ContentTypes = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],

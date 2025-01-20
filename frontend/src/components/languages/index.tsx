@@ -43,7 +43,7 @@ export const Languages = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<ILanguage>(false);
   const editDialogCtl = useDialog<ILanguage>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILanguage>({
@@ -100,7 +100,7 @@ export const Languages = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
         isDisabled: (row) => row.isDefault,
       },

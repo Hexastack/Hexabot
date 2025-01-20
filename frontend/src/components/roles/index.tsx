@@ -41,7 +41,7 @@ export const Roles = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<IRole>(false);
   const editDialogCtl = useDialog<IRole>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const permissionDialogCtl = useDialog<{
     role: IRole;
   }>(false);
@@ -82,7 +82,7 @@ export const Roles = () => {
 
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],

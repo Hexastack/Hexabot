@@ -48,7 +48,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<INlpValue>(false);
   const editDialogCtl = useDialog<INlpValue>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const [direction, setDirection] = useState<"up" | "down">("up");
   const { data: nlpEntity, refetch: refetchEntity } = useGet(entityId, {
@@ -93,7 +93,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
       },
     ],
     t("label.operations"),
@@ -151,9 +151,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
 
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(
-      selection.length ? selection.toString() : undefined,
-    );
+    deleteDialogCtl.saveData?.(selection as string[]);
 
   return (
     <Grid container gap={2} flexDirection="column">
@@ -204,7 +202,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       {t("button.add")}
                     </Button>
                   ) : null}
-                  {deleteDialogCtl?.data && (
+                  {deleteDialogCtl?.data?.length && (
                     <Grid item>
                       <Button
                         startIcon={<DeleteIcon />}
