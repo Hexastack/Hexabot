@@ -48,7 +48,7 @@ export class ConversationRepository extends BaseRepository<
    *
    * @returns A promise resolving to the result of the update operation.
    */
-  async end(convo: Conversation | ConversationFull) {
+  async end(convo: Conversation | ConversationFull): Promise<Conversation> {
     return await this.updateOne(convo.id, { active: false });
   }
 }

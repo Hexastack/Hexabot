@@ -305,11 +305,6 @@ export class NlpSampleController extends BaseController<
       trained: false,
     });
 
-    if (!sample) {
-      this.logger.warn(`Unable to update NLP Sample by id ${id}`);
-      throw new NotFoundException(`NLP Sample with ID ${id} not found`);
-    }
-
     await this.nlpSampleEntityService.deleteMany({ sample: id });
 
     const updatedSampleEntities =

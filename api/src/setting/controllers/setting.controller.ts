@@ -10,7 +10,6 @@ import {
   Body,
   Controller,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Query,
@@ -71,11 +70,6 @@ export class SettingController {
     @Param('id') id: string,
     @Body() settingUpdateDto: { value: any },
   ): Promise<Setting> {
-    const result = await this.settingService.updateOne(id, settingUpdateDto);
-    if (!result) {
-      this.logger.warn(`Unable to update setting by id ${id}`);
-      throw new NotFoundException(`Setting with ID ${id} not found`);
-    }
-    return result;
+    return await this.settingService.updateOne(id, settingUpdateDto);
   }
 }

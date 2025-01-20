@@ -482,7 +482,7 @@ export abstract class BaseRepository<
     options: QueryOptions<D> | null = {
       new: true,
     },
-  ): Promise<T | null> {
+  ): Promise<T> {
     const query = this.model.findOneAndUpdate<T>(
       {
         ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
@@ -512,7 +512,14 @@ export abstract class BaseRepository<
       filterCriteria,
       queryUpdates,
     );
-    return await this.executeOne(query, this.cls);
+    const result = await this.executeOne(query, this.cls);
+
+    if (!result) {
+      const errorMessage = `Unable to update ${this.cls.name} with ${typeof criteria === 'string' ? 'ID' : 'criteria'} ${JSON.stringify(criteria)}`;
+      throw new Error(errorMessage);
+    }
+
+    return result;
   }
 
   async updateMany<D extends Partial<U>>(

@@ -123,12 +123,7 @@ export class LanguageController extends BaseController<Language> {
       }
     }
 
-    const result = await this.languageService.updateOne(id, languageUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Language by id ${id}`);
-      throw new NotFoundException(`Language with ID ${id} not found`);
-    }
-    return result;
+    return await this.languageService.updateOne(id, languageUpdate);
   }
 
   /**

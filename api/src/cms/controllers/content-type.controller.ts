@@ -148,17 +148,6 @@ export class ContentTypeController extends BaseController<ContentType> {
     @Body() contentTypeDto: ContentTypeUpdateDto,
     @Param('id') id: string,
   ) {
-    const updatedContentType = await this.contentTypeService.updateOne(
-      id,
-      contentTypeDto,
-    );
-
-    if (!updatedContentType) {
-      this.logger.warn(
-        `Failed to update content type with id ${id}. Content type not found.`,
-      );
-      throw new NotFoundException(`Content type with id ${id} not found`);
-    }
-    return updatedContentType;
+    return await this.contentTypeService.updateOne(id, contentTypeDto);
   }
 }

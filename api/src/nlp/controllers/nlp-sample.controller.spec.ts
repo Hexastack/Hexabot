@@ -22,6 +22,7 @@ import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
 import { SettingService } from '@/setting/services/setting.service';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installAttachmentFixtures } from '@/utils/test/fixtures/attachment';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
@@ -310,7 +311,7 @@ describe('NlpSampleController', () => {
           type: NlpSampleState.test,
           language: 'fr',
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(NlpSample.name, byeJhonSampleId!));
     });
   });
 

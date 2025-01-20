@@ -111,12 +111,7 @@ export class LabelController extends BaseController<
     @Param('id') id: string,
     @Body() labelUpdate: LabelUpdateDto,
   ) {
-    const result = await this.labelService.updateOne(id, labelUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Label by id ${id}`);
-      throw new NotFoundException(`Label with ID ${id} not found`);
-    }
-    return result;
+    return await this.labelService.updateOne(id, labelUpdate);
   }
 
   @CsrfCheck(true)

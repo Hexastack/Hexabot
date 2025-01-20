@@ -23,6 +23,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   contentFixtures,
   installContentFixtures,
@@ -194,7 +195,7 @@ describe('ContentController', () => {
     it('should throw NotFoundException if the content is not found', async () => {
       await expect(
         contentController.updateOne(updatedContent, NOT_FOUND_ID),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(Content.name, NOT_FOUND_ID));
     });
   });
 

@@ -296,12 +296,7 @@ export class BlockController extends BaseController<
     @Param('id') id: string,
     @Body() blockUpdate: BlockUpdateDto,
   ): Promise<Block> {
-    const result = await this.blockService.updateOne(id, blockUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Block by id ${id}`);
-      throw new NotFoundException(`Block with ID ${id} not found`);
-    }
-    return result;
+    return await this.blockService.updateOne(id, blockUpdate);
   }
 
   /**

@@ -7,7 +7,6 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -38,6 +37,7 @@ import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   installTranslationFixtures,
   translationFixtures,
@@ -209,7 +209,7 @@ describe('TranslationController', () => {
       jest.spyOn(translationService, 'updateOne');
       await expect(
         translationController.updateOne(NOT_FOUND_ID, translationUpdateDto),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(Translation.name, NOT_FOUND_ID));
     });
   });
 });

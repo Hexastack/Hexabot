@@ -111,7 +111,7 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  async handleStatEntry(type: BotStatsType, name: string) {
+  async handleStatEntry(type: BotStatsType, name: string): Promise<void> {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);

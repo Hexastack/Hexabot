@@ -174,11 +174,6 @@ export class SubscriberController extends BaseController<
     @Param('id') id: string,
     @Body() subscriberUpdate: SubscriberUpdateDto,
   ) {
-    const result = await this.subscriberService.updateOne(id, subscriberUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Subscriber by id ${id}`);
-      throw new NotFoundException(`Subscriber with ID ${id} not found`);
-    }
-    return result;
+    return await this.subscriberService.updateOne(id, subscriberUpdate);
   }
 }

@@ -120,12 +120,7 @@ export class ContextVarController extends BaseController<ContextVar> {
     @Param('id') id: string,
     @Body() contextVarUpdate: ContextVarUpdateDto,
   ): Promise<ContextVar> {
-    const result = await this.contextVarService.updateOne(id, contextVarUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update ContextVar by id ${id}`);
-      throw new NotFoundException(`ContextVar with ID ${id} not found`);
-    }
-    return result;
+    return await this.contextVarService.updateOne(id, contextVarUpdate);
   }
 
   /**

@@ -306,7 +306,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
         })
       : undefined;
 
-    const result = await this.userService.updateOne(
+    return await this.userService.updateOne(
       req.user.id,
       avatar
         ? {
@@ -315,12 +315,6 @@ export class ReadWriteUserController extends ReadOnlyUserController {
           }
         : userUpdate,
     );
-
-    if (!result) {
-      this.logger.warn(`Unable to update User by id ${id}`);
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-    return result;
   }
 
   /**
