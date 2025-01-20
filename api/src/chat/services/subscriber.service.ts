@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,9 +9,7 @@
 import {
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   Optional,
-  StreamableFile,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
@@ -30,7 +28,7 @@ import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { SubscriberUpdateDto } from '../dto/subscriber.dto';
+import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
 import {
   Subscriber,
@@ -42,7 +40,8 @@ import {
 export class SubscriberService extends BaseService<
   Subscriber,
   SubscriberPopulate,
-  SubscriberFull
+  SubscriberFull,
+  SubscriberDto
 > {
   private readonly gateway: WebsocketGateway;
 
@@ -53,7 +52,7 @@ export class SubscriberService extends BaseService<
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(repository);
-    this.gateway = gateway;
+    if (gateway) this.gateway = gateway;
   }
 
   /**
@@ -137,22 +136,6 @@ export class SubscriberService extends BaseService<
    */
   async handOverByForeignId(foreignId: string, userId: string) {
     return await this.repository.handOverByForeignIdQuery(foreignId, userId);
-  }
-
-  /**
-   * Retrieves the profile picture of a subscriber based on the foreign ID.
-   *
-   * @param foreign_id - The foreign ID of the subscriber.
-   *
-   * @returns A streamable file representing the profile picture.
-   */
-  async findProfilePic(foreign_id: string): Promise<StreamableFile> {
-    try {
-      return await this.attachmentService.downloadProfilePic(foreign_id);
-    } catch (err) {
-      this.logger.error('Error downloading profile picture', err);
-      throw new NotFoundException('Profile picture not found');
-    }
   }
 
   /**

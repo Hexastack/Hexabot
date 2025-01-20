@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { EntityType } from "@/services/types";
 
@@ -41,37 +42,27 @@ export enum FileType {
 }
 
 // Attachments
-export interface AttachmentAttrs {
+export interface IAttachmentAttrs {
   name: string;
   type: string;
   size: number;
   location: string;
   channel?: Record<string, any>;
+  url?: string;
 }
 
-export type AttachmentForeignKey = {
+export type TAttachmentForeignKey = {
+  id: string | null;
+  /** @deprecated use id instead */
   url?: string;
-  attachment_id: string | undefined;
 };
 
-export type WithUrl<A> = A & { url?: string };
-
-export interface AttachmentPayload<
-  A extends WithUrl<AttachmentAttrs> | AttachmentForeignKey,
-> {
+export interface IAttachmentPayload {
   type: FileType;
-  payload?: A;
-}
-
-export interface IncomingAttachmentPayload {
-  type: FileType;
-  payload: {
-    url: string;
-  };
+  payload: TAttachmentForeignKey;
 }
 
 // Content
-
 export interface ContentOptions {
   display: OutgoingMessageFormat.list | OutgoingMessageFormat.carousel;
   fields: {
@@ -104,7 +95,7 @@ export type Payload =
     }
   | {
       type: PayloadType.attachments;
-      attachments: IncomingAttachmentPayload;
+      attachments: IAttachmentPayload;
     };
 
 export enum QuickReplyType {
@@ -171,11 +162,9 @@ export type StdOutgoingListMessage = {
     limit: number;
   };
 };
-export type StdOutgoingAttachmentMessage<
-  A extends WithUrl<AttachmentAttrs> | AttachmentForeignKey,
-> = {
+export type StdOutgoingAttachmentMessage = {
   // Stored in DB as `AttachmentPayload`, `Attachment` when populated for channels relaying
-  attachment: AttachmentPayload<A>;
+  attachment: IAttachmentPayload;
   quickReplies?: StdQuickReply[];
 };
 
@@ -198,7 +187,7 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
+  attachment: IAttachmentPayload | IAttachmentPayload[];
 };
 
 export type StdPluginMessage = {
@@ -217,7 +206,7 @@ export type StdOutgoingMessage =
   | StdOutgoingQuickRepliesMessage
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage<WithUrl<AttachmentAttrs>>;
+  | StdOutgoingAttachmentMessage;
 
 export interface IMessageAttributes {
   mid?: string;

@@ -75,7 +75,7 @@ export class BotStatsService extends BaseService<BotStats> {
       if (now - +subscriber.lastvisit > config.analytics.thresholds.loyalty) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          'returning_users',
+          BotStatsType.returning_users,
           'Loyalty',
           subscriber,
         );
@@ -85,8 +85,9 @@ export class BotStatsService extends BaseService<BotStats> {
       if (now - +subscriber.lastvisit > config.analytics.thresholds.returning) {
         this.eventEmitter.emit(
           'hook:stats:entry',
-          'returning_users',
+          BotStatsType.returning_users,
           'Returning users',
+          subscriber,
         );
       }
     }
@@ -110,7 +111,7 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  async handleStatEntry(type: BotStatsType, name: string) {
+  async handleStatEntry(type: BotStatsType, name: string): Promise<void> {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);

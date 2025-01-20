@@ -28,6 +28,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -43,7 +44,7 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
 import { InvitationService } from '../services/invitation.service';
 import { PermissionService } from '../services/permission.service';
@@ -59,14 +60,17 @@ describe('AuthController', () => {
   let invitationService: InvitationService;
   let roleService: RoleService;
   let jwtService: JwtService;
-  let role: Role;
+  let role: Role | null;
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LocalAuthController],
       imports: [
-        rootMongooseTestModule(installUserFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installUserFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,
@@ -132,7 +136,8 @@ describe('AuthController', () => {
       username: 'test',
       first_name: 'test',
       last_name: 'test',
-      roles: [role.id],
+      roles: [role!.id],
+      avatar: null,
     };
     await invitationService.create(baseUser);
   });
@@ -153,6 +158,7 @@ describe('AuthController', () => {
         email: 'test@test.test',
         password: 'test',
         roles: ['invalid role value'],
+        avatar: null,
       };
 
       await expect(authController.signup(userCreateDto)).rejects.toThrow(
@@ -170,6 +176,7 @@ describe('AuthController', () => {
         email: 'test@test.test',
         password: 'test',
         roles: ['659564cb4aa383c0d0dbc688'],
+        avatar: null,
       };
       const result = await authController.signup(userCreateDto);
       expect(userService.create).toHaveBeenCalledWith(userCreateDto);

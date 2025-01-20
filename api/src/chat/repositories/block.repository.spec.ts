@@ -36,6 +36,7 @@ describe('BlockRepository', () => {
   let hasNextBlocks: Block;
   let validIds: string[];
   let validCategory: string;
+  let blockValidIds: string[];
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -51,13 +52,14 @@ describe('BlockRepository', () => {
     validIds = ['64abc1234def567890fedcba', '64abc1234def567890fedcbc'];
     validCategory = '64def5678abc123490fedcba';
 
-    category = await categoryRepository.findOne({ label: 'default' });
-    hasPreviousBlocks = await blockRepository.findOne({
+    category = (await categoryRepository.findOne({ label: 'default' }))!;
+    hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
-    });
-    hasNextBlocks = await blockRepository.findOne({
+    }))!;
+    hasNextBlocks = (await blockRepository.findOne({
       name: 'hasNextBlocks',
-    });
+    }))!;
+    blockValidIds = (await blockRepository.findAll()).map(({ id }) => id);
   });
 
   afterEach(jest.clearAllMocks);
@@ -77,6 +79,7 @@ describe('BlockRepository', () => {
         category,
         nextBlocks: [hasPreviousBlocks],
         previousBlocks: [],
+        attachedToBlock: null,
       });
     });
   });
@@ -93,6 +96,7 @@ describe('BlockRepository', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockModel.find).toHaveBeenCalledWith({}, undefined);
@@ -110,6 +114,7 @@ describe('BlockRepository', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockModel.find).toHaveBeenCalledWith({}, undefined);
@@ -166,22 +171,22 @@ describe('BlockRepository', () => {
   describe('prepareBlocksInCategoryUpdateScope', () => {
     it('should update blocks within the scope based on category and ids', async () => {
       jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
-        id: validIds[0],
+        id: blockValidIds[0],
         category: 'oldCategory',
-        nextBlocks: [validIds[1]],
-        attachedBlock: validIds[1],
+        nextBlocks: [blockValidIds[1]],
+        attachedBlock: blockValidIds[1],
       } as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
       await blockRepository.prepareBlocksInCategoryUpdateScope(
         validCategory,
-        validIds,
+        blockValidIds,
       );
 
-      expect(mockUpdateOne).toHaveBeenCalledWith(validIds[0], {
-        nextBlocks: [validIds[1]],
-        attachedBlock: validIds[1],
+      expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[0], {
+        nextBlocks: [blockValidIds[1]],
+        attachedBlock: blockValidIds[1],
       });
     });
 
@@ -191,7 +196,7 @@ describe('BlockRepository', () => {
         category: validCategory,
         nextBlocks: [],
         attachedBlock: null,
-      } as Block);
+      } as unknown as Block);
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
@@ -208,9 +213,9 @@ describe('BlockRepository', () => {
     it('should update blocks outside the scope by removing references from attachedBlock', async () => {
       const otherBlocks = [
         {
-          id: '64abc1234def567890fedcab',
-          attachedBlock: validIds[0],
-          nextBlocks: [validIds[0]],
+          id: blockValidIds[1],
+          attachedBlock: blockValidIds[0],
+          nextBlocks: [blockValidIds[0]],
         },
       ] as Block[];
 
@@ -218,10 +223,10 @@ describe('BlockRepository', () => {
 
       await blockRepository.prepareBlocksOutOfCategoryUpdateScope(
         otherBlocks,
-        validIds,
+        blockValidIds,
       );
 
-      expect(mockUpdateOne).toHaveBeenCalledWith('64abc1234def567890fedcab', {
+      expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[1], {
         attachedBlock: null,
       });
     });
@@ -229,20 +234,20 @@ describe('BlockRepository', () => {
     it('should update blocks outside the scope by removing references from nextBlocks', async () => {
       const otherBlocks = [
         {
-          id: '64abc1234def567890fedcab',
+          id: blockValidIds[1],
           attachedBlock: null,
-          nextBlocks: [validIds[0], validIds[1]],
+          nextBlocks: [blockValidIds[0], blockValidIds[1]],
         },
-      ] as Block[];
+      ] as unknown as Block[];
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
       await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
-        validIds[0],
+        blockValidIds[0],
       ]);
 
-      expect(mockUpdateOne).toHaveBeenCalledWith('64abc1234def567890fedcab', {
-        nextBlocks: [validIds[1]],
+      expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[1], {
+        nextBlocks: [blockValidIds[1]],
       });
     });
   });
@@ -251,7 +256,7 @@ describe('BlockRepository', () => {
     it('should update blocks in and out of the scope', async () => {
       const mockFind = jest.spyOn(blockRepository, 'find').mockResolvedValue([
         {
-          id: '64abc1234def567890fedcab',
+          id: blockValidIds[1],
           attachedBlock: validIds[0],
           nextBlocks: [validIds[0]],
         },
@@ -275,17 +280,17 @@ describe('BlockRepository', () => {
       expect(mockFind).toHaveBeenCalled();
       expect(prepareBlocksInCategoryUpdateScope).toHaveBeenCalledWith(
         validCategory,
-        ['64abc1234def567890fedcab'],
+        [blockValidIds[1]],
       );
       expect(prepareBlocksOutOfCategoryUpdateScope).toHaveBeenCalledWith(
         [
           {
-            id: '64abc1234def567890fedcab',
+            id: blockValidIds[1],
             attachedBlock: validIds[0],
             nextBlocks: [validIds[0]],
           },
         ],
-        ['64abc1234def567890fedcab'],
+        [blockValidIds[1]],
       );
     });
 

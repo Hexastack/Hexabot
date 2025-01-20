@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -95,25 +95,27 @@ export const baseBlockInstance = {
   category: undefined,
   previousBlocks: [],
   trigger_channels: [],
+  nextBlocks: [],
   ...modelInstance,
 };
 
-export const blockEmpty: BlockFull = {
+export const blockEmpty = {
   ...baseBlockInstance,
   name: 'Empty',
   patterns: [],
   message: [''],
-};
+  nextBlocks: [],
+} as unknown as BlockFull;
 
 // Translation Data
 export const textResult = ['Hi back !'];
 
-export const textBlock: BlockFull = {
+export const textBlock = {
   name: 'message',
   patterns: ['Hi'],
   message: textResult,
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const quickRepliesResult = [
   "What's your favorite color?",
@@ -122,7 +124,7 @@ export const quickRepliesResult = [
   'Red',
 ];
 
-export const quickRepliesBlock: BlockFull = {
+export const quickRepliesBlock = {
   name: 'message',
   patterns: ['colors'],
   message: {
@@ -146,7 +148,7 @@ export const quickRepliesBlock: BlockFull = {
     ],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const buttonsResult = [
   'What would you like to know about us?',
@@ -155,7 +157,7 @@ export const buttonsResult = [
   'Approach',
 ];
 
-export const buttonsBlock: BlockFull = {
+export const buttonsBlock = {
   name: 'message',
   patterns: ['about'],
   message: {
@@ -179,9 +181,9 @@ export const buttonsBlock: BlockFull = {
     ],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
-export const attachmentBlock: BlockFull = {
+export const attachmentBlock = {
   name: 'message',
   patterns: ['image'],
   message: {
@@ -189,13 +191,13 @@ export const attachmentBlock: BlockFull = {
       type: FileType.image,
       payload: {
         url: 'https://fr.facebookbrand.com/wp-content/uploads/2016/09/messenger_icon2.png',
-        attachment_id: '1234',
+        id: '1234',
       },
     },
     quickReplies: [],
   },
   ...baseBlockInstance,
-};
+} as unknown as BlockFull;
 
 export const allBlocksStringsResult = [
   'Hi back !',
@@ -214,7 +216,7 @@ export const allBlocksStringsResult = [
 
 /////////
 
-export const blockGetStarted: BlockFull = {
+export const blockGetStarted = {
   ...baseBlockInstance,
   name: 'Get Started',
   patterns: [
@@ -245,7 +247,7 @@ export const blockGetStarted: BlockFull = {
   ],
   trigger_labels: customerLabelsMock,
   message: ['Welcome! How are you ? '],
-};
+} as unknown as BlockFull;
 
 const patternsProduct: Pattern[] = [
   'produit',
@@ -262,7 +264,7 @@ const patternsProduct: Pattern[] = [
   ],
 ];
 
-export const blockProductListMock: BlockFull = {
+export const blockProductListMock = {
   ...baseBlockInstance,
   name: 'test_list',
   patterns: patternsProduct,
@@ -278,11 +280,11 @@ export const blockProductListMock: BlockFull = {
       limit: 0,
     },
   },
-};
+} as unknown as BlockFull;
 
-export const blockCarouselMock: BlockFull = {
+export const blockCarouselMock = {
   ...blockProductListMock,
   options: blockCarouselOptions,
-};
+} as unknown as BlockFull;
 
 export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];

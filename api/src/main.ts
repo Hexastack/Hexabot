@@ -84,9 +84,9 @@ async function bootstrap() {
     app.useWebSocketAdapter(redisIoAdapter);
   }
 
-  process.on('uncaughtException', async (error) => {
-    if (error.stack.toLowerCase().includes('smtp'))
-      (await app.resolve(LoggerService)).error('SMTP error', error.stack);
+  process.on('uncaughtException', (error) => {
+    if (error.stack?.toLowerCase().includes('smtp'))
+      app.get(LoggerService).error('SMTP error', error.stack);
     else throw error;
   });
 

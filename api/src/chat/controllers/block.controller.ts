@@ -219,9 +219,12 @@ export class BlockController extends BaseController<
     this.validate({
       dto: block,
       allowedIds: {
-        category: (await this.categoryService.findOne(block.category))?.id,
-        attachedBlock: (await this.blockService.findOne(block.attachedBlock))
-          ?.id,
+        category: block.category
+          ? (await this.categoryService.findOne(block.category))?.id
+          : null,
+        attachedBlock: block.attachedBlock
+          ? (await this.blockService.findOne(block.attachedBlock))?.id
+          : null,
         nextBlocks: (
           await this.blockService.find({
             _id: {
@@ -293,12 +296,7 @@ export class BlockController extends BaseController<
     @Param('id') id: string,
     @Body() blockUpdate: BlockUpdateDto,
   ): Promise<Block> {
-    const result = await this.blockService.updateOne(id, blockUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Block by id ${id}`);
-      throw new NotFoundException(`Block with ID ${id} not found`);
-    }
-    return result;
+    return await this.blockService.updateOne(id, blockUpdate);
   }
 
   /**

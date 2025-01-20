@@ -29,7 +29,10 @@ export class SearchFilterPipe<T>
 {
   constructor(
     private readonly props: {
-      allowedFields: TFilterNestedKeysOfType<T, string | string[]>[];
+      allowedFields: TFilterNestedKeysOfType<
+        T,
+        null | undefined | string | string[]
+      >[];
     },
   ) {}
 
@@ -45,7 +48,10 @@ export class SearchFilterPipe<T>
   private isAllowedField(field: string) {
     if (
       this.props.allowedFields.includes(
-        field as TFilterNestedKeysOfType<T, string | string[]>,
+        field as TFilterNestedKeysOfType<
+          T,
+          null | undefined | string | string[]
+        >,
       )
     )
       return true;
@@ -55,71 +61,104 @@ export class SearchFilterPipe<T>
 
   private transformField(field: string, val?: unknown): TTransformFieldProps {
     if (['id'].includes(field)) {
-      if (Types.ObjectId.isValid(String(val[field])))
+      if (Types.ObjectId.isValid(String(val))) {
         return {
-          operator: 'eq',
-          [field === 'id' ? '_id' : field]: this.getNullableValue(val[field]),
+          _operator: 'eq',
+          data: {
+            [field === 'id' ? '_id' : field]: this.getNullableValue(
+              String(val),
+            ),
+          },
         };
+      }
       return {};
-    } else if (val['contains'] || val[field]?.['contains']) {
+    } else if (val?.['contains'] || val?.[field]?.['contains']) {
       return {
-        operator: 'iLike',
-        [field]: this.getRegexValue(
-          String(val['contains'] || val[field]['contains']),
-        ),
+        _operator: 'iLike',
+        data: {
+          [field]: this.getRegexValue(
+            String(val['contains'] || val[field]['contains']),
+          ),
+        },
       };
-    } else if (val['!=']) {
+    } else if (val?.['!=']) {
       return {
-        operator: 'neq',
-        [field]: this.getNullableValue(val['!=']),
+        _operator: 'neq',
+        data: {
+          [field]: this.getNullableValue(val['!=']),
+        },
       };
     }
+
     return {
-      operator: 'eq',
-      [field]: this.getNullableValue(String(val)),
+      _operator: 'eq',
+      data: {
+        [field]: Array.isArray(val)
+          ? val.map((v) => this.getNullableValue(v)).filter((v) => v)
+          : this.getNullableValue(String(val)),
+      },
     };
   }
 
   async transform(value: TSearchFilterValue<T>, _metadata: ArgumentMetadata) {
     const whereParams = value['where'] ?? {};
     const filters: TTransformFieldProps[] = [];
-    if (whereParams?.['or'])
+
+    if (whereParams?.['or']) {
       Object.values(whereParams['or'])
-        .filter((val) => this.isAllowedField(Object.keys(val)[0]))
+        .filter((val) => val && this.isAllowedField(Object.keys(val)[0]))
         .map((val) => {
+          if (!val) return false;
           const [field] = Object.keys(val);
-          const filter = this.transformField(field, val[field]);
-          if (filter.operator)
+          const filter = this.transformField(field, val?.[field]);
+          if (filter._operator)
             filters.push({
               ...filter,
-              context: 'or',
+              _context: 'or',
             });
         });
+    }
 
     delete whereParams['or'];
-    if (whereParams)
+
+    if (whereParams) {
       Object.entries(whereParams)
         .filter(([field]) => this.isAllowedField(field))
-        .map(([field, val]) => {
+        .forEach(([field, val]) => {
           const filter = this.transformField(field, val);
 
-          if (filter.operator)
+          if (filter._operator) {
             filters.push({
               ...filter,
-              context: 'and',
+              _context: 'and',
             });
+          }
         });
+    }
 
-    return filters.reduce(
-      (acc, { context, operator, ...filter }) => ({
-        ...acc,
-        ...(operator === 'neq'
-          ? { $nor: [...(acc?.$nor || []), filter] }
-          : context === 'or'
-            ? { $or: [...(acc?.$or || []), filter] }
-            : context === 'and' && { $and: [...(acc?.$and || []), filter] }),
-      }),
-      {} as TFilterQuery<T>,
-    );
+    return filters.reduce((acc, { _context, _operator, data, ...filter }) => {
+      switch (_operator) {
+        case 'neq':
+          return {
+            ...acc,
+            $nor: [...(acc?.$nor || []), { ...filter, ...data }],
+          };
+        default:
+          switch (_context) {
+            case 'or':
+              return {
+                ...acc,
+                $or: [...(acc?.$or || []), { ...filter, ...data }],
+              };
+            case 'and':
+              return {
+                ...acc,
+                $and: [...(acc?.$and || []), { ...filter, ...data }],
+              };
+            default:
+              return acc; // Handle any other cases if necessary
+          }
+      }
+    }, {} as TFilterQuery<T>);
   }
 }

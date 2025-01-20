@@ -21,10 +21,8 @@ import {
   getDefaultConversationContext,
 } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
-import {
-  IncomingMessageType,
-  StdOutgoingEnvelope,
-} from '../schemas/types/message';
+import { IncomingMessageType } from '../schemas/types/message';
+import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -70,14 +68,13 @@ export class BotService {
     );
     // Process message : Replace tokens with context data and then send the message
     const recipient = event.getSender();
-    const envelope: StdOutgoingEnvelope =
-      await this.blockService.processMessage(
-        block,
-        context,
-        recipient.context,
-        fallback,
-        conservationId,
-      );
+    const envelope = await this.blockService.processMessage(
+      block,
+      context,
+      recipient?.context as SubscriberContext,
+      fallback,
+      conservationId,
+    );
     // Send message through the right channel
 
     const response = await event
@@ -112,7 +109,7 @@ export class BotService {
 
     // Apply updates : Assign block labels to user
     const blockLabels = (block.assign_labels || []).map(({ id }) => id);
-    const assignTo = block.options.assignTo || null;
+    const assignTo = block.options?.assignTo || null;
     await this.subscriberService.applyUpdates(
       event.getSender(),
       blockLabels,
@@ -223,13 +220,12 @@ export class BotService {
         _id: { $in: nextIds },
       });
       let fallback = false;
-      const fallbackOptions =
-        convo.current && convo.current.options.fallback
-          ? convo.current.options.fallback
-          : {
-              active: false,
-              max_attempts: 0,
-            };
+      const fallbackOptions = convo.current?.options?.fallback
+        ? convo.current.options.fallback
+        : {
+            active: false,
+            max_attempts: 0,
+          };
 
       // Find the next block that matches
       const matchedBlock = await this.blockService.match(nextBlocks, event);
@@ -240,6 +236,7 @@ export class BotService {
         !matchedBlock &&
         event.getMessageType() === IncomingMessageType.message &&
         fallbackOptions.active &&
+        convo.context?.attempt &&
         convo.context.attempt < fallbackOptions.max_attempts
       ) {
         // Trigger block fallback
@@ -251,8 +248,8 @@ export class BotService {
           // If there's labels, they should be already have been assigned
           assign_labels: [],
           trigger_labels: [],
-          attachedBlock: undefined,
-          category: undefined,
+          attachedBlock: null,
+          category: null,
           previousBlocks: [],
         };
         convo.context.attempt++;

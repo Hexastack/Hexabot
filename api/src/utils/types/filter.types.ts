@@ -55,7 +55,7 @@ export type RecursivePartial<T> = {
       : T[P];
 };
 //base controller validator types
-type TAllowedKeys<T, TStub, TValue = string[]> = {
+type TAllowedKeys<T, TStub, TValue = (string | null | undefined)[]> = {
   [key in keyof Record<
     TFilterKeysOfType<
       TFilterPopulateFields<TFilterKeysOfNeverType<T>, TStub>,
@@ -65,17 +65,25 @@ type TAllowedKeys<T, TStub, TValue = string[]> = {
   >]: TValue;
 };
 
+type TVirtualFields<T> = Pick<T, TFilterKeysOfType<T, undefined>>;
+
 export type TValidateProps<T, TStub> = {
   dto:
     | Partial<TAllowedKeys<T, TStub>>
     | Partial<TAllowedKeys<T, TStub, string>>;
-  allowedIds: TAllowedKeys<T, TStub> & TAllowedKeys<T, TStub, string>;
+  allowedIds: Omit<
+    TAllowedKeys<T, TStub, null | undefined | string | string[]>,
+    keyof TVirtualFields<T>
+  >;
 };
 
 //populate types
 export type TFilterPopulateFields<T, TStub> = Omit<
   T,
-  TFilterKeysOfType<TStub, string | number | boolean | object>
+  TFilterKeysOfType<
+    TStub,
+    null | undefined | string | number | boolean | object
+  >
 >;
 
 //search filter types
@@ -105,10 +113,12 @@ type TOperator = 'eq' | 'iLike' | 'neq';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {
-  [x: string]: string | RegExp;
   _id?: string;
-  context?: TContext;
-  operator?: TOperator;
+  _context?: TContext;
+  _operator?: TOperator;
+  data?: {
+    [x: string]: undefined | string | RegExp | (string | undefined)[];
+  };
 };
 
 /* mongoose */

@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -18,8 +19,9 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { forwardRef, useEffect, useRef, useState, useCallback } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 
+import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
 import {
   AnyButton as ButtonType,
   OutgoingPopulatedListMessage,
@@ -188,6 +190,8 @@ const ListCard = forwardRef<
     buttons: ButtonType[];
   }
 >(function ListCardRef(props, ref) {
+  const metadata = useGetAttachmentMetadata(props.content.image_url?.payload);
+
   return (
     <Card
       style={{
@@ -201,9 +205,9 @@ const ListCard = forwardRef<
       ref={ref}
       id={"A" + props.id}
     >
-      {props.content.image_url ? (
+      {metadata ? (
         <CardMedia
-          image={props.content.image_url?.payload?.url as string}
+          image={metadata.url}
           sx={{ height: "185px" }}
           title={props.content.title}
         />

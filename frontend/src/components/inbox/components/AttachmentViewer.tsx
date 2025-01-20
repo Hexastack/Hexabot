@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,21 +7,22 @@
  */
 
 import DownloadIcon from "@mui/icons-material/Download";
-import { Button, Dialog, DialogContent } from "@mui/material";
+import { Box, Button, Dialog, DialogContent, Typography } from "@mui/material";
 import { FC } from "react";
 
 import { DialogTitle } from "@/app-components/dialogs";
 import { useDialog } from "@/hooks/useDialog";
+import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
-  AttachmentAttrs,
   FileType,
+  IAttachmentPayload,
   StdIncomingAttachmentMessage,
   StdOutgoingAttachmentMessage,
-  WithUrl,
 } from "@/types/message.types";
 
 interface AttachmentInterface {
+  name?: string;
   url?: string;
 }
 
@@ -71,17 +72,23 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const { t } = useTranslate();
 
     return (
-      <div>
-        <span style={{ fontWeight: "bold" }}>{t("label.attachment")}: </span>
+      <Box>
+        <Typography
+          component="span"
+          className="cs-message__text-content"
+          mr={2}
+        >
+          {props.name}
+        </Typography>
         <Button
           href={props.url}
           endIcon={<DownloadIcon />}
           color="inherit"
-          variant="text"
+          variant="contained"
         >
           {t("button.download")}
         </Button>
-      </div>
+      </Box>
     );
   },
   [FileType.video]: ({ url }: AttachmentInterface) => (
@@ -92,20 +99,43 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
   [FileType.unknown]: ({ url }: AttachmentInterface) => <>Unknown Type:{url}</>,
 };
 
-export const AttachmentViewer = (props: {
-  message:
-    | StdIncomingAttachmentMessage
-    | StdOutgoingAttachmentMessage<WithUrl<AttachmentAttrs>>;
+export const MessageAttachmentViewer = ({
+  attachment,
+}: {
+  attachment: IAttachmentPayload;
+}) => {
+  const metadata = useGetAttachmentMetadata(attachment.payload);
+  const AttachmentViewerForType = componentMap[attachment.type];
+
+  if (!metadata) {
+    return <>No attachment to display</>;
+  }
+
+  return <AttachmentViewerForType url={metadata.url} name={metadata.name} />;
+};
+
+export const MessageAttachmentsViewer = (props: {
+  message: StdIncomingAttachmentMessage | StdOutgoingAttachmentMessage;
 }) => {
   const message = props.message;
-
   // if the attachment is an array show a 4x4 grid with a +{number of remaining attachment} and open a modal to show the list of attachments
   // Remark: Messenger doesn't send multiple attachments when user sends multiple at once, it only relays the first one to Hexabot
   // TODO: Implenent this
-  if (Array.isArray(message.attachment)) {
-    return <>Not yet Implemented</>;
-  }
-  const AttachmentViewerForType = componentMap[message.attachment.type];
 
-  return <AttachmentViewerForType url={message.attachment?.payload?.url} />;
+  if (!message.attachment) {
+    return <>No attachment to display</>;
+  }
+
+  const attachments = Array.isArray(message.attachment)
+    ? message.attachment
+    : [message.attachment];
+
+  return attachments.map((attachment, idx) => {
+    return (
+      <MessageAttachmentViewer
+        key={`${attachment.payload.id}-${idx}`}
+        attachment={attachment}
+      />
+    );
+  });
 };

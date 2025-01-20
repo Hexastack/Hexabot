@@ -1,24 +1,25 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { promises as fsPromises } from 'fs';
-import path from 'path';
-
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Request, Response } from 'express';
-import multer, { diskStorage } from 'multer';
-import sanitize from 'sanitize-filename';
+import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { ChannelService } from '@/channel/channel.service';
 import ChannelHandler from '@/channel/lib/Handler';
 import { ChannelName } from '@/channel/types';
@@ -26,13 +27,13 @@ import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
-import { WithUrl } from '@/chat/schemas/types/attachment';
+import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
   ContentElement,
-  FileType,
   IncomingMessage,
+  IncomingMessageType,
   OutgoingMessage,
   OutgoingMessageFormat,
   PayloadType,
@@ -74,7 +75,7 @@ export default abstract class BaseWebChannelHandler<
     protected readonly eventEmitter: EventEmitter2,
     protected readonly i18n: I18nService,
     protected readonly subscriberService: SubscriberService,
-    protected readonly attachmentService: AttachmentService,
+    public readonly attachmentService: AttachmentService,
     protected readonly messageService: MessageService,
     protected readonly menuService: MenuService,
     protected readonly websocketGateway: WebsocketGateway,
@@ -133,9 +134,9 @@ export default abstract class BaseWebChannelHandler<
    * @param incoming - Incoming message
    * @returns Formatted web message
    */
-  private formatIncomingHistoryMessage(
+  private async formatIncomingHistoryMessage(
     incoming: IncomingMessage,
-  ): Web.IncomingMessageBase {
+  ): Promise<Web.IncomingMessageBase> {
     // Format incoming message
     if ('type' in incoming.message) {
       if (incoming.message.type === PayloadType.location) {
@@ -151,14 +152,15 @@ export default abstract class BaseWebChannelHandler<
         };
       } else {
         // @TODO : handle multiple files
-        const attachment = Array.isArray(incoming.message.attachment)
+        const attachmentPayload = Array.isArray(incoming.message.attachment)
           ? incoming.message.attachment[0]
           : incoming.message.attachment;
+
         return {
           type: Web.IncomingMessageType.file,
           data: {
-            type: attachment.type,
-            url: attachment.payload.url,
+            type: attachmentPayload.type,
+            url: await this.getPublicUrl(attachmentPayload.payload),
           },
         };
       }
@@ -176,9 +178,9 @@ export default abstract class BaseWebChannelHandler<
    * @param outgoing - The outgoing message
    * @returns Formatted web message
    */
-  private formatOutgoingHistoryMessage(
+  private async formatOutgoingHistoryMessage(
     outgoing: OutgoingMessage,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     // Format outgoing message
     if ('buttons' in outgoing.message) {
       return this._buttonsFormat(outgoing.message);
@@ -188,11 +190,11 @@ export default abstract class BaseWebChannelHandler<
       return this._quickRepliesFormat(outgoing.message);
     } else if ('options' in outgoing.message) {
       if (outgoing.message.options.display === 'carousel') {
-        return this._carouselFormat(outgoing.message, {
+        return await this._carouselFormat(outgoing.message, {
           content: outgoing.message.options,
         });
       } else {
-        return this._listFormat(outgoing.message, {
+        return await this._listFormat(outgoing.message, {
           content: outgoing.message.options,
         });
       }
@@ -202,34 +204,51 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
+   * Checks if a given message is an IncomingMessage
+   *
+   * @param message Any type of message
+   * @returns True, if it's a incoming message
+   */
+  private isIncomingMessage(message: AnyMessage): message is IncomingMessage {
+    return 'sender' in message && !!message.sender;
+  }
+
+  /**
    * Adapt the message structure for web channel
    *
    * @param messages - The messages to be formatted
    *
    * @returns Formatted message
    */
-  protected formatMessages(messages: AnyMessage[]): Web.Message[] {
-    return messages.map((anyMessage: AnyMessage) => {
-      if ('sender' in anyMessage && anyMessage.sender) {
-        return {
-          ...this.formatIncomingHistoryMessage(anyMessage as IncomingMessage),
+  protected async formatMessages(
+    messages: AnyMessage[],
+  ): Promise<Web.Message[]> {
+    const formattedMessages: Web.Message[] = [];
+
+    for (const anyMessage of messages) {
+      if (this.isIncomingMessage(anyMessage)) {
+        const message = await this.formatIncomingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
           mid: anyMessage.mid,
           createdAt: anyMessage.createdAt,
-        } as Web.IncomingMessage;
+        });
       } else {
-        const outgoingMessage = anyMessage as OutgoingMessage;
-        return {
-          ...this.formatOutgoingHistoryMessage(outgoingMessage),
+        const message = await this.formatOutgoingHistoryMessage(anyMessage);
+        formattedMessages.push({
+          ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: outgoingMessage.mid,
-          handover: !!outgoingMessage.handover,
-          createdAt: outgoingMessage.createdAt,
-        } as Web.OutgoingMessage;
+          mid: anyMessage.mid || this.generateId(),
+          handover: !!anyMessage.handover,
+          createdAt: anyMessage.createdAt,
+        });
       }
-    });
+    }
+
+    return formattedMessages;
   }
 
   /**
@@ -252,7 +271,7 @@ export default abstract class BaseWebChannelHandler<
         until,
         n,
       );
-      return this.formatMessages(messages.reverse());
+      return await this.formatMessages(messages.reverse());
     }
     return [];
   }
@@ -277,7 +296,7 @@ export default abstract class BaseWebChannelHandler<
         since,
         n,
       );
-      return this.formatMessages(messages);
+      return await this.formatMessages(messages);
     }
     return [];
   }
@@ -373,7 +392,8 @@ export default abstract class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     } else if (
-      ('isSocket' in req && !!req.isSocket !== req.session.web.isSocket) ||
+      (this.isSocketRequest(req) &&
+        !!req.isSocket !== req.session.web.isSocket) ||
       !Array.isArray(req.session.web.messageQueue)
     ) {
       this.logger.warn(
@@ -462,7 +482,7 @@ export default abstract class BaseWebChannelHandler<
 
     req.session.web = {
       profile,
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       messageQueue: [],
       polling: false,
     };
@@ -472,12 +492,12 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Return message queue (using by long polling case only)
    *
-   * @param req
-   * @param res
+   * @param req HTTP Express Request
+   * @param res HTTP Express Response
    */
   private getMessageQueue(req: Request, res: Response) {
     // Polling not authorized when using websockets
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       this.logger.warn(
         'Web Channel Handler : Polling not authorized when using websockets',
       );
@@ -509,6 +529,9 @@ export default abstract class BaseWebChannelHandler<
 
     const fetchMessages = async (req: Request, res: Response, retrials = 1) => {
       try {
+        if (!req.query.since)
+          throw new BadRequestException(`QueryParam 'since' is missing`);
+
         const since = new Date(req.query.since.toString());
         const messages = await this.pollMessages(req, since);
         if (messages.length === 0 && retrials <= 5) {
@@ -548,13 +571,13 @@ export default abstract class BaseWebChannelHandler<
   ) {
     this.logger.debug(
       'Web Channel Handler : subscribe (isSocket=' +
-        ('isSocket' in req && !!req.isSocket) +
+        this.isSocketRequest(req) +
         ')',
     );
     try {
       const profile = await this.getOrCreateSession(req);
       // Join socket room when using websocket
-      if ('isSocket' in req && !!req.isSocket) {
+      if (this.isSocketRequest(req)) {
         try {
           await req.socket.join(profile.foreign_id);
         } catch (err) {
@@ -569,9 +592,8 @@ export default abstract class BaseWebChannelHandler<
         'since' in req.query
           ? req.query.since // Long polling case
           : req.body?.since || undefined; // Websocket case
-      return this.fetchHistory(req, criteria).then((messages) => {
-        return res.status(200).json({ profile, messages });
-      });
+      const messages = await this.fetchHistory(req, criteria);
+      return res.status(200).json({ profile, messages });
     } catch (err) {
       this.logger.warn('Web Channel Handler : Unable to subscribe ', err);
       return res.status(500).json({ err: 'Unable to subscribe' });
@@ -579,149 +601,149 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Upload file as attachment if provided
+   * Handle upload via WebSocket
    *
-   * @param upload
-   * @param filename
+   * @returns The stored attachment or null
    */
-  private async storeAttachment(
-    upload: Omit<Web.IncomingAttachmentMessageData, 'url' | 'file'>,
-    filename: string,
-    next: (
-      err: Error | null,
-      payload: { type: string; url: string } | false,
-    ) => void,
-  ): Promise<void> {
+  async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
-      this.logger.debug('Web Channel Handler : Successfully uploaded file');
+      const { type, data } = req.body as Web.IncomingMessage;
 
-      const attachment = await this.attachmentService.create({
-        name: upload.name || '',
-        type: upload.type || 'text/txt',
-        size: upload.size || 0,
-        location: filename,
-        channel: { web: {} },
-      });
+      if (!req.session?.web?.profile?.id) {
+        this.logger.debug('Web Channel Handler : No session');
+        return null;
+      }
 
-      this.logger.debug(
-        'Web Channel Handler : Successfully stored file as attachment',
-      );
+      // Check if any file is provided
+      if (type !== 'file' || !('file' in data) || !data.file) {
+        this.logger.debug('Web Channel Handler : No files provided');
+        return null;
+      }
 
-      next(null, {
-        type: Attachment.getTypeByMime(attachment.type),
-        url: Attachment.getAttachmentUrl(attachment.id, attachment.name),
+      const size = Buffer.byteLength(data.file);
+
+      if (size > config.parameters.maxUploadSize) {
+        throw new Error('Max upload size has been exceeded');
+      }
+
+      return await this.attachmentService.store(data.file, {
+        name: data.name,
+        size: Buffer.byteLength(data.file),
+        type: data.type,
+        resourceRef: AttachmentResourceRef.MessageAttachment,
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
+        createdBy: req.session?.web?.profile?.id,
       });
     } catch (err) {
       this.logger.error(
-        'Web Channel Handler : Unable to store uploaded file as attachment',
+        'Web Channel Handler : Unable to store uploaded file',
         err,
       );
-      next(err, false);
+      throw new Error('Unable to upload file!');
+    }
+  }
+
+  /**
+   * Handle multipart/form-data upload
+   *
+   * @returns The stored attachment or null
+   */
+  async handleWebUpload(
+    req: Request,
+    res: Response,
+  ): Promise<Attachment | null | undefined> {
+    try {
+      const upload = multer({
+        limits: {
+          fileSize: config.parameters.maxUploadSize,
+        },
+        storage: (() => {
+          if (config.parameters.storageMode === 'memory') {
+            return memoryStorage();
+          } else {
+            return diskStorage({});
+          }
+        })(),
+      }).single('file'); // 'file' is the field name in the form
+
+      const multerUpload = new Promise<Express.Multer.File | null>(
+        (resolve, reject) => {
+          upload(req as Request, res as Response, async (err?: any) => {
+            if (err) {
+              this.logger.error(
+                'Web Channel Handler : Unable to store uploaded file',
+                err,
+              );
+              reject(new Error('Unable to upload file!'));
+            }
+
+            if (req.file) {
+              resolve(req.file);
+            }
+          });
+        },
+      );
+
+      const file = await multerUpload;
+
+      // Check if any file is provided
+      if (!file) {
+        this.logger.debug('Web Channel Handler : No files provided');
+        return null;
+      }
+
+      return await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        resourceRef: AttachmentResourceRef.MessageAttachment,
+        access: AttachmentAccess.Private,
+        createdByRef: AttachmentCreatedByRef.Subscriber,
+        createdBy: req.session.web.profile?.id,
+      });
+    } catch (err) {
+      this.logger.error(
+        'Web Channel Handler : Unable to store uploaded file',
+        err,
+      );
+      throw err;
     }
   }
 
   /**
    * Upload file as attachment if provided
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
+   * @param next Callback Function
    */
-  async handleFilesUpload(
+  async handleUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-    next: (
-      err: null | Error,
-      result: { type: string; url: string } | false,
-    ) => void,
-  ): Promise<void> {
-    const data: Web.IncomingMessage = req.body;
+  ): Promise<Attachment | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('Web Channel Handler : No session provided');
-      return next(null, false);
-    }
-    // Check if any file is provided
-    if (!data || !data.type || data.type !== 'file') {
-      this.logger.debug('Web Channel Handler : No files provided');
-      return next(null, false);
+      return null;
     }
 
-    // Parse json form data (in case of content-type multipart/form-data)
-    data.data =
-      typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-
-    // Check max size upload
-    const upload = data.data;
-    if (typeof upload.size === 'undefined') {
-      return next(new Error('File upload probably failed.'), false);
-    }
-
-    // Store file as attachment
-    const dirPath = path.join(config.parameters.uploadDir);
-    const sanitizedFilename = sanitize(
-      `${req.session.web.profile.id}_${+new Date()}_${upload.name}`,
-    );
-    const filePath = path.resolve(dirPath, sanitizedFilename);
-
-    if (!filePath.startsWith(dirPath)) {
-      return next(new Error('Invalid file path!'), false);
-    }
-
-    if ('isSocket' in req && req.isSocket) {
-      // @TODO : test this
-      try {
-        await fsPromises.writeFile(filePath, upload.file);
-        this.storeAttachment(upload, sanitizedFilename, next);
-      } catch (err) {
-        this.logger.error(
-          'Web Channel Handler : Unable to write uploaded file',
-          err,
-        );
-        return next(new Error('Unable to upload file!'), false);
-      }
+    if (this.isSocketRequest(req)) {
+      return this.handleWsUpload(req);
     } else {
-      const upload = multer({
-        storage: diskStorage({
-          destination: dirPath, // Set the destination directory for file storage
-          filename: (_req, _file, cb) => {
-            cb(null, sanitizedFilename); // Set the file name
-          },
-        }),
-      }).single('file'); // 'file' is the field name in the form
-
-      upload(req as Request, res as Response, (err) => {
-        if (err) {
-          this.logger.error(
-            'Web Channel Handler : Unable to write uploaded file',
-            err,
-          );
-          return next(new Error('Unable to upload file!'), false);
-        }
-        // @TODO : test upload
-        // @ts-expect-error @TODO : This needs to be fixed at a later point
-        const file = req.file;
-        this.storeAttachment(
-          {
-            name: file.filename,
-            type: file.mimetype as FileType, // @Todo : test this
-            size: file.size,
-          },
-          file.path.replace(dirPath, ''),
-          next,
-        );
-      });
+      return this.handleWebUpload(req, res as Response);
     }
   }
 
   /**
    * Returns the request client IP address
    *
-   * @param req
+   * @param req Either a HTTP request or a WS Request (Synthetic object)
    *
    * @returns IP Address
    */
   protected getIpAddress(req: Request | SocketRequest): string {
-    if ('isSocket' in req && req.isSocket) {
+    if (this.isSocketRequest(req)) {
       return req.socket.handshake.address;
     } else if (Array.isArray(req.ips) && req.ips.length > 0) {
       // If config.http.trustProxy is enabled, this variable contains the IP addresses
@@ -736,7 +758,7 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Return subscriber channel specific attributes
    *
-   * @param req
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    *
    * @returns The subscriber channel's attributes
    */
@@ -744,30 +766,54 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
   ): SubscriberChannelDict[typeof WEB_CHANNEL_NAME] {
     return {
-      isSocket: 'isSocket' in req && !!req.isSocket,
+      isSocket: this.isSocketRequest(req),
       ipAddress: this.getIpAddress(req),
-      agent: req.headers['user-agent'],
+      agent: req.headers['user-agent'] || 'browser',
     };
   }
 
   /**
    * Handle channel event (probably a message)
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   _handleEvent(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ): void {
-    const data: Web.IncomingMessage = req.body;
-    this.validateSession(req, res, (profile) => {
-      this.handleFilesUpload(
-        req,
-        res,
-        // @ts-expect-error @TODO : This needs to be fixed at a later point @TODO
-        (err: Error, upload: Web.IncomingMessageData) => {
-          if (err) {
+    // @TODO: perform payload validation
+    if (!req.body) {
+      this.logger.debug('Web Channel Handler : Empty body');
+      res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
+      return;
+    } else {
+      // Parse json form data (in case of content-type multipart/form-data)
+      req.body.data =
+        typeof req.body.data === 'string'
+          ? JSON.parse(req.body.data)
+          : req.body.data;
+    }
+
+    this.validateSession(req, res, async (profile) => {
+      // Set data in file upload case
+      const body: Web.IncomingMessage = req.body;
+
+      const channelAttrs = this.getChannelAttributes(req);
+      const event = new WebEventWrapper<N>(this, body, channelAttrs);
+      if (event._adapter.eventType === StdEventType.message) {
+        // Handle upload when files are provided
+        if (event._adapter.messageType === IncomingMessageType.attachments) {
+          try {
+            const attachment = await this.handleUpload(req, res);
+            if (attachment) {
+              event._adapter.attachment = attachment;
+              event._adapter.raw.data = {
+                type: Attachment.getTypeByMime(attachment.type),
+                url: await this.getPublicUrl(attachment),
+              };
+            }
+          } catch (err) {
             this.logger.warn(
               'Web Channel Handler : Unable to upload file ',
               err,
@@ -776,53 +822,57 @@ export default abstract class BaseWebChannelHandler<
               .status(403)
               .json({ err: 'Web Channel Handler : File upload failed!' });
           }
-          // Set data in file upload case
-          if (upload) {
-            data.data = upload;
-          }
-          const channelAttrs = this.getChannelAttributes(req);
-          const event = new WebEventWrapper<N>(this, data, channelAttrs);
-          if (event.getEventType() === 'message') {
-            // Handler sync message sent by chabbot
-            if (data.sync && data.author === 'chatbot') {
-              const sentMessage: MessageCreateDto = {
-                mid: event.getId(),
-                message: event.getMessage() as StdOutgoingMessage,
-                recipient: profile.id,
-                read: true,
-                delivery: true,
-              };
-              this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
-              return res.status(200).json(event._adapter.raw);
-            } else {
-              // Generate unique ID and handle message
-              event.set('mid', this.generateId());
-            }
-          }
-          // Force author id from session
-          event.set('author', profile.foreign_id);
-          event.setSender(profile);
+        }
 
-          const type = event.getEventType();
-          if (type) {
-            this.eventEmitter.emit(`hook:chatbot:${type}`, event);
-          } else {
-            this.logger.error(
-              'Web Channel Handler : Webhook received unknown event ',
-              event,
-            );
-          }
-          res.status(200).json(event._adapter.raw);
-        },
-      );
+        // Handler sync message sent by chabbot
+        if (body.sync && body.author === 'chatbot') {
+          const sentMessage: MessageCreateDto = {
+            mid: event.getId(),
+            message: event.getMessage() as StdOutgoingMessage,
+            recipient: profile.id,
+            read: true,
+            delivery: true,
+          };
+          this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+          return res.status(200).json(event._adapter.raw);
+        } else {
+          // Generate unique ID and handle message
+          event._adapter.raw.mid = this.generateId();
+          // Force author id from session
+          event._adapter.raw.author = profile.foreign_id;
+        }
+      }
+
+      event.setSender(profile);
+
+      const type = event.getEventType();
+      if (type) {
+        this.eventEmitter.emit(`hook:chatbot:${type}`, event);
+      } else {
+        this.logger.error(
+          'Web Channel Handler : Webhook received unknown event ',
+          event,
+        );
+      }
+      res.status(200).json(event._adapter.raw);
     });
+  }
+
+  /**
+   * Checks if a given request is a socket request
+   *
+   * @param req Either a HTTP express request or a WS request
+   * @returns True if it's a WS request
+   */
+  isSocketRequest(req: Request | SocketRequest): req is SocketRequest {
+    return 'isSocket' in req && req.isSocket;
   }
 
   /**
    * Process incoming Web Channel data (finding out its type and assigning it to its proper handler)
    *
-   * @param req
-   * @param res
+   * @param req Either a HTTP Express request or a WS request (Synthetic Object)
+   * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    */
   async handle(req: Request | SocketRequest, res: Response | SocketResponse) {
     const settings = await this.getSettings();
@@ -830,7 +880,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       await this.checkRequest(req, res);
       if (req.method === 'GET') {
-        if (!('isSocket' in req) && req.query._get) {
+        if (!this.isSocketRequest(req) && req.query._get) {
           switch (req.query._get) {
             case 'settings':
               this.logger.debug(
@@ -957,19 +1007,25 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A ready to be sent attachment message
    */
-  _attachmentFormat(
-    message: StdOutgoingAttachmentMessage<WithUrl<Attachment>>,
+  async _attachmentFormat(
+    message: StdOutgoingAttachmentMessage,
     _options?: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const payload: Web.OutgoingMessageBase = {
       type: Web.OutgoingMessageType.file,
       data: {
         type: message.attachment.type,
-        url: message.attachment.payload.url,
+        url: await this.getPublicUrl(message.attachment.payload),
       },
     };
     if (message.quickReplies && message.quickReplies.length > 0) {
-      payload.data.quick_replies = message.quickReplies;
+      return {
+        ...payload,
+        data: {
+          ...payload.data,
+          quick_replies: message.quickReplies,
+        } as Web.OutgoingFileMessageData,
+      };
     }
     return payload;
   }
@@ -982,36 +1038,34 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns An array of elements object
    */
-  _formatElements(
+  async _formatElements(
     data: ContentElement[],
     options: BlockOptions,
-  ): Web.MessageElement[] {
+  ): Promise<Web.MessageElement[]> {
     if (!options.content || !options.content.fields) {
       throw new Error('Content options are missing the fields');
     }
 
     const fields = options.content.fields;
     const buttons: Button[] = options.content.buttons;
-    return data.map((item) => {
+    const result: Web.MessageElement[] = [];
+
+    for (const item of data) {
       const element: Web.MessageElement = {
         title: item[fields.title],
         buttons: item.buttons || [],
       };
+
       if (fields.subtitle && item[fields.subtitle]) {
         element.subtitle = item[fields.subtitle];
       }
+
       if (fields.image_url && item[fields.image_url]) {
-        const attachmentPayload = item[fields.image_url].payload;
-        if (attachmentPayload.url) {
-          if (!attachmentPayload.id) {
-            // @deprecated
-            this.logger.warn(
-              'Web Channel Handler: Attachment remote url has been deprecated',
-              item,
-            );
-          }
-          element.image_url = attachmentPayload.url;
-        }
+        const attachmentRef =
+          typeof item[fields.image_url] === 'string'
+            ? { url: item[fields.image_url] }
+            : (item[fields.image_url].payload as AttachmentRef);
+        element.image_url = await this.getPublicUrl(attachmentRef);
       }
 
       buttons.forEach((button: Button, index) => {
@@ -1047,11 +1101,15 @@ export default abstract class BaseWebChannelHandler<
         }
         element.buttons?.push(btn);
       });
+
       if (Array.isArray(element.buttons) && element.buttons.length === 0) {
         delete element.buttons;
       }
-      return element;
-    });
+
+      result.push(element);
+    }
+
+    return result;
   }
 
   /**
@@ -1062,10 +1120,10 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A ready to be sent list template message
    */
-  _listFormat(
+  async _listFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     const pagination = message.pagination;
     let buttons: Button[] = [],
@@ -1091,7 +1149,7 @@ export default abstract class BaseWebChannelHandler<
     }
 
     // Populate items (elements/cards) with content
-    elements = this._formatElements(data, options);
+    elements = await this._formatElements(data, options);
     const topElementStyle = options.content?.top_element_style
       ? {
           top_element_style: options.content?.top_element_style,
@@ -1115,10 +1173,10 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A carousel ready to be sent as a message
    */
-  _carouselFormat(
+  async _carouselFormat(
     message: StdOutgoingListMessage,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     const data = message.elements || [];
     // Items count min check
     if (data.length === 0) {
@@ -1129,7 +1187,7 @@ export default abstract class BaseWebChannelHandler<
     }
 
     // Populate items (elements/cards) with content
-    const elements = this._formatElements(data, options);
+    const elements = await this._formatElements(data, options);
     return {
       type: Web.OutgoingMessageType.carousel,
       data: {
@@ -1146,19 +1204,19 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns A template filled with its payload
    */
-  _formatMessage(
+  async _formatMessage(
     envelope: StdOutgoingEnvelope,
     options: BlockOptions,
-  ): Web.OutgoingMessageBase {
+  ): Promise<Web.OutgoingMessageBase> {
     switch (envelope.format) {
       case OutgoingMessageFormat.attachment:
-        return this._attachmentFormat(envelope.message, options);
+        return await this._attachmentFormat(envelope.message, options);
       case OutgoingMessageFormat.buttons:
         return this._buttonsFormat(envelope.message, options);
       case OutgoingMessageFormat.carousel:
-        return this._carouselFormat(envelope.message, options);
+        return await this._carouselFormat(envelope.message, options);
       case OutgoingMessageFormat.list:
-        return this._listFormat(envelope.message, options);
+        return await this._listFormat(envelope.message, options);
       case OutgoingMessageFormat.quickReplies:
         return this._quickRepliesFormat(envelope.message, options);
       case OutgoingMessageFormat.text:
@@ -1206,7 +1264,7 @@ export default abstract class BaseWebChannelHandler<
     options: BlockOptions,
     _context?: any,
   ): Promise<{ mid: string }> {
-    const messageBase: Web.OutgoingMessageBase = this._formatMessage(
+    const messageBase: Web.OutgoingMessageBase = await this._formatMessage(
       envelope,
       options,
     );
@@ -1275,7 +1333,9 @@ export default abstract class BaseWebChannelHandler<
    *
    * @returns The web's response, otherwise an error
    */
-  async getUserData(event: WebEventWrapper<N>): Promise<SubscriberCreateDto> {
+  async getSubscriberData(
+    event: WebEventWrapper<N>,
+  ): Promise<SubscriberCreateDto> {
     const sender = event.getSender();
     const {
       id: _id,
@@ -1288,5 +1348,45 @@ export default abstract class BaseWebChannelHandler<
       channel: Subscriber.getChannelData(sender),
     };
     return subscriber;
+  }
+
+  /**
+   * Checks if the request is authorized to download a given attachment file.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, req: Request) {
+    const subscriberId = req.session?.web?.profile?.id as string;
+    if (attachment.access === AttachmentAccess.Public) {
+      return true;
+    } else if (!subscriberId) {
+      this.logger.warn(
+        `Unauthorized access attempt to attachment ${attachment.id}`,
+      );
+      return false;
+    } else if (
+      attachment.createdByRef === AttachmentCreatedByRef.Subscriber &&
+      subscriberId === attachment.createdBy
+    ) {
+      // Either subscriber wants to access the attachment he sent
+      return true;
+    } else {
+      // Or, he would like to access an attachment sent to him privately
+      const message = await this.messageService.findOne({
+        ['recipient' as any]: subscriberId,
+        $or: [
+          { 'message.attachment.payload.id': attachment.id },
+          {
+            'message.attachment': {
+              $elemMatch: { 'payload.id': attachment.id },
+            },
+          },
+        ],
+      });
+
+      return !!message;
+    }
   }
 }

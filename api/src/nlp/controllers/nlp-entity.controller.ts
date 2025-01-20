@@ -167,17 +167,7 @@ export class NlpEntityController extends BaseController<
       );
     }
 
-    const result = await this.nlpEntityService.updateOne(
-      id,
-      updateNlpEntityDto,
-    );
-    if (!result) {
-      this.logger.warn(`Failed to update NLP Entity by id ${id}`);
-      throw new InternalServerErrorException(
-        `Failed to update NLP Entity with ID ${id}`,
-      );
-    }
-    return result;
+    return await this.nlpEntityService.updateOne(id, updateNlpEntityDto);
   }
 
   /**

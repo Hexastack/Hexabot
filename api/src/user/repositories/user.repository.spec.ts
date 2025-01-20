@@ -28,13 +28,13 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { PermissionModel } from '../schemas/permission.schema';
 import { Role, RoleModel } from '../schemas/role.schema';
-import { User, UserModel } from '../schemas/user.schema';
+import { User, UserFull, UserModel } from '../schemas/user.schema';
 
 describe('UserRepository', () => {
   let roleRepository: RoleRepository;
   let userRepository: UserRepository;
   let userModel: Model<User>;
-  let user: User;
+  let user: User | null;
   let allRoles: Role[];
 
   const FIELDS_TO_IGNORE: string[] = [
@@ -90,12 +90,12 @@ describe('UserRepository', () => {
   describe('findOneAndPopulate', () => {
     it('should find one user and populate its role', async () => {
       jest.spyOn(userModel, 'findById');
-      const result = await userRepository.findOneAndPopulate(user.id);
-      expect(userModel.findById).toHaveBeenCalledWith(user.id, undefined);
+      const result = await userRepository.findOneAndPopulate(user!.id);
+      expect(userModel.findById).toHaveBeenCalledWith(user!.id, undefined);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: allRoles.filter(({ id }) => user.roles.includes(id)),
+          roles: allRoles.filter(({ id }) => user!.roles.includes(id)),
         },
         FIELDS_TO_IGNORE,
       );
@@ -113,10 +113,11 @@ describe('UserRepository', () => {
       const usersWithRoles = allUsers.reduce((acc, currUser) => {
         acc.push({
           ...currUser,
-          roles: allRoles.filter(({ id }) => user.roles.includes(id)),
+          roles: allRoles.filter(({ id }) => user?.roles.includes(id)),
+          avatar: null,
         });
         return acc;
-      }, []);
+      }, [] as UserFull[]);
 
       expect(userModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(usersWithRoles);

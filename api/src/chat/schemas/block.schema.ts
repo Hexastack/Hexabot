@@ -43,7 +43,7 @@ export class BlockStub extends BaseSchema {
     validate: isPatternList,
     default: [],
   })
-  patterns?: Pattern[];
+  patterns: Pattern[];
 
   @Prop([
     {
@@ -52,7 +52,7 @@ export class BlockStub extends BaseSchema {
       default: [],
     },
   ])
-  trigger_labels?: unknown;
+  trigger_labels: unknown;
 
   @Prop([
     {
@@ -61,19 +61,19 @@ export class BlockStub extends BaseSchema {
       default: [],
     },
   ])
-  assign_labels?: unknown;
+  assign_labels: unknown;
 
   @Prop({
     type: Object,
     default: [],
   })
-  trigger_channels?: string[];
+  trigger_channels: string[];
 
   @Prop({
     type: Object,
     default: {},
   })
-  options?: BlockOptions;
+  options: BlockOptions;
 
   @Prop({
     type: Object,
@@ -88,13 +88,13 @@ export class BlockStub extends BaseSchema {
       default: [],
     },
   ])
-  nextBlocks?: unknown;
+  nextBlocks: unknown;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Block',
   })
-  attachedBlock?: unknown;
+  attachedBlock: unknown;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
@@ -106,14 +106,14 @@ export class BlockStub extends BaseSchema {
     type: Boolean,
     default: false,
   })
-  starts_conversation?: boolean;
+  starts_conversation: boolean;
 
   @Prop({
     type: Object,
     validate: isValidVarCapture,
     default: [],
   })
-  capture_vars?: CaptureVar[];
+  capture_vars: CaptureVar[];
 
   @Prop({
     type: Object,
@@ -125,31 +125,33 @@ export class BlockStub extends BaseSchema {
     type: Boolean,
     default: false,
   })
-  builtin?: boolean;
+  builtin: boolean;
 }
 
 @Schema({ timestamps: true })
 export class Block extends BlockStub {
-  @Transform(({ obj }) => obj.trigger_labels?.map((elem) => elem.toString()))
-  trigger_labels?: string[];
+  @Transform(({ obj }) => obj.trigger_labels.map((elem) => elem.toString()))
+  trigger_labels: string[];
 
-  @Transform(({ obj }) => obj.assign_labels?.map((elem) => elem.toString()))
-  assign_labels?: string[];
+  @Transform(({ obj }) => obj.assign_labels.map((elem) => elem.toString()))
+  assign_labels: string[];
 
-  @Transform(({ obj }) => obj.nextBlocks?.map((elem) => elem.toString()))
-  nextBlocks?: string[];
+  @Transform(({ obj }) => obj.nextBlocks.map((elem) => elem.toString()))
+  nextBlocks: string[];
 
-  @Transform(({ obj }) => obj.attachedBlock?.toString() || null)
-  attachedBlock?: string;
+  @Transform(({ obj }) =>
+    obj.attachedBlock ? obj.attachedBlock.toString() : null,
+  )
+  attachedBlock: string | null;
 
-  @Transform(({ obj }) => obj.category.toString())
-  category: string;
+  @Transform(({ obj }) => (obj.category ? obj.category.toString() : null))
+  category: string | null;
 
   @Exclude()
   previousBlocks?: never;
 
   @Exclude()
-  attachedToBlock?: never | null;
+  attachedToBlock?: never;
 }
 
 @Schema({ timestamps: true })
@@ -161,16 +163,16 @@ export class BlockFull extends BlockStub {
   assign_labels: Label[];
 
   @Type(() => Block)
-  nextBlocks?: Block[];
+  nextBlocks: Block[];
 
   @Type(() => Block)
-  attachedBlock?: Block;
+  attachedBlock: Block | null;
 
   @Type(() => Category)
-  category: Category;
+  category: Category | null;
 
   @Type(() => Block)
-  previousBlocks: Block[];
+  previousBlocks?: Block[];
 
   @Type(() => Block)
   attachedToBlock?: Block;

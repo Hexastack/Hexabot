@@ -27,15 +27,16 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import {
-  NlpEntityModel,
   NlpEntity,
   NlpEntityFull,
+  NlpEntityModel,
 } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
@@ -48,8 +49,8 @@ describe('NlpEntityController', () => {
   let nlpEntityController: NlpEntityController;
   let nlpValueService: NlpValueService;
   let nlpEntityService: NlpEntityService;
-  let intentEntityId: string;
-  let buitInEntityId: string;
+  let intentEntityId: string | null;
+  let buitInEntityId: string | null;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -76,16 +77,18 @@ describe('NlpEntityController', () => {
     nlpValueService = module.get<NlpValueService>(NlpValueService);
     nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
 
-    intentEntityId = (
-      await nlpEntityService.findOne({
-        name: 'intent',
-      })
-    ).id;
-    buitInEntityId = (
-      await nlpEntityService.findOne({
-        name: 'built_in',
-      })
-    ).id;
+    intentEntityId =
+      (
+        await nlpEntityService.findOne({
+          name: 'intent',
+        })
+      )?.id || null;
+    buitInEntityId =
+      (
+        await nlpEntityService.findOne({
+          name: 'built_in',
+        })
+      )?.id || null;
   });
   afterAll(async () => {
     await closeInMongodConnection();
@@ -106,12 +109,14 @@ describe('NlpEntityController', () => {
           acc.push({
             ...curr,
             values: nlpValueFixtures.filter(
-              ({ entity }) => parseInt(entity) === index,
-            ),
+              ({ entity }) => parseInt(entity!) === index,
+            ) as NlpEntityFull['values'],
+            lookups: curr.lookups!,
+            builtin: curr.builtin!,
           });
           return acc;
         },
-        [],
+        [] as TFixtures<NlpEntityFull>[],
       );
       expect(result).toEqualPayload(
         entitiesWithValues.sort((a, b) => {
@@ -170,19 +175,19 @@ describe('NlpEntityController', () => {
 
   describe('deleteOne', () => {
     it('should delete a nlp entity', async () => {
-      const result = await nlpEntityController.deleteOne(intentEntityId);
+      const result = await nlpEntityController.deleteOne(intentEntityId!);
       expect(result.deletedCount).toEqual(1);
     });
 
     it('should throw exception when nlp entity id not found', async () => {
       await expect(
-        nlpEntityController.deleteOne(intentEntityId),
+        nlpEntityController.deleteOne(intentEntityId!),
       ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw exception when nlp entity is builtin', async () => {
       await expect(
-        nlpEntityController.deleteOne(buitInEntityId),
+        nlpEntityController.deleteOne(buitInEntityId!),
       ).rejects.toThrow(MethodNotAllowedException);
     });
   });
@@ -192,10 +197,10 @@ describe('NlpEntityController', () => {
       const firstNameEntity = await nlpEntityService.findOne({
         name: 'first_name',
       });
-      const result = await nlpEntityController.findOne(firstNameEntity.id, []);
+      const result = await nlpEntityController.findOne(firstNameEntity!.id, []);
 
       expect(result).toEqualPayload(
-        nlpEntityFixtures.find(({ name }) => name === 'first_name'),
+        nlpEntityFixtures.find(({ name }) => name === 'first_name')!,
       );
     });
 
@@ -206,9 +211,15 @@ describe('NlpEntityController', () => {
       const firstNameValues = await nlpValueService.findOne({ value: 'jhon' });
       const firstNameWithValues: NlpEntityFull = {
         ...firstNameEntity,
-        values: [firstNameValues],
+        values: firstNameValues ? [firstNameValues] : [],
+        name: firstNameEntity!.name,
+        id: firstNameEntity!.id,
+        createdAt: firstNameEntity!.createdAt,
+        updatedAt: firstNameEntity!.updatedAt,
+        lookups: firstNameEntity!.lookups,
+        builtin: firstNameEntity!.builtin,
       };
-      const result = await nlpEntityController.findOne(firstNameEntity.id, [
+      const result = await nlpEntityController.findOne(firstNameEntity!.id, [
         'values',
       ]);
       expect(result).toEqualPayload(firstNameWithValues);
@@ -216,7 +227,7 @@ describe('NlpEntityController', () => {
 
     it('should throw NotFoundException when Id does not exist', async () => {
       await expect(
-        nlpEntityController.findOne(intentEntityId, ['values']),
+        nlpEntityController.findOne(intentEntityId!, ['values']),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -233,7 +244,7 @@ describe('NlpEntityController', () => {
         builtin: false,
       };
       const result = await nlpEntityController.updateOne(
-        firstNameEntity.id,
+        firstNameEntity!.id,
         updatedNlpEntity,
       );
       expect(result).toEqualPayload(updatedNlpEntity);
@@ -247,7 +258,7 @@ describe('NlpEntityController', () => {
         builtin: false,
       };
       await expect(
-        nlpEntityController.updateOne(intentEntityId, updateNlpEntity),
+        nlpEntityController.updateOne(intentEntityId!, updateNlpEntity),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -259,7 +270,7 @@ describe('NlpEntityController', () => {
         builtin: false,
       };
       await expect(
-        nlpEntityController.updateOne(buitInEntityId, updateNlpEntity),
+        nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
       ).rejects.toThrow(MethodNotAllowedException);
     });
   });
@@ -276,7 +287,7 @@ describe('NlpEntityController', () => {
             name: 'updated',
           })
         )?.id,
-      ];
+      ] as string[];
 
       const result = await nlpEntityController.deleteMany(entitiesToDelete);
 

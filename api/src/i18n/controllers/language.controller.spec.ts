@@ -7,7 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -15,6 +15,7 @@ import { Test } from '@nestjs/testing';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   installLanguageFixtures,
   languageFixtures,
@@ -69,7 +70,7 @@ describe('LanguageController', () => {
     }).compile();
     languageService = module.get<LanguageService>(LanguageService);
     languageController = module.get<LanguageController>(LanguageController);
-    language = await languageService.findOne({ code: 'en' });
+    language = (await languageService.findOne({ code: 'en' })) as Language;
   });
 
   afterEach(jest.clearAllMocks);
@@ -92,7 +93,7 @@ describe('LanguageController', () => {
 
       expect(languageService.findOne).toHaveBeenCalledWith(language.id);
       expect(result).toEqualPayload(
-        languageFixtures.find(({ code }) => code === language.code),
+        languageFixtures.find(({ code }) => code === language.code) as Language,
       );
     });
   });
@@ -142,7 +143,9 @@ describe('LanguageController', () => {
     it('should mark a language as default', async () => {
       jest.spyOn(languageService, 'updateOne');
       const translationUpdateDto = { isDefault: true };
-      const frLang = await languageService.findOne({ code: 'fr' });
+      const frLang = (await languageService.findOne({
+        code: 'fr',
+      })) as Language;
       const result = await languageController.updateOne(
         frLang.id,
         translationUpdateDto,
@@ -157,7 +160,9 @@ describe('LanguageController', () => {
         ...translationUpdateDto,
       });
 
-      const enLang = await languageService.findOne({ code: 'en' });
+      const enLang = (await languageService.findOne({
+        code: 'en',
+      })) as Language;
       expect(enLang.isDefault).toBe(false);
     });
 
@@ -165,13 +170,15 @@ describe('LanguageController', () => {
       jest.spyOn(languageService, 'updateOne');
       await expect(
         languageController.updateOne(NOT_FOUND_ID, translationUpdateDto),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(Language.name, NOT_FOUND_ID));
     });
   });
 
   describe('deleteOne', () => {
     it('should throw when attempting to delete the default language', async () => {
-      const defaultLang = await languageService.findOne({ isDefault: true });
+      const defaultLang = (await languageService.findOne({
+        isDefault: true,
+      })) as Language;
 
       await expect(
         languageController.deleteOne(defaultLang.id),

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,24 +12,6 @@ import { FileType } from '@/chat/schemas/types/message';
 import { StdQuickReply } from '@/chat/schemas/types/quick-reply';
 
 export namespace Web {
-  export enum SettingLabel {
-    allowed_domains = 'allowed_domains',
-    start_button = 'start_button',
-    input_disabled = 'input_disabled',
-    persistent_menu = 'persistent_menu',
-    greeting_message = 'greeting_message',
-    theme_color = 'theme_color',
-    window_title = 'window_title',
-    avatar_url = 'avatar_url',
-    show_emoji = 'show_emoji',
-    show_file = 'show_file',
-    show_location = 'show_location',
-    allowed_upload_size = 'allowed_upload_size',
-    allowed_upload_types = 'allowed_upload_types',
-  }
-
-  export type Settings = Record<SettingLabel, any>;
-
   export type RequestSession = {
     web?: {
       profile: SubscriberFull;
@@ -77,14 +59,19 @@ export namespace Web {
     };
   };
 
-  export type IncomingAttachmentMessageData = {
-    type: FileType; // mime type in a file case
-    url: string; // file url
-    // Only when uploaded
-    size?: number; // file size
-    name?: string;
-    file?: any;
-  };
+  export type IncomingAttachmentMessageData =
+    // When it's a incoming history message
+    | {
+        type: FileType;
+        url: string; // file download url
+      }
+    // When it's a file upload message
+    | {
+        type: string; // mime type
+        size: number; // file size
+        name: string;
+        file: Buffer;
+      };
 
   export type IncomingMessageData =
     | IncomingTextMessageData

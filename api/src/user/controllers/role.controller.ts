@@ -134,12 +134,7 @@ export class RoleController extends BaseController<
   @CsrfCheck(true)
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() roleUpdate: RoleUpdateDto) {
-    const result = await this.roleService.updateOne(id, roleUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
-    }
-    return result;
+    return await this.roleService.updateOne(id, roleUpdate);
   }
 
   /**

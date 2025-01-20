@@ -75,8 +75,9 @@ export class NlpValueController extends BaseController<
     this.validate({
       dto: createNlpValueDto,
       allowedIds: {
-        entity: (await this.nlpEntityService.findOne(createNlpValueDto.entity))
-          ?.id,
+        entity: createNlpValueDto.entity
+          ? (await this.nlpEntityService.findOne(createNlpValueDto.entity))?.id
+          : null,
       },
     });
     return await this.nlpValueService.create(createNlpValueDto);
@@ -167,12 +168,7 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
-    const result = await this.nlpValueService.updateOne(id, updateNlpValueDto);
-    if (!result) {
-      this.logger.warn(`Unable to update NLP Value by id ${id}`);
-      throw new NotFoundException(`NLP Value with ID ${id} not found`);
-    }
-    return result;
+    return await this.nlpValueService.updateOne(id, updateNlpValueDto);
   }
 
   /**

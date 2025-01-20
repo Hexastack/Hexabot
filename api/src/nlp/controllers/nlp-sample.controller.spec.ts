@@ -6,17 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs from 'fs';
-
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -27,6 +22,7 @@ import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
 import { SettingService } from '@/setting/services/setting.service';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installAttachmentFixtures } from '@/utils/test/fixtures/attachment';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
@@ -35,6 +31,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -43,14 +40,17 @@ import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample, NlpSampleModel } from '../schemas/nlp-sample.schema';
+import {
+  NlpSample,
+  NlpSampleFull,
+  NlpSampleModel,
+} from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 import { NlpSampleState } from '../schemas/types';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 import { NlpValueService } from '../services/nlp-value.service';
-import { NlpService } from '../services/nlp.service';
 
 import { NlpSampleController } from './nlp-sample.controller';
 
@@ -60,9 +60,8 @@ describe('NlpSampleController', () => {
   let nlpSampleService: NlpSampleService;
   let nlpEntityService: NlpEntityService;
   let nlpValueService: NlpValueService;
-  let attachmentService: AttachmentService;
   let languageService: LanguageService;
-  let byeJhonSampleId: string;
+  let byeJhonSampleId: string | null;
   let languages: Language[];
 
   beforeAll(async () => {
@@ -76,7 +75,6 @@ describe('NlpSampleController', () => {
         MongooseModule.forFeature([
           NlpSampleModel,
           NlpSampleEntityModel,
-          AttachmentModel,
           NlpEntityModel,
           NlpValueModel,
           SettingModel,
@@ -87,9 +85,7 @@ describe('NlpSampleController', () => {
         LoggerService,
         NlpSampleRepository,
         NlpSampleEntityRepository,
-        AttachmentService,
         NlpEntityService,
-        AttachmentRepository,
         NlpEntityRepository,
         NlpValueService,
         NlpValueRepository,
@@ -98,7 +94,6 @@ describe('NlpSampleController', () => {
         LanguageRepository,
         LanguageService,
         EventEmitter2,
-        NlpService,
         HelperService,
         SettingRepository,
         SettingService,
@@ -126,12 +121,12 @@ describe('NlpSampleController', () => {
     nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
     nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
     nlpValueService = module.get<NlpValueService>(NlpValueService);
-    byeJhonSampleId = (
-      await nlpSampleService.findOne({
-        text: 'Bye Jhon',
-      })
-    ).id;
-    attachmentService = module.get<AttachmentService>(AttachmentService);
+    byeJhonSampleId =
+      (
+        await nlpSampleService.findOne({
+          text: 'Bye Jhon',
+        })
+      )?.id || null;
     languageService = module.get<LanguageService>(LanguageService);
     languages = await languageService.findAll();
   });
@@ -155,15 +150,16 @@ describe('NlpSampleController', () => {
         (acc, currSample) => {
           const sampleWithEntities = {
             ...currSample,
-            entities: nlpSampleEntities.filter((currSampleEntity) => {
-              return currSampleEntity.sample === currSample.id;
-            }),
-            language: languages.find((lang) => lang.id === currSample.language),
+            entities: nlpSampleEntities.filter(
+              (currSampleEntity) => currSampleEntity.sample === currSample.id,
+            ),
+            language:
+              languages.find((lang) => lang.id === currSample.language) || null,
           };
           acc.push(sampleWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpSampleFull>[],
       );
 
       expect(result).toEqualPayload(nlpSampleFixturesWithEntities);
@@ -179,7 +175,7 @@ describe('NlpSampleController', () => {
       expect(result).toEqualPayload(
         nlpSampleFixtures.map((sample) => ({
           ...sample,
-          language: languages[sample.language].id,
+          language: sample.language ? languages[sample.language].id : null,
         })),
       );
     });
@@ -213,13 +209,13 @@ describe('NlpSampleController', () => {
 
   describe('deleteOne', () => {
     it('should delete a nlp sample', async () => {
-      const result = await nlpSampleController.deleteOne(byeJhonSampleId);
+      const result = await nlpSampleController.deleteOne(byeJhonSampleId!);
       expect(result.deletedCount).toEqual(1);
     });
 
     it('should throw exception when nlp sample id not found', async () => {
       await expect(
-        nlpSampleController.deleteOne(byeJhonSampleId),
+        nlpSampleController.deleteOne(byeJhonSampleId!),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -229,12 +225,14 @@ describe('NlpSampleController', () => {
       const yessSample = await nlpSampleService.findOne({
         text: 'yess',
       });
-      const result = await nlpSampleController.findOne(yessSample.id, [
+      const result = await nlpSampleController.findOne(yessSample!.id, [
         'invalidCreteria',
       ]);
       expect(result).toEqualPayload({
         ...nlpSampleFixtures[0],
-        language: languages[nlpSampleFixtures[0].language].id,
+        language: nlpSampleFixtures[0].language
+          ? languages[nlpSampleFixtures?.[0]?.language]?.id
+          : null,
       });
     });
 
@@ -243,22 +241,24 @@ describe('NlpSampleController', () => {
         text: 'yess',
       });
       const yessSampleEntity = await nlpSampleEntityService.findOne({
-        sample: yessSample.id,
+        sample: yessSample!.id,
       });
-      const result = await nlpSampleController.findOne(yessSample.id, [
+      const result = await nlpSampleController.findOne(yessSample!.id, [
         'entities',
       ]);
       const samplesWithEntities = {
         ...nlpSampleFixtures[0],
         entities: [yessSampleEntity],
-        language: languages[nlpSampleFixtures[0].language],
+        language: nlpSampleFixtures[0].language
+          ? languages[nlpSampleFixtures[0].language]
+          : null,
       };
       expect(result).toEqualPayload(samplesWithEntities);
     });
 
     it('should throw NotFoundException when Id does not exist', async () => {
       await expect(
-        nlpSampleController.findOne(byeJhonSampleId, ['entities']),
+        nlpSampleController.findOne(byeJhonSampleId!, ['entities']),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -271,7 +271,7 @@ describe('NlpSampleController', () => {
       const frLang = await languageService.findOne({
         code: 'fr',
       });
-      const result = await nlpSampleController.updateOne(yessSample.id, {
+      const result = await nlpSampleController.updateOne(yessSample!.id, {
         text: 'updated',
         trained: true,
         type: NlpSampleState.test,
@@ -300,98 +300,59 @@ describe('NlpSampleController', () => {
       expect(result.type).toEqual(updatedSample.type);
       expect(result.trained).toEqual(updatedSample.trained);
       expect(result.entities).toMatchObject(updatedSample.entities);
-      expect(result.language).toEqualPayload(updatedSample.language);
+      expect(result.language).toEqualPayload(updatedSample.language!);
     });
 
     it('should throw exception when nlp sample id not found', async () => {
       await expect(
-        nlpSampleController.updateOne(byeJhonSampleId, {
+        nlpSampleController.updateOne(byeJhonSampleId!, {
           text: 'updated',
           trained: true,
           type: NlpSampleState.test,
           language: 'fr',
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(NlpSample.name, byeJhonSampleId!));
     });
   });
 
-  describe('import', () => {
-    it('should throw exception when attachment is not found', async () => {
-      const invalidattachmentId = (
-        await attachmentService.findOne({
-          name: 'store2.jpg',
-        })
-      ).id;
-      await attachmentService.deleteOne({ name: 'store2.jpg' });
-      await expect(
-        nlpSampleController.import(invalidattachmentId),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw exception when file location is not present', async () => {
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(false);
-      await expect(nlpSampleController.import(attachmentId)).rejects.toThrow(
-        NotFoundException,
+  describe('importFile', () => {
+    it('should throw exception when something is wrong with the upload', async () => {
+      const file = {
+        buffer: Buffer.from('', 'utf-8'),
+        size: 0,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      await expect(nlpSampleController.importFile(file)).rejects.toThrow(
+        'Bad Request Exception',
       );
     });
 
     it('should return a failure if an error occurs when parsing csv file ', async () => {
       const mockCsvDataWithErrors: string = `intent,entities,lang,question
           greeting,person,en`;
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvDataWithErrors);
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
 
-      const mockParsedCsvDataWithErrors = {
-        data: [{ intent: 'greeting', entities: 'person', lang: 'en' }],
-        errors: [
-          {
-            type: 'FieldMismatch',
-            code: 'TooFewFields',
-            message: 'Too few fields: expected 4 fields but parsed 3',
-            row: 0,
-          },
-        ],
-        meta: {
-          delimiter: ',',
-          linebreak: '\n',
-          aborted: false,
-          truncated: false,
-          cursor: 49,
-          fields: ['intent', 'entities', 'lang', 'question'],
-        },
-      };
-      await expect(nlpSampleController.import(attachmentId)).rejects.toThrow(
-        new BadRequestException({
-          cause: mockParsedCsvDataWithErrors.errors,
-          description: 'Error while parsing CSV',
-        }),
-      );
+      const buffer = Buffer.from(mockCsvDataWithErrors, 'utf-8');
+      const file = {
+        buffer,
+        size: buffer.length,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      await expect(nlpSampleController.importFile(file)).rejects.toThrow();
     });
 
     it('should import data from a CSV file', async () => {
-      const attachmentId = (
-        await attachmentService.findOne({
-          name: 'store1.jpg',
-        })
-      ).id;
       const mockCsvData: string = [
         `text,intent,language`,
         `How much does a BMW cost?,price,en`,
       ].join('\n');
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvData);
 
-      const result = await nlpSampleController.import(attachmentId);
+      const buffer = Buffer.from(mockCsvData, 'utf-8');
+      const file = {
+        buffer,
+        size: buffer.length,
+        mimetype: 'text/csv',
+      } as Express.Multer.File;
+      const result = await nlpSampleController.importFile(file);
       const intentEntityResult = await nlpEntityService.findOne({
         name: 'intent',
       });
@@ -417,21 +378,22 @@ describe('NlpSampleController', () => {
         value: 'price',
         expressions: [],
         builtin: false,
-        entity: priceValueEntity.id,
+        entity: priceValueEntity!.id,
       };
       const textSample = {
         text: 'How much does a BMW cost?',
         trained: false,
         type: 'train',
-        language: language.id,
+        language: language!.id,
       };
 
       expect(intentEntityResult).toEqualPayload(intentEntity);
       expect(priceValueResult).toEqualPayload(priceValue);
       expect(textSampleResult).toEqualPayload(textSample);
-      expect(result).toEqual({ success: true });
+      expect(result).toEqualPayload([textSample]);
     });
   });
+
   describe('deleteMany', () => {
     it('should delete multiple nlp samples', async () => {
       const samplesToDelete = [
@@ -439,13 +401,13 @@ describe('NlpSampleController', () => {
           await nlpSampleService.findOne({
             text: 'How much does a BMW cost?',
           })
-        ).id,
+        )?.id,
         (
           await nlpSampleService.findOne({
             text: 'text1',
           })
-        ).id,
-      ];
+        )?.id,
+      ] as string[];
 
       const result = await nlpSampleController.deleteMany(samplesToDelete);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,6 +9,7 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -23,11 +24,14 @@ export const useUpload = <
 >(
   entity: TEntity,
   options?: Omit<
-    TMutationOptions<TBasic, Error, File, TBasic>,
+    TMutationOptions<
+      TBasic,
+      Error,
+      { file: File; resourceRef: AttachmentResourceRef },
+      TBasic
+    >,
     "mutationFn" | "mutationKey"
-  > & {
-    invalidate?: boolean;
-  },
+  >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const queryClient = useQueryClient();
@@ -35,8 +39,8 @@ export const useUpload = <
   const { invalidate = true, ...otherOptions } = options || {};
 
   return useMutation({
-    mutationFn: async (variables: File) => {
-      const data = await api.upload(variables);
+    mutationFn: async ({ file, resourceRef }) => {
+      const data = await api.upload(file, resourceRef);
       const { entities, result } = normalizeAndCache(data);
 
       // Invalidate all counts & collections

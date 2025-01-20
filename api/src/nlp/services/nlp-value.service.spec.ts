@@ -10,6 +10,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { BaseSchema } from '@/utils/generics/base-schema';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
   installNlpValueFixtures,
@@ -26,7 +27,11 @@ import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.rep
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpValue, NlpValueModel } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValueModel,
+} from '../schemas/nlp-value.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueService } from './nlp-value.service';
@@ -64,9 +69,7 @@ describe('NlpValueService', () => {
     nlpValues = await nlpValueRepository.findAll();
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
@@ -89,12 +92,15 @@ describe('NlpValueService', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntityFixtures[parseInt(curr.entity)],
+            entity: nlpEntityFixtures[parseInt(curr.entity!)] as NlpEntity,
+            expressions: curr.expressions!,
+            metadata: curr.metadata!,
+            builtin: curr.builtin!,
           };
           acc.push(ValueWithEntities);
           return acc;
         },
-        [],
+        [] as Omit<NlpValueFull, keyof BaseSchema>[],
       );
       expect(result).toEqualPayload(nlpValueFixturesWithEntities);
     });
@@ -130,12 +136,12 @@ describe('NlpValueService', () => {
       const jhonValue = await nlpValueRepository.findOne({ value: 'jhon' });
       const storedValues = [
         {
-          entity: intentEntity.id,
-          value: greetingValue.id,
+          entity: intentEntity!.id,
+          value: greetingValue!.id,
         },
         {
-          entity: firstNameEntity.id,
-          value: jhonValue.id,
+          entity: firstNameEntity!.id,
+          value: jhonValue!.id,
         },
       ];
 

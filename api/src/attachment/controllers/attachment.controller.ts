@@ -1,31 +1,32 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { extname } from 'path';
-
 import {
   BadRequestException,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
   Param,
   Post,
   Query,
+  Req,
   StreamableFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
-import { v4 as uuidv4 } from 'uuid';
 
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -38,12 +39,18 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { AttachmentDownloadDto } from '../dto/attachment.dto';
+import {
+  AttachmentContextParamDto,
+  AttachmentDownloadDto,
+} from '../dto/attachment.dto';
+import { AttachmentGuard } from '../guards/attachment-ability.guard';
 import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
+import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
+@UseGuards(AttachmentGuard)
 export class AttachmentController extends BaseController<Attachment> {
   constructor(
     private readonly attachmentService: AttachmentService,
@@ -61,7 +68,7 @@ export class AttachmentController extends BaseController<Attachment> {
   async filterCount(
     @Query(
       new SearchFilterPipe<Attachment>({
-        allowedFields: ['name', 'type'],
+        allowedFields: ['name', 'type', 'resourceRef'],
       }),
     )
     filters?: TFilterQuery<Attachment>,
@@ -90,7 +97,9 @@ export class AttachmentController extends BaseController<Attachment> {
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Attachment>,
     @Query(
-      new SearchFilterPipe<Attachment>({ allowedFields: ['name', 'type'] }),
+      new SearchFilterPipe<Attachment>({
+        allowedFields: ['name', 'type', 'resourceRef'],
+      }),
     )
     filters: TFilterQuery<Attachment>,
   ) {
@@ -114,26 +123,49 @@ export class AttachmentController extends BaseController<Attachment> {
         if (config.parameters.storageMode === 'memory') {
           return memoryStorage();
         } else {
-          return diskStorage({
-            destination: config.parameters.uploadDir,
-            filename: (req, file, cb) => {
-              const name = file.originalname.split('.')[0];
-              const extension = extname(file.originalname);
-              cb(null, `${name}-${uuidv4()}${extension}`);
-            },
-          });
+          return diskStorage({});
         }
       })(),
     }),
   )
   async uploadFile(
     @UploadedFiles() files: { file: Express.Multer.File[] },
+    @Req() req: Request,
+    @Query()
+    {
+      resourceRef,
+      access = AttachmentAccess.Public,
+    }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
     }
 
-    return await this.attachmentService.uploadFiles(files);
+    const userId = req.session?.passport?.user?.id;
+    if (!userId) {
+      throw new ForbiddenException(
+        'Unexpected Error: Only authenticated users are allowed to upload',
+      );
+    }
+
+    const attachments: Attachment[] = [];
+    for (const file of files.file) {
+      const attachment = await this.attachmentService.store(file, {
+        name: file.originalname,
+        size: file.size,
+        type: file.mimetype,
+        resourceRef,
+        access,
+        createdBy: userId,
+        createdByRef: AttachmentCreatedByRef.User,
+      });
+
+      if (attachment) {
+        attachments.push(attachment);
+      }
+    }
+
+    return attachments;
   }
 
   /**

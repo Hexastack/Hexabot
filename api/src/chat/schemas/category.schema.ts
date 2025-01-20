@@ -25,19 +25,19 @@ export class Category extends BaseSchema {
     type: Boolean,
     default: false,
   })
-  builtin?: boolean;
+  builtin: boolean;
 
   @Prop({
     type: Number,
     default: 100,
   })
-  zoom?: number;
+  zoom: number;
 
   @Prop({
     type: [Number, Number],
     default: [0, 0],
   })
-  offset?: [number, number];
+  offset: [number, number];
 }
 
 export const CategoryModel: ModelDefinition = LifecycleHookManager.attach({

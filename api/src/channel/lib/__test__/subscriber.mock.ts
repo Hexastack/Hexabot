@@ -28,6 +28,8 @@ export const subscriberInstance: Subscriber = {
     name: 'web-channel',
   },
   labels: [],
+  avatar: null,
+  context: {},
   ...modelInstance,
 };
 

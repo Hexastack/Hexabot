@@ -25,6 +25,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { getUserFixtures, userFixtures } from '@/utils/test/fixtures/user';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -45,8 +46,8 @@ import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel, Role } from '../schemas/role.schema';
-import { UserModel, User } from '../schemas/user.schema';
+import { Role, RoleModel } from '../schemas/role.schema';
+import { User, UserFull, UserModel } from '../schemas/user.schema';
 import { PasswordResetService } from '../services/passwordReset.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -62,16 +63,19 @@ describe('UserController', () => {
   let roleService: RoleService;
   let invitationService: InvitationService;
   let notFoundId: string;
-  let role: Role;
+  let role: Role | null;
   let roles: Role[];
-  let user: User;
+  let user: User | null;
   let passwordResetService: PasswordResetService;
   let jwtService: JwtService;
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReadWriteUserController],
       imports: [
-        rootMongooseTestModule(installPermissionFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installPermissionFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,
@@ -153,12 +157,12 @@ describe('UserController', () => {
   describe('findOne', () => {
     it('should find one user and populate its roles', async () => {
       jest.spyOn(userService, 'findOneAndPopulate');
-      const result = await userController.findOne(user.id, ['roles']);
-      expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user.id);
+      const result = await userController.findOne(user!.id, ['roles']);
+      expect(userService.findOneAndPopulate).toHaveBeenCalledWith(user!.id);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
-          roles: roles.filter(({ id }) => user.roles.includes(id)),
+          roles: roles.filter(({ id }) => user!.roles.includes(id)),
         },
         [...IGNORED_FIELDS, 'password', 'provider'],
       );
@@ -172,13 +176,17 @@ describe('UserController', () => {
       jest.spyOn(userService, 'findPageAndPopulate');
       const result = await userService.findPageAndPopulate({}, pageQuery);
 
-      const usersWithRoles = userFixtures.reduce((acc, currUser) => {
-        acc.push({
-          ...currUser,
-          roles: roles.filter(({ id }) => user.roles.includes(id)),
-        });
-        return acc;
-      }, []);
+      const usersWithRoles = userFixtures.reduce(
+        (acc, currUser) => {
+          acc.push({
+            ...currUser,
+            roles: roles.filter(({ id }) => user?.roles?.includes(id)),
+            avatar: null,
+          });
+          return acc;
+        },
+        [] as Omit<UserFull, 'id' | 'createdAt' | 'updatedAt'>[],
+      );
 
       expect(userService.findPageAndPopulate).toHaveBeenCalledWith(
         {},
@@ -201,7 +209,8 @@ describe('UserController', () => {
         last_name: 'testUser',
         email: 'test@test.test',
         password: 'test',
-        roles: [role.id],
+        roles: [role!.id],
+        avatar: null,
       };
       const result = await userController.create(userDto);
       expect(userService.create).toHaveBeenCalledWith(userDto);
@@ -220,16 +229,16 @@ describe('UserController', () => {
     it('should return updated user', async () => {
       jest.spyOn(userService, 'updateOne');
       const result = await userController.updateOne(
-        { user: { id: user.id } } as any,
-        user.id,
+        { user: { id: user!.id } } as any,
+        user!.id,
         updateDto,
       );
-      expect(userService.updateOne).toHaveBeenCalledWith(user.id, updateDto);
+      expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
           ...updateDto,
-          roles: user.roles,
+          roles: user!.roles,
         },
         [...IGNORED_FIELDS, 'password', 'provider'],
       );
@@ -239,44 +248,43 @@ describe('UserController', () => {
   describe('updateStateAndRoles', () => {
     it('should return updated user', async () => {
       const updateDto: UserUpdateStateAndRolesDto = {
-        roles: [role.id],
+        roles: [role!.id],
       };
       jest.spyOn(userService, 'updateOne');
       const result = await userController.updateStateAndRoles(
-        user.id,
+        user!.id,
         updateDto,
         {
           passport: {
-            user: { id: user.id },
+            user: { id: user!.id },
           },
         } as ExpressSession,
       );
-      expect(userService.updateOne).toHaveBeenCalledWith(user.id, updateDto);
+      expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
           ...updateDto,
         },
-
         [...IGNORED_FIELDS, 'first_name', 'password', 'provider'],
       );
     });
 
     it('should return updated user after adding an extra role', async () => {
       const updateDto: UserUpdateStateAndRolesDto = {
-        roles: [role.id, roles[1].id],
+        roles: [role!.id, roles[1].id],
       };
       jest.spyOn(userService, 'updateOne');
       const result = await userController.updateStateAndRoles(
-        user.id,
+        user!.id,
         updateDto,
         {
           passport: {
-            user: { id: user.id },
+            user: { id: user!.id },
           },
         } as ExpressSession,
       );
-      expect(userService.updateOne).toHaveBeenCalledWith(user.id, updateDto);
+      expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toEqualPayload(
         {
           ...userFixtures.find(({ username }) => username === 'admin'),
@@ -292,9 +300,9 @@ describe('UserController', () => {
         state: false,
       };
       await expect(
-        userController.updateStateAndRoles(user.id, updateDto, {
+        userController.updateStateAndRoles(user!.id, updateDto, {
           passport: {
-            user: { id: user.id },
+            user: { id: user!.id },
           },
         } as ExpressSession),
       ).rejects.toThrow(ForbiddenException);
@@ -305,9 +313,9 @@ describe('UserController', () => {
         roles: [],
       };
       await expect(
-        userController.updateStateAndRoles(user.id, updateDto, {
+        userController.updateStateAndRoles(user!.id, updateDto, {
           passport: {
-            user: { id: user.id },
+            user: { id: user!.id },
           },
         } as ExpressSession),
       ).rejects.toThrow(ForbiddenException);
@@ -339,8 +347,8 @@ describe('UserController', () => {
 
   describe('deleteOne', () => {
     it('should delete user by id', async () => {
-      const result = await userController.deleteOne(user.id);
-      notFoundId = user.id;
+      const result = await userController.deleteOne(user!.id);
+      notFoundId = user!.id;
       expect(result).toEqual({
         acknowledged: true,
         deletedCount: 1,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,7 +22,7 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import { BlockCreateDto, BlockDto, BlockUpdateDto } from '../dto/block.dto';
 import {
   Block,
   BLOCK_POPULATE,
@@ -34,7 +34,8 @@ import {
 export class BlockRepository extends BaseRepository<
   Block,
   BlockPopulate,
-  BlockFull
+  BlockFull,
+  BlockDto
 > {
   constructor(
     readonly eventEmitter: EventEmitter2,
@@ -56,8 +57,8 @@ export class BlockRepository extends BaseRepository<
       block.message.attachment.payload &&
       'url' in block.message.attachment.payload
     ) {
-      this.logger.error(
-        'NOTE: `url` payload has been deprecated in favor of `attachment_id`',
+      this.logger?.error(
+        'NOTE: `url` payload has been deprecated in favor of `id`',
         block.name,
       );
     }
@@ -97,7 +98,7 @@ export class BlockRepository extends BaseRepository<
     const update: BlockUpdateDto = updates?.['$set'];
 
     if (update?.category) {
-      const movedBlock: Block = await this.findOne(criteria);
+      const movedBlock = await this.findOne(criteria);
 
       if (!movedBlock) {
         return;
@@ -178,9 +179,9 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const id of ids) {
-      const oldState: Block = await this.findOne(id);
-      if (oldState.category !== category) {
-        const updatedNextBlocks = oldState.nextBlocks.filter((nextBlock) =>
+      const oldState = await this.findOne(id);
+      if (oldState && oldState.category !== category) {
+        const updatedNextBlocks = oldState.nextBlocks?.filter((nextBlock) =>
           ids.includes(nextBlock),
         );
 
@@ -209,15 +210,15 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      if (ids.includes(block.attachedBlock)) {
+      if (block.attachedBlock && ids.includes(block.attachedBlock)) {
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const nextBlocks = block.nextBlocks.filter(
+      const nextBlocks = block.nextBlocks?.filter(
         (nextBlock) => !ids.includes(nextBlock),
       );
 
-      if (nextBlocks.length > 0) {
+      if (nextBlocks?.length) {
         await this.updateOne(block.id, { nextBlocks });
       }
     }

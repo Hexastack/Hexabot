@@ -25,6 +25,7 @@ import {
   installInvitationFixtures,
   invitationsFixtures,
 } from '@/utils/test/fixtures/invitation';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -53,7 +54,10 @@ describe('InvitationService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        rootMongooseTestModule(installInvitationFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installInvitationFixtures();
+        }),
         MongooseModule.forFeature([
           RoleModel,
           PermissionModel,
@@ -146,7 +150,7 @@ describe('InvitationService', () => {
       const role = await roleRepository.findOne({});
       const newInvitation: InvitationCreateDto = {
         email: 'test@testland.tst',
-        roles: [role.id.toString()],
+        roles: [role!.id.toString()],
       };
 
       jest.spyOn(invitationRepository, 'create');

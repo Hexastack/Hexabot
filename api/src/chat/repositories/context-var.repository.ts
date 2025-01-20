@@ -19,11 +19,17 @@ import { Document, Model, Query } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { ContextVarDto } from '../dto/context-var.dto';
 import { ContextVar } from '../schemas/context-var.schema';
 import { BlockService } from '../services/block.service';
 
 @Injectable()
-export class ContextVarRepository extends BaseRepository<ContextVar> {
+export class ContextVarRepository extends BaseRepository<
+  ContextVar,
+  never,
+  never,
+  ContextVarDto
+> {
   private readonly blockService: BlockService;
 
   constructor(
@@ -32,7 +38,7 @@ export class ContextVarRepository extends BaseRepository<ContextVar> {
     @Optional() blockService?: BlockService,
   ) {
     super(eventEmitter, model, ContextVar);
-    this.blockService = blockService;
+    if (blockService) this.blockService = blockService;
   }
 
   /**

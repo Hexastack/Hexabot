@@ -1,16 +1,13 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-} from '@/chat/schemas/types/attachment';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
   IncomingMessageType,
@@ -32,19 +29,24 @@ export default abstract class EventWrapper<
     eventType: StdEventType;
     messageType?: IncomingMessageType;
     raw: E;
+    attachments?: Attachment[];
   },
   E,
   N extends ChannelName = ChannelName,
   C extends ChannelHandler = ChannelHandler<N>,
   S = SubscriberChannelDict[N],
 > {
-  _adapter: A = { raw: {}, eventType: StdEventType.unknown } as A;
+  _adapter: A = {
+    raw: {},
+    eventType: StdEventType.unknown,
+    attachments: undefined,
+  } as A;
 
   _handler: C;
 
   channelAttrs: S;
 
-  _profile!: Subscriber;
+  subscriber!: Subscriber;
 
   _nlp!: NLU.ParseEntities;
 
@@ -75,7 +77,6 @@ export default abstract class EventWrapper<
         messageType: this.getMessageType(),
         payload: this.getPayload(),
         message: this.getMessage(),
-        attachments: this.getAttachments(),
         deliveredMessages: this.getDeliveredMessages(),
         watermark: this.getWatermark(),
       },
@@ -101,7 +102,7 @@ export default abstract class EventWrapper<
    *
    * @returns The current instance of the channel handler.
    */
-  getHandler(): ChannelHandler {
+  getHandler(): C {
     return this._handler;
   }
 
@@ -126,6 +127,7 @@ export default abstract class EventWrapper<
   /**
    * Sets an event attribute value
    *
+   * @deprecated
    * @param attr - Event attribute name
    * @param value - The value to set for the specified attribute.
    */
@@ -136,6 +138,7 @@ export default abstract class EventWrapper<
   /**
    * Returns an event attribute value, default value if it does exist
    *
+   * @deprecated
    * @param  attr - Event attribute name
    * @param  otherwise - Default value if attribute does not exist
    *
@@ -178,7 +181,7 @@ export default abstract class EventWrapper<
    * @returns event sender data
    */
   getSender(): Subscriber {
-    return this._profile;
+    return this.subscriber;
   }
 
   /**
@@ -187,7 +190,29 @@ export default abstract class EventWrapper<
    * @param profile - Sender data
    */
   setSender(profile: Subscriber) {
-    this._profile = profile;
+    this.subscriber = profile;
+  }
+
+  /**
+   * Pre-Process the message event
+   *
+   * Child class can perform operations such as storing files as attachments.
+   */
+  async preprocess() {
+    if (
+      this._adapter.eventType === StdEventType.message &&
+      this._adapter.messageType === IncomingMessageType.attachments
+    ) {
+      await this._handler.persistMessageAttachments(
+        this as EventWrapper<
+          any,
+          any,
+          ChannelName,
+          ChannelHandler<ChannelName>,
+          Record<string, any>
+        >,
+      );
+    }
   }
 
   /**
@@ -243,13 +268,6 @@ export default abstract class EventWrapper<
     }
     return '';
   }
-
-  /**
-   * Returns the list of received attachments
-   *
-   * @returns Received attachments message
-   */
-  abstract getAttachments(): AttachmentPayload<AttachmentForeignKey>[];
 
   /**
    * Returns the list of delivered messages
@@ -372,14 +390,6 @@ export class GenericEventWrapper extends EventWrapper<
    */
   getMessage(): StdIncomingMessage {
     throw new Error('Unknown incoming message type');
-  }
-
-  /**
-   * @returns A list of received attachments
-   * @deprecated - This method is deprecated
-   */
-  getAttachments(): AttachmentPayload<AttachmentForeignKey>[] {
-    return [];
   }
 
   /**

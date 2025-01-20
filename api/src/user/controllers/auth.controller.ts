@@ -87,7 +87,7 @@ export class LocalAuthController extends BaseAuthController {
     logger: LoggerService,
     private readonly userService: UserService,
     private readonly validateAccountService: ValidateAccountService,
-    private readonly invitationService?: InvitationService,
+    private readonly invitationService: InvitationService,
   ) {
     super(logger);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,7 +7,11 @@
  */
 
 import { Attachment } from '@/attachment/schemas/attachment.schema';
-import { WithUrl } from '@/chat/schemas/types/attachment';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { ButtonType } from '@/chat/schemas/types/button';
 import {
   FileType,
@@ -79,23 +83,22 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
 };
 
 const attachment: Attachment = {
-  id: '1',
+  id: '1'.repeat(24),
   name: 'attachment.jpg',
   type: 'image/jpeg',
   size: 3539,
   location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
   channel: {
-    ['dimelo']: {
-      id: 'attachment-id-dimelo',
+    ['any-channel']: {
+      id: 'any-channel-attachment-id',
     },
   },
+  resourceRef: AttachmentResourceRef.BlockAttachment,
+  access: AttachmentAccess.Public,
+  createdByRef: AttachmentCreatedByRef.User,
+  createdBy: null,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-
-const attachmentWithUrl: WithUrl<Attachment> = {
-  ...attachment,
-  url: 'http://localhost:4000/attachment/download/1/attachment.jpg',
 };
 
 export const contentMessage: StdOutgoingListMessage = {
@@ -122,7 +125,8 @@ export const contentMessage: StdOutgoingListMessage = {
       title: 'First',
       desc: 'About being first',
       thumbnail: {
-        payload: attachmentWithUrl,
+        type: 'image',
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -137,7 +141,8 @@ export const contentMessage: StdOutgoingListMessage = {
       title: 'Second',
       desc: 'About being second',
       thumbnail: {
-        payload: attachmentWithUrl,
+        type: 'image',
+        payload: { id: attachment.id },
       },
       getPayload() {
         return this.title;
@@ -150,16 +155,14 @@ export const contentMessage: StdOutgoingListMessage = {
   pagination: {
     total: 3,
     skip: 0,
-    limit: 1,
+    limit: 2,
   },
 };
 
-export const attachmentMessage: StdOutgoingAttachmentMessage<
-  WithUrl<Attachment>
-> = {
+export const attachmentMessage: StdOutgoingAttachmentMessage = {
   attachment: {
     type: FileType.image,
-    payload: attachmentWithUrl,
+    payload: { id: attachment.id },
   },
   quickReplies: [
     {

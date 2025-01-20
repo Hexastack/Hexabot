@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -73,7 +73,7 @@ export const config: Config = {
     grant3rdPartyCookie: true,
     onlyAllowOrigins: process.env.FRONTEND_ORIGIN
       ? process.env.FRONTEND_ORIGIN.split(',').map((origin) => origin.trim())
-      : [undefined], // ['http://example.com', 'https://example.com'],
+      : [], // ['http://example.com', 'https://example.com'],
   },
   session: {
     secret: process.env.SESSION_SECRET || 'changeme',
@@ -91,7 +91,9 @@ export const config: Config = {
   emails: {
     isEnabled: process.env.EMAIL_SMTP_ENABLED === 'true' || false,
     smtp: {
-      port: parseInt(process.env.EMAIL_SMTP_PORT) || 25,
+      port: process.env.EMAIL_SMTP_PORT
+        ? parseInt(process.env.EMAIL_SMTP_PORT)
+        : 25,
       host: process.env.EMAIL_SMTP_HOST || 'localhost',
       ignoreTLS: false,
       secure: process.env.EMAIL_SMTP_SECURE === 'true' || false,
@@ -103,17 +105,22 @@ export const config: Config = {
     from: process.env.EMAIL_SMTP_FROM || 'noreply@example.com',
   },
   parameters: {
-    uploadDir: process.env.UPLOAD_DIR
-      ? join(process.cwd(), process.env.UPLOAD_DIR)
-      : join(process.cwd(), 'uploads'),
-    avatarDir: process.env.AVATAR_DIR
-      ? join(process.cwd(), process.env.AVATAR_DIR)
-      : join(process.cwd(), 'avatars'),
-    storageMode: 'disk',
+    uploadDir: join(process.cwd(), process.env.UPLOAD_DIR || '/uploads'),
+    avatarDir: join(
+      process.cwd(),
+      process.env.UPLOAD_DIR || '/uploads',
+      '/avatars',
+    ),
+    storageMode: (process.env.STORAGE_MODE as 'disk' | 'memory') || 'disk',
     maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
       ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-      : 2000000,
+      : 50 * 1024 * 1024, // 50 MB in bytes
     appName: 'Hexabot.ai',
+    signedUrl: {
+      salt: parseInt(process.env.SALT_LENGTH || '12'),
+      secret: process.env.SIGNED_URL_SECRET || 'DEFAULT_SIGNED_URL_SECRET',
+      expiresIn: process.env.SIGNED_URL_EXPIRES_IN || '24H',
+    },
   },
   pagination: {
     limit: 10,
@@ -138,8 +145,15 @@ export const config: Config = {
   mongo: {
     user: process.env.MONGO_USER || 'dev_only',
     password: process.env.MONGO_PASSWORD || 'dev_only',
-    uri: process.env.MONGO_URI || 'mongodb://dev_only:dev_only@mongo:27017/',
+    uri:
+      process.env.MONGO_URI || 'mongodb://dev_only:dev_only@localhost:27017/',
     dbName: process.env.MONGO_DB || 'hexabot',
+    autoMigrate:
+      // Either auto-migration is explicitly enabled and the node is primary (cluster case)
+      (process.env.MONGO_AUTO_MIGRATE === 'true' &&
+        (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
+      // Otherwise, run only in dev mode
+      !(process.env.NODE_ENV || 'development').toLowerCase().includes('prod'),
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {

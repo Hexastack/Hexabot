@@ -15,11 +15,17 @@ import { BlockService } from '@/chat/services/block.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { ContentTypeDto } from '../dto/contentType.dto';
 import { ContentType } from '../schemas/content-type.schema';
 import { Content } from '../schemas/content.schema';
 
 @Injectable()
-export class ContentTypeRepository extends BaseRepository<ContentType> {
+export class ContentTypeRepository extends BaseRepository<
+  ContentType,
+  never,
+  never,
+  ContentTypeDto
+> {
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(ContentType.name) readonly model: Model<ContentType>,
@@ -49,7 +55,7 @@ export class ContentTypeRepository extends BaseRepository<ContentType> {
     criteria: TFilterQuery<ContentType>,
   ) {
     const entityId: string = criteria._id as string;
-    const associatedBlocks = await this.blockService.findOne({
+    const associatedBlocks = await this.blockService?.findOne({
       'options.content.entity': entityId,
     });
     if (associatedBlocks) {

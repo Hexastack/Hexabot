@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import CloseIcon from "@mui/icons-material/Close";
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
@@ -19,6 +20,7 @@ import { useApiClient } from "@/hooks/useApiClient";
 import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
+import { AttachmentResourceRef } from "@/types/attachment.types";
 import { IContentType } from "@/types/content-type.types";
 
 export type ContentImportDialogProps = DialogControlProps<{
@@ -80,6 +82,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
               }}
               label=""
               value={attachmentId}
+              resourceRef={AttachmentResourceRef.ContentAttachment}
             />
           </ContentItem>
         </ContentContainer>

@@ -15,14 +15,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import {
-  AttachmentModel,
   Attachment,
+  AttachmentModel,
 } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   contentFixtures,
   installContentFixtures,
@@ -48,9 +49,9 @@ describe('ContentController', () => {
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
   let attachmentService: AttachmentService;
-  let contentType: ContentType;
-  let content: Content;
-  let attachment: Attachment;
+  let contentType: ContentType | null;
+  let content: Content | null;
+  let attachment: Attachment | null;
   let updatedContent;
   let pageQuery: PageQueryDto<Content>;
 
@@ -94,21 +95,19 @@ describe('ContentController', () => {
     });
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
   describe('findOne', () => {
     it('should find content by ID', async () => {
-      const contentType = await contentTypeService.findOne(content.entity);
+      const contentType = await contentTypeService.findOne(content!.entity);
       jest.spyOn(contentService, 'findOne');
-      const result = await contentController.findOne(content.id, []);
-      expect(contentService.findOne).toHaveBeenCalledWith(content.id);
+      const result = await contentController.findOne(content!.id, []);
+      expect(contentService.findOne).toHaveBeenCalledWith(content!.id);
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
-        entity: contentType.id,
+        entity: contentType!.id,
       });
     });
 
@@ -121,8 +120,8 @@ describe('ContentController', () => {
     });
 
     it('should find content by ID and populate its corresponding content type', async () => {
-      const result = await contentController.findOne(content.id, ['entity']);
-      const contentType = await contentTypeService.findOne(content.entity);
+      const result = await contentController.findOne(content!.id, ['entity']);
+      const contentType = await contentTypeService.findOne(content!.entity);
 
       expect(result).toEqualPayload({
         ...contentFixtures.find(({ title }) => title === 'Jean'),
@@ -137,7 +136,7 @@ describe('ContentController', () => {
       expect(result).toEqualPayload([
         {
           ...contentFixtures.find(({ title }) => title === 'Jean'),
-          entity: contentType.id,
+          entity: contentType!.id,
         },
       ]);
     });
@@ -160,12 +159,14 @@ describe('ContentController', () => {
   describe('findByType', () => {
     it('should find contents by content type', async () => {
       const result = await contentController.findByType(
-        contentType.id,
+        contentType!.id,
         pageQuery,
       );
       const contents = contentFixtures.filter(({ entity }) => entity === '0');
       contents.reduce((acc, curr) => {
-        curr['entity'] = contentType.id;
+        if (contentType?.id) {
+          curr['entity'] = contentType.id;
+        }
         return acc;
       }, []);
       expect(result).toEqualPayload([contents[0]]);
@@ -174,15 +175,15 @@ describe('ContentController', () => {
 
   describe('update', () => {
     it('should update and return the updated content', async () => {
-      const contentType = await contentTypeService.findOne(content.entity);
+      const contentType = await contentTypeService.findOne(content!.entity);
       updatedContent = {
         ...contentFixtures.find(({ title }) => title === 'Jean'),
-        entity: contentType.id,
+        entity: contentType!.id,
         title: 'modified Jean',
       };
       const result = await contentController.updateOne(
         updatedContent,
-        content.id,
+        content!.id,
       );
 
       expect(result).toEqualPayload(updatedContent, [
@@ -194,14 +195,14 @@ describe('ContentController', () => {
     it('should throw NotFoundException if the content is not found', async () => {
       await expect(
         contentController.updateOne(updatedContent, NOT_FOUND_ID),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(Content.name, NOT_FOUND_ID));
     });
   });
 
   describe('deleteOne', () => {
     it('should delete an existing Content', async () => {
       const content = await contentService.findOne({ title: 'Adaptateur' });
-      const result = await contentService.deleteOne(content.id);
+      const result = await contentService.deleteOne(content!.id);
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
   });
@@ -219,7 +220,7 @@ describe('ContentController', () => {
             },
           },
         },
-        entity: contentType.id,
+        entity: contentType!.id,
         status: true,
       };
       jest.spyOn(contentService, 'create');
@@ -263,18 +264,18 @@ should not appear,store 3,true,image.jpg`;
       });
 
       const result = await contentController.import({
-        idFileToImport: attachment.id,
-        idTargetContentType: contentType.id,
+        idFileToImport: attachment!.id,
+        idTargetContentType: contentType!.id,
       });
       expect(contentService.createMany).toHaveBeenCalledWith([
-        { ...mockCsvContentDto, entity: contentType.id },
+        { ...mockCsvContentDto, entity: contentType!.id },
       ]);
 
       expect(result).toEqualPayload(
         [
           {
             ...mockCsvContentDto,
-            entity: contentType.id,
+            entity: contentType!.id,
           },
         ],
         [...IGNORED_TEST_FIELDS, 'rag'],
@@ -284,7 +285,7 @@ should not appear,store 3,true,image.jpg`;
     it('should throw NotFoundException if content type is not found', async () => {
       await expect(
         contentController.import({
-          idFileToImport: attachment.id,
+          idFileToImport: attachment!.id,
           idTargetContentType: NOT_FOUND_ID,
         }),
       ).rejects.toThrow(new NotFoundException('Content type is not found'));
@@ -298,7 +299,7 @@ should not appear,store 3,true,image.jpg`;
       await expect(
         contentController.import({
           idFileToImport: NOT_FOUND_ID,
-          idTargetContentType: contentType.id.toString(),
+          idTargetContentType: contentType!.id.toString(),
         }),
       ).rejects.toThrow(new NotFoundException('File does not exist'));
     });
@@ -307,8 +308,8 @@ should not appear,store 3,true,image.jpg`;
       jest.spyOn(fs, 'existsSync').mockReturnValue(false);
       await expect(
         contentController.import({
-          idFileToImport: attachment.id,
-          idTargetContentType: contentType.id,
+          idFileToImport: attachment!.id,
+          idTargetContentType: contentType!.id,
         }),
       ).rejects.toThrow(new NotFoundException('File does not exist'));
     });

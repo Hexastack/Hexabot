@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,17 +8,40 @@
 
 import path from 'path';
 
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { NextFunction, Request, Response } from 'express';
-
-import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { plainToClass } from 'class-transformer';
+import { NextFunction, Request, Response } from 'express';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
+
+import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentFile,
+  AttachmentResourceRef,
+} from '@/attachment/types';
+import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
+import { AttachmentRef } from '@/chat/schemas/types/attachment';
+import {
+  IncomingMessageType,
+  StdEventType,
   StdOutgoingEnvelope,
   StdOutgoingMessage,
 } from '@/chat/schemas/types/message';
+import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { Extension } from '@/utils/generics/extension';
+import { buildURL } from '@/utils/helpers/URL';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -36,6 +59,19 @@ export default abstract class ChannelHandler<
   implements OnModuleInit
 {
   private readonly settings: ChannelSetting<N>[];
+
+  @Inject(AttachmentService)
+  public readonly attachmentService: AttachmentService;
+
+  @Inject(JwtService)
+  protected readonly jwtService: JwtService;
+
+  protected readonly jwtSignOptions: JwtSignOptions = {
+    secret: config.parameters.signedUrl.secret,
+    expiresIn: config.parameters.signedUrl.expiresIn,
+    algorithm: 'HS256',
+    encoding: 'utf-8',
+  };
 
   constructor(
     name: N,
@@ -181,14 +217,62 @@ export default abstract class ChannelHandler<
   ): Promise<{ mid: string }>;
 
   /**
-   * Fetch the end user profile data
+   * Calls the channel handler to fetch attachments and stores them
+   *
+   * @param event
+   * @returns An attachment array
+   */
+  getMessageAttachments?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile[]>;
+
+  /**
+   * Fetch the subscriber profile data
    * @param event - The message event received
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
-   
    */
-  abstract getUserData(
+  getSubscriberAvatar?(
+    event: EventWrapper<any, any, N>,
+  ): Promise<AttachmentFile | undefined>;
+
+  /**
+   * Fetch the subscriber profile data
+   *
+   * @param event - The message event received
+   * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
+   */
+  abstract getSubscriberData(
     event: EventWrapper<any, any, N>,
   ): Promise<SubscriberCreateDto>;
+
+  /**
+   * Persist Message attachments
+   *
+   * @returns Resolves the promise once attachments are fetched and stored
+   */
+  async persistMessageAttachments(event: EventWrapper<any, any, N>) {
+    if (
+      event._adapter.eventType === StdEventType.message &&
+      event._adapter.messageType === IncomingMessageType.attachments &&
+      this.getMessageAttachments
+    ) {
+      const metadatas = await this.getMessageAttachments(event);
+      const subscriber = event.getSender();
+      event._adapter.attachments = await Promise.all(
+        metadatas.map(({ file, name, type, size }) => {
+          return this.attachmentService.store(file, {
+            name: `${name ? `${name}-` : ''}${uuidv4()}.${mime.extension(type)}`,
+            type,
+            size,
+            resourceRef: AttachmentResourceRef.MessageAttachment,
+            access: AttachmentAccess.Private,
+            createdByRef: AttachmentCreatedByRef.Subscriber,
+            createdBy: subscriber.id,
+          });
+        }),
+      );
+    }
+  }
 
   /**
    * Custom channel middleware
@@ -199,5 +283,90 @@ export default abstract class ChannelHandler<
   async middleware(_req: Request, _res: Response, next: NextFunction) {
     // Do nothing, override in channel
     next();
+  }
+
+  /**
+   * Generates a signed URL for downloading an attachment.
+   *
+   * This function creates a signed URL for a given attachment using a JWT token.
+   * The signed URL includes the attachment name and a token as query parameters.
+   *
+   * @param attachment The attachment ID or object to generate a signed URL for.
+   * @return A signed URL string for downloading the specified attachment.
+   */
+  public async getPublicUrl(attachment: AttachmentRef | Attachment) {
+    if ('id' in attachment) {
+      if (!attachment.id) {
+        throw new TypeError(
+          'Attachment ID is empty, unable to generate public URL.',
+        );
+      }
+
+      const resource = await this.attachmentService.findOne(attachment.id);
+
+      if (!resource) {
+        throw new NotFoundException('Unable to find attachment');
+      }
+
+      const token = this.jwtService.sign({ ...resource }, this.jwtSignOptions);
+      const [name, _suffix] = this.getName().split('-');
+      return buildURL(
+        config.apiBaseUrl,
+        `/webhook/${name}/download/${resource.name}?t=${encodeURIComponent(token)}`,
+      );
+    } else if ('url' in attachment && attachment.url) {
+      // In case the url is external
+      return attachment.url;
+    } else {
+      throw new TypeError('Unable to resolve the attachment public URL.');
+    }
+  }
+
+  /**
+   * Checks if the request is authorized to download a given attachment file.
+   * Can be overriden by the channel handler to customize, by default it shouldn't
+   * allow any client to download a subscriber attachment for example.
+   *
+   * @param attachment The attachment object
+   * @param req - The HTTP express request object.
+   * @return True, if requester is authorized to download the attachment
+   */
+  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
+    return attachment.access === AttachmentAccess.Public;
+  }
+
+  /**
+   * Downloads an attachment using a signed token.
+   *
+   * This function verifies the provided token and retrieves the corresponding
+   * attachment as a streamable file. If the verification fails or the attachment
+   * cannot be located, it throws a NotFoundException.
+   *
+   * @param token The signed token used to verify and locate the attachment.
+   * @param req - The HTTP express request object.
+   * @return A streamable file of the attachment.
+   */
+  public async download(token: string, req: Request) {
+    try {
+      const {
+        exp: _exp,
+        iat: _iat,
+        ...result
+      } = this.jwtService.verify(token, this.jwtSignOptions);
+      const attachment = plainToClass(Attachment, result);
+
+      // Check access
+      const canDownload = await this.hasDownloadAccess(attachment, req);
+      if (!canDownload) {
+        throw new ForbiddenException(
+          'You are not authorized to download the attachment',
+        );
+      }
+
+      return await this.attachmentService.download(attachment);
+    } catch (err) {
+      this.logger.error('Failed to download attachment', err);
+      throw new NotFoundException('Unable to locate attachment');
+    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,11 +9,12 @@
 import { ConflictException } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
-import { ProjectionType } from 'mongoose';
+import { ProjectionType, QueryOptions } from 'mongoose';
 
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
+import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
 
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
@@ -22,8 +23,12 @@ export abstract class BaseService<
   T extends BaseSchema,
   P extends string = never,
   TFull extends Omit<T, P> = never,
+  Dto extends DtoConfig = object,
+  U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
 > {
-  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
+  constructor(
+    protected readonly repository: BaseRepository<T, P, TFull, Dto>,
+  ) {}
 
   getRepository() {
     return this.repository;
@@ -33,7 +38,7 @@ export abstract class BaseService<
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
     projection?: ProjectionType<T>,
-  ): Promise<T> {
+  ): Promise<T | null> {
     return await this.repository.findOne(criteria, options, projection);
   }
 
@@ -140,7 +145,7 @@ export abstract class BaseService<
     return await this.repository.count(criteria);
   }
 
-  async create<D extends Omit<T, keyof BaseSchema>>(dto: D): Promise<T> {
+  async create(dto: DtoInfer<DtoAction.Create, Dto, U>): Promise<T> {
     try {
       return await this.repository.create(dto);
     } catch (error) {
@@ -153,9 +158,9 @@ export abstract class BaseService<
     }
   }
 
-  async findOneOrCreate<D extends Omit<T, keyof BaseSchema>>(
+  async findOneOrCreate(
     criteria: string | TFilterQuery<T>,
-    dto: D,
+    dto: DtoInfer<DtoAction.Create, Dto, U>,
   ): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {
@@ -164,23 +169,21 @@ export abstract class BaseService<
     return result;
   }
 
-  async createMany<D extends Omit<T, keyof BaseSchema>>(
-    dtoArray: D[],
+  async createMany(
+    dtoArray: DtoInfer<DtoAction.Create, Dto, U>[],
   ): Promise<T[]> {
     return await this.repository.createMany(dtoArray);
   }
 
-  async updateOne<D extends Partial<Omit<T, keyof BaseSchema>>>(
+  async updateOne(
     criteria: string | TFilterQuery<T>,
-    dto: D,
+    dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
+    options?: QueryOptions<Partial<U>> | null,
   ): Promise<T> {
-    return await this.repository.updateOne(criteria, dto);
+    return await this.repository.updateOne(criteria, dto, options);
   }
 
-  async updateMany<D extends Partial<Omit<T, keyof BaseSchema>>>(
-    filter: TFilterQuery<T>,
-    dto: D,
-  ) {
+  async updateMany(filter: TFilterQuery<T>, dto: Partial<U>) {
     return await this.repository.updateMany(filter, dto);
   }
 

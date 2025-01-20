@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -102,10 +102,12 @@ describe('CategoryController', () => {
     }).compile();
     categoryService = module.get<CategoryService>(CategoryService);
     categoryController = module.get<CategoryController>(CategoryController);
-    category = await categoryService.findOne({ label: 'test category 1' });
-    categoryToDelete = await categoryService.findOne({
+    category = (await categoryService.findOne({
+      label: 'test category 1',
+    })) as Category;
+    categoryToDelete = (await categoryService.findOne({
       label: 'test category 2',
-    });
+    })) as Category;
   });
 
   afterEach(jest.clearAllMocks);
@@ -133,9 +135,9 @@ describe('CategoryController', () => {
   describe('findOne', () => {
     it('should return the existing category', async () => {
       jest.spyOn(categoryService, 'findOne');
-      const category = await categoryService.findOne({
+      const category = (await categoryService.findOne({
         label: 'test category 1',
-      });
+      })) as Category;
       const result = await categoryController.findOne(category.id);
 
       expect(categoryService.findOne).toHaveBeenCalledWith(category.id);

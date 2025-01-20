@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs from 'fs';
-import { join } from 'path';
 import { Readable } from 'stream';
 
 import {
@@ -25,14 +23,13 @@ import {
   Query,
   Res,
   StreamableFile,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
-import Papa from 'papaparse';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
@@ -45,18 +42,17 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpSampleCreateDto, NlpSampleDto } from '../dto/nlp-sample.dto';
+import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
   NlpSample,
   NlpSampleFull,
   NlpSamplePopulate,
   NlpSampleStub,
 } from '../schemas/nlp-sample.schema';
-import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
+import { NlpSampleState } from '../schemas/types';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
-import { NlpService } from '../services/nlp.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('nlpsample')
@@ -64,15 +60,14 @@ export class NlpSampleController extends BaseController<
   NlpSample,
   NlpSampleStub,
   NlpSamplePopulate,
-  NlpSampleFull
+  NlpSampleFull,
+  TNlpSampleDto
 > {
   constructor(
     private readonly nlpSampleService: NlpSampleService,
-    private readonly attachmentService: AttachmentService,
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
     private readonly logger: LoggerService,
-    private readonly nlpService: NlpService,
     private readonly languageService: LanguageService,
     private readonly helperService: HelperService,
   ) {
@@ -134,15 +129,18 @@ export class NlpSampleController extends BaseController<
     }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
+
     const nlpSample = await this.nlpSampleService.create({
       ...createNlpSampleDto,
       language: language.id,
     });
 
-    const entities = await this.nlpSampleEntityService.storeSampleEntities(
-      nlpSample,
-      nlpEntities,
-    );
+    const entities = nlpEntities
+      ? await this.nlpSampleEntityService.storeSampleEntities(
+          nlpSample,
+          nlpEntities,
+        )
+      : [];
 
     return {
       ...nlpSample,
@@ -208,7 +206,7 @@ export class NlpSampleController extends BaseController<
 
     try {
       const helper = await this.helperService.getDefaultNluHelper();
-      const response = await helper.train(samples, entities);
+      const response = await helper.train?.(samples, entities);
       // Mark samples as trained
       await this.nlpSampleService.updateMany(
         { type: 'train' },
@@ -234,7 +232,7 @@ export class NlpSampleController extends BaseController<
       await this.getSamplesAndEntitiesByType('test');
 
     const helper = await this.helperService.getDefaultNluHelper();
-    return await helper.evaluate(samples, entities);
+    return await helper.evaluate?.(samples, entities);
   }
 
   /**
@@ -300,21 +298,20 @@ export class NlpSampleController extends BaseController<
     @Body() { entities, language: languageCode, ...sampleAttrs }: NlpSampleDto,
   ): Promise<NlpSampleFull> {
     const language = await this.languageService.getLanguageByCode(languageCode);
+
     const sample = await this.nlpSampleService.updateOne(id, {
       ...sampleAttrs,
       language: language.id,
       trained: false,
     });
 
-    if (!sample) {
-      this.logger.warn(`Unable to update NLP Sample by id ${id}`);
-      throw new NotFoundException(`NLP Sample with ID ${id} not found`);
-    }
-
     await this.nlpSampleEntityService.deleteMany({ sample: id });
 
     const updatedSampleEntities =
-      await this.nlpSampleEntityService.storeSampleEntities(sample, entities);
+      await this.nlpSampleEntityService.storeSampleEntities(
+        sample,
+        entities || [],
+      );
 
     return {
       ...sample,
@@ -369,129 +366,11 @@ export class NlpSampleController extends BaseController<
     return deleteResult;
   }
 
-  /**
-   * Imports NLP samples from a CSV file.
-   *
-   * @param file - The file path or ID of the CSV file to import.
-   *
-   * @returns A success message after the import process is completed.
-   */
   @CsrfCheck(true)
-  @Post('import/:file')
-  async import(
-    @Param('file')
-    file: string,
-  ) {
-    // Check if file is present
-    const importedFile = await this.attachmentService.findOne(file);
-    if (!importedFile) {
-      throw new NotFoundException('Missing file!');
-    }
-    const filePath = importedFile
-      ? join(config.parameters.uploadDir, importedFile.location)
-      : undefined;
-
-    // Check if file location is present
-    if (!fs.existsSync(filePath)) {
-      throw new NotFoundException('File does not exist');
-    }
-
-    const allEntities = await this.nlpEntityService.findAll();
-
-    // Check if file location is present
-    if (allEntities.length === 0) {
-      throw new NotFoundException(
-        'No entities found, please create them first.',
-      );
-    }
-
-    // Read file content
-    const data = fs.readFileSync(filePath, 'utf8');
-
-    // Parse local CSV file
-    const result: {
-      errors: any[];
-      data: Array<Record<string, string>>;
-    } = Papa.parse(data, {
-      header: true,
-      skipEmptyLines: true,
-    });
-
-    if (result.errors && result.errors.length > 0) {
-      this.logger.warn(
-        `Errors parsing the file: ${JSON.stringify(result.errors)}`,
-      );
-      throw new BadRequestException(result.errors, {
-        cause: result.errors,
-        description: 'Error while parsing CSV',
-      });
-    }
-    // Remove data with no intent
-    const filteredData = result.data.filter((d) => d.intent !== 'none');
-    const languages = await this.languageService.getLanguages();
-    const defaultLanguage = await this.languageService.getDefaultLanguage();
-    // Reduce function to ensure executing promises one by one
-    for (const d of filteredData) {
-      try {
-        // Check if a sample with the same text already exists
-        const existingSamples = await this.nlpSampleService.find({
-          text: d.text,
-        });
-
-        // Skip if sample already exists
-        if (Array.isArray(existingSamples) && existingSamples.length > 0) {
-          continue;
-        }
-
-        // Fallback to default language if 'language' is missing or invalid
-        if (!d.language || !(d.language in languages)) {
-          if (d.language) {
-            this.logger.warn(
-              `Language "${d.language}" does not exist, falling back to default.`,
-            );
-          }
-          d.language = defaultLanguage.code;
-        }
-
-        // Create a new sample dto
-        const sample: NlpSampleCreateDto = {
-          text: d.text,
-          trained: false,
-          language: languages[d.language].id,
-        };
-
-        // Create a new sample entity dto
-        const entities: NlpSampleEntityValue[] = allEntities
-          .filter(({ name }) => name in d)
-          .map(({ name }) => {
-            return {
-              entity: name,
-              value: d[name],
-            };
-          });
-
-        // Store any new entity/value
-        const storedEntities = await this.nlpEntityService.storeNewEntities(
-          sample.text,
-          entities,
-          ['trait'],
-        );
-        // Store sample
-        const createdSample = await this.nlpSampleService.create(sample);
-        // Map and assign the sample ID to each stored entity
-        const sampleEntities = storedEntities.map((se) => ({
-          ...se,
-          sample: createdSample?.id,
-        }));
-
-        // Store sample entities
-        await this.nlpSampleEntityService.createMany(sampleEntities);
-      } catch (err) {
-        this.logger.error('Error occurred when extracting data. ', err);
-      }
-    }
-
-    this.logger.log('Import process completed successfully.');
-    return { success: true };
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importFile(@UploadedFile() file: Express.Multer.File) {
+    const datasetContent = file.buffer.toString('utf-8');
+    return await this.nlpSampleService.parseAndSaveDataset(datasetContent);
   }
 }

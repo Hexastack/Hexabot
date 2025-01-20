@@ -35,6 +35,7 @@ import { PermissionService } from '@/user/services/permission.service';
 import { RoleService } from '@/user/services/role.service';
 import { UserService } from '@/user/services/user.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   blockFixtures,
   installBlockFixtures,
@@ -142,18 +143,19 @@ describe('BlockController', () => {
     blockController = module.get<BlockController>(BlockController);
     blockService = module.get<BlockService>(BlockService);
     categoryService = module.get<CategoryService>(CategoryService);
-    category = await categoryService.findOne({ label: 'default' });
-    block = await blockService.findOne({ name: 'first' });
-    blockToDelete = await blockService.findOne({ name: 'buttons' });
-    hasNextBlocks = await blockService.findOne({
+    category = (await categoryService.findOne({ label: 'default' }))!;
+    block = (await blockService.findOne({ name: 'first' }))!;
+    blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
+    hasNextBlocks = (await blockService.findOne({
       name: 'hasNextBlocks',
-    });
-    hasPreviousBlocks = await blockService.findOne({
+    }))!;
+    hasPreviousBlocks = (await blockService.findOne({
       name: 'hasPreviousBlocks',
-    });
+    }))!;
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('find', () => {
@@ -185,6 +187,7 @@ describe('BlockController', () => {
           blockFixture.name === 'hasPreviousBlocks' ? [hasNextBlocks] : [],
         nextBlocks:
           blockFixture.name === 'hasNextBlocks' ? [hasPreviousBlocks] : [],
+        attachedToBlock: null,
       }));
 
       expect(blockService.findAndPopulate).toHaveBeenCalledWith({}, undefined);
@@ -220,12 +223,13 @@ describe('BlockController', () => {
         ...blockFixtures.find(({ name }) => name === 'hasPreviousBlocks'),
         category,
         previousBlocks: [hasNextBlocks],
+        attachedToBlock: null,
       });
     });
 
     it('should find one block by id, and populate its category and an empty previousBlocks', async () => {
       jest.spyOn(blockService, 'findOneAndPopulate');
-      block = await blockService.findOne({ name: 'attachment' });
+      block = (await blockService.findOne({ name: 'attachment' }))!;
       const result = await blockController.findOne(
         block.id,
         FIELDS_TO_POPULATE,
@@ -235,6 +239,7 @@ describe('BlockController', () => {
         ...blockFixtures.find(({ name }) => name === 'attachment'),
         category,
         previousBlocks: [],
+        attachedToBlock: null,
       });
     });
   });
@@ -323,9 +328,7 @@ describe('BlockController', () => {
 
       await expect(
         blockController.updateOne(blockToDelete.id, updateBlock),
-      ).rejects.toThrow(
-        new NotFoundException(`Block with ID ${blockToDelete.id} not found`),
-      );
+      ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
     });
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "hexabot-chat-widget",
-  "version": "2.1.8",
+  "version": "2.1.9",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
@@ -15,6 +15,9 @@
     "preview": "vite preview",
     "serve": "npx http-server ./dist/",
     "typecheck": "tsc --noEmit"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": "eslint --fix -c \".eslintrc-staged.json\""
   },
   "dependencies": {
     "@types/emoji-js": "^3.5.2",
@@ -33,9 +36,11 @@
     "@typescript-eslint/parser": "^7.15.0",
     "@vitejs/plugin-react": "^4.3.1",
     "eslint": "^8.57.0",
+    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "lint-staged": "^15.3.0",
     "sass": "^1.77.8",
     "typescript": "^5.2.2",
     "vite": "^5.3.4",

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,8 +21,12 @@ import { NlpEntitySeeder } from './nlp/seeds/nlp-entity.seed';
 import { nlpEntityModels } from './nlp/seeds/nlp-entity.seed-model';
 import { NlpValueSeeder } from './nlp/seeds/nlp-value.seed';
 import { nlpValueModels } from './nlp/seeds/nlp-value.seed-model';
+import { MetadataSeeder } from './setting/seeds/metadata.seed';
+import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
 import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
+import { PermissionCreateDto } from './user/dto/permission.dto';
+import { Role } from './user/schemas/role.schema';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
 import { PermissionSeeder } from './user/seeds/permission.seed';
@@ -39,6 +43,7 @@ export async function seedDatabase(app: INestApplicationContext) {
   const contextVarSeeder = app.get(ContextVarSeeder);
   const roleSeeder = app.get(RoleSeeder);
   const settingSeeder = app.get(SettingSeeder);
+  const metadataSeeder = app.get(MetadataSeeder);
   const permissionSeeder = app.get(PermissionSeeder);
   const userSeeder = app.get(UserSeeder);
   const languageSeeder = app.get(LanguageSeeder);
@@ -71,12 +76,12 @@ export async function seedDatabase(app: INestApplicationContext) {
 
   const models = await modelSeeder.findAll();
   const roles = await roleSeeder.findAll();
-  const adminRole = roles.find(({ name }) => name === 'admin');
-  const managerRole = roles.find(({ name }) => name === 'manager');
+  const adminRole = roles.find(({ name }) => name === 'admin') as Role;
+  const managerRole = roles.find(({ name }) => name === 'manager') as Role;
   const managerModels = models.filter(
     (model) => !['Role', 'User', 'Permission'].includes(model.name),
   );
-  const roleModelsCombinations: [string, string][] = [
+  const roleModelsCombinations = [
     ...models.map((model) => [model.id, adminRole.id]),
     ...managerModels.map((model) => [model.id, managerRole.id]),
   ] as [string, string][];
@@ -85,7 +90,7 @@ export async function seedDatabase(app: INestApplicationContext) {
     (acc, [modelId, roleId]) => {
       return acc.concat(permissionModels(modelId, roleId));
     },
-    [],
+    [] as PermissionCreateDto[],
   );
 
   // Seed permissions
@@ -104,13 +109,15 @@ export async function seedDatabase(app: INestApplicationContext) {
       logger.error('Unable to seed the database with users!');
       throw e;
     }
-    // Seed users
-    try {
-      await settingSeeder.seed(DEFAULT_SETTINGS);
-    } catch (e) {
-      logger.error('Unable to seed the database with settings!');
-      throw e;
-    }
+  }
+
+  // Seed settings and metadata
+  try {
+    await settingSeeder.seed(DEFAULT_SETTINGS);
+    await metadataSeeder.seed(DEFAULT_METADATA);
+  } catch (e) {
+    logger.error('Unable to seed the database with settings and metadata!');
+    throw e;
   }
 
   // Seed categories

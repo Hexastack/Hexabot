@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,15 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -36,6 +44,7 @@ export class ChatService {
     private readonly botService: BotService,
     private readonly websocketGateway: WebsocketGateway,
     private readonly helperService: HelperService,
+    private readonly attachmentService: AttachmentService,
   ) {}
 
   /**
@@ -117,6 +126,12 @@ export class ChatService {
     try {
       const msg = await this.messageService.create(received);
       const populatedMsg = await this.messageService.findOneAndPopulate(msg.id);
+
+      if (!populatedMsg) {
+        this.logger.warn('Unable to find populated message.', event);
+        throw new Error(`Unable to find Message by ID ${msg.id} not found`);
+      }
+
       this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
       this.eventEmitter.emit('hook:stats:entry', 'incoming', 'Incoming');
       this.eventEmitter.emit(
@@ -231,7 +246,7 @@ export class ChatService {
    */
   @OnEvent('hook:chatbot:message')
   async handleNewMessage(event: EventWrapper<any, any>) {
-    this.logger.debug('New message received', event);
+    this.logger.debug('New message received', event._adapter.raw);
 
     const foreignId = event.getSenderForeignId();
     const handler = event.getHandler();
@@ -242,10 +257,14 @@ export class ChatService {
       });
 
       if (!subscriber) {
-        const subscriberData = await handler.getUserData(event);
+        const subscriberData = await handler.getSubscriberData(event);
         this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
+
+        if (!subscriber) {
+          throw new Error('Unable to create a new subscriber');
+        }
       } else {
         // Already existing user profile
         // Exec lastvisit hook
@@ -254,12 +273,57 @@ export class ChatService {
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
-      event.setSender(subscriber);
+      // Retrieve and store the subscriber avatar
+      if (handler.getSubscriberAvatar) {
+        try {
+          const metadata = await handler.getSubscriberAvatar(event);
+          if (metadata) {
+            const { file, type, size } = metadata;
+            const extension = mime.extension(type);
+
+            const avatar = await this.attachmentService.store(file, {
+              name: `avatar-${uuidv4()}.${extension}`,
+              size,
+              type,
+              resourceRef: AttachmentResourceRef.SubscriberAvatar,
+              access: AttachmentAccess.Private,
+              createdByRef: AttachmentCreatedByRef.Subscriber,
+              createdBy: subscriber.id,
+            });
+
+            if (avatar) {
+              subscriber = await this.subscriberService.updateOne(
+                subscriber.id,
+                {
+                  avatar: avatar.id,
+                },
+              );
+
+              if (!subscriber) {
+                throw new Error('Unable to update the subscriber avatar');
+              }
+            }
+          }
+        } catch (err) {
+          this.logger.error(
+            `Unable to retrieve avatar for subscriber ${event.getSenderForeignId()}`,
+            err,
+          );
+        }
+      }
+
+      // Set the subscriber object
+      event.setSender(subscriber!);
+
+      // Preprocess the event (persist attachments, ...)
+      if (event.preprocess) {
+        await event.preprocess();
+      }
 
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);
 
-      if (subscriber.assignedTo) {
+      if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
         return;
       }
@@ -288,7 +352,9 @@ export class ChatService {
   @OnEvent('hook:subscriber:postCreate')
   async onSubscriberCreate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    this.websocketGateway.broadcastSubscriberNew(subscriber);
+    if (subscriber) {
+      this.websocketGateway.broadcastSubscriberNew(subscriber);
+    }
   }
 
   /**
@@ -299,6 +365,8 @@ export class ChatService {
   @OnEvent('hook:subscriber:postUpdate')
   async onSubscriberUpdate({ _id }: SubscriberDocument) {
     const subscriber = await this.subscriberService.findOne(_id);
-    this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+    if (subscriber) {
+      this.websocketGateway.broadcastSubscriberUpdate(subscriber);
+    }
   }
 }

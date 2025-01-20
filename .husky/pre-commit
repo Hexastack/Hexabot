@@ -16,7 +16,7 @@ run_checks() {
         echo "${BLUE}Running ${path} checks and tests...${NC}"
         cd ./${path} 
         npm run typecheck
-        npm run lint
+        npx lint-staged
         if [ "$path" = "api" ]; then
             npm run test:half # Run API specific tests
         fi

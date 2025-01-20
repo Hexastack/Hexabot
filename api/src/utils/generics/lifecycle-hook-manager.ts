@@ -25,7 +25,7 @@ type PostHook = (...args: any[]) => void;
 
 interface LifecycleHook {
   pre: PreHook & { execute: (newCallback: PreHook) => void };
-  post?: PostHook & { execute: (newCallback: PostHook) => void };
+  post: PostHook & { execute: (newCallback: PostHook) => void };
 }
 
 type LifecycleHooks = {
@@ -77,11 +77,8 @@ export class LifecycleHookManager {
     for (const [op, types] of Object.entries(operations)) {
       const hooks: LifecycleHook = {
         pre: this.createLifecycleCallback() as LifecycleHook['pre'],
+        post: this.createLifecycleCallback() as LifecycleHook['post'],
       };
-
-      if (types.includes('post')) {
-        hooks.post = this.createLifecycleCallback() as LifecycleHook['post'];
-      }
 
       types.forEach((type) => {
         schema[type](op, hooks[type]);

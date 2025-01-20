@@ -8,6 +8,7 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 
@@ -101,6 +102,7 @@ describe('BlockService', () => {
           ContextVarModel,
           LanguageModel,
         ]),
+        JwtModule,
       ],
       providers: [
         EventEmitter2,
@@ -191,9 +193,9 @@ describe('BlockService', () => {
     });
 
     const [block] = await blockService.findAndPopulate({ patterns: ['Hi'] });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
-    });
+    }))!;
 
     event.setSender(webSubscriber);
 
@@ -258,9 +260,9 @@ describe('BlockService', () => {
       ipAddress: '1.1.1.1',
       agent: 'Chromium',
     });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-1',
-    });
+    }))!;
     event.setSender(webSubscriber);
 
     const clearMock = jest
@@ -312,9 +314,9 @@ describe('BlockService', () => {
       ipAddress: '1.1.1.1',
       agent: 'Chromium',
     });
-    const webSubscriber = await subscriberService.findOne({
+    const webSubscriber = (await subscriberService.findOne({
       foreign_id: 'foreign-id-web-2',
-    });
+    }))!;
     event.setSender(webSubscriber);
     const captured = await botService.processConversationMessage(event);
 

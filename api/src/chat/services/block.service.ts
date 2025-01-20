@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,6 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ContentService } from '@/cms/services/content.service';
@@ -23,9 +22,9 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
+import { BlockDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
-import { WithUrl } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
 import {
   BlockMessage,
@@ -37,7 +36,12 @@ import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 @Injectable()
-export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
+export class BlockService extends BaseService<
+  Block,
+  BlockPopulate,
+  BlockFull,
+  BlockDto
+> {
   constructor(
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
@@ -161,7 +165,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     payload: string | Payload,
     block: BlockFull | Block,
   ): PayloadPattern | undefined {
-    const payloadPatterns = block.patterns.filter(
+    const payloadPatterns = block.patterns?.filter(
       (p) => typeof p === 'object' && 'label' in p,
     ) as PayloadPattern[];
 
@@ -190,57 +194,56 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     block: Block | BlockFull,
   ): (RegExpMatchArray | string)[] | false {
     // Filter text patterns & Instanciate Regex patterns
-    const patterns: (string | RegExp | Pattern)[] = block.patterns.map(
-      (pattern) => {
-        if (
-          typeof pattern === 'string' &&
-          pattern.endsWith('/') &&
-          pattern.startsWith('/')
-        ) {
-          return new RegExp(pattern.slice(1, -1), 'i');
-        }
-        return pattern;
-      },
-    );
-
-    // Return first match
-    for (let i = 0; i < patterns.length; i++) {
-      const pattern = patterns[i];
-      if (pattern instanceof RegExp) {
-        if (pattern.test(text)) {
-          const matches = text.match(pattern);
-          if (matches) {
-            if (matches.length >= 2) {
-              // Remove global match if needed
-              matches.shift();
-            }
-            return matches;
-          }
-        }
-        continue;
-      } else if (
-        typeof pattern === 'object' &&
-        'label' in pattern &&
-        text.trim().toLowerCase() === pattern.label.toLowerCase()
-      ) {
-        // Payload (quick reply)
-        return [text];
-      } else if (
+    const patterns: undefined | Pattern[] = block.patterns?.map((pattern) => {
+      if (
         typeof pattern === 'string' &&
-        text.trim().toLowerCase() === pattern.toLowerCase()
+        pattern.endsWith('/') &&
+        pattern.startsWith('/')
       ) {
-        // Equals
-        return [text];
+        return new RegExp(pattern.slice(1, -1), 'i');
       }
-      // @deprecated
-      //  else if (
-      //   typeof pattern === 'string' &&
-      //   Soundex(text) === Soundex(pattern)
-      // ) {
-      //   // Sound like
-      //   return [text];
-      // }
-    }
+      return pattern;
+    });
+
+    if (patterns?.length)
+      // Return first match
+      for (let i = 0; i < patterns.length; i++) {
+        const pattern = patterns[i];
+        if (pattern instanceof RegExp) {
+          if (pattern.test(text)) {
+            const matches = text.match(pattern);
+            if (matches) {
+              if (matches.length >= 2) {
+                // Remove global match if needed
+                matches.shift();
+              }
+              return matches;
+            }
+          }
+          continue;
+        } else if (
+          typeof pattern === 'object' &&
+          'label' in pattern &&
+          text.trim().toLowerCase() === pattern.label.toLowerCase()
+        ) {
+          // Payload (quick reply)
+          return [text];
+        } else if (
+          typeof pattern === 'string' &&
+          text.trim().toLowerCase() === pattern.toLowerCase()
+        ) {
+          // Equals
+          return [text];
+        }
+        // @deprecated
+        //  else if (
+        //   typeof pattern === 'string' &&
+        //   Soundex(text) === Soundex(pattern)
+        // ) {
+        //   // Sound like
+        //   return [text];
+        // }
+      }
     // No match
     return false;
   }
@@ -262,7 +265,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       return undefined;
     }
 
-    const nlpPatterns = block.patterns.filter((p) => {
+    const nlpPatterns = block.patterns?.filter((p) => {
       return Array.isArray(p);
     }) as NlpPattern[][];
 
@@ -414,7 +417,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       'url' in block.message.attachment.payload
     ) {
       this.logger.error(
-        'Attachment Model : `url` payload has been deprecated in favor of `attachment_id`',
+        'Attachment Block : `url` payload has been deprecated in favor of `id`',
         block.id,
         block.message,
       );
@@ -440,7 +443,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
   ): Promise<StdOutgoingEnvelope> {
     const settings = await this.settingService.getSettings();
     const blockMessage: BlockMessage =
-      fallback && block.options.fallback
+      fallback && block.options?.fallback
         ? [...block.options.fallback.message]
         : Array.isArray(block.message)
           ? [...block.message]
@@ -524,21 +527,11 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       }
     } else if (blockMessage && 'attachment' in blockMessage) {
       const attachmentPayload = blockMessage.attachment.payload;
-      if (!attachmentPayload.attachment_id) {
+      if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
-        throw new Error('Remote attachments are no longer supported!');
-      }
-
-      const attachment = await this.attachmentService.findOne(
-        attachmentPayload.attachment_id,
-      );
-
-      if (!attachment) {
-        this.logger.debug(
-          'Unable to locate the attachment for the given block',
-          block,
+        throw new Error(
+          'Remote attachments in blocks are no longer supported!',
         );
-        throw new Error('Unable to find attachment.');
       }
 
       const envelope: StdOutgoingEnvelope = {
@@ -546,7 +539,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
         message: {
           attachment: {
             type: blockMessage.attachment.type,
-            payload: attachment as WithUrl<Attachment>,
+            payload: blockMessage.attachment.payload,
           },
           quickReplies: blockMessage.quickReplies
             ? [...blockMessage.quickReplies]
@@ -557,7 +550,7 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
     } else if (
       blockMessage &&
       'elements' in blockMessage &&
-      block.options.content
+      block.options?.content
     ) {
       const contentBlockOptions = block.options.content;
       // Hadnle pagination for list/carousel
@@ -599,13 +592,18 @@ export class BlockService extends BaseService<Block, BlockPopulate, BlockFull> {
       );
       // Process custom plugin block
       try {
-        return await plugin.process(block, context, conversationId);
+        const envelope = await plugin?.process(block, context, conversationId);
+
+        if (!envelope) {
+          throw new Error('Unable to find envelope');
+        }
+
+        return envelope;
       } catch (e) {
         this.logger.error('Plugin was unable to load/process ', e);
         throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
       }
-    } else {
-      throw new Error('Invalid message format.');
     }
+    throw new Error('Invalid message format.');
   }
 }

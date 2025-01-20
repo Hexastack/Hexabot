@@ -13,11 +13,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ModulesContainer } from '@nestjs/core';
+import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { LoggerService } from '@/logger/logger.service';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
+import { SocketRequest } from '../utils/socket-request';
 import { SocketResponse } from '../utils/socket-response';
 
 type Handler = (req: any, res: SocketResponse) => Promise<any>;
@@ -43,22 +45,23 @@ export class SocketEventDispatcherService implements OnModuleInit {
   async handleEvent(
     socketMethod: SocketMethod,
     path: string,
-    req: any,
+    req: SocketRequest,
     res: SocketResponse,
   ) {
     try {
       const handlers = this.routeHandlers[socketMethod];
-
-      const [_, handler] = Array.from(handlers.entries()).find(([key, _]) => {
+      const foundHandler = Array.from(handlers.entries()).find(([key, _]) => {
         const urlPathname = new URL(req.url, 'http://localhost').pathname;
         const keyUrlPathName = new URL(key, 'http://localhost').pathname;
 
         return urlPathname === keyUrlPathName;
       });
 
-      if (!handler) {
+      if (!foundHandler) {
         return res.status(HttpStatus.NOT_FOUND).send({ message: 'Not Found' });
       }
+
+      const [_, handler] = foundHandler;
       return await handler(req, res);
     } catch (error) {
       return this.handleException(error, res);
@@ -68,7 +71,10 @@ export class SocketEventDispatcherService implements OnModuleInit {
   onModuleInit() {
     const allProviders = Array.from(this.modulesContainer.values())
       .map((module) => module.providers.values())
-      .reduce((prev, curr) => prev.concat(Array.from(curr)), [])
+      .reduce(
+        (prev, curr) => prev.concat(Array.from(curr)),
+        [] as InstanceWrapper<unknown>[],
+      )
       .filter((provider) => !!provider.instance);
 
     for (const provider of allProviders) {

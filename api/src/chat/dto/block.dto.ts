@@ -21,6 +21,7 @@ import {
   IsString,
 } from 'class-validator';
 
+import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { CaptureVar } from '../schemas/types/capture-var';
@@ -83,13 +84,13 @@ export class BlockCreateDto {
   @IsObjectId({
     message: 'Attached block must be a valid objectId',
   })
-  attachedBlock?: string;
+  attachedBlock?: string | null;
 
   @ApiProperty({ description: 'Block category', type: String })
   @IsNotEmpty()
   @IsString()
   @IsObjectId({ message: 'Category must be a valid objectId' })
-  category: string;
+  category: string | null;
 
   @ApiPropertyOptional({
     description: 'Block has started conversation',
@@ -146,3 +147,7 @@ export class BlockUpdateDto extends PartialType(
   @IsOptional()
   trigger_channels?: string[];
 }
+
+export type BlockDto = DtoConfig<{
+  create: BlockCreateDto;
+}>;

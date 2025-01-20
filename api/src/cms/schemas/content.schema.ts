@@ -41,10 +41,10 @@ export class ContentStub extends BaseSchema {
    * Either of not this content is active.
    */
   @Prop({ type: Boolean, default: true })
-  status?: boolean;
+  status: boolean;
 
   @Prop({ type: mongoose.Schema.Types.Mixed })
-  dynamicFields?: Record<string, any>;
+  dynamicFields: Record<string, any>;
 
   @Prop({ type: String })
   rag?: string;

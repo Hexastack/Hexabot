@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,6 +8,7 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
@@ -78,6 +79,7 @@ describe('WebChannelHandler', () => {
           LabelModel,
           UserModel,
         ]),
+        JwtModule,
       ],
       providers: [
         {
@@ -123,9 +125,14 @@ describe('WebChannelHandler', () => {
     }).compile();
     subscriberService = module.get<SubscriberService>(SubscriberService);
     handler = module.get<WebChannelHandler>(WebChannelHandler);
+
+    jest
+      .spyOn(handler, 'getPublicUrl')
+      .mockResolvedValue('http://public.url/download/filename.extension?t=any');
   });
 
   afterAll(async () => {
+    jest.restoreAllMocks();
     await closeInMongodConnection();
   });
 
@@ -202,15 +209,15 @@ describe('WebChannelHandler', () => {
     expect(formatted).toEqual(webButtons);
   });
 
-  it('should format list properly', () => {
-    const formatted = handler._listFormat(contentMessage, {
+  it('should format list properly', async () => {
+    const formatted = await handler._listFormat(contentMessage, {
       content: contentMessage.options,
     });
     expect(formatted).toEqual(webList);
   });
 
-  it('should format carousel properly', () => {
-    const formatted = handler._carouselFormat(contentMessage, {
+  it('should format carousel properly', async () => {
+    const formatted = await handler._carouselFormat(contentMessage, {
       content: {
         ...contentMessage.options,
         display: OutgoingMessageFormat.carousel,
@@ -219,8 +226,8 @@ describe('WebChannelHandler', () => {
     expect(formatted).toEqual(webCarousel);
   });
 
-  it('should format attachment properly', () => {
-    const formatted = handler._attachmentFormat(attachmentMessage, {});
+  it('should format attachment properly', async () => {
+    const formatted = await handler._attachmentFormat(attachmentMessage, {});
     expect(formatted).toEqual(webAttachment);
   });
 

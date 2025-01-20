@@ -10,7 +10,7 @@ import MongoStore from 'connect-mongo';
 
 import { config } from '@/config';
 
-let sessionStore: MongoStore = null;
+let sessionStore: MongoStore | null = null;
 
 export const getSessionStore = () => {
   if (!sessionStore) {

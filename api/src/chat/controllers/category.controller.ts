@@ -114,12 +114,7 @@ export class CategoryController extends BaseController<Category> {
     @Param('id') id: string,
     @Body() categoryUpdate: CategoryUpdateDto,
   ): Promise<Category> {
-    const result = await this.categoryService.updateOne(id, categoryUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Category by id ${id}`);
-      throw new NotFoundException(`Category with ID ${id} not found`);
-    }
-    return result;
+    return await this.categoryService.updateOne(id, categoryUpdate);
   }
 
   /**

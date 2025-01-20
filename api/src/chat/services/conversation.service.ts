@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,6 +12,7 @@ import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { ConversationDto } from '../dto/conversation.dto';
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block, BlockFull } from '../schemas/block.schema';
@@ -30,7 +31,8 @@ import { SubscriberService } from './subscriber.service';
 export class ConversationService extends BaseService<
   Conversation,
   ConversationPopulate,
-  ConversationFull
+  ConversationFull,
+  ConversationDto
 > {
   constructor(
     readonly repository: ConversationRepository,
@@ -68,6 +70,7 @@ export class ConversationService extends BaseService<
   ) {
     const msgType = event.getMessageType();
     const profile = event.getSender();
+
     // Capture channel specific context data
     convo.context.channel = event.getHandler().getName();
     convo.context.text = event.getText();
@@ -81,7 +84,7 @@ export class ConversationService extends BaseService<
     // Capture user entry in context vars
     if (captureVars && next.capture_vars && next.capture_vars.length > 0) {
       next.capture_vars.forEach((capture) => {
-        let contextValue: string | Payload;
+        let contextValue: string | Payload | undefined;
 
         const nlp = event.getNLP();
 
@@ -103,7 +106,7 @@ export class ConversationService extends BaseService<
         if (capture.entity === -1) {
           // Capture the whole message
           contextValue =
-            ['message', 'quick_reply'].indexOf(msgType) !== -1
+            msgType && ['message', 'quick_reply'].indexOf(msgType) !== -1
               ? event.getText()
               : event.getPayload();
         } else if (capture.entity === -2) {
@@ -113,13 +116,16 @@ export class ConversationService extends BaseService<
         contextValue =
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
-        if (contextVars[capture.context_var]?.permanent) {
+        if (
+          profile.context?.vars &&
+          contextVars[capture.context_var]?.permanent
+        ) {
           Logger.debug(
             `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
           );
           profile.context.vars[capture.context_var] = contextValue;
         } else {
-          convo.context.vars[capture.context_var] = contextValue;
+          convo.context!.vars[capture.context_var] = contextValue;
         }
       });
     }
@@ -143,21 +149,11 @@ export class ConversationService extends BaseService<
         lat: parseFloat(coordinates.lat.toString()),
         lon: parseFloat(coordinates.lon.toString()),
       };
-    } else if (msgType === 'attachments') {
-      // @TODO : deprecated in favor of geolocation msgType
-      const attachments = event.getAttachments();
-      // @ts-expect-error deprecated
-      if (attachments.length === 1 && attachments[0].type === 'location') {
-        // @ts-expect-error deprecated
-        const coord = attachments[0].payload.coordinates;
-        convo.context.user_location = { lat: 0, lon: 0 };
-        convo.context.user_location.lat = parseFloat(coord.lat);
-        convo.context.user_location.lon = parseFloat(coord.long);
-      }
     }
 
     // Deal with load more in the case of a list display
     if (
+      next.options &&
       next.options.content &&
       (next.options.content.display === OutgoingMessageFormat.list ||
         next.options.content.display === OutgoingMessageFormat.carousel)
@@ -177,11 +173,6 @@ export class ConversationService extends BaseService<
       const updatedConversation = await this.updateOne(convo.id, {
         context: convo.context,
       });
-      if (!updatedConversation) {
-        throw new Error(
-          'Conversation Model : No conversation has been updated',
-        );
-      }
 
       //TODO: add check if nothing changed don't update
       const criteria =

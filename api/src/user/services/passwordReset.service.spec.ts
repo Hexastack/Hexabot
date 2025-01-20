@@ -25,6 +25,7 @@ import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -49,7 +50,10 @@ describe('PasswordResetService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        rootMongooseTestModule(installUserFixtures),
+        rootMongooseTestModule(async () => {
+          await installLanguageFixtures();
+          await installUserFixtures();
+        }),
         MongooseModule.forFeature([
           UserModel,
           RoleModel,
@@ -99,16 +103,15 @@ describe('PasswordResetService', () => {
     }).compile();
     passwordResetService =
       module.get<PasswordResetService>(PasswordResetService);
-
     mailerService = module.get<MailerService>(MailerService);
     jwtService = module.get<JwtService>(JwtService);
     userModel = module.get<Model<User>>(getModelToken('User'));
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
+
   describe('requestReset', () => {
     it('should send an email with a token', async () => {
       const sendMailSpy = jest.spyOn(mailerService, 'sendMail');
@@ -148,8 +151,8 @@ describe('PasswordResetService', () => {
       expect(verifySpy).toHaveBeenCalled();
 
       const user = await userModel.findOne({ email: users[0].email });
-      expect(user.resetToken).toBeNull();
-      expect(compareSync('newPassword', user.password)).toBeTruthy();
+      expect(user!.resetToken).toBeNull();
+      expect(compareSync('newPassword', user!.password)).toBeTruthy();
     });
   });
 });

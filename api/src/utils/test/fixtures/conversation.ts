@@ -9,10 +9,7 @@
 import mongoose from 'mongoose';
 
 import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
-import {
-  Conversation,
-  ConversationModel,
-} from '@/chat/schemas/conversation.schema';
+import { ConversationModel } from '@/chat/schemas/conversation.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -61,6 +58,9 @@ const conversations: ConversationCreateDto[] = [
         labels: [],
         assignedTo: null,
         channel: { name: 'messenger-channel' },
+        avatar: null,
+        context: {},
+        assignedAt: new Date(),
       },
       skip: {},
       attempt: 0,
@@ -107,6 +107,9 @@ const conversations: ConversationCreateDto[] = [
         labels: [],
         assignedTo: null,
         channel: { name: 'web-channel' },
+        avatar: null,
+        context: {},
+        assignedAt: new Date(),
       },
       skip: {},
       attempt: 0,
@@ -116,14 +119,16 @@ const conversations: ConversationCreateDto[] = [
   },
 ];
 
-export const conversationDefaultValues: TFixturesDefaultValues<Conversation> = {
-  active: false,
-};
+export const conversationDefaultValues: TFixturesDefaultValues<ConversationCreateDto> =
+  {
+    active: false,
+  };
 
-export const conversationFixtures = getFixturesWithDefaultValues<Conversation>({
-  fixtures: conversations,
-  defaultValues: conversationDefaultValues,
-});
+export const conversationFixtures =
+  getFixturesWithDefaultValues<ConversationCreateDto>({
+    fixtures: conversations,
+    defaultValues: conversationDefaultValues,
+  });
 
 export const installConversationTypeFixtures = async () => {
   const subscribers = await installSubscriberFixtures();
@@ -137,8 +142,10 @@ export const installConversationTypeFixtures = async () => {
     conversationFixtures.map((conversationFixture) => ({
       ...conversationFixture,
       sender: subscribers[parseInt(conversationFixture.sender)].id,
-      current: blocks[parseInt(conversationFixture.current)].id,
-      next: conversationFixture.next.map((n) => blocks[parseInt(n)].id),
+      current: conversationFixture.current
+        ? blocks[parseInt(conversationFixture.current)]?.id
+        : undefined,
+      next: conversationFixture.next?.map((n) => blocks[parseInt(n)].id),
     })),
   );
 };

@@ -84,9 +84,12 @@ describe('ContentTypeService', () => {
       );
       jest.spyOn(blockService, 'findOne').mockResolvedValueOnce(null);
       const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const result = await contentTypeService.deleteCascadeOne(contentType.id);
-      expect(deleteContentTypeSpy).toHaveBeenCalledWith(contentType.id);
-      expect(await contentService.find({ entity: contentType.id })).toEqual([]);
+
+      const result = await contentTypeService.deleteCascadeOne(contentType!.id);
+      expect(deleteContentTypeSpy).toHaveBeenCalledWith(contentType!.id);
+      expect(await contentService.find({ entity: contentType!.id })).toEqual(
+        [],
+      );
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
   });

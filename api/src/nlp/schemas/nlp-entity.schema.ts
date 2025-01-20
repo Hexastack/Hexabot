@@ -44,7 +44,7 @@ export class NlpEntityStub extends BaseSchema {
    * Lookup strategy can contain : keywords, trait, free-text
    */
   @Prop({ type: [String], default: ['keywords'] })
-  lookups?: Lookup[];
+  lookups: Lookup[];
 
   /**
    * Description of the entity purpose.
@@ -56,7 +56,7 @@ export class NlpEntityStub extends BaseSchema {
    * Either or not this entity a built-in (either fixtures or shipped along with the 3rd party ai).
    */
   @Prop({ type: Boolean, default: false })
-  builtin?: boolean;
+  builtin: boolean;
 
   /**
    * Returns a map object for entities

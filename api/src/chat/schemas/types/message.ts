@@ -1,22 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { PluginName } from '@/plugins/types';
 
 import { Message } from '../message.schema';
 
-import {
-  AttachmentForeignKey,
-  AttachmentPayload,
-  IncomingAttachmentPayload,
-  WithUrl,
-} from './attachment';
+import { AttachmentPayload } from './attachment';
 import { Button } from './button';
 import { ContentOptions } from './options';
 import { StdQuickReply } from './quick-reply';
@@ -101,11 +95,9 @@ export type StdOutgoingListMessage = {
   };
 };
 
-export type StdOutgoingAttachmentMessage<
-  A extends WithUrl<Attachment> | AttachmentForeignKey,
-> = {
+export type StdOutgoingAttachmentMessage = {
   // Stored in DB as `AttachmentPayload`, `Attachment` when populated for channels relaying
-  attachment: AttachmentPayload<A>;
+  attachment: AttachmentPayload;
   quickReplies?: StdQuickReply[];
 };
 
@@ -120,7 +112,7 @@ export type BlockMessage =
   | StdOutgoingQuickRepliesMessage
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage<AttachmentForeignKey>
+  | StdOutgoingAttachmentMessage
   | StdPluginMessage;
 
 export type StdOutgoingMessage =
@@ -128,7 +120,7 @@ export type StdOutgoingMessage =
   | StdOutgoingQuickRepliesMessage
   | StdOutgoingButtonsMessage
   | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage<WithUrl<Attachment>>;
+  | StdOutgoingAttachmentMessage;
 
 type StdIncomingTextMessage = { text: string };
 
@@ -147,7 +139,7 @@ export type StdIncomingLocationMessage = {
 export type StdIncomingAttachmentMessage = {
   type: PayloadType.attachments;
   serialized_text: string;
-  attachment: IncomingAttachmentPayload | IncomingAttachmentPayload[];
+  attachment: AttachmentPayload | AttachmentPayload[];
 };
 
 export type StdIncomingMessage =
@@ -192,7 +184,7 @@ export interface StdOutgoingListEnvelope {
 
 export interface StdOutgoingAttachmentEnvelope {
   format: OutgoingMessageFormat.attachment;
-  message: StdOutgoingAttachmentMessage<WithUrl<Attachment>>;
+  message: StdOutgoingAttachmentMessage;
 }
 
 export type StdOutgoingEnvelope =

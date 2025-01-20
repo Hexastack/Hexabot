@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
+import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
   installNlpValueFixtures,
@@ -22,6 +23,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { TFixtures } from '@/utils/test/types';
 
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -29,7 +31,11 @@ import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.rep
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpValueModel, NlpValue } from '../schemas/nlp-value.schema';
+import {
+  NlpValue,
+  NlpValueFull,
+  NlpValueModel,
+} from '../schemas/nlp-value.schema';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
@@ -39,9 +45,9 @@ describe('NlpValueController', () => {
   let nlpValueController: NlpValueController;
   let nlpValueService: NlpValueService;
   let nlpEntityService: NlpEntityService;
-  let jhonNlpValue: NlpValue;
-  let positiveValue: NlpValue;
-  let negativeValue: NlpValue;
+  let jhonNlpValue: NlpValue | null;
+  let positiveValue: NlpValue | null;
+  let negativeValue: NlpValue | null;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -92,11 +98,16 @@ describe('NlpValueController', () => {
         (acc, curr) => {
           acc.push({
             ...curr,
-            entity: nlpEntityFixtures[parseInt(curr.entity)],
+            entity: nlpEntityFixtures[
+              parseInt(curr.entity!)
+            ] as NlpValueFull['entity'],
+            builtin: curr.builtin!,
+            expressions: curr.expressions!,
+            metadata: curr.metadata!,
           });
           return acc;
         },
-        [],
+        [] as TFixtures<NlpValueFull>[],
       );
       expect(result).toEqualPayload(nlpValueFixturesWithEntities);
     });
@@ -115,12 +126,15 @@ describe('NlpValueController', () => {
         (acc, curr) => {
           const ValueWithEntities = {
             ...curr,
-            entity: nlpEntities[parseInt(curr.entity)].id,
+            entity: curr.entity ? nlpEntities[parseInt(curr.entity!)].id : null,
+            expressions: curr.expressions!,
+            metadata: curr.metadata!,
+            builtin: curr.builtin!,
           };
           acc.push(ValueWithEntities);
           return acc;
         },
-        [],
+        [] as TFixtures<NlpValueCreateDto>[],
       );
       expect(result).toEqualPayload(nlpValueFixturesWithEntities);
     });
@@ -151,20 +165,20 @@ describe('NlpValueController', () => {
 
   describe('deleteOne', () => {
     it('should delete a nlp Value', async () => {
-      const result = await nlpValueController.deleteOne(jhonNlpValue.id);
+      const result = await nlpValueController.deleteOne(jhonNlpValue!.id);
       expect(result.deletedCount).toEqual(1);
     });
 
     it('should throw exception when nlp Value id not found', async () => {
       await expect(
-        nlpValueController.deleteOne(jhonNlpValue.id),
+        nlpValueController.deleteOne(jhonNlpValue!.id),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('findOne', () => {
     it('should get a nlp Value', async () => {
-      const result = await nlpValueController.findOne(positiveValue.id, [
+      const result = await nlpValueController.findOne(positiveValue!.id, [
         'invalidCreteria',
       ]);
       const intentNlpEntity = await nlpEntityService.findOne({
@@ -172,7 +186,7 @@ describe('NlpValueController', () => {
       });
       const valueWithEntity = {
         ...nlpValueFixtures[0],
-        entity: intentNlpEntity.id,
+        entity: intentNlpEntity!.id,
       };
 
       expect(result).toEqualPayload(valueWithEntity);
@@ -182,7 +196,7 @@ describe('NlpValueController', () => {
       const intentNlpEntity = await nlpEntityService.findOne({
         name: 'intent',
       });
-      const result = await nlpValueController.findOne(positiveValue.id, [
+      const result = await nlpValueController.findOne(positiveValue!.id, [
         'entity',
       ]);
       const valueWithEntity = {
@@ -194,7 +208,7 @@ describe('NlpValueController', () => {
 
     it('should throw NotFoundException when Id does not exist', async () => {
       await expect(
-        nlpValueController.findOne(jhonNlpValue.id, ['entity']),
+        nlpValueController.findOne(jhonNlpValue!.id, ['entity']),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -205,13 +219,13 @@ describe('NlpValueController', () => {
         name: 'intent',
       });
       const updatedValue = {
-        entity: intentNlpEntity.id,
+        entity: intentNlpEntity!.id,
         value: 'updated',
         expressions: [],
         builtin: true,
       };
       const result = await nlpValueController.updateOne(
-        positiveValue.id,
+        positiveValue!.id,
         updatedValue,
       );
       expect(result).toEqualPayload(updatedValue);
@@ -222,18 +236,18 @@ describe('NlpValueController', () => {
         name: 'intent',
       });
       await expect(
-        nlpValueController.updateOne(jhonNlpValue.id, {
-          entity: intentNlpEntity.id,
+        nlpValueController.updateOne(jhonNlpValue!.id, {
+          entity: intentNlpEntity!.id,
           value: 'updated',
           expressions: [],
           builtin: true,
         }),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(getUpdateOneError(NlpValue.name, jhonNlpValue!.id));
     });
   });
   describe('deleteMany', () => {
     it('should delete multiple nlp values', async () => {
-      const valuesToDelete = [positiveValue.id, negativeValue.id];
+      const valuesToDelete = [positiveValue!.id, negativeValue!.id];
 
       const result = await nlpValueController.deleteMany(valuesToDelete);
 

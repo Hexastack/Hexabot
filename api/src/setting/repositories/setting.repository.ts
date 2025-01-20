@@ -7,18 +7,21 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookSettingsGroupLabelOperationMap,
+} from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
   FilterQuery,
   Model,
+  Query,
   Types,
   UpdateQuery,
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
-import { I18nService } from '@/i18n/services/i18n.service';
 import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { Setting } from '../schemas/setting.schema';
@@ -29,7 +32,6 @@ export class SettingRepository extends BaseRepository<Setting> {
   constructor(
     readonly eventEmitter: EventEmitter2,
     @InjectModel(Setting.name) readonly model: Model<Setting>,
-    private readonly i18n: I18nService,
   ) {
     super(eventEmitter, model, Setting);
   }
@@ -47,12 +49,48 @@ export class SettingRepository extends BaseRepository<Setting> {
   ): Promise<void> {
     if (!Array.isArray(updates)) {
       const payload = updates.$set;
-      if (typeof payload.value !== 'undefined') {
-        const { type } =
-          'type' in payload ? payload : await this.findOne(criteria);
-        this.validateSettingValue(type, payload.value);
+      if (payload && 'value' in payload) {
+        const hasType = 'type' in payload;
+        if (hasType) {
+          // Case when we need to update both the type and value
+          this.validateSettingValue(payload.type, payload.value);
+        } else {
+          // Case when we only update the setting value
+          const setting = await this.findOne(criteria);
+          if (setting && 'type' in setting) {
+            this.validateSettingValue(setting.type, payload.value);
+          } else {
+            throw new Error('Unable to find the setting to be updated');
+          }
+        }
       }
     }
+  }
+
+  /**
+   * Emits an event after a `Setting` has been updated.
+   *
+   * This method is used to synchronize global settings by emitting an event
+   * based on the `group` and `label` of the `Setting`.
+   *
+   * @param _query The Mongoose query object used to find and update the document.
+   * @param setting The updated `Setting` object.
+   */
+  async postUpdate(
+    _query: Query<
+      Document<Setting, any, any>,
+      Document<Setting, any, any>,
+      unknown,
+      Setting,
+      'findOneAndUpdate'
+    >,
+    setting: Setting,
+  ) {
+    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
+    const label = setting.label as '*';
+
+    // Sync global settings var
+    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
   }
 
   /**
@@ -65,7 +103,7 @@ export class SettingRepository extends BaseRepository<Setting> {
    *
    * @param setting The `Setting` document to be validated.
    */
-  private validateSettingValue(type: SettingType, value: any) {
+  public validateSettingValue(type: SettingType, value: any) {
     if (
       (type === SettingType.text || type === SettingType.textarea) &&
       typeof value !== 'string' &&

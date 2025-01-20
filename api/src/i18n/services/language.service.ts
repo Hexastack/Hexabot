@@ -7,9 +7,15 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
+import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
@@ -17,14 +23,21 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
+import { LanguageDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
 import { Language } from '../schemas/language.schema';
 
 @Injectable()
-export class LanguageService extends BaseService<Language> {
+export class LanguageService extends BaseService<
+  Language,
+  never,
+  never,
+  LanguageDto
+> {
   constructor(
     readonly repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -53,7 +66,13 @@ export class LanguageService extends BaseService<Language> {
    */
   @Cacheable(DEFAULT_LANGUAGE_CACHE_KEY)
   async getDefaultLanguage() {
-    return await this.findOne({ isDefault: true });
+    const defaultLanguage = await this.findOne({ isDefault: true });
+    if (!defaultLanguage) {
+      throw new InternalServerErrorException(
+        'Default language not found: getDefaultLanguage()',
+      );
+    }
+    return defaultLanguage;
   }
 
   /**
@@ -62,6 +81,15 @@ export class LanguageService extends BaseService<Language> {
    * @returns A promise that resolves to the `Language` object.
    */
   async getLanguageByCode(code: string) {
-    return await this.findOne({ code });
+    const language = await this.findOne({ code });
+
+    if (!language) {
+      this.logger.warn(`Unable to Language by languageCode ${code}`);
+      throw new NotFoundException(
+        `Language with languageCode ${code} not found`,
+      );
+    }
+
+    return language;
   }
 }

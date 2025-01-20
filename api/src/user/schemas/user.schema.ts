@@ -50,6 +50,16 @@ export class UserStub extends BaseSchema {
   })
   password: string;
 
+  @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'Role' }])
+  roles: unknown;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Attachment',
+    default: null,
+  })
+  avatar: unknown;
+
   @Prop({
     type: Boolean,
     default: false,
@@ -83,16 +93,6 @@ export class UserStub extends BaseSchema {
   })
   resetCount?: number;
 
-  @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'Role' }])
-  roles: unknown;
-
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'Attachment',
-    default: null,
-  })
-  avatar?: unknown;
-
   @Prop({
     type: String,
     default: null,
@@ -112,7 +112,7 @@ export class User extends UserStub {
   roles: string[];
 
   @Transform(({ obj }) => obj.avatar?.toString() || null)
-  avatar?: string;
+  avatar: string | null;
 }
 
 @Schema({ timestamps: true })

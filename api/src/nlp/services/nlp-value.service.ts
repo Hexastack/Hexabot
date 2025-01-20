@@ -11,7 +11,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
+import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -27,7 +27,8 @@ import { NlpEntityService } from './nlp-entity.service';
 export class NlpValueService extends BaseService<
   NlpValue,
   NlpValuePopulate,
-  NlpValueFull
+  NlpValueFull,
+  NlpValueDto
 > {
   constructor(
     readonly repository: NlpValueRepository,
@@ -62,7 +63,7 @@ export class NlpValueService extends BaseService<
     sampleText: string,
     sampleEntities: NlpSampleEntityValue[],
     storedEntities: NlpEntity[],
-  ) {
+  ): Promise<NlpSampleEntityValue[]> {
     const eMap: Record<string, NlpEntity> = storedEntities.reduce(
       (acc, curr) => {
         if (curr.name) acc[curr?.name] = curr;
@@ -123,7 +124,7 @@ export class NlpValueService extends BaseService<
         if ('start' in e && 'end' in e) {
           const word = sampleText.slice(e.start, e.end);
           return (
-            word !== e.value && vMap[e.value].expressions.indexOf(word) === -1
+            word !== e.value && vMap[e.value].expressions?.indexOf(word) === -1
           );
         }
         return false;
@@ -131,10 +132,10 @@ export class NlpValueService extends BaseService<
       .map((e) => {
         return this.updateOne(vMap[e.value].id, {
           ...vMap[e.value],
-          expressions: vMap[e.value].expressions.concat([
+          expressions: vMap[e.value].expressions?.concat([
             sampleText.slice(e.start, e.end),
           ]),
-        } as NlpValueUpdateDto);
+        });
       });
 
     await Promise.all(synonymsToAdd);
@@ -202,9 +203,11 @@ export class NlpValueService extends BaseService<
     const promises = valuesToAdd.map(async (v) => {
       const createdOrFound = await this.findOneOrCreate({ value: v.value }, v);
       // If value is found in database, then update it's synonyms
-      const expressions = createdOrFound.expressions
-        .concat(v.expressions) // Add new synonyms
-        .filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
+      const expressions = v.expressions
+        ? createdOrFound.expressions
+            ?.concat(v.expressions) // Add new synonyms
+            .filter((v, i, a) => a.indexOf(v) === i)
+        : createdOrFound.expressions?.filter((v, i, a) => a.indexOf(v) === i); // Filter unique values
 
       // Update expressions
       const result = await this.updateOne({ value: v.value }, { expressions });

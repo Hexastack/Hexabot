@@ -6,15 +6,23 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { FlattenMaps } from 'mongoose';
+
+import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
+
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
 
 export abstract class BaseSeeder<
-  T,
+  T extends FlattenMaps<unknown>,
   P extends string = never,
   TFull extends Omit<T, P> = never,
+  Dto extends DtoConfig = object,
+  U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
 > {
-  constructor(protected readonly repository: BaseRepository<T, P, TFull>) {}
+  constructor(
+    protected readonly repository: BaseRepository<T, P, TFull, Dto>,
+  ) {}
 
   async findAll(): Promise<T[]> {
     return await this.repository.findAll();
@@ -25,7 +33,7 @@ export abstract class BaseSeeder<
     return count === 0;
   }
 
-  async seed(models: Omit<T, keyof BaseSchema>[]): Promise<boolean> {
+  async seed(models: DtoInfer<DtoAction.Create, Dto, U>[]): Promise<boolean> {
     if (await this.isEmpty()) {
       await this.repository.createMany(models);
       return true;

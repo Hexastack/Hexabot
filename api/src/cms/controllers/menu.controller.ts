@@ -94,7 +94,9 @@ export class MenuController extends BaseController<
     this.validate({
       dto: body,
       allowedIds: {
-        parent: (await this.menuService.findOne(body.parent))?.id,
+        parent: body?.parent
+          ? (await this.menuService.findOne(body.parent))?.id
+          : undefined,
       },
     });
     return await this.menuService.create(body);
@@ -163,7 +165,10 @@ export class MenuController extends BaseController<
    */
   @CsrfCheck(true)
   @Patch(':id')
-  async updateOne(@Body() body: MenuCreateDto, @Param('id') id: string) {
+  async updateOne(
+    @Body() body: MenuCreateDto,
+    @Param('id') id: string,
+  ): Promise<Menu> {
     if (!id) return await this.create(body);
     return await this.menuService.updateOne(id, body);
   }

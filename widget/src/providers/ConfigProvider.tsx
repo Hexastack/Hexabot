@@ -9,23 +9,15 @@
 import React, { createContext, ReactNode, useContext, useRef } from "react";
 
 import { DEFAULT_CONFIG } from "../constants/defaultConfig";
+import { Config } from "../types/config.types";
 
-// Define the type for your config, including all possible properties
-export type Config = {
-  apiUrl: string;
-  channel: string;
-  language: string;
-};
-
-// Create a context with a specific type, providing better type-checking
 const ConfigContext = createContext<Config>(DEFAULT_CONFIG);
 
-export const ConfigProvider: React.FC<{
-  apiUrl?: string;
-  channel?: string;
-  language?: string;
-  children: ReactNode;
-}> = ({ children, ...providedConfig }) => {
+export const ConfigProvider: React.FC<
+  Partial<Config> & {
+    children: ReactNode;
+  }
+> = ({ children, ...providedConfig }) => {
   const config = useRef<Config>({
     ...DEFAULT_CONFIG,
     ...providedConfig,

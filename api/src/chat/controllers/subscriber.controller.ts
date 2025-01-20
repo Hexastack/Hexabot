@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -19,9 +19,9 @@ import {
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
+import { AttachmentService } from '@/attachment/services/attachment.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -49,11 +49,21 @@ export class SubscriberController extends BaseController<
 > {
   constructor(
     private readonly subscriberService: SubscriberService,
+    private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
   ) {
     super(subscriberService);
   }
 
+  /**
+   * Retrieves a paginated list of subscribers based on provided query parameters.
+   * Supports filtering, pagination, and population of related fields.
+   *
+   * @param pageQuery - The pagination and sorting options.
+   * @param populate - List of fields to populate in the response.
+   * @param filters - Search filters to apply on the Subscriber model.
+   * @returns A promise containing the paginated and optionally populated list of subscribers.
+   */
   @Get()
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Subscriber>,
@@ -79,8 +89,10 @@ export class SubscriberController extends BaseController<
   }
 
   /**
-   * Counts the filtered number of subscribers.
-   * @returns A promise that resolves to an object representing the filtered number of subscribers.
+   * Retrieves the count of subscribers that match the provided search filters.
+   *
+   * @param filters - Optional search filters to apply on the Subscriber model.
+   * @returns A promise containing the count of subscribers matching the filters.
    */
   @Get('count')
   async filterCount(
@@ -100,6 +112,14 @@ export class SubscriberController extends BaseController<
     return await this.count(filters);
   }
 
+  /**
+   * Retrieves a single subscriber by their unique ID.
+   * Supports optional population of related fields.
+   *
+   * @param id - The unique identifier of the subscriber to retrieve.
+   * @param populate - An optional list of related fields to populate in the response.
+   * @returns The subscriber document, populated if requested.
+   */
   @Get(':id')
   async findOne(
     @Param('id') id: string,
@@ -116,23 +136,35 @@ export class SubscriberController extends BaseController<
     return doc;
   }
 
-  @Roles('public')
-  @Get(':foreign_id/profile_pic')
-  async findProfilePic(
-    @Param('foreign_id') foreign_id: string,
-  ): Promise<StreamableFile> {
+  /**
+   * Retrieves the profile picture (avatar) of a subscriber by their unique ID.
+   * If no avatar is set, generates an initials-based avatar.
+   *
+   * @param id - The unique identifier of the subscriber whose profile picture is to be retrieved.
+   * @returns A streamable file containing the avatar image.
+   */
+  @Get(':id/profile_pic')
+  async getAvatar(
+    @Param('id') id: string,
+  ): Promise<StreamableFile | undefined> {
+    const subscriber = await this.subscriberService.findOneAndPopulate(id);
+
+    if (!subscriber) {
+      throw new NotFoundException(`Subscriber with ID ${id} not found`);
+    }
+
     try {
-      const pic = await this.subscriberService.findProfilePic(foreign_id);
-      return pic;
-    } catch (e) {
-      const [subscriber] = await this.subscriberService.find({ foreign_id });
-      if (subscriber) {
-        return generateInitialsAvatar(subscriber);
-      } else {
-        throw new NotFoundException(
-          `Subscriber with ID ${foreign_id} not found`,
-        );
+      if (!subscriber.avatar) {
+        throw new Error('User has no avatar');
       }
+
+      return await this.attachmentService.download(subscriber.avatar);
+    } catch (err) {
+      this.logger.verbose(
+        'Subscriber has no avatar, generating initials avatar ...',
+        err,
+      );
+      return await generateInitialsAvatar(subscriber);
     }
   }
 
@@ -142,11 +174,6 @@ export class SubscriberController extends BaseController<
     @Param('id') id: string,
     @Body() subscriberUpdate: SubscriberUpdateDto,
   ) {
-    const result = await this.subscriberService.updateOne(id, subscriberUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Subscriber by id ${id}`);
-      throw new NotFoundException(`Subscriber with ID ${id} not found`);
-    }
-    return result;
+    return await this.subscriberService.updateOne(id, subscriberUpdate);
   }
 }

@@ -5,6 +5,7 @@ Dockerfile
 Dockerfile.base
 .env
 .eslintrc.js
+.eslintrc-staged.js
 .git
 .gitignore
 .husky

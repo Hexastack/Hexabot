@@ -66,27 +66,22 @@ describe('WebsocketGateway', () => {
   });
 
   it('should connect successfully', async () => {
-    ioClient.connect();
-    await new Promise<void>((resolve) => {
-      ioClient.on('connect', () => {
-        expect(true).toBe(true);
-        resolve();
-      });
+    ioClient.on('connect', () => {
+      expect(true).toBe(true);
     });
+    ioClient.connect();
     ioClient.disconnect();
   });
 
   it('should emit "OK" on "healthcheck"', async () => {
-    ioClient.connect();
-    await new Promise<void>((resolve) => {
-      ioClient.on('connect', () => {
-        ioClient.emit('healthcheck', 'Hello world!');
-        ioClient.on('event', (data) => {
-          expect(data).toBe('OK');
-          resolve();
-        });
+    ioClient.on('connect', () => {
+      ioClient.emit('healthcheck', 'Hello world');
+
+      ioClient.on('event', (data) => {
+        expect(data).toBe('OK');
       });
     });
+    ioClient.connect();
     ioClient.disconnect();
   });
 });

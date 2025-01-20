@@ -17,6 +17,7 @@ export const userModels = (roles: string[]): UserCreateDto[] => {
       email: 'admin@admin.admin',
       password: 'adminadmin',
       roles,
+      avatar: null,
     },
   ];
 };
