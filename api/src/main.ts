@@ -86,7 +86,7 @@ async function bootstrap() {
 
   process.on('uncaughtException', (error) => {
     if (error.stack?.toLowerCase().includes('smtp'))
-      app.get(LoggerService).error('SMTP error', error.stack);
+      (await app.resolve(LoggerService)).error('SMTP error', error.stack);
     else throw error;
   });
 
@@ -95,7 +95,7 @@ async function bootstrap() {
     swagger(app);
   }
 
-  await app.listen(3000);
+  await app.listen(4001);
 }
 
 bootstrap();
