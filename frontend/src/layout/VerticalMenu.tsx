@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -32,14 +32,13 @@ import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { useRouter } from "next/router";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { Sidebar } from "@/app-components/menus/Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
-import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 import { getLayout } from "@/utils/laylout";
@@ -206,7 +205,6 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
         },
       },
 
-      
       // {
       //   text: 'menu.broadcast',
       //   href: "/subscribers/broadcast",
@@ -287,25 +285,10 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
   onToggleOut,
 }) => {
   const { ssoEnabled } = useConfig();
-  const { t } = useTranslate();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const hasPermission = useHasPermission();
   const menuItems = getMenuItems(ssoEnabled);
-  // Filter menu item to which user is allowed access
-  const availableMenuItems = useMemo(() => {
-    return menuItems.filter(({ requires: requiredPermissions }) => {
-      return (
-        !requiredPermissions ||
-        Object.entries(requiredPermissions).every((permission) => {
-          const entityType = permission[0] as EntityType;
-          const actions = permission[1];
-
-          return actions.every((action) => hasPermission(entityType, action));
-        })
-      );
-    });
-  }, [t, hasPermission]);
+  const availableMenuItems = useAvailableMenuItems(menuItems);
   const hasTemporaryDrawer =
     getLayout(router.pathname.slice(1)) === "full_width";
 
