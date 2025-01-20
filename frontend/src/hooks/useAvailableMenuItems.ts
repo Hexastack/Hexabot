@@ -14,7 +14,12 @@ import { PermissionAction } from "@/types/permission.types";
 
 import { useHasPermission } from "./useHasPermission";
 
-// Helper function to check permissions for a menu item
+/**
+ * Helper function to check permissions for a menu item
+ * @param menuItem - The menu item
+ * @param hasPermission - Callback function
+ * @returns True if hasPermission() is true for all required permissions.
+ */
 const isMenuItemAllowed = (
   menuItem: MenuItem,
   hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,
@@ -30,6 +35,12 @@ const isMenuItemAllowed = (
     )
   );
 };
+
+/**
+ * Filters menu items based on user permissions.
+ * @param menuItems - The list of menu items to filter.
+ * @returns A filtered list of menu items that the user is allowed to access.
+ */
 const filterMenuItems = (
   menuItems: MenuItem[],
   hasPermission: (entityType: EntityType, action: PermissionAction) => boolean,

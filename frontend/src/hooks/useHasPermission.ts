@@ -19,7 +19,7 @@ export const useHasPermission = () => {
     (type: EntityType, action: PermissionAction) => {
       const allowedActions = getAllowedActions(type);
 
-      return allowedActions?.includes(action) ? true : false;
+      return !!allowedActions && allowedActions?.includes(action);
     },
     [getAllowedActions],
   );
