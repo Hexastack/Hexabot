@@ -772,6 +772,42 @@ const migrateAndPopulateAttachmentMessages = async ({
   }
 };
 
+const addDefaultStorageHelper = async ({ logger }: MigrationServices) => {
+  const SettingModel = mongoose.model<Setting>(Setting.name, settingSchema);
+  try {
+    await SettingModel.create({
+      group: 'chatbot_settings',
+      label: 'default_storage_helper',
+      value: 'local-storage-helper',
+      type: SettingType.select,
+      config: {
+        multiple: false,
+        allowCreate: false,
+        entity: 'Helper',
+        idKey: 'name',
+        labelKey: 'name',
+      },
+      weight: 2,
+    });
+    logger.log('Successfuly added the default local storage helper setting');
+  } catch (err) {
+    logger.error('Unable to add the default local storage helper setting');
+  }
+};
+
+const removeDefaultStorageHelper = async ({ logger }: MigrationServices) => {
+  const SettingModel = mongoose.model<Setting>(Setting.name, settingSchema);
+  try {
+    await SettingModel.deleteOne({
+      group: 'chatbot_settings',
+      label: 'default_storage_helper',
+    });
+    logger.log('Successfuly removed the default local storage helper setting');
+  } catch (err) {
+    logger.error('Unable to remove the default local storage helper setting');
+  }
+};
+
 module.exports = {
   async up(services: MigrationServices) {
     await updateOldAvatarsPath(services);
@@ -784,6 +820,7 @@ module.exports = {
     await populateSettingAttachments(services);
     await populateUserAvatars(services);
     await populateSubscriberAvatars(services);
+    await addDefaultStorageHelper(services);
     return true;
   },
   async down(services: MigrationServices) {
@@ -792,6 +829,7 @@ module.exports = {
     await restoreOldAvatarsPath(services);
     await migrateAttachmentBlocks(MigrationAction.DOWN, services);
     await migrateAttachmentContents(MigrationAction.DOWN, services);
+    await removeDefaultStorageHelper(services);
     return true;
   },
 };

@@ -7,12 +7,14 @@
     "fallback_message": "Message de secours",
     "fallback_block": "Bloc de secours",
     "default_nlu_helper": "Utilitaire NLU par défaut",
-    "default_llm_helper": "Utilitaire LLM par défaut"
+    "default_llm_helper": "Utilitaire LLM par défaut",
+    "default_storage_helper": "Utilitaire de stockage par défaut"
   },
   "help": {
     "global_fallback": "La réponse de secours globale vous permet d'envoyer des messages personnalisés lorsque l'entrée de l'utilisateur ne correspond à aucun des messages des blocs.",
     "fallback_message": "Si aucun bloc de secours n'est sélectionné, l'un de ces messages sera envoyé.",
     "default_nlu_helper": "Utilitaire du traitement et de la compréhension des entrées des utilisateurs, incluant des tâches telles que la prédiction d'intention, la détection de langue et la reconnaissance d'entités.",
-    "default_llm_helper": "Utilitaire responsable de l'intelligence artificielle générative avancée pour effectuer des tâches telles que la génération de texte, la complétion de chat et les réponses à des requêtes complexes."
+    "default_llm_helper": "Utilitaire responsable de l'intelligence artificielle générative avancée pour effectuer des tâches telles que la génération de texte, la complétion de chat et les réponses à des requêtes complexes.",
+    "default_storage_helper": "Utilitaire de stockage définit l'emplacement où stocker les fichiers joints. Par défaut, le stockage local par défaut les conserve localement, mais vous pouvez choisir d'utiliser Minio ou tout autre serveur de stockage."
   }
 }
