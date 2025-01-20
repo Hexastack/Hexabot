@@ -15,6 +15,6 @@
     "fallback_message": "If no fallback block is selected, then one of these messages will be sent.",
     "default_nlu_helper": "The NLU helper is responsible for processing and understanding user inputs, including tasks like intent prediction, language detection, and entity recognition.",
     "default_llm_helper": "The LLM helper leverages advanced generative AI to perform tasks such as text generation, chat completion, and complex query responses.",
-    "default_storage_helper": "The Storage helper defines where to storage attachment files. By default, the default local storage stores them locally, but you can choose to use Minio or any other storage servers."
+    "default_storage_helper": "The storage helper defines where to store attachment files. By default, the default local storage helper stores them locally, but you can choose to use Minio or any other storage solution."
   }
 }

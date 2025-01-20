@@ -89,12 +89,6 @@ describe('AttachmentController', () => {
         SettingSeeder,
         SettingService,
         HelperService,
-        // {
-        //   provide: HelperService,
-        //   useValue: {
-        //     getDefaultHelper: jest.fn(),
-        //   },
-        // },
         {
           provide: CACHE_MANAGER,
           useValue: {

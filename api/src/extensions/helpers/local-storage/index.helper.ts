@@ -186,6 +186,6 @@ export default class LocalStorageHelper
       throw new NotFoundException('No file was found');
     }
 
-    return fs.createReadStream(path); // Reads the file content as a Buffer
+    return fs.createReadStream(path);
   }
 }
