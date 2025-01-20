@@ -35,7 +35,6 @@ const isMenuItemAllowed = (
     )
   );
 };
-
 /**
  * Filters menu items based on user permissions.
  * @param menuItems - The list of menu items to filter.
