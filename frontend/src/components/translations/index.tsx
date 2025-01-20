@@ -12,6 +12,7 @@ import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -44,7 +45,7 @@ export const Translations = () => {
     },
   );
   const editDialogCtl = useDialog<ITranslation>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
     $iLike: ["str"],
   });
@@ -83,7 +84,7 @@ export const Translations = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -167,10 +168,7 @@ export const Translations = () => {
             <EditTranslationDialog {...getDisplayDialogs(editDialogCtl)} />
             <DeleteDialog
               {...deleteDialogCtl}
-              callback={() => {
-                if (deleteDialogCtl?.data)
-                  deleteTranslation(deleteDialogCtl.data);
-              }}
+              callback={deleteCallbackHandler(deleteTranslation)}
             />
             <Grid item width="100%">
               <DataGrid {...dataGridProps} columns={columns} />

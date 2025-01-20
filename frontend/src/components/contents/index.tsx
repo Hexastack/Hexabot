@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -54,7 +55,7 @@ export const Contents = () => {
     content?: IContent;
     contentType?: IContentType;
   }>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContent>({
     $eq: [{ entity: String(query.id) }],
@@ -102,7 +103,7 @@ export const Contents = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (content) => deleteDialogCtl.openDialog(content.id),
+        action: (content) => deleteDialogCtl.openDialog([content.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -169,9 +170,7 @@ export const Contents = () => {
           />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data) deleteContent(deleteDialogCtl.data);
-            }}
+            callback={deleteCallbackHandler(deleteContent)}
           />
 
           <Grid padding={2} container>

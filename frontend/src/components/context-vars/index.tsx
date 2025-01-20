@@ -11,9 +11,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import React, { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -43,7 +43,7 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<IContextVar>(false);
   const editDialogCtl = useDialog<IContextVar>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IContextVar>({
     $iLike: ["label"],
@@ -67,8 +67,7 @@ export const ContextVars = () => {
       toast.error(error);
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
-      setSelectedContextVars([]);
+      deleteDialogCtl.closeDialog(undefined, "postDelete");
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -79,13 +78,11 @@ export const ContextVars = () => {
         toast.error(error);
       },
       onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedContextVars([]);
+        deleteDialogCtl.closeDialog(undefined, "postDelete");
         toast.success(t("message.item_delete_success"));
       },
     },
   );
-  const [selectedContextVars, setSelectedContextVars] = useState<string[]>([]);
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
     [
@@ -96,7 +93,7 @@ export const ContextVars = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -160,9 +157,8 @@ export const ContextVars = () => {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedContextVars(selection as string[]);
-  };
+  const handleSelectionChange = (selection: GridRowSelectionModel) =>
+    deleteDialogCtl.saveData?.(selection as string[]);
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -171,15 +167,7 @@ export const ContextVars = () => {
 
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (selectedContextVars.length > 0) {
-            deleteContextVars(selectedContextVars);
-            setSelectedContextVars([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            deleteContextVar(deleteDialogCtl.data);
-          }
-        }}
+        callback={deleteCallbackHandler(deleteContextVar, deleteContextVars)}
       />
       <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
         <Grid
@@ -205,13 +193,13 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
-          {selectedContextVars.length > 0 && (
+          {deleteDialogCtl?.data?.length && (
             <Grid item>
               <Button
                 startIcon={<DeleteIcon />}
                 variant="contained"
                 color="error"
-                onClick={() => deleteDialogCtl.openDialog(undefined)}
+                onClick={() => deleteDialogCtl.openDialog()}
               >
                 {t("button.delete")}
               </Button>

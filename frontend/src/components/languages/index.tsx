@@ -13,6 +13,7 @@ import { GridColDef } from "@mui/x-data-grid";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -42,7 +43,7 @@ export const Languages = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<ILanguage>(false);
   const editDialogCtl = useDialog<ILanguage>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILanguage>({
@@ -99,7 +100,7 @@ export const Languages = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
         isDisabled: (row) => row.isDefault,
       },
@@ -186,9 +187,7 @@ export const Languages = () => {
       <LanguageDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLanguage(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteLanguage)}
       />
       <PageHeader icon={Flag} title={t("title.languages")}>
         <Grid

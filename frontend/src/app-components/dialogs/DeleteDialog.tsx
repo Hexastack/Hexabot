@@ -20,9 +20,10 @@ import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { DialogControl } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 
-export type DeleteDialogProps<T = string> = DialogControl<T>;
+export type DeleteDialogProps<T = string> = DialogControl<T, T>;
 export const DeleteDialog = <T extends any = string>({
   open,
+  data,
   callback,
   closeDialog: closeFunction,
 }: DeleteDialogProps<T>) => {
@@ -45,11 +46,7 @@ export const DeleteDialog = <T extends any = string>({
         <Button
           variant="contained"
           color="error"
-          onClick={() => {
-            if (callback) {
-              callback();
-            }
-          }}
+          onClick={() => callback?.(data)}
           autoFocus
         >
           {t("button.yes")}

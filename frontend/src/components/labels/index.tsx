@@ -10,9 +10,9 @@ import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -40,7 +40,7 @@ export const Labels = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<ILabel>(false);
   const editDialogCtl = useDialog<ILabel>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILabel>({
     $or: ["name", "title"],
@@ -70,7 +70,7 @@ export const Labels = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -153,9 +153,7 @@ export const Labels = () => {
       <LabelDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteLabel)}
       />
       <PageHeader icon={faTags} title={t("title.labels")}>
         <Grid

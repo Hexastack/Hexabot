@@ -10,9 +10,9 @@ import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -41,7 +41,7 @@ export const Roles = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<IRole>(false);
   const editDialogCtl = useDialog<IRole>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const permissionDialogCtl = useDialog<{
     role: IRole;
   }>(false);
@@ -82,7 +82,7 @@ export const Roles = () => {
 
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -132,9 +132,7 @@ export const Roles = () => {
       <RoleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl.data) deleteRole(deleteDialogCtl.data);
-        }}
+        callback={deleteCallbackHandler(deleteRole)}
       />
       <PageHeader title={t("title.roles")} icon={faUniversalAccess}>
         <Grid

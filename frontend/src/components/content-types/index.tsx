@@ -12,6 +12,7 @@ import { Button, Grid, Paper } from "@mui/material";
 import { useRouter } from "next/router";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -41,7 +42,7 @@ export const ContentTypes = () => {
   const router = useRouter();
   // Dialog Controls
   const addDialogCtl = useDialog<IContentType>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const deleteDialogCtl = useDialog<string[]>(false);
   const fieldsDialogCtl = useDialog<IContentType>(false);
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContentType>({
@@ -80,7 +81,7 @@ export const ContentTypes = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog([row.id]),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -120,10 +121,7 @@ export const ContentTypes = () => {
           <ContentTypeDialog {...getDisplayDialogs(addDialogCtl)} />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data)
-                deleteContentType(deleteDialogCtl.data);
-            }}
+            callback={deleteCallbackHandler(deleteContentType)}
           />
           <EditContentTypeFieldsDialog {...fieldsDialogCtl} />
           <Grid padding={2} container>
