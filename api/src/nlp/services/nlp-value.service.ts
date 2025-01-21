@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -63,7 +63,7 @@ export class NlpValueService extends BaseService<
     sampleText: string,
     sampleEntities: NlpSampleEntityValue[],
     storedEntities: NlpEntity[],
-  ) {
+  ): Promise<NlpSampleEntityValue[]> {
     const eMap: Record<string, NlpEntity> = storedEntities.reduce(
       (acc, curr) => {
         if (curr.name) acc[curr?.name] = curr;

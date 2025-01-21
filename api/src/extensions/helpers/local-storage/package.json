@@ -1,0 +1,8 @@
+{
+  "name": "hexabot-helper-local-storage",
+  "version": "2.2.0",
+  "description": "The default Hexabot Helper Extension for Hexabot to enable local storage for attachment files",
+  "dependencies": {},
+  "author": "Hexastack",
+  "license": "AGPL-3.0-only"
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -134,12 +134,7 @@ export class RoleController extends BaseController<
   @CsrfCheck(true)
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() roleUpdate: RoleUpdateDto) {
-    const result = await this.roleService.updateOne(id, roleUpdate);
-    if (!result) {
-      this.logger.warn(`Unable to update Role by id ${id}`);
-      throw new NotFoundException(`Role with ID ${id} not found`);
-    }
-    return result;
+    return await this.roleService.updateOne(id, roleUpdate);
   }
 
   /**

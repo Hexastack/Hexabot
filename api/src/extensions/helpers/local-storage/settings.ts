@@ -6,19 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BaseBlockPlugin } from './base-block-plugin';
-import { BaseEventPlugin } from './base-event-plugin';
-import { BasePlugin } from './base-plugin.service';
-import { PluginType } from './types';
+import { HelperSetting } from '@/helper/types';
 
-const PLUGIN_TYPE_MAP = {
-  [PluginType.event]: BaseEventPlugin,
-  [PluginType.block]: BaseBlockPlugin,
-};
+export const LOCAL_STORAGE_HELPER_NAME = 'local-storage-helper';
 
-export type PluginTypeMap = typeof PLUGIN_TYPE_MAP;
+export const LOCAL_STORAGE_HELPER_NAMESPACE = 'local-storage-helper';
 
-export type PluginInstance<T extends PluginType> = InstanceType<
-  PluginTypeMap[T]
-> &
-  BasePlugin;
+export default [] as const satisfies HelperSetting<
+  typeof LOCAL_STORAGE_HELPER_NAME
+>[];

@@ -16,8 +16,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
+import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
+import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { PluginService } from '@/plugins/plugins.service';
+import { SettingRepository } from '@/setting/repositories/setting.repository';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
 import { ModelRepository } from '@/user/repositories/model.repository';
 import { PermissionRepository } from '@/user/repositories/permission.repository';
 import { ModelModel } from '@/user/schemas/model.schema';
@@ -30,6 +35,7 @@ import {
   attachmentFixtures,
   installAttachmentFixtures,
 } from '@/utils/test/fixtures/attachment';
+import { installSettingFixtures } from '@/utils/test/fixtures/setting';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -51,16 +57,23 @@ describe('AttachmentController', () => {
   let attachmentController: AttachmentController;
   let attachmentService: AttachmentService;
   let attachmentToDelete: Attachment;
+  let helperService: HelperService;
+  let settingService: SettingService;
+  let loggerService: LoggerService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AttachmentController],
       imports: [
-        rootMongooseTestModule(installAttachmentFixtures),
+        rootMongooseTestModule(async () => {
+          await installSettingFixtures();
+          await installAttachmentFixtures();
+        }),
         MongooseModule.forFeature([
           AttachmentModel,
           PermissionModel,
           ModelModel,
+          SettingModel,
         ]),
       ],
       providers: [
@@ -68,11 +81,14 @@ describe('AttachmentController', () => {
         AttachmentRepository,
         PermissionService,
         PermissionRepository,
+        SettingRepository,
         ModelService,
         ModelRepository,
         LoggerService,
         EventEmitter2,
-        PluginService,
+        SettingSeeder,
+        SettingService,
+        HelperService,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -89,6 +105,14 @@ describe('AttachmentController', () => {
     attachmentToDelete = (await attachmentService.findOne({
       name: 'store1.jpg',
     }))!;
+
+    helperService = module.get<HelperService>(HelperService);
+    settingService = module.get<SettingService>(SettingService);
+    loggerService = module.get<LoggerService>(LoggerService);
+
+    helperService.register(
+      new LocalStorageHelper(settingService, helperService, loggerService),
+    );
   });
 
   afterAll(closeInMongodConnection);

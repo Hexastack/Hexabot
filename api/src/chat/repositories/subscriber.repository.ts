@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -151,7 +151,7 @@ export class SubscriberRepository extends BaseRepository<
   async updateOneByForeignIdQuery(
     id: string,
     updates: SubscriberUpdateDto,
-  ): Promise<Subscriber | null> {
+  ): Promise<Subscriber> {
     return await this.updateOne({ foreign_id: id }, updates);
   }
 
@@ -162,9 +162,7 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @returns The updated subscriber entity.
    */
-  async handBackByForeignIdQuery(
-    foreignId: string,
-  ): Promise<Subscriber | null> {
+  async handBackByForeignIdQuery(foreignId: string): Promise<Subscriber> {
     return await this.updateOne(
       {
         foreign_id: foreignId,
@@ -187,7 +185,7 @@ export class SubscriberRepository extends BaseRepository<
   async handOverByForeignIdQuery(
     foreignId: string,
     userId: string,
-  ): Promise<Subscriber | null> {
+  ): Promise<Subscriber> {
     return await this.updateOne(
       {
         foreign_id: foreignId,

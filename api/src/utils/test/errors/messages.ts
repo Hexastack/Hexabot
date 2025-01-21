@@ -6,19 +6,5 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BaseBlockPlugin } from './base-block-plugin';
-import { BaseEventPlugin } from './base-event-plugin';
-import { BasePlugin } from './base-plugin.service';
-import { PluginType } from './types';
-
-const PLUGIN_TYPE_MAP = {
-  [PluginType.event]: BaseEventPlugin,
-  [PluginType.block]: BaseBlockPlugin,
-};
-
-export type PluginTypeMap = typeof PLUGIN_TYPE_MAP;
-
-export type PluginInstance<T extends PluginType> = InstanceType<
-  PluginTypeMap[T]
-> &
-  BasePlugin;
+export const getUpdateOneError = (entity: string, id?: string) =>
+  new Error(`Unable to update ${entity}${id ? ` with ID \"${id}\"` : ''}`);

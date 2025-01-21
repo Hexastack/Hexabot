@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,7 +10,6 @@ import {
   Body,
   Controller,
   Get,
-  NotFoundException,
   Param,
   Patch,
   Query,
@@ -71,11 +70,6 @@ export class SettingController {
     @Param('id') id: string,
     @Body() settingUpdateDto: { value: any },
   ): Promise<Setting> {
-    const result = await this.settingService.updateOne(id, settingUpdateDto);
-    if (!result) {
-      this.logger.warn(`Unable to update setting by id ${id}`);
-      throw new NotFoundException(`Setting with ID ${id} not found`);
-    }
-    return result;
+    return await this.settingService.updateOne(id, settingUpdateDto);
   }
 }
