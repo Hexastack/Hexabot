@@ -52,7 +52,6 @@ RUN npm install
 COPY ./frontend ./frontend
 COPY ./widget ./widget
 
-RUN npm install
 
 
 # used to by pass Next.js paching lock file
