@@ -238,6 +238,19 @@ export default abstract class ChannelHandler<
   /**
    * Fetch the subscriber profile data
    *
+   * @deprecated
+   * @param event - The message event received
+   * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
+   */
+  async getUserData(
+    event: EventWrapper<any, any, N>,
+  ): Promise<SubscriberCreateDto> {
+    return await this.getSubscriberData(event);
+  }
+
+  /**
+   * Fetch the subscriber profile data
+   *
    * @param event - The message event received
    * @returns {Promise<Subscriber>} - The channel's response, otherwise an error
    */

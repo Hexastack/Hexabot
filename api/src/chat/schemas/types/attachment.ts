@@ -31,7 +31,11 @@ export type AttachmentRef =
       url: string;
     };
 
-export interface AttachmentPayload {
+/** IMPORTANT: No need to use generic type here */
+export interface AttachmentPayload<T extends AttachmentRef = AttachmentRef> {
   type: FileType;
-  payload: AttachmentRef;
+  payload: T;
 }
+
+/** @deprecated */
+export type WithUrl<A> = A & { url?: string };
