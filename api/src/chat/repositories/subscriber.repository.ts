@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -81,6 +81,10 @@ export class SubscriberRepository extends BaseRepository<
     const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
 
     const oldSubscriber = await this.findOne(criteria);
+
+    if (!oldSubscriber) {
+      throw new Error('Something went wrong: subscriber does not exist');
+    }
 
     if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
       this.eventEmitter.emit(
