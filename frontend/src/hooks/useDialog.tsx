@@ -7,7 +7,7 @@
  */
 
 import { DialogProps } from "@mui/material";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 export type DialogControlProps<T, C = never> = Omit<
   DialogControl<T, C>,
@@ -20,7 +20,7 @@ type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
 type TFnVoid<T> = (data?: T) => void;
 export type DialogControl<T = null, C = never> = DialogProps & {
   data?: T;
-  saveData?: TFnVoid<T>;
+  setData?: Dispatch<SetStateAction<T | undefined>>;
   callback?: TFnVoid<C>;
   openDialog: TFnVoid<T>;
   closeDialog: TCloseDialog;
@@ -34,12 +34,15 @@ export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
     setOpen(true);
   };
   const closeDialog: TCloseDialog = (event, reason) => {
-    if (reason === "postDelete") setData(undefined);
-    if (reason !== "backdropClick") setOpen(false);
+    if (reason === "postDelete") {
+      setData(undefined);
+    }
+    if (reason !== "backdropClick") {
+      setOpen(false);
+    }
   };
-  const saveData: TFnVoid<T> = (data) => setData(data);
 
-  return { open, openDialog, closeDialog, data, saveData };
+  return { open, openDialog, closeDialog, data, setData };
 };
 
 export const getDisplayDialogs = <T,>({
