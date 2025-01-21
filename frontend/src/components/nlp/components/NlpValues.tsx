@@ -151,7 +151,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
 
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(selection as string[]);
+    deleteDialogCtl.setData?.(selection as string[]);
 
   return (
     <Grid container gap={2} flexDirection="column">
@@ -202,7 +202,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       {t("button.add")}
                     </Button>
                   ) : null}
-                  {deleteDialogCtl?.data?.length && (
+                  {deleteDialogCtl.data?.length ? (
                     <Grid item>
                       <Button
                         startIcon={<DeleteIcon />}
@@ -213,7 +213,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                         {t("button.delete")}
                       </Button>
                     </Grid>
-                  )}
+                  ) : null}
                 </ButtonGroup>
               </Grid>
             </PageHeader>

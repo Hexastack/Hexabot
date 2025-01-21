@@ -170,7 +170,7 @@ const NlpEntity = () => {
     actionEntityColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(selection as string[]);
+    deleteDialogCtl.setData?.(selection as string[]);
 
   return (
     <Grid item xs={12}>
@@ -202,7 +202,7 @@ const NlpEntity = () => {
             </Button>
           </Grid>
         ) : null}
-        {deleteDialogCtl?.data?.length && (
+        {deleteDialogCtl.data?.length ? (
           <Grid item>
             <Button
               startIcon={<DeleteIcon />}
@@ -213,7 +213,7 @@ const NlpEntity = () => {
               {t("button.delete")}
             </Button>
           </Grid>
-        )}
+        ) : null}
       </Grid>
       <Grid mt={3}>
         <DataGrid

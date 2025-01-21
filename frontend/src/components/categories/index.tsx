@@ -123,7 +123,7 @@ export const Categories = () => {
     actionColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(selection as string[]);
+    deleteDialogCtl.setData?.(selection as string[]);
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -158,7 +158,7 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
-            {deleteDialogCtl?.data?.length && (
+            {deleteDialogCtl.data?.length ? (
               <Grid item>
                 <Button
                   startIcon={<DeleteIcon />}
@@ -169,7 +169,7 @@ export const Categories = () => {
                   {t("button.delete")}
                 </Button>
               </Grid>
-            )}
+            ) : null}
           </Grid>
         </PageHeader>
       </Grid>

@@ -291,7 +291,7 @@ export default function NlpSample() {
     actionColumns,
   ];
   const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.saveData?.(selection as string[]);
+    deleteDialogCtl.setData?.(selection as string[]);
   const handleImportChange = async (file: File) => {
     await importDataset(file);
   };
@@ -396,7 +396,7 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            {deleteDialogCtl.data && (
+            {deleteDialogCtl.data?.length ? (
               <Grid item>
                 <Button
                   startIcon={<DeleteIcon />}
@@ -407,7 +407,7 @@ export default function NlpSample() {
                   {t("button.delete")}
                 </Button>
               </Grid>
-            )}
+            ) : null}
           </ButtonGroup>
         </Grid>
       </Grid>
