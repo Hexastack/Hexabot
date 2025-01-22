@@ -82,6 +82,10 @@ export class SubscriberRepository extends BaseRepository<
 
     const oldSubscriber = await this.findOne(criteria);
 
+    if (!oldSubscriber) {
+      throw new Error('Something went wrong: subscriber does not exist');
+    }
+
     if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
       this.eventEmitter.emit(
         'hook:subscriber:assign',

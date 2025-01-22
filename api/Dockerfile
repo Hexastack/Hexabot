@@ -18,11 +18,11 @@ WORKDIR /app
 
 COPY package*.json ./
 
+COPY --from=builder /app/node_modules ./node_modules
+
 COPY --from=builder /app/src/extensions ./src/extensions
 
 COPY --from=builder /app/patches ./patches
-
-RUN npm install
 
 COPY . .
 
