@@ -1,30 +1,27 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import getConfig from "next/config";
 import { useRouter } from "next/router";
-import { useState, useEffect, createContext, ReactNode } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import {
-  useQueryClient,
-  useQuery,
   QueryObserverResult,
   RefetchOptions,
   UseMutateFunction,
+  useQuery,
+  useQueryClient,
 } from "react-query";
 
 import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
-import {
-  useLogoutRedirection,
-  CURRENT_USER_KEY,
-  PUBLIC_PATHS,
-} from "@/hooks/useAuth";
+import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
@@ -55,7 +52,6 @@ const { publicRuntimeConfig } = getConfig();
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
-  const { logoutRedirection } = useLogoutRedirection();
   const [search, setSearch] = useState("");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
   const { i18n, t } = useTranslate();
@@ -67,10 +63,8 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const { mutateAsync: logoutSession } = useLogout();
   const logout = async () => {
-    queryClient.removeQueries([CURRENT_USER_KEY]);
     updateLanguage(publicRuntimeConfig.lang.default);
     await logoutSession();
-    logoutRedirection();
     toast.success(t("message.logout_success"));
   };
   const authRedirection = async (isAuthenticated: boolean) => {
@@ -79,8 +73,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
       const nextPage = redirect && decodeURIComponent(redirect);
 
       if (nextPage?.startsWith("/")) {
-        router.push(nextPage);
-      } else if (hasPublicPath) router.push(RouterType.HOME);
+        await router.push(nextPage);
+      } else if (hasPublicPath) {
+        await router.push(RouterType.HOME);
+      }
     }
   };
   const { apiClient } = useApiClient();

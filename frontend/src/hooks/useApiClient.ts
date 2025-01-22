@@ -45,7 +45,7 @@ export const useAxiosInstance = () => {
     // Response Interceptor
     instance.interceptors.response.use(
       (resp) => resp,
-      (error) => {
+      async (error) => {
         if (!error.response) {
           // Optionally redirect to an error page or show a notification
           toast.error(t("message.network_error"));
@@ -53,7 +53,7 @@ export const useAxiosInstance = () => {
           return Promise.reject(new Error("Network error"));
         }
         if (error.response.status === 401) {
-          logoutRedirection(true);
+          await logoutRedirection(true);
         }
 
         return Promise.reject(error.response.data);
