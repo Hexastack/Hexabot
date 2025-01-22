@@ -62,9 +62,9 @@ export const useLogout = (
 
       return await apiClient.logout();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      logoutRedirection();
+      await logoutRedirection();
     },
   });
 };
