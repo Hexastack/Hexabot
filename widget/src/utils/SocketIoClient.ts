@@ -57,8 +57,6 @@ export class SocketIoClient {
 
   private config: SocketIoClientConfig;
 
-  public id: string;
-
   constructor(
     apiUrl: string,
     socketConfig: SocketIoClientConfig,
