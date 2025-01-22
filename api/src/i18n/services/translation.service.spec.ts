@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,7 +10,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
+import { PluginBlockTemplate } from '@/plugins/types';
 import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 
@@ -157,26 +159,56 @@ describe('TranslationService', () => {
       attachedBlock: null,
     };
 
-    const mockedPlugin: any = {
-      name: 'ollama-plugin',
-      type: 'block',
-      settings: [
-        {
-          label: 'model',
-          group: 'default',
-          type: SettingType.text,
-          value: 'llama3.2',
-          translatable: false,
-        },
-        {
-          label: 'context',
-          group: 'default',
-          type: SettingType.multiple_text,
-          value: ['Answer the user QUESTION using the DOCUMENTS text above.'],
-          translatable: true,
-        },
-      ],
-    };
+    class MockPlugin extends BasePlugin {
+      template: PluginBlockTemplate = { name: 'Ollama Plugin' };
+
+      name: `${string}-plugin`;
+
+      type: any;
+
+      private settings: {
+        label: string;
+        group: string;
+        type: SettingType;
+        value: any;
+        translatable: boolean;
+      }[];
+
+      constructor() {
+        super('ollama-plugin', pluginService);
+        this.name = 'ollama-plugin';
+        this.type = 'block';
+        this.settings = [
+          {
+            label: 'model',
+            group: 'default',
+            type: SettingType.text,
+            value: 'llama3.2',
+            translatable: false,
+          },
+          {
+            label: 'context',
+            group: 'default',
+            type: SettingType.multiple_text,
+            value: ['Answer the user QUESTION using the DOCUMENTS text above.'],
+            translatable: true,
+          },
+        ];
+      }
+
+      // Implementing the 'getPath' method (with a mock return value)
+      getPath() {
+        // Return a mock path
+        return '/mock/path';
+      }
+
+      getDefaultSettings() {
+        return this.settings;
+      }
+    }
+
+    // Create an instance of the mock plugin
+    const mockedPlugin = new MockPlugin();
 
     jest
       .spyOn(pluginService, 'getPlugin')
