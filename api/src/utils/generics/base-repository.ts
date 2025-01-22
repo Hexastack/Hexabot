@@ -618,4 +618,8 @@ export abstract class BaseRepository<
   ): Promise<void> {
     // Nothing ...
   }
+
+  async aggregate<T = any>(pipeline: any[]): Promise<T[]> {
+    return this.model.aggregate<T>(pipeline).exec();
+  }
 }
