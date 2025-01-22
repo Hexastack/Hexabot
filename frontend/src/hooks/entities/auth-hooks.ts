@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
@@ -22,7 +21,7 @@ import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
-import { useAuth } from "../useAuth";
+import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
 
 export const useLogin = (
   options?: Omit<
@@ -51,8 +50,10 @@ export const useLogout = (
     "mutationFn"
   >,
 ) => {
+  const queryClient = useQueryClient();
   const { apiClient } = useApiClient();
   const { socket } = useSocket();
+  const { logoutRedirection } = useLogoutRedirection();
 
   return useMutation({
     ...options,
@@ -61,7 +62,10 @@ export const useLogout = (
 
       return await apiClient.logout();
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      queryClient.removeQueries([CURRENT_USER_KEY]);
+      logoutRedirection();
+    },
   });
 };
 
