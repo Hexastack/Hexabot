@@ -109,7 +109,8 @@
     "code_is_required": "Language code is required",
     "text_is_required": "Text is required",
     "invalid_file_type": "Invalid file type. Please select a file in the supported format.",
-    "select_category": "Select a flow"
+    "select_category": "Select a flow",
+    "logout_failed": "Something went wrong while disconnecting"
   },
   "menu": {
     "terms": "Terms of Use",

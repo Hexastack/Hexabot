@@ -109,7 +109,8 @@
     "code_is_required": "Le code est requis",
     "text_is_required": "Texte requis",
     "invalid_file_type": "Type de fichier invalide. Veuillez choisir un fichier dans un format pris en charge.",
-    "select_category": "Sélectionner une catégorie"
+    "select_category": "Sélectionner une catégorie",
+    "logout_failed": "Une erreur s'est produite lors de la déconnexion"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
