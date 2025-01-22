@@ -461,6 +461,9 @@
     "original_text": "Original Text",
     "inputs": "Inputs",
     "outputs": "Outputs",
+    "profile" : "Profile",
+    "add_new_flow": "Add new flow",
+    "toggle_menu": "Toggle menu",
     "any": "- Any -"
   },
   "placeholder": {

@@ -462,6 +462,9 @@
     "original_text": "Texte par défaut",
     "inputs": "Ports d'entrée",
     "outputs": "Ports de sortie",
+    "profile": "Profil",
+    "add_new_flow": "Ajouter un nouveau flux",
+    "toggle_menu": "Basculer le menu",
     "any": "- Toutes -"
   },
   "placeholder": {
