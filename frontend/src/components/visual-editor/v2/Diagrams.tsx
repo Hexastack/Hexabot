@@ -1,10 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
+
 
 import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -39,6 +41,7 @@ import {
 } from "react";
 import { useQueryClient } from "react-query";
 
+import { CustomTip } from "@/app-components/custom/CustomTip";
 import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
@@ -612,26 +615,28 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <Button
-              sx={{
-                mt: "7px",
-                ml: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
-
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
-              }}
-              onClick={(e) => {
-                addCategoryDialogCtl.openDialog();
-                e.preventDefault();
-              }}
-            >
-              <Add />
-            </Button>
+            <CustomTip text={t("label.add_new_flow")}>
+              <Button
+                sx={{
+                  mt: "7px",
+                  ml: "5px",
+                  borderRadius: "0",
+                  minHeight: "30px",
+                  
+                  border: "1px solid #DDDDDD",
+                  backgroundColor: "#F8F8F8",
+                  borderBottom: "none",
+                  width: "42px",
+                  minWidth: "42px",
+                }}
+                onClick={(e) => {
+                  addCategoryDialogCtl.openDialog();
+                  e.preventDefault();
+                }}
+                >
+                <Add />
+              </Button>
+            </CustomTip>
           </Grid>
           <Grid container>
             <Grid

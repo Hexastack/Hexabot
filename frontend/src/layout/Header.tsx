@@ -1,10 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
+
 
 import MenuIcon from "@mui/icons-material/Menu";
 import {
@@ -19,6 +21,7 @@ import {
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { FC, useEffect, useRef, useState } from "react";
 
+import { CustomTip } from "@/app-components/custom/CustomTip";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
@@ -99,7 +102,9 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 onClick={onToggleSidebar}
                 isToggled={isSideBarOpen}
               >
-                <MenuIcon />
+                <CustomTip text={t("label.toggle_menu")} position="right">
+                  <MenuIcon />
+                </CustomTip>
               </StyledIconButton>
             ) : null}
           </Toolbar>
@@ -158,12 +163,14 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   {user?.email}
                 </Typography>
               </Box>
-              <Avatar
-                src={getAvatarSrc(apiUrl, EntityType.USER, user?.id).concat(
-                  `?${randomSeed}`,
-                )}
-                color={theme.palette.text.secondary}
-              />
+              <CustomTip text={t("label.profile")} position="bottom">
+                <Avatar
+                  src={getAvatarSrc(apiUrl, EntityType.USER, user?.id).concat(
+                    `?${randomSeed}`,
+                  )}
+                  color={theme.palette.text.secondary}
+                />
+              </CustomTip>
             </Box>
 
             {user ? (
