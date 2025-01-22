@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -30,12 +30,16 @@ export abstract class BaseBlockPlugin<
 > extends BasePlugin {
   public readonly type: PluginType = PluginType.block;
 
-  public readonly settings: T;
+  private readonly settings: T;
 
   constructor(name: PluginName, pluginService: PluginService<BasePlugin>) {
     super(name, pluginService);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     this.settings = require(path.join(this.getPath(), 'settings')).default;
+  }
+
+  getDefaultSettings(): T {
+    return this.settings;
   }
 
   abstract template: PluginBlockTemplate;
@@ -50,8 +54,22 @@ export abstract class BaseBlockPlugin<
 
   protected getArguments(block: Block) {
     if ('args' in block.message) {
-      return block.message.args as SettingObject<T>;
+      return (
+        Object.entries(block.message.args)
+          // Filter out old settings
+          .filter(
+            ([argKey]) =>
+              this.settings.findIndex(({ label }) => label === argKey) !== -1,
+          )
+          .reduce(
+            (acc, [k, v]) => ({
+              ...acc,
+              [k]: v,
+            }),
+            {} as SettingObject<T>,
+          )
+      );
     }
-    throw new Error(`Block "${block.name}" does not have any arguments.`);
+    throw new Error(`Block ${block.name} does not have any arguments.`);
   }
 }
