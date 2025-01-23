@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import React, {
   createContext,
@@ -268,7 +269,7 @@ const ChatProvider: React.FC<{
               content_type: QuickReplyType.text,
               text: qr.title,
               payload: qr.payload,
-            }) as ISuggestion,
+            } as ISuggestion),
         ),
       );
     } else {
@@ -308,11 +309,17 @@ const ChatProvider: React.FC<{
     async (firstName?: string, lastName?: string) => {
       try {
         setConnectionState(2);
+        const queryParams: Record<string, string> =
+          firstName && lastName
+            ? { first_name: firstName, last_name: lastName }
+            : {};
         const { body } = await socketCtx.socket.get<{
           messages: TMessage[];
           profile: ISubscriber;
         }>(
-          `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
+          `/webhook/${config.channel}/?${new URLSearchParams(
+            queryParams,
+          ).toString()}`,
         );
 
         localStorage.setItem("profile", JSON.stringify(body.profile));
@@ -332,7 +339,7 @@ const ChatProvider: React.FC<{
           }),
         );
         setParticipants([
-          ...participants,
+          participants[0],
           {
             id: body.profile.foreign_id,
             foreign_id: body.profile.foreign_id,
@@ -382,6 +389,24 @@ const ChatProvider: React.FC<{
     if (screen === "chat" && connectionState === ConnectionState.connected) {
       handleSubscription();
     }
+
+    // When user loses internet connection, on reconnect
+    // we will need to subscribe him again (join the io room)
+    const reSubscribe = () => {
+      const item = localStorage.getItem("profile");
+
+      if (item) {
+        const profile = JSON.parse(item) as ISubscriber;
+
+        handleSubscription(profile.first_name, profile.last_name);
+      }
+    };
+
+    socketCtx.socket.io.on("reconnect", reSubscribe);
+
+    return () => {
+      socketCtx.socket.io.off("reconnect", reSubscribe);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

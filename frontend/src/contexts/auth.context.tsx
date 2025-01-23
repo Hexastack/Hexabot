@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import getConfig from "next/config";
 import { useRouter } from "next/router";
 import { createContext, ReactNode, useEffect, useState } from "react";
@@ -22,7 +21,6 @@ import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
@@ -54,18 +52,16 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
-  const { i18n, t } = useTranslate();
-  const { toast } = useToast();
+  const { i18n } = useTranslate();
   const [isReady, setIsReady] = useState(false);
   const queryClient = useQueryClient();
   const updateLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };
-  const { mutateAsync: logoutSession } = useLogout();
+  const { mutate: logoutSession } = useLogout();
   const logout = async () => {
     updateLanguage(publicRuntimeConfig.lang.default);
-    await logoutSession();
-    toast.success(t("message.logout_success"));
+    logoutSession();
   };
   const authRedirection = async (isAuthenticated: boolean) => {
     if (isAuthenticated) {

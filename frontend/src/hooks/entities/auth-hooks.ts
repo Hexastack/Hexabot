@@ -22,6 +22,8 @@ import { useSocket } from "@/websocket/socket-hooks";
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
+import { useToast } from "../useToast";
+import { useTranslate } from "../useTranslate";
 
 export const useLogin = (
   options?: Omit<
@@ -54,6 +56,8 @@ export const useLogout = (
   const { apiClient } = useApiClient();
   const { socket } = useSocket();
   const { logoutRedirection } = useLogoutRedirection();
+  const { toast } = useToast();
+  const { t } = useTranslate();
 
   return useMutation({
     ...options,
@@ -65,6 +69,10 @@ export const useLogout = (
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
       await logoutRedirection();
+      toast.success(t("message.logout_success"));
+    },
+    onError: () => {
+      toast.error(t("message.logout_failed"));
     },
   });
 };
