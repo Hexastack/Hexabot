@@ -142,11 +142,15 @@ export class SettingService extends BaseService<Setting> {
       label: 'allowed_domains',
     })) as TextSetting[];
 
-    const uniqueOrigins = new Set(
-      settings.flatMap((setting) =>
-        setting.value.split(',').filter((o) => !!o),
-      ),
+    const allowedDomains = settings.flatMap((setting) =>
+      setting.value.split(',').filter((o) => !!o),
     );
+
+    const uniqueOrigins = new Set([
+      ...config.security.cors.allowOrigins,
+      ...config.sockets.onlyAllowOrigins,
+      ...allowedDomains,
+    ]);
 
     return uniqueOrigins;
   }
