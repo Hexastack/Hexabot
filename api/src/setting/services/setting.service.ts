@@ -24,6 +24,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting } from '../schemas/setting.schema';
+import { TextSetting } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
 
 @Injectable()
@@ -137,10 +138,14 @@ export class SettingService extends BaseService<Setting> {
    */
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
   async getAllowedOrigins() {
-    const settings = await this.find({ label: 'allowed_domains' });
+    const settings = (await this.find({
+      label: 'allowed_domains',
+    })) as TextSetting[];
 
     const uniqueOrigins = new Set(
-      settings.flatMap((setting) => setting.value.split(',')),
+      settings.flatMap((setting) =>
+        setting.value.split(',').filter((o) => !!o),
+      ),
     );
 
     return uniqueOrigins;
