@@ -17,17 +17,36 @@ import {
 } from "@mui/material";
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
+import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { DialogControl } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
+import { EntityType } from "@/services/types";
+import { IEntityMapTypes } from "@/types/base.types";
 
-export type DeleteDialogProps<T = string> = DialogControl<T, T>;
+export type DeleteDialogProps<T = string> = DialogControl<T>;
 export const DeleteDialog = <T extends any = string>({
   open,
-  data,
-  callback,
   closeDialog: closeFunction,
-}: DeleteDialogProps<T>) => {
+  data: ids,
+  callback,
+  entity = EntityType.ATTACHMENT,
+  onDeleteError = () => {},
+  onDeleteSuccess = () => {},
+}: DeleteDialogProps<T> & {
+  entity?: keyof IEntityMapTypes;
+  onDeleteError?: (error: Error) => void;
+  onDeleteSuccess?: (data?: unknown) => void;
+}) => {
   const { t } = useTranslate();
+  const { mutateAsync: deleteEntity } = useDelete(entity, {
+    onError: onDeleteError,
+    onSuccess: onDeleteSuccess,
+  });
+  const { mutateAsync: deleteEntities } = useDeleteMany(entity, {
+    onError: onDeleteError,
+    onSuccess: onDeleteSuccess,
+  });
 
   return (
     <Dialog open={open} fullWidth onClose={closeFunction}>
@@ -44,9 +63,24 @@ export const DeleteDialog = <T extends any = string>({
       </DialogContent>
       <DialogActions>
         <Button
-          variant="contained"
           color="error"
-          onClick={() => callback?.(data)}
+          variant="contained"
+          onClick={async () => {
+            if (callback) {
+              callback(ids);
+            } else {
+              if (!Array.isArray(ids)) {
+                throw new Error("IDs need to be an Array");
+              }
+
+              if (ids.length === 0) {
+                throw new Error("IDs cannot be empty");
+              }
+
+              if (ids.length === 1) await deleteEntity(ids[0]);
+              else if (ids.length > 1) await deleteEntities(ids);
+            }
+          }}
           autoFocus
         >
           {t("button.yes")}

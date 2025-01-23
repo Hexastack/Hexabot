@@ -13,7 +13,6 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -21,8 +20,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -42,27 +39,6 @@ const NlpEntity = () => {
   const editDialogCtl = useDialog<INlpEntity>(false);
   const deleteDialogCtl = useDialog<string[]>(false);
   const hasPermission = useHasPermission();
-  const { mutateAsync: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteNlpEntities } = useDeleteMany(
-    EntityType.NLP_ENTITY,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog(undefined, "postDelete");
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
   const { t } = useTranslate();
   const { toast } = useToast();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
@@ -178,7 +154,14 @@ const NlpEntity = () => {
       <NlpEntityDialog {...editDialogCtl} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteNlpEntity, deleteNlpEntities)}
+        entity={EntityType.NLP_ENTITY}
+        onDeleteError={() => {
+          toast.error(t("message.internal_server_error"));
+        }}
+        onDeleteSuccess={() => {
+          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <Grid
         justifyContent="flex-end"

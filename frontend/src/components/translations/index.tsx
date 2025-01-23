@@ -12,14 +12,12 @@ import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -55,15 +53,6 @@ export const Translations = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const { mutateAsync: checkRefreshTranslations, isLoading } =
     useRefreshTranslations({
       onError: () => {
@@ -168,7 +157,14 @@ export const Translations = () => {
             <EditTranslationDialog {...getDisplayDialogs(editDialogCtl)} />
             <DeleteDialog
               {...deleteDialogCtl}
-              callback={deleteCallbackHandler(deleteTranslation)}
+              entity={EntityType.TRANSLATION}
+              onDeleteError={() => {
+                toast.error(t("message.internal_server_error"));
+              }}
+              onDeleteSuccess={() => {
+                deleteDialogCtl.closeDialog();
+                toast.success(t("message.item_delete_success"));
+              }}
             />
             <Grid item width="100%">
               <DataGrid {...dataGridProps} columns={columns} />

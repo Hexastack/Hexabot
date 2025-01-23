@@ -16,10 +16,9 @@ import { DialogControlProps } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IAttachment } from "@/types/attachment.types";
 
-export type AttachmentDialogProps = DialogControlProps<
-  never,
-  IAttachment | null
-> & { accept: string };
+export type AttachmentDialogProps = DialogControlProps<IAttachment | null> & {
+  accept: string;
+};
 
 export const AttachmentDialog: FC<AttachmentDialogProps> = ({
   open,

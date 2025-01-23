@@ -15,7 +15,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -23,7 +22,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -80,12 +78,6 @@ export const Contents = () => {
     },
     onSuccess() {
       toast.success(t("message.success_save"));
-    },
-  });
-  const { mutateAsync: deleteContent } = useDelete(EntityType.CONTENT, {
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
     },
   });
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
@@ -170,7 +162,11 @@ export const Contents = () => {
           />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={deleteCallbackHandler(deleteContent)}
+            entity={EntityType.CONTENT}
+            onDeleteSuccess={() => {
+              deleteDialogCtl.closeDialog();
+              toast.success(t("message.item_delete_success"));
+            }}
           />
 
           <Grid padding={2} container>

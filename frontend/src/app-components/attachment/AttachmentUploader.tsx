@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FolderCopyIcon from "@mui/icons-material/FolderCopy";
 import { Box, Button, Divider, Grid, styled, Typography } from "@mui/material";
@@ -95,7 +94,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       onUploadComplete && onUploadComplete();
     },
   });
-  const libraryDialogCtl = useDialog<never>(false);
+  const libraryDialogCtl = useDialog<IAttachment | null | undefined>(false);
   const stopDefaults = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();

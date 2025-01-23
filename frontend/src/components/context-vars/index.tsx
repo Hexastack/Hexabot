@@ -13,7 +13,6 @@ import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -21,8 +20,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -62,27 +59,6 @@ export const ContextVars = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteContextVars } = useDeleteMany(
-    EntityType.CONTEXT_VAR,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog(undefined, "postDelete");
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
     [
@@ -167,7 +143,14 @@ export const ContextVars = () => {
 
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteContextVar, deleteContextVars)}
+        entity={EntityType.CONTEXT_VAR}
+        onDeleteError={(error) => {
+          toast.error(error);
+        }}
+        onDeleteSuccess={() => {
+          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
         <Grid

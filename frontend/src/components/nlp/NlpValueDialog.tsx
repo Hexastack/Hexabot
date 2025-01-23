@@ -30,7 +30,7 @@ export type TNlpValueAttributesWithRequiredExpressions = INlpValueAttributes & {
   expressions: string[];
 };
 
-export type NlpValueDialogProps = DialogControlProps<INlpValue, INlpValue> & {
+export type NlpValueDialogProps = DialogControlProps<INlpValue> & {
   canHaveSynonyms: boolean;
 };
 

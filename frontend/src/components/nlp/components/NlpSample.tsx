@@ -27,7 +27,6 @@ import { useState } from "react";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import FileUploadButton from "@/app-components/inputs/FileInput";
@@ -40,8 +39,6 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
@@ -95,27 +92,6 @@ export default function NlpSample() {
     ],
     $iLike: ["text"],
   });
-  const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteNlpSamples } = useDeleteMany(
-    EntityType.NLP_SAMPLE,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog(undefined, "postDelete");
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
   const { mutateAsync: importDataset, isLoading } = useImport(
     EntityType.NLP_SAMPLE,
     {
@@ -301,7 +277,14 @@ export default function NlpSample() {
       <NlpSampleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteNlpSample, deleteNlpSamples)}
+        entity={EntityType.NLP_SAMPLE}
+        onDeleteError={(error) => {
+          toast.error(error);
+        }}
+        onDeleteSuccess={() => {
+          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <Grid container alignItems="center">
         <Grid

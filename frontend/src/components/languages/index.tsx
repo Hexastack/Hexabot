@@ -13,7 +13,6 @@ import { GridColDef } from "@mui/x-data-grid";
 import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,7 +21,6 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -62,22 +60,6 @@ export const Languages = () => {
     onSuccess() {
       refetch();
       toast.success(t("message.success_save"));
-    },
-  });
-  const { mutateAsync: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [_qType, qEntity] = queryKey;
-
-          return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
-        },
-      });
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
     },
   });
   const toggleDefault = (row: ILanguage) => {
@@ -187,7 +169,21 @@ export const Languages = () => {
       <LanguageDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteLanguage)}
+        entity={EntityType.LANGUAGE}
+        onDeleteError={() => {
+          toast.error(t("message.internal_server_error"));
+        }}
+        onDeleteSuccess={() => {
+          queryClient.removeQueries({
+            predicate: ({ queryKey }) => {
+              const [_qType, qEntity] = queryKey;
+
+              return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
+            },
+          });
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <PageHeader icon={Flag} title={t("title.languages")}>
         <Grid

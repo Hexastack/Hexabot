@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import { FC } from "react";
 
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useGet } from "@/hooks/crud/useGet";
 import { useDialog } from "@/hooks/useDialog";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
@@ -85,16 +84,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   });
   const { toast } = useToast();
   const { t } = useTranslate();
-  const deleteDialogCtl = useDialog<string>(false);
-  const { mutateAsync: deleteAttachment } = useDelete(EntityType.ATTACHMENT, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      toast.success(t("message.success_save"));
-      onChange && onChange(null);
-    },
-  });
+  const deleteDialogCtl = useDialog<string[]>(false);
 
   if (!attachment) {
     return t("message.attachment_not_found") + id;
@@ -123,8 +113,13 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
             <>
               <DeleteDialog
                 {...deleteDialogCtl}
-                callback={() => {
-                  deleteAttachment(attachment.id);
+                entity={EntityType.ATTACHMENT}
+                onDeleteError={() => {
+                  toast.error(t("message.internal_server_error"));
+                }}
+                onDeleteSuccess={() => {
+                  toast.success(t("message.success_save"));
+                  onChange?.(null);
                 }}
               />
               <CardActions sx={{ justifyContent: "center", flex: "1 1 50%" }}>
@@ -146,7 +141,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   variant="contained"
                   startIcon={<DeleteOutlineOutlinedIcon />}
                   onClick={(e) => {
-                    deleteDialogCtl.openDialog();
+                    deleteDialogCtl.openDialog([attachment.id]);
                     e.preventDefault();
                     e.stopPropagation();
                   }}

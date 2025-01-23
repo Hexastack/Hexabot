@@ -16,7 +16,6 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -24,8 +23,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet } from "@/hooks/crud/useGet";
 import { useDialog } from "@/hooks/useDialog";
@@ -65,25 +62,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-      refetchEntity();
-    },
-  });
-  const { mutateAsync: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const actionColumns = useActionColumns<INlpValue>(
     EntityType.NLP_VALUE,
     [
@@ -226,7 +204,14 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             />
             <DeleteDialog
               {...deleteDialogCtl}
-              callback={deleteCallbackHandler(deleteNlpValue, deleteNlpValues)}
+              entity={EntityType.NLP_VALUE}
+              onDeleteError={(error) => {
+                toast.error(error);
+              }}
+              onDeleteSuccess={() => {
+                deleteDialogCtl.closeDialog(undefined, "postDelete");
+                toast.success(t("message.item_delete_success"));
+              }}
             />
             <NlpValueDialog
               {...editDialogCtl}

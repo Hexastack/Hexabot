@@ -12,7 +12,6 @@ import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -20,7 +19,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -55,15 +53,6 @@ export const Roles = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const actionColumns = useActionColumns<IRole>(
     EntityType.ROLE,
     [
@@ -132,7 +121,14 @@ export const Roles = () => {
       <RoleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteRole)}
+        entity={EntityType.ROLE}
+        onDeleteError={(error) => {
+          toast.error(error);
+        }}
+        onDeleteSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <PageHeader title={t("title.roles")} icon={faUniversalAccess}>
         <Grid

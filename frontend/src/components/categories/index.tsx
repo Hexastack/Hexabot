@@ -13,7 +13,6 @@ import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
-import { deleteCallbackHandler } from "@/app-components/dialogs/utils/deleteHandlers";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -21,8 +20,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -54,24 +51,6 @@ export const Categories = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteCategory } = useDelete(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteCategories } = useDeleteMany(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog(undefined, "postDelete");
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const actionColumns = useActionColumns<ICategory>(
     EntityType.CATEGORY,
     [
@@ -131,7 +110,14 @@ export const Categories = () => {
       <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={deleteCallbackHandler(deleteCategory, deleteCategories)}
+        entity={EntityType.CATEGORY}
+        onDeleteError={(error) => {
+          toast.error(error.message || t("message.internal_server_error"));
+        }}
+        onDeleteSuccess={() => {
+          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          toast.success(t("message.item_delete_success"));
+        }}
       />
       <Grid>
         <PageHeader icon={FolderIcon} title={t("title.categories")}>
