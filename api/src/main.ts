@@ -22,6 +22,7 @@ import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
+import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
@@ -43,8 +44,16 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
   app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+  const settingService = app.get<SettingService>(SettingService);
+  const allowedDomains = await settingService.getAllowedDomains();
   app.enableCors({
-    origin: config.security.cors.allowOrigins,
+    origin: (origin, callback) => {
+      if (!origin || allowedDomains.has(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: config.security.cors.methods,
     credentials: config.security.cors.allowCredentials,
     allowedHeaders: config.security.cors.headers.split(','),

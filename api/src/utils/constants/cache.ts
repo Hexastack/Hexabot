@@ -16,3 +16,5 @@ export const MENU_CACHE_KEY = 'menu';
 export const LANGUAGES_CACHE_KEY = 'languages';
 
 export const DEFAULT_LANGUAGE_CACHE_KEY = 'default_language';
+
+export const ALLOWED_DOMAINS_CACHE_KEY = 'allowed-domains';

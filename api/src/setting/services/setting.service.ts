@@ -14,7 +14,10 @@ import { Cache } from 'cache-manager';
 import { config } from '@/config';
 import { Config } from '@/config/types';
 import { LoggerService } from '@/logger/logger.service';
-import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
+import {
+  ALLOWED_DOMAINS_CACHE_KEY,
+  SETTING_CACHE_KEY,
+} from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -110,6 +113,7 @@ export class SettingService extends BaseService<Setting> {
    */
   async clearCache() {
     this.cacheManager.del(SETTING_CACHE_KEY);
+    this.cacheManager.del(ALLOWED_DOMAINS_CACHE_KEY);
   }
 
   /**
@@ -119,6 +123,23 @@ export class SettingService extends BaseService<Setting> {
   @OnEvent('hook:setting:*')
   async handleSettingUpdateEvent() {
     this.clearCache();
+  }
+
+  /**
+   * Retrieves allowed_domains from the cache if available, or loads them from the
+   * repository and caches the result.
+   *
+   * @returns A promise that resolves to a Set of`allowed_domains` string.
+   */
+  @Cacheable(ALLOWED_DOMAINS_CACHE_KEY)
+  async getAllowedDomains() {
+    // combines all allowed_doamins and whitelist them for cors
+    const settings = await this.find({ label: 'allowed_domains' });
+
+    const whiteListedOrigins = new Set(
+      settings.flatMap((setting) => setting.value.split(',')),
+    );
+    return whiteListedOrigins;
   }
 
   /**
