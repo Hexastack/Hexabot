@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -15,7 +15,7 @@ import { config } from '@/config';
 import { Config } from '@/config/types';
 import { LoggerService } from '@/logger/logger.service';
 import {
-  ALLOWED_DOMAINS_CACHE_KEY,
+  ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
@@ -113,7 +113,7 @@ export class SettingService extends BaseService<Setting> {
    */
   async clearCache() {
     this.cacheManager.del(SETTING_CACHE_KEY);
-    this.cacheManager.del(ALLOWED_DOMAINS_CACHE_KEY);
+    this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
   }
 
   /**
@@ -126,20 +126,24 @@ export class SettingService extends BaseService<Setting> {
   }
 
   /**
-   * Retrieves allowed_domains from the cache if available, or loads them from the
-   * repository and caches the result.
+   * Retrieves a set of unique allowed origins for CORS configuration.
    *
-   * @returns A promise that resolves to a Set of`allowed_domains` string.
+   * This method combines all `allowed_domains` settings,
+   * splits their values (comma-separated), and removes duplicates to produce a
+   * whitelist of origins. The result is cached for better performance using the
+   * `Cacheable` decorator with the key `ALLOWED_ORIGINS_CACHE_KEY`.
+   *
+   * @returns A promise that resolves to a set of allowed origins
    */
-  @Cacheable(ALLOWED_DOMAINS_CACHE_KEY)
-  async getAllowedDomains() {
-    // combines all allowed_doamins and whitelist them for cors
+  @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
+  async getAllowedOrigins() {
     const settings = await this.find({ label: 'allowed_domains' });
 
-    const whiteListedOrigins = new Set(
+    const uniqueOrigins = new Set(
       settings.flatMap((setting) => setting.value.split(',')),
     );
-    return whiteListedOrigins;
+
+    return uniqueOrigins;
   }
 
   /**

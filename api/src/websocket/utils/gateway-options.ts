@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,7 +10,9 @@ import util from 'util';
 
 import type { ServerOptions } from 'socket.io';
 
+import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
+import { SettingService } from '@/setting/services/setting.service';
 
 export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
   const opts: Partial<ServerOptions> = {
@@ -53,16 +55,25 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
     ...(config.sockets.onlyAllowOrigins && {
       cors: {
         origin: (origin, cb) => {
-          if (origin && config.sockets.onlyAllowOrigins.includes(origin)) {
-            cb(null, true);
-          } else {
-            // eslint-disable-next-line no-console
-            console.log(
-              `A socket was rejected via the config.sockets.onlyAllowOrigins array.\n` +
-                `It attempted to connect with origin: ${origin}`,
-            );
-            cb(new Error('Origin not allowed'), false);
-          }
+          // Retrieve the allowed origins from the settings
+          const app = AppInstance.getApp();
+          const settingService = app.get<SettingService>(SettingService);
+
+          settingService
+            .getAllowedOrigins()
+            .then((allowedOrigins) => {
+              if (origin && allowedOrigins.has(origin)) {
+                cb(null, true);
+              } else {
+                // eslint-disable-next-line no-console
+                console.log(
+                  `A socket was rejected via the config.sockets.onlyAllowOrigins array.\n` +
+                    `It attempted to connect with origin: ${origin}`,
+                );
+                cb(new Error('Origin not allowed'), false);
+              }
+            })
+            .catch(cb);
         },
       },
     }),
