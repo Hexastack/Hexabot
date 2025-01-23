@@ -258,7 +258,6 @@ export class ChatService {
 
       if (!subscriber) {
         const subscriberData = await handler.getSubscriberData(event);
-        this.eventEmitter.emit('hook:stats:entry', 'new_users', 'New users');
         subscriberData.channel = event.getChannelData();
         subscriber = await this.subscriberService.create(subscriberData);
 
