@@ -123,7 +123,7 @@ export default abstract class BaseNlpHelper<
   async format(
     samples: NlpSampleFull[],
     entities: NlpEntityFull[],
-  ): Promise<Record<string, any>[]> {
+  ): Promise<Record<string, any>[] | Record<string, any>> {
     const entityMap = NlpEntity.getEntityMap(entities);
     const valueMap = NlpValue.getValueMap(
       NlpValue.getValuesFromEntities(entities),
