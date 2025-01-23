@@ -27,7 +27,7 @@ type TooltipProps = {
     | "right-end";
 };
 
-export const CustomTip: React.FC<TooltipProps> = ({
+export const MuiTooltipWrapper: React.FC<TooltipProps> = ({
   children,
   text,
   position = "top",

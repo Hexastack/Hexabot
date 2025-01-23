@@ -41,7 +41,7 @@ import {
 } from "react";
 import { useQueryClient } from "react-query";
 
-import { CustomTip } from "@/app-components/custom/CustomTip";
+import { MuiTooltipWrapper } from "@/app-components/custom/MuiTooltipWrapper";
 import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
 import { CategoryDialog } from "@/components/categories/CategoryDialog";
@@ -615,7 +615,7 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <CustomTip text={t("label.add_new_flow")}>
+            <MuiTooltipWrapper text={t("label.add_new_flow")}>
               <Button
                 sx={{
                   mt: "7px",
@@ -636,7 +636,7 @@ const Diagrams = () => {
                 >
                 <Add />
               </Button>
-            </CustomTip>
+            </MuiTooltipWrapper>
           </Grid>
           <Grid container>
             <Grid

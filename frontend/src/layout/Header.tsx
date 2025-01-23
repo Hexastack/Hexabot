@@ -21,7 +21,7 @@ import {
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import { FC, useEffect, useRef, useState } from "react";
 
-import { CustomTip } from "@/app-components/custom/CustomTip";
+import { MuiTooltipWrapper } from "@/app-components/custom/MuiTooltipWrapper";
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { PopoverMenu } from "@/app-components/menus/PopoverMenu";
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
@@ -102,9 +102,9 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 onClick={onToggleSidebar}
                 isToggled={isSideBarOpen}
               >
-                <CustomTip text={t("label.toggle_menu")} position="right">
+                <MuiTooltipWrapper text={t("label.toggle_menu")} position="right">
                   <MenuIcon />
-                </CustomTip>
+                </MuiTooltipWrapper>
               </StyledIconButton>
             ) : null}
           </Toolbar>
@@ -163,14 +163,14 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   {user?.email}
                 </Typography>
               </Box>
-              <CustomTip text={t("label.profile")} position="bottom">
+              <MuiTooltipWrapper text={t("label.profile")} position="bottom">
                 <Avatar
                   src={getAvatarSrc(apiUrl, EntityType.USER, user?.id).concat(
                     `?${randomSeed}`,
                   )}
                   color={theme.palette.text.secondary}
                 />
-              </CustomTip>
+              </MuiTooltipWrapper>
             </Box>
 
             {user ? (
