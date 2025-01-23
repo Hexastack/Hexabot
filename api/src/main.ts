@@ -49,14 +49,18 @@ async function bootstrap() {
   app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
   const settingService = app.get<SettingService>(SettingService);
-  const allowedOrigins = await settingService.getAllowedOrigins();
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.has(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      settingService
+        .getAllowedOrigins()
+        .then((allowedOrigins) => {
+          if (!origin || allowedOrigins.has(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        })
+        .catch(callback);
     },
     methods: config.security.cors.methods,
     credentials: config.security.cors.allowCredentials,
