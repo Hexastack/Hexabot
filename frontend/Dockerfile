@@ -47,11 +47,19 @@ WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
-COPY ./frontend ./frontend
-COPY ./widget ./widget
+COPY frontend/package*.json ./frontend/  
+
+COPY widget/package*.json ./widget/  
 
 RUN npm install
 
+COPY ./frontend ./frontend
+COPY ./widget ./widget
+
+
+
+# used to by pass Next.js paching lock file
+ENV NEXT_IGNORE_INCORRECT_LOCKFILE=true 
 ENV NODE_ENV=development
 ENV CHOKIDAR_USEPOLLING=true
 ENV WATCHPACK_POLLING=true
@@ -64,6 +72,8 @@ CMD ["npm", "run", "dev", "--", "-p", "8080"]
 FROM base AS production
 WORKDIR /app
 
+# used to by pass Next.js paching lock file 
+ENV NEXT_IGNORE_INCORRECT_LOCKFILE=true 
 ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED 1

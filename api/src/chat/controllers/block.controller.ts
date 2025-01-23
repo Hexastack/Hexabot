@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -110,7 +110,7 @@ export class BlockController extends BaseController<
         throw new NotFoundException('Plugin Not Found');
       }
 
-      return plugin.settings;
+      return plugin.getDefaultSettings();
     } catch (e) {
       this.logger.error('Unable to fetch plugin settings', e);
       throw e;
@@ -134,7 +134,7 @@ export class BlockController extends BaseController<
             ...p.template,
             message: {
               plugin: p.name,
-              args: p.settings.reduce(
+              args: p.getDefaultSettings().reduce(
                 (acc, setting) => {
                   acc[setting.label] = setting.value;
                   return acc;
