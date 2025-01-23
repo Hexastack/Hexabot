@@ -47,10 +47,15 @@ WORKDIR /app
 
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 
+COPY frontend/package*.json ./frontend/  
+
+COPY widget/package*.json ./widget/  
+
+RUN npm install
+
 COPY ./frontend ./frontend
 COPY ./widget ./widget
 
-RUN npm install
 
 
 # used to by pass Next.js paching lock file
