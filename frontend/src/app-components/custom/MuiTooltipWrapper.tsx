@@ -6,34 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Tooltip as MuiTooltip } from "@mui/material";
-import React, { ReactNode } from "react";
+import { Tooltip as MuiTooltip, TooltipProps as MuiToolTipProps } from "@mui/material";
+import React from "react";
 
-type TooltipProps = {
-  children: ReactNode;
-  text: string;
-  position?:
-    | "top"
-    | "bottom"
-    | "left"
-    | "right"
-    | "top-start"
-    | "top-end"
-    | "bottom-start"
-    | "bottom-end"
-    | "left-start"
-    | "left-end"
-    | "right-start"
-    | "right-end";
-};
-
-export const MuiTooltipWrapper: React.FC<TooltipProps> = ({
+export const MuiTooltipWrapper: React.FC<MuiToolTipProps> = ({
   children,
-  text,
-  position = "top",
+  placement = "top",
+  ...props
 }) => {
   return (
-    <MuiTooltip title={text} placement={position} arrow>
+    <MuiTooltip {...props} placement={placement} arrow>
       <div>{children}</div>
     </MuiTooltip>
   );
