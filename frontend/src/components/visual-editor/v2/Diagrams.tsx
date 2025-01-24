@@ -615,7 +615,7 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <MuiTooltipWrapper text={t("label.add_new_flow")}>
+            <MuiTooltipWrapper title={t("label.add_new_flow")}>
               <Button
                 sx={{
                   mt: "7px",

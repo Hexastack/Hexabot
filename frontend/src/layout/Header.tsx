@@ -102,7 +102,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                 onClick={onToggleSidebar}
                 isToggled={isSideBarOpen}
               >
-                <MuiTooltipWrapper text={t("label.toggle_menu")} position="right">
+                <MuiTooltipWrapper title={t("label.toggle_menu")} placement="right">
                   <MenuIcon />
                 </MuiTooltipWrapper>
               </StyledIconButton>
@@ -163,7 +163,7 @@ export const Header: FC<HeaderProps> = ({ isSideBarOpen, onToggleSidebar }) => {
                   {user?.email}
                 </Typography>
               </Box>
-              <MuiTooltipWrapper text={t("label.profile")} position="bottom">
+              <MuiTooltipWrapper title={t("label.profile")} placement="bottom">
                 <Avatar
                   src={getAvatarSrc(apiUrl, EntityType.USER, user?.id).concat(
                     `?${randomSeed}`,
