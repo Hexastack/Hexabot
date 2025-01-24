@@ -10,6 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { LogClass } from '@/logger/logger.decorator';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
@@ -29,6 +30,7 @@ import { ConversationService } from './conversation.service';
 import { SubscriberService } from './subscriber.service';
 
 @Injectable()
+@LogClass()
 export class BotService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
