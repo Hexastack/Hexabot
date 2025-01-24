@@ -6,15 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-// CACHE
-export const SETTING_CACHE_KEY = 'settings';
+import { INestApplication } from '@nestjs/common';
 
-export const PERMISSION_CACHE_KEY = 'permissions';
+export class AppInstance {
+  private static app: INestApplication;
 
-export const MENU_CACHE_KEY = 'menu';
+  static setApp(app: INestApplication) {
+    this.app = app;
+  }
 
-export const LANGUAGES_CACHE_KEY = 'languages';
-
-export const DEFAULT_LANGUAGE_CACHE_KEY = 'default_language';
-
-export const ALLOWED_ORIGINS_CACHE_KEY = 'allowed_origins';
+  static getApp(): INestApplication {
+    if (!this.app) {
+      throw new Error('App instance has not been set yet.');
+    }
+    return this.app;
+  }
+}

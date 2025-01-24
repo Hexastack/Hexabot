@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,13 +14,17 @@ import { Cache } from 'cache-manager';
 import { config } from '@/config';
 import { Config } from '@/config/types';
 import { LoggerService } from '@/logger/logger.service';
-import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
+import {
+  ALLOWED_ORIGINS_CACHE_KEY,
+  SETTING_CACHE_KEY,
+} from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting } from '../schemas/setting.schema';
+import { TextSetting } from '../schemas/types';
 import { SettingSeeder } from '../seeds/setting.seed';
 
 @Injectable()
@@ -110,6 +114,7 @@ export class SettingService extends BaseService<Setting> {
    */
   async clearCache() {
     this.cacheManager.del(SETTING_CACHE_KEY);
+    this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
   }
 
   /**
@@ -119,6 +124,35 @@ export class SettingService extends BaseService<Setting> {
   @OnEvent('hook:setting:*')
   async handleSettingUpdateEvent() {
     this.clearCache();
+  }
+
+  /**
+   * Retrieves a set of unique allowed origins for CORS configuration.
+   *
+   * This method combines all `allowed_domains` settings,
+   * splits their values (comma-separated), and removes duplicates to produce a
+   * whitelist of origins. The result is cached for better performance using the
+   * `Cacheable` decorator with the key `ALLOWED_ORIGINS_CACHE_KEY`.
+   *
+   * @returns A promise that resolves to a set of allowed origins
+   */
+  @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
+  async getAllowedOrigins() {
+    const settings = (await this.find({
+      label: 'allowed_domains',
+    })) as TextSetting[];
+
+    const allowedDomains = settings.flatMap((setting) =>
+      setting.value.split(',').filter((o) => !!o),
+    );
+
+    const uniqueOrigins = new Set([
+      ...config.security.cors.allowOrigins,
+      ...config.sockets.onlyAllowOrigins,
+      ...allowedDomains,
+    ]);
+
+    return uniqueOrigins;
   }
 
   /**
