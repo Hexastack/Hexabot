@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -141,6 +141,64 @@ describe('SettingService', () => {
           { group: 'group2', label: 'setting1', type: 'text', value: 'value3' },
         ],
       });
+    });
+  });
+
+  describe('getAllowedOrigins', () => {
+    it('should return a set of unique origins from allowed_domains settings', async () => {
+      const mockSettings = [
+        {
+          label: 'allowed_domains',
+          value: 'https://example.com,https://test.com',
+        },
+        {
+          label: 'allowed_domains',
+          value: 'https://example.com,https://another.com',
+        },
+      ] as Setting[];
+
+      jest.spyOn(settingService, 'find').mockResolvedValue(mockSettings);
+
+      const result = await settingService.getAllowedOrigins();
+
+      expect(settingService.find).toHaveBeenCalledWith({
+        label: 'allowed_domains',
+      });
+      expect(result).toEqual(
+        new Set([
+          '*',
+          'https://example.com',
+          'https://test.com',
+          'https://another.com',
+        ]),
+      );
+    });
+
+    it('should return the config allowed cors only if no settings are found', async () => {
+      jest.spyOn(settingService, 'find').mockResolvedValue([]);
+
+      const result = await settingService.getAllowedOrigins();
+
+      expect(settingService.find).toHaveBeenCalledWith({
+        label: 'allowed_domains',
+      });
+      expect(result).toEqual(new Set(['*']));
+    });
+
+    it('should handle settings with empty values', async () => {
+      const mockSettings = [
+        { label: 'allowed_domains', value: '' },
+        { label: 'allowed_domains', value: 'https://example.com' },
+      ] as Setting[];
+
+      jest.spyOn(settingService, 'find').mockResolvedValue(mockSettings);
+
+      const result = await settingService.getAllowedOrigins();
+
+      expect(settingService.find).toHaveBeenCalledWith({
+        label: 'allowed_domains',
+      });
+      expect(result).toEqual(new Set(['*', 'https://example.com']));
     });
   });
 });

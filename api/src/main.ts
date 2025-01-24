@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -18,10 +18,12 @@ moduleAlias.addAliases({
   '@': __dirname,
 });
 
+import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
+import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
@@ -35,6 +37,9 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  // Set the global app instance
+  AppInstance.setApp(app);
+
   const rawBodyBuffer = (req, res, buf, encoding) => {
     if (buf?.length) {
       req.rawBody = buf.toString(encoding || 'utf8');
@@ -43,8 +48,20 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
   app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+  const settingService = app.get<SettingService>(SettingService);
   app.enableCors({
-    origin: config.security.cors.allowOrigins,
+    origin: (origin, callback) => {
+      settingService
+        .getAllowedOrigins()
+        .then((allowedOrigins) => {
+          if (!origin || allowedOrigins.has(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        })
+        .catch(callback);
+    },
     methods: config.security.cors.methods,
     credentials: config.security.cors.allowCredentials,
     allowedHeaders: config.security.cors.headers.split(','),
