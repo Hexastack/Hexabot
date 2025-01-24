@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Hexabot Live Chat Widget
 
 The [Hexabot](https://hexabot.ai/) Live Chat Widget is a React-based embeddable widget that allows users to integrate real-time chat functionality into their websites. It connects to the Hexabot API and facilitates seamless interaction between end-users and chatbots across multiple channels.

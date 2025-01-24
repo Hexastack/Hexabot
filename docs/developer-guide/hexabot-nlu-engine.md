@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Hexabot NLU Engine
 
 The [Hexabot](https://hexabot.ai/) NLU (Natural Language Understanding) engine is a Python-based project that provides tools for building, training, and evaluating machine learning models for natural language tasks such as intent detection and language recognition. It also includes a REST API for inference, built using FastAPI.

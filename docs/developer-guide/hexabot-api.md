@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Hexabot API
 
 ## Hexabot API
