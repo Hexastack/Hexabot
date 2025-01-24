@@ -40,9 +40,9 @@ export const DeleteDialog = <T extends any = string>({
   onDeleteSuccess?: (data?: unknown) => void;
 }) => {
   const { t } = useTranslate();
-  const onSuccess = () => {
+  const onSuccess = (data: unknown) => {
     setData?.(undefined);
-    onDeleteSuccess();
+    onDeleteSuccess(data);
   };
   const { mutateAsync: deleteOne } = useDelete(entity, {
     onError: onDeleteError,
