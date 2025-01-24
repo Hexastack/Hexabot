@@ -125,10 +125,10 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @returns The found subscriber entity.
    */
-  async findOneByForeignId(id: string): Promise<Subscriber> {
+  async findOneByForeignId(id: string): Promise<Subscriber | null> {
     const query = this.findByForeignIdQuery(id);
     const [result] = await this.execute(query, Subscriber);
-    return result;
+    return result || null;
   }
 
   /**
