@@ -6,13 +6,30 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Global, Module } from '@nestjs/common';
+import { DynamicModule, Module, Scope } from '@nestjs/common';
 
 import { LoggerService } from './logger.service';
 
-@Global()
-@Module({
-  providers: [LoggerService],
-  exports: [LoggerService],
-})
-export class LoggerModule {}
+const LOGGER_CONTEXT = 'LOGGER_CONTEXT';
+
+@Module({})
+export class LoggerModule {
+  static register(context: string): DynamicModule {
+    return {
+      module: LoggerModule,
+      providers: [
+        {
+          provide: LOGGER_CONTEXT, // Provide the context as a separate injectable
+          useValue: context,
+        },
+        {
+          provide: LoggerService,
+          useFactory: () => new LoggerService(context),
+          inject: [LOGGER_CONTEXT], // Inject the context into the factory
+          scope: Scope.TRANSIENT,
+        },
+      ],
+      exports: [LoggerService],
+    };
+  }
+}

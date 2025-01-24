@@ -97,6 +97,7 @@ const i18nOptions: I18nOptions = {
         return connection;
       },
     }),
+    LoggerModule.register('AppModule'),
     NlpModule,
     CmsModule,
     UserModule,
@@ -107,7 +108,6 @@ const i18nOptions: I18nOptions = {
     ChannelModule,
     PluginsModule,
     HelperModule,
-    LoggerModule,
     WebsocketModule,
     EventEmitterModule.forRoot({
       // set this to `true` to use wildcards

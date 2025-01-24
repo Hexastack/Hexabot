@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -40,7 +39,7 @@ import { LanguageService } from '../services/language.service';
 export class LanguageController extends BaseController<Language> {
   constructor(
     private readonly languageService: LanguageService,
-    private readonly logger: LoggerService,
+    // private readonly logger: LoggerService,
   ) {
     super(languageService);
   }
@@ -85,7 +84,7 @@ export class LanguageController extends BaseController<Language> {
   async findOne(@Param('id') id: string): Promise<Language> {
     const doc = await this.languageService.findOne(id);
     if (!doc) {
-      this.logger.warn(`Unable to find Language by id ${id}`);
+      // this.logger.warn(`Unable to find Language by id ${id}`);
       throw new NotFoundException(`Language with ID ${id} not found`);
     }
     return doc;
@@ -140,7 +139,7 @@ export class LanguageController extends BaseController<Language> {
       _id: id,
     });
     if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Language by id ${id}`);
+      // this.logger.warn(`Unable to delete Language by id ${id}`);
       throw new BadRequestException(`Unable to delete Language with ID ${id}`);
     }
     return result;

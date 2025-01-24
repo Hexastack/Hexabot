@@ -8,11 +8,14 @@
 
 import { Global, Module } from '@nestjs/common';
 
+import { LoggerModule } from '@/logger/logger.module';
+
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { WebsocketGateway } from './websocket.gateway';
 
 @Global()
 @Module({
+  imports: [LoggerModule.register('WebsocketModule')],
   providers: [WebsocketGateway, SocketEventDispatcherService],
   exports: [WebsocketGateway],
 })

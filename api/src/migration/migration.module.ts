@@ -22,7 +22,7 @@ import { MigrationService } from './migration.service';
 @Module({
   imports: [
     MongooseModule.forFeature([MigrationModel]),
-    LoggerModule,
+    LoggerModule.register('MigrationModule'),
     HttpModule,
     AttachmentModule,
   ],

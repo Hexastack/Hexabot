@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
@@ -37,7 +36,7 @@ export class LanguageService extends BaseService<
   constructor(
     readonly repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly logger: LoggerService,
+    // private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -84,7 +83,7 @@ export class LanguageService extends BaseService<
     const language = await this.findOne({ code });
 
     if (!language) {
-      this.logger.warn(`Unable to Language by languageCode ${code}`);
+      // this.logger.warn(`Unable to Language by languageCode ${code}`);
       throw new NotFoundException(
         `Language with languageCode ${code} not found`,
       );

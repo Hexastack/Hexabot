@@ -19,6 +19,7 @@ import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms/cms.module';
+import { LoggerModule } from '@/logger/logger.module';
 
 import { ChannelController } from './channel.controller';
 import { ChannelMiddleware } from './channel.middleware';
@@ -39,7 +40,14 @@ export interface ChannelModuleOptions {
   'dist/.hexabot/custom/extensions/channels/**/*.channel.js',
 )
 @Module({
-  imports: [ChatModule, AttachmentModule, CmsModule, HttpModule, JwtModule],
+  imports: [
+    ChatModule,
+    AttachmentModule,
+    CmsModule,
+    HttpModule,
+    JwtModule,
+    LoggerModule.register('ChannelModule'),
+  ],
   controllers: [WebhookController, ChannelController],
   providers: [ChannelService],
   exports: [ChannelService],

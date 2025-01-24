@@ -18,6 +18,7 @@ import { BlockModel } from '@/chat/schemas/block.schema';
 import { CmsModule } from '@/cms/cms.module';
 import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
 import { ContentModel } from '@/cms/schemas/content.schema';
+import { LoggerModule } from '@/logger/logger.module';
 
 import { PluginService } from './plugins.service';
 
@@ -32,6 +33,7 @@ import { PluginService } from './plugins.service';
 @Global()
 @Module({
   imports: [
+    LoggerModule.register('PluginModule'),
     MongooseModule.forFeature([
       BlockModel,
       AttachmentModel,

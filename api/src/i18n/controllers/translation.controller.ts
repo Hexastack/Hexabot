@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
@@ -44,7 +43,7 @@ export class TranslationController extends BaseController<Translation> {
     private readonly languageService: LanguageService,
     private readonly translationService: TranslationService,
     private readonly settingService: SettingService,
-    private readonly logger: LoggerService,
+    // private readonly logger: LoggerService,
   ) {
     super(translationService);
   }
@@ -78,7 +77,7 @@ export class TranslationController extends BaseController<Translation> {
   async findOne(@Param('id') id: string) {
     const doc = await this.translationService.findOne(id);
     if (!doc) {
-      this.logger.warn(`Unable to find Translation by id ${id}`);
+      // this.logger.warn(`Unable to find Translation by id ${id}`);
       throw new NotFoundException(`Translation with ID ${id} not found`);
     }
     return doc;
@@ -145,7 +144,7 @@ export class TranslationController extends BaseController<Translation> {
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
     const result = await this.translationService.deleteOne(id);
     if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete Translation by id ${id}`);
+      // this.logger.warn(`Unable to delete Translation by id ${id}`);
       throw new BadRequestException(
         `Unable to delete Translation with ID ${id}`,
       );

@@ -10,6 +10,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
+import { LoggerModule } from '@/logger/logger.module';
 import { NlpModule } from '@/nlp/nlp.module';
 
 import { HelperController } from './helper.controller';
@@ -25,7 +26,7 @@ import { HelperService } from './helper.service';
   'dist/.hexabot/custom/extensions/helpers/**/*.helper.js',
 )
 @Module({
-  imports: [HttpModule, NlpModule],
+  imports: [LoggerModule.register('SettingModule'), HttpModule, NlpModule],
   controllers: [HelperController],
   providers: [HelperService],
   exports: [HelperService],

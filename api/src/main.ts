@@ -34,6 +34,7 @@ async function bootstrap() {
   const app = await NestFactory.create(HexabotModule, {
     bodyParser: false,
   });
+  app.useLogger(await app.resolve(LoggerService));
 
   const rawBodyBuffer = (req, res, buf, encoding) => {
     if (buf?.length) {
@@ -84,9 +85,9 @@ async function bootstrap() {
     app.useWebSocketAdapter(redisIoAdapter);
   }
 
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', async (error) => {
     if (error.stack?.toLowerCase().includes('smtp'))
-      app.get(LoggerService).error('SMTP error', error.stack);
+      (await app.resolve(LoggerService)).error('SMTP error', error.stack);
     else throw error;
   });
 

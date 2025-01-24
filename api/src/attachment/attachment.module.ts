@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
 import { config } from '@/config';
+import { LoggerModule } from '@/logger/logger.module';
 import { UserModule } from '@/user/user.module';
 
 import { AttachmentController } from './controllers/attachment.controller';
@@ -22,6 +23,7 @@ import { AttachmentService } from './services/attachment.service';
 
 @Module({
   imports: [
+    LoggerModule.register('AttachmentModule'),
     MongooseModule.forFeature([AttachmentModel]),
     PassportModule.register({
       session: true,

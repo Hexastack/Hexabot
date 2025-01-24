@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
+import { LoggerModule } from '@/logger/logger.module';
 
 import { AttachmentModel } from '../attachment/schemas/attachment.schema';
 
@@ -29,6 +30,7 @@ import { MenuService } from './services/menu.service';
 
 @Module({
   imports: [
+    LoggerModule.register('CMSModule'),
     MongooseModule.forFeature([
       ContentModel,
       ContentTypeModel,

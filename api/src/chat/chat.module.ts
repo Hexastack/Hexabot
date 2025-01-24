@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
+import { LoggerModule } from '@/logger/logger.module';
 import { UserModule } from '@/user/user.module';
 
 import { BlockController } from './controllers/block.controller';
@@ -64,6 +65,7 @@ import { SubscriberService } from './services/subscriber.service';
     AttachmentModule,
     EventEmitter2,
     UserModule,
+    LoggerModule.register('ChatModule'),
   ],
   controllers: [
     CategoryController,

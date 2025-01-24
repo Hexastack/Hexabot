@@ -11,6 +11,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
+import { LoggerModule } from '@/logger/logger.module';
 
 import { NlpEntityController } from './controllers/nlp-entity.controller';
 import { NlpSampleController } from './controllers/nlp-sample.controller';
@@ -33,6 +34,7 @@ import { NlpService } from './services/nlp.service';
 
 @Module({
   imports: [
+    LoggerModule.register('NlpModule'),
     MongooseModule.forFeature([
       NlpEntityModel,
       NlpValueModel,

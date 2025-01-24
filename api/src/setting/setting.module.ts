@@ -10,6 +10,8 @@ import { Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
+import { LoggerModule } from '@/logger/logger.module';
+
 import { SettingController } from './controllers/setting.controller';
 import { MetadataRepository } from './repositories/metadata.repository';
 import { SettingRepository } from './repositories/setting.repository';
@@ -23,6 +25,7 @@ import { SettingService } from './services/setting.service';
 @Global()
 @Module({
   imports: [
+    LoggerModule.register('SettingModule'),
     MongooseModule.forFeature([SettingModel, MetadataModel]),
     PassportModule.register({
       session: true,
