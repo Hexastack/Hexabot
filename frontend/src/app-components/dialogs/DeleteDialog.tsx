@@ -31,6 +31,7 @@ export const DeleteDialog = <T extends any = string>({
   data: ids,
   callback,
   entity = EntityType.ATTACHMENT,
+  setData,
   onDeleteError = () => {},
   onDeleteSuccess = () => {},
 }: DeleteDialogProps<T> & {
@@ -39,13 +40,17 @@ export const DeleteDialog = <T extends any = string>({
   onDeleteSuccess?: (data?: unknown) => void;
 }) => {
   const { t } = useTranslate();
-  const { mutateAsync: deleteEntity } = useDelete(entity, {
+  const onSuccess = () => {
+    setData?.(undefined);
+    onDeleteSuccess();
+  };
+  const { mutateAsync: deleteOne } = useDelete(entity, {
     onError: onDeleteError,
-    onSuccess: onDeleteSuccess,
+    onSuccess,
   });
-  const { mutateAsync: deleteEntities } = useDeleteMany(entity, {
+  const { mutateAsync: deleteMany } = useDeleteMany(entity, {
     onError: onDeleteError,
-    onSuccess: onDeleteSuccess,
+    onSuccess,
   });
 
   return (
@@ -71,14 +76,13 @@ export const DeleteDialog = <T extends any = string>({
             } else {
               if (!Array.isArray(ids)) {
                 throw new Error("IDs need to be an Array");
-              }
-
-              if (ids.length === 0) {
+              } else if (ids.length === 0) {
                 throw new Error("IDs cannot be empty");
+              } else if (ids.length === 1) {
+                await deleteOne(ids[0]);
+              } else if (ids.length > 1) {
+                await deleteMany(ids);
               }
-
-              if (ids.length === 1) await deleteEntity(ids[0]);
-              else if (ids.length > 1) await deleteEntities(ids);
             }
           }}
           autoFocus

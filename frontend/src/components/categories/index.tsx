@@ -115,7 +115,7 @@ export const Categories = () => {
           toast.error(error.message || t("message.internal_server_error"));
         }}
         onDeleteSuccess={() => {
-          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          deleteDialogCtl.closeDialog();
           toast.success(t("message.item_delete_success"));
         }}
       />
@@ -144,18 +144,17 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
-            {deleteDialogCtl.data?.length ? (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteDialogCtl.openDialog()}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            ) : null}
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteDialogCtl.openDialog()}
+                disabled={!deleteDialogCtl.data?.length}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
           </Grid>
         </PageHeader>
       </Grid>

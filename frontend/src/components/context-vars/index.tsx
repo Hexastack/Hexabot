@@ -148,7 +148,7 @@ export const ContextVars = () => {
           toast.error(error);
         }}
         onDeleteSuccess={() => {
-          deleteDialogCtl.closeDialog(undefined, "postDelete");
+          deleteDialogCtl.closeDialog();
           toast.success(t("message.item_delete_success"));
         }}
       />
@@ -176,18 +176,17 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
-          {deleteDialogCtl.data?.length ? (
-            <Grid item>
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={() => deleteDialogCtl.openDialog()}
-              >
-                {t("button.delete")}
-              </Button>
-            </Grid>
-          ) : null}
+          <Grid item>
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              color="error"
+              onClick={() => deleteDialogCtl.openDialog()}
+              disabled={!deleteDialogCtl.data?.length}
+            >
+              {t("button.delete")}
+            </Button>
+          </Grid>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
