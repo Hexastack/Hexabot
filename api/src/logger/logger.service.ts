@@ -6,11 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Global, Injectable } from '@nestjs/common';
 
 import { loggingStorage } from './logger.context';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Global()
+@Injectable()
 export class LoggerService extends ConsoleLogger {
   constructor(private readonly moduleContext: string) {
     super(moduleContext);

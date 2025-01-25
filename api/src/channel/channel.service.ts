@@ -12,6 +12,7 @@ import { Request, Response } from 'express';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
+import { LogClass } from '@/logger/logger.decorator';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 import {
@@ -27,6 +28,7 @@ import ChannelHandler from './lib/Handler';
 import { ChannelName } from './types';
 
 @Injectable()
+@LogClass()
 export class ChannelService {
   private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
 

@@ -97,7 +97,7 @@ const i18nOptions: I18nOptions = {
         return connection;
       },
     }),
-    LoggerModule.register('AppModule'),
+    LoggerModule,
     NlpModule,
     CmsModule,
     UserModule,

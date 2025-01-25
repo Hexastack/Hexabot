@@ -20,6 +20,7 @@ import {
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
+import { LogClass } from '@/logger/logger.decorator';
 import { LoggerService } from '@/logger/logger.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -34,6 +35,7 @@ import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 
 @Injectable()
+@LogClass()
 export class ChatService {
   constructor(
     private readonly eventEmitter: EventEmitter2,

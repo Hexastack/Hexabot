@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -32,6 +32,7 @@ import {
 } from '@/chat/schemas/subscriber.schema';
 import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
 import { config } from '@/config';
+import { LogClass } from '@/logger/logger.decorator';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 
@@ -42,6 +43,7 @@ import { buildWebSocketGatewayOptions } from './utils/gateway-options';
 import { SocketRequest } from './utils/socket-request';
 import { SocketResponse } from './utils/socket-response';
 
+@LogClass()
 @WebSocketGateway(buildWebSocketGatewayOptions())
 export class WebsocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
