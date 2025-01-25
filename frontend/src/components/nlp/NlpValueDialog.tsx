@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import { useRouter } from "next/router";
@@ -36,44 +37,47 @@ export type NlpValueDialogProps = DialogControlProps<INlpValue> & {
 
 export const NlpValueDialog: FC<NlpValueDialogProps> = ({
   open,
+  datum: nlpValue,
   closeDialog,
-  data,
   canHaveSynonyms,
   callback,
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
-  const { refetch: refetchEntity } = useGet(data?.entity || String(query.id), {
-    entity: EntityType.NLP_ENTITY,
-    format: Format.FULL,
-  });
+  const { refetch: refetchEntity } = useGet(
+    nlpValue?.entity || String(query.id),
+    {
+      entity: EntityType.NLP_ENTITY,
+      format: Format.FULL,
+    },
+  );
   const { mutateAsync: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
-    onSuccess(data) {
+    onSuccess(datum) {
       refetchEntity();
       closeDialog();
       toast.success(t("message.success_save"));
-      callback?.(data);
+      callback?.(datum);
     },
   });
   const { mutateAsync: updateNlpValue } = useUpdate(EntityType.NLP_VALUE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
-    onSuccess(data) {
+    onSuccess(datum) {
       closeDialog();
       toast.success(t("message.success_save"));
-      callback?.(data);
+      callback?.(datum);
     },
   });
   const { reset, register, handleSubmit, control } =
     useForm<TNlpValueAttributesWithRequiredExpressions>({
       defaultValues: {
-        value: data?.value || "",
-        expressions: data?.expressions || [],
+        value: nlpValue?.value || "",
+        expressions: nlpValue?.expressions || [],
       },
     });
   const validationRules = {
@@ -84,8 +88,8 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
     description: {},
   };
   const onSubmitForm = async (params: INlpValueAttributes) => {
-    if (data) {
-      updateNlpValue({ id: data.id, params });
+    if (nlpValue) {
+      updateNlpValue({ id: nlpValue.id, params });
     } else {
       createNlpValue({ ...params, entity: String(query.id) });
     }
@@ -96,21 +100,23 @@ export const NlpValueDialog: FC<NlpValueDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (nlpValue) {
       reset({
-        value: data.value,
-        expressions: data.expressions,
+        value: nlpValue.value,
+        expressions: nlpValue.expressions,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [nlpValue, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_nlp_value") : t("title.new_nlp_entity_value")}
+          {nlpValue
+            ? t("title.edit_nlp_value")
+            : t("title.new_nlp_entity_value")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

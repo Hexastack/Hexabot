@@ -94,7 +94,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       onUploadComplete && onUploadComplete();
     },
   });
-  const libraryDialogCtl = useDialog<IAttachment | null | undefined>(false);
+  const libraryDialogCtl = useDialog<IAttachment | null>(false);
   const stopDefaults = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -140,7 +140,9 @@ const AttachmentUploader: FC<FileUploadProps> = ({
     <Grid>
       <AttachmentDialog
         {...getDisplayDialogs(libraryDialogCtl)}
-        callback={onChange}
+        callback={async (data) => {
+          if (!Array.isArray(data)) onChange?.(data);
+        }}
         accept={accept}
       />
       <Grid container>

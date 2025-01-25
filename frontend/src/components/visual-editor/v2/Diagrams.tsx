@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -74,8 +75,8 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
-  const deleteDialogCtl = useDialog<string[]>(false);
-  const moveDialogCtl = useDialog<string[] | string>(false);
+  const deleteDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string>(false);
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
@@ -203,7 +204,8 @@ const Diagrams = () => {
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
-        deleteDialogCtl.openDialog(ids);
+        deleteDialogCtl.setData?.(ids);
+        deleteDialogCtl.openDialog();
         deleteCallbackRef.current = next;
       },
       onDbClickNode: (event, id) => {
@@ -445,7 +447,8 @@ const Diagrams = () => {
         });
         engine?.repaintCanvas();
       };
-      deleteDialogCtl.openDialog(ids);
+      deleteDialogCtl.setData?.(ids);
+      deleteDialogCtl.openDialog();
     }
   };
   const handleMoveButton = () => {
@@ -453,12 +456,11 @@ const Diagrams = () => {
     const ids = selectedEntities?.map((model) => model.getID());
 
     if (ids && selectedEntities) {
-      moveDialogCtl.openDialog(ids);
+      moveDialogCtl.setData?.(ids);
+      moveDialogCtl.openDialog();
     }
   };
-  const onDelete = async () => {
-    const ids = deleteDialogCtl?.data;
-
+  const onDelete = async (ids: string[]) => {
     if (!ids || ids?.length === 0) {
       return;
     }
@@ -530,12 +532,15 @@ const Diagrams = () => {
       <Box sx={{ width: "100%" }}>
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
-        <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
+        <DeleteDialog
+          {...deleteDialogCtl}
+          callback={async (data) => {
+            if (Array.isArray(data)) onDelete(data);
+          }}
+        />
         <MoveDialog
-          open={moveDialogCtl.open}
-          openDialog={moveDialogCtl.openDialog}
+          {...moveDialogCtl}
           callback={onMove}
-          closeDialog={moveDialogCtl.closeDialog}
           categories={categories}
         />
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>

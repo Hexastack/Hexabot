@@ -44,6 +44,7 @@
     "account_disabled": "Votre compte a été désactivé ou est en attente de confirmation.",
     "success_invitation_sent": "L'invitation a été envoyée avec succès.",
     "item_delete_confirm": "Êtes-vous sûr de bien vouloir supprimer cet élément?",
+    "items_delete_confirm": "Êtes-vous sûr de bien vouloir supprimer ces {{0}} éléments sélectionnés?",
     "item_delete_success": "L'élément a été supprimé avec succès",
     "success_save": "Les modifications ont été enregistrées!",
     "no_result_found": "Aucun résultat trouvé",

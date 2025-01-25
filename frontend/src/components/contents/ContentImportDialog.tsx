@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CloseIcon from "@mui/icons-material/Close";
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useState } from "react";
@@ -29,7 +28,7 @@ export type ContentImportDialogProps = DialogControlProps<{
 
 export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   open,
-  data,
+  datum,
   closeDialog,
   ...rest
 }) => {
@@ -38,10 +37,10 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
   const { toast } = useToast();
   const { apiClient } = useApiClient();
   const { refetch, isFetching } = useQuery(
-    ["importContent", data?.contentType?.id, attachmentId],
+    ["importContent", datum?.contentType?.id, attachmentId],
     async () => {
-      if (data?.contentType?.id && attachmentId) {
-        await apiClient.importContent(data.contentType.id, attachmentId);
+      if (datum?.contentType?.id && attachmentId) {
+        await apiClient.importContent(datum.contentType.id, attachmentId);
       }
     },
     {
@@ -63,7 +62,7 @@ export const ContentImportDialog: FC<ContentImportDialogProps> = ({
     setAttachmentId(null);
   };
   const handleImportClick = () => {
-    if (attachmentId && data?.contentType?.id) {
+    if (attachmentId && datum?.contentType?.id) {
       refetch();
     }
   };

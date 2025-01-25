@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -22,7 +23,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 
@@ -74,7 +75,7 @@ export default function NlpSample() {
   const { t } = useTranslate();
   const { toast } = useToast();
   const editDialogCtl = useDialog<INlpDatasetSample>(false);
-  const deleteDialogCtl = useDialog<string[]>(false);
+  const deleteDialogCtl = useDialog<string>(false);
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
@@ -154,7 +155,7 @@ export default function NlpSample() {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog([row.id]),
+        action: (row) => deleteDialogCtl.openDialog(row.id),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -266,8 +267,6 @@ export default function NlpSample() {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.setData?.(selection as string[]);
   const handleImportChange = async (file: File) => {
     await importDataset(file);
   };
@@ -399,7 +398,9 @@ export default function NlpSample() {
           columns={columns}
           {...dataGridProps}
           checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
+          onRowSelectionModelChange={(rowSelectionModel) =>
+            deleteDialogCtl.setData?.(rowSelectionModel as string[])
+          }
         />
       </Grid>
     </Grid>

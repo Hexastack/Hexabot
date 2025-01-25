@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -84,7 +85,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   });
   const { toast } = useToast();
   const { t } = useTranslate();
-  const deleteDialogCtl = useDialog<string[]>(false);
+  const deleteDialogCtl = useDialog<string>(false);
 
   if (!attachment) {
     return t("message.attachment_not_found") + id;
@@ -141,7 +142,7 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   variant="contained"
                   startIcon={<DeleteOutlineOutlinedIcon />}
                   onClick={(e) => {
-                    deleteDialogCtl.openDialog([attachment.id]);
+                    deleteDialogCtl.openDialog(attachment.id);
                     e.preventDefault();
                     e.stopPropagation();
                   }}

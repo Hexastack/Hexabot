@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
@@ -13,17 +14,17 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Button,
   Dialog,
+  DialogActions,
+  DialogContent,
+  Divider,
   Grid,
   MenuItem,
   Paper,
   Typography,
-  DialogContent,
-  DialogActions,
-  Button,
-  Divider,
 } from "@mui/material";
-import { useState, FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -67,7 +68,7 @@ const AccordionModelHead = () => (
 
 export const PermissionsDialog: FC<PermissionsDialogProps> = ({
   open,
-  data,
+  datum: permission,
   closeDialog: closeFunction,
 }) => {
   const { t } = useTranslate();
@@ -78,7 +79,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
       hasCount: false,
     },
   );
-  const getPermisionFromCache = useGetFromCache(EntityType.PERMISSION);
+  const getPermissionFromCache = useGetFromCache(EntityType.PERMISSION);
   const { mutateAsync: createPermission } = useCreate(EntityType.PERMISSION, {
     onError: (error: Error & { statusCode?: number }) => {
       if (error.statusCode === 409) {
@@ -127,7 +128,7 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
       </DialogTitle>
       <DialogContent>
         <Typography fontWeight={700} sx={{ marginBottom: 2 }}>
-          {data?.role.name}
+          {permission?.role.name}
         </Typography>
         {models?.map((model) => {
           return (
@@ -161,11 +162,8 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                 >
                   <AccordionModelHead />
                   {model.permissions
-                    ?.map((p) => getPermisionFromCache(p))
-                    ?.filter(
-                      (permission) =>
-                        permission && permission.role === data?.role.id,
-                    )
+                    ?.map((p) => getPermissionFromCache(p))
+                    ?.filter((p) => p && p.role === permission?.role.id)
                     .map((p) => p as IPermission)
                     .map(({ id, action, relation }, index) => {
                       return (
@@ -212,11 +210,11 @@ export const PermissionsDialog: FC<PermissionsDialogProps> = ({
                         color="primary"
                         variant="contained"
                         onClick={() => {
-                          if (data?.role.id)
+                          if (permission?.role.id)
                             createPermission({
                               ...payload,
                               model: model.id,
-                              role: data.role.id,
+                              role: permission.role.id,
                             });
                           reset();
                         }}

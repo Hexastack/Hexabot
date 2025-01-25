@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import {
   Button,
@@ -40,7 +41,7 @@ export type EditUserDialogProps = DialogControlProps<{
 
 export const EditUserDialog: FC<EditUserDialogProps> = ({
   open,
-  data,
+  datum,
   closeDialog,
   ...rest
 }) => {
@@ -62,7 +63,7 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
     reset,
     formState: { errors },
   } = useForm<IUserAttributes>({
-    defaultValues: { roles: data?.roles.map((role) => role.id) },
+    defaultValues: { roles: datum?.roles.map((role) => role.id) },
   });
   const validationRules = {
     roles: {
@@ -70,18 +71,18 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: IUserAttributes) => {
-    if (data?.user.id)
+    if (datum?.user.id)
       updateUser({
-        id: data.user.id,
+        id: datum.user.id,
         params,
       });
   };
 
   useEffect(() => {
-    if (data?.user) setFullName(getFullName(data?.user));
+    if (datum?.user) setFullName(getFullName(datum?.user));
 
-    if (open) reset({ roles: data?.user?.roles });
-  }, [open, reset, data]);
+    if (open) reset({ roles: datum?.user?.roles });
+  }, [open, reset, datum]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
@@ -108,7 +109,7 @@ export const EditUserDialog: FC<EditUserDialogProps> = ({
                     name="roles"
                     rules={validationRules.roles}
                     control={control}
-                    defaultValue={data?.roles?.map(({ id }) => id) || []}
+                    defaultValue={datum?.roles?.map(({ id }) => id) || []}
                     render={({ field }) => {
                       const { onChange, ...rest } = field;
 

@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import {
   Dialog,
@@ -37,7 +38,7 @@ import TranslationInput from "./TranslationInput";
 export type EditTranslationDialogProps = DialogControlProps<ITranslation>;
 export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
   open,
-  data,
+  datum: translation,
   closeDialog,
   ...rest
 }) => {
@@ -59,15 +60,15 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
     },
   });
   const { reset, control, handleSubmit } = useForm<ITranslationAttributes>({
-    defaultValues: data,
+    defaultValues: translation,
   });
   const onSubmitForm = async (params: ITranslationAttributes) => {
-    if (data?.id) updateTranslation({ id: data.id, params });
+    if (translation?.id) updateTranslation({ id: translation.id, params });
   };
 
   useEffect(() => {
-    if (open) reset(data);
-  }, [open, reset, data]);
+    if (open) reset(translation);
+  }, [open, reset, translation]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
@@ -78,7 +79,7 @@ export const EditTranslationDialog: FC<EditTranslationDialogProps> = ({
         <DialogContent>
           <ContentItem>
             <FormLabel>{t("label.original_text")}</FormLabel>
-            <Typography component="p">{data?.str}</Typography>
+            <Typography component="p">{translation?.str}</Typography>
           </ContentItem>
           <ContentContainer>
             {languages

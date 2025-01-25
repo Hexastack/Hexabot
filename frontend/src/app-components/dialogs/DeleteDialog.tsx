@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import ErrorIcon from "@mui/icons-material/Error";
 import {
@@ -24,10 +25,11 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { IEntityMapTypes } from "@/types/base.types";
 
-export type DeleteDialogProps<T = string> = DialogControl<T>;
-export const DeleteDialog = <T extends any = string>({
+export type DeleteDialogProps<T extends string = string> = DialogControl<T>;
+export const DeleteDialog = <T extends string = string>({
   open,
   closeDialog: closeFunction,
+  datum,
   data: ids,
   callback,
   entity = EntityType.ATTACHMENT,
@@ -40,6 +42,9 @@ export const DeleteDialog = <T extends any = string>({
   onDeleteSuccess?: (data?: unknown) => void;
 }) => {
   const { t } = useTranslate();
+  const getItemsFromData = (data: unknown) => (Array.isArray(data) ? data : []);
+  const hasMultipleItems = (data: unknown): boolean =>
+    getItemsFromData(data).length > 1;
   const onSuccess = (data: unknown) => {
     setData?.(undefined);
     onDeleteSuccess(data);
@@ -62,7 +67,16 @@ export const DeleteDialog = <T extends any = string>({
             <ErrorIcon sx={{ fontSize: "28px" }} color="error" />
           </Grid>
           <Grid item alignSelf="center">
-            <Typography>{t("message.item_delete_confirm")}</Typography>
+            <Typography>
+              {t(
+                `${
+                  hasMultipleItems(ids)
+                    ? "message.items_delete_confirm"
+                    : "message.item_delete_confirm"
+                }`,
+                { "0": getItemsFromData(ids).length.toString() },
+              )}
+            </Typography>
           </Grid>
         </Grid>
       </DialogContent>
@@ -73,16 +87,10 @@ export const DeleteDialog = <T extends any = string>({
           onClick={async () => {
             if (callback) {
               callback(ids);
-            } else {
-              if (!Array.isArray(ids)) {
-                throw new Error("IDs need to be an Array");
-              } else if (ids.length === 0) {
-                throw new Error("IDs cannot be empty");
-              } else if (ids.length === 1) {
-                await deleteOne(ids[0]);
-              } else if (ids.length > 1) {
-                await deleteMany(ids);
-              }
+            } else if (Array.isArray(ids)) {
+              await deleteMany(ids);
+            } else if (datum) {
+              await deleteOne(datum);
             }
           }}
           autoFocus

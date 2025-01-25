@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useEffect } from "react";
@@ -27,7 +28,7 @@ import { slugify } from "@/utils/string";
 export type LabelDialogProps = DialogControlProps<ILabel>;
 export const LabelDialog: FC<LabelDialogProps> = ({
   open,
-  data,
+  datum: label,
   closeDialog,
   ...rest
 }) => {
@@ -59,9 +60,9 @@ export const LabelDialog: FC<LabelDialogProps> = ({
     handleSubmit,
   } = useForm<ILabelAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      title: data?.title || "",
-      description: data?.description || "",
+      name: label?.name || "",
+      title: label?.title || "",
+      description: label?.description || "",
     },
   });
   const validationRules = {
@@ -72,8 +73,8 @@ export const LabelDialog: FC<LabelDialogProps> = ({
     description: {},
   };
   const onSubmitForm = async (params: ILabelAttributes) => {
-    if (data) {
-      updateLabel({ id: data.id, params });
+    if (label) {
+      updateLabel({ id: label.id, params });
     } else {
       createLabel(params);
     }
@@ -84,22 +85,22 @@ export const LabelDialog: FC<LabelDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (label) {
       reset({
-        name: data.name,
-        title: data.title,
-        description: data.description,
+        name: label.name,
+        title: label.title,
+        description: label.description,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [label, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_label") : t("title.new_label")}
+          {label ? t("title.edit_label") : t("title.new_label")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

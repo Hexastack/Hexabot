@@ -1,16 +1,17 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -40,7 +41,7 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const addDialogCtl = useDialog<IContextVar>(false);
   const editDialogCtl = useDialog<IContextVar>(false);
-  const deleteDialogCtl = useDialog<string[]>(false);
+  const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IContextVar>({
     $iLike: ["label"],
@@ -69,7 +70,7 @@ export const ContextVars = () => {
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog([row.id]),
+        action: (row) => deleteDialogCtl.openDialog(row.id),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -133,14 +134,11 @@ export const ContextVars = () => {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) =>
-    deleteDialogCtl.setData?.(selection as string[]);
 
   return (
     <Grid container gap={3} flexDirection="column">
       <ContextVarDialog {...getDisplayDialogs(addDialogCtl)} />
       <ContextVarDialog {...getDisplayDialogs(editDialogCtl)} />
-
       <DeleteDialog
         {...deleteDialogCtl}
         entity={EntityType.CONTEXT_VAR}
@@ -196,7 +194,10 @@ export const ContextVars = () => {
               columns={columns}
               {...dataGridProps}
               checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
+              rowSelectionModel={deleteDialogCtl.data || []}
+              onRowSelectionModelChange={(rowSelectionModel) =>
+                deleteDialogCtl.setData?.(rowSelectionModel as string[])
+              }
             />
           </Grid>
         </Paper>

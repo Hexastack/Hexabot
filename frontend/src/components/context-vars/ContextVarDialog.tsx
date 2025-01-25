@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import {
   Dialog,
@@ -34,7 +35,7 @@ import { slugify } from "@/utils/string";
 export type ContextVarDialogProps = DialogControlProps<IContextVar>;
 export const ContextVarDialog: FC<ContextVarDialogProps> = ({
   open,
-  data,
+  datum: contextVar,
   closeDialog,
   ...rest
 }) => {
@@ -67,9 +68,9 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     control,
   } = useForm<IContextVarAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      label: data?.label || "",
-      permanent: data?.permanent || false,
+      name: contextVar?.name || "",
+      label: contextVar?.label || "",
+      permanent: contextVar?.permanent || false,
     },
   });
   const validationRules = {
@@ -84,8 +85,8 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: IContextVarAttributes) => {
-    if (data) {
-      updateContextVar({ id: data.id, params });
+    if (contextVar) {
+      updateContextVar({ id: contextVar.id, params });
     } else {
       createContextVar(params);
     }
@@ -96,22 +97,24 @@ export const ContextVarDialog: FC<ContextVarDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (contextVar) {
       reset({
-        label: data.label,
-        name: data.name,
-        permanent: data.permanent,
+        label: contextVar.label,
+        name: contextVar.name,
+        permanent: contextVar.permanent,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [contextVar, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_context_var") : t("title.new_context_var")}
+          {contextVar
+            ? t("title.edit_context_var")
+            : t("title.new_context_var")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

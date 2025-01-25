@@ -7,7 +7,7 @@
  */
 
 import { DialogProps } from "@mui/material";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 
 export type DialogControlProps<T> = Omit<DialogControl<T>, "openDialog">;
 type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
@@ -15,19 +15,25 @@ type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
   reason?: "backdropClick" | "escapeKeyDown",
 ) => void;
 type TFnVoid<T> = (data?: T) => void;
-export type DialogControl<T = null> = DialogProps & {
-  data?: T;
-  setData?: Dispatch<SetStateAction<T | undefined>>;
-  callback?: TFnVoid<T>;
+
+export type DialogControl<T = never> = DialogProps & {
+  data?: T[];
+  datum?: T;
+  setData?: TFnVoid<T[]>;
+  callback?: (data?: T | T[]) => Promise<void>;
   openDialog: TFnVoid<T>;
   closeDialog: TCloseDialog;
 };
 
 export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
   const [open, setOpen] = useState(initialState);
-  const [data, setData] = useState<T | undefined>(undefined);
-  const openDialog: TFnVoid<T> = (data) => {
-    if (data) setData(data);
+  const [data, setData] = useState<T[] | undefined>(undefined);
+  const [datum, setDatum] = useState<T | undefined>(undefined);
+  const openDialog: TFnVoid<T> = (datum) => {
+    setDatum(datum);
+    if (datum) {
+      setData(undefined);
+    }
     setOpen(true);
   };
   const closeDialog: TCloseDialog = (event, reason) => {
@@ -36,11 +42,18 @@ export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
     }
   };
 
-  return { open, openDialog, closeDialog, data, setData };
+  return {
+    open,
+    data,
+    datum,
+    setData,
+    openDialog,
+    closeDialog,
+  };
 };
 
 export const getDisplayDialogs = <T,>({
   open,
   closeDialog,
-  data,
-}: DialogControl<T>): DialogControlProps<T> => ({ open, closeDialog, data });
+  datum,
+}: DialogControl<T>): DialogControlProps<T> => ({ open, datum, closeDialog });
