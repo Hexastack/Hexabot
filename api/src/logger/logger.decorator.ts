@@ -9,7 +9,9 @@
 import { loggingStorage } from './logger.context';
 
 export function LogClass() {
-  return function <T extends { new (...args: any[]): {} }>(constructor: T) {
+  return function <T extends { new (...args: any[]): unknown }>(
+    constructor: T,
+  ) {
     const prototype = constructor.prototype;
     const methodNames = Object.getOwnPropertyNames(prototype).filter(
       (name) => name !== 'constructor' && typeof prototype[name] === 'function',
