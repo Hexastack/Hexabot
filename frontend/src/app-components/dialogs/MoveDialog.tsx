@@ -15,55 +15,51 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { FC, useState } from "react";
 
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { DialogControl } from "@/hooks/useDialog";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ICategory } from "@/types/category.types";
 
-export interface MoveDialogProps
-  extends Omit<DialogControl<string>, "callback"> {
+export interface MoveDialogProps<T = never>
+  extends Omit<DialogControl<T>, "callback"> {
   categories: ICategory[];
-  callback?: (newCategoryId?: string) => Promise<void>;
-  openDialog: (data?: string) => void;
+  callback?: (selectedCategoryId?: T, ids?: T[]) => Promise<void>;
 }
 
-export const MoveDialog: FC<MoveDialogProps> = ({
-  open,
-  callback,
-  closeDialog,
-  categories,
-}: MoveDialogProps) => {
+export const MoveDialog = <T,>({
+  data: ids,
+  datum: selectedCategoryId,
+  ...rest
+}: MoveDialogProps<T>) => {
   const { t } = useTranslate();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const handleMove = async () => {
-    if (selectedCategoryId && callback) {
-      await callback(selectedCategoryId);
-      closeDialog();
+    if (selectedCategoryId && rest.callback) {
+      await rest.callback(selectedCategoryId, ids);
+      rest.closeDialog();
     }
   };
 
   return (
-    <Dialog open={open} fullWidth onClose={closeDialog}>
-      <DialogTitle onClose={closeDialog}>
+    <Dialog open={rest.open} fullWidth onClose={rest.closeDialog}>
+      <DialogTitle onClose={rest.closeDialog}>
         {t("message.select_category")}
       </DialogTitle>
       <DialogContent>
         <Grid container direction="column" gap={2}>
           <Grid item>
             <Select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value as string)}
+              value={selectedCategoryId || ""}
+              onChange={(e) => rest.setDatum?.(e.target.value as T)}
               fullWidth
               displayEmpty
             >
               <MenuItem value="" disabled>
                 {t("label.category")}
               </MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  {category.label}
+              {rest.categories.map(({ id, label }) => (
+                <MenuItem key={id} value={id}>
+                  {label}
                 </MenuItem>
               ))}
             </Select>
@@ -78,7 +74,7 @@ export const MoveDialog: FC<MoveDialogProps> = ({
         >
           {t("button.move")}
         </Button>
-        <Button variant="outlined" onClick={closeDialog}>
+        <Button variant="outlined" onClick={rest.closeDialog}>
           {t("button.cancel")}
         </Button>
       </DialogActions>

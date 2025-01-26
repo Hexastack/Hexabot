@@ -26,40 +26,30 @@ import { IEntityMapTypes } from "@/types/base.types";
 
 export type DeleteDialogProps<T extends string = string> = DialogControl<T>;
 export const DeleteDialog = <T extends string = string>({
-  open,
-  closeDialog: closeFunction,
-  datum,
   data: ids,
-  callback,
   entity = EntityType.ATTACHMENT,
-  setData,
   onDeleteError = () => {},
   onDeleteSuccess = () => {},
+  ...rest
 }: DeleteDialogProps<T> & {
   entity?: keyof IEntityMapTypes;
   onDeleteError?: (error: Error) => void;
   onDeleteSuccess?: (data?: unknown) => void;
 }) => {
   const { t } = useTranslate();
-  const getItemsFromData = (data: unknown) => (Array.isArray(data) ? data : []);
-  const hasMultipleItems = (data: unknown): boolean =>
-    getItemsFromData(data).length > 1;
-  const onSuccess = (data: unknown) => {
-    setData?.(undefined);
-    onDeleteSuccess(data);
+  const options = {
+    onError: onDeleteError,
+    onSuccess: (data: unknown) => {
+      rest.setData?.(undefined);
+      onDeleteSuccess(data);
+    },
   };
-  const { mutateAsync: deleteOne } = useDelete(entity, {
-    onError: onDeleteError,
-    onSuccess,
-  });
-  const { mutateAsync: deleteMany } = useDeleteMany(entity, {
-    onError: onDeleteError,
-    onSuccess,
-  });
+  const { mutateAsync: deleteOne } = useDelete(entity, options);
+  const { mutateAsync: deleteMany } = useDeleteMany(entity, options);
 
   return (
-    <Dialog open={open} fullWidth onClose={closeFunction}>
-      <DialogTitle onClose={closeFunction}>{t("title.warning")}</DialogTitle>
+    <Dialog open={rest.open} fullWidth onClose={rest.closeDialog}>
+      <DialogTitle onClose={rest.closeDialog}>{t("title.warning")}</DialogTitle>
       <DialogContent>
         <Grid container gap={1}>
           <Grid item height="28px">
@@ -68,12 +58,15 @@ export const DeleteDialog = <T extends string = string>({
           <Grid item alignSelf="center">
             <Typography>
               {t(
-                `${
-                  hasMultipleItems(ids)
-                    ? "message.items_delete_confirm"
-                    : "message.item_delete_confirm"
-                }`,
-                { "0": getItemsFromData(ids).length.toString() },
+                `message.item${
+                  (ids?.length || 0) > 1 ? "s" : ""
+                }_delete_confirm`,
+                {
+                  "0":
+                    ids?.length === 1
+                      ? t("message.selected")
+                      : ids?.length.toString(),
+                },
               )}
             </Typography>
           </Grid>
@@ -84,19 +77,19 @@ export const DeleteDialog = <T extends string = string>({
           color="error"
           variant="contained"
           onClick={async () => {
-            if (callback) {
-              callback(ids);
+            if (rest.callback) {
+              rest.callback(ids);
             } else if (Array.isArray(ids)) {
               await deleteMany(ids);
-            } else if (datum) {
-              await deleteOne(datum);
+            } else if (rest.datum) {
+              await deleteOne(rest.datum);
             }
           }}
           autoFocus
         >
           {t("button.yes")}
         </Button>
-        <Button variant="outlined" onClick={closeFunction}>
+        <Button variant="outlined" onClick={rest.closeDialog}>
           {t("button.no")}
         </Button>
       </DialogActions>

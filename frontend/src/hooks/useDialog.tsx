@@ -15,24 +15,33 @@ type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
   reason?: "backdropClick" | "escapeKeyDown",
 ) => void;
 type TFnVoid<T> = (data?: T) => void;
-
+type TStatesMode = "datumOrData" | "datumAndData";
 export type DialogControl<T = never> = DialogProps & {
   data?: T[];
   datum?: T;
   setData?: TFnVoid<T[]>;
+  setDatum?: TFnVoid<T>;
   callback?: (data?: T | T[]) => Promise<void>;
-  openDialog: TFnVoid<T>;
+  openDialog: TFnVoid<T | T[]>;
   closeDialog: TCloseDialog;
 };
 
-export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
+export const useDialog = <T,>(
+  initialState: boolean,
+  statesMode: TStatesMode = "datumOrData",
+): DialogControl<T> => {
   const [open, setOpen] = useState(initialState);
-  const [data, setData] = useState<T[] | undefined>(undefined);
-  const [datum, setDatum] = useState<T | undefined>(undefined);
-  const openDialog: TFnVoid<T> = (datum) => {
-    setDatum(datum);
-    if (datum) {
-      setData(undefined);
+  const [data, setData] = useState<T[] | undefined>();
+  const [datum, setDatum] = useState<T | undefined>();
+  const openDialog: TFnVoid<T | T[]> = (value) => {
+    if (statesMode === "datumOrData") {
+      if (value) {
+        setData(Array.isArray(value) ? value : undefined);
+        setDatum(Array.isArray(value) ? undefined : value);
+      }
+    } else if (statesMode === "datumAndData") {
+      setData(Array.isArray(value) ? value : data);
+      setDatum(Array.isArray(value) ? datum : value);
     }
     setOpen(true);
   };
@@ -47,6 +56,7 @@ export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
     data,
     datum,
     setData,
+    setDatum,
     openDialog,
     closeDialog,
   };
@@ -54,6 +64,6 @@ export const useDialog = <T,>(initialState: boolean): DialogControl<T> => {
 
 export const getDisplayDialogs = <T,>({
   open,
-  closeDialog,
   datum,
+  closeDialog,
 }: DialogControl<T>): DialogControlProps<T> => ({ open, datum, closeDialog });

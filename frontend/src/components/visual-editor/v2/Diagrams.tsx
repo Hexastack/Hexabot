@@ -75,7 +75,7 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string>(false);
-  const moveDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string>(false, "datumAndData");
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
@@ -203,8 +203,7 @@ const Diagrams = () => {
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: (ids, next) => {
-        deleteDialogCtl.setData?.(ids);
-        deleteDialogCtl.openDialog();
+        deleteDialogCtl.openDialog(ids);
         deleteCallbackRef.current = next;
       },
       onDbClickNode: (event, id) => {
@@ -446,8 +445,7 @@ const Diagrams = () => {
         });
         engine?.repaintCanvas();
       };
-      deleteDialogCtl.setData?.(ids);
-      deleteDialogCtl.openDialog();
+      deleteDialogCtl.openDialog(ids);
     }
   };
   const handleMoveButton = () => {
@@ -455,8 +453,7 @@ const Diagrams = () => {
     const ids = selectedEntities?.map((model) => model.getID());
 
     if (ids && selectedEntities) {
-      moveDialogCtl.setData?.(ids);
-      moveDialogCtl.openDialog();
+      moveDialogCtl.openDialog(ids);
     }
   };
   const onDelete = async (ids: string[]) => {
@@ -473,14 +470,12 @@ const Diagrams = () => {
 
     cleanupAfterDeletion();
   };
-  const onMove = async (newCategoryId?: string) => {
+  const onMove = async (newCategoryId?: string, ids?: string[]) => {
     if (!newCategoryId) {
       return;
     }
 
-    const ids = moveDialogCtl?.data;
-
-    if (ids?.length && Array.isArray(ids)) {
+    if (Array.isArray(ids) && ids?.length) {
       await updateBlocks({ ids, payload: { category: newCategoryId } });
 
       queryClient.invalidateQueries({
