@@ -36,7 +36,7 @@ export const MoveDialog = <T,>({
   const handleMove = async () => {
     if (selectedCategoryId && rest.callback) {
       await rest.callback(selectedCategoryId, ids);
-      rest.closeDialog();
+      rest.reset?.();
     }
   };
 
