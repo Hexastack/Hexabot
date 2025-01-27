@@ -48,7 +48,7 @@ export const useBroadcastChannel = ({
   }, [channel, channelName, initialValue]);
 
   const send = (data: EBCEvent) => {
-    channel?.postMessage(data);
+    channel.postMessage(data);
   };
 
   return { mode, value, send };
