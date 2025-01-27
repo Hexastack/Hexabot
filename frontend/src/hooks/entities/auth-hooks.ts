@@ -71,8 +71,8 @@ export const useLogout = (
       return await apiClient.logout();
     },
     onSuccess: async () => {
-      send(EBCEvent.LOGOUT_END_SESSION);
       queryClient.removeQueries([CURRENT_USER_KEY]);
+      send(EBCEvent.LOGOUT_END_SESSION);
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },
