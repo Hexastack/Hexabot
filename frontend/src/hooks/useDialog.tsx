@@ -19,6 +19,7 @@ type TStatesMode = "datumOrData" | "datumAndData";
 export type DialogControl<T = never> = DialogProps & {
   data?: T[];
   datum?: T;
+  reset?: () => void;
   setData?: TFnVoid<T[]>;
   setDatum?: TFnVoid<T>;
   callback?: (data?: T | T[]) => Promise<void>;
@@ -50,11 +51,17 @@ export const useDialog = <T,>(
       setOpen(false);
     }
   };
+  const reset = () => {
+    setOpen(false);
+    setData(undefined);
+    setDatum(undefined);
+  };
 
   return {
     open,
     data,
     datum,
+    reset,
     setData,
     setDatum,
     openDialog,
