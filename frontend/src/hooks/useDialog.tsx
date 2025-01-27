@@ -16,25 +16,25 @@ type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
 ) => void;
 type TFnVoid<T> = (data?: T) => void;
 type TStatesMode = "datumOrData" | "datumAndData";
-export type DialogControl<T = never> = Omit<DialogProps, "onError"> & {
-  data?: T[];
+export type DialogControl<T = never, S = T> = Omit<DialogProps, "onError"> & {
+  data?: S[];
   datum?: T;
   reset?: () => void;
-  setData?: TFnVoid<T[]>;
+  setData?: TFnVoid<S[]>;
   setDatum?: TFnVoid<T>;
-  callback?: (data?: T | T[]) => Promise<void>;
-  openDialog: TFnVoid<T | T[]>;
+  callback?: (data?: T | S[]) => Promise<void>;
+  openDialog: TFnVoid<T | S[]>;
   closeDialog: TCloseDialog;
 };
 
-export const useDialog = <T,>(
+export const useDialog = <T, S = T>(
   initialState: boolean,
   statesMode: TStatesMode = "datumOrData",
-): DialogControl<T> => {
+): DialogControl<T, S> => {
   const [open, setOpen] = useState(initialState);
-  const [data, setData] = useState<T[] | undefined>();
+  const [data, setData] = useState<S[] | undefined>();
   const [datum, setDatum] = useState<T | undefined>();
-  const openDialog: TFnVoid<T | T[]> = (value) => {
+  const openDialog: TFnVoid<T | S[]> = (value) => {
     if (statesMode === "datumOrData") {
       if (value) {
         setData(Array.isArray(value) ? value : undefined);
