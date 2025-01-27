@@ -40,8 +40,8 @@ export const DeleteDialog = <T extends string = string>({
   const options = {
     onError: onDeleteError,
     onSuccess: (data: unknown) => {
-      rest.setData?.(undefined);
       onDeleteSuccess(data);
+      rest.reset?.();
     },
   };
   const { mutateAsync: deleteOne } = useDelete(entity, options);
