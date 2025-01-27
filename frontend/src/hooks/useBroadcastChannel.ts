@@ -47,7 +47,7 @@ export const useBroadcastChannel = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channel, channelName, initialValue]);
 
-  const send = (data?: EBCEvent) => {
+  const send = (data: EBCEvent) => {
     channel?.postMessage(data);
   };
 
