@@ -202,10 +202,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             <DeleteDialog
               {...deleteDialogCtl}
               entity={EntityType.NLP_VALUE}
-              onDeleteError={(error) => {
+              onError={(error) => {
                 toast.error(error);
               }}
-              onDeleteSuccess={() => {
+              onSuccess={() => {
                 deleteDialogCtl.closeDialog();
                 toast.success(t("message.item_delete_success"));
               }}

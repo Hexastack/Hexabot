@@ -232,8 +232,8 @@ export default function NlpSample() {
             val.value === NlpSampleType.train
               ? "enabled"
               : val.value === NlpSampleType.inbox
-              ? "inbox"
-              : "test"
+                ? "inbox"
+                : "test"
           }
         />
       ),
@@ -276,10 +276,10 @@ export default function NlpSample() {
       <DeleteDialog
         {...deleteDialogCtl}
         entity={EntityType.NLP_SAMPLE}
-        onDeleteError={(error) => {
+        onError={(error) => {
           toast.error(error);
         }}
-        onDeleteSuccess={() => {
+        onSuccess={() => {
           deleteDialogCtl.closeDialog();
           toast.success(t("message.item_delete_success"));
         }}

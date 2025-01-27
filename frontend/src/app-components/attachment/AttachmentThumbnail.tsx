@@ -114,10 +114,10 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
               <DeleteDialog
                 {...deleteDialogCtl}
                 entity={EntityType.ATTACHMENT}
-                onDeleteError={() => {
+                onError={() => {
                   toast.error(t("message.internal_server_error"));
                 }}
-                onDeleteSuccess={() => {
+                onSuccess={() => {
                   toast.success(t("message.success_save"));
                   onChange?.(null);
                 }}

@@ -170,10 +170,10 @@ export const Languages = () => {
       <DeleteDialog
         {...deleteDialogCtl}
         entity={EntityType.LANGUAGE}
-        onDeleteError={() => {
+        onError={() => {
           toast.error(t("message.internal_server_error"));
         }}
-        onDeleteSuccess={() => {
+        onSuccess={() => {
           queryClient.removeQueries({
             predicate: ({ queryKey }) => {
               const [_qType, qEntity] = queryKey;

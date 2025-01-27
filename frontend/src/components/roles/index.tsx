@@ -122,10 +122,10 @@ export const Roles = () => {
       <DeleteDialog
         {...deleteDialogCtl}
         entity={EntityType.ROLE}
-        onDeleteError={(error) => {
+        onError={(error) => {
           toast.error(error);
         }}
-        onDeleteSuccess={() => {
+        onSuccess={() => {
           deleteDialogCtl.closeDialog();
           toast.success(t("message.item_delete_success"));
         }}

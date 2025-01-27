@@ -28,19 +28,19 @@ export type DeleteDialogProps<T extends string = string> = DialogControl<T>;
 export const DeleteDialog = <T extends string = string>({
   data: ids,
   entity = EntityType.ATTACHMENT,
-  onDeleteError = () => {},
-  onDeleteSuccess = () => {},
+  onError = () => {},
+  onSuccess = () => {},
   ...rest
 }: DeleteDialogProps<T> & {
   entity?: keyof IEntityMapTypes;
-  onDeleteError?: (error: Error) => void;
-  onDeleteSuccess?: (data?: unknown) => void;
+  onError?: (error: Error) => void;
+  onSuccess?: (data?: unknown) => void;
 }) => {
   const { t } = useTranslate();
   const options = {
-    onError: onDeleteError,
+    onError,
     onSuccess: (data: unknown) => {
-      onDeleteSuccess(data);
+      onSuccess(data);
       rest.reset?.();
     },
   };

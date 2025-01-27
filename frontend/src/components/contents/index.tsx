@@ -163,7 +163,7 @@ export const Contents = () => {
           <DeleteDialog
             {...deleteDialogCtl}
             entity={EntityType.CONTENT}
-            onDeleteSuccess={() => {
+            onSuccess={() => {
               deleteDialogCtl.closeDialog();
               toast.success(t("message.item_delete_success"));
             }}

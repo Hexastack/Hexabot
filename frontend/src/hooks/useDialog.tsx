@@ -16,7 +16,7 @@ type TCloseDialog = <E extends React.MouseEvent | Event | Object>(
 ) => void;
 type TFnVoid<T> = (data?: T) => void;
 type TStatesMode = "datumOrData" | "datumAndData";
-export type DialogControl<T = never> = DialogProps & {
+export type DialogControl<T = never> = Omit<DialogProps, "onError"> & {
   data?: T[];
   datum?: T;
   reset?: () => void;

@@ -153,10 +153,10 @@ const NlpEntity = () => {
       <DeleteDialog
         {...deleteDialogCtl}
         entity={EntityType.NLP_ENTITY}
-        onDeleteError={() => {
+        onError={() => {
           toast.error(t("message.internal_server_error"));
         }}
-        onDeleteSuccess={() => {
+        onSuccess={() => {
           deleteDialogCtl.closeDialog();
           toast.success(t("message.item_delete_success"));
         }}
