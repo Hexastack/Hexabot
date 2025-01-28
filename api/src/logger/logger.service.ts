@@ -20,8 +20,11 @@ export class LoggerService extends ConsoleLogger {
   private logLevels: LogLevel[] = [];
 
   constructor(@Inject(INQUIRER) private parentClass: object) {
-    super(parentClass.constructor.name);
-    this.initLogLevels();
+    super(parentClass.constructor.name, {
+      logLevels: process.env.NODE_ENV?.includes('dev')
+        ? ['log', 'debug', 'error', 'verbose', 'fatal', 'warn']
+        : ['log', 'warn', 'error'],
+    });
   }
 
   log(message: string, ...args: any[]) {
@@ -76,12 +79,5 @@ export class LoggerService extends ConsoleLogger {
     args.forEach((arg) => {
       super[type](arg);
     });
-  }
-
-  private initLogLevels() {
-    process.env.NODE_ENV?.includes('dev')
-      ? this.logLevels.push('log', 'debug', 'error', 'verbose', 'fatal', 'warn')
-      : this.logLevels.push('log', 'warn', 'error');
-    super.setLogLevels(this.logLevels);
   }
 }
