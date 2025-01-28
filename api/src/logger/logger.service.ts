@@ -17,8 +17,6 @@ import { INQUIRER } from '@nestjs/core';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LoggerService extends ConsoleLogger {
-  private logLevels: LogLevel[] = [];
-
   constructor(@Inject(INQUIRER) private parentClass: object) {
     super(parentClass.constructor.name, {
       logLevels: process.env.NODE_ENV?.includes('dev')
@@ -28,54 +26,31 @@ export class LoggerService extends ConsoleLogger {
   }
 
   log(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('log')) {
-      return;
-    }
-    super.log(message);
-    this.logArguments('log', args);
+    this.logArguments('log', message, args);
   }
 
   error(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('error')) {
-      return;
-    }
-    super.error(message);
-    this.logArguments('error', args);
+    this.logArguments('error', message, args);
   }
 
   warn(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('warn')) {
-      return;
-    }
-    super.warn(message);
-    this.logArguments('warn', args);
+    this.logArguments('warn', message, args);
   }
 
   debug(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('debug')) {
-      return;
-    }
-    super.debug(message);
-    this.logArguments('debug', args);
+    this.logArguments('debug', message, args);
   }
 
   verbose(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('verbose')) {
-      return;
-    }
-    super.verbose(message);
-    this.logArguments('verbose', args);
+    this.logArguments('verbose', message, args);
   }
 
   fatal(message: string, ...args: any[]) {
-    if (!this.isLevelEnabled('fatal')) {
-      return;
-    }
-    super.fatal(message);
-    this.logArguments('fatal', args);
+    this.logArguments('fatal', message, args);
   }
 
-  private logArguments(type: LogLevel, args: any[]) {
+  private logArguments(type: LogLevel, message: string, args: any[]) {
+    super[type](message);
     args.forEach((arg) => {
       super[type](arg);
     });
