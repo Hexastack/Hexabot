@@ -16,11 +16,7 @@ import React, {
   useState,
 } from "react";
 
-import {
-  EBCEvent,
-  ETabMode,
-  useBroadcastChannel,
-} from "../hooks/useBroadcastChannel";
+import { useBroadcastChannel } from "../hooks/useBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -192,7 +188,6 @@ const ChatProvider: React.FC<{
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
-  const { mode, value } = useBroadcastChannel();
   const config = useConfig();
   const settings = useSettings();
   const { screen, setScreen } = useWidget();
@@ -424,12 +419,6 @@ const ChatProvider: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.avatarUrl]);
 
-  useEffect(() => {
-    if (value === EBCEvent.LOGOUT_END_SESSION && mode === ETabMode.SECONDARY) {
-      socketCtx.socket.disconnect();
-    }
-  }, [value, mode, socketCtx.socket]);
-
   const contextValue: ChatContextType = {
     participants,
     setParticipants,
@@ -463,6 +452,10 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
   };
+
+  useBroadcastChannel("session", () => {
+    socketCtx.socket.disconnect();
+  });
 
   return (
     <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>
