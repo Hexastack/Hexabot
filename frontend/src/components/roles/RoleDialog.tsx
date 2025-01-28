@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -26,7 +26,7 @@ import { IRole, IRoleAttributes } from "@/types/role.types";
 export type RoleDialogProps = DialogControlProps<IRole>;
 export const RoleDialog: FC<RoleDialogProps> = ({
   open,
-  data,
+  datum: role,
   closeDialog,
   ...rest
 }) => {
@@ -64,8 +64,8 @@ export const RoleDialog: FC<RoleDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: IRoleAttributes) => {
-    if (data) {
-      updateRole({ id: data.id, params });
+    if (role) {
+      updateRole({ id: role.id, params });
     } else {
       createRole(params);
     }
@@ -76,20 +76,20 @@ export const RoleDialog: FC<RoleDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (role) {
       reset({
-        name: data.name,
+        name: role.name,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [role, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_role") : t("title.new_role")}
+          {role ? t("title.edit_role") : t("title.new_role")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

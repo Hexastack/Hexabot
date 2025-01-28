@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,7 +22,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -79,12 +78,6 @@ export const Contents = () => {
     },
     onSuccess() {
       toast.success(t("message.success_save"));
-    },
-  });
-  const { mutateAsync: deleteContent } = useDelete(EntityType.CONTENT, {
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
     },
   });
   const getEntityFromCache = useGetFromCache(EntityType.CONTENT_TYPE);
@@ -163,14 +156,16 @@ export const Contents = () => {
           <ContentDialog {...getDisplayDialogs(editDialogCtl)} />
           <ContentImportDialog
             {...getDisplayDialogs(importDialogCtl)}
-            callback={() => {
+            callback={async () => {
               refetch();
             }}
           />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data) deleteContent(deleteDialogCtl.data);
+            entity={EntityType.CONTENT}
+            onSuccess={() => {
+              deleteDialogCtl.closeDialog();
+              toast.success(t("message.item_delete_success"));
             }}
           />
 

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -20,9 +20,9 @@ import { useFieldArray, useForm } from "react-hook-form";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import {
-  DialogTitle,
   ContentContainer,
   ContentItem,
+  DialogTitle,
 } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useGet } from "@/hooks/crud/useGet";
@@ -39,9 +39,9 @@ import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
 export type EditContentTypeDialogFieldsProps = DialogControlProps<IContentType>;
 
 export const EditContentTypeFieldsDialog = ({
-  data: contentType,
-  closeDialog,
   open,
+  datum: contentType,
+  closeDialog,
 }: EditContentTypeDialogFieldsProps) => {
   const { t } = useTranslate();
   const { isLoading, data, refetch } = useGet(contentType?.id || "", {
@@ -113,10 +113,6 @@ export const EditContentTypeFieldsDialog = ({
     }
   }, [data, reset]);
 
-  function handleClose() {
-    closeDialog();
-  }
-
   const { mutateAsync: updateContentType } = useUpdate(
     EntityType.CONTENT_TYPE,
     {
@@ -135,9 +131,9 @@ export const EditContentTypeFieldsDialog = ({
       fullWidth
       maxWidth="xl"
       sx={{ width: "fit-content", mx: "auto", minWidth: "600px" }}
-      onClose={handleClose}
+      onClose={closeDialog}
     >
-      <DialogTitle onClose={handleClose}>
+      <DialogTitle onClose={closeDialog}>
         {t("title.manage_fields")}
       </DialogTitle>
       <form
@@ -150,7 +146,7 @@ export const EditContentTypeFieldsDialog = ({
                 fields,
               },
             });
-          handleClose();
+          closeDialog();
         })}
       >
         <DialogContent>

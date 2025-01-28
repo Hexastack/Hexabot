@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,7 +22,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 
@@ -39,8 +39,6 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
@@ -73,8 +71,10 @@ const NLP_SAMPLE_TYPE_COLORS = {
 
 export default function NlpSample() {
   const { apiUrl } = useConfig();
-  const { toast } = useToast();
   const { t } = useTranslate();
+  const { toast } = useToast();
+  const editDialogCtl = useDialog<INlpDatasetSample>(false);
+  const deleteDialogCtl = useDialog<string>(false);
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
@@ -92,28 +92,6 @@ export default function NlpSample() {
     ],
     $iLike: ["text"],
   });
-  const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteNlpSamples } = useDeleteMany(
-    EntityType.NLP_SAMPLE,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedNlpSamples([]);
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
   const { mutateAsync: importDataset, isLoading } = useImport(
     EntityType.NLP_SAMPLE,
     {
@@ -140,15 +118,12 @@ export default function NlpSample() {
       },
     },
   );
-  const [selectedNlpSamples, setSelectedNlpSamples] = useState<string[]>([]);
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_SAMPLE, format: Format.FULL },
     {
       params: searchPayload,
     },
   );
-  const deleteDialogCtl = useDialog<string>(false);
-  const editDialogCtl = useDialog<INlpDatasetSample>(false);
   const actionColumns = getActionsColumn<INlpSample>(
     [
       {
@@ -257,8 +232,8 @@ export default function NlpSample() {
             val.value === NlpSampleType.train
               ? "enabled"
               : val.value === NlpSampleType.inbox
-              ? "inbox"
-              : "test"
+                ? "inbox"
+                : "test"
           }
         />
       ),
@@ -291,9 +266,6 @@ export default function NlpSample() {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedNlpSamples(selection as string[]);
-  };
   const handleImportChange = async (file: File) => {
     await importDataset(file);
   };
@@ -303,14 +275,13 @@ export default function NlpSample() {
       <NlpSampleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (selectedNlpSamples.length > 0) {
-            deleteNlpSamples(selectedNlpSamples);
-            setSelectedNlpSamples([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl.data) {
-            deleteNlpSample(deleteDialogCtl.data);
-          }
+        entity={EntityType.NLP_SAMPLE}
+        onError={(error) => {
+          toast.error(error);
+        }}
+        onSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
       <Grid container alignItems="center">
@@ -406,18 +377,17 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            {selectedNlpSamples.length > 0 && (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteDialogCtl.openDialog(undefined)}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            )}
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteDialogCtl.openDialog()}
+                disabled={!deleteDialogCtl.data?.length}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
           </ButtonGroup>
         </Grid>
       </Grid>
@@ -427,7 +397,9 @@ export default function NlpSample() {
           columns={columns}
           {...dataGridProps}
           checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
+          onRowSelectionModelChange={(rowSelectionModel) =>
+            deleteDialogCtl.setData?.(rowSelectionModel as string[])
+          }
         />
       </Grid>
     </Grid>

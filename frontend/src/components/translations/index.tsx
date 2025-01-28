@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -18,7 +18,6 @@ import {
   useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -54,15 +53,6 @@ export const Translations = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const { mutateAsync: checkRefreshTranslations, isLoading } =
     useRefreshTranslations({
       onError: () => {
@@ -167,9 +157,13 @@ export const Translations = () => {
             <EditTranslationDialog {...getDisplayDialogs(editDialogCtl)} />
             <DeleteDialog
               {...deleteDialogCtl}
-              callback={() => {
-                if (deleteDialogCtl?.data)
-                  deleteTranslation(deleteDialogCtl.data);
+              entity={EntityType.TRANSLATION}
+              onError={() => {
+                toast.error(t("message.internal_server_error"));
+              }}
+              onSuccess={() => {
+                deleteDialogCtl.closeDialog();
+                toast.success(t("message.item_delete_success"));
               }}
             />
             <Grid item width="100%">

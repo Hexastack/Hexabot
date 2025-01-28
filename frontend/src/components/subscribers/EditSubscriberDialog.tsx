@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,7 +14,7 @@ import {
   Grid,
 } from "@mui/material";
 import Link from "next/link";
-import { useEffect, FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
@@ -39,7 +39,7 @@ export type EditSubscriberDialogProps = DialogControlProps<{
 }>;
 export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
   open,
-  data,
+  datum,
   closeDialog,
   ...rest
 }) => {
@@ -65,17 +65,17 @@ export const EditSubscriberDialog: FC<EditSubscriberDialogProps> = ({
     labels: {},
   };
   const onSubmitForm = async (params: ISubscriberAttributes) => {
-    if (data?.subscriber.id)
-      updateSubscriber({ id: data?.subscriber.id, params });
+    if (datum?.subscriber.id)
+      updateSubscriber({ id: datum?.subscriber.id, params });
   };
 
   useEffect(() => {
-    if (data?.subscriber) setFullName(getFullName(data?.subscriber));
+    if (datum?.subscriber) setFullName(getFullName(datum?.subscriber));
 
     if (open) {
-      reset({ labels: data?.subscriber?.labels });
+      reset({ labels: datum?.subscriber?.labels });
     }
-  }, [open, reset, data]);
+  }, [open, reset, datum]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>

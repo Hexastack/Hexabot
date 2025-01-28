@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -29,7 +29,7 @@ import {
 export type ContentTypeDialogProps = DialogControlProps<IContentType>;
 export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   open,
-  data,
+  datum: contentType,
   closeDialog,
 }) => {
   const { toast } = useToast();
@@ -40,7 +40,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     reset,
     formState: { errors },
   } = useForm<IContentTypeAttributes>({
-    defaultValues: { name: data?.name || "" },
+    defaultValues: { name: contentType?.name || "" },
   });
   const CloseAndReset = () => {
     closeDialog();
@@ -76,9 +76,9 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: IContentTypeAttributes) => {
-    if (data) {
+    if (contentType) {
       updateContentType({
-        id: data.id,
+        id: contentType.id,
         params,
       });
     } else {
@@ -91,20 +91,22 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (contentType) {
       reset({
-        name: data.name,
+        name: contentType.name,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [contentType, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={CloseAndReset}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={CloseAndReset}>
-          {data ? t("title.edit_content_type") : t("title.new_content_type")}
+          {contentType
+            ? t("title.edit_content_type")
+            : t("title.new_content_type")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>
