@@ -123,12 +123,12 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @param id - The foreign ID of the subscriber.
    *
-   * @returns The found subscriber entity.
+   * @returns The found subscriber entity, or `null` if no subscriber is found.
    */
-  async findOneByForeignId(id: string): Promise<Subscriber> {
+  async findOneByForeignId(id: string): Promise<Subscriber | null> {
     const query = this.findByForeignIdQuery(id);
     const [result] = await this.execute(query, Subscriber);
-    return result;
+    return result || null;
   }
 
   /**
