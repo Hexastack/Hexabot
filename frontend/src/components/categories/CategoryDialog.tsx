@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -17,7 +17,7 @@ import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
+import { DialogControlProps } from "@/hooks/useDialog2";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -27,7 +27,7 @@ export type CategoryDialogProps = DialogControlProps<ICategory>;
 
 export const CategoryDialog: FC<CategoryDialogProps> = ({
   open,
-  data,
+  datum: category,
   closeDialog,
   ...rest
 }) => {
@@ -57,7 +57,7 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<ICategoryAttributes>({
-    defaultValues: { label: data?.label || "" },
+    defaultValues: { label: category?.label || "" },
   });
   const validationRules = {
     label: {
@@ -65,8 +65,8 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: ICategoryAttributes) => {
-    if (data) {
-      updateCategory({ id: data.id, params });
+    if (category) {
+      updateCategory({ id: category.id, params });
     } else {
       createCategory(params);
     }
@@ -77,20 +77,20 @@ export const CategoryDialog: FC<CategoryDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (category) {
       reset({
-        label: data.label,
+        label: category.label,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [category, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_category") : t("title.new_category")}
+          {category ? t("title.edit_category") : t("title.new_category")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

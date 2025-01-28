@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -51,6 +52,10 @@ import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import {
+  getDisplayDialogs as getDisplayDialogs2,
+  useDialog as useDialog2,
+} from "@/hooks/useDialog2";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
@@ -76,7 +81,7 @@ const Diagrams = () => {
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const deleteDialogCtl = useDialog<string[]>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
-  const addCategoryDialogCtl = useDialog<ICategory>(false);
+  const addCategoryDialogCtl = useDialog2<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
@@ -528,7 +533,7 @@ const Diagrams = () => {
       }}
     >
       <Box sx={{ width: "100%" }}>
-        <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
+        <CategoryDialog {...getDisplayDialogs2(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
         <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
         <MoveDialog
