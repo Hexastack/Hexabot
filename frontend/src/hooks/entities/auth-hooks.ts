@@ -22,7 +22,7 @@ import { useSocket } from "@/websocket/socket-hooks";
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
-import { EBCEvent, useBroadcastChannel } from "../useBroadcastChannel";
+import { useBroadcastChannel } from "../useBroadcastChannel";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
 
@@ -59,7 +59,7 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const { send } = useBroadcastChannel();
+  const postDisconnectionSignal = useBroadcastChannel("session");
 
   return useMutation({
     ...options,
@@ -70,7 +70,7 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      send(EBCEvent.LOGOUT_END_SESSION);
+      postDisconnectionSignal("logout");
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },
