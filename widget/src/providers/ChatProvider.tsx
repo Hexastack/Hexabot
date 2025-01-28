@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import React, {
   createContext,
   ReactNode,
@@ -17,6 +16,11 @@ import React, {
   useState,
 } from "react";
 
+import {
+  EBCEvent,
+  ETabMode,
+  useBroadcastChannel,
+} from "../hooks/useBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -188,6 +192,7 @@ const ChatProvider: React.FC<{
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  const { mode, value } = useBroadcastChannel();
   const config = useConfig();
   const settings = useSettings();
   const { screen, setScreen } = useWidget();
@@ -269,7 +274,7 @@ const ChatProvider: React.FC<{
               content_type: QuickReplyType.text,
               text: qr.title,
               payload: qr.payload,
-            } as ISuggestion),
+            }) as ISuggestion,
         ),
       );
     } else {
@@ -418,6 +423,12 @@ const ChatProvider: React.FC<{
     setParticipants(newParticipants);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.avatarUrl]);
+
+  useEffect(() => {
+    if (value === EBCEvent.LOGOUT_END_SESSION && mode === ETabMode.SECONDARY) {
+      socketCtx.socket.disconnect();
+    }
+  }, [value, mode]);
 
   const contextValue: ChatContextType = {
     participants,

@@ -59,9 +59,7 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const { send } = useBroadcastChannel({
-    channelName: "websocket-session",
-  });
+  const { send } = useBroadcastChannel();
 
   return useMutation({
     ...options,
