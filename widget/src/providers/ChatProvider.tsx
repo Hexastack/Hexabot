@@ -428,7 +428,7 @@ const ChatProvider: React.FC<{
     if (value === EBCEvent.LOGOUT_END_SESSION && mode === ETabMode.SECONDARY) {
       socketCtx.socket.disconnect();
     }
-  }, [value, mode]);
+  }, [value, mode, socketCtx.socket]);
 
   const contextValue: ChatContextType = {
     participants,
