@@ -21,11 +21,7 @@ import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
-import {
-  EBCEvent,
-  ETabMode,
-  useBroadcastChannel,
-} from "@/hooks/useBroadcastChannel";
+import { useBroadcastChannel } from "@/hooks/useBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
@@ -64,7 +60,6 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     i18n.changeLanguage(lang);
   };
   const { mutate: logoutSession } = useLogout();
-  const { mode, value } = useBroadcastChannel();
   const logout = async () => {
     updateLanguage(publicRuntimeConfig.lang.default);
     logoutSession();
@@ -113,11 +108,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setIsReady(true);
   }, []);
 
-  useEffect(() => {
-    if (value === EBCEvent.LOGOUT_END_SESSION && mode === ETabMode.SECONDARY) {
-      router.reload();
-    }
-  }, [value, mode, router]);
+  useBroadcastChannel("session", () => {
+    router.reload();
+  });
 
   if (!isReady || isLoading) return <Progress />;
 
