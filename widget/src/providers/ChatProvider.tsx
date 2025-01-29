@@ -453,8 +453,10 @@ const ChatProvider: React.FC<{
     handleSubscription,
   };
 
-  useBroadcastChannel("session", () => {
-    socketCtx.socket.disconnect();
+  useBroadcastChannel("session", (e) => {
+    if (e.data === "logout") {
+      socketCtx.socket.disconnect();
+    }
   });
 
   return (
