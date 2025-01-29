@@ -59,7 +59,7 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const postDisconnectionSignal = useBroadcastChannel("session");
+  const broadcastLogoutAcrossTabs = useBroadcastChannel("session");
 
   return useMutation({
     ...options,
@@ -70,7 +70,7 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      postDisconnectionSignal("logout");
+      broadcastLogoutAcrossTabs("logout");
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },
