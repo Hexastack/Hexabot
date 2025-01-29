@@ -8,11 +8,11 @@
 
 import { Module } from '@nestjs/common';
 
-import { ExtensionCleanupService } from './extension-cleanup.service';
+import { CleanupService } from './cleanup.service';
 
 @Module({
-  providers: [ExtensionCleanupService],
+  providers: [CleanupService],
 })
-class ExtensionCleanupModule {}
+class CleanupModule {}
 
-export default [ExtensionCleanupModule];
+export default [CleanupModule];

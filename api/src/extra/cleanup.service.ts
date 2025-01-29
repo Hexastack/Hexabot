@@ -15,7 +15,7 @@ import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 @Injectable()
-export class ExtensionCleanupService implements OnModuleInit {
+export class CleanupService implements OnModuleInit {
   constructor(
     private readonly helperService: HelperService,
     private readonly pluginService: PluginService,
@@ -38,12 +38,7 @@ export class ExtensionCleanupService implements OnModuleInit {
       ...this.getHelperNames(),
       ...this.getPluginNames(),
       ...this.getChannelNames(),
-    ].reduce<string[]>((acc, name) => {
-      if (!acc.includes(name)) {
-        acc.push(name.replace(/-/g, '_'));
-      }
-      return acc;
-    }, []);
+    ];
 
     this.logger.debug('Cleaning up orphaned settings...');
 
@@ -60,14 +55,16 @@ export class ExtensionCleanupService implements OnModuleInit {
   }
 
   private getHelperNames(): string[] {
-    return this.helperService.getAll().map((handler) => handler.getName());
+    return this.helperService.getAll().map((handler) => handler.getNamespace());
   }
 
   private getPluginNames(): string[] {
-    return this.pluginService.getAll().map((handler) => handler.getName());
+    return this.pluginService.getAll().map((handler) => handler.getNamespace());
   }
 
   private getChannelNames(): string[] {
-    return this.channelService.getAll().map((handler) => handler.getName());
+    return this.channelService
+      .getAll()
+      .map((handler) => handler.getNamespace());
   }
 }
