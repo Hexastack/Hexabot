@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -11,6 +11,8 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
+  Inject,
   InternalServerErrorException,
   Param,
   Post,
@@ -21,7 +23,9 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CsrfCheck, CsrfGen, CsrfGenAuth } from '@tekuconcept/nestjs-csrf';
+import cookie from 'cookie';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
@@ -38,6 +42,9 @@ import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
 
 export class BaseAuthController {
+  @Inject(EventEmitter2)
+  private readonly eventEmitter: EventEmitter2;
+
   constructor(protected readonly logger: LoggerService) {}
 
   /**
@@ -66,7 +73,13 @@ export class BaseAuthController {
   logout(
     @Session() session: ExpressSession,
     @Res({ passthrough: true }) res: Response,
+    @Headers() headers: Record<string, string>,
   ) {
+    const parsedCookie = cookie.parse(headers['cookie']);
+    const sessionCookie = encodeURIComponent(
+      String(parsedCookie[config.session.name] || ''),
+    );
+    this.eventEmitter.emit('hook:websocket:session_data', sessionCookie);
     res.clearCookie(config.session.name);
 
     session.destroy((error) => {
