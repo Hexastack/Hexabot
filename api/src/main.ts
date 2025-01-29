@@ -101,10 +101,11 @@ async function bootstrap() {
     app.useWebSocketAdapter(redisIoAdapter);
   }
 
-  process.on('uncaughtException', (error) => {
-    if (error.stack?.toLowerCase().includes('smtp'))
-      app.get(LoggerService).error('SMTP error', error.stack);
-    else throw error;
+  process.on('uncaughtException', async (error) => {
+    if (error.stack?.toLowerCase().includes('smtp')) {
+      const logger = await app.resolve(LoggerService);
+      logger.error('SMTP error', error.stack);
+    } else throw error;
   });
 
   if (!isProduction) {

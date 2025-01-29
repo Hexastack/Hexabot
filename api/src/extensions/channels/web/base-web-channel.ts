@@ -89,7 +89,7 @@ export default abstract class BaseWebChannelHandler<
    * @returns -
    */
   init(): void {
-    this.logger.debug('Web Channel Handler : initialization ...');
+    this.logger.debug('initialization ...');
   }
 
   /**
@@ -108,22 +108,17 @@ export default abstract class BaseWebChannelHandler<
         return;
       }
 
-      this.logger.debug(
-        'Web Channel Handler : WS connected .. sending settings',
-      );
+      this.logger.debug('WS connected .. sending settings');
 
       try {
         const menu = await this.menuService.getTree();
         return client.emit('settings', { menu, ...settings });
       } catch (err) {
-        this.logger.warn('Web Channel Handler : Unable to retrieve menu ', err);
+        this.logger.warn('Unable to retrieve menu ', err);
         return client.emit('settings', settings);
       }
     } catch (err) {
-      this.logger.error(
-        'Web Channel Handler : Unable to initiate websocket connection',
-        err,
-      );
+      this.logger.error('Unable to initiate websocket connection', err);
       client.disconnect();
     }
   }
@@ -315,7 +310,7 @@ export default abstract class BaseWebChannelHandler<
 
     // Check if we have an origin header...
     if (!req.headers?.origin) {
-      this.logger.debug('Web Channel Handler : No origin ', req.headers);
+      this.logger.debug('No origin ', req.headers);
       throw new Error('CORS - No origin provided!');
     }
 
@@ -332,10 +327,7 @@ export default abstract class BaseWebChannelHandler<
         try {
           return new URL(origin.trim()).origin;
         } catch (error) {
-          this.logger.error(
-            `Web Channel Handler : Invalid URL in allowed domains: ${origin}`,
-            error,
-          );
+          this.logger.error(`Invalid URL in allowed domains: ${origin}`, error);
           return null;
         }
       })
@@ -353,10 +345,7 @@ export default abstract class BaseWebChannelHandler<
       // For HTTP requests, set the Access-Control-Allow-Origin header to '', which the browser will
       // interpret as, 'no way Jose.'
       res.set('Access-Control-Allow-Origin', '');
-      this.logger.debug(
-        'Web Channel Handler : No origin found ',
-        req.headers.origin,
-      );
+      this.logger.debug('No origin found ', req.headers.origin);
       throw new Error('CORS - Domain not allowed!');
     } else {
       res.set('Access-Control-Allow-Origin', originUrl.origin);
@@ -384,10 +373,7 @@ export default abstract class BaseWebChannelHandler<
     next: (profile: Subscriber) => void,
   ) {
     if (!req.session?.web?.profile?.id) {
-      this.logger.warn(
-        'Web Channel Handler : No session ID to be found!',
-        req.session,
-      );
+      this.logger.warn('No session ID to be found!', req.session);
       return res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -397,7 +383,7 @@ export default abstract class BaseWebChannelHandler<
       !Array.isArray(req.session.web.messageQueue)
     ) {
       this.logger.warn(
-        'Web Channel Handler : Mixed channel request or invalid session data!',
+        'Mixed channel request or invalid session data!',
         req.session,
       );
       return res
@@ -420,10 +406,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       await this.validateCors(req, res);
     } catch (err) {
-      this.logger.warn(
-        'Web Channel Handler : Attempt to access from an unauthorized origin',
-        err,
-      );
+      this.logger.warn('Attempt to access from an unauthorized origin', err);
       throw new Error('Unauthorized, invalid origin !');
     }
   }
@@ -498,18 +481,14 @@ export default abstract class BaseWebChannelHandler<
   private getMessageQueue(req: Request, res: Response) {
     // Polling not authorized when using websockets
     if (this.isSocketRequest(req)) {
-      this.logger.warn(
-        'Web Channel Handler : Polling not authorized when using websockets',
-      );
+      this.logger.warn('Polling not authorized when using websockets');
       return res
         .status(403)
         .json({ err: 'Polling not authorized when using websockets' });
     }
     // Session must be active
     if (!(req.session && req.session.web && req.session.web.profile.id)) {
-      this.logger.warn(
-        'Web Channel Handler : Must be connected to poll messages',
-      );
+      this.logger.warn('Must be connected to poll messages');
       return res
         .status(403)
         .json({ err: 'Polling not authorized : Must be connected' });
@@ -517,9 +496,7 @@ export default abstract class BaseWebChannelHandler<
 
     // Can only request polling once at a time
     if (req.session && req.session.web && req.session.web.polling) {
-      this.logger.warn(
-        'Web Channel Handler : Poll rejected ... already requested',
-      );
+      this.logger.warn('Poll rejected ... already requested');
       return res
         .status(403)
         .json({ err: 'Poll rejected ... already requested' });
@@ -543,16 +520,14 @@ export default abstract class BaseWebChannelHandler<
           req.session.web.polling = false;
           return res.status(200).json(messages.map((msg) => ['message', msg]));
         } else {
-          this.logger.error(
-            'Web Channel Handler : Polling failed .. no session data',
-          );
+          this.logger.error('Polling failed .. no session data');
           return res.status(500).json({ err: 'No session data' });
         }
       } catch (err) {
         if (req.session.web) {
           req.session.web.polling = false;
         }
-        this.logger.error('Web Channel Handler : Polling failed', err);
+        this.logger.error('Polling failed', err);
         return res.status(500).json({ err: 'Polling failed' });
       }
     };
@@ -569,11 +544,7 @@ export default abstract class BaseWebChannelHandler<
     req: Request | SocketRequest,
     res: Response | SocketResponse,
   ) {
-    this.logger.debug(
-      'Web Channel Handler : subscribe (isSocket=' +
-        this.isSocketRequest(req) +
-        ')',
-    );
+    this.logger.debug('subscribe (isSocket=' + this.isSocketRequest(req) + ')');
     try {
       const profile = await this.getOrCreateSession(req);
       // Join socket room when using websocket
@@ -581,10 +552,7 @@ export default abstract class BaseWebChannelHandler<
         try {
           await req.socket.join(profile.foreign_id);
         } catch (err) {
-          this.logger.error(
-            'Web Channel Handler : Unable to subscribe via websocket',
-            err,
-          );
+          this.logger.error('Unable to subscribe via websocket', err);
         }
       }
       // Fetch message history
@@ -595,7 +563,7 @@ export default abstract class BaseWebChannelHandler<
       const messages = await this.fetchHistory(req, criteria);
       return res.status(200).json({ profile, messages });
     } catch (err) {
-      this.logger.warn('Web Channel Handler : Unable to subscribe ', err);
+      this.logger.warn('Unable to subscribe ', err);
       return res.status(500).json({ err: 'Unable to subscribe' });
     }
   }
@@ -610,13 +578,13 @@ export default abstract class BaseWebChannelHandler<
       const { type, data } = req.body as Web.IncomingMessage;
 
       if (!req.session?.web?.profile?.id) {
-        this.logger.debug('Web Channel Handler : No session');
+        this.logger.debug('No session');
         return null;
       }
 
       // Check if any file is provided
       if (type !== 'file' || !('file' in data) || !data.file) {
-        this.logger.debug('Web Channel Handler : No files provided');
+        this.logger.debug('No files provided');
         return null;
       }
 
@@ -636,10 +604,7 @@ export default abstract class BaseWebChannelHandler<
         createdBy: req.session?.web?.profile?.id,
       });
     } catch (err) {
-      this.logger.error(
-        'Web Channel Handler : Unable to store uploaded file',
-        err,
-      );
+      this.logger.error('Unable to store uploaded file', err);
       throw new Error('Unable to upload file!');
     }
   }
@@ -671,10 +636,7 @@ export default abstract class BaseWebChannelHandler<
         (resolve, reject) => {
           upload(req as Request, res as Response, async (err?: any) => {
             if (err) {
-              this.logger.error(
-                'Web Channel Handler : Unable to store uploaded file',
-                err,
-              );
+              this.logger.error('Unable to store uploaded file', err);
               reject(new Error('Unable to upload file!'));
             }
 
@@ -689,7 +651,7 @@ export default abstract class BaseWebChannelHandler<
 
       // Check if any file is provided
       if (!file) {
-        this.logger.debug('Web Channel Handler : No files provided');
+        this.logger.debug('No files provided');
         return null;
       }
 
@@ -703,10 +665,7 @@ export default abstract class BaseWebChannelHandler<
         createdBy: req.session.web.profile?.id,
       });
     } catch (err) {
-      this.logger.error(
-        'Web Channel Handler : Unable to store uploaded file',
-        err,
-      );
+      this.logger.error('Unable to store uploaded file', err);
       throw err;
     }
   }
@@ -724,7 +683,7 @@ export default abstract class BaseWebChannelHandler<
   ): Promise<Attachment | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
-      this.logger.debug('Web Channel Handler : No session provided');
+      this.logger.debug('No session provided');
       return null;
     }
 
@@ -784,7 +743,7 @@ export default abstract class BaseWebChannelHandler<
   ): void {
     // @TODO: perform payload validation
     if (!req.body) {
-      this.logger.debug('Web Channel Handler : Empty body');
+      this.logger.debug('Empty body');
       res.status(400).json({ err: 'Web Channel Handler : Bad Request!' });
       return;
     } else {
@@ -814,10 +773,7 @@ export default abstract class BaseWebChannelHandler<
               };
             }
           } catch (err) {
-            this.logger.warn(
-              'Web Channel Handler : Unable to upload file ',
-              err,
-            );
+            this.logger.warn('Unable to upload file ', err);
             return res
               .status(403)
               .json({ err: 'Web Channel Handler : File upload failed!' });
@@ -849,10 +805,7 @@ export default abstract class BaseWebChannelHandler<
       if (type) {
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
-        this.logger.error(
-          'Web Channel Handler : Webhook received unknown event ',
-          event,
-        );
+        this.logger.error('Webhook received unknown event ', event);
       }
       res.status(200).json(event._adapter.raw);
     });
@@ -883,9 +836,7 @@ export default abstract class BaseWebChannelHandler<
         if (!this.isSocketRequest(req) && req.query._get) {
           switch (req.query._get) {
             case 'settings':
-              this.logger.debug(
-                'Web Channel Handler : connected .. sending settings',
-              );
+              this.logger.debug('connected .. sending settings');
               try {
                 const menu = await this.menuService.getTree();
                 return res.status(200).json({
@@ -894,19 +845,14 @@ export default abstract class BaseWebChannelHandler<
                   ...settings,
                 });
               } catch (err) {
-                this.logger.warn(
-                  'Web Channel Handler : Unable to retrieve menu ',
-                  err,
-                );
+                this.logger.warn('Unable to retrieve menu ', err);
                 return res.status(500).json({ err: 'Unable to retrieve menu' });
               }
             case 'polling':
               // Handle polling when user is not connected via websocket
               return this.getMessageQueue(req, res as Response);
             default:
-              this.logger.error(
-                'Web Channel Handler : Webhook received unknown command',
-              );
+              this.logger.error('Webhook received unknown command');
               return res
                 .status(500)
                 .json({ err: 'Webhook received unknown command' });
@@ -923,7 +869,7 @@ export default abstract class BaseWebChannelHandler<
         return this._handleEvent(req, res);
       }
     } catch (err) {
-      this.logger.warn('Web Channel Handler : Request check failed', err);
+      this.logger.warn('Request check failed', err);
       return res
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
@@ -1131,9 +1077,7 @@ export default abstract class BaseWebChannelHandler<
 
     // Items count min check
     if (!data.length) {
-      this.logger.error(
-        'Web Channel Handler : Unsufficient content count (must be >= 0 for list)',
-      );
+      this.logger.error('Unsufficient content count (must be >= 0 for list)');
       throw new Error('Unsufficient content count (list >= 0)');
     }
 
@@ -1181,7 +1125,7 @@ export default abstract class BaseWebChannelHandler<
     // Items count min check
     if (data.length === 0) {
       this.logger.error(
-        'Web Channel Handler : Unsufficient content count (must be > 0 for carousel)',
+        'Unsufficient content count (must be > 0 for carousel)',
       );
       throw new Error('Unsufficient content count (carousel > 0)');
     }
@@ -1293,10 +1237,7 @@ export default abstract class BaseWebChannelHandler<
         await this.sendTypingIndicator(subscriber, timeout);
         return next();
       } catch (err) {
-        this.logger.error(
-          'Web Channel Handler : Failed in sending typing indicator ',
-          err,
-        );
+        this.logger.error('Failed in sending typing indicator ', err);
       }
     }
 

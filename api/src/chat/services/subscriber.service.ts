@@ -72,9 +72,7 @@ export class SubscriberService extends BaseService<
         subscribe: Room.SUBSCRIBER,
       });
     } catch (e) {
-      this.logger.error(
-        'SubscriberController subscribe : Websocket subscription',
-      );
+      this.logger.error('Websocket subscription');
       throw new InternalServerErrorException(e);
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -62,10 +62,7 @@ export class BotService {
     context = context || getDefaultConversationContext();
     fallback = typeof fallback !== 'undefined' ? fallback : false;
     const options = block.options;
-    this.logger.debug(
-      'Bot service : Sending message ... ',
-      event.getSenderForeignId(),
-    );
+    this.logger.debug('Sending message ... ', event.getSenderForeignId());
     // Process message : Replace tokens with context data and then send the message
     const recipient = event.getSender();
     const envelope = await this.blockService.processMessage(
@@ -116,7 +113,7 @@ export class BotService {
       assignTo,
     );
 
-    this.logger.debug('Bot service : Assigned labels ', blockLabels);
+    this.logger.debug('Assigned labels ', blockLabels);
     return response;
   }
 
@@ -375,7 +372,7 @@ export class BotService {
           );
 
         this.logger.debug(
-          'Bot service : Started a new conversation with ',
+          'Started a new conversation with ',
           subscriber.id,
           block.name,
         );
@@ -386,14 +383,11 @@ export class BotService {
           false,
         );
       } catch (err) {
-        this.logger.error('Bot service : Unable to store context data!', err);
+        this.logger.error('Unable to store context data!', err);
         this.eventEmitter.emit('hook:conversation:end', convo, true);
       }
     } catch (err) {
-      this.logger.error(
-        'Botservice : Unable to start a new conversation with ',
-        err,
-      );
+      this.logger.error('Unable to start a new conversation with ', err);
     }
   }
 
