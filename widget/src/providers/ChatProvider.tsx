@@ -17,6 +17,7 @@ import React, {
 } from "react";
 
 import { useBroadcastChannel } from "../hooks/useBroadcastChannel";
+import { useTabUuid } from "../hooks/useTabUuid";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -269,7 +270,7 @@ const ChatProvider: React.FC<{
               content_type: QuickReplyType.text,
               text: qr.title,
               payload: qr.payload,
-            }) as ISuggestion,
+            } as ISuggestion),
         ),
       );
     } else {
@@ -452,9 +453,11 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
   };
+  const tabUuidRef = useTabUuid();
+  const tabUuid = tabUuidRef.current;
 
-  useBroadcastChannel("session", (e) => {
-    if (e.data === "logout") {
+  useBroadcastChannel("session", ({ data }) => {
+    if (data.value === "logout" && data.uuid !== tabUuid) {
       socketCtx.socket.disconnect();
     }
   });

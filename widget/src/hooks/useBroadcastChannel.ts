@@ -8,13 +8,10 @@
 
 import * as React from "react";
 
-export type BroadcastChannelData =
-  | string
-  | number
-  | boolean
-  | Record<string, unknown>
-  | undefined
-  | null;
+export type BroadcastChannelData = {
+  uuid: string;
+  value: string | number | boolean | Record<string, unknown> | undefined | null;
+};
 
 /**
  * React hook to create and manage a Broadcast Channel across multiple browser windows.
@@ -24,10 +21,12 @@ export type BroadcastChannelData =
  * @param handleMessageError [optional] Callback to handle the event generated when `error` is received.
  * @returns A function to send/post message on the channel.
  */
-export function useBroadcastChannel<T extends BroadcastChannelData = string>(
+export function useBroadcastChannel<
+  T extends BroadcastChannelData = BroadcastChannelData,
+>(
   channelName: string,
-  handleMessage?: (event: MessageEvent) => void,
-  handleMessageError?: (event: MessageEvent) => void,
+  handleMessage?: (event: MessageEvent<T>) => void,
+  handleMessageError?: (event: MessageEvent<T>) => void,
 ): (data: T) => void {
   const channelRef = React.useRef<BroadcastChannel | null>(
     typeof window !== "undefined" && "BroadcastChannel" in window
@@ -52,7 +51,9 @@ export function useBroadcastChannel<T extends BroadcastChannelData = string>(
  * @param initialState Initial state.
  * @returns Tuple of state and setter for the state.
  */
-export function useBroadcastState<T extends BroadcastChannelData = string>(
+export function useBroadcastState<
+  T extends BroadcastChannelData = BroadcastChannelData,
+>(
   channelName: string,
   initialState: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>, boolean] {

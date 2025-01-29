@@ -22,6 +22,7 @@ import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
 import { useBroadcastChannel } from "@/hooks/useBroadcastChannel";
+import { useTabUuid } from "@/hooks/useTabUuid";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
@@ -108,8 +109,11 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setIsReady(true);
   }, []);
 
+  const tabUuidRef = useTabUuid();
+  const tabUuid = tabUuidRef.current;
+
   useBroadcastChannel("session", (e) => {
-    if (e.data === "logout") {
+    if (e.data.value === "logout" && e.data.uuid !== tabUuid) {
       router.reload();
     }
   });

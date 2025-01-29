@@ -23,6 +23,7 @@ import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
 import { useBroadcastChannel } from "../useBroadcastChannel";
+import { useTabUuid } from "../useTabUuid";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
 
@@ -60,6 +61,8 @@ export const useLogout = (
   const { toast } = useToast();
   const { t } = useTranslate();
   const broadcastLogoutAcrossTabs = useBroadcastChannel("session");
+  const tabUuidRef = useTabUuid();
+  const tabUuid = tabUuidRef.current;
 
   return useMutation({
     ...options,
@@ -70,7 +73,10 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      broadcastLogoutAcrossTabs("logout");
+      broadcastLogoutAcrossTabs({
+        value: "logout",
+        uuid: tabUuid || "",
+      });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },
