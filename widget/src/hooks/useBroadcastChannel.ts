@@ -23,18 +23,6 @@ export type BroadcastChannelData =
  * @param handleMessage Callback to handle the event generated when `message` is received.
  * @param handleMessageError [optional] Callback to handle the event generated when `error` is received.
  * @returns A function to send/post message on the channel.
- * @example
- * ```tsx
- * import {useBroadcastChannel} from 'react-broadcast-channel';
- *
- * function App () {
- *   const postUserIdMessage = useBroadcastChannel('userId', (e) => alert(e.data));
- *   return (<button onClick={() => postUserIdMessage('ABC123')}>Send UserId</button>);
- * }
- * ```
- * ---
- * Works in browser that support Broadcast Channel API natively. See [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API#browser_compatibility).
- * To support other browsers, install and use [broadcastchannel-polyfill](https://www.npmjs.com/package/broadcastchannel-polyfill).
  */
 export function useBroadcastChannel<T extends BroadcastChannelData = string>(
   channelName: string,
@@ -63,24 +51,6 @@ export function useBroadcastChannel<T extends BroadcastChannelData = string>(
  * @param channelName Static name of channel used across the browser windows.
  * @param initialState Initial state.
  * @returns Tuple of state and setter for the state.
- * @example
- * ```tsx
- * import {useBroadcastState} from 'react-broadcast-channel';
- *
- * function App () {
- *   const [count, setCount] = useBroadcastState('count', 0);
- *   return (
- *     <div>
- *       <button onClick={() => setCount(prev => prev - 1)}>Decrement</button>
- *       <span>{count}</span>
- *       <button onClick={() => setCount(prev => prev + 1)}>Increment</button>
- *     </div>
- *   );
- * }
- * ```
- * ---
- * Works in browser that support Broadcast Channel API natively. See [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API#browser_compatibility).
- * To support other browsers, install and use [broadcastchannel-polyfill](https://www.npmjs.com/package/broadcastchannel-polyfill).
  */
 export function useBroadcastState<T extends BroadcastChannelData = string>(
   channelName: string,
