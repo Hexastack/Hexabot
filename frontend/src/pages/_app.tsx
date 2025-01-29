@@ -19,6 +19,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
 import { ApiClientProvider } from "@/contexts/apiClient.context";
 import { AuthProvider } from "@/contexts/auth.context";
+import BroadcastChannelProvider from "@/contexts/broadcast-channel";
 import { ConfigProvider } from "@/contexts/config.context";
 import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";
@@ -83,15 +84,17 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
                 <QueryClientProvider client={queryClient}>
                   <CssBaseline />
                   <ApiClientProvider>
-                    <AuthProvider>
-                      <PermissionProvider>
-                        <SettingsProvider>
-                          <SocketProvider>
-                            {getLayout(<Component {...pageProps} />)}
-                          </SocketProvider>
-                        </SettingsProvider>
-                      </PermissionProvider>
-                    </AuthProvider>
+                    <BroadcastChannelProvider>
+                      <AuthProvider>
+                        <PermissionProvider>
+                          <SettingsProvider>
+                            <SocketProvider>
+                              {getLayout(<Component {...pageProps} />)}
+                            </SocketProvider>
+                          </SettingsProvider>
+                        </PermissionProvider>
+                      </AuthProvider>
+                    </BroadcastChannelProvider>
                   </ApiClientProvider>
                   <ReactQueryDevtools initialIsOpen={false} />
                 </QueryClientProvider>

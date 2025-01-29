@@ -60,7 +60,8 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const broadcastLogoutAcrossTabs = useBroadcastChannel("session");
+  const { useBroadcast } = useBroadcastChannel();
+  const broadcastLogoutAcrossTabs = useBroadcast("session");
   const tabUuidRef = useTabUuid();
   const tabUuid = tabUuidRef.current;
 

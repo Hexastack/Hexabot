@@ -110,10 +110,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   }, []);
 
   const tabUuidRef = useTabUuid();
-  const tabUuid = tabUuidRef.current;
+  const { useBroadcast } = useBroadcastChannel();
 
-  useBroadcastChannel("session", (e) => {
-    if (e.data.value === "logout" && e.data.uuid !== tabUuid) {
+  useBroadcast("session", (e) => {
+    if (e.data.value === "logout" && e.data.uuid !== tabUuidRef.current) {
       router.reload();
     }
   });
