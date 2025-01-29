@@ -77,7 +77,7 @@ describe('MigrationService', () => {
     }).compile();
 
     service = module.get<MigrationService>(MigrationService);
-    loggerService = module.get<LoggerService>(LoggerService);
+    loggerService = await module.resolve<LoggerService>(LoggerService);
     metadataService = module.get<MetadataService>(MetadataService);
   });
 

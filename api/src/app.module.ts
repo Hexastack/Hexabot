@@ -72,7 +72,7 @@ const i18nOptions: I18nOptions = {
             }),
             template: {
               adapter: new MjmlAdapter('ejs', { inlineCssEnabled: false }),
-              dir: './src/templates',
+              dir: path.join(process.cwd(), 'dist', 'templates'),
               options: {
                 context: {
                   appName: config.parameters.appName,

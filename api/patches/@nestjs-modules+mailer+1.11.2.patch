@@ -1,3 +1,30 @@
+diff --git a/node_modules/@nestjs-modules/mailer/dist/adapters/mjml.adapter.js b/node_modules/@nestjs-modules/mailer/dist/adapters/mjml.adapter.js
+index 5eb7a4a..afaaaa9 100644
+--- a/node_modules/@nestjs-modules/mailer/dist/adapters/mjml.adapter.js
++++ b/node_modules/@nestjs-modules/mailer/dist/adapters/mjml.adapter.js
+@@ -26,8 +26,20 @@ class MjmlAdapter {
+     compile(mail, callback, mailerOptions) {
+         var _a;
+         (_a = this === null || this === void 0 ? void 0 : this.engine) === null || _a === void 0 ? void 0 : _a.compile(mail, () => {
+-            mail.data.html = mjml2html(mail.data.html).html;
+-            callback();
++            Promise.resolve(mail.data.html).then((html) => {
++                Promise.resolve(mjml2html(html)).then((result) => {
++                    mail.data.html = result.html;
++                    callback();
++                }).catch((err) => {
++                    console.error('@nestjs-modules/mailer: Unable to convert mjml to html', err)
++                    mail.data.html = '';
++                    callback();
++                })
++            }).catch((err) => {
++                console.error('@nestjs-modules/mailer: Unable to compiling mjml', err)
++                mail.data.html = '';
++                callback();
++            })
+         }, mailerOptions);
+     }
+ }
 diff --git a/node_modules/@nestjs-modules/mailer/dist/mailer.service.js b/node_modules/@nestjs-modules/mailer/dist/mailer.service.js
 index 016055b..d534240 100644
 --- a/node_modules/@nestjs-modules/mailer/dist/mailer.service.js

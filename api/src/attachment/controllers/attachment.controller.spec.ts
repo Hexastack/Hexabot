@@ -108,7 +108,7 @@ describe('AttachmentController', () => {
 
     helperService = module.get<HelperService>(HelperService);
     settingService = module.get<SettingService>(SettingService);
-    loggerService = module.get<LoggerService>(LoggerService);
+    loggerService = await module.resolve<LoggerService>(LoggerService);
 
     helperService.register(
       new LocalStorageHelper(settingService, helperService, loggerService),

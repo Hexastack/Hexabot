@@ -286,7 +286,7 @@ export class BlockService extends BaseService<
             return e.entity === ev.entity;
           });
         } else {
-          this.logger.warn('Block Service : Unknown NLP match type', ev);
+          this.logger.warn('Unknown NLP match type', ev);
           return false;
         }
       });
