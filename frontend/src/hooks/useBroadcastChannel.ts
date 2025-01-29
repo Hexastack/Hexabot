@@ -13,7 +13,7 @@ import {
   BroadcastChannelContext,
   BroadcastChannelData,
   IBroadcastChannelContext,
-} from "@/contexts/broadcast-channel";
+} from "@/contexts/broadcast-channel.context";
 
 export const useBroadcast = <
   T extends BroadcastChannelData = BroadcastChannelData,

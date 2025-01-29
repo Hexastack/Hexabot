@@ -19,7 +19,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import { SnackbarCloseButton } from "@/app-components/displays/Toast/CloseButton";
 import { ApiClientProvider } from "@/contexts/apiClient.context";
 import { AuthProvider } from "@/contexts/auth.context";
-import BroadcastChannelProvider from "@/contexts/broadcast-channel";
+import BroadcastChannelProvider from "@/contexts/broadcast-channel.context";
 import { ConfigProvider } from "@/contexts/config.context";
 import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";

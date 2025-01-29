@@ -454,10 +454,10 @@ const ChatProvider: React.FC<{
     handleSubscription,
   };
   const tabUuidRef = useTabUuid();
-  const tabUuid = tabUuidRef.current;
+  const { useBroadcast } = useBroadcastChannel();
 
-  useBroadcastChannel("session", ({ data }) => {
-    if (data.value === "logout" && data.uuid !== tabUuid) {
+  useBroadcast("session", ({ data }) => {
+    if (data.value === "logout" && data.uuid !== tabUuidRef.current) {
       socketCtx.socket.disconnect();
     }
   });
