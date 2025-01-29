@@ -94,6 +94,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       subscribe,
       postMessage,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
