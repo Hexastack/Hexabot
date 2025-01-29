@@ -52,6 +52,15 @@ export class SettingService extends BaseService<Setting> {
   }
 
   /**
+   * Removes all settings that belong to the provided group.
+   *
+   * @param group - The group of settings to remove.
+   */
+  async deleteGroup(group: string) {
+    await this.repository.deleteMany({ group });
+  }
+
+  /**
    * Loads all settings and returns them grouped in ascending order by weight.
    *
    * @returns A grouped object of settings.
@@ -98,6 +107,22 @@ export class SettingService extends BaseService<Setting> {
         return acc;
       }, {}) || {}
     );
+  }
+
+  /**
+   * Retrieves a list of all setting groups.
+   *
+   * @returns A promise that resolves to a list of setting groups.
+   */
+  async getAllGroups(): Promise<string[]> {
+    const settings = await this.findAll();
+    const groups = settings.reduce<string[]>((acc, setting) => {
+      if (!acc.includes(setting.group)) {
+        acc.push(setting.group);
+      }
+      return acc;
+    }, []);
+    return groups;
   }
 
   /**
