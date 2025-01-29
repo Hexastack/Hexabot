@@ -39,9 +39,7 @@ export const BroadcastChannelContext = createContext<{
 });
 
 export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
-  // eslint-disable-next-line react/prop-types
   channelName,
-  // eslint-disable-next-line react/prop-types
   children,
 }) => {
   const channelRef = useRef<BroadcastChannel | null>(null);
