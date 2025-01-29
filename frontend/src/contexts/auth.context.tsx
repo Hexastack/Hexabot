@@ -108,8 +108,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setIsReady(true);
   }, []);
 
-  useBroadcastChannel("session", () => {
-    router.reload();
+  useBroadcastChannel("session", (e) => {
+    if (e.data === "logout") {
+      router.reload();
+    }
   });
 
   if (!isReady || isLoading) return <Progress />;
