@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createContext } from "react";
+import { createContext, ReactNode } from "react";
 
 import { useBroadcast } from "../hooks/useBroadcastChannel";
 
@@ -24,7 +24,7 @@ export type BroadcastChannelData = {
 };
 
 export interface IBroadcastChannelProps {
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export const BroadcastChannelContext = createContext<IBroadcastChannelContext>({
