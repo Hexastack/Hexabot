@@ -24,6 +24,7 @@ export const useTabUuid = (key: string = "tab_uuid") => {
       sessionStorage.setItem(key, newUuid);
       tabUuidRef.current = newUuid;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return tabUuidRef;
