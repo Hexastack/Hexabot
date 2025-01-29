@@ -84,7 +84,7 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
                 <QueryClientProvider client={queryClient}>
                   <CssBaseline />
                   <ApiClientProvider>
-                    <BroadcastChannelProvider>
+                    <BroadcastChannelProvider channelName="main-channel">
                       <AuthProvider>
                         <PermissionProvider>
                           <SettingsProvider>

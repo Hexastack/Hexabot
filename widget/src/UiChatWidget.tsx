@@ -42,7 +42,7 @@ function UiChatWidget({
         <SocketProvider>
           <SettingsProvider>
             <ColorProvider>
-              <BroadcastChannelProvider>
+              <BroadcastChannelProvider channelName="main-channel">
                 <WidgetProvider defaultScreen="chat">
                   <ChatProvider
                     defaultConnectionState={ConnectionState.connected}

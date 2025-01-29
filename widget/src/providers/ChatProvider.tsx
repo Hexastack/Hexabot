@@ -16,8 +16,6 @@ import React, {
   useState,
 } from "react";
 
-import { useBroadcastChannel } from "../hooks/useBroadcastChannel";
-import { useTabUuid } from "../hooks/useTabUuid";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -31,6 +29,7 @@ import {
 } from "../types/message.types";
 import { ConnectionState, OutgoingMessageState } from "../types/state.types";
 
+import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
@@ -453,11 +452,10 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
   };
-  const tabUuidRef = useTabUuid();
-  const { useBroadcast } = useBroadcastChannel();
+  const { subscribe } = useBroadcastChannel();
 
-  useBroadcast("session", ({ data }) => {
-    if (data.value === "logout" && data.uuid !== tabUuidRef.current) {
+  subscribe(({ data }) => {
+    if (data === "logout") {
       socketCtx.socket.disconnect();
     }
   });

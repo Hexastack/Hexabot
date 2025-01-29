@@ -21,12 +21,12 @@ import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
-import { useBroadcastChannel } from "@/hooks/useBroadcastChannel";
-import { useTabUuid } from "@/hooks/useTabUuid";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
 import { getFromQuery } from "@/utils/URL";
+
+import { useBroadcastChannel } from "./broadcast-channel.context";
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -109,11 +109,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setIsReady(true);
   }, []);
 
-  const tabUuidRef = useTabUuid();
-  const { useBroadcast } = useBroadcastChannel();
+  const { subscribe } = useBroadcastChannel();
 
-  useBroadcast("session", (e) => {
-    if (e.data.value === "logout" && e.data.uuid !== tabUuidRef.current) {
+  subscribe((message) => {
+    if (message.data === "logout") {
       router.reload();
     }
   });

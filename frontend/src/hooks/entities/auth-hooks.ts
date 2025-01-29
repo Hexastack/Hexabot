@@ -9,6 +9,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import {
@@ -22,7 +23,6 @@ import { useSocket } from "@/websocket/socket-hooks";
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
-import { useBroadcastChannel } from "../useBroadcastChannel";
 import { useTabUuid } from "../useTabUuid";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
@@ -60,10 +60,8 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const { useBroadcast } = useBroadcastChannel();
-  const broadcastLogoutAcrossTabs = useBroadcast("session");
-  const tabUuidRef = useTabUuid();
-  const tabUuid = tabUuidRef.current;
+  const { postMessage } = useBroadcastChannel();
+  const uuid = useTabUuid();
 
   return useMutation({
     ...options,
@@ -74,10 +72,7 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      broadcastLogoutAcrossTabs({
-        value: "logout",
-        uuid: tabUuid || "",
-      });
+      postMessage({ data: "logout", tabId: uuid.current || "" });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },

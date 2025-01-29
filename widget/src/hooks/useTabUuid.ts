@@ -11,18 +11,20 @@ import { useRef } from "react";
 import { generateId } from "../utils/generateId";
 
 const getOrCreateTabId = () => {
-  let tabId = sessionStorage.getItem("tab_uuid");
+  let storedTabId = sessionStorage.getItem("tab_uuid");
 
-  if (!tabId) {
-    tabId = generateId();
-    sessionStorage.setItem("tab_uuid", tabId);
+  if (storedTabId) {
+    return storedTabId;
   }
 
-  return tabId;
+  storedTabId = generateId();
+  sessionStorage.setItem("tab_uuid", storedTabId);
+
+  return storedTabId;
 };
 
 export const useTabUuid = () => {
-  const tabUuidRef = useRef<string | null>(getOrCreateTabId());
+  const tabUuidRef = useRef<string>(getOrCreateTabId());
 
   return tabUuidRef;
 };
