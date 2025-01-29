@@ -101,6 +101,9 @@ function useChannelEventListener<K extends keyof BroadcastChannelEventMap>(
 
     channel.addEventListener(event, callback);
 
-    return () => channel.removeEventListener(event, callback);
+    return () => {
+      channel.close();
+      channel.removeEventListener(event, callback);
+    };
   }, [channel, event]);
 }
