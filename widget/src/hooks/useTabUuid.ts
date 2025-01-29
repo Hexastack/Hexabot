@@ -6,26 +6,23 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 import { generateId } from "../utils/generateId";
 
-export const useTabUuid = (key: string = "tab_uuid") => {
-  const tabUuidRef = useRef<string | null>(null);
+const getOrCreateTabId = () => {
+  let tabId = sessionStorage.getItem("tab_uuid");
 
-  useEffect(() => {
-    const storedUuid = sessionStorage.getItem(key);
+  if (!tabId) {
+    tabId = generateId();
+    sessionStorage.setItem("tab_uuid", tabId);
+  }
 
-    if (storedUuid) {
-      tabUuidRef.current = storedUuid;
-    } else {
-      const newUuid = generateId();
+  return tabId;
+};
 
-      sessionStorage.setItem(key, newUuid);
-      tabUuidRef.current = newUuid;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+export const useTabUuid = () => {
+  const tabUuidRef = useRef<string | null>(getOrCreateTabId());
 
   return tabUuidRef;
 };
