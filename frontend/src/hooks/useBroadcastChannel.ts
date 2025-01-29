@@ -41,13 +41,11 @@ export function useBroadcastChannel<T extends BroadcastChannelData = string>(
   handleMessage?: (event: MessageEvent) => void,
   handleMessageError?: (event: MessageEvent) => void,
 ): (data: T) => void {
-  const channelRef = React.useRef<BroadcastChannel | null>(null);
-
-  React.useEffect(() => {
-    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
-      channelRef.current = new BroadcastChannel(channelName + "-channel");
-    }
-  }, [channelName]);
+  const channelRef = React.useRef<BroadcastChannel | null>(
+    typeof window !== "undefined" && "BroadcastChannel" in window
+      ? new BroadcastChannel(channelName + "-channel")
+      : null,
+  );
 
   useChannelEventListener(channelRef.current, "message", handleMessage);
   useChannelEventListener(
@@ -56,10 +54,7 @@ export function useBroadcastChannel<T extends BroadcastChannelData = string>(
     handleMessageError,
   );
 
-  return React.useCallback(
-    (data: T) => channelRef.current?.postMessage(data),
-    [channelRef.current],
-  );
+  return (data: T) => channelRef.current?.postMessage(data);
 }
 
 /**
