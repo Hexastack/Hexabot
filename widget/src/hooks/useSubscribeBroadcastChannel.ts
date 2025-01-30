@@ -8,17 +8,15 @@
 
 import { useEffect } from "react";
 
-import {
-  IBroadcastChannelContext,
-  useBroadcastChannel,
-} from "../providers/BroadcastChannelProvider";
+import { useBroadcastChannel } from "../providers/BroadcastChannelProvider";
 
-export const useSubscribeBroadcastChannel: IBroadcastChannelContext["subscribe"] =
-  (...props) => {
-    const { subscribe } = useBroadcastChannel();
+export const useSubscribeBroadcastChannel: ReturnType<
+  typeof useBroadcastChannel
+>["subscribe"] = (...props) => {
+  const { subscribe } = useBroadcastChannel();
 
-    useEffect(() => {
-      subscribe(...props);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [subscribe, ...props]);
-  };
+  useEffect(() => {
+    subscribe(...props);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscribe, ...props]);
+};

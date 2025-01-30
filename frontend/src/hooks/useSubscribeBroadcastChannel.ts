@@ -8,16 +8,14 @@
 
 import { useEffect } from "react";
 
-import {
-  IBroadcastChannelContext,
-  useBroadcastChannel,
-} from "@/contexts/broadcast-channel.context";
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 
-export const useSubscribeBroadcastChannel: IBroadcastChannelContext["subscribe"] =
-  (...props) => {
-    const { subscribe } = useBroadcastChannel();
+export const useSubscribeBroadcastChannel: ReturnType<
+  typeof useBroadcastChannel
+>["subscribe"] = (...props) => {
+  const { subscribe } = useBroadcastChannel();
 
-    useEffect(() => {
-      subscribe(...props);
-    }, [subscribe, ...props]);
-  };
+  useEffect(() => {
+    subscribe(...props);
+  }, [subscribe, ...props]);
+};
