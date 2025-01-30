@@ -21,12 +21,11 @@ import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
 import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
+import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
 import { getFromQuery } from "@/utils/URL";
-
-import { useBroadcastChannel } from "./broadcast-channel.context";
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -101,17 +100,16 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setUser(user);
   };
   const isAuthenticated = !!user;
-  const { subscribe } = useBroadcastChannel();
+
+  useSubscribeBroadcastChannel("logout", () => {
+    router.reload();
+  });
 
   useEffect(() => {
     const search = location.search;
 
     setSearch(search);
     setIsReady(true);
-
-    subscribe("logout", () => {
-      router.reload();
-    });
   }, []);
 
   if (!isReady || isLoading) return <Progress />;

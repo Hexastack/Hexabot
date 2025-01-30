@@ -49,11 +49,11 @@ const getOrCreateTabId = () => {
   return storedTabId;
 };
 
-interface IBroadcastChannelContext {
+export interface IBroadcastChannelContext {
   subscribe: (
     event: `${EBCEvent}`,
     callback: (message: BroadcastChannelData) => void,
-  ) => () => void;
+  ) => void;
   postMessage: (payload: BroadcastChannelPayload) => void;
 }
 
