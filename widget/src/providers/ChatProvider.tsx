@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import React, {
   createContext,
   ReactNode,
@@ -17,6 +16,7 @@ import React, {
   useState,
 } from "react";
 
+import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -384,6 +384,10 @@ const ChatProvider: React.FC<{
       updateNewMessagesCount(0);
     }
   }, [syncState, isOpen]);
+
+  useSubscribeBroadcastChannel("logout", () => {
+    socketCtx.socket.disconnect();
+  });
 
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
