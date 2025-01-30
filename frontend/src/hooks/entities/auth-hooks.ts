@@ -9,6 +9,7 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { EntityType, TMutationOptions } from "@/services/types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import {
@@ -32,11 +33,16 @@ export const useLogin = (
   >,
 ) => {
   const { apiClient } = useApiClient();
+  const { postMessage } = useBroadcastChannel();
 
   return useMutation({
     ...options,
     async mutationFn(credentials) {
       return await apiClient.login(credentials);
+    },
+    onSuccess: (data, variables, context) => {
+      options?.onSuccess?.(data, variables, context);
+      postMessage({ event: "login" });
     },
   });
 };
@@ -58,6 +64,7 @@ export const useLogout = (
   const { logoutRedirection } = useLogoutRedirection();
   const { toast } = useToast();
   const { t } = useTranslate();
+  const { postMessage } = useBroadcastChannel();
 
   return useMutation({
     ...options,
@@ -68,6 +75,7 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
+      postMessage({ event: "logout" });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },

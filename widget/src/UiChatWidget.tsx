@@ -10,6 +10,7 @@ import { PropsWithChildren } from "react";
 
 import Launcher from "./components/Launcher";
 import UserSubscription from "./components/UserSubscription";
+import BroadcastChannelProvider from "./providers/BroadcastChannelProvider";
 import ChatProvider from "./providers/ChatProvider";
 import { ColorProvider } from "./providers/ColorProvider";
 import { ConfigProvider } from "./providers/ConfigProvider";
@@ -41,17 +42,19 @@ function UiChatWidget({
         <SocketProvider>
           <SettingsProvider>
             <ColorProvider>
-              <WidgetProvider defaultScreen="chat">
-                <ChatProvider
-                  defaultConnectionState={ConnectionState.connected}
-                >
-                  <Launcher
-                    CustomHeader={CustomHeader}
-                    CustomAvatar={CustomAvatar}
-                    PreChat={UserSubscription}
-                  />
-                </ChatProvider>
-              </WidgetProvider>
+              <BroadcastChannelProvider channelName="main-channel">
+                <WidgetProvider defaultScreen="chat">
+                  <ChatProvider
+                    defaultConnectionState={ConnectionState.connected}
+                  >
+                    <Launcher
+                      CustomHeader={CustomHeader}
+                      CustomAvatar={CustomAvatar}
+                      PreChat={UserSubscription}
+                    />
+                  </ChatProvider>
+                </WidgetProvider>
+              </BroadcastChannelProvider>
             </ColorProvider>
           </SettingsProvider>
         </SocketProvider>
