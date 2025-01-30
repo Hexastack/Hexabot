@@ -75,7 +75,6 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       // eslint-disable-next-line react-hooks/exhaustive-deps
       channelRef.current.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subscribe: IBroadcastChannelContext["subscribe"] = (
