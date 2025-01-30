@@ -33,11 +33,16 @@ export const useLogin = (
   >,
 ) => {
   const { apiClient } = useApiClient();
+  const { postMessage } = useBroadcastChannel();
 
   return useMutation({
     ...options,
     async mutationFn(credentials) {
       return await apiClient.login(credentials);
+    },
+    onSuccess: (data, variables, context) => {
+      options?.onSuccess?.(data, variables, context);
+      postMessage({ event: "login" });
     },
   });
 };

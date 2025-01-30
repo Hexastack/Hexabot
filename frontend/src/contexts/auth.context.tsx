@@ -101,6 +101,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const isAuthenticated = !!user;
 
+  useSubscribeBroadcastChannel("login", () => {
+    router.reload();
+  });
+
   useSubscribeBroadcastChannel("logout", () => {
     router.reload();
   });

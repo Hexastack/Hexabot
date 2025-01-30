@@ -18,6 +18,7 @@ import {
 import { generateId } from "@/utils/generateId";
 
 export enum EBCEvent {
+  LOGIN = "login",
   LOGOUT = "logout",
 }
 
