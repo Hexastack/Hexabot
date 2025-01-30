@@ -12,97 +12,122 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useMemo,
   useRef,
 } from "react";
 
-import { useTabUuid } from "@/hooks/useTabUuid";
+import { generateId } from "@/utils/generateId";
+
+export enum EBCEvent {
+  LOGOUT = "logout",
+}
+
+type BroadcastChannelPayload = {
+  event: `${EBCEvent}`;
+  data?: string | number | boolean | Record<string, unknown> | undefined | null;
+};
 
 export type BroadcastChannelData = {
   tabId: string;
-  data: string | number | boolean | Record<string, unknown> | undefined | null;
+  payload: BroadcastChannelPayload;
 };
 
 export interface IBroadcastChannelProps {
   channelName: string;
-  children?: ReactNode;
+  children: ReactNode;
 }
 
-export const BroadcastChannelContext = createContext<{
-  subscribers: ((message: BroadcastChannelData) => void)[];
-  subscribe: (callback: (message: BroadcastChannelData) => void) => () => void;
-  postMessage: (message: BroadcastChannelData) => void;
-}>({
-  subscribers: [],
+const getOrCreateTabId = () => {
+  let storedTabId = sessionStorage.getItem("tab_uuid");
+
+  if (storedTabId) {
+    return storedTabId;
+  }
+
+  storedTabId = generateId();
+  sessionStorage.setItem("tab_uuid", storedTabId);
+
+  return storedTabId;
+};
+
+interface IBroadcastChannelContext {
+  subscribe: (
+    event: `${EBCEvent}`,
+    callback: (message: BroadcastChannelData) => void,
+  ) => () => void;
+  postMessage: (payload: BroadcastChannelPayload) => void;
+}
+
+export const BroadcastChannelContext = createContext<IBroadcastChannelContext>({
   subscribe: () => () => {},
   postMessage: () => {},
 });
 
 export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
-  channelName,
   children,
+  channelName,
 }) => {
-  const channelRef = useRef<BroadcastChannel | null>(null);
-  const subscribersRef = useRef<Array<(message: BroadcastChannelData) => void>>(
-    [],
+  const channelRef = useRef<BroadcastChannel>(
+    new BroadcastChannel(channelName),
   );
-  const tabUuidRef = useTabUuid();
+  const subscribersRef = useRef<
+    Record<string, Array<(message: BroadcastChannelData) => void>>
+  >({});
+  const tabUuid = getOrCreateTabId();
 
   useEffect(() => {
-    const channel = new BroadcastChannel(channelName);
+    const handleMessage = ({ data }: MessageEvent<BroadcastChannelData>) => {
+      const { tabId, payload } = data;
 
-    channelRef.current = channel;
+      if (tabId === tabUuid) {
+        return;
+      }
 
-    const handleMessage = (event: MessageEvent) => {
-      const { tabId, data } = event.data;
-
-      if (tabId === tabUuidRef.current) return;
-
-      subscribersRef.current.forEach((callback) => callback(data));
+      subscribersRef.current[payload.event]?.forEach((callback) =>
+        callback(data),
+      );
     };
 
-    channel.addEventListener("message", handleMessage);
+    channelRef.current.addEventListener("message", handleMessage);
 
     return () => {
-      channel.removeEventListener("message", handleMessage);
-      channel.close();
+      channelRef.current.removeEventListener("message", handleMessage);
+      channelRef.current.close();
     };
-  }, [channelName, tabUuidRef]);
+  }, []);
 
-  const postMessage = (message: BroadcastChannelData) => {
-    channelRef.current?.postMessage({
-      tabId: tabUuidRef.current,
-      data: message,
-    });
-  };
-  const subscribe = (callback: (message: BroadcastChannelData) => void) => {
-    subscribersRef.current.push(callback);
+  const subscribe: IBroadcastChannelContext["subscribe"] = (
+    event,
+    callback,
+  ) => {
+    subscribersRef.current[event] ??= [];
+    subscribersRef.current[event]?.push(callback);
 
     return () => {
-      const index = subscribersRef.current.indexOf(callback);
+      const index = subscribersRef.current[event]?.indexOf(callback) ?? -1;
 
       if (index !== -1) {
-        subscribersRef.current.splice(index, 1);
+        subscribersRef.current[event]?.splice(index, 1);
       }
     };
   };
-  const contextValue = useMemo(
-    () => ({
-      subscribers: subscribersRef.current,
-      subscribe,
-      postMessage,
-    }),
-    [],
-  );
+  const postMessage: IBroadcastChannelContext["postMessage"] = (payload) => {
+    channelRef.current?.postMessage({
+      tabId: tabUuid,
+      payload,
+    });
+  };
 
   return (
-    <BroadcastChannelContext.Provider value={contextValue}>
+    <BroadcastChannelContext.Provider
+      value={{
+        subscribe,
+        postMessage,
+      }}
+    >
       {children}
     </BroadcastChannelContext.Provider>
   );
 };
-
-export default BroadcastChannelProvider;
 
 export const useBroadcastChannel = () => {
   const context = useContext(BroadcastChannelContext);
@@ -115,3 +140,5 @@ export const useBroadcastChannel = () => {
 
   return context;
 };
+
+export default BroadcastChannelProvider;

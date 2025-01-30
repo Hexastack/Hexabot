@@ -23,7 +23,6 @@ import { useSocket } from "@/websocket/socket-hooks";
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
 import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
-import { useTabUuid } from "../useTabUuid";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
 
@@ -61,7 +60,6 @@ export const useLogout = (
   const { toast } = useToast();
   const { t } = useTranslate();
   const { postMessage } = useBroadcastChannel();
-  const uuid = useTabUuid();
 
   return useMutation({
     ...options,
@@ -72,7 +70,7 @@ export const useLogout = (
     },
     onSuccess: async () => {
       queryClient.removeQueries([CURRENT_USER_KEY]);
-      postMessage({ data: "logout", tabId: uuid.current || "" });
+      postMessage({ event: "logout" });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
     },

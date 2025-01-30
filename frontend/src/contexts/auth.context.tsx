@@ -101,21 +101,18 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     setUser(user);
   };
   const isAuthenticated = !!user;
+  const { subscribe } = useBroadcastChannel();
 
   useEffect(() => {
     const search = location.search;
 
     setSearch(search);
     setIsReady(true);
-  }, []);
 
-  const { subscribe } = useBroadcastChannel();
-
-  subscribe((message) => {
-    if (message.data === "logout") {
+    subscribe("logout", () => {
       router.reload();
-    }
-  });
+    });
+  }, []);
 
   if (!isReady || isLoading) return <Progress />;
 

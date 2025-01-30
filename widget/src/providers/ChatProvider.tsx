@@ -385,6 +385,8 @@ const ChatProvider: React.FC<{
     }
   }, [syncState, isOpen]);
 
+  const { subscribe } = useBroadcastChannel();
+
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
       handleSubscription();
@@ -403,6 +405,10 @@ const ChatProvider: React.FC<{
     };
 
     socketCtx.socket.io.on("reconnect", reSubscribe);
+
+    subscribe("logout", () => {
+      socketCtx.socket.disconnect();
+    });
 
     return () => {
       socketCtx.socket.io.off("reconnect", reSubscribe);
@@ -452,13 +458,6 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
   };
-  const { subscribe } = useBroadcastChannel();
-
-  subscribe(({ data }) => {
-    if (data === "logout") {
-      socketCtx.socket.disconnect();
-    }
-  });
 
   return (
     <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>
