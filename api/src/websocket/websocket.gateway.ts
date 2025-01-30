@@ -20,7 +20,7 @@ import {
 import cookie from 'cookie';
 import * as cookieParser from 'cookie-parser';
 import signature from 'cookie-signature';
-import { SessionData } from 'express-session';
+import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
@@ -259,12 +259,10 @@ export class WebsocketGateway
   }
 
   @OnEvent('hook:user:logout')
-  disconnectSockets(sessionCookie: string) {
-    if (sessionCookie.length) {
-      for (const [socketId, socket] of this.io.sockets.sockets) {
-        if (socket.handshake.headers.cookie?.includes(sessionCookie)) {
-          this.io.sockets.sockets.get(socketId)?.disconnect(true);
-        }
+  disconnectSockets({ id }: ExpressSession) {
+    for (const [, socket] of this.io.sockets.sockets) {
+      if (socket.data['sessionID'] === id) {
+        socket.disconnect(true);
       }
     }
   }

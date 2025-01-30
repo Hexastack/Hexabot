@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { type Session as ExpressSession } from 'express-session';
 import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
@@ -162,7 +163,7 @@ declare module '@nestjs/event-emitter' {
     model: TDefinition<Model>;
     permission: TDefinition<Permission>;
     role: TDefinition<Role>;
-    user: TDefinition<User, { lastvisit: Subscriber; logout: string }>;
+    user: TDefinition<User, { lastvisit: Subscriber; logout: ExpressSession }>;
   }
 
   /* entities hooks having schemas */

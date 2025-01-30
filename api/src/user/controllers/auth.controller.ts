@@ -11,7 +11,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Inject,
   InternalServerErrorException,
   Param,
@@ -25,7 +24,6 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CsrfCheck, CsrfGen, CsrfGenAuth } from '@tekuconcept/nestjs-csrf';
-import cookie from 'cookie';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
@@ -73,13 +71,8 @@ export class BaseAuthController {
   logout(
     @Session() session: ExpressSession,
     @Res({ passthrough: true }) res: Response,
-    @Headers() headers: Record<string, string>,
   ) {
-    const parsedCookie = cookie.parse(headers['cookie']);
-    const sessionCookie = encodeURIComponent(
-      String(parsedCookie[config.session.name] || ''),
-    );
-    this.eventEmitter.emit('hook:user:logout', sessionCookie);
+    this.eventEmitter.emit('hook:user:logout', session);
     res.clearCookie(config.session.name);
 
     session.destroy((error) => {
