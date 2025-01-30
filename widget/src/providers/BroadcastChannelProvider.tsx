@@ -57,10 +57,9 @@ export interface IBroadcastChannelContext {
   postMessage: (payload: BroadcastChannelPayload) => void;
 }
 
-export const BroadcastChannelContext = createContext<IBroadcastChannelContext>({
-  subscribe: () => () => {},
-  postMessage: () => {},
-});
+export const BroadcastChannelContext = createContext<
+  IBroadcastChannelContext | undefined
+>(undefined);
 
 export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   children,
