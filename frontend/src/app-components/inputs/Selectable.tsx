@@ -1,12 +1,14 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, Input, styled } from "@mui/material";
+
+
+import { Box, CircularProgress, Input, styled } from "@mui/material";
 import randomSeed from "random-seed";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -62,6 +64,7 @@ type SelectableProps = {
     text: string;
     entities: INlpDatasetKeywordEntity[];
   }) => void;
+  loading?: boolean;
 };
 
 const Selectable: FC<SelectableProps> = ({
@@ -70,6 +73,7 @@ const Selectable: FC<SelectableProps> = ({
   placeholder = "",
   onChange,
   onSelect,
+  loading,
 }) => {
   const [text, setText] = useState(defaultValue || "");
   const editableRef = useRef<HTMLDivElement>(null);
@@ -205,6 +209,22 @@ const Selectable: FC<SelectableProps> = ({
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder={placeholder}
       />
+      {
+        loading && (
+          <CircularProgress
+            size={20}
+            thickness={5}
+            style={
+              {
+                position: "absolute", 
+                top: "30%", 
+                right: "5px", 
+                transform: "translateY(-30%)" 
+              }
+            }
+          />
+        )
+      }
     </SelectableBox>
   );
 };
