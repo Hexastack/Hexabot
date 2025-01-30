@@ -9,17 +9,27 @@
 import { Test } from '@nestjs/testing';
 
 import { LoggerModule } from '@/logger/logger.module';
+import { SettingService } from '@/setting/services/setting.service';
 import { DummyPlugin } from '@/utils/test/dummy/dummy.plugin';
 
 import { BaseBlockPlugin } from './base-block-plugin';
 import { PluginService } from './plugins.service';
 import { PluginType } from './types';
 
+// Mock services
+const mockSettingService = {
+  get: jest.fn(),
+} as unknown as SettingService;
+
 describe('PluginsService', () => {
   let pluginsService: PluginService;
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      providers: [PluginService, DummyPlugin],
+      providers: [
+        PluginService,
+        DummyPlugin,
+        { provide: SettingService, useValue: mockSettingService },
+      ],
       imports: [LoggerModule],
     }).compile();
     pluginsService = module.get<PluginService>(PluginService);

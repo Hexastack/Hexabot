@@ -6,7 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
+
+import { LoggerService } from '@/logger/logger.service';
+import { SettingService } from '@/setting/services/setting.service';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginInstance } from './map-types';
@@ -26,7 +33,9 @@ import { PluginName, PluginType } from './types';
  * @typeparam T - The plugin type, which extends from `BasePlugin`. By default, it uses `BaseBlockPlugin`.
  */
 @Injectable()
-export class PluginService<T extends BasePlugin = BasePlugin> {
+export class PluginService<T extends BasePlugin = BasePlugin>
+  implements OnApplicationBootstrap
+{
   /**
    * The registry of plugins, stored as a map where the first key is the type of plugin,
    * the second key is the name of the plugin and the value is a plugin of type `T`.
@@ -35,7 +44,37 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
     Object.keys(PluginType).map((t) => [t as PluginType, new Map()]),
   );
 
-  constructor() {}
+  constructor(
+    private readonly settingService: SettingService,
+    private readonly logger: LoggerService,
+  ) {}
+
+  async onApplicationBootstrap(): Promise<void> {
+    await this.cleanup();
+  }
+
+  /**
+   * Cleanups the unregisterd plugins from settings.
+   *
+   */
+  async cleanup(): Promise<void> {
+    const activePlugins = this.getAll().map((handler) =>
+      handler.getNamespace(),
+    );
+
+    const pluginSettings = (await this.settingService.getAllGroups()).filter(
+      (group) => group.split('_').pop() === 'plugin',
+    ) as HyphenToUnderscore<PluginName>[];
+
+    const orphanSettings = pluginSettings.filter(
+      (group) => !activePlugins.includes(group),
+    );
+
+    for (const group of orphanSettings) {
+      this.logger.log(`Deleting orphaned settings for ${group}...`);
+      await this.settingService.deleteGroup(group);
+    }
+  }
 
   /**
    * Registers a plugin with a given name.
