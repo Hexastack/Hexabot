@@ -15,8 +15,6 @@ import {
   useRef,
 } from "react";
 
-import { generateId } from "@/utils/generateId";
-
 export enum EBCEvent {
   LOGIN = "login",
   LOGOUT = "logout",
@@ -28,7 +26,6 @@ type BroadcastChannelPayload = {
 };
 
 type BroadcastChannelData = {
-  tabId: string;
   payload: BroadcastChannelPayload;
 };
 
@@ -44,19 +41,6 @@ interface IBroadcastChannelContext {
   ) => void;
   postMessage: (payload: BroadcastChannelPayload) => void;
 }
-
-const getOrCreateTabId = () => {
-  let storedTabId = sessionStorage.getItem("tab_uuid");
-
-  if (storedTabId) {
-    return storedTabId;
-  }
-
-  storedTabId = generateId();
-  sessionStorage.setItem("tab_uuid", storedTabId);
-
-  return storedTabId;
-};
 
 export const BroadcastChannelContext = createContext<
   IBroadcastChannelContext | undefined
@@ -75,15 +59,10 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       Array<Parameters<IBroadcastChannelContext["subscribe"]>["1"]>
     >
   >({});
-  const tabUuid = getOrCreateTabId();
 
   useEffect(() => {
     const handleMessage = ({ data }: MessageEvent<BroadcastChannelData>) => {
-      const { tabId, payload } = data;
-
-      if (tabId === tabUuid) {
-        return;
-      }
+      const { payload } = data;
 
       subscribersRef.current[payload.event].forEach((callback) =>
         callback(data),
@@ -115,7 +94,6 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   };
   const postMessage: IBroadcastChannelContext["postMessage"] = (payload) => {
     channelRef.current.postMessage({
-      tabId: tabUuid,
       payload,
     });
   };
