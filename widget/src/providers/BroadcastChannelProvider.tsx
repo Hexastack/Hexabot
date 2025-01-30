@@ -136,7 +136,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
 export const useBroadcastChannel = () => {
   const context = useContext(BroadcastChannelContext);
 
-  if (context === undefined) {
+  if (!context) {
     throw new Error(
       "useBroadcastChannel must be used within a BroadcastChannelProvider",
     );
