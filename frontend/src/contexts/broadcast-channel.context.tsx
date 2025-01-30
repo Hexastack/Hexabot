@@ -103,7 +103,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     subscribersRef.current[event].push(callback);
 
     return () => {
-      const index = subscribersRef.current[event].indexOf(callback) ?? -1;
+      const index = subscribersRef.current[event].indexOf(callback);
 
       if (index !== -1) {
         subscribersRef.current[event].splice(index, 1);
