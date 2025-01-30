@@ -16,6 +16,7 @@ import React, {
   useState,
 } from "react";
 
+import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -29,7 +30,6 @@ import {
 } from "../types/message.types";
 import { ConnectionState, OutgoingMessageState } from "../types/state.types";
 
-import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
@@ -385,7 +385,9 @@ const ChatProvider: React.FC<{
     }
   }, [syncState, isOpen]);
 
-  const { subscribe } = useBroadcastChannel();
+  useSubscribeBroadcastChannel("logout", () => {
+    socketCtx.socket.disconnect();
+  });
 
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
@@ -405,10 +407,6 @@ const ChatProvider: React.FC<{
     };
 
     socketCtx.socket.io.on("reconnect", reSubscribe);
-
-    subscribe("logout", () => {
-      socketCtx.socket.disconnect();
-    });
 
     return () => {
       socketCtx.socket.io.off("reconnect", reSubscribe);
