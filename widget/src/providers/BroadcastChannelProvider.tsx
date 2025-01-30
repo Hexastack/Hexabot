@@ -26,14 +26,22 @@ type BroadcastChannelPayload = {
   data?: string | number | boolean | Record<string, unknown> | undefined | null;
 };
 
-export type BroadcastChannelData = {
+type BroadcastChannelData = {
   tabId: string;
   payload: BroadcastChannelPayload;
 };
 
-export interface IBroadcastChannelProps {
+interface IBroadcastChannelProps {
   channelName: string;
   children: ReactNode;
+}
+
+interface IBroadcastChannelContext {
+  subscribe: (
+    event: `${EBCEvent}`,
+    callback: (message: BroadcastChannelData) => void,
+  ) => void;
+  postMessage: (payload: BroadcastChannelPayload) => void;
 }
 
 const getOrCreateTabId = () => {
@@ -49,14 +57,6 @@ const getOrCreateTabId = () => {
   return storedTabId;
 };
 
-interface IBroadcastChannelContext {
-  subscribe: (
-    event: `${EBCEvent}`,
-    callback: (message: BroadcastChannelData) => void,
-  ) => void;
-  postMessage: (payload: BroadcastChannelPayload) => void;
-}
-
 export const BroadcastChannelContext = createContext<
   IBroadcastChannelContext | undefined
 >(undefined);
@@ -69,7 +69,10 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     new BroadcastChannel(channelName),
   );
   const subscribersRef = useRef<
-    Record<string, Array<(message: BroadcastChannelData) => void>>
+    Record<
+      string,
+      Array<Parameters<IBroadcastChannelContext["subscribe"]>["1"]>
+    >
   >({});
   const tabUuid = getOrCreateTabId();
 
