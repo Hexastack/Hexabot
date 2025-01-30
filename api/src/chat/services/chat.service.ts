@@ -83,7 +83,10 @@ export class ChatService {
    * @param sentMessage - The message that has been sent
    */
   @OnEvent('hook:chatbot:sent')
-  async handleSentMessage(sentMessage: MessageCreateDto) {
+  async handleSentMessage(
+    sentMessage: MessageCreateDto,
+    _event: EventWrapper<any, any>,
+  ) {
     if (sentMessage.mid) {
       try {
         const message = await this.messageService.findOneOrCreate(
@@ -231,7 +234,7 @@ export class ChatService {
           read: false,
         };
 
-        this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+        this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
         this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo');
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
