@@ -1,12 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -20,7 +20,7 @@ import {
 import cookie from 'cookie';
 import * as cookieParser from 'cookie-parser';
 import signature from 'cookie-signature';
-import { SessionData } from 'express-session';
+import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
@@ -256,6 +256,15 @@ export class WebsocketGateway
     this.logger.debug(`Number of connected clients: ${sockets?.size}`);
 
     this.eventEmitter.emit(`hook:websocket:connection`, client);
+  }
+
+  @OnEvent('hook:user:logout')
+  disconnectSockets({ id }: ExpressSession) {
+    for (const [, socket] of this.io.sockets.sockets) {
+      if (socket.data['sessionID'] === id) {
+        socket.disconnect(true);
+      }
+    }
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
