@@ -82,7 +82,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
         return;
       }
 
-      subscribersRef.current[payload.event]?.forEach((callback) =>
+      subscribersRef.current[payload.event].forEach((callback) =>
         callback(data),
       );
     };
@@ -100,18 +100,18 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     callback,
   ) => {
     subscribersRef.current[event] ??= [];
-    subscribersRef.current[event]?.push(callback);
+    subscribersRef.current[event].push(callback);
 
     return () => {
-      const index = subscribersRef.current[event]?.indexOf(callback) ?? -1;
+      const index = subscribersRef.current[event].indexOf(callback) ?? -1;
 
       if (index !== -1) {
-        subscribersRef.current[event]?.splice(index, 1);
+        subscribersRef.current[event].splice(index, 1);
       }
     };
   };
   const postMessage: IBroadcastChannelContext["postMessage"] = (payload) => {
-    channelRef.current?.postMessage({
+    channelRef.current.postMessage({
       tabId: tabUuid,
       payload,
     });
