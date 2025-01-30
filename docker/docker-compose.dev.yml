@@ -19,7 +19,6 @@ services:
       - 27017:27017
 
   mongo-express:
-    container_name: mongoUi
     image: mongo-express:1-20
     restart: always
     ports:
@@ -32,7 +31,6 @@ services:
       ME_CONFIG_MONGODB_URL: ${MONGO_URI}
 
   hexabot-frontend:
-    container_name: frontend
     build:
       context: ../
       dockerfile: ./frontend/Dockerfile

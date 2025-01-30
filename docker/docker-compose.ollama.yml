@@ -3,7 +3,6 @@ version: "3.9"
 services:
   ollama:
     image: ollama/ollama
-    container_name: ollama
     volumes:
       - ollama:/root/.ollama
     # deploy:

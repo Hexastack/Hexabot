@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   api:
-    container_name: api
     image: hexastack/hexabot-api:latest
     env_file: .env
     ports:
@@ -23,7 +22,6 @@ services:
       start_period: 10s
 
   hexabot-frontend:
-    container_name: frontend
     image: hexastack/hexabot-ui:latest
     env_file: .env
     ports:
@@ -35,7 +33,6 @@ services:
         condition: service_healthy
 
   mongo:
-    container_name: mongo
     image: mongo:7.0
     restart: always
     environment:

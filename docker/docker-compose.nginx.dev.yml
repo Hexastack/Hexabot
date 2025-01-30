@@ -1,8 +1,7 @@
 version: "3.8"
 
 services:
-    nginx:
-      container_name: nginx
-      volumes:
-        - ./nginx/unsecure/:/etc/nginx/templates/
-        - /etc/localtime:/etc/localtime:ro
+  nginx:
+    volumes:
+      - ./nginx/unsecure/:/etc/nginx/templates/
+      - /etc/localtime:/etc/localtime:ro
