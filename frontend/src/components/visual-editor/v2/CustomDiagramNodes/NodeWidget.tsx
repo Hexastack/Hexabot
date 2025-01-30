@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import BrokenImageOutlinedIcon from "@mui/icons-material/BrokenImageOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
@@ -76,7 +77,7 @@ class NodeAbstractWidget extends React.Component<
           >
             <IconContainer
               style={{
-                borderWidth: "3px",
+                borderWidth: "1px",
                 borderColor: this.props.color,
                 borderStyle: "solid",
               }}
@@ -117,7 +118,7 @@ class NodeAbstractWidget extends React.Component<
               >
                 <IconContainer
                   style={{
-                    borderWidth: "3px",
+                    borderWidth: "1px",
                     borderColor: this.props.color,
                     borderStyle: "solid",
                   }}
@@ -263,12 +264,12 @@ class NodeWidget extends React.Component<
           this.props.node.isSelected() ? "selected" : "",
         )}
         style={{
-          border: `6px solid ${this.config.color}`,
+          border: `1px solid ${this.config.color}`,
         }}
       >
         {this.props.node.starts_conversation ? (
           <div className="start-point-container">
-            <div className="start-point" />
+            <PlayArrowRoundedIcon className="start-point" />
           </div>
         ) : null}
         <div

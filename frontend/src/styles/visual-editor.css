@@ -18,20 +18,14 @@
 .diagram-container {
   width: 100%;
   height: 100%;
-  background: #e8eff2;
-  background-image: linear-gradient(to right, #fff9 1px, transparent 1px),
-    linear-gradient(to bottom, #fff9 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-position: -1px -1px;
-  background-attachment: fixed;
   z-index: 2;
 }
 
 .start-point-container {
   top: -11px;
   left: -11px;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   transform: scale(140%);
   border: 1px solid #fff;
   position: absolute;
@@ -40,12 +34,12 @@
 }
 
 .start-point {
-  margin: 5px 7px;
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 9px solid #fff;
+  color: #FFF;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
 }
 
 .node {
@@ -58,7 +52,7 @@
   z-index: -1;
 }
 .node:has(.selected) {
-  outline: 6px solid #1dc7fc;
+  outline: 2px solid #1dc7fc;
   z-index: 0;
   cursor: grab;
   transform: scale(1.02);
@@ -76,7 +70,8 @@
   min-height: 130px;
   background-color: #fff;
   padding: 0px;
-  border-radius: 17.5px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #c4c4c4;
 }
 
 .custom-node-header {
@@ -116,7 +111,7 @@
   justify-content: flex-start;
   align-items: center;
   gap: 15px;
-  padding: 20px 24px 24px;
+  padding: 16px 28px;
   position: relative;
 }
 
@@ -127,7 +122,7 @@
   justify-items: flex-start;
   align-items: center;
   gap: 8px;
-  border-radius: 10px 10px 0 0px;
+  border-radius: 12px 12px 0 0;
   width: auto;
   margin-top: -1px;
   margin-left: -1px;
@@ -186,6 +181,9 @@
 .circle-porter {
   top: 50%;
   margin-top: 5px;
+  border-radius: 100%;
+  box-shadow: 0 0 8px #0003;
+  transition: all .4s ease 0s;
 }
 .circle-out-porters {
   position: absolute;
@@ -196,9 +194,20 @@
 .circle-porter-in {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) scale(.75);
   left: -12px;
 }
 .circle-porter-out {
-  right: -30px;
+  transform: scale(.75);
+  right: -12px;
+}
+
+.circle-porter-out:hover {
+  cursor: grab;
+  transform: scale(1.1);
+}
+
+.circle-porter-in:hover {
+  cursor: grab;
+  transform: translateY(-50%) scale(1.1);
 }
