@@ -15,20 +15,13 @@ import {
   useRef,
 } from "react";
 
-import { generateId } from "../utils/generateId";
-
 export enum EBCEvent {
   LOGOUT = "logout",
 }
 
-type BroadcastChannelPayload = {
+type BroadcastChannelMessage = {
   event: `${EBCEvent}`;
   data?: string | number | boolean | Record<string, unknown> | undefined | null;
-};
-
-type BroadcastChannelData = {
-  tabId: string;
-  payload: BroadcastChannelPayload;
 };
 
 interface IBroadcastChannelProps {
@@ -39,23 +32,10 @@ interface IBroadcastChannelProps {
 interface IBroadcastChannelContext {
   subscribe: (
     event: `${EBCEvent}`,
-    callback: (message: BroadcastChannelData) => void,
+    callback: (message: BroadcastChannelMessage) => void,
   ) => void;
-  postMessage: (payload: BroadcastChannelPayload) => void;
+  postMessage: (message: BroadcastChannelMessage) => void;
 }
-
-const getOrCreateTabId = () => {
-  let storedTabId = sessionStorage.getItem("tab_uuid");
-
-  if (storedTabId) {
-    return storedTabId;
-  }
-
-  storedTabId = generateId();
-  sessionStorage.setItem("tab_uuid", storedTabId);
-
-  return storedTabId;
-};
 
 export const BroadcastChannelContext = createContext<
   IBroadcastChannelContext | undefined
@@ -74,19 +54,10 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       Array<Parameters<IBroadcastChannelContext["subscribe"]>["1"]>
     >
   >({});
-  const tabUuid = getOrCreateTabId();
 
   useEffect(() => {
-    const handleMessage = ({ data }: MessageEvent<BroadcastChannelData>) => {
-      const { tabId, payload } = data;
-
-      if (tabId === tabUuid) {
-        return;
-      }
-
-      subscribersRef.current[payload.event].forEach((callback) =>
-        callback(data),
-      );
+    const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
+      subscribersRef.current[data.event].forEach((callback) => callback(data));
     };
 
     channelRef.current.addEventListener("message", handleMessage);
@@ -96,7 +67,6 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       // eslint-disable-next-line react-hooks/exhaustive-deps
       channelRef.current.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const subscribe: IBroadcastChannelContext["subscribe"] = (
@@ -114,11 +84,8 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       }
     };
   };
-  const postMessage: IBroadcastChannelContext["postMessage"] = (payload) => {
-    channelRef.current.postMessage({
-      tabId: tabUuid,
-      payload,
-    });
+  const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
+    channelRef.current.postMessage(message);
   };
 
   return (
