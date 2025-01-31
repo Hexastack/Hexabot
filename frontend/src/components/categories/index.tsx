@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,10 +10,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
 import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useState } from "react";
+import { GridColDef } from "@mui/x-data-grid";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog2";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -21,10 +20,8 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { getDisplayDialogs, useDialog } from "@/hooks/useDialog2";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -54,27 +51,6 @@ export const Categories = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteCategory } = useDelete(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      setSelectedCategories([]);
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteCategories } = useDeleteMany(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      setSelectedCategories([]);
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const actionColumns = useActionColumns<ICategory>(
     EntityType.CATEGORY,
     [
@@ -125,9 +101,6 @@ export const Categories = () => {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedCategories(selection as string[]);
-  };
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -135,16 +108,13 @@ export const Categories = () => {
       <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={async () => {
-          if (selectedCategories.length > 0) {
-            deleteCategories(selectedCategories), setSelectedCategories([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            {
-              deleteCategory(deleteDialogCtl.data);
-              deleteDialogCtl.closeDialog();
-            }
-          }
+        entity={EntityType.CATEGORY}
+        onError={(error) => {
+          toast.error(error.message || t("message.internal_server_error"));
+        }}
+        onSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
       <Grid>
@@ -172,18 +142,17 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
-            {selectedCategories.length > 0 && (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteDialogCtl.openDialog(undefined)}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            )}
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteDialogCtl.openDialog()}
+                disabled={!deleteDialogCtl.data?.length || deleteDialogCtl.open}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
           </Grid>
         </PageHeader>
       </Grid>
@@ -194,7 +163,10 @@ export const Categories = () => {
               columns={columns}
               {...dataGridProps}
               checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
+              rowSelectionModel={deleteDialogCtl.data || []}
+              onRowSelectionModelChange={(rowSelectionModel) =>
+                deleteDialogCtl.setData?.(rowSelectionModel as string[])
+              }
             />
           </Grid>
         </Paper>
