@@ -19,13 +19,9 @@ export enum EBCEvent {
   LOGOUT = "logout",
 }
 
-type BroadcastChannelPayload = {
+type BroadcastChannelMessage = {
   event: `${EBCEvent}`;
   data?: string | number | boolean | Record<string, unknown> | undefined | null;
-};
-
-type BroadcastChannelData = {
-  payload: BroadcastChannelPayload;
 };
 
 interface IBroadcastChannelProps {
@@ -36,9 +32,9 @@ interface IBroadcastChannelProps {
 interface IBroadcastChannelContext {
   subscribe: (
     event: `${EBCEvent}`,
-    callback: (message: BroadcastChannelData) => void,
+    callback: (message: BroadcastChannelMessage) => void,
   ) => void;
-  postMessage: (payload: BroadcastChannelPayload) => void;
+  postMessage: (message: BroadcastChannelMessage) => void;
 }
 
 export const BroadcastChannelContext = createContext<
@@ -60,12 +56,8 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   >({});
 
   useEffect(() => {
-    const handleMessage = ({ data }: MessageEvent<BroadcastChannelData>) => {
-      const { payload } = data;
-
-      subscribersRef.current[payload.event].forEach((callback) =>
-        callback(data),
-      );
+    const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
+      subscribersRef.current[data.event].forEach((callback) => callback(data));
     };
 
     channelRef.current.addEventListener("message", handleMessage);
@@ -92,10 +84,8 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       }
     };
   };
-  const postMessage: IBroadcastChannelContext["postMessage"] = (payload) => {
-    channelRef.current.postMessage({
-      payload,
-    });
+  const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
+    channelRef.current.postMessage(message);
   };
 
   return (
