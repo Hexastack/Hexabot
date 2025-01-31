@@ -42,13 +42,13 @@ This will copy the `.env.example` file to `.env` in the `./docker` directory if 
 3. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
 ```
-$ hexabot dev --services nlu,widget
+$ hexabot dev
 ```
 
 **Note:**&#x20;
 
-* The first time you run the app, Docker will take some time to build all the required Docker images cache the layers.
-* The "**--services**" allows you to add additional services coma seperated. For each service, there needs to be a Docker compose file under the "**docker/**" directory. For instance, if you do "**--services nginx**" you will need to have a docker compose file for that service "**docker/docker-compose.nginx.yml**"
+* The first time you run the app, Docker will take some time to build all the required Docker images and cache the layers.
+* The "**--services**" allows you to add additional services comma separated. For each service, there needs to be a Docker compose file under the "**docker/**" directory. For instance, if you do "**--services nginx**" you will need to have a docker compose file for that service "**docker/docker-compose.nginx.yml**"
 
 ### Usage
 
