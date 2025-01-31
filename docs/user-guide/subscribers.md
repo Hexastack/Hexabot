@@ -1,3 +1,7 @@
+---
+icon: users-between-lines
+---
+
 # Subscribers
 
 In Hexabot, we define a subscriber as then end-user who will ultimately interact with the chatbot. The Subscriber Management features allow you to effectively track, organize, and interact with the users who engage with your chatbot. This guide will walk you through the process of managing your subscriber base, segmenting them using labels, and leveraging subscriber data for improved communication and targeted interactions.

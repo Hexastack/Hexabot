@@ -1,3 +1,7 @@
+---
+icon: gear
+---
+
 # Manage Settings
 
 This guide will walk you through the various settings available within the Hexabot platform, empowering you to tailor your chatbot's behavior, appearance, and integrations to suit your specific needs and goals.

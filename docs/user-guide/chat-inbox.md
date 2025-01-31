@@ -1,3 +1,7 @@
+---
+icon: inbox-full
+---
+
 # Chat Inbox
 
 The Chat Inbox in Hexabot is your central hub for monitoring all conversations between your chatbot and users. This comprehensive view allows you to track interactions, review past conversations, and intervene in real-time when necessary.

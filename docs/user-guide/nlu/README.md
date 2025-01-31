@@ -1,3 +1,7 @@
+---
+icon: brain-circuit
+---
+
 # NLU
 
 ### What is NLU?

@@ -1,3 +1,7 @@
+---
+icon: books
+---
+
 # Knowledge Base
 
 Hexabot's built-in Knowledge Base is where you store and manage all the information your chatbot uses to interact with users. Think of it as  a centralized knowledge base that keeps all your chatbot's responses accurate, consistent, and up-to-date.

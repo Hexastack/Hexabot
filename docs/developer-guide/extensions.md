@@ -1,3 +1,7 @@
+---
+icon: box-open-full
+---
+
 # Extensions
 
 Hexabot supports **extensions**, which are modular pieces of code that add new capabilities, features, or integrations to your Hexabot instance. Extensions allow you to customize and enhance your Conversational AI by adding functionality beyond the default setup. They can be categorized into three main types: Channels, Plugins, and Helpers.

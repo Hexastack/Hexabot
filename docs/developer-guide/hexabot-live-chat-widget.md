@@ -1,5 +1,6 @@
 ---
 hidden: true
+icon: message
 ---
 
 # Hexabot Live Chat Widget

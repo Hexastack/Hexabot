@@ -1,3 +1,7 @@
+---
+icon: language
+---
+
 # Localization
 
 Hexabot's chatbot builder allows you to create multilingual chatbots by managing languages within the platform. This feature enables you to define the languages your chatbot will support and handle translations for blocks, messages, quick replies, buttons, and more.

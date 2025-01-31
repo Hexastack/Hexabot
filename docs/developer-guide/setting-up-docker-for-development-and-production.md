@@ -1,3 +1,7 @@
+---
+icon: docker
+---
+
 # Setting Up Docker for Development and Production
 
 Hexabot uses Docker for development purposes as well as streamline deployment, running essential services like the API, frontend, and MongoDB in containers. The provided Docker Compose setup ensures quick and consistent startup, eliminating manual configuration complexities.

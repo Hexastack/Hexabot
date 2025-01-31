@@ -1,5 +1,6 @@
 ---
 hidden: true
+icon: server
 ---
 
 # Hexabot API

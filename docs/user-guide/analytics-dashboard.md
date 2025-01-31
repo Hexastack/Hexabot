@@ -1,3 +1,7 @@
+---
+icon: chart-line
+---
+
 # Analytics Dashboard
 
 {% hint style="info" %}

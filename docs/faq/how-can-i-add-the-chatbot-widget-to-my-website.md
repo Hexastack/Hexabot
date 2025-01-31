@@ -1,3 +1,7 @@
+---
+icon: comment-dots
+---
+
 # How can I add the Chatbot Widget to my Website?
 
 The [Hexabot](https://hexabot.ai/) Live Chat Widget is a React-based embeddable widget that allows you to integrate real-time chat functionality into your website. This guide will walk you through how to add the widget to your website, customize it to fit your needs, and manage its settings.

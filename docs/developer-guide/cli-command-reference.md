@@ -1,3 +1,7 @@
+---
+icon: rectangle-terminal
+---
+
 # CLI Command Reference
 
 Hexabot CLI is a powerful command-line tool to help manage your Hexabot chatbot instance. With it, you can create new projects, initialize environments, start services in various modes, run database migrations, and more. The CLI aims to make managing your chatbot seamless and intuitive.

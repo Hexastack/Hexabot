@@ -1,4 +1,8 @@
-# Manage User and Roles
+---
+icon: users-gear
+---
+
+# Users and Roles
 
 Hexabot offers robust user and role management features to streamline collaboration and ensure security within your chatbot projects. Whether you're working with a team of developers, content creators, or marketing professionals, Hexabot makes it easy to grant the right access levels to the right people.
 

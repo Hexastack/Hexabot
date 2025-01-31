@@ -1,5 +1,6 @@
 ---
 hidden: true
+icon: browser
 ---
 
 # Hexabot UI Admin Panel

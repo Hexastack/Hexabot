@@ -1,5 +1,6 @@
 ---
 hidden: true
+icon: brain-circuit
 ---
 
 # Hexabot NLU Engine

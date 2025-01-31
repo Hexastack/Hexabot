@@ -1,3 +1,7 @@
+---
+icon: arrow-up-from-square
+---
+
 # How can I deploy my Hexabot using NGINX ?
 
 ### Introduction

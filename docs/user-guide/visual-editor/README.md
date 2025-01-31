@@ -1,3 +1,7 @@
+---
+icon: table-columns
+---
+
 # Visual Editor
 
 <figure><img src="../../.gitbook/assets/mediamodifier_image.png" alt=""><figcaption></figcaption></figure>

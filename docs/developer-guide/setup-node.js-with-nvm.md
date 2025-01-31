@@ -1,3 +1,7 @@
+---
+icon: node
+---
+
 # Setup Node.js with NVM
 
 Node.js is a pre-requisite to run both the Hexabot CLI and a Hexabot project since the API is built on NestJS. Using [NVM](https://github.com/nvm-sh/nvm) (Node Version Manager) simplifies managing the required Node.js version. When creating a new Hexabot project, the structure includes source folders like **extensions** to add custom plugins, helpers and channels, making Node.js essential tool for smooth development and customization.

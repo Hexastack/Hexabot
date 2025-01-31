@@ -1,3 +1,7 @@
+---
+icon: brackets-curly
+---
+
 # Context Variables
 
 <figure><img src="../.gitbook/assets/image (21).png" alt=""><figcaption><p>Manage Context Variables</p></figcaption></figure>

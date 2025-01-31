@@ -1,3 +1,7 @@
+---
+icon: diagram-project
+---
+
 # Flows
 
 Hexabot's Flows feature allows you to organize your chatbot's conversation flows into different sections, creating dedicated tabs within the Visual Editor. This makes it easier to manage complex chatbots with multiple topics or functionalities.

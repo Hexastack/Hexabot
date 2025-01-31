@@ -1,3 +1,7 @@
+---
+icon: envelope
+---
+
 # SMTP Configuration and Emails
 
 {% hint style="info" %}
@@ -11,7 +15,7 @@ You have two options for handling email functionality during development:
 1. **Without SMTP**:\
    You can run the app without using SMTP by setting the environment variable `EMAIL_SMTP_ENABLED=false`. Simply run `hexabot start` and invite a new user. The app will behave as though it is sending emails, but nothing will happen in the background.
 2. **Using smtp4dev for Testing**:\
-   We use `smtp4dev` for email testing in the development environment. To use this service, set the `EMAIL_SMTP_ENABLED` to `true` in the `.env` file and restart the app. Then, invite a new user or reset a password and check whether emails are received in the smtp4dev UI interface at [http://localhost:9002/](http://localhost:9002/). This also applies to other scenarios like the confirmation email after signup and the password reset email.
+   We use `smtp4dev` for email testing in the development environment. To use this service, set the `EMAIL_SMTP_ENABLED` to `true` in the `.env` file and restart the app using the command `hexabot start --services smtp4dev`. Then, invite a new user or reset a password and check whether emails are received in the smtp4dev UI interface at [http://localhost:9002/](http://localhost:9002/). This also applies to other scenarios like the confirmation email after signup and the password reset email.
 
 **SMTP Config (Local Dev)**
 

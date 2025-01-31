@@ -1,3 +1,7 @@
+---
+icon: handshake-angle
+---
+
 # Contributers Installation Guide
 
 ## Prerequisites
