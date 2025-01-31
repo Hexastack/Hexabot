@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,6 +7,10 @@
  */
 
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+
+import { LoggerService } from '@/logger/logger.service';
+import { SettingService } from '@/setting/services/setting.service';
+import { ExtensionService } from '@/utils/generics/extension-service';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginInstance } from './map-types';
@@ -26,7 +30,9 @@ import { PluginName, PluginType } from './types';
  * @typeparam T - The plugin type, which extends from `BasePlugin`. By default, it uses `BaseBlockPlugin`.
  */
 @Injectable()
-export class PluginService<T extends BasePlugin = BasePlugin> {
+export class PluginService<
+  T extends BasePlugin = BasePlugin,
+> extends ExtensionService<T> {
   /**
    * The registry of plugins, stored as a map where the first key is the type of plugin,
    * the second key is the name of the plugin and the value is a plugin of type `T`.
@@ -35,7 +41,21 @@ export class PluginService<T extends BasePlugin = BasePlugin> {
     Object.keys(PluginType).map((t) => [t as PluginType, new Map()]),
   );
 
-  constructor() {}
+  constructor(
+    protected readonly settingService: SettingService,
+    protected readonly logger: LoggerService,
+  ) {
+    super(settingService, logger);
+  }
+
+  /**
+   * Retrieves the type of extension this service manages.
+   *
+   * @returns The type of extension this service manages.
+   */
+  public getExtensionType(): 'plugin' {
+    return 'plugin';
+  }
 
   /**
    * Registers a plugin with a given name.
