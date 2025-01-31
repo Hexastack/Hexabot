@@ -13,7 +13,6 @@ import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -24,7 +23,8 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -36,13 +36,11 @@ import { getDateTimeFormatter } from "@/utils/date";
 
 import { ICategory } from "../../types/category.types";
 
-import { CategoryDialog } from "./CategoryDialog";
+import { CategoryFormDialog } from "./CategoryFormDialog";
 
 export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<ICategory>(false);
-  const editDialogCtl = useDialog<ICategory>(false);
   const deleteDialogCtl = useDialog<string>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ICategory>({
@@ -80,7 +78,7 @@ export const Categories = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(CategoryFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -128,10 +126,11 @@ export const Categories = () => {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedCategories(selection as string[]);
   };
+  const dialogs = useDialogs();
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <CategoryDialog {...getDisplayDialogs(addDialogCtl)} />
+      {/* <CategoryDialog {...getDisplayDialogs(addDialogCtl)} />
       <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
@@ -146,7 +145,7 @@ export const Categories = () => {
             }
           }
         }}
-      />
+      /> */}
       <Grid>
         <PageHeader icon={FolderIcon} title={t("title.categories")}>
           <Grid
@@ -166,7 +165,7 @@ export const Categories = () => {
                   startIcon={<AddIcon />}
                   variant="contained"
                   sx={{ float: "right" }}
-                  onClick={() => addDialogCtl.openDialog()}
+                  onClick={() => dialogs.open(CategoryFormDialog, null)}
                 >
                   {t("button.add")}
                 </Button>
