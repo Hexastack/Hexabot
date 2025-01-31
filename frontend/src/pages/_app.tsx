@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,6 +21,7 @@ import { ApiClientProvider } from "@/contexts/apiClient.context";
 import { AuthProvider } from "@/contexts/auth.context";
 import BroadcastChannelProvider from "@/contexts/broadcast-channel.context";
 import { ConfigProvider } from "@/contexts/config.context";
+import { DialogsProvider } from "@/contexts/dialogs.context";
 import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";
 import { ToastProvider } from "@/hooks/useToast";
@@ -88,9 +89,11 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
                       <AuthProvider>
                         <PermissionProvider>
                           <SettingsProvider>
-                            <SocketProvider>
-                              {getLayout(<Component {...pageProps} />)}
-                            </SocketProvider>
+                            <DialogsProvider>
+                              <SocketProvider>
+                                {getLayout(<Component {...pageProps} />)}
+                              </SocketProvider>
+                            </DialogsProvider>
                           </SettingsProvider>
                         </PermissionProvider>
                       </AuthProvider>
