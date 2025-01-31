@@ -71,7 +71,7 @@
 * [Hexabot API](developer-guide/hexabot-api.md)
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
 * [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
-* [Contributers Installation Guide](developer-guide/contributers-installation-guide.md)
+* [Contributors Installation Guide](developer-guide/contributors-installation-guide.md)
 
 ## Key Concepts
 
