@@ -6,57 +6,38 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { ExtensionService } from '@/utils/generics/extension-service';
 
 import BaseHelper from './lib/base-helper';
 import { HelperName, HelperRegistry, HelperType, TypeOfHelper } from './types';
 
 @Injectable()
-export class HelperService implements OnApplicationBootstrap {
+export class HelperService extends ExtensionService<BaseHelper> {
   private registry: HelperRegistry = new Map();
 
   constructor(
-    private readonly settingService: SettingService,
-    private readonly logger: LoggerService,
+    protected readonly settingService: SettingService,
+    protected readonly logger: LoggerService,
   ) {
+    super(settingService, logger);
+
     // Init empty registry
     Object.values(HelperType).forEach((type: HelperType) => {
       this.registry.set(type, new Map());
     });
   }
 
-  async onApplicationBootstrap(): Promise<void> {
-    await this.cleanup();
-  }
-
   /**
-   * Cleanups the unregisterd helpers from settings.
+   * Retrieves the type of extension this service manages.
    *
+   * @returns The type of extension this service manages.
    */
-  async cleanup(): Promise<void> {
-    const activeHelpers = this.getAll().map((handler) =>
-      handler.getNamespace(),
-    );
-
-    const helperSettings = (await this.settingService.getAllGroups()).filter(
-      (group) => group.split('_').pop() === 'helper',
-    ) as HyphenToUnderscore<HelperName>[];
-
-    const orphanSettings = helperSettings.filter(
-      (group) => !activeHelpers.includes(group),
-    );
-
-    for (const group of orphanSettings) {
-      this.logger.log(`Deleting orphaned settings for ${group}...`);
-      await this.settingService.deleteGroup(group);
-    }
+  protected getExtensionType(): 'helper' {
+    return 'helper';
   }
 
   /**

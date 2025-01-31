@@ -20,6 +20,7 @@ import {
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
+import { ExtensionName } from '@/utils/types/extension';
 
 import { SettingCreateDto } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
@@ -110,18 +111,25 @@ export class SettingService extends BaseService<Setting> {
   }
 
   /**
-   * Retrieves a list of all setting groups.
+   *
+   * Retrieves a list of all setting groups for a specific extension type.
+   *
+   * @param extensionType - The extension type to filter by.
    *
    * @returns A promise that resolves to a list of setting groups.
    */
-  async getAllGroups(): Promise<string[]> {
-    const settings = await this.findAll();
+  async getExtensionSettings(
+    extensionType: 'channel' | 'plugin' | 'helper',
+  ): Promise<HyphenToUnderscore<ExtensionName>[]> {
+    const settings = await this.find({
+      group: { $regex: `_${extensionType}$` },
+    });
     const groups = settings.reduce<string[]>((acc, setting) => {
       if (!acc.includes(setting.group)) {
         acc.push(setting.group);
       }
       return acc;
-    }, []);
+    }, []) as HyphenToUnderscore<ExtensionName>[];
     return groups;
   }
 

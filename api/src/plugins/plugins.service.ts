@@ -1,19 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { ExtensionService } from '@/utils/generics/extension-service';
 
 import { BasePlugin } from './base-plugin.service';
 import { PluginInstance } from './map-types';
@@ -33,9 +30,9 @@ import { PluginName, PluginType } from './types';
  * @typeparam T - The plugin type, which extends from `BasePlugin`. By default, it uses `BaseBlockPlugin`.
  */
 @Injectable()
-export class PluginService<T extends BasePlugin = BasePlugin>
-  implements OnApplicationBootstrap
-{
+export class PluginService<
+  T extends BasePlugin = BasePlugin,
+> extends ExtensionService<T> {
   /**
    * The registry of plugins, stored as a map where the first key is the type of plugin,
    * the second key is the name of the plugin and the value is a plugin of type `T`.
@@ -45,35 +42,19 @@ export class PluginService<T extends BasePlugin = BasePlugin>
   );
 
   constructor(
-    private readonly settingService: SettingService,
-    private readonly logger: LoggerService,
-  ) {}
-
-  async onApplicationBootstrap(): Promise<void> {
-    await this.cleanup();
+    protected readonly settingService: SettingService,
+    protected readonly logger: LoggerService,
+  ) {
+    super(settingService, logger);
   }
 
   /**
-   * Cleanups the unregisterd plugins from settings.
+   * Retrieves the type of extension this service manages.
    *
+   * @returns The type of extension this service manages.
    */
-  async cleanup(): Promise<void> {
-    const activePlugins = this.getAll().map((handler) =>
-      handler.getNamespace(),
-    );
-
-    const pluginSettings = (await this.settingService.getAllGroups()).filter(
-      (group) => group.split('_').pop() === 'plugin',
-    ) as HyphenToUnderscore<PluginName>[];
-
-    const orphanSettings = pluginSettings.filter(
-      (group) => !activePlugins.includes(group),
-    );
-
-    for (const group of orphanSettings) {
-      this.logger.log(`Deleting orphaned settings for ${group}...`);
-      await this.settingService.deleteGroup(group);
-    }
+  public getExtensionType(): 'plugin' {
+    return 'plugin';
   }
 
   /**

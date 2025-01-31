@@ -6,11 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  OnApplicationBootstrap,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { SubscriberService } from '@/chat/services/subscriber.service';
@@ -19,6 +15,7 @@ import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { getSessionStore } from '@/utils/constants/session-store';
+import { ExtensionService } from '@/utils/generics/extension-service';
 import {
   SocketGet,
   SocketPost,
@@ -32,40 +29,26 @@ import ChannelHandler from './lib/Handler';
 import { ChannelName } from './types';
 
 @Injectable()
-export class ChannelService implements OnApplicationBootstrap {
+export class ChannelService extends ExtensionService<
+  ChannelHandler<ChannelName>
+> {
   private registry: Map<string, ChannelHandler<ChannelName>> = new Map();
 
   constructor(
-    private readonly logger: LoggerService,
-    private readonly settingService: SettingService,
+    protected readonly logger: LoggerService,
+    protected readonly settingService: SettingService,
     private readonly subscriberService: SubscriberService,
-  ) {}
-
-  async onApplicationBootstrap(): Promise<void> {
-    await this.cleanup();
+  ) {
+    super(settingService, logger);
   }
 
   /**
-   * Cleanups the unregisterd channels from settings.
+   * Retrieves the type of extension this service manages.
    *
+   * @returns The type of extension this service manages.
    */
-  async cleanup(): Promise<void> {
-    const activePlugins = this.getAll().map((handler) =>
-      handler.getNamespace(),
-    );
-
-    const channelSettings = (await this.settingService.getAllGroups()).filter(
-      (group) => group.split('_').pop() === 'channel',
-    ) as HyphenToUnderscore<ChannelName>[];
-
-    const orphanSettings = channelSettings.filter(
-      (group) => !activePlugins.includes(group),
-    );
-
-    for (const group of orphanSettings) {
-      this.logger.log(`Deleting orphaned settings for ${group}...`);
-      await this.settingService.deleteGroup(group);
-    }
+  public getExtensionType(): 'channel' {
+    return 'channel';
   }
 
   /**
