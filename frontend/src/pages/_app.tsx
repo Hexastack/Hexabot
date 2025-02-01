@@ -86,17 +86,19 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
                   <QueryClientProvider client={queryClient}>
                     <CssBaseline />
                     <ApiClientProvider>
-                      <BroadcastChannelProvider channelName="main-channel">
-                        <AuthProvider>
-                          <PermissionProvider>
-                            <SettingsProvider>
-                              <SocketProvider>
-                                {getLayout(<Component {...pageProps} />)}
-                              </SocketProvider>
-                            </SettingsProvider>
-                          </PermissionProvider>
-                        </AuthProvider>
-                      </BroadcastChannelProvider>
+                      <DialogsProvider>
+                        <BroadcastChannelProvider channelName="main-channel">
+                          <AuthProvider>
+                            <PermissionProvider>
+                              <SettingsProvider>
+                                <SocketProvider>
+                                  {getLayout(<Component {...pageProps} />)}
+                                </SocketProvider>
+                              </SettingsProvider>
+                            </PermissionProvider>
+                          </AuthProvider>
+                        </BroadcastChannelProvider>
+                      </DialogsProvider>
                     </ApiClientProvider>
                     <ReactQueryDevtools initialIsOpen={false} />
                   </QueryClientProvider>
