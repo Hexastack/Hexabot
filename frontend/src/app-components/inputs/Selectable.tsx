@@ -208,23 +208,20 @@ const Selectable: FC<SelectableProps> = ({
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder={placeholder}
+        endAdornment={
+          true ? (
+            <CircularProgress
+              size={20} 
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "20%",
+                transform: "translateY(-20%)",
+              }} 
+            />
+          ) : null
+        }
       />
-      {
-        loading && (
-          <CircularProgress
-            size={20}
-            thickness={5}
-            style={
-              {
-                position: "absolute", 
-                top: "30%", 
-                right: "5px", 
-                transform: "translateY(-30%)" 
-              }
-            }
-          />
-        )
-      }
     </SelectableBox>
   );
 };
