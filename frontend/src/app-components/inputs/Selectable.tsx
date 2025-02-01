@@ -209,7 +209,7 @@ const Selectable: FC<SelectableProps> = ({
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder={placeholder}
         endAdornment={
-          true ? (
+          loading ? (
             <CircularProgress
               size={20} 
               style={{
