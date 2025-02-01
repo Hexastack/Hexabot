@@ -6,104 +6,35 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useContext, useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 
+import { ConfirmDialog } from "@/app-components/dialogs";
+import { DialogsContext } from "@/contexts/dialogs.context";
 import {
   CloseDialog,
-  DialogsContext,
+  OpenConfirmDialog,
   OpenDialog,
-} from "@/contexts/dialogs.context";
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
+} from "@/types/common/dialogs.types";
 
 export interface DialogHook {
-  // alert: OpenAlertDialog;
-  // confirm: OpenConfirmDialog;
-  // prompt: OpenPromptDialog;
   open: OpenDialog;
   close: CloseDialog;
+  // alert: OpenAlertDialog;
+  // prompt: OpenPromptDialog;
+  confirm: OpenConfirmDialog;
 }
 
-export function useDialogs(): DialogHook {
-  const { open, close } = useContext(DialogsContext);
+export const useDialogs = (): DialogHook => {
+  const context = useContext(DialogsContext);
+
+  if (!context) {
+    throw new Error("useDialogs must be used within a DialogsProvider");
+  }
+
+  const { open, close } = context;
   // const alert = React.useCallback<OpenAlertDialog>(
   //   async (msg, { onClose, ...options } = {}) =>
   //     open(AlertDialog, { ...options, msg }, { onClose }),
-  //   [open],
-  // );
-  // const confirm = React.useCallback<OpenConfirmDialog>(
-  //   async (msg, { onClose, ...options } = {}) =>
-  //     open(ConfirmDialog, { ...options, msg }, { onClose }),
   //   [open],
   // );
   // const prompt = React.useCallback<OpenPromptDialog>(
@@ -111,16 +42,20 @@ export function useDialogs(): DialogHook {
   //     open(PromptDialog, { ...options, msg }, { onClose }),
   //   [open],
   // );
+  const confirm = React.useCallback<OpenConfirmDialog>(
+    async (msg, { onClose, ...options } = {}) =>
+      open(ConfirmDialog, { ...options, msg }, { onClose }),
+    [open],
+  );
 
   return useMemo(
     () => ({
-      // alert,
-      // confirm,
-      // prompt,
       open,
       close,
+      // alert,
+      // prompt,
+      confirm,
     }),
-    // [alert, close, confirm, open, prompt],
-    [close, open],
+    [close, open, confirm],
   );
-}
+};

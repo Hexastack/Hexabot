@@ -6,106 +6,34 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import * as React from "react";
+import {
+  createContext,
+  FC,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-export interface OpenDialogOptions<R> {
-  /**
-   * A function that is called before closing the dialog closes. The dialog
-   * stays open as long as the returned promise is not resolved. Use this if
-   * you want to perform an async action on close and show a loading state.
-   *
-   * @param result The result that the dialog will return after closing.
-   * @returns A promise that resolves when the dialog can be closed.
-   */
-  onClose?: (result: R) => Promise<void>;
-}
+import { ConfirmDialog, ConfirmDialogProps } from "@/app-components/dialogs";
+import {
+  CloseDialog,
+  DialogComponent,
+  DialogProviderProps,
+  DialogStackEntry,
+  OpenDialog,
+  OpenDialogOptions,
+} from "@/types/common/dialogs.types";
 
-/**
- * The props that are passed to a dialog component.
- */
-export interface DialogProps<P = undefined, R = void> {
-  /**
-   * The payload that was passed when the dialog was opened.
-   */
-  payload: P;
-  /**
-   * Whether the dialog is open.
-   */
-  open: boolean;
-  /**
-   * A function to call when the dialog should be closed. If the dialog has a return
-   * value, it should be passed as an argument to this function. You should use the promise
-   * that is returned to show a loading state while the dialog is performing async actions
-   * on close.
-   * @param result The result to return from the dialog.
-   * @returns A promise that resolves when the dialog can be fully closed.
-   */
-  onClose: (result: R) => Promise<void>;
-}
-
-export type DialogComponent<P, R> = React.ComponentType<DialogProps<P, R>>;
-
-export interface OpenDialog {
-  /**
-   * Open a dialog without payload.
-   * @param Component The dialog component to open.
-   * @param options Additional options for the dialog.
-   */
-  <P extends undefined, R>(
-    Component: DialogComponent<P, R>,
-    payload?: P,
-    options?: OpenDialogOptions<R>,
-  ): Promise<R>;
-  /**
-   * Open a dialog and pass a payload.
-   * @param Component The dialog component to open.
-   * @param payload The payload to pass to the dialog.
-   * @param options Additional options for the dialog.
-   */
-  <P, R>(
-    Component: DialogComponent<P, R>,
-    payload: P,
-    options?: OpenDialogOptions<R>,
-  ): Promise<R>;
-}
-
-export interface CloseDialog {
-  /**
-   * Close a dialog and return a result.
-   * @param dialog The dialog to close. The promise returned by `open`.
-   * @param result The result to return from the dialog.
-   * @returns A promise that resolves when the dialog is fully closed.
-   */
-  <R>(dialog: Promise<R>, result: R): Promise<R>;
-}
-
-export interface DialogHook {
-  // alert: OpenAlertDialog;
-  // confirm: OpenConfirmDialog;
-  // prompt: OpenPromptDialog;
-  open: OpenDialog;
-  close: CloseDialog;
-}
-
-export const DialogsContext = React.createContext<{
-  open: OpenDialog;
-  close: CloseDialog;
-} | null>(null);
-
-interface DialogStackEntry<P, R> {
-  key: string;
-  open: boolean;
-  promise: Promise<R>;
-  Component: DialogComponent<P, R>;
-  payload: P;
-  onClose: (result: R) => Promise<void>;
-  resolve: (result: R) => void;
-}
-
-export interface DialogProviderProps {
-  children?: React.ReactNode;
-  unmountAfter?: number;
-}
+export const DialogsContext = createContext<
+  | {
+      open: OpenDialog;
+      close: CloseDialog;
+      confirm: FC<ConfirmDialogProps>;
+    }
+  | undefined
+>(undefined);
 
 /**
  * Provider for Dialog stacks. The subtree of this component can use the `useDialogs` hook to
@@ -121,10 +49,10 @@ export interface DialogProviderProps {
  */
 function DialogsProvider(props: DialogProviderProps) {
   const { children, unmountAfter = 1000 } = props;
-  const [stack, setStack] = React.useState<DialogStackEntry<any, any>[]>([]);
-  const keyPrefix = React.useId();
-  const nextId = React.useRef(0);
-  const requestDialog = React.useCallback<OpenDialog>(
+  const [stack, setStack] = useState<DialogStackEntry<any, any>[]>([]);
+  const keyPrefix = useId();
+  const nextId = useRef(0);
+  const requestDialog = useCallback<OpenDialog>(
     function open<P, R>(
       Component: DialogComponent<P, R>,
       payload: P,
@@ -160,7 +88,7 @@ function DialogsProvider(props: DialogProviderProps) {
     },
     [keyPrefix],
   );
-  const closeDialogUi = React.useCallback(
+  const closeDialogUi = useCallback(
     function closeDialogUi<R>(dialog: Promise<R>) {
       setStack((prevStack) =>
         prevStack.map((entry) =>
@@ -176,7 +104,7 @@ function DialogsProvider(props: DialogProviderProps) {
     },
     [unmountAfter],
   );
-  const closeDialog = React.useCallback(
+  const closeDialog = useCallback(
     async function closeDialog<R>(dialog: Promise<R>, result: R) {
       const entryToClose = stack.find((entry) => entry.promise === dialog);
 
@@ -192,8 +120,12 @@ function DialogsProvider(props: DialogProviderProps) {
     },
     [stack, closeDialogUi],
   );
-  const contextValue = React.useMemo(
-    () => ({ open: requestDialog, close: closeDialog }),
+  const contextValue = useMemo(
+    () => ({
+      open: requestDialog,
+      close: closeDialog,
+      confirm: ConfirmDialog,
+    }),
     [requestDialog, closeDialog],
   );
 
