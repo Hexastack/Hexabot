@@ -67,7 +67,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
       hasCount: false,
     },
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const defaultValues: INlpSampleFormAttributes = useMemo(
