@@ -6,34 +6,30 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogProps,
-} from "@mui/material";
-import { FC, ReactNode } from "react";
+import { Dialog, DialogActions, DialogContent } from "@mui/material";
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
+import { DialogTitle } from "@/app-components/dialogs";
+import { FormDialogProps } from "@/types/common/dialogs.types";
 
-export interface FormDialogProps extends DialogProps {
-  title: string;
-  children: ReactNode;
-}
+import { FormButtons } from "../buttons/FormButtons";
 
-export const FormDialog: FC<FormDialogProps> = ({
+export const FormDialog = <T,>({
   title,
   children,
-  open,
-  onClose,
+  onConfirm,
   ...rest
-}) => {
+}: FormDialogProps<T>) => {
   return (
-    <Dialog open={open} fullWidth onClose={onClose} {...rest}>
-      <DialogTitle onClose={onClose}>{title}</DialogTitle>
+    <Dialog fullWidth {...rest}>
+      <DialogTitle onClose={() => rest.onClose?.({}, "backdropClick")}>
+        {title}
+      </DialogTitle>
       <DialogContent>{children}</DialogContent>
       <DialogActions>
-        {/* <DialogButtons closeDialog={closeDialog} /> */}
+        <FormButtons<T>
+          onCancel={() => rest.onClose?.({}, "backdropClick")}
+          onConfirm={onConfirm}
+        />
       </DialogActions>
     </Dialog>
   );

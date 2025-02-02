@@ -6,7 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, useEffect } from "react";
+import {
+  BaseSyntheticEvent,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+} from "react";
 import { useForm } from "react-hook-form";
 
 import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
@@ -18,30 +23,36 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ICategory, ICategoryAttributes } from "@/types/category.types";
+import {
+  ComponentFormProps,
+  HTMLFormElementExtension,
+  HTMLFormElementExtra,
+} from "@/types/common/dialogs.types";
 
-export type CategoryFormProps = {
-  data: ICategory | null;
-};
-
-export const CategoryForm: FC<CategoryFormProps> = ({ data }) => {
+export const CategoryForm = forwardRef<
+  HTMLFormElement,
+  ComponentFormProps<ICategory>
+>(({ data, ...rest }, ref) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutateAsync: createCategory } = useCreate(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error);
+  const options = {
+    onError: (error: Error) => {
+      rest.onError?.();
+      toast.error(error || t("message.internal_server_error"));
     },
     onSuccess: () => {
+      rest.onSuccess?.();
       toast.success(t("message.success_save"));
     },
-  });
-  const { mutateAsync: updateCategory } = useUpdate(EntityType.CATEGORY, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      toast.success(t("message.success_save"));
-    },
-  });
+  };
+  const { mutateAsync: createCategory } = useCreate(
+    EntityType.CATEGORY,
+    options,
+  );
+  const { mutateAsync: updateCategory } = useUpdate(
+    EntityType.CATEGORY,
+    options,
+  );
   const {
     reset,
     register,
@@ -57,11 +68,25 @@ export const CategoryForm: FC<CategoryFormProps> = ({ data }) => {
   };
   const onSubmitForm = async (params: ICategoryAttributes) => {
     if (data) {
-      updateCategory({ id: data.id, params });
+      return await updateCategory({ id: data.id, params });
     } else {
-      createCategory(params);
+      return await createCategory(params);
     }
   };
+  const submitAsync = async (e: BaseSyntheticEvent) => {
+    return await new Promise<ICategory>((resolve) => {
+      handleSubmit((params) => {
+        resolve(onSubmitForm(params));
+      })(e);
+    });
+  };
+
+  useImperativeHandle<
+    HTMLFormElementExtension<ICategory>,
+    HTMLFormElementExtra<ICategory>
+  >(ref, () => ({
+    submitAsync,
+  }));
 
   useEffect(() => {
     if (data) {
@@ -74,7 +99,7 @@ export const CategoryForm: FC<CategoryFormProps> = ({ data }) => {
   }, [data, reset]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmitForm)}>
+    <form ref={ref} onSubmit={submitAsync}>
       <ContentContainer>
         <ContentItem>
           <Input
@@ -87,4 +112,6 @@ export const CategoryForm: FC<CategoryFormProps> = ({ data }) => {
       </ContentContainer>
     </form>
   );
-};
+});
+
+CategoryForm.displayName = "CategoryForm";

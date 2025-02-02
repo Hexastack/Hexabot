@@ -13,6 +13,7 @@ import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -78,12 +79,24 @@ export const Categories = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(CategoryFormDialog, row),
+        action: async (row) => {
+          await dialogs.open(CategoryFormDialog, row);
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(<ConfirmDialogBody />, {
+            title: t("title.warning"),
+            okText: t("label.yes"),
+            cancelText: t("label.no"),
+          });
+
+          if (isConfirmed) {
+            await deleteCategory(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -130,22 +143,6 @@ export const Categories = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      {/* <CategoryDialog {...getDisplayDialogs(addDialogCtl)} />
-      <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={async () => {
-          if (selectedCategories.length > 0) {
-            deleteCategories(selectedCategories), setSelectedCategories([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            {
-              deleteCategory(deleteDialogCtl.data);
-              deleteDialogCtl.closeDialog();
-            }
-          }
-        }}
-      /> */}
       <Grid>
         <PageHeader icon={FolderIcon} title={t("title.categories")}>
           <Grid
@@ -177,7 +174,20 @@ export const Categories = () => {
                   startIcon={<DeleteIcon />}
                   variant="contained"
                   color="error"
-                  onClick={() => deleteDialogCtl.openDialog(undefined)}
+                  onClick={async () => {
+                    const isConfirmed = await dialogs.confirm(
+                      <ConfirmDialogBody />,
+                      {
+                        title: t("title.warning"),
+                        okText: t("label.yes"),
+                        cancelText: t("label.no"),
+                      },
+                    );
+
+                    if (isConfirmed) {
+                      await deleteCategories(selectedCategories);
+                    }
+                  }}
                 >
                   {t("button.delete")}
                 </Button>
