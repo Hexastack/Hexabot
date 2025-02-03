@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,18 +12,21 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { z } from 'zod';
 
-export function isChannelData(channel: any) {
-  return (
-    typeof channel === 'object' &&
-    channel.name &&
-    typeof channel.name === 'string'
-  );
+export const channelSchema = z.object({
+  name: z.string(),
+});
+
+export type Channel = z.infer<typeof channelSchema>;
+
+export function isChannelData(channel: Channel) {
+  return channelSchema.safeParse(channel).success;
 }
 
 @ValidatorConstraint({ async: false })
 export class ChannelDataValidator implements ValidatorConstraintInterface {
-  validate(channel: any) {
+  validate(channel: Channel) {
     return isChannelData(channel);
   }
 }
