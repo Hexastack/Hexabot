@@ -16,6 +16,9 @@ import {
 import { Pattern, patternSchema } from '../schemas/types/pattern';
 
 export function isPatternList(patterns: Pattern[]) {
+  if (!Array.isArray(patterns)) {
+    return false;
+  }
   patterns.every((pattern) => {
     const result = patternSchema.safeParse(pattern);
     if (!result.success) {
