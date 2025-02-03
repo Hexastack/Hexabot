@@ -6,12 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import React, { BaseSyntheticEvent, FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
