@@ -13,10 +13,10 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { Channel, channelSchema } from '../schemas/types/channel';
+import { Channel, channelDataSchema } from '../schemas/types/channel';
 
 export function isChannelData(channel: Channel) {
-  return channelSchema.safeParse(channel).success;
+  return channelDataSchema.safeParse(channel).success;
 }
 
 @ValidatorConstraint({ async: false })
