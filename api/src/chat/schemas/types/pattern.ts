@@ -10,13 +10,13 @@ import { z } from 'zod';
 
 import { PayloadType } from './message';
 
-export const PayloadPatternSchema = z.object({
+export const payloadPatternSchema = z.object({
   label: z.string(),
   value: z.string(),
   type: z.nativeEnum(PayloadType).optional(),
 });
 
-export type PayloadPattern = z.infer<typeof PayloadPatternSchema>;
+export type PayloadPattern = z.infer<typeof payloadPatternSchema>;
 
 export const nlpPatternSchema = z.discriminatedUnion('match', [
   z.object({
@@ -35,7 +35,7 @@ export type NlpPattern = z.infer<typeof nlpPatternSchema>;
 export const patternSchema = z.union([
   z.string(),
   z.instanceof(RegExp),
-  PayloadPatternSchema,
+  payloadPatternSchema,
   z.array(nlpPatternSchema),
 ]);
 
