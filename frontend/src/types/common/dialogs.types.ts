@@ -7,7 +7,7 @@
  */
 
 import { DialogProps as MuiDialogProps } from "@mui/material";
-import { BaseSyntheticEvent, ReactNode } from "react";
+import { BaseSyntheticEvent } from "react";
 
 // context
 
@@ -139,11 +139,9 @@ export interface DialogProviderProps {
 
 // form dialog
 export interface FormDialogProps<T> extends MuiDialogProps {
-  title: string;
-  children: ReactNode;
-  onConfirm: (
-    e: BaseSyntheticEvent<object, any, any>,
-  ) => Promise<T | undefined>;
+  title?: string;
+  children?: React.ReactNode;
+  onSubmit: (e: BaseSyntheticEvent) => Promise<T>;
 }
 
 // form
@@ -151,23 +149,13 @@ export type ComponentFormProps<T> = {
   data: T | null;
   onError?: () => void;
   onSuccess?: () => void;
+  FormWrapper?: React.FC<FormDialogProps<T>>;
+  FormWrapperProps?: Partial<FormDialogProps<T>>;
 };
 
 export interface FormButtonsProps<T> {
   onCancel?: () => void;
-  onConfirm?: (
-    e: BaseSyntheticEvent<object, any, any>,
-  ) => Promise<T | undefined>;
+  onConfirm: (e: BaseSyntheticEvent) => Promise<T>;
 }
-
-export type HTMLFormElementExtra<T> = {
-  submitAsync: (
-    e: BaseSyntheticEvent<object, any, any>,
-  ) => Promise<T | undefined>;
-};
-
-export type HTMLFormElementExtension<T> =
-  | HTMLFormElement
-  | HTMLFormElementExtra<T>;
 
 export type ComponentFormDialogProps<T> = DialogProps<T | null, boolean>;
