@@ -13,7 +13,7 @@ import { z } from 'zod';
 // entity is `String` for NLP entities
 export const captureVarSchema = z.object({
   entity: z.union([z.number().min(-2).max(-1), z.string()]),
-  context_var: z.string(),
+  context_var: z.string().regex(/^[a-z][a-z_0-9]*$/),
 });
 
 export type CaptureVar = z.infer<typeof captureVarSchema>;
