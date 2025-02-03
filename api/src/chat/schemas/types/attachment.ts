@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { z } from 'zod';
+
 export enum FileType {
   image = 'image',
   video = 'video',
@@ -13,6 +15,8 @@ export enum FileType {
   file = 'file',
   unknown = 'unknown',
 }
+
+export const fileTypeSchema = z.nativeEnum(FileType);
 
 /**
  * The `AttachmentRef` type defines two possible ways to reference an attachment:
@@ -22,20 +26,24 @@ export enum FileType {
  * the content is generated or retrieved by a plugin that consumes a third-party API.
  * In this case, the `url` field contains the direct link to the external resource.
  */
-export type AttachmentRef =
-  | {
-      id: string | null;
-    }
-  | {
-      /** @deprecated To be used only for external URLs (plugins), for stored attachments use "id" instead */
-      url: string;
-    };
 
-/** IMPORTANT: No need to use generic type here */
-export interface AttachmentPayload<T extends AttachmentRef = AttachmentRef> {
-  type: FileType;
-  payload: T;
-}
+export const attachmentRefSchema = z.union([
+  z.object({
+    id: z.string().nullable(),
+  }),
+  z.object({
+    url: z.string(),
+  }),
+]);
+
+export type AttachmentRef = z.infer<typeof attachmentRefSchema>;
+
+export const attachmentPayloadSchema = z.object({
+  type: fileTypeSchema,
+  payload: attachmentRefSchema,
+});
+
+export type AttachmentPayload = z.infer<typeof attachmentPayloadSchema>;
 
 /** @deprecated */
 export type WithUrl<A> = A & { url?: string };
