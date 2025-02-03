@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CloseIcon from "@mui/icons-material/Close";
 import {
   IconButton,
@@ -23,31 +22,16 @@ const StyledDialogTitle = styled(Typography)(() => ({
 export const DialogTitle = ({
   children,
   onClose,
-  onCloseV2,
 }: {
   children: React.ReactNode;
   onClose?: () => void;
-  onCloseV2?:
-    | ((event: {}, reason: "backdropClick" | "escapeKeyDown") => void)
-    | undefined;
 }) => (
   <MuiDialogTitle>
     <StyledDialogTitle>{children}</StyledDialogTitle>
-    {onClose && (
-      <IconButton
-        size="small"
-        aria-label="close"
-        onClick={(e) => {
-          if (onCloseV2) {
-            onCloseV2(e, "backdropClick");
-          } else {
-            //TODO: the old onClose prop can be replaced by the new one after the full implementation of the useDialogs hook
-            onClose();
-          }
-        }}
-      >
+    {onClose ? (
+      <IconButton size="small" aria-label="close" onClick={onClose}>
         <CloseIcon />
       </IconButton>
-    )}
+    ) : null}
   </MuiDialogTitle>
 );
