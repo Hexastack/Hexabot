@@ -8,6 +8,7 @@
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
@@ -1302,33 +1303,47 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Web channel middleware to handle multipart uploads (Long Pooling only)
+   * Web channel middleware
+   *
    * @param req Express Request
    * @param res Express Response
    * @param next Callback function
    */
   async middleware(req: Request, res: Response, next: NextFunction) {
-    if (
-      !this.isSocketRequest(req) &&
-      req.headers['content-type']?.includes('multipart/form-data')
-    ) {
-      const upload = multer({
-        limits: {
-          fileSize: config.parameters.maxUploadSize,
-        },
-        storage: (() => {
-          if (config.parameters.storageMode === 'memory') {
-            return memoryStorage();
-          } else {
-            return diskStorage({});
-          }
-        })(),
-      }).single('file'); // 'file' is the field name in the form
+    if (!this.isSocketRequest(req)) {
+      if (req.headers['content-type']?.includes('multipart/form-data')) {
+        // Handle multipart uploads (Long Pooling only)
+        const upload = multer({
+          limits: {
+            fileSize: config.parameters.maxUploadSize,
+          },
+          storage: (() => {
+            if (config.parameters.storageMode === 'memory') {
+              return memoryStorage();
+            } else {
+              return diskStorage({});
+            }
+          })(),
+        }).single('file'); // 'file' is the field name in the form
 
-      upload(req, res, next);
-    } else {
-      // Do nothing
-      next();
+        return upload(req, res, next);
+      } else if (req.headers['content-type']?.includes('text/plain')) {
+        // Handle plain text payloads as JSON (retro-compability)
+        const textParser = bodyParser.text({ type: 'text/plain' });
+
+        return textParser(req, res, () => {
+          try {
+            req.body =
+              typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            next();
+          } catch (err) {
+            next(err);
+          }
+        });
+      }
     }
+
+    // Do nothing
+    next();
   }
 }
