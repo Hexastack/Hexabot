@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -13,18 +13,10 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { Position } from '../schemas/types/position';
+import { Position, positionSchema } from '../schemas/types/position';
 
 export function isPosition(position: Position) {
-  return (
-    typeof position === 'object' &&
-    !isNaN(position.x) &&
-    !isNaN(position.y) &&
-    position.x !== Infinity &&
-    position.x !== -Infinity &&
-    position.y !== Infinity &&
-    position.y !== -Infinity
-  );
+  return positionSchema.safeParse(position).success;
 }
 
 @ValidatorConstraint({ async: false })
