@@ -19,13 +19,8 @@ export function isPatternList(patterns: Pattern[]) {
   if (!Array.isArray(patterns)) {
     return false;
   }
-  patterns.every((pattern) => {
-    const result = patternSchema.safeParse(pattern);
-    if (!result.success) {
-      return false;
-    }
-  });
-  return true;
+
+  return patterns.every((pattern) => patternSchema.safeParse(pattern).success);
 }
 
 @ValidatorConstraint({ async: false })
