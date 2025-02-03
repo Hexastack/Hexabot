@@ -6,21 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { AttachmentPayload } from './attachment';
-import { PayloadType } from './message';
+import { z } from 'zod';
 
-export type Payload =
-  | {
-      type: PayloadType.location;
-      coordinates: {
-        lat: number;
-        lon: number;
-      };
-    }
-  | {
-      type: PayloadType.attachments;
-      attachment: AttachmentPayload;
-    };
+import { attachmentPayloadSchema } from './attachment';
+import { PayloadType } from './message';
 
 export enum QuickReplyType {
   text = 'text',
@@ -29,8 +18,28 @@ export enum QuickReplyType {
   user_email = 'user_email',
 }
 
-export interface StdQuickReply {
-  content_type: QuickReplyType;
-  title: string;
-  payload: string;
-}
+export const cordinatesSchema = z.object({
+  lat: z.number(),
+  lon: z.number(),
+});
+
+export const payloadSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal(PayloadType.location),
+    coordinates: cordinatesSchema,
+  }),
+  z.object({
+    type: z.literal(PayloadType.attachments),
+    attachment: attachmentPayloadSchema,
+  }),
+]);
+
+export const stdQuickReplySchema = z.object({
+  content_type: z.nativeEnum(QuickReplyType),
+  title: z.string(),
+  payload: z.string(),
+});
+
+export type Payload = z.infer<typeof payloadSchema>;
+
+export type StdQuickReply = z.infer<typeof stdQuickReplySchema>;
