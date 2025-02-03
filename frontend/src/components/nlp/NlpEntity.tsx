@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,8 +7,9 @@
  */
 
 import AddIcon from "@mui/icons-material/Add";
+import DatasetLinkedIcon from "@mui/icons-material/DatasetLinked";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Chip, Grid } from "@mui/material";
+import { Button, Chip, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -29,12 +30,13 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
+import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { NlpEntityDialog } from "../NlpEntityDialog";
+import { NlpEntityDialog } from "./NlpEntityDialog";
 
 const NlpEntity = () => {
   const router = useRouter();
@@ -87,7 +89,7 @@ const NlpEntity = () => {
         action: (row) =>
           router.push(
             {
-              pathname: "/nlp/nlp-entities/[id]/nlpValues",
+              pathname: "/nlp/entities/[id]/values",
               query: { id: row.id },
             },
             undefined,
@@ -176,7 +178,7 @@ const NlpEntity = () => {
   };
 
   return (
-    <Grid item xs={12}>
+    <Grid container gap={3} flexDirection="column">
       <NlpEntityDialog {...getDisplayDialogs(addDialogCtl)} />
       <NlpEntityDialog {...editEntityDialogCtl} />
       <DeleteDialog
@@ -191,51 +193,54 @@ const NlpEntity = () => {
           }
         }}
       />
+      <PageHeader title={t("title.nlp_entities")} icon={DatasetLinkedIcon}>
+        <Grid
+          justifyContent="flex-end"
+          gap={1}
+          container
+          alignItems="center"
+          flexShrink={0}
+          width="max-content"
+        >
+          <Grid item>
+            <FilterTextfield onChange={onSearch} />
+          </Grid>
 
-      <Grid
-        justifyContent="flex-end"
-        gap={1}
-        container
-        alignItems="center"
-        flexShrink={0}
-      >
-        <Grid item>
-          <FilterTextfield onChange={onSearch} />
+          {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
+            <Grid item>
+              <Button
+                startIcon={<AddIcon />}
+                variant="contained"
+                sx={{ float: "right" }}
+                onClick={() => addDialogCtl.openDialog()}
+              >
+                {t("button.add")}
+              </Button>
+            </Grid>
+          ) : null}
+          {selectedNlpEntities.length > 0 && (
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={() => deleteEntityDialogCtl.openDialog(undefined)}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
+          )}
         </Grid>
-
-        {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
-          <Grid item>
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              sx={{ float: "right" }}
-              onClick={() => addDialogCtl.openDialog()}
-            >
-              {t("button.add")}
-            </Button>
-          </Grid>
-        ) : null}
-        {selectedNlpEntities.length > 0 && (
-          <Grid item>
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={() => deleteEntityDialogCtl.openDialog(undefined)}
-            >
-              {t("button.delete")}
-            </Button>
-          </Grid>
-        )}
-      </Grid>
-
-      <Grid mt={3}>
-        <DataGrid
-          columns={nlpEntityColumns}
-          {...nlpEntityGrid}
-          checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
-        />
+      </PageHeader>
+      <Grid item xs={12}>
+        <Paper sx={{ padding: 2 }}>
+          <DataGrid
+            columns={nlpEntityColumns}
+            {...nlpEntityGrid}
+            checkboxSelection
+            onRowSelectionModelChange={handleSelectionChange}
+          />
+        </Paper>
       </Grid>
     </Grid>
   );

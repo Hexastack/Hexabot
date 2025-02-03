@@ -23,6 +23,8 @@ import {
 import { Flag, Language } from "@mui/icons-material";
 import AppsIcon from "@mui/icons-material/Apps";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import DatasetIcon from "@mui/icons-material/Dataset";
+import DatasetLinkedIcon from "@mui/icons-material/DatasetLinked";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import FolderIcon from "@mui/icons-material/Folder";
 import HomeIcon from "@mui/icons-material/Home";
@@ -124,11 +126,25 @@ const getMenuItems = (ssoEnabled: boolean): MenuItem[] => [
   },
   {
     text: "menu.nlp",
-    href: "/nlp",
     Icon: faGraduationCap,
-    requires: {
-      [EntityType.NLP_SAMPLE]: [PermissionAction.READ],
-    },
+    submenuItems: [
+      {
+        text: "menu.nlp_entities",
+        href: "/nlp/entities",
+        Icon: DatasetLinkedIcon,
+        requires: {
+          [EntityType.NLP_ENTITY]: [PermissionAction.READ],
+        },
+      },
+      {
+        text: "menu.nlp_dataset",
+        href: "/nlp/dataset",
+        Icon: DatasetIcon,
+        requires: {
+          [EntityType.NLP_SAMPLE]: [PermissionAction.READ],
+        },
+      },
+    ],
   },
   {
     text: "menu.inbox",
