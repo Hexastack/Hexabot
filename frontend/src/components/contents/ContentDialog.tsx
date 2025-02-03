@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import LinkIcon from "@mui/icons-material/Link";
 import {
   Dialog,
@@ -238,7 +237,9 @@ export const ContentDialog: FC<ContentDialogProps> = ({
                   name={contentField.name}
                   control={control}
                   defaultValue={
-                    content ? content["dynamicFields"][contentField.name] : null
+                    content && content["dynamicFields"]
+                      ? content["dynamicFields"][contentField.name]
+                      : null
                   }
                   rules={
                     contentField.name === "title"
