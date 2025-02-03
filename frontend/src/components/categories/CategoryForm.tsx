@@ -94,6 +94,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
           <ContentItem>
             <Input
               label={t("placeholder.label")}
+              error={!!errors.label}
               {...register("label", validationRules.label)}
               autoFocus
               helperText={errors.label ? errors.label.message : null}
