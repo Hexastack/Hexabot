@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { FC } from "react";
 
 import { FormDialog } from "@/app-components/dialogs";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -14,10 +15,10 @@ import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { CategoryForm } from "./CategoryForm";
 
-export const CategoryFormDialog = <T extends ICategory = ICategory>({
+export const CategoryFormDialog: FC<ComponentFormDialogProps<ICategory>> = ({
   payload,
   ...rest
-}: ComponentFormDialogProps<T>) => {
+}) => {
   const { t } = useTranslate();
 
   return (

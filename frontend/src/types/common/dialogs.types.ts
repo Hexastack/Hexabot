@@ -10,7 +10,6 @@ import { DialogProps as MuiDialogProps } from "@mui/material";
 import { BaseSyntheticEvent } from "react";
 
 // context
-
 export interface OpenDialogOptions<R> {
   /**
    * A function that is called before closing the dialog closes. The dialog
