@@ -1,6 +1,6 @@
 ---
-hidden: true
 icon: message
+hidden: true
 ---
 
 # Hexabot Live Chat Widget
@@ -25,7 +25,7 @@ The Hexabot Live Chat Widget is organized into the following directory structure
 * **src/services:** Handles external services, such as communication with the Hexabot API or other third-party integrations.
 * **src/styles:** Contains the styling for the widget, including CSS or SCSS files used to define the look and feel of the chat interface.
 * **src/providers:** Context providers for managing global state, such as user session, chat messages, and widget configurations.
-* **src/translations:** Contains transalation of a couple of strings.
+* **src/translations:** Contains translation of a couple of strings.
 * **src/types:** Defines the typescript interfaces, types, and enums used.
 * **src/utils:** Utility functions and helpers used throughout the widget, such as formatting, validations, or data transformations.
 * **/public:** Contains static files that are publicly accessible. This includes the main HTML template where the widget is embedded for local development.
@@ -69,7 +69,7 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
   ReactDOM.render(
     el(HexabotWidget, {
       apiUrl: 'https://api.yourdomain.com',
-      channel: 'offline',
+      channel: 'web-channel',
       token: 'token123',
     }),
     domContainer,
@@ -77,11 +77,11 @@ Once the widget is built, you can easily embed it into any webpage. Here's an ex
 </script>
 ```
 
-Replace the values in apiUrl and token with your configuration details.
+Replace the values in `apiUrl` and token with your configuration details.
 
 ### Customization
 
-You can customize the look and feel of the chat widget by modifying the widget’s scss styles or behavior. The widget allows you to:
+You can customize the look and feel of the chat widget by modifying the widget’s SCSS styles or behavior. The widget allows you to:
 
 * Change colors and fonts to match your website's branding.
 * Configure user settings like language and chatbot response preferences.

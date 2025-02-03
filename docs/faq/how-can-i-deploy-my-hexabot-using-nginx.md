@@ -87,10 +87,10 @@ If you're starting with a fresh installation and not using a DB backup, it's rec
 ```bash
 hexabot start
 # Or include additional services you may want to use
-hexabot start --services nlu,ollama,influxdb
+hexabot start --services ollama,influxdb
 ```
 
-Note that this command will start all the services (api, frontend, mongodb, ...) as Docker containers.
+Note that this command will start all the services (api, frontend, mongodb, ...) as Docker containers and other optional services that may provide.
 
 #### Step 2: Install Nginx
 
