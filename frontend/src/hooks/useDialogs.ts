@@ -19,8 +19,6 @@ import {
 export interface DialogHook {
   open: OpenDialog;
   close: CloseDialog;
-  // alert: OpenAlertDialog;
-  // prompt: OpenPromptDialog;
   confirm: OpenConfirmDialog;
 }
 
@@ -32,16 +30,6 @@ export const useDialogs = (): DialogHook => {
   }
 
   const { open, close } = context;
-  // const alert = React.useCallback<OpenAlertDialog>(
-  //   async (msg, { onClose, ...options } = {}) =>
-  //     open(AlertDialog, { ...options, msg }, { onClose }),
-  //   [open],
-  // );
-  // const prompt = React.useCallback<OpenPromptDialog>(
-  //   async (msg, { onClose, ...options } = {}) =>
-  //     open(PromptDialog, { ...options, msg }, { onClose }),
-  //   [open],
-  // );
   const confirm = React.useCallback<OpenConfirmDialog>(
     async (msg, { onClose, ...options } = {}) =>
       open(ConfirmDialog, { ...options, msg }, { onClose }),
@@ -52,8 +40,6 @@ export const useDialogs = (): DialogHook => {
     () => ({
       open,
       close,
-      // alert,
-      // prompt,
       confirm,
     }),
     [close, open, confirm],
