@@ -12,13 +12,8 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { z } from 'zod';
 
-export const channelSchema = z.object({
-  name: z.string(),
-});
-
-export type Channel = z.infer<typeof channelSchema>;
+import { Channel, channelSchema } from '../schemas/types/channel';
 
 export function isChannelData(channel: Channel) {
   return channelSchema.safeParse(channel).success;
