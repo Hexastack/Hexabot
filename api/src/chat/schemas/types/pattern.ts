@@ -32,11 +32,11 @@ export const nlpPatternSchema = z.discriminatedUnion('match', [
 
 export type NlpPattern = z.infer<typeof nlpPatternSchema>;
 
-export const PatternSchema = z.union([
+export const patternSchema = z.union([
   z.string(),
   z.instanceof(RegExp),
   PayloadPatternSchema,
   z.array(nlpPatternSchema),
 ]);
 
-export type Pattern = z.infer<typeof PatternSchema>;
+export type Pattern = z.infer<typeof patternSchema>;
