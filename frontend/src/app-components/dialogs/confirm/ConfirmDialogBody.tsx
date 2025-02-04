@@ -20,13 +20,13 @@ export const ConfirmDialogBody = ({
 }) => {
   const { t } = useTranslate();
   const dialogBodyText =
-    itemsNumber === 1
-      ? t("message.item_delete_confirm", {
-          "0": mode === "click" ? "" : t("message.selected"),
-        })
-      : t("message.items_delete_confirm", {
-          "0": itemsNumber.toString(),
-        });
+    mode === "selection"
+      ? itemsNumber === 1
+        ? t("message.item_selected_delete_confirm")
+        : t("message.items_selected_delete_confirm", {
+            "0": itemsNumber.toString(),
+          })
+      : t("message.item_delete_confirm");
 
   return (
     <Grid container gap={1}>

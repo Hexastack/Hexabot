@@ -83,6 +83,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
               label={t("placeholder.label")}
               error={!!errors.label}
               {...register("label", validationRules.label)}
+              required
               autoFocus
               helperText={errors.label ? errors.label.message : null}
             />
