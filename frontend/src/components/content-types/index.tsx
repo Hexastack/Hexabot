@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -19,7 +19,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -41,8 +40,8 @@ export const ContentTypes = () => {
   const router = useRouter();
   // Dialog Controls
   const addDialogCtl = useDialog<IContentType>(false);
+  const editDialogCtl = useDialog<IContentType>(false);
   const deleteDialogCtl = useDialog<string>(false);
-  const fieldsDialogCtl = useDialog<IContentType>(false);
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContentType>({
     $iLike: ["name"],
@@ -51,18 +50,6 @@ export const ContentTypes = () => {
     { entity: EntityType.CONTENT_TYPE },
     {
       params: searchPayload,
-    },
-  );
-  const { mutateAsync: deleteContentType } = useDelete(
-    EntityType.CONTENT_TYPE,
-    {
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        toast.success(t("message.item_delete_success"));
-      },
-      onError: (error) => {
-        toast.error(error.message || t("message.internal_server_error"));
-      },
     },
   );
   const hasPermission = useHasPermission();
@@ -75,7 +62,7 @@ export const ContentTypes = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => fieldsDialogCtl.openDialog(row),
+        action: (row) => editDialogCtl.openDialog(row),
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -120,12 +107,16 @@ export const ContentTypes = () => {
           <ContentTypeDialog {...getDisplayDialogs(addDialogCtl)} />
           <DeleteDialog
             {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data)
-                deleteContentType(deleteDialogCtl.data);
+            entity={EntityType.CONTENT_TYPE}
+            onError={(error) => {
+              toast.error(error.message || t("message.internal_server_error"));
+            }}
+            onSuccess={() => {
+              deleteDialogCtl.closeDialog();
+              toast.success(t("message.item_delete_success"));
             }}
           />
-          <EditContentTypeFieldsDialog {...fieldsDialogCtl} />
+          <EditContentTypeFieldsDialog {...editDialogCtl} />
           <Grid padding={2} container>
             <Grid item width="100%">
               <DataGrid

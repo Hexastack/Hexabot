@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -26,7 +26,7 @@ import NlpDatasetSample from "./components/NlpTrainForm";
 export type NlpSampleDialogProps = DialogControlProps<INlpDatasetSample>;
 export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
   open,
-  data: sample,
+  datum: nlpSample,
   closeDialog,
   ...rest
 }) => {
@@ -44,10 +44,10 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
     },
   });
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
-    if (sample?.id) {
+    if (nlpSample?.id) {
       updateSample(
         {
-          id: sample.id,
+          id: nlpSample.id,
           params: {
             text: form.text,
             type: form.type,
@@ -70,7 +70,7 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
         {t("title.edit_nlp_sample")}
       </DialogTitle>
       <DialogContent>
-        <NlpDatasetSample sample={sample} submitForm={onSubmitForm} />
+        <NlpDatasetSample sample={nlpSample} submitForm={onSubmitForm} />
       </DialogContent>
     </Dialog>
   );

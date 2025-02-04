@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,7 +10,6 @@ import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -20,7 +19,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -55,15 +53,6 @@ export const Roles = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
   const actionColumns = useActionColumns<IRole>(
     EntityType.ROLE,
     [
@@ -132,8 +121,13 @@ export const Roles = () => {
       <RoleDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl.data) deleteRole(deleteDialogCtl.data);
+        entity={EntityType.ROLE}
+        onError={(error) => {
+          toast.error(error);
+        }}
+        onSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
       <PageHeader title={t("title.roles")} icon={faUniversalAccess}>

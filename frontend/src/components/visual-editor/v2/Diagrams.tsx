@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -74,8 +74,8 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
-  const deleteDialogCtl = useDialog<string[]>(false);
-  const moveDialogCtl = useDialog<string[] | string>(false);
+  const deleteDialogCtl = useDialog<string>(false);
+  const moveDialogCtl = useDialog<string>(false, "datumAndData");
   const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
@@ -456,9 +456,7 @@ const Diagrams = () => {
       moveDialogCtl.openDialog(ids);
     }
   };
-  const onDelete = async () => {
-    const ids = deleteDialogCtl?.data;
-
+  const onDelete = async (ids: string[]) => {
     if (!ids || ids?.length === 0) {
       return;
     }
@@ -472,14 +470,12 @@ const Diagrams = () => {
 
     cleanupAfterDeletion();
   };
-  const onMove = async (newCategoryId?: string) => {
+  const onMove = async (newCategoryId?: string, ids?: string[]) => {
     if (!newCategoryId) {
       return;
     }
 
-    const ids = moveDialogCtl?.data;
-
-    if (ids?.length && Array.isArray(ids)) {
+    if (Array.isArray(ids) && ids?.length) {
       await updateBlocks({ ids, payload: { category: newCategoryId } });
 
       queryClient.invalidateQueries({
@@ -530,12 +526,15 @@ const Diagrams = () => {
       <Box sx={{ width: "100%" }}>
         <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
-        <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
+        <DeleteDialog
+          {...deleteDialogCtl}
+          callback={async (data) => {
+            if (Array.isArray(data)) onDelete(data);
+          }}
+        />
         <MoveDialog
-          open={moveDialogCtl.open}
-          openDialog={moveDialogCtl.openDialog}
+          {...moveDialogCtl}
           callback={onMove}
-          closeDialog={moveDialogCtl.closeDialog}
           categories={categories}
         />
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>

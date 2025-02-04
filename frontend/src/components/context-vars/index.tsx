@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,8 +10,7 @@ import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper, Switch } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import React, { useState } from "react";
+import { GridColDef } from "@mui/x-data-grid";
 
 import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -21,8 +20,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -62,30 +59,6 @@ export const ContextVars = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess() {
-      deleteDialogCtl.closeDialog();
-      setSelectedContextVars([]);
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteContextVars } = useDeleteMany(
-    EntityType.CONTEXT_VAR,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedContextVars([]);
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
-  const [selectedContextVars, setSelectedContextVars] = useState<string[]>([]);
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
     [
@@ -160,25 +133,20 @@ export const ContextVars = () => {
     },
     actionColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedContextVars(selection as string[]);
-  };
 
   return (
     <Grid container gap={3} flexDirection="column">
       <ContextVarDialog {...getDisplayDialogs(addDialogCtl)} />
       <ContextVarDialog {...getDisplayDialogs(editDialogCtl)} />
-
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (selectedContextVars.length > 0) {
-            deleteContextVars(selectedContextVars);
-            setSelectedContextVars([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            deleteContextVar(deleteDialogCtl.data);
-          }
+        entity={EntityType.CONTEXT_VAR}
+        onError={(error) => {
+          toast.error(error);
+        }}
+        onSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
       <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
@@ -205,18 +173,17 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
-          {selectedContextVars.length > 0 && (
-            <Grid item>
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={() => deleteDialogCtl.openDialog(undefined)}
-              >
-                {t("button.delete")}
-              </Button>
-            </Grid>
-          )}
+          <Grid item>
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              color="error"
+              onClick={() => deleteDialogCtl.openDialog()}
+              disabled={!deleteDialogCtl.data?.length}
+            >
+              {t("button.delete")}
+            </Button>
+          </Grid>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
@@ -226,7 +193,10 @@ export const ContextVars = () => {
               columns={columns}
               {...dataGridProps}
               checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
+              rowSelectionModel={deleteDialogCtl.data || []}
+              onRowSelectionModelChange={(rowSelectionModel) =>
+                deleteDialogCtl.setData?.(rowSelectionModel as string[])
+              }
             />
           </Grid>
         </Paper>

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,7 +21,6 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
@@ -61,22 +60,6 @@ export const Languages = () => {
     onSuccess() {
       refetch();
       toast.success(t("message.success_save"));
-    },
-  });
-  const { mutateAsync: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      queryClient.removeQueries({
-        predicate: ({ queryKey }) => {
-          const [_qType, qEntity] = queryKey;
-
-          return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
-        },
-      });
-      deleteDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
     },
   });
   const toggleDefault = (row: ILanguage) => {
@@ -186,8 +169,20 @@ export const Languages = () => {
       <LanguageDialog {...getDisplayDialogs(editDialogCtl)} />
       <DeleteDialog
         {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLanguage(deleteDialogCtl.data);
+        entity={EntityType.LANGUAGE}
+        onError={() => {
+          toast.error(t("message.internal_server_error"));
+        }}
+        onSuccess={() => {
+          queryClient.removeQueries({
+            predicate: ({ queryKey }) => {
+              const [_qType, qEntity] = queryKey;
+
+              return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
+            },
+          });
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
       <PageHeader icon={Flag} title={t("title.languages")}>

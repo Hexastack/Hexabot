@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -32,7 +32,7 @@ import { ILanguage, ILanguageAttributes } from "@/types/language.types";
 export type LanguageDialogProps = DialogControlProps<ILanguage>;
 export const LanguageDialog: FC<LanguageDialogProps> = ({
   open,
-  data,
+  datum: language,
   closeDialog,
   ...rest
 }) => {
@@ -64,9 +64,9 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
     control,
   } = useForm<ILanguageAttributes>({
     defaultValues: {
-      title: data?.title || "",
-      code: data?.code || "",
-      isRTL: data?.isRTL || false,
+      title: language?.title || "",
+      code: language?.code || "",
+      isRTL: language?.isRTL || false,
     },
   });
   const validationRules = {
@@ -78,8 +78,8 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
     },
   };
   const onSubmitForm = async (params: ILanguageAttributes) => {
-    if (data) {
-      updateLanguage({ id: data.id, params });
+    if (language) {
+      updateLanguage({ id: language.id, params });
     } else {
       createLanguage(params);
     }
@@ -90,22 +90,22 @@ export const LanguageDialog: FC<LanguageDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (data) {
+    if (language) {
       reset({
-        title: data.title,
-        code: data.code,
-        isRTL: data.isRTL,
+        title: language.title,
+        code: language.code,
+        isRTL: language.isRTL,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [language, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeDialog} {...rest}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <DialogTitle onClose={closeDialog}>
-          {data ? t("title.edit_label") : t("title.new_label")}
+          {language ? t("title.edit_label") : t("title.new_label")}
         </DialogTitle>
         <DialogContent>
           <ContentContainer>

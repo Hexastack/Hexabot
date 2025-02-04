@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,9 +9,8 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Chip, Grid } from "@mui/material";
-import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { GridColDef } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -21,8 +20,6 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
-import { useDelete } from "@/hooks/crud/useDelete";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -38,33 +35,10 @@ import { NlpEntityDialog } from "../NlpEntityDialog";
 
 const NlpEntity = () => {
   const router = useRouter();
-  const deleteEntityDialogCtl = useDialog<string>(false);
-  const hasPermission = useHasPermission();
-  const editEntityDialogCtl = useDialog<INlpEntity>(false);
-  const { mutateAsync: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess() {
-      deleteEntityDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
-    },
-  });
-  const { mutateAsync: deleteNlpEntities } = useDeleteMany(
-    EntityType.NLP_ENTITY,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteEntityDialogCtl.closeDialog();
-        setSelectedNlpEntities([]);
-        toast.success(t("message.item_delete_success"));
-      },
-    },
-  );
-  const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
   const addDialogCtl = useDialog<INlpEntity>(false);
+  const editDialogCtl = useDialog<INlpEntity>(false);
+  const deleteDialogCtl = useDialog<string>(false);
+  const hasPermission = useHasPermission();
   const { t } = useTranslate();
   const { toast } = useToast();
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
@@ -100,12 +74,12 @@ const NlpEntity = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editEntityDialogCtl.openDialog(row),
+        action: (row) => editDialogCtl.openDialog(row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteEntityDialogCtl.openDialog(row.id),
+        action: (row) => deleteDialogCtl.openDialog(row.id),
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -171,27 +145,22 @@ const NlpEntity = () => {
     },
     actionEntityColumns,
   ];
-  const handleSelectionChange = (selection: GridRowSelectionModel) => {
-    setSelectedNlpEntities(selection as string[]);
-  };
 
   return (
     <Grid item xs={12}>
       <NlpEntityDialog {...getDisplayDialogs(addDialogCtl)} />
-      <NlpEntityDialog {...editEntityDialogCtl} />
+      <NlpEntityDialog {...editDialogCtl} />
       <DeleteDialog
-        {...deleteEntityDialogCtl}
-        callback={() => {
-          if (selectedNlpEntities.length > 0) {
-            deleteNlpEntities(selectedNlpEntities);
-            setSelectedNlpEntities([]);
-            deleteEntityDialogCtl.closeDialog();
-          } else if (deleteEntityDialogCtl.data) {
-            deleteNlpEntity(deleteEntityDialogCtl.data);
-          }
+        {...deleteDialogCtl}
+        entity={EntityType.NLP_ENTITY}
+        onError={() => {
+          toast.error(t("message.internal_server_error"));
+        }}
+        onSuccess={() => {
+          deleteDialogCtl.closeDialog();
+          toast.success(t("message.item_delete_success"));
         }}
       />
-
       <Grid
         justifyContent="flex-end"
         gap={1}
@@ -202,7 +171,6 @@ const NlpEntity = () => {
         <Grid item>
           <FilterTextfield onChange={onSearch} />
         </Grid>
-
         {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
           <Grid item>
             <Button
@@ -215,26 +183,27 @@ const NlpEntity = () => {
             </Button>
           </Grid>
         ) : null}
-        {selectedNlpEntities.length > 0 && (
-          <Grid item>
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={() => deleteEntityDialogCtl.openDialog(undefined)}
-            >
-              {t("button.delete")}
-            </Button>
-          </Grid>
-        )}
+        <Grid item>
+          <Button
+            startIcon={<DeleteIcon />}
+            variant="contained"
+            color="error"
+            onClick={() => deleteDialogCtl.openDialog()}
+            disabled={!deleteDialogCtl.data?.length}
+          >
+            {t("button.delete")}
+          </Button>
+        </Grid>
       </Grid>
-
       <Grid mt={3}>
         <DataGrid
           columns={nlpEntityColumns}
           {...nlpEntityGrid}
           checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
+          rowSelectionModel={deleteDialogCtl.data || []}
+          onRowSelectionModelChange={(rowSelectionModel) =>
+            deleteDialogCtl.setData?.(rowSelectionModel as string[])
+          }
         />
       </Grid>
     </Grid>
