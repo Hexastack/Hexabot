@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import { Button, Grid } from "@mui/material";
@@ -22,7 +21,7 @@ export const DialogFormButtons = <T,>({
 
   return (
     <Grid
-      p="5px 15px"
+      p="0.3rem 1rem"
       width="100%"
       display="flex"
       justifyContent="space-between"

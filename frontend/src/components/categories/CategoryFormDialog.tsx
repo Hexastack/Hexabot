@@ -27,8 +27,8 @@ export const CategoryFormDialog: FC<ComponentFormDialogProps<ICategory>> = ({
       onSuccess={() => {
         rest.onClose(true);
       }}
-      FormWrapper={FormDialog}
-      FormWrapperProps={{
+      Wrapper={FormDialog}
+      WrapperProps={{
         title: payload ? t("title.edit_category") : t("title.new_category"),
         ...rest,
       }}

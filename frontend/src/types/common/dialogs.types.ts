@@ -148,8 +148,8 @@ export type ComponentFormProps<T> = {
   data: T | null;
   onError?: () => void;
   onSuccess?: () => void;
-  FormWrapper?: React.FC<FormDialogProps<T>>;
-  FormWrapperProps?: Partial<FormDialogProps<T>>;
+  Wrapper?: React.FC<FormDialogProps<T>>;
+  WrapperProps?: Partial<FormDialogProps<T>>;
 };
 
 export interface FormButtonsProps<T> {

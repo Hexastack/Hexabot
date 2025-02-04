@@ -21,8 +21,8 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 
 export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   data,
-  FormWrapper = React.Fragment,
-  FormWrapperProps,
+  Wrapper = React.Fragment,
+  WrapperProps,
   ...rest
 }) => {
   const { t } = useTranslate();
@@ -84,10 +84,10 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   }, [data, reset]);
 
   return (
-    <FormWrapper
-      {...FormWrapperProps}
+    <Wrapper
+      open={!!WrapperProps?.open}
       onSubmit={submitAsync}
-      open={!!FormWrapperProps?.open}
+      {...WrapperProps}
     >
       <form onSubmit={submitAsync}>
         <ContentContainer>
@@ -102,7 +102,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
           </ContentItem>
         </ContentContainer>
       </form>
-    </FormWrapper>
+    </Wrapper>
   );
 };
 
