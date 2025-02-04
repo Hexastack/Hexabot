@@ -37,14 +37,8 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const { mutateAsync: createCategory } = useCreate(
-    EntityType.CATEGORY,
-    options,
-  );
-  const { mutateAsync: updateCategory } = useUpdate(
-    EntityType.CATEGORY,
-    options,
-  );
+  const { mutate: createCategory } = useCreate(EntityType.CATEGORY, options);
+  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, options);
   const {
     reset,
     register,
@@ -60,13 +54,13 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   };
   const onSubmitForm = async (params: ICategoryAttributes) => {
     if (data) {
-      return await updateCategory({ id: data.id, params });
+      updateCategory({ id: data.id, params });
     } else {
-      return await createCategory(params);
+      createCategory(params);
     }
   };
   const submitAsync = async (e: BaseSyntheticEvent) => {
-    return await new Promise<ICategory>((resolve) => {
+    return await new Promise<void>((resolve) => {
       handleSubmit((params) => {
         resolve(onSubmitForm(params));
       })(e);

@@ -13,10 +13,7 @@ import { Button, Grid } from "@mui/material";
 import { useTranslate } from "@/hooks/useTranslate";
 import { FormButtonsProps } from "@/types/common/dialogs.types";
 
-export const DialogFormButtons = <T,>({
-  onCancel,
-  onSubmit,
-}: FormButtonsProps<T>) => {
+export const DialogFormButtons = ({ onCancel, onSubmit }: FormButtonsProps) => {
   const { t } = useTranslate();
 
   return (
