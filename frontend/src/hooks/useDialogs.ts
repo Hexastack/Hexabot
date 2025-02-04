@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { useContext, useMemo } from "react";
+import React, { useContext } from "react";
 
 import { ConfirmDialog } from "@/app-components/dialogs";
 import { DialogsContext } from "@/contexts/dialogs.context";
@@ -50,12 +50,9 @@ export const useDialogs = (): DialogHook => {
     [open],
   );
 
-  return useMemo(
-    () => ({
-      open,
-      close,
-      confirm,
-    }),
-    [close, open, confirm],
-  );
+  return {
+    open,
+    close,
+    confirm,
+  };
 };
