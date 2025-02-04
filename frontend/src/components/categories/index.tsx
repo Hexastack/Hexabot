@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -42,6 +41,7 @@ import { CategoryFormDialog } from "./CategoryFormDialog";
 export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ICategory>({
     $iLike: ["label"],
@@ -128,7 +128,6 @@ export const Categories = () => {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedCategories(selection as string[]);
   };
-  const dialogs = useDialogs();
 
   return (
     <Grid container gap={3} flexDirection="column">

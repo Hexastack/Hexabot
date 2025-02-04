@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { FC, useEffect } from "react";
+import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
@@ -21,7 +21,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 
 export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   data,
-  Wrapper = React.Fragment,
+  Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
