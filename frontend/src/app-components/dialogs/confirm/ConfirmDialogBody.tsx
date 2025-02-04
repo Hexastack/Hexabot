@@ -19,7 +19,7 @@ export const ConfirmDialogBody = ({
   itemsNumber?: number;
 }) => {
   const { t } = useTranslate();
-  const DialogBodyText =
+  const dialogBodyText =
     itemsNumber === 1
       ? t("message.item_delete_confirm", {
           "0": mode === "click" ? "" : t("message.selected"),
@@ -34,7 +34,7 @@ export const ConfirmDialogBody = ({
         <ErrorIcon sx={{ fontSize: "1.75rem" }} color="error" />
       </Grid>
       <Grid item alignSelf="center">
-        <Typography>{DialogBodyText}</Typography>
+        <Typography>{dialogBodyText}</Typography>
       </Grid>
     </Grid>
   );
