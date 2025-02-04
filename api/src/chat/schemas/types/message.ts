@@ -6,14 +6,24 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+/*
+ * Copyright © 2025 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
+import { z } from 'zod';
+
 import { PluginName } from '@/plugins/types';
 
 import { Message } from '../message.schema';
 
-import { AttachmentPayload } from './attachment';
-import { Button } from './button';
-import { ContentOptions } from './options';
-import { StdQuickReply } from './quick-reply';
+import { attachmentPayloadSchema } from './attachment';
+import { buttonSchema } from './button';
+import { contentOptionsSchema } from './options';
+import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
 
 /**
  * StdEventType enum is declared, and currently not used
@@ -41,6 +51,10 @@ export enum IncomingMessageType {
   unknown = '',
 }
 
+export const incomingMessageType = z.nativeEnum(IncomingMessageType);
+
+export type IncomingMessageTypeLiteral = z.infer<typeof incomingMessageType>;
+
 export enum OutgoingMessageFormat {
   text = 'text',
   quickReplies = 'quickReplies',
@@ -49,6 +63,12 @@ export enum OutgoingMessageFormat {
   list = 'list',
   carousel = 'carousel',
 }
+
+export const outgoingMessageFormatSchema = z.nativeEnum(OutgoingMessageFormat);
+
+export type OutgoingMessageFormatLiteral = z.infer<
+  typeof outgoingMessageFormatSchema
+>;
 
 /**
  * FileType enum is declared, and currently not used
@@ -61,6 +81,10 @@ export enum FileType {
   unknown = 'unknown',
 }
 
+export const fileTypeSchema = z.nativeEnum(FileType);
+
+export type FileTypeLiteral = z.infer<typeof fileTypeSchema>;
+
 export enum PayloadType {
   location = 'location',
   attachments = 'attachments',
@@ -68,85 +92,151 @@ export enum PayloadType {
   button = 'button',
 }
 
-export type StdOutgoingTextMessage = { text: string };
+export const payloadTypeSchema = z.nativeEnum(PayloadType);
 
-export type StdOutgoingQuickRepliesMessage = {
-  text: string;
-  quickReplies: StdQuickReply[];
-};
+export type PayloadTypeLiteral = z.infer<typeof payloadTypeSchema>;
 
-export type StdOutgoingButtonsMessage = {
-  text: string;
-  buttons: Button[];
-};
+export const stdOutgoingTextMessageSchema = z.object({
+  text: z.string(),
+});
 
-export type ContentElement = { id: string; title: string } & Record<
-  string,
-  any
+export type StdOutgoingTextMessage = z.infer<
+  typeof stdOutgoingTextMessageSchema
 >;
 
-export type StdOutgoingListMessage = {
-  options: ContentOptions;
-  elements: ContentElement[];
-  pagination: {
-    total: number;
-    skip: number;
-    limit: number;
-  };
-};
+export const stdOutgoingQuickRepliesMessageSchema = z.object({
+  text: z.string(),
+  quickReplies: z.array(stdQuickReplySchema),
+});
 
-export type StdOutgoingAttachmentMessage = {
-  // Stored in DB as `AttachmentPayload`, `Attachment` when populated for channels relaying
-  attachment: AttachmentPayload;
-  quickReplies?: StdQuickReply[];
-};
+export type StdOutgoingQuickRepliesMessage = z.infer<
+  typeof stdOutgoingQuickRepliesMessageSchema
+>;
 
-export type StdPluginMessage = {
-  plugin: PluginName;
-  args: { [key: string]: any };
-};
+export const stdOutgoingButtonsMessageSchema = z.object({
+  text: z.string(),
+  buttons: z.array(buttonSchema),
+});
 
-export type BlockMessage =
-  | string[]
-  | StdOutgoingTextMessage
-  | StdOutgoingQuickRepliesMessage
-  | StdOutgoingButtonsMessage
-  | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage
-  | StdPluginMessage;
+export type StdOutgoingButtonsMessage = z.infer<
+  typeof stdOutgoingButtonsMessageSchema
+>;
 
-export type StdOutgoingMessage =
-  | StdOutgoingTextMessage
-  | StdOutgoingQuickRepliesMessage
-  | StdOutgoingButtonsMessage
-  | StdOutgoingListMessage
-  | StdOutgoingAttachmentMessage;
+export const contentElementSchema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+  })
+  .catchall(z.any());
 
-type StdIncomingTextMessage = { text: string };
+export type ContentElement = z.infer<typeof contentElementSchema>;
 
-export type StdIncomingPostBackMessage = StdIncomingTextMessage & {
-  postback: string;
-};
+export const stdOutgoingListMessageSchema = z.object({
+  options: contentOptionsSchema,
+  elements: z.array(contentElementSchema),
+  pagination: z.object({
+    total: z.number(),
+    skip: z.number(),
+    limit: z.number(),
+  }),
+});
 
-export type StdIncomingLocationMessage = {
-  type: PayloadType.location;
-  coordinates: {
-    lat: number;
-    lon: number;
-  };
-};
+export type StdOutgoingListMessage = z.infer<
+  typeof stdOutgoingListMessageSchema
+>;
 
-export type StdIncomingAttachmentMessage = {
-  type: PayloadType.attachments;
-  serialized_text: string;
-  attachment: AttachmentPayload | AttachmentPayload[];
-};
+export const stdOutgoingAttachmentMessageSchema = z.object({
+  attachment: attachmentPayloadSchema,
+  quickReplies: z.array(stdQuickReplySchema).optional(),
+});
 
-export type StdIncomingMessage =
-  | StdIncomingTextMessage
-  | StdIncomingPostBackMessage
-  | StdIncomingLocationMessage
-  | StdIncomingAttachmentMessage;
+export type StdOutgoingAttachmentMessage = z.infer<
+  typeof stdOutgoingAttachmentMessageSchema
+>;
+
+export const pluginNameSchema = z.object({
+  name: z.string().regex(/-plugin$/) as z.ZodType<PluginName>,
+});
+
+export const stdPluginMessageSchema = z.object({
+  plugin: pluginNameSchema,
+  args: z.record(z.any()),
+});
+
+export type StdPluginMessage = z.infer<typeof stdPluginMessageSchema>;
+
+export const BlockMessageSchema = z.union([
+  z.array(z.string()),
+  stdOutgoingTextMessageSchema,
+  stdOutgoingQuickRepliesMessageSchema,
+  stdOutgoingButtonsMessageSchema,
+  stdOutgoingListMessageSchema,
+  stdOutgoingAttachmentMessageSchema,
+  stdPluginMessageSchema,
+]);
+
+export type BlockMessage = z.infer<typeof BlockMessageSchema>;
+
+export const StdOutgoingMessageSchema = z.union([
+  stdOutgoingTextMessageSchema,
+  stdOutgoingQuickRepliesMessageSchema,
+  stdOutgoingButtonsMessageSchema,
+  stdOutgoingListMessageSchema,
+  stdOutgoingAttachmentMessageSchema,
+]);
+
+export type StdOutgoingMessage = z.infer<typeof StdOutgoingMessageSchema>;
+
+export const stdIncomingTextMessageSchema = z.object({
+  text: z.string(),
+});
+
+export type StdIncomingTextMessage = z.infer<
+  typeof stdIncomingTextMessageSchema
+>;
+
+export const stdIncomingPostBackMessageSchema =
+  stdIncomingTextMessageSchema.extend({
+    postback: z.string(),
+  });
+
+export type StdIncomingPostBackMessage = z.infer<
+  typeof stdIncomingPostBackMessageSchema
+>;
+
+export const stdIncomingLocationMessageSchema = z.object({
+  type: z.literal(PayloadType.location),
+  coordinates: z.object({
+    lat: z.number(),
+    lon: z.number(),
+  }),
+});
+
+export type StdIncomingLocationMessage = z.infer<
+  typeof stdIncomingLocationMessageSchema
+>;
+
+export const stdIncomingAttachmentMessageSchema = z.object({
+  type: z.literal(PayloadType.attachments),
+  serialized_text: z.string(),
+  attachment: z.union([
+    attachmentPayloadSchema,
+    z.array(attachmentPayloadSchema),
+  ]),
+});
+
+export type StdIncomingAttachmentMessage = z.infer<
+  typeof stdIncomingAttachmentMessageSchema
+>;
+
+export const stdIncomingMessageSchema = z.union([
+  stdIncomingTextMessageSchema,
+  stdIncomingPostBackMessageSchema,
+  stdIncomingLocationMessageSchema,
+  stdIncomingAttachmentMessageSchema,
+]);
+
+export type StdIncomingMessage = z.infer<typeof stdIncomingMessageSchema>;
 
 export interface IncomingMessage extends Omit<Message, 'recipient' | 'sentBy'> {
   message: StdIncomingMessage;
@@ -162,34 +252,121 @@ export interface OutgoingMessage extends Omit<Message, 'sender'> {
 
 export type AnyMessage = IncomingMessage | OutgoingMessage;
 
-export interface StdOutgoingTextEnvelope {
-  format: OutgoingMessageFormat.text;
-  message: StdOutgoingTextMessage;
-}
+export const stdOutgoingTextEnvelopeSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.text),
+  message: stdOutgoingTextMessageSchema,
+});
 
-export interface StdOutgoingQuickRepliesEnvelope {
-  format: OutgoingMessageFormat.quickReplies;
-  message: StdOutgoingQuickRepliesMessage;
-}
+export type StdOutgoingTextEnvelope = z.infer<
+  typeof stdOutgoingTextEnvelopeSchema
+>;
 
-export interface StdOutgoingButtonsEnvelope {
-  format: OutgoingMessageFormat.buttons;
-  message: StdOutgoingButtonsMessage;
-}
+export const stdOutgoingQuickRepliesEnvelopeSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.quickReplies),
+  message: stdOutgoingQuickRepliesMessageSchema,
+});
 
-export interface StdOutgoingListEnvelope {
-  format: OutgoingMessageFormat.list | OutgoingMessageFormat.carousel;
-  message: StdOutgoingListMessage;
-}
+export type StdOutgoingQuickRepliesEnvelope = z.infer<
+  typeof stdOutgoingQuickRepliesEnvelopeSchema
+>;
 
-export interface StdOutgoingAttachmentEnvelope {
-  format: OutgoingMessageFormat.attachment;
-  message: StdOutgoingAttachmentMessage;
-}
+export const stdOutgoingButtonsEnvelopeSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.buttons),
+  message: stdOutgoingButtonsMessageSchema,
+});
 
-export type StdOutgoingEnvelope =
-  | StdOutgoingTextEnvelope
-  | StdOutgoingQuickRepliesEnvelope
-  | StdOutgoingButtonsEnvelope
-  | StdOutgoingListEnvelope
-  | StdOutgoingAttachmentEnvelope;
+export type StdOutgoingButtonsEnvelope = z.infer<
+  typeof stdOutgoingButtonsEnvelopeSchema
+>;
+
+export const stdOutgoingListEnvelopeSchema = z.object({
+  format: z.union([
+    z.literal(OutgoingMessageFormat.list),
+    z.literal(OutgoingMessageFormat.carousel),
+  ]),
+  message: stdOutgoingListMessageSchema,
+});
+
+export type StdOutgoingListEnvelope = z.infer<
+  typeof stdOutgoingListEnvelopeSchema
+>;
+
+export const stdOutgoingAttachmentEnvelopeSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.attachment),
+  message: stdOutgoingAttachmentMessageSchema,
+});
+
+export type StdOutgoingAttachmentEnvelope = z.infer<
+  typeof stdOutgoingAttachmentEnvelopeSchema
+>;
+
+export const stdOutgoingEnvelopeSchema = z.union([
+  stdOutgoingTextEnvelopeSchema,
+  stdOutgoingQuickRepliesEnvelopeSchema,
+  stdOutgoingButtonsEnvelopeSchema,
+  stdOutgoingListEnvelopeSchema,
+  stdOutgoingAttachmentEnvelopeSchema,
+]);
+
+export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
+
+// is-valid-message-text validation
+export const validMessageTextSchema = z.object({
+  message: z.string(),
+});
+
+// is-message validation
+const MESSAGE_REGEX = /^function \(context\) \{[^]+\}/;
+
+export const messageRegexSchema = z.string().regex(MESSAGE_REGEX);
+
+export const textSchema = z.array(z.string().max(1000));
+
+const quickReplySchema = z
+  .object({
+    content_type: z.nativeEnum(QuickReplyType),
+    title: z.string().max(20).optional(),
+    payload: z.string().max(1000).optional(),
+  })
+  .superRefine((data, ctx) => {
+    // When content_type is 'text', title and payload are required.
+    if (data.content_type === QuickReplyType.text) {
+      if (data.title == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Title is required when content_type is 'text'",
+          path: ['title'],
+        });
+      }
+      if (data.payload == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Payload is required when content_type is 'text'",
+          path: ['payload'],
+        });
+      }
+    }
+  });
+
+// Attachment Message Schema
+export const objectSchema = z.object({
+  text: z.string().max(1000).optional(),
+  attachment: z
+    .object({
+      type: z.nativeEnum(FileType),
+      payload: z.object({
+        url: z.string().url().optional(),
+        id: z.string().optional(),
+      }),
+    })
+    .optional(),
+  elements: z.boolean().optional(),
+  cards: z
+    .object({
+      default_action: buttonSchema,
+      buttons: z.array(buttonSchema).max(3),
+    })
+    .optional(),
+  buttons: z.array(buttonSchema).max(3).optional(),
+  quickReplies: z.array(quickReplySchema).max(11).optional(),
+});

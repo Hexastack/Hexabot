@@ -6,6 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+/*
+ * Copyright © 2025 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
 import { Injectable } from '@nestjs/common';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -224,7 +232,8 @@ export class BlockService extends BaseService<
         } else if (
           typeof pattern === 'object' &&
           'label' in pattern &&
-          text.trim().toLowerCase() === pattern.label.toLowerCase()
+          text.trim().toLowerCase() ===
+            (pattern.label as unknown as string).toLowerCase()
         ) {
           // Payload (quick reply)
           return [text];
@@ -568,15 +577,13 @@ export class BlockService extends BaseService<
           contentBlockOptions,
           skip,
         );
-
-        const envelope: StdOutgoingEnvelope = {
+        const envelope = {
           format: contentBlockOptions.display,
           message: {
             ...results,
             options: contentBlockOptions,
           },
-        };
-
+        } as StdOutgoingEnvelope;
         return envelope;
       } catch (err) {
         this.logger.error(
@@ -588,7 +595,7 @@ export class BlockService extends BaseService<
     } else if (blockMessage && 'plugin' in blockMessage) {
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
-        blockMessage.plugin as PluginName,
+        blockMessage.plugin as unknown as PluginName,
       );
       // Process custom plugin block
       try {

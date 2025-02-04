@@ -11,7 +11,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { PluginType } from '@/plugins/types';
+import { PluginName, PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -54,7 +54,7 @@ export class TranslationService extends BaseService<Translation> {
       if ('plugin' in block.message) {
         const plugin = this.pluginService.getPlugin(
           PluginType.block,
-          block.message.plugin,
+          block.message.plugin as unknown as PluginName,
         );
 
         // plugin
