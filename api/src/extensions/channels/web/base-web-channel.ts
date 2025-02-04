@@ -64,6 +64,20 @@ import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
 
+// Handle multipart uploads (Long Pooling only)
+const upload = multer({
+  limits: {
+    fileSize: config.parameters.maxUploadSize,
+  },
+  storage: (() => {
+    if (config.parameters.storageMode === 'memory') {
+      return memoryStorage();
+    } else {
+      return diskStorage({});
+    }
+  })(),
+}).single('file'); // 'file' is the field name in the form
+
 @Injectable()
 export default abstract class BaseWebChannelHandler<
   N extends ChannelName,
@@ -1313,19 +1327,6 @@ export default abstract class BaseWebChannelHandler<
     if (!this.isSocketRequest(req)) {
       if (req.headers['content-type']?.includes('multipart/form-data')) {
         // Handle multipart uploads (Long Pooling only)
-        const upload = multer({
-          limits: {
-            fileSize: config.parameters.maxUploadSize,
-          },
-          storage: (() => {
-            if (config.parameters.storageMode === 'memory') {
-              return memoryStorage();
-            } else {
-              return diskStorage({});
-            }
-          })(),
-        }).single('file'); // 'file' is the field name in the form
-
         return upload(req, res, next);
       } else if (req.headers['content-type']?.includes('text/plain')) {
         // Handle plain text payloads as JSON (retro-compability)
