@@ -6,9 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  Grid,
+} from "@mui/material";
 import { FC, ReactNode } from "react";
 
+import { useTranslate } from "@/hooks/useTranslate";
 import { ConfirmOptions, DialogProps } from "@/types/common/dialogs.types";
 
 import { DialogTitle } from "../DialogTitle";
@@ -23,6 +30,7 @@ export interface ConfirmDialogProps
   extends DialogProps<ConfirmDialogPayload, boolean> {}
 
 export const ConfirmDialog: FC<ConfirmDialogProps> = ({ payload, ...rest }) => {
+  const { t } = useTranslate();
   const cancelButtonProps = useDialogLoadingButton(() => rest.onClose(false));
   const okButtonProps = useDialogLoadingButton(() => rest.onClose(true));
 
@@ -34,22 +42,24 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({ payload, ...rest }) => {
       onClose={() => rest.onClose(false)}
     >
       <DialogTitle onClose={() => rest.onClose(false)}>
-        {payload.title}
+        {payload.title || t("title.warning")}
       </DialogTitle>
       <DialogContent>{payload.msg}</DialogContent>
       <DialogActions>
-        <Button
-          color={payload.severity || "error"}
-          variant="contained"
-          disabled={!open}
-          autoFocus
-          {...okButtonProps}
-        >
-          {payload.okText}
-        </Button>
-        <Button variant="outlined" disabled={!open} {...cancelButtonProps}>
-          {payload.cancelText}
-        </Button>
+        <Grid p="0.3rem 1rem" gap="0.5rem" display="flex">
+          <Button
+            color={payload.severity || "error"}
+            variant="contained"
+            disabled={!open}
+            autoFocus
+            {...okButtonProps}
+          >
+            {payload.okText || t("label.yes")}
+          </Button>
+          <Button variant="outlined" disabled={!open} {...cancelButtonProps}>
+            {payload.cancelText || t("label.no")}
+          </Button>
+        </Grid>
       </DialogActions>
     </Dialog>
   );

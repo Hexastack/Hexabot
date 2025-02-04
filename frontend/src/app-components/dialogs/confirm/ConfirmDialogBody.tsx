@@ -11,16 +11,30 @@ import { Grid, Typography } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
-export const ConfirmDialogBody = () => {
+export const ConfirmDialogBody = ({
+  mode = "click",
+  itemsNumber = 1,
+}: {
+  mode?: "selection" | "click";
+  itemsNumber?: number;
+}) => {
   const { t } = useTranslate();
+  const DialogBodyText =
+    itemsNumber === 1
+      ? t("message.item_delete_confirm", {
+          "0": mode === "click" ? "" : t("message.selected"),
+        })
+      : t("message.items_delete_confirm", {
+          "0": itemsNumber.toString(),
+        });
 
   return (
     <Grid container gap={1}>
-      <Grid item height="28px">
-        <ErrorIcon sx={{ fontSize: "28px" }} color="error" />
+      <Grid item height="1.75rem">
+        <ErrorIcon sx={{ fontSize: "1.75rem" }} color="error" />
       </Grid>
       <Grid item alignSelf="center">
-        <Typography>{t("message.item_delete_confirm")}</Typography>
+        <Typography>{DialogBodyText}</Typography>
       </Grid>
     </Grid>
   );
