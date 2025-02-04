@@ -9,8 +9,12 @@
 import { DialogProps as MuiDialogProps } from "@mui/material";
 import { BaseSyntheticEvent } from "react";
 
+interface ConfirmDialogExtraOptions {
+  mode?: "click" | "selection";
+  count?: number;
+}
 // context
-export interface OpenDialogOptions<R> {
+export interface OpenDialogOptions<R> extends ConfirmDialogExtraOptions {
   /**
    * A function that is called before closing the dialog closes. The dialog
    * stays open as long as the returned promise is not resolved. Use this if
@@ -129,6 +133,7 @@ export interface DialogStackEntry<P, R> {
   payload: P;
   onClose: (result: R) => Promise<void>;
   resolve: (result: R) => void;
+  msgProps: ConfirmDialogExtraOptions;
 }
 
 export interface DialogProviderProps {
