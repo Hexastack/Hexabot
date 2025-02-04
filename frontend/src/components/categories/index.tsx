@@ -156,29 +156,26 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
-            {selectedCategories.length > 0 && (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={async () => {
-                    const isConfirmed = await dialogs.confirm(
-                      <ConfirmDialogBody
-                        mode="selection"
-                        itemsNumber={selectedCategories.length}
-                      />,
-                    );
+            <Button
+              color="error"
+              variant="contained"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(
+                  <ConfirmDialogBody
+                    mode="selection"
+                    itemsNumber={selectedCategories.length}
+                  />,
+                );
 
-                    if (isConfirmed) {
-                      deleteCategories(selectedCategories);
-                    }
-                  }}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            )}
+                if (isConfirmed) {
+                  deleteCategories(selectedCategories);
+                }
+              }}
+              disabled={!selectedCategories.length}
+              startIcon={<DeleteIcon />}
+            >
+              {t("button.delete")}
+            </Button>
           </Grid>
         </PageHeader>
       </Grid>
