@@ -232,8 +232,7 @@ export class BlockService extends BaseService<
         } else if (
           typeof pattern === 'object' &&
           'label' in pattern &&
-          text.trim().toLowerCase() ===
-            (pattern.label as unknown as string).toLowerCase()
+          text.trim().toLowerCase() === pattern.label.toLowerCase()
         ) {
           // Payload (quick reply)
           return [text];
