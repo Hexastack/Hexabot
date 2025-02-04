@@ -161,10 +161,8 @@ export const Categories = () => {
               variant="contained"
               onClick={async () => {
                 const isConfirmed = await dialogs.confirm(
-                  <ConfirmDialogBody
-                    mode="selection"
-                    count={selectedCategories.length}
-                  />,
+                  <ConfirmDialogBody />,
+                  { mode: "selection", count: selectedCategories.length },
                 );
 
                 if (isConfirmed) {

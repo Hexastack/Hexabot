@@ -13,7 +13,7 @@ import {
   DialogContent,
   Grid,
 } from "@mui/material";
-import { FC, ReactNode } from "react";
+import { cloneElement, FC, ReactNode } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { ConfirmOptions, DialogProps } from "@/types/common/dialogs.types";
@@ -27,12 +27,20 @@ export interface ConfirmDialogPayload extends ConfirmOptions {
 }
 
 export interface ConfirmDialogProps
-  extends DialogProps<ConfirmDialogPayload, boolean> {}
+  extends DialogProps<ConfirmDialogPayload, boolean> {
+  mode?: "selection" | "click";
+  count?: number;
+}
 
 export const ConfirmDialog: FC<ConfirmDialogProps> = ({ payload, ...rest }) => {
   const { t } = useTranslate();
   const cancelButtonProps = useDialogLoadingButton(() => rest.onClose(false));
   const okButtonProps = useDialogLoadingButton(() => rest.onClose(true));
+  // @ts-ignore
+  const messageReactNode = cloneElement(payload.msg, {
+    mode: rest.mode,
+    count: rest.count,
+  });
 
   return (
     <Dialog
@@ -44,7 +52,7 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({ payload, ...rest }) => {
       <DialogTitle onClose={() => rest.onClose(false)}>
         {payload.title || t("title.warning")}
       </DialogTitle>
-      <DialogContent>{payload.msg}</DialogContent>
+      <DialogContent>{messageReactNode}</DialogContent>
       <DialogActions>
         <Grid p="0.3rem 1rem" gap="0.5rem" display="flex">
           <Button

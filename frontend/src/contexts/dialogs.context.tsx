@@ -77,6 +77,7 @@ function DialogsProvider(props: DialogProviderProps) {
         payload,
         onClose,
         resolve,
+        msgProps: { count: options.count, mode: options.mode },
       };
 
       setStack((prevStack) => [...prevStack, newEntry]);
@@ -128,7 +129,7 @@ function DialogsProvider(props: DialogProviderProps) {
   return (
     <DialogsContext.Provider value={contextValue}>
       {children}
-      {stack.map(({ key, open, Component, payload, promise }) => (
+      {stack.map(({ key, open, Component, payload, promise, msgProps }) => (
         <Component
           key={key}
           payload={payload}
@@ -136,6 +137,7 @@ function DialogsProvider(props: DialogProviderProps) {
           onClose={async (result) => {
             await closeDialog(promise, result);
           }}
+          {...msgProps}
         />
       ))}
     </DialogsContext.Provider>
