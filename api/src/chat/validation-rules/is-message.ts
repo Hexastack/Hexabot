@@ -36,9 +36,6 @@ export function isValidMessage(msg: any) {
     }
     return result.success;
   } else if (typeof msg === 'object' && msg !== null) {
-    if ('plugin' in msg) {
-      return true;
-    }
     const result = blockMessageObjectSchema.safeParse(msg);
     if (!result.success) {
       console.error('Block Model: Object validation failed!', result.error);
