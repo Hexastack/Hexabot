@@ -115,6 +115,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
                 {...register("name", {
                   required: t("message.name_is_required"),
                 })}
+                helperText={errors.name ? errors.name.message : null}
                 required
                 autoFocus
               />
