@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useEffect } from "react";
@@ -53,30 +52,34 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     name: "fields",
     control,
   });
+  const CloseAndReset = () => {
+    closeDialog();
+    reset();
+  };
+
+  useEffect(() => {
+    if (open) reset();
+  }, [open, reset]);
 
   useEffect(() => {
     if (data) {
       reset({
         name: data.name,
-        fields: data.fields,
       });
     } else {
       reset();
     }
   }, [data, reset]);
 
-  const { mutateAsync: createContentType } = useCreate(
-    EntityType.CONTENT_TYPE,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        closeDialog();
-        toast.success(t("message.success_save"));
-      },
+  const { mutate: createContentType } = useCreate(EntityType.CONTENT_TYPE, {
+    onError: (error) => {
+      toast.error(error);
     },
-  );
+    onSuccess: () => {
+      closeDialog();
+      toast.success(t("message.success_save"));
+    },
+  });
   const { mutateAsync: updateContentType } = useUpdate(
     EntityType.CONTENT_TYPE,
     {
@@ -98,9 +101,9 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} fullWidth onClose={closeDialog}>
+    <Dialog open={open} fullWidth onClose={CloseAndReset}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
-        <DialogTitle onClose={closeDialog}>
+        <DialogTitle onClose={CloseAndReset}>
           {data ? t("title.edit_content_type") : t("title.new_content_type")}
         </DialogTitle>
         <DialogContent>
