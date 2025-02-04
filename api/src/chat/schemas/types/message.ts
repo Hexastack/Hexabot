@@ -354,10 +354,12 @@ export const objectSchema = z.object({
   attachment: z
     .object({
       type: z.nativeEnum(FileType),
-      payload: z.object({
-        url: z.string().url().optional(),
-        id: z.string().optional(),
-      }),
+      payload: z
+        .object({
+          url: z.string().url().optional(),
+          id: z.string().nullable().optional(),
+        })
+        .optional(),
     })
     .optional(),
   elements: z.boolean().optional(),
