@@ -154,7 +154,7 @@ export type ComponentFormProps<T> = {
 
 export interface FormButtonsProps<T> {
   onCancel?: () => void;
-  onConfirm: (e: BaseSyntheticEvent) => Promise<T>;
+  onSubmit: (e: BaseSyntheticEvent) => Promise<T>;
 }
 
 export type ComponentFormDialogProps<T> = DialogProps<T | null, boolean>;

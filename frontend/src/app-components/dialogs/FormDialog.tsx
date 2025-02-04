@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
 
 import { DialogTitle } from "@/app-components/dialogs";
 import { FormDialogProps } from "@/types/common/dialogs.types";
 
-import { FormButtons } from "../buttons/FormButtons";
+import { DialogFormButtons } from "../buttons/FormButtons";
 
 export const FormDialog = <T,>({
   title,
@@ -26,10 +25,10 @@ export const FormDialog = <T,>({
         {title}
       </DialogTitle>
       <DialogContent>{children}</DialogContent>
-      <DialogActions>
-        <FormButtons
+      <DialogActions style={{ padding: "8px" }}>
+        <DialogFormButtons
           onCancel={() => rest.onClose?.({}, "backdropClick")}
-          onConfirm={onSubmit}
+          onSubmit={onSubmit}
         />
       </DialogActions>
     </Dialog>

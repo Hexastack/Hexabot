@@ -85,9 +85,9 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
 
   return (
     <FormWrapper
-      open={!!FormWrapperProps?.open}
-      onSubmit={submitAsync}
       {...FormWrapperProps}
+      onSubmit={submitAsync}
+      open={!!FormWrapperProps?.open}
     >
       <form onSubmit={submitAsync}>
         <ContentContainer>
