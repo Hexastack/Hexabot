@@ -38,7 +38,7 @@ export const useDialogs = (): DialogHook => {
         ConfirmDialog,
         {
           ...rest,
-          msg,
+          msg: React.createElement(msg),
         },
         {
           mode,
