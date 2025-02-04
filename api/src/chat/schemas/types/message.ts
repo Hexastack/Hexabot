@@ -154,9 +154,9 @@ export type StdOutgoingAttachmentMessage = z.infer<
   typeof stdOutgoingAttachmentMessageSchema
 >;
 
-export const pluginNameSchema = z.object({
-  name: z.string().regex(/-plugin$/) as z.ZodType<PluginName>,
-});
+export const pluginNameSchema = z
+  .string()
+  .regex(/-plugin$/) as z.ZodType<PluginName>;
 
 export const stdPluginMessageSchema = z.object({
   plugin: pluginNameSchema,
