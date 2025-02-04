@@ -137,10 +137,10 @@ export interface DialogProviderProps {
 }
 
 // form dialog
-export interface FormDialogProps<T> extends MuiDialogProps {
+export interface FormDialogProps extends MuiDialogProps {
   title?: string;
   children?: React.ReactNode;
-  onSubmit: (e: BaseSyntheticEvent) => Promise<T>;
+  onSubmit: (e: BaseSyntheticEvent) => void;
 }
 
 // form
@@ -148,13 +148,13 @@ export type ComponentFormProps<T> = {
   data: T | null;
   onError?: () => void;
   onSuccess?: () => void;
-  Wrapper?: React.FC<FormDialogProps<T>>;
-  WrapperProps?: Partial<FormDialogProps<T>>;
+  Wrapper?: React.FC<FormDialogProps>;
+  WrapperProps?: Partial<FormDialogProps>;
 };
 
-export interface FormButtonsProps<T> {
+export interface FormButtonsProps {
   onCancel?: () => void;
-  onSubmit: (e: BaseSyntheticEvent) => Promise<T>;
+  onSubmit: (e: BaseSyntheticEvent) => void;
 }
 
 export type ComponentFormDialogProps<T> = DialogProps<T | null, boolean>;

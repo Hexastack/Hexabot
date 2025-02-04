@@ -13,12 +13,12 @@ import { FormDialogProps } from "@/types/common/dialogs.types";
 
 import { DialogFormButtons } from "../buttons/FormButtons";
 
-export const FormDialog = <T,>({
+export const FormDialog = ({
   title,
   children,
   onSubmit,
   ...rest
-}: FormDialogProps<T>) => {
+}: FormDialogProps) => {
   const handleClose = () => rest.onClose?.({}, "backdropClick");
 
   return (
