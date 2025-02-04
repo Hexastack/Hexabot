@@ -8,7 +8,6 @@
 
 import {
   createContext,
-  FC,
   useCallback,
   useId,
   useMemo,
@@ -16,7 +15,6 @@ import {
   useState,
 } from "react";
 
-import { ConfirmDialog, ConfirmDialogProps } from "@/app-components/dialogs";
 import {
   CloseDialog,
   DialogComponent,
@@ -30,7 +28,6 @@ export const DialogsContext = createContext<
   | {
       open: OpenDialog;
       close: CloseDialog;
-      confirm: FC<ConfirmDialogProps>;
     }
   | undefined
 >(undefined);
@@ -124,7 +121,6 @@ function DialogsProvider(props: DialogProviderProps) {
     () => ({
       open: requestDialog,
       close: closeDialog,
-      confirm: ConfirmDialog,
     }),
     [requestDialog, closeDialog],
   );
