@@ -1,14 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogActions, DialogContent } from "@mui/material";
+
+import AddIcon from "@mui/icons-material/Add";
+import { Button, Dialog, DialogActions, DialogContent } from "@mui/material";
 import { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
 import DialogButtons from "@/app-components/buttons/DialogButtons";
 import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
@@ -21,10 +23,10 @@ import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import {
-  IContentType,
-  IContentTypeAttributes,
-} from "@/types/content-type.types";
+import { ContentFieldType, IContentType } from "@/types/content-type.types";
+
+import { FieldInput } from "./components/FieldInput";
+import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
 
 export type ContentTypeDialogProps = DialogControlProps<IContentType>;
 export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
@@ -37,15 +39,32 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   const {
     handleSubmit,
     register,
+    control,
     reset,
+    setValue,
     formState: { errors },
-  } = useForm<IContentTypeAttributes>({
-    defaultValues: { name: data?.name || "" },
+  } = useForm<Partial<IContentType>>({
+    defaultValues: {
+      name: data?.name || "",
+      fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
+    },
   });
-  const CloseAndReset = () => {
-    closeDialog();
-    reset();
-  };
+  const { append, fields, remove } = useFieldArray({
+    name: "fields",
+    control,
+  });
+
+  useEffect(() => {
+    if (data) {
+      reset({
+        name: data.name,
+        fields: data.fields,
+      });
+    } else {
+      reset();
+    }
+  }, [data, reset]);
+
   const { mutateAsync: createContentType } = useCreate(
     EntityType.CONTENT_TYPE,
     {
@@ -70,40 +89,18 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
       },
     },
   );
-  const validationRules = {
-    name: {
-      required: t("message.name_is_required"),
-    },
-  };
-  const onSubmitForm = async (params: IContentTypeAttributes) => {
+  const onSubmitForm = async (params) => {
     if (data) {
-      updateContentType({
-        id: data.id,
-        params,
-      });
+      updateContentType({ id: data.id, params });
     } else {
-      createContentType(params);
+      createContentType({ ...params, name: params.name || "" });
     }
   };
-
-  useEffect(() => {
-    if (open) reset();
-  }, [open, reset]);
-
-  useEffect(() => {
-    if (data) {
-      reset({
-        name: data.name,
-      });
-    } else {
-      reset();
-    }
-  }, [data, reset]);
 
   return (
-    <Dialog open={open} fullWidth onClose={CloseAndReset}>
+    <Dialog open={open} fullWidth onClose={closeDialog}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
-        <DialogTitle onClose={CloseAndReset}>
+        <DialogTitle onClose={closeDialog}>
           {data ? t("title.edit_content_type") : t("title.new_content_type")}
         </DialogTitle>
         <DialogContent>
@@ -112,11 +109,40 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
               <Input
                 label={t("label.name")}
                 error={!!errors.name}
-                {...register("name", validationRules.name)}
-                helperText={errors.name ? errors.name.message : null}
+                {...register("name", {
+                  required: t("message.name_is_required"),
+                })}
                 required
                 autoFocus
               />
+            </ContentItem>
+
+            {fields.map((f, index) => (
+              <ContentItem
+                key={f.id}
+                display="flex"
+                justifyContent="space-between"
+                gap={2}
+              >
+                <FieldInput
+                  setValue={setValue}
+                  control={control}
+                  remove={remove}
+                  index={index}
+                  disabled={READ_ONLY_FIELDS.includes(f.label as any)}
+                />
+              </ContentItem>
+            ))}
+            <ContentItem>
+              <Button
+                startIcon={<AddIcon />}
+                variant="contained"
+                onClick={() =>
+                  append({ label: "", name: "", type: ContentFieldType.TEXT })
+                }
+              >
+                {t("button.add")}
+              </Button>
             </ContentItem>
           </ContentContainer>
         </DialogContent>
