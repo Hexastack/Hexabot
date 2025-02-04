@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { BaseSyntheticEvent, FC, useEffect } from "react";
+import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
@@ -59,13 +59,6 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
       createCategory(params);
     }
   };
-  const submitAsync = async (e: BaseSyntheticEvent) => {
-    return await new Promise<void>((resolve) => {
-      handleSubmit((params) => {
-        resolve(onSubmitForm(params));
-      })(e);
-    });
-  };
 
   useEffect(() => {
     if (data) {
@@ -80,10 +73,10 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   return (
     <Wrapper
       open={!!WrapperProps?.open}
-      onSubmit={submitAsync}
+      onSubmit={handleSubmit(onSubmitForm)}
       {...WrapperProps}
     >
-      <form onSubmit={submitAsync}>
+      <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
             <Input
