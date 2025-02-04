@@ -348,17 +348,17 @@ const quickReplySchema = z
     }
   });
 
-// Attachment Message Schema
-export const objectSchema = z.object({
+// BlockMessage Schema
+export const blockMessageObjectSchema = z.object({
   text: z.string().max(1000).optional(),
   attachment: z
     .object({
       type: z.nativeEnum(FileType),
       payload: z
-        .object({
-          url: z.string().url().optional(),
-          id: z.string().nullable().optional(),
-        })
+        .union([
+          z.object({ url: z.string().url() }),
+          z.object({ id: z.string().nullable() }),
+        ])
         .optional(),
     })
     .optional(),
