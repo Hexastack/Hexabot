@@ -53,7 +53,7 @@ export const ConfirmDialog: FC<ConfirmDialogProps> = ({ payload, ...rest }) => {
         {payload.title || t("title.warning")}
       </DialogTitle>
       <DialogContent>{messageReactNode}</DialogContent>
-      <DialogActions>
+      <DialogActions style={{ padding: "0.5rem" }}>
         <Grid p="0.3rem 1rem" gap="0.5rem" display="flex">
           <Button
             color={payload.severity || "error"}
