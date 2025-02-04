@@ -80,26 +80,29 @@ export class SubscriberRepository extends BaseRepository<
   ): Promise<void> {
     const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
 
-    const oldSubscriber = await this.findOne(criteria);
+    if ('assignedTo' in subscriberUpdates) {
+      // In case of a handover or handback, emit events
+      const oldSubscriber = await this.findOne(criteria);
 
-    if (!oldSubscriber) {
-      throw new Error('Something went wrong: subscriber does not exist');
-    }
+      if (!oldSubscriber) {
+        throw new Error('Something went wrong: subscriber does not exist');
+      }
 
-    if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
-      this.eventEmitter.emit(
-        'hook:subscriber:assign',
-        subscriberUpdates,
-        oldSubscriber,
-      );
-
-      if (!(subscriberUpdates.assignedTo && oldSubscriber?.assignedTo)) {
+      if (subscriberUpdates.assignedTo !== oldSubscriber?.assignedTo) {
         this.eventEmitter.emit(
-          'hook:analytics:passation',
+          'hook:subscriber:assign',
+          subscriberUpdates,
           oldSubscriber,
-          !!subscriberUpdates?.assignedTo,
         );
-        subscriberUpdates.assignedAt = new Date();
+
+        if (!(subscriberUpdates.assignedTo && oldSubscriber?.assignedTo)) {
+          this.eventEmitter.emit(
+            'hook:analytics:passation',
+            oldSubscriber,
+            !!subscriberUpdates?.assignedTo,
+          );
+          subscriberUpdates.assignedAt = new Date();
+        }
       }
     }
   }
