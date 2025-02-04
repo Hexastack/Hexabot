@@ -348,8 +348,8 @@ const quickReplySchema = z
     }
   });
 
-// pluginBlockMessageObjectSchema in case of plugin
-export const pluginBlockMessageObjectSchema = z
+// pluginBlockMessageSchema in case of Plugin Block
+export const pluginBlockMessageSchema = z
   .record(z.any())
   .superRefine((data, ctx) => {
     if (!('plugin' in data)) {
@@ -361,30 +361,43 @@ export const pluginBlockMessageObjectSchema = z
     }
   });
 
-// BlockMessage Schema
-export const blockMessageObjectSchema = z.union([
-  pluginBlockMessageObjectSchema,
-  z.object({
-    text: z.string().max(1000).optional(),
-    attachment: z
-      .object({
-        type: z.nativeEnum(FileType),
-        payload: z
-          .union([
-            z.object({ url: z.string().url() }),
-            z.object({ id: z.string().nullable() }),
-          ])
-          .optional(),
-      })
-      .optional(),
-    elements: z.boolean().optional(),
-    cards: z
-      .object({
-        default_action: buttonSchema,
-        buttons: z.array(buttonSchema).max(3),
-      })
-      .optional(),
-    buttons: z.array(buttonSchema).max(3).optional(),
-    quickReplies: z.array(quickReplySchema).max(11).optional(),
+// textBlockMessageSchema in case of Text Block
+const textBlockMessageSchema = z.string().max(1000);
+
+const buttonMessageSchema = z.object({
+  text: z.string(),
+  buttons: z.array(buttonSchema).max(3),
+});
+
+// quickReplyMessageSchema in case of QuickReply Block
+const quickReplyMessageSchema = z.object({
+  text: z.string(),
+  quickReplies: z.array(quickReplySchema).max(11).optional(),
+});
+
+// listBlockMessageSchema in case of List Block
+const listBlockMessageSchema = z.object({
+  elements: z.boolean(),
+});
+
+// attachmentBlockMessageSchema in case of Attachment Block
+const attachmentBlockMessageSchema = z.object({
+  text: z.string().max(1000).optional(),
+  attachment: z.object({
+    type: z.nativeEnum(FileType),
+    payload: z.union([
+      z.object({ url: z.string().url() }),
+      z.object({ id: z.string().nullable() }),
+    ]),
   }),
+});
+
+// BlockMessage Schema
+export const blockMessageSchema = z.union([
+  pluginBlockMessageSchema,
+  textBlockMessageSchema,
+  buttonMessageSchema,
+  quickReplyMessageSchema,
+  listBlockMessageSchema,
+  attachmentBlockMessageSchema,
 ]);

@@ -15,7 +15,7 @@ import {
 
 import {
   BlockMessage,
-  blockMessageObjectSchema,
+  blockMessageSchema,
   messageRegexSchema,
   textSchema,
 } from '../schemas/types/message';
@@ -36,7 +36,7 @@ export function isValidMessage(msg: any) {
     }
     return result.success;
   } else if (typeof msg === 'object' && msg !== null) {
-    const result = blockMessageObjectSchema.safeParse(msg);
+    const result = blockMessageSchema.safeParse(msg);
     if (!result.success) {
       console.error('Block Model: Object validation failed!', result.error);
     }
