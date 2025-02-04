@@ -163,7 +163,7 @@ export const Categories = () => {
                 const isConfirmed = await dialogs.confirm(
                   <ConfirmDialogBody
                     mode="selection"
-                    itemsNumber={selectedCategories.length}
+                    count={selectedCategories.length}
                   />,
                 );
 

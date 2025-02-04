@@ -13,18 +13,18 @@ import { useTranslate } from "@/hooks/useTranslate";
 
 export const ConfirmDialogBody = ({
   mode = "click",
-  itemsNumber = 1,
+  count = 1,
 }: {
   mode?: "selection" | "click";
-  itemsNumber?: number;
+  count?: number;
 }) => {
   const { t } = useTranslate();
   const dialogBodyText =
     mode === "selection"
-      ? itemsNumber === 1
+      ? count === 1
         ? t("message.item_selected_delete_confirm")
         : t("message.items_selected_delete_confirm", {
-            "0": itemsNumber.toString(),
+            "0": count.toString(),
           })
       : t("message.item_delete_confirm");
 

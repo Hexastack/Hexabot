@@ -52,7 +52,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
       required: t("message.label_is_required"),
     },
   };
-  const onSubmitForm = async (params: ICategoryAttributes) => {
+  const onSubmitForm = (params: ICategoryAttributes) => {
     if (data) {
       updateCategory({ id: data.id, params });
     } else {
