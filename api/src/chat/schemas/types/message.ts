@@ -348,27 +348,43 @@ const quickReplySchema = z
     }
   });
 
+// pluginBlockMessageObjectSchema in case of plugin
+export const pluginBlockMessageObjectSchema = z
+  .record(z.any())
+  .superRefine((data, ctx) => {
+    if (!('plugin' in data)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The object must contain the 'plugin' attribute",
+        path: ['plugin'],
+      });
+    }
+  });
+
 // BlockMessage Schema
-export const blockMessageObjectSchema = z.object({
-  text: z.string().max(1000).optional(),
-  attachment: z
-    .object({
-      type: z.nativeEnum(FileType),
-      payload: z
-        .union([
-          z.object({ url: z.string().url() }),
-          z.object({ id: z.string().nullable() }),
-        ])
-        .optional(),
-    })
-    .optional(),
-  elements: z.boolean().optional(),
-  cards: z
-    .object({
-      default_action: buttonSchema,
-      buttons: z.array(buttonSchema).max(3),
-    })
-    .optional(),
-  buttons: z.array(buttonSchema).max(3).optional(),
-  quickReplies: z.array(quickReplySchema).max(11).optional(),
-});
+export const blockMessageObjectSchema = z.union([
+  pluginBlockMessageObjectSchema,
+  z.object({
+    text: z.string().max(1000).optional(),
+    attachment: z
+      .object({
+        type: z.nativeEnum(FileType),
+        payload: z
+          .union([
+            z.object({ url: z.string().url() }),
+            z.object({ id: z.string().nullable() }),
+          ])
+          .optional(),
+      })
+      .optional(),
+    elements: z.boolean().optional(),
+    cards: z
+      .object({
+        default_action: buttonSchema,
+        buttons: z.array(buttonSchema).max(3),
+      })
+      .optional(),
+    buttons: z.array(buttonSchema).max(3).optional(),
+    quickReplies: z.array(quickReplySchema).max(11).optional(),
+  }),
+]);
