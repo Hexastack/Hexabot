@@ -114,7 +114,7 @@ export interface OpenConfirmDialog {
    * @param options Additional options for the dialog.
    * @returns A promise that resolves to true if the user confirms, false if the user cancels.
    */
-  (msg: React.ReactNode, options?: ConfirmOptions): Promise<boolean>;
+  (msg: React.ComponentType, options?: ConfirmOptions): Promise<boolean>;
 }
 
 export interface DialogHook {

@@ -80,7 +80,7 @@ export const Categories = () => {
       {
         label: ActionColumnLabel.Delete,
         action: async ({ id }) => {
-          const isConfirmed = await dialogs.confirm(<ConfirmDialogBody />);
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {
             deleteCategory(id);
@@ -160,10 +160,10 @@ export const Categories = () => {
               color="error"
               variant="contained"
               onClick={async () => {
-                const isConfirmed = await dialogs.confirm(
-                  <ConfirmDialogBody />,
-                  { mode: "selection", count: selectedCategories.length },
-                );
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedCategories.length,
+                });
 
                 if (isConfirmed) {
                   deleteCategories(selectedCategories);
