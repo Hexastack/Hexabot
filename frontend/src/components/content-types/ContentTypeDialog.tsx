@@ -56,21 +56,6 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     closeDialog();
     reset();
   };
-
-  useEffect(() => {
-    if (open) reset();
-  }, [open, reset]);
-
-  useEffect(() => {
-    if (data) {
-      reset({
-        name: data.name,
-      });
-    } else {
-      reset();
-    }
-  }, [data, reset]);
-
   const { mutate: createContentType } = useCreate(EntityType.CONTENT_TYPE, {
     onError: (error) => {
       toast.error(error);
@@ -96,9 +81,23 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     if (data) {
       updateContentType({ id: data.id, params });
     } else {
-      createContentType({ ...params, name: params.name || "" });
+      createContentType(params);
     }
   };
+
+  useEffect(() => {
+    if (open) reset();
+  }, [open, reset]);
+
+  useEffect(() => {
+    if (data) {
+      reset({
+        name: data.name,
+      });
+    } else {
+      reset();
+    }
+  }, [data, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={CloseAndReset}>
