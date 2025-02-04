@@ -165,7 +165,7 @@ export const stdPluginMessageSchema = z.object({
 
 export type StdPluginMessage = z.infer<typeof stdPluginMessageSchema>;
 
-export const BlockMessageSchema = z.union([
+export const blockMessageSchema = z.union([
   z.array(z.string()),
   stdOutgoingTextMessageSchema,
   stdOutgoingQuickRepliesMessageSchema,
@@ -175,7 +175,7 @@ export const BlockMessageSchema = z.union([
   stdPluginMessageSchema,
 ]);
 
-export type BlockMessage = z.infer<typeof BlockMessageSchema>;
+export type BlockMessage = z.infer<typeof blockMessageSchema>;
 
 export const StdOutgoingMessageSchema = z.union([
   stdOutgoingTextMessageSchema,
@@ -393,7 +393,7 @@ const attachmentBlockMessageSchema = z.object({
 });
 
 // BlockMessage Schema
-export const blockMessageSchema = z.union([
+export const blockMessageObjectSchema = z.union([
   pluginBlockMessageSchema,
   textBlockMessageSchema,
   buttonMessageSchema,
