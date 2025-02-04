@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -52,6 +52,7 @@ describe('SubscriberRepository', () => {
   let allSubscribers: Subscriber[];
   let allAttachments: Attachment[];
   let subscribersWithPopulatedFields: SubscriberFull[];
+  let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -94,6 +95,7 @@ describe('SubscriberRepository', () => {
         allUsers.find(({ id }) => subscriber.assignedTo === id) || null,
       avatar: allAttachments.find(({ id }) => subscriber.avatar === id) || null,
     }));
+    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
   afterEach(jest.clearAllMocks);
@@ -153,6 +155,75 @@ describe('SubscriberRepository', () => {
       expect(result).toEqualPayload(
         subscribersWithPopulatedFields.sort(sortRowsBy),
       );
+    });
+  });
+
+  describe('updateOne', () => {
+    it('should execute preUpdate hook and emit events on assignedTo change', async () => {
+      // Arrange: Set up a mock subscriber
+      const oldSubscriber = {
+        ...subscriberFixtures[0], // Mocked existing subscriber
+        assignedTo: null,
+      } as Subscriber;
+
+      const updates = { assignedTo: '9'.repeat(24) }; // Change assigned user;
+
+      jest
+        .spyOn(subscriberRepository, 'findOne')
+        .mockResolvedValue(oldSubscriber);
+      jest.spyOn(eventEmitter, 'emit');
+
+      await subscriberRepository.updateOne(oldSubscriber.id, updates);
+
+      expect(eventEmitter.emit).toHaveBeenNthCalledWith(
+        3,
+        'hook:subscriber:assign',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(eventEmitter.emit).toHaveBeenNthCalledWith(
+        4,
+        'hook:analytics:passation',
+        expect.anything(),
+        true, // Because assignedTo has changed
+      );
+    });
+
+    it('should not emit events if assignedTo remains unchanged', async () => {
+      const oldSubscriber = {
+        ...subscriberFixtures[0],
+        assignedTo: '8'.repeat(24),
+      } as Subscriber;
+
+      const updates = { assignedTo: '8'.repeat(24) }; // Same user;
+
+      jest
+        .spyOn(subscriberRepository, 'findOne')
+        .mockResolvedValue(oldSubscriber);
+      jest.spyOn(eventEmitter, 'emit');
+
+      await subscriberRepository.updateOne(oldSubscriber.id, updates);
+
+      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+        'hook:subscriber:assign',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+        'hook:analytics:passation',
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+
+    it('should throw an error if the subscriber does not exist', async () => {
+      jest.spyOn(subscriberRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        subscriberRepository.updateOne('0'.repeat(24), {
+          $set: { assignedTo: 'user-456' },
+        }),
+      ).rejects.toThrow();
     });
   });
 });
