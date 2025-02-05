@@ -65,18 +65,15 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: updateContentType } = useUpdate(
-    EntityType.CONTENT_TYPE,
-    {
-      onError: () => {
-        toast.error(t("message.internal_server_error"));
-      },
-      onSuccess: () => {
-        closeDialog();
-        toast.success(t("message.success_save"));
-      },
+  const { mutate: updateContentType } = useUpdate(EntityType.CONTENT_TYPE, {
+    onError: () => {
+      toast.error(t("message.internal_server_error"));
     },
-  );
+    onSuccess: () => {
+      closeDialog();
+      toast.success(t("message.success_save"));
+    },
+  });
   const onSubmitForm = async (params) => {
     if (data) {
       updateContentType({ id: data.id, params });
@@ -93,7 +90,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     if (data) {
       reset({
         name: data.name,
-        fields: data.fields || [],
+        fields: data.fields || FIELDS_FORM_DEFAULT_VALUES,
       });
     } else {
       reset();
