@@ -1,18 +1,18 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,7 +22,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -33,14 +33,12 @@ import { ILabel } from "@/types/label.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { LabelDialog } from "./LabelDialog";
+import { LabelFormDialog } from "./LabelFormDialog";
 
 export const Labels = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<ILabel>(false);
-  const editDialogCtl = useDialog<ILabel>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILabel>({
     $or: ["name", "title"],
@@ -51,12 +49,11 @@ export const Labels = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteLabel } = useDelete(EntityType.LABEL, {
+  const { mutate: deleteLabel } = useDelete(EntityType.LABEL, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -65,12 +62,18 @@ export const Labels = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(LabelFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteLabel(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -149,14 +152,6 @@ export const Labels = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <LabelDialog {...getDisplayDialogs(addDialogCtl)} />
-      <LabelDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLabel(deleteDialogCtl.data);
-        }}
-      />
       <PageHeader icon={faTags} title={t("title.labels")}>
         <Grid
           justifyContent="flex-end"
@@ -175,7 +170,7 @@ export const Labels = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => addDialogCtl.openDialog()}
+                onClick={() => dialogs.open(LabelFormDialog, null)}
               >
                 {t("button.add")}
               </Button>
