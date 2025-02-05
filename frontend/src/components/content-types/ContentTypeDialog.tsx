@@ -25,7 +25,7 @@ import { EntityType } from "@/services/types";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
 
 import { FieldInput } from "./components/FieldInput";
-import { READ_ONLY_FIELDS } from "./constants";
+import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
 
 export type ContentTypeDialogProps = DialogControlProps<IContentType>;
 export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
@@ -45,16 +45,20 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   } = useForm<Partial<IContentType>>({
     defaultValues: {
       name: data?.name || "",
-      fields: data?.fields || [],
+      fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
     },
   });
-  const { append, fields, remove } = useFieldArray({
+  const { append, fields, remove, replace } = useFieldArray({
     name: "fields",
     control,
   });
   const CloseAndReset = () => {
     closeDialog();
-    reset();
+    reset({
+      name: "",
+      fields: FIELDS_FORM_DEFAULT_VALUES,
+    });
+    replace(FIELDS_FORM_DEFAULT_VALUES);
   };
   const { mutate: createContentType } = useCreate(EntityType.CONTENT_TYPE, {
     onError: (error) => {
@@ -92,10 +96,12 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
         name: data.name,
         fields: data.fields || [],
       });
+      replace(data.fields || FIELDS_FORM_DEFAULT_VALUES);
     } else {
-      reset();
+      reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
+      replace(FIELDS_FORM_DEFAULT_VALUES);
     }
-  }, [data, reset]);
+  }, [open, data, reset, replace]);
 
   return (
     <Dialog open={open} fullWidth onClose={CloseAndReset}>
