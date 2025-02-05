@@ -6,32 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC } from "react";
-
-import { FormDialog } from "@/app-components/dialogs";
-import { useTranslate } from "@/hooks/useTranslate";
+import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 import { ILanguage } from "@/types/language.types";
 
 import { LanguageForm } from "./LanguageForm";
 
-export const LanguageFormDialog: FC<ComponentFormDialogProps<ILanguage>> = ({
-  payload,
-  ...rest
-}) => {
-  const { t } = useTranslate();
-
-  return (
-    <LanguageForm
-      data={payload}
-      onSuccess={() => {
-        rest.onClose(true);
-      }}
-      Wrapper={FormDialog}
-      WrapperProps={{
-        title: payload ? t("title.edit_language") : t("title.new_language"),
-        ...rest,
-      }}
-    />
-  );
-};
+export const LanguageFormDialog = <T extends ILanguage = ILanguage>(
+  props: ComponentFormDialogProps<T>,
+) => (
+  <GenericFormDialog<T>
+    Form={LanguageForm}
+    addText="title.new_language"
+    editText="title.edit_language"
+    {...props}
+  />
+);
