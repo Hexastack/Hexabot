@@ -93,6 +93,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     if (data) {
       reset({
         name: data.name,
+        fields: data.fields || [],
       });
     } else {
       reset();
