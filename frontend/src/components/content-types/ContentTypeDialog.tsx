@@ -25,7 +25,7 @@ import { EntityType } from "@/services/types";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
 
 import { FieldInput } from "./components/FieldInput";
-import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
+import { READ_ONLY_FIELDS } from "./constants";
 
 export type ContentTypeDialogProps = DialogControlProps<IContentType>;
 export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
@@ -45,7 +45,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   } = useForm<Partial<IContentType>>({
     defaultValues: {
       name: data?.name || "",
-      fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
+      fields: data?.fields || [],
     },
   });
   const { append, fields, remove } = useFieldArray({
@@ -90,7 +90,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     if (data) {
       reset({
         name: data.name,
-        fields: data.fields || FIELDS_FORM_DEFAULT_VALUES,
+        fields: data.fields || [],
       });
     } else {
       reset();
