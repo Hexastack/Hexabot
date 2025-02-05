@@ -576,13 +576,13 @@ export class BlockService extends BaseService<
           contentBlockOptions,
           skip,
         );
-        const envelope = {
+        const envelope: StdOutgoingEnvelope = {
           format: contentBlockOptions.display,
           message: {
             ...results,
             options: contentBlockOptions,
           },
-        } as StdOutgoingEnvelope;
+        };
         return envelope;
       } catch (err) {
         this.logger.error(

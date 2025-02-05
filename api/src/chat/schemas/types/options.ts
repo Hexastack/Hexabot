@@ -9,10 +9,9 @@
 import { z } from 'zod';
 
 import { buttonSchema } from './button';
-import { OutgoingMessageFormat } from './message';
 
 export const contentOptionsSchema = z.object({
-  display: z.nativeEnum(OutgoingMessageFormat),
+  display: z.enum(['list', 'carousel']),
   fields: z.object({
     title: z.string(),
     subtitle: z.string().nullable(),
