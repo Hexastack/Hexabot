@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -11,9 +11,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -25,7 +25,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -36,14 +36,12 @@ import { IContextVar } from "@/types/context-var.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { ContextVarDialog } from "./ContextVarDialog";
+import { ContextVarFormDialog } from "./ContextVarFormDialog";
 
 export const ContextVars = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<IContextVar>(false);
-  const editDialogCtl = useDialog<IContextVar>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IContextVar>({
     $iLike: ["label"],
@@ -54,7 +52,7 @@ export const ContextVars = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
+  const { mutate: updateContextVar } = useUpdate(EntityType.CONTEXT_VAR, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -62,41 +60,42 @@ export const ContextVars = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
+  const { mutate: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
     onError: (error) => {
       toast.error(error);
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
       setSelectedContextVars([]);
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: deleteContextVars } = useDeleteMany(
-    EntityType.CONTEXT_VAR,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedContextVars([]);
-        toast.success(t("message.item_delete_success"));
-      },
+  const { mutate: deleteContextVars } = useDeleteMany(EntityType.CONTEXT_VAR, {
+    onError: (error) => {
+      toast.error(error);
     },
-  );
+    onSuccess: () => {
+      setSelectedContextVars([]);
+      toast.success(t("message.item_delete_success"));
+    },
+  });
   const [selectedContextVars, setSelectedContextVars] = useState<string[]>([]);
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(ContextVarFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteContextVar(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -119,9 +118,9 @@ export const ContextVars = () => {
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",
-      renderCell: (params) => (
+      renderCell: ({ row, value }) => (
         <Switch
-          checked={params.value}
+          checked={value}
           color="primary"
           inputProps={{ "aria-label": "primary checkbox" }}
           disabled={
@@ -129,8 +128,8 @@ export const ContextVars = () => {
           }
           onChange={() => {
             updateContextVar({
-              id: params.row.id,
-              params: { permanent: !params.value },
+              id: row.id,
+              params: { permanent: !value },
             });
           }}
         />
@@ -166,21 +165,6 @@ export const ContextVars = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <ContextVarDialog {...getDisplayDialogs(addDialogCtl)} />
-      <ContextVarDialog {...getDisplayDialogs(editDialogCtl)} />
-
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (selectedContextVars.length > 0) {
-            deleteContextVars(selectedContextVars);
-            setSelectedContextVars([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            deleteContextVar(deleteDialogCtl.data);
-          }
-        }}
-      />
       <PageHeader icon={faAsterisk} title={t("title.context_vars")}>
         <Grid
           justifyContent="flex-end"
@@ -199,24 +183,32 @@ export const ContextVars = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => addDialogCtl.openDialog()}
+                onClick={() => dialogs.open(ContextVarFormDialog, null)}
               >
                 {t("button.add")}
               </Button>
             </Grid>
           ) : null}
-          {selectedContextVars.length > 0 && (
-            <Grid item>
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={() => deleteDialogCtl.openDialog(undefined)}
-              >
-                {t("button.delete")}
-              </Button>
-            </Grid>
-          )}
+          <Grid item>
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              color="error"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedContextVars.length,
+                });
+
+                if (isConfirmed) {
+                  deleteContextVars(selectedContextVars);
+                }
+              }}
+              disabled={!selectedContextVars.length}
+            >
+              {t("button.delete")}
+            </Button>
+          </Grid>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
