@@ -280,10 +280,7 @@ export type StdOutgoingButtonsEnvelope = z.infer<
 >;
 
 export const stdOutgoingListEnvelopeSchema = z.object({
-  format: z.union([
-    z.literal(OutgoingMessageFormat.list),
-    z.literal(OutgoingMessageFormat.carousel),
-  ]),
+  format: z.enum(['list', 'carousel']),
   message: stdOutgoingListMessageSchema,
 });
 
