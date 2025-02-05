@@ -58,7 +58,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   };
   const { mutate: createContentType } = useCreate(EntityType.CONTENT_TYPE, {
     onError: (error) => {
-      toast.error(error);
+      toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess: () => {
       closeDialog();
@@ -66,8 +66,8 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     },
   });
   const { mutate: updateContentType } = useUpdate(EntityType.CONTENT_TYPE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+    onError: (error) => {
+      toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess: () => {
       closeDialog();
