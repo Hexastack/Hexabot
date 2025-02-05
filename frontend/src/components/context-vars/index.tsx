@@ -60,24 +60,23 @@ export const ContextVars = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutate: deleteContextVar } = useDelete(EntityType.CONTEXT_VAR, {
-    onError: (error) => {
+  const options = {
+    onError: (error: Error) => {
       toast.error(error);
     },
     onSuccess() {
       setSelectedContextVars([]);
       toast.success(t("message.item_delete_success"));
     },
-  });
-  const { mutate: deleteContextVars } = useDeleteMany(EntityType.CONTEXT_VAR, {
-    onError: (error) => {
-      toast.error(error);
-    },
-    onSuccess: () => {
-      setSelectedContextVars([]);
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  };
+  const { mutate: deleteContextVar } = useDelete(
+    EntityType.CONTEXT_VAR,
+    options,
+  );
+  const { mutate: deleteContextVars } = useDeleteMany(
+    EntityType.CONTEXT_VAR,
+    options,
+  );
   const [selectedContextVars, setSelectedContextVars] = useState<string[]>([]);
   const actionColumns = useActionColumns<IContextVar>(
     EntityType.CONTEXT_VAR,
