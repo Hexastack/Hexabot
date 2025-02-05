@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -11,7 +11,7 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
-import { DeleteDialog } from "@/app-components/dialogs";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -21,7 +21,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -32,19 +32,18 @@ import { PermissionAction } from "@/types/permission.types";
 import { ITranslation } from "@/types/translation.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { EditTranslationDialog } from "./EditTranslationDialog";
+import { TranslationFormDialog } from "./TranslationFormDialog";
 
 export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const dialogs = useDialogs();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
       hasCount: false,
     },
   );
-  const editDialogCtl = useDialog<ITranslation>(false);
-  const deleteDialogCtl = useDialog<string>(false);
   const { onSearch, searchPayload } = useSearch<ITranslation>({
     $iLike: ["str"],
   });
@@ -54,16 +53,15 @@ export const Translations = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
+  const { mutate: deleteTranslation } = useDelete(EntityType.TRANSLATION, {
     onError: (error) => {
       toast.error(error);
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: checkRefreshTranslations, isLoading } =
+  const { mutate: checkRefreshTranslations, isLoading } =
     useRefreshTranslations({
       onError: () => {
         toast.error(t("message.internal_server_error"));
@@ -78,12 +76,18 @@ export const Translations = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(TranslationFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteTranslation(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -164,14 +168,6 @@ export const Translations = () => {
       <Grid item xs={12}>
         <Paper>
           <Grid padding={2} container>
-            <EditTranslationDialog {...getDisplayDialogs(editDialogCtl)} />
-            <DeleteDialog
-              {...deleteDialogCtl}
-              callback={() => {
-                if (deleteDialogCtl?.data)
-                  deleteTranslation(deleteDialogCtl.data);
-              }}
-            />
             <Grid item width="100%">
               <DataGrid {...dataGridProps} columns={columns} />
             </Grid>
