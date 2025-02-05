@@ -12,7 +12,7 @@ import { Button, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useQueryClient } from "react-query";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -24,7 +24,7 @@ import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -35,14 +35,12 @@ import { ILanguage } from "@/types/language.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { LanguageDialog } from "./LanguageDialog";
+import { LanguageFormDialog } from "./LanguageFormDialog";
 
 export const Languages = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<ILanguage>(false);
-  const editDialogCtl = useDialog<ILanguage>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const dialogs = useDialogs();
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ILanguage>({
@@ -75,7 +73,6 @@ export const Languages = () => {
           return isSameEntity(qEntity, EntityType.NLP_SAMPLE);
         },
       });
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -94,12 +91,18 @@ export const Languages = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(LanguageFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteLanguage(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
         isDisabled: (row) => row.isDefault,
       },
@@ -182,14 +185,6 @@ export const Languages = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <LanguageDialog {...getDisplayDialogs(addDialogCtl)} />
-      <LanguageDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl?.data) deleteLanguage(deleteDialogCtl.data);
-        }}
-      />
       <PageHeader icon={Flag} title={t("title.languages")}>
         <Grid
           justifyContent="flex-end"
@@ -208,7 +203,7 @@ export const Languages = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => addDialogCtl.openDialog()}
+                onClick={() => dialogs.open(LanguageFormDialog, null)}
               >
                 {t("button.add")}
               </Button>
