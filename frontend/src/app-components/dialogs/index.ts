@@ -11,5 +11,6 @@ export * from "./confirm/ConfirmDialogBody";
 export * from "./DeleteDialog";
 export * from "./DialogTitle";
 export * from "./FormDialog";
+export * from "./GenericFormDialog";
 export * from "./layouts/ContentContainer";
 export * from "./layouts/ContentItem";
