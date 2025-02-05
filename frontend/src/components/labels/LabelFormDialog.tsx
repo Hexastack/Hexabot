@@ -6,32 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC } from "react";
-
-import { FormDialog } from "@/app-components/dialogs";
-import { useTranslate } from "@/hooks/useTranslate";
+import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 import { ILabel } from "@/types/label.types";
 
 import { LabelForm } from "./LabelForm";
 
-export const LabelFormDialog: FC<ComponentFormDialogProps<ILabel>> = ({
-  payload,
-  ...rest
-}) => {
-  const { t } = useTranslate();
-
-  return (
-    <LabelForm
-      data={payload}
-      onSuccess={() => {
-        rest.onClose(true);
-      }}
-      Wrapper={FormDialog}
-      WrapperProps={{
-        title: payload ? t("title.edit_label") : t("title.new_label"),
-        ...rest,
-      }}
-    />
-  );
-};
+export const LabelFormDialog = <T extends ILabel = ILabel>(
+  props: ComponentFormDialogProps<T>,
+) => (
+  <GenericFormDialog<T>
+    Form={LabelForm}
+    addText="title.new_label"
+    editText="title.edit_label"
+    {...props}
+  />
+);
