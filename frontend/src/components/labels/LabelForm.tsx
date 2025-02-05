@@ -31,7 +31,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error || t("message.internal_server_error"));
+      toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess: () => {
       rest.onSuccess?.();
