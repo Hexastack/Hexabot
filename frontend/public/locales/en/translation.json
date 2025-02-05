@@ -198,6 +198,8 @@
     "import": "Bulk Import",
     "media_library": "Media Library",
     "languages": "Languages",
+    "new_language": "Add Language",
+    "edit_language": "Edit Language",
     "translations": "Translations",
     "update_translation": "Update Translation",
     "broadcast": "Broadcast",

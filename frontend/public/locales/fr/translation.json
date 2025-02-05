@@ -198,6 +198,8 @@
     "import": "Importation en masse",
     "media_library": "Bibliothéque Media",
     "languages": "Langues",
+    "new_language": "Nouvelle Langue",
+    "edit_language": "Modifier Langue",
     "translations": "Traductions",
     "update_translation": "Mettre à jour la traduction",
     "broadcast": "Diffusion",
