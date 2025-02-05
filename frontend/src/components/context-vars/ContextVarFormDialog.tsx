@@ -6,33 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC } from "react";
-
-import { FormDialog } from "@/app-components/dialogs";
-import { useTranslate } from "@/hooks/useTranslate";
+import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 import { IContextVar } from "@/types/context-var.types";
 
 import { ContextVarForm } from "./ContextVarForm";
 
-export const ContextVarFormDialog: FC<
-  ComponentFormDialogProps<IContextVar>
-> = ({ payload, ...rest }) => {
-  const { t } = useTranslate();
-
-  return (
-    <ContextVarForm
-      data={payload}
-      onSuccess={() => {
-        rest.onClose(true);
-      }}
-      Wrapper={FormDialog}
-      WrapperProps={{
-        title: payload
-          ? t("title.edit_context_var")
-          : t("title.new_context_var"),
-        ...rest,
-      }}
-    />
-  );
-};
+export const ContextVarFormDialog = <T extends IContextVar = IContextVar>(
+  props: ComponentFormDialogProps<T>,
+) => (
+  <GenericFormDialog<T>
+    Form={ContextVarForm}
+    addText="title.new_context_var"
+    editText="title.edit_context_var"
+    {...props}
+  />
+);
