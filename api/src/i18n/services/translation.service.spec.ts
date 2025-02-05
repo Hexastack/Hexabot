@@ -9,7 +9,6 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { BlockMessage } from '@/chat/schemas/types/message';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -155,7 +154,7 @@ describe('TranslationService', () => {
           model: 'String 1',
           context: ['String 2', 'String 3'],
         },
-      } as unknown as BlockMessage,
+      },
       options: {},
       attachedBlock: null,
     };
