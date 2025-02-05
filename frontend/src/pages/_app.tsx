@@ -21,6 +21,7 @@ import { ApiClientProvider } from "@/contexts/apiClient.context";
 import { AuthProvider } from "@/contexts/auth.context";
 import BroadcastChannelProvider from "@/contexts/broadcast-channel.context";
 import { ConfigProvider } from "@/contexts/config.context";
+import { DialogsProvider } from "@/contexts/dialogs.context";
 import { PermissionProvider } from "@/contexts/permission.context";
 import { SettingsProvider } from "@/contexts/setting.context";
 import { ToastProvider } from "@/hooks/useToast";
@@ -73,33 +74,37 @@ const App = ({ Component, pageProps }: TAppPropsWithLayout) => {
       <main className={roboto.className}>
         <ConfigProvider>
           <ThemeProvider theme={theme}>
-            <ToastProvider
-              maxSnack={3}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
-              action={(snackbarKey) => (
-                <SnackbarCloseButton snackbarKey={snackbarKey} />
-              )}
-            >
-              <StyledEngineProvider injectFirst>
-                <QueryClientProvider client={queryClient}>
-                  <CssBaseline />
-                  <ApiClientProvider>
-                    <BroadcastChannelProvider channelName="main-channel">
-                      <AuthProvider>
-                        <PermissionProvider>
-                          <SettingsProvider>
-                            <SocketProvider>
-                              {getLayout(<Component {...pageProps} />)}
-                            </SocketProvider>
-                          </SettingsProvider>
-                        </PermissionProvider>
-                      </AuthProvider>
-                    </BroadcastChannelProvider>
-                  </ApiClientProvider>
-                  <ReactQueryDevtools initialIsOpen={false} />
-                </QueryClientProvider>
-              </StyledEngineProvider>
-            </ToastProvider>
+            <DialogsProvider>
+              <ToastProvider
+                maxSnack={3}
+                anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                action={(snackbarKey) => (
+                  <SnackbarCloseButton snackbarKey={snackbarKey} />
+                )}
+              >
+                <StyledEngineProvider injectFirst>
+                  <QueryClientProvider client={queryClient}>
+                    <CssBaseline />
+                    <ApiClientProvider>
+                      <DialogsProvider>
+                        <BroadcastChannelProvider channelName="main-channel">
+                          <AuthProvider>
+                            <PermissionProvider>
+                              <SettingsProvider>
+                                <SocketProvider>
+                                  {getLayout(<Component {...pageProps} />)}
+                                </SocketProvider>
+                              </SettingsProvider>
+                            </PermissionProvider>
+                          </AuthProvider>
+                        </BroadcastChannelProvider>
+                      </DialogsProvider>
+                    </ApiClientProvider>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                  </QueryClientProvider>
+                </StyledEngineProvider>
+              </ToastProvider>
+            </DialogsProvider>
           </ThemeProvider>
         </ConfigProvider>
       </main>

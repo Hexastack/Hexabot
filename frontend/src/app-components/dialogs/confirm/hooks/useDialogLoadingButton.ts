@@ -1,15 +1,26 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export * from "./confirm/ConfirmDialog";
-export * from "./confirm/ConfirmDialogBody";
-export * from "./DeleteDialog";
-export * from "./DialogTitle";
-export * from "./FormDialog";
-export * from "./layouts/ContentContainer";
-export * from "./layouts/ContentItem";
+import { useState } from "react";
+
+export const useDialogLoadingButton = (onClose: () => Promise<void>) => {
+  const [loading, setLoading] = useState(false);
+  const handleClick = async () => {
+    try {
+      setLoading(true);
+      await onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    onClick: handleClick,
+    loading,
+  };
+};
