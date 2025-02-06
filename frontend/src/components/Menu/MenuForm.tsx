@@ -19,14 +19,18 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { IMenuItemAttributes, MenuType } from "@/types/menu.types";
+import { IMenuItem, IMenuItemAttributes, MenuType } from "@/types/menu.types";
 import { isAbsoluteUrl } from "@/utils/URL";
-
-import { MenuFormDialogProps } from "./MenuFormDialog";
 
 const DEFAULT_VALUES = { title: "", type: MenuType.web_url, url: undefined };
 
-export const MenuForm: FC<ComponentFormProps<MenuFormDialogProps>> = ({
+export type MenuFormData = {
+  row?: IMenuItem;
+  rowId?: string;
+  parentId?: string;
+};
+
+export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
   data,
   Wrapper = Fragment,
   WrapperProps,

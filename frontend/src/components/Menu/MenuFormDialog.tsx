@@ -8,18 +8,10 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { IMenuItem } from "@/types/menu.types";
 
-import { MenuForm } from "./MenuForm";
+import { MenuForm, MenuFormData } from "./MenuForm";
 
-export type MenuFormDialogProps = {
-  row?: IMenuItem;
-  rowId?: string;
-  parentId?: string;
-};
-export const MenuFormDialog = <
-  T extends MenuFormDialogProps = MenuFormDialogProps,
->(
+export const MenuFormDialog = <T extends MenuFormData = MenuFormData>(
   props: ComponentFormDialogProps<T>,
 ) => (
   <GenericFormDialog<T>
