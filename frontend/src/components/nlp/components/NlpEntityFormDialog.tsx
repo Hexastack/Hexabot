@@ -17,8 +17,8 @@ export const NlpEntityFormDialog = <T extends INlpEntity = INlpEntity>(
 ) => (
   <GenericFormDialog<T>
     Form={NlpEntityVarForm}
-    addText="title.new_context_var"
-    editText="title.edit_context_var"
+    addText="title.new_nlp_entity"
+    editText="title.edit_nlp_entity"
     {...props}
   />
 );
