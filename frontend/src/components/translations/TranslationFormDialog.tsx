@@ -17,8 +17,7 @@ export const TranslationFormDialog = <T extends ITranslation = ITranslation>(
 ) => (
   <GenericFormDialog<T>
     Form={TranslationForm}
-    addText="title.new_label"
-    editText="title.edit_label"
+    editText="title.update_translation"
     {...props}
   />
 );
