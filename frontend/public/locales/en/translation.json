@@ -112,7 +112,8 @@
     "text_is_required": "Text is required",
     "invalid_file_type": "Invalid file type. Please select a file in the supported format.",
     "select_category": "Select a flow",
-    "logout_failed": "Something went wrong during logout"
+    "logout_failed": "Something went wrong during logout",
+    "duplicate_labels_not_allowed": "Duplicate labels are not allowed"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -191,7 +192,6 @@
     "entities": "Content Types",
     "new_content_type": "New Content Type",
     "edit_content_type": "Edit Content Type",
-    "manage_fields": "Manage Fields",
     "nodes": "Content",
     "new_node": "New Content",
     "edit_node": "Edit Content",
