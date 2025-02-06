@@ -33,9 +33,6 @@ import { useInfinitedLiveMessages } from "../hooks/useInfiniteLiveMessages";
 
 import { ChatActions } from "./ChatActions";
 import { ChatHeader } from "./ChatHeader";
-import GeolocationMessage, {
-  GeolocationMessageProps,
-} from "./GeolocationMessage";
 
 export function Chat() {
   const { apiUrl } = useConfig();
@@ -94,32 +91,12 @@ export function Chat() {
           autoScrollToBottom={true}
           autoScrollToBottomOnMount={true}
         >
-          {messages.map((message: any, i) => {
+          {messages.map((message, i) => {
             const position = getMessagePosition(
               message,
               messages[i - 1],
               messages[i + 1],
             );
-
-            if (message?.message?.type === "location") {
-              const msg = {
-                type: message.message.type,
-                data: {
-                  coordinates: {
-                    lat: message.message.coordinates.lat,
-                    lng: message.message.coordinates.lon,
-                  },
-                },
-                author: message.sender,
-                read: message.read,
-                mid: message.mid,
-                createdAt: message.createdAt,
-                direction: "sent",
-                delivery: false,
-              } as GeolocationMessageProps["message"];
-
-              return <GeolocationMessage message={msg} key={message.id} />;
-            }
 
             return (
               <Message
