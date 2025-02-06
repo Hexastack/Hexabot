@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -64,22 +63,23 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       params: searchPayload,
     },
   );
-  const options = {
+  const { mutate: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
+    onError: (error: Error) => {
+      toast.error(error.message || t("message.internal_server_error"));
+    },
+    onSuccess() {
+      refetchEntity();
+      toast.success(t("message.item_delete_success"));
+    },
+  });
+  const { mutate: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
     onError: (error: Error) => {
       toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess() {
       toast.success(t("message.item_delete_success"));
     },
-  };
-  const { mutateAsync: deleteNlpValue } = useDelete(
-    EntityType.NLP_VALUE,
-    options,
-  );
-  const { mutate: deleteNlpValues } = useDeleteMany(
-    EntityType.NLP_VALUE,
-    options,
-  );
+  });
   const [selectedNlpValues, setSelectedNlpValues] = useState<string[]>([]);
   const actionColumns = useActionColumns<INlpValue>(
     EntityType.NLP_VALUE,
@@ -95,8 +95,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
           const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 
           if (isConfirmed) {
-            await deleteNlpValue(id);
-            refetchEntity();
+            deleteNlpValue(id);
           }
         },
       },
