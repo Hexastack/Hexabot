@@ -52,7 +52,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     name: "fields",
     control,
   });
-  const CloseAndReset = () => {
+  const closeAndReset = () => {
     closeDialog();
     reset({
       name: "",
@@ -79,6 +79,25 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
     },
   });
   const onSubmitForm = async (params) => {
+    const labelCounts: Record<string, number> = params.fields.reduce(
+      (acc, field) => {
+        if (!field.label.trim()) return acc;
+        acc[field.label] = (acc[field.label] || 0) + 1;
+
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+    const hasDuplicates = Object.values(labelCounts).some(
+      (count: number) => count > 1,
+    );
+
+    if (hasDuplicates) {
+      toast.error(t("message.duplicate_labels_not_allowed"));
+
+      return;
+    }
+
     if (data) {
       updateContentType({ id: data.id, params });
     } else {
@@ -104,9 +123,9 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   }, [open, data, reset, replace]);
 
   return (
-    <Dialog open={open} fullWidth onClose={CloseAndReset}>
+    <Dialog open={open} fullWidth onClose={closeAndReset}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
-        <DialogTitle onClose={CloseAndReset}>
+        <DialogTitle onClose={closeAndReset}>
           {data ? t("title.edit_content_type") : t("title.new_content_type")}
         </DialogTitle>
         <DialogContent>
