@@ -33,7 +33,18 @@ export const NlpValueForm: FC<
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const options = {
+  const { mutate: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
+    onError: () => {
+      rest.onError?.();
+      toast.error(t("message.internal_server_error"));
+    },
+    onSuccess() {
+      rest.onSuccess?.();
+      refetchEntity();
+      toast.success(t("message.success_save"));
+    },
+  });
+  const { mutate: updateNlpValue } = useUpdate(EntityType.NLP_VALUE, {
     onError: () => {
       rest.onError?.();
       toast.error(t("message.internal_server_error"));
@@ -42,12 +53,7 @@ export const NlpValueForm: FC<
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
     },
-  };
-  const { mutateAsync: createNlpValue } = useCreate(
-    EntityType.NLP_VALUE,
-    options,
-  );
-  const { mutate: updateNlpValue } = useUpdate(EntityType.NLP_VALUE, options);
+  });
   const { reset, register, handleSubmit, control } = useForm<
     INlpValueAttributes & {
       expressions: string[];
@@ -69,8 +75,7 @@ export const NlpValueForm: FC<
     if (data) {
       updateNlpValue({ id: data.id, params });
     } else {
-      await createNlpValue({ ...params, entity: String(query.id) });
-      refetchEntity();
+      createNlpValue({ ...params, entity: String(query.id) });
     }
   };
 
