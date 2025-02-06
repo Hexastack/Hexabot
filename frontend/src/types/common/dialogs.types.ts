@@ -9,12 +9,14 @@
 import { DialogProps as MuiDialogProps } from "@mui/material";
 import { BaseSyntheticEvent } from "react";
 
-interface ConfirmDialogExtraOptions {
+interface DialogExtraOptions {
   mode?: "click" | "selection";
   count?: number;
+  maxWidth?: MuiDialogProps["maxWidth"];
+  hasButtons?: boolean;
 }
 // context
-export interface OpenDialogOptions<R> extends ConfirmDialogExtraOptions {
+export interface OpenDialogOptions<R> extends DialogExtraOptions {
   /**
    * A function that is called before closing the dialog closes. The dialog
    * stays open as long as the returned promise is not resolved. Use this if
@@ -133,7 +135,7 @@ export interface DialogStackEntry<P, R> {
   payload: P;
   onClose: (result: R) => Promise<void>;
   resolve: (result: R) => void;
-  msgProps: ConfirmDialogExtraOptions;
+  msgProps: DialogExtraOptions;
 }
 
 export interface DialogProviderProps {
@@ -142,7 +144,7 @@ export interface DialogProviderProps {
 }
 
 // form dialog
-export interface FormDialogProps extends MuiDialogProps {
+export interface FormDialogProps extends MuiDialogProps, DialogExtraOptions {
   title?: string;
   children?: React.ReactNode;
   onSubmit: (e: BaseSyntheticEvent) => void;

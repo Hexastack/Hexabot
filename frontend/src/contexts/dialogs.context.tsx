@@ -55,7 +55,7 @@ function DialogsProvider(props: DialogProviderProps) {
       payload: P,
       options: OpenDialogOptions<R> = {},
     ) {
-      const { onClose = async () => {} } = options;
+      const { onClose = async () => {}, ...rest } = options;
       let resolve: ((result: R) => void) | undefined;
       const promise = new Promise<R>((resolveImpl) => {
         resolve = resolveImpl;
@@ -77,7 +77,7 @@ function DialogsProvider(props: DialogProviderProps) {
         payload,
         onClose,
         resolve,
-        msgProps: { count: options.count, mode: options.mode },
+        msgProps: rest,
       };
 
       setStack((prevStack) => [...prevStack, newEntry]);

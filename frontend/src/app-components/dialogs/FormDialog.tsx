@@ -25,9 +25,11 @@ export const FormDialog = ({
     <Dialog fullWidth {...rest}>
       <DialogTitle onClose={handleClose}>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
-      <DialogActions style={{ padding: "0.5rem" }}>
-        <DialogFormButtons onCancel={handleClose} onSubmit={onSubmit} />
-      </DialogActions>
+      {rest.hasButtons === false ? null : (
+        <DialogActions style={{ padding: "0.5rem" }}>
+          <DialogFormButtons onCancel={handleClose} onSubmit={onSubmit} />
+        </DialogActions>
+      )}
     </Dialog>
   );
 };
