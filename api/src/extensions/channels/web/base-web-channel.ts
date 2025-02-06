@@ -8,7 +8,8 @@
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+import { NextFunction, Request, Response } from 'express';
 import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
@@ -62,6 +63,20 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 import { WEB_CHANNEL_NAME, WEB_CHANNEL_NAMESPACE } from './settings';
 import { Web } from './types';
 import WebEventWrapper from './wrapper';
+
+// Handle multipart uploads (Long Pooling only)
+const upload = multer({
+  limits: {
+    fileSize: config.parameters.maxUploadSize,
+  },
+  storage: (() => {
+    if (config.parameters.storageMode === 'memory') {
+      return memoryStorage();
+    } else {
+      return diskStorage({});
+    }
+  })(),
+}).single('file'); // 'file' is the field name in the form
 
 @Injectable()
 export default abstract class BaseWebChannelHandler<
@@ -616,49 +631,19 @@ export default abstract class BaseWebChannelHandler<
    */
   async handleWebUpload(
     req: Request,
-    res: Response,
+    _res: Response,
   ): Promise<Attachment | null | undefined> {
     try {
-      const upload = multer({
-        limits: {
-          fileSize: config.parameters.maxUploadSize,
-        },
-        storage: (() => {
-          if (config.parameters.storageMode === 'memory') {
-            return memoryStorage();
-          } else {
-            return diskStorage({});
-          }
-        })(),
-      }).single('file'); // 'file' is the field name in the form
-
-      const multerUpload = new Promise<Express.Multer.File | null>(
-        (resolve, reject) => {
-          upload(req as Request, res as Response, async (err?: any) => {
-            if (err) {
-              this.logger.error('Unable to store uploaded file', err);
-              reject(new Error('Unable to upload file!'));
-            }
-
-            if (req.file) {
-              resolve(req.file);
-            }
-          });
-        },
-      );
-
-      const file = await multerUpload;
-
       // Check if any file is provided
-      if (!file) {
+      if (!req.file) {
         this.logger.debug('No files provided');
         return null;
       }
 
-      return await this.attachmentService.store(file, {
-        name: file.originalname,
-        size: file.size,
-        type: file.mimetype,
+      return await this.attachmentService.store(req.file, {
+        name: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype,
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
@@ -1329,5 +1314,37 @@ export default abstract class BaseWebChannelHandler<
 
       return !!message;
     }
+  }
+
+  /**
+   * Web channel middleware
+   *
+   * @param req Express Request
+   * @param res Express Response
+   * @param next Callback function
+   */
+  async middleware(req: Request, res: Response, next: NextFunction) {
+    if (!this.isSocketRequest(req)) {
+      if (req.headers['content-type']?.includes('multipart/form-data')) {
+        // Handle multipart uploads (Long Pooling only)
+        return upload(req, res, next);
+      } else if (req.headers['content-type']?.includes('text/plain')) {
+        // Handle plain text payloads as JSON (retro-compability)
+        const textParser = bodyParser.text({ type: 'text/plain' });
+
+        return textParser(req, res, () => {
+          try {
+            req.body =
+              typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+            next();
+          } catch (err) {
+            next(err);
+          }
+        });
+      }
+    }
+
+    // Do nothing
+    next();
   }
 }
