@@ -6,10 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { z } from 'zod';
+import { useState } from "react";
 
-export const subscriberContextSchema = z.object({
-  vars: z.record(z.any()).optional(),
-});
+export const useDialogLoadingButton = (onClose: () => Promise<void>) => {
+  const [loading, setLoading] = useState(false);
+  const handleClick = async () => {
+    try {
+      setLoading(true);
+      await onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-export type SubscriberContext = z.infer<typeof subscriberContextSchema>;
+  return {
+    onClick: handleClick,
+    loading,
+  };
+};

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -13,7 +13,7 @@ import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -24,7 +24,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -36,14 +36,12 @@ import { getDateTimeFormatter } from "@/utils/date";
 
 import { ICategory } from "../../types/category.types";
 
-import { CategoryDialog } from "./CategoryDialog";
+import { CategoryFormDialog } from "./CategoryFormDialog";
 
 export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<ICategory>(false);
-  const editDialogCtl = useDialog<ICategory>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<ICategory>({
     $iLike: ["label"],
@@ -54,38 +52,40 @@ export const Categories = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteCategory } = useDelete(EntityType.CATEGORY, {
-    onError: (error) => {
+  const options = {
+    onError: (error: Error) => {
       toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess: () => {
-      deleteDialogCtl.closeDialog();
       setSelectedCategories([]);
       toast.success(t("message.item_delete_success"));
     },
-  });
-  const { mutateAsync: deleteCategories } = useDeleteMany(EntityType.CATEGORY, {
-    onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      deleteDialogCtl.closeDialog();
-      setSelectedCategories([]);
-      toast.success(t("message.item_delete_success"));
-    },
-  });
+  };
+  const { mutate: deleteCategory } = useDelete(EntityType.CATEGORY, options);
+  const { mutate: deleteCategories } = useDeleteMany(
+    EntityType.CATEGORY,
+    options,
+  );
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const actionColumns = useActionColumns<ICategory>(
     EntityType.CATEGORY,
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: async (row) => {
+          await dialogs.open(CategoryFormDialog, row);
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteCategory(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -131,22 +131,6 @@ export const Categories = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <CategoryDialog {...getDisplayDialogs(addDialogCtl)} />
-      <CategoryDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={async () => {
-          if (selectedCategories.length > 0) {
-            deleteCategories(selectedCategories), setSelectedCategories([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl?.data) {
-            {
-              deleteCategory(deleteDialogCtl.data);
-              deleteDialogCtl.closeDialog();
-            }
-          }
-        }}
-      />
       <Grid>
         <PageHeader icon={FolderIcon} title={t("title.categories")}>
           <Grid
@@ -166,24 +150,30 @@ export const Categories = () => {
                   startIcon={<AddIcon />}
                   variant="contained"
                   sx={{ float: "right" }}
-                  onClick={() => addDialogCtl.openDialog()}
+                  onClick={() => dialogs.open(CategoryFormDialog, null)}
                 >
                   {t("button.add")}
                 </Button>
               </Grid>
             ) : null}
-            {selectedCategories.length > 0 && (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteDialogCtl.openDialog(undefined)}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            )}
+            <Button
+              color="error"
+              variant="contained"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedCategories.length,
+                });
+
+                if (isConfirmed) {
+                  deleteCategories(selectedCategories);
+                }
+              }}
+              disabled={!selectedCategories.length}
+              startIcon={<DeleteIcon />}
+            >
+              {t("button.delete")}
+            </Button>
           </Grid>
         </PageHeader>
       </Grid>

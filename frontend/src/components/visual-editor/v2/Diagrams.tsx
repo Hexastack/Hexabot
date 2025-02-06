@@ -41,7 +41,7 @@ import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
 import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
-import { CategoryDialog } from "@/components/categories/CategoryDialog";
+import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
@@ -51,11 +51,11 @@ import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
-import { ICategory } from "@/types/category.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import BlockDialog from "../BlockDialog";
@@ -74,9 +74,9 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
+  const dialogs = useDialogs();
   const deleteDialogCtl = useDialog<string[]>(false);
   const moveDialogCtl = useDialog<string[] | string>(false);
-  const addCategoryDialogCtl = useDialog<ICategory>(false);
   const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
@@ -528,7 +528,6 @@ const Diagrams = () => {
       }}
     >
       <Box sx={{ width: "100%" }}>
-        <CategoryDialog {...getDisplayDialogs(addCategoryDialogCtl)} />
         <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
         <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
         <MoveDialog
@@ -625,8 +624,8 @@ const Diagrams = () => {
                 width: "42px",
                 minWidth: "42px",
               }}
-              onClick={(e) => {
-                addCategoryDialogCtl.openDialog();
+              onClick={async (e) => {
+                await dialogs.open(CategoryFormDialog, null);
                 e.preventDefault();
               }}
             >

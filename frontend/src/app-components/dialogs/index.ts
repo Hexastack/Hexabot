@@ -6,7 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+export * from "./confirm/ConfirmDialog";
+export * from "./confirm/ConfirmDialogBody";
 export * from "./DeleteDialog";
 export * from "./DialogTitle";
+export * from "./FormDialog";
 export * from "./layouts/ContentContainer";
 export * from "./layouts/ContentItem";
