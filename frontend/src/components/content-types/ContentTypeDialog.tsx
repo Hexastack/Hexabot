@@ -110,12 +110,14 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
+    if (!open) return;
+
     if (data) {
       reset({
         name: data.name,
-        fields: data.fields || [],
+        fields: data.fields?.length ? data.fields : FIELDS_FORM_DEFAULT_VALUES,
       });
-      replace(data.fields || FIELDS_FORM_DEFAULT_VALUES);
+      replace(data.fields?.length ? data.fields : FIELDS_FORM_DEFAULT_VALUES);
     } else {
       reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
       replace(FIELDS_FORM_DEFAULT_VALUES);
@@ -173,7 +175,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
           </ContentContainer>
         </DialogContent>
         <DialogActions>
-          <DialogButtons closeDialog={closeDialog} />
+          <DialogButtons closeDialog={closeAndReset} />
         </DialogActions>
       </form>
     </Dialog>
