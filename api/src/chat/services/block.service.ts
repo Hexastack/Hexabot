@@ -17,7 +17,7 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
-import { PluginName, PluginType } from '@/plugins/types';
+import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandom } from '@/utils/helpers/safeRandom';
@@ -568,7 +568,6 @@ export class BlockService extends BaseService<
           contentBlockOptions,
           skip,
         );
-
         const envelope: StdOutgoingEnvelope = {
           format: contentBlockOptions.display,
           message: {
@@ -576,7 +575,6 @@ export class BlockService extends BaseService<
             options: contentBlockOptions,
           },
         };
-
         return envelope;
       } catch (err) {
         this.logger.error(
@@ -588,7 +586,7 @@ export class BlockService extends BaseService<
     } else if (blockMessage && 'plugin' in blockMessage) {
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
-        blockMessage.plugin as PluginName,
+        blockMessage.plugin,
       );
       // Process custom plugin block
       try {

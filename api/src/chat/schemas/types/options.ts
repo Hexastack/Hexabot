@@ -1,42 +1,46 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Button } from './button';
-import { OutgoingMessageFormat } from './message';
+import { z } from 'zod';
 
-export interface ContentOptions {
-  display: OutgoingMessageFormat.list | OutgoingMessageFormat.carousel;
-  fields: {
-    title: string;
-    subtitle: string | null;
-    image_url: string | null;
-    url?: string;
-    action_title?: string;
-    action_payload?: string;
-  };
-  buttons: Button[];
-  limit: number;
-  query?: any; // Waterline model criteria
-  entity?: string | number; // ContentTypeID
-  top_element_style?: 'large' | 'compact';
-}
+import { buttonSchema } from './button';
 
-export interface BlockOptions {
-  typing?: number;
-  // In case of carousel/list message
-  content?: ContentOptions;
-  // Only if the block has next blocks
-  fallback?: {
-    active: boolean;
-    message: string[];
-    max_attempts: number;
-  };
-  assignTo?: string;
-  // plugins effects
-  effects?: string[];
-}
+export const contentOptionsSchema = z.object({
+  display: z.enum(['list', 'carousel']),
+  fields: z.object({
+    title: z.string(),
+    subtitle: z.string().nullable(),
+    image_url: z.string().nullable(),
+    url: z.string().optional(),
+    action_title: z.string().optional(),
+    action_payload: z.string().optional(),
+  }),
+  buttons: z.array(buttonSchema),
+  limit: z.number().finite(),
+  query: z.any().optional(),
+  entity: z.union([z.string(), z.number().finite()]).optional(),
+  top_element_style: z.enum(['large', 'compact']).optional(),
+});
+
+export type ContentOptions = z.infer<typeof contentOptionsSchema>;
+
+export const BlockOptionsSchema = z.object({
+  typing: z.number().optional(),
+  content: contentOptionsSchema.optional(),
+  fallback: z
+    .object({
+      active: z.boolean(),
+      message: z.array(z.string()),
+      max_attempts: z.number().finite(),
+    })
+    .optional(),
+  assignTo: z.string().optional(),
+  effects: z.array(z.string()).optional(),
+});
+
+export type BlockOptions = z.infer<typeof BlockOptionsSchema>;
