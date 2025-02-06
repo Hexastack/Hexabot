@@ -19,8 +19,7 @@ export const NlpSampleFormDialog = <
 ) => (
   <GenericFormDialog<T>
     Form={NlpSampleForm}
-    addText="title.new_category"
-    editText="title.edit_category"
+    editText="title.edit_nlp_sample"
     {...props}
   />
 );
