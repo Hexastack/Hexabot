@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -26,7 +27,7 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 
-import { DeleteDialog } from "@/app-components/dialogs";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import FileUploadButton from "@/app-components/inputs/FileInput";
@@ -45,7 +46,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useConfig } from "@/hooks/useConfig";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -62,7 +63,7 @@ import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 import { buildURL } from "@/utils/URL";
 
-import { NlpSampleDialog } from "../NlpSampleDialog";
+import { NlpSampleFormDialog } from "./NlpSampleFormDialog";
 
 const NLP_SAMPLE_TYPE_COLORS = {
   all: "#fff",
@@ -75,6 +76,7 @@ export default function NlpSample() {
   const { apiUrl } = useConfig();
   const { toast } = useToast();
   const { t } = useTranslate();
+  const dialogs = useDialogs();
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
@@ -92,28 +94,23 @@ export default function NlpSample() {
     ],
     $iLike: ["text"],
   });
-  const { mutateAsync: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
+  const { mutate: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: deleteNlpSamples } = useDeleteMany(
-    EntityType.NLP_SAMPLE,
-    {
-      onError: (error) => {
-        toast.error(error);
-      },
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        setSelectedNlpSamples([]);
-        toast.success(t("message.item_delete_success"));
-      },
+  const { mutate: deleteNlpSamples } = useDeleteMany(EntityType.NLP_SAMPLE, {
+    onError: (error) => {
+      toast.error(error);
     },
-  );
+    onSuccess: () => {
+      setSelectedNlpSamples([]);
+      toast.success(t("message.item_delete_success"));
+    },
+  });
   const { mutateAsync: importDataset, isLoading } = useImport(
     EntityType.NLP_SAMPLE,
     {
@@ -147,8 +144,6 @@ export default function NlpSample() {
       params: searchPayload,
     },
   );
-  const deleteDialogCtl = useDialog<string>(false);
-  const editDialogCtl = useDialog<INlpDatasetSample>(false);
   const actionColumns = getActionsColumn<INlpSample>(
     [
       {
@@ -173,13 +168,22 @@ export default function NlpSample() {
               : null,
           };
 
-          editDialogCtl.openDialog(data);
+          dialogs.open(NlpSampleFormDialog, data, {
+            maxWidth: "md",
+            hasButtons: false,
+          });
         },
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteNlpSample(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -300,19 +304,6 @@ export default function NlpSample() {
 
   return (
     <Grid item xs={12}>
-      <NlpSampleDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (selectedNlpSamples.length > 0) {
-            deleteNlpSamples(selectedNlpSamples);
-            setSelectedNlpSamples([]);
-            deleteDialogCtl.closeDialog();
-          } else if (deleteDialogCtl.data) {
-            deleteNlpSample(deleteDialogCtl.data);
-          }
-        }}
-      />
       <Grid container alignItems="center">
         <Grid
           container
@@ -406,18 +397,26 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            {selectedNlpSamples.length > 0 && (
-              <Grid item>
-                <Button
-                  startIcon={<DeleteIcon />}
-                  variant="contained"
-                  color="error"
-                  onClick={() => deleteDialogCtl.openDialog(undefined)}
-                >
-                  {t("button.delete")}
-                </Button>
-              </Grid>
-            )}
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedNlpSamples.length,
+                  });
+
+                  if (isConfirmed) {
+                    deleteNlpSamples(selectedNlpSamples);
+                  }
+                }}
+                disabled={!selectedNlpSamples.length}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
           </ButtonGroup>
         </Grid>
       </Grid>
