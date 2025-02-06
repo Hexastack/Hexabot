@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 export const getFromQuery = ({
   key,
   search,
@@ -49,7 +48,8 @@ export const isAbsoluteUrl = (value: string = ""): boolean => {
 
     return (
       (url.protocol === "http:" || url.protocol === "https:") &&
-      (url.href.startsWith("http://") || url.href.startsWith("https://")) &&
+      ((url.href.startsWith("http://") && value.startsWith("http://")) ||
+        (url.href.startsWith("https://") && value.startsWith("https://"))) &&
       hostnameParts.length > 1 &&
       hostnameParts[hostnameParts.length - 1].length > 1
     );
