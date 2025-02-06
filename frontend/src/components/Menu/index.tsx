@@ -8,35 +8,26 @@
 
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
-import { Grid, Paper, Button, Box, debounce } from "@mui/material";
-import React, { useRef, useState } from "react";
+import { Box, Button, debounce, Grid, Paper } from "@mui/material";
+import { useRef, useState } from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
-import { useCreate } from "@/hooks/crud/useCreate";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
-import { IMenuItem } from "@/types/menu.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import MenuAccordion from "./MenuAccordion";
-import { MenuDialog } from "./MenuDialog";
+import { MenuFormDialog } from "./MenuFormDialog";
 
 export const Menu = () => {
   const { t } = useTranslate();
-  const [addDialogOpened, setAddDialogOpened] = useState(false);
-  const [editDialogOpened, setEditDialogOpened] = useState(false);
-  const [selectedMenuId, setSelectedMenuId] = useState<string | undefined>(
-    undefined,
-  );
-  const [editRow, setEditRow] = useState<IMenuItem | null>(null);
-  const [deleteDialogOpened, setDeleteDialogOpened] = useState(false);
-  const [deleteRowId, setDeleteRowId] = useState<string>();
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { data: menus, refetch } = useFind(
     { entity: EntityType.MENUTREE },
@@ -44,38 +35,11 @@ export const Menu = () => {
       hasCount: false,
     },
   );
-  const { mutateAsync: createMenu } = useCreate(EntityType.MENU, {
+  const { mutate: deleteMenu } = useDelete(EntityType.MENU, {
     onSuccess: () => {
-      setAddDialogOpened(false);
       refetch();
     },
   });
-  const { mutateAsync: updateMenu } = useUpdate(EntityType.MENU, {
-    onSuccess: () => {
-      setEditDialogOpened(false);
-      setEditRow(null);
-      refetch();
-    },
-  });
-  const { mutateAsync: deleteMenu } = useDelete(EntityType.MENU, {
-    onSuccess: () => {
-      setDeleteDialogOpened(false);
-      refetch();
-    },
-  });
-  const handleAppend = (menuId: string) => {
-    setSelectedMenuId(menuId);
-    setAddDialogOpened(true);
-    refetch();
-  };
-  const handleUpdate = (menu: IMenuItem) => {
-    setEditRow(menu);
-    setEditDialogOpened(true);
-  };
-  const handleDelete = (menu: IMenuItem) => {
-    setDeleteRowId(menu.id);
-    setDeleteDialogOpened(true);
-  };
   const [position, setPosition] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const [shadowVisible, setShadowVisible] = useState(false);
@@ -95,10 +59,7 @@ export const Menu = () => {
             {hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
               <Button
                 variant="contained"
-                onClick={() => {
-                  setSelectedMenuId(undefined);
-                  setAddDialogOpened(true);
-                }}
+                onClick={() => dialogs.open(MenuFormDialog, null)}
                 disabled={menus?.length === 10}
                 startIcon={<AddIcon />}
               >
@@ -108,17 +69,16 @@ export const Menu = () => {
           </Grid>
         </Grid>
       </PageHeader>
-
       <Paper
         ref={ref}
         onMouseMove={debounce((e) => {
           if (!ref.current) return;
           const padding = 16;
           const boxHeight = 56;
-          const mousePositonInsideElement =
+          const mousePositionInsideElement =
             e.clientY - ref.current?.getBoundingClientRect().top - padding;
           const currentBlock = Math.floor(
-            mousePositonInsideElement / boxHeight,
+            mousePositionInsideElement / boxHeight,
           );
           const maxBlock = Math.floor(
             (ref.current.getBoundingClientRect().height - padding - 1) /
@@ -137,41 +97,6 @@ export const Menu = () => {
         onMouseLeave={() => setShadowVisible(false)}
         onMouseEnter={() => setShadowVisible(true)}
       >
-        <MenuDialog
-          open={addDialogOpened}
-          parentId={selectedMenuId}
-          closeFunction={() => {
-            setAddDialogOpened(false);
-            setEditDialogOpened(false);
-          }}
-          createFunction={createMenu}
-        />
-
-        {editRow ? (
-          <MenuDialog
-            row={editRow}
-            open={editDialogOpened}
-            editFunction={(params) => {
-              if (editRow.id) updateMenu({ id: editRow.id, params });
-            }}
-            closeFunction={() => {
-              setEditDialogOpened(false);
-              setEditRow(null);
-            }}
-          />
-        ) : null}
-
-        <DeleteDialog
-          open={deleteDialogOpened}
-          openDialog={() => setDeleteDialogOpened(true)}
-          closeDialog={() => setDeleteDialogOpened(false)}
-          callback={() => {
-            if (deleteRowId) {
-              deleteMenu(deleteRowId);
-            }
-          }}
-        />
-
         {menus?.length > 0 && (
           <Box
             sx={{
@@ -194,9 +119,15 @@ export const Menu = () => {
           <MenuAccordion
             key={menu.id}
             menu={menu}
-            onAppend={handleAppend}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
+            onAppend={(parentId) => dialogs.open(MenuFormDialog, { parentId })}
+            onUpdate={(row) => dialogs.open(MenuFormDialog, { row })}
+            onDelete={async (row) => {
+              const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+              if (isConfirmed) {
+                deleteMenu(row.id);
+              }
+            }}
           />
         ))}
       </Paper>
