@@ -48,7 +48,7 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
       fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
     },
   });
-  const { append, fields, remove, replace } = useFieldArray({
+  const { append, fields, remove } = useFieldArray({
     name: "fields",
     control,
   });
@@ -58,7 +58,6 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
       name: "",
       fields: FIELDS_FORM_DEFAULT_VALUES,
     });
-    replace(FIELDS_FORM_DEFAULT_VALUES);
   };
   const { mutate: createContentType } = useCreate(EntityType.CONTENT_TYPE, {
     onError: (error) => {
@@ -110,19 +109,15 @@ export const ContentTypeDialog: FC<ContentTypeDialogProps> = ({
   }, [open, reset]);
 
   useEffect(() => {
-    if (!open) return;
-
     if (data) {
       reset({
         name: data.name,
-        fields: data.fields?.length ? data.fields : FIELDS_FORM_DEFAULT_VALUES,
+        fields: data.fields || FIELDS_FORM_DEFAULT_VALUES,
       });
-      replace(data.fields?.length ? data.fields : FIELDS_FORM_DEFAULT_VALUES);
     } else {
       reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
-      replace(FIELDS_FORM_DEFAULT_VALUES);
     }
-  }, [open, data, reset, replace]);
+  }, [data, reset]);
 
   return (
     <Dialog open={open} fullWidth onClose={closeAndReset}>
