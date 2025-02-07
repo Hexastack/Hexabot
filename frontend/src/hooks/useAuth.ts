@@ -32,14 +32,12 @@ export const useAuth = () => {
 
 export const useLogoutRedirection = () => {
   const router = useRouter();
-  const isDynamicPath = router.pathname.includes("[");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
-  const encodedPath = isDynamicPath
-    ? encodeURIComponent("/settings")
-    : encodeURIComponent(router.pathname);
   const logoutRedirection = async (fullReload: boolean = false) => {
     if (!hasPublicPath) {
-      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodedPath}`;
+      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(
+        router.asPath,
+      )}`;
 
       if (fullReload) {
         window.location.replace(redirectUrl);
