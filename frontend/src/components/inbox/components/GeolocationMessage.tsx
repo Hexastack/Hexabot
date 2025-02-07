@@ -21,7 +21,7 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
     throw new Error("Unable to find coordinates");
   }
 
-  const { lat, lon } = message?.coordinates || { lat: 0.0, lng: 0.0 };
+  const { lat, lon } = message.coordinates || { lat: 0.0, lng: 0.0 };
   const openStreetMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
     lon - 0.1
   },${lat - 0.1},${lon + 0.1},${lat + 0.1}&layer=mapnik&marker=${lat},${lon}`;
