@@ -1,38 +1,35 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Dialog, DialogContent } from "@mui/material";
-import { FC } from "react";
+import { FC, Fragment } from "react";
 
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
+import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   INlpDatasetSample,
   INlpDatasetSampleAttributes,
   INlpSampleFormAttributes,
 } from "@/types/nlp-sample.types";
 
-import NlpDatasetSample from "./components/NlpTrainForm";
+import NlpDatasetSample from "./NlpTrainForm";
 
-export type NlpSampleDialogProps = DialogControlProps<INlpDatasetSample>;
-export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
-  open,
-  data: sample,
-  closeDialog,
+export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
+  data,
+  Wrapper = Fragment,
+  WrapperProps,
   ...rest
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutateAsync: updateSample } = useUpdate<
+  const { mutate: updateSample } = useUpdate<
     EntityType.NLP_SAMPLE,
     INlpDatasetSampleAttributes
   >(EntityType.NLP_SAMPLE, {
@@ -44,10 +41,10 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
     },
   });
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
-    if (sample?.id) {
+    if (data?.id) {
       updateSample(
         {
-          id: sample.id,
+          id: data.id,
           params: {
             text: form.text,
             type: form.type,
@@ -57,7 +54,7 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
         },
         {
           onSuccess: () => {
-            closeDialog();
+            rest.onSuccess?.();
           },
         },
       );
@@ -65,13 +62,13 @@ export const NlpSampleDialog: FC<NlpSampleDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={closeDialog} {...rest}>
-      <DialogTitle onClose={closeDialog}>
-        {t("title.edit_nlp_sample")}
-      </DialogTitle>
-      <DialogContent>
-        <NlpDatasetSample sample={sample} submitForm={onSubmitForm} />
-      </DialogContent>
-    </Dialog>
+    <Wrapper open={!!WrapperProps?.open} onSubmit={() => {}} {...WrapperProps}>
+      <form>
+        <NlpDatasetSample
+          sample={data || undefined}
+          submitForm={onSubmitForm}
+        />
+      </form>
+    </Wrapper>
   );
 };
