@@ -52,7 +52,7 @@ export interface DialogProps<P = undefined, R = void> {
    */
   onClose: (result: R) => Promise<void>;
 
-  onSubmit: (e: BaseSyntheticEvent) => void;
+  onSubmit?: (e: BaseSyntheticEvent) => void;
 }
 
 export type DialogComponent<P, R> = React.ComponentType<DialogProps<P, R>>;
@@ -157,7 +157,7 @@ export interface FormDialogProps
 
 // form
 export interface FormButtonsProps {
-  onSubmit: (e: BaseSyntheticEvent) => void;
+  onSubmit?: (e: BaseSyntheticEvent) => void;
   onCancel?: () => void;
   cancelButtonProps?: ButtonProps;
   confirmButtonProps?: ButtonProps;
