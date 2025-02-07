@@ -59,15 +59,18 @@ export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
     },
   };
   const onSubmitForm = (params: IUserAttributes) => {
-    if (data?.user.id)
+    if (data?.user.id) {
       updateUser({
         id: data.user.id,
         params,
       });
+    }
   };
 
   useEffect(() => {
-    if (data?.user) reset({ roles: data?.user?.roles });
+    if (data?.user) {
+      reset({ roles: data?.user?.roles });
+    }
   }, [reset, data?.user]);
 
   return (
