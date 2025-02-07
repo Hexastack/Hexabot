@@ -6,15 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { DialogProps as MuiDialogProps } from "@mui/material";
+import { ButtonProps, DialogProps as MuiDialogProps } from "@mui/material";
 import { BaseSyntheticEvent } from "react";
 
-interface ConfirmDialogExtraOptions {
+interface DialogExtraOptions {
   mode?: "click" | "selection";
   count?: number;
+  maxWidth?: MuiDialogProps["maxWidth"];
+  hasButtons?: boolean;
 }
 // context
-export interface OpenDialogOptions<R> extends ConfirmDialogExtraOptions {
+export interface OpenDialogOptions<R> extends DialogExtraOptions {
   /**
    * A function that is called before closing the dialog closes. The dialog
    * stays open as long as the returned promise is not resolved. Use this if
@@ -24,6 +26,8 @@ export interface OpenDialogOptions<R> extends ConfirmDialogExtraOptions {
    * @returns A promise that resolves when the dialog can be closed.
    */
   onClose?: (result: R) => Promise<void>;
+
+  onSubmit?: (e: BaseSyntheticEvent) => void;
 }
 
 /**
@@ -47,6 +51,8 @@ export interface DialogProps<P = undefined, R = void> {
    * @returns A promise that resolves when the dialog can be fully closed.
    */
   onClose: (result: R) => Promise<void>;
+
+  onSubmit?: (e: BaseSyntheticEvent) => void;
 }
 
 export type DialogComponent<P, R> = React.ComponentType<DialogProps<P, R>>;
@@ -133,7 +139,7 @@ export interface DialogStackEntry<P, R> {
   payload: P;
   onClose: (result: R) => Promise<void>;
   resolve: (result: R) => void;
-  msgProps: ConfirmDialogExtraOptions;
+  msgProps: DialogExtraOptions;
 }
 
 export interface DialogProviderProps {
@@ -142,24 +148,28 @@ export interface DialogProviderProps {
 }
 
 // form dialog
-export interface FormDialogProps extends MuiDialogProps {
+export interface FormDialogProps
+  extends FormButtonsProps,
+    Omit<MuiDialogProps, "onSubmit"> {
   title?: string;
   children?: React.ReactNode;
-  onSubmit: (e: BaseSyntheticEvent) => void;
 }
 
 // form
-export type ComponentFormProps<T> = {
+export interface FormButtonsProps {
+  onSubmit?: (e: BaseSyntheticEvent) => void;
+  onCancel?: () => void;
+  cancelButtonProps?: ButtonProps;
+  confirmButtonProps?: ButtonProps;
+}
+
+export type ComponentFormProps<T> = FormButtonsProps & {
   data: T | null;
   onError?: () => void;
   onSuccess?: () => void;
   Wrapper?: React.FC<FormDialogProps>;
-  WrapperProps?: Partial<FormDialogProps>;
+  WrapperProps?: Partial<FormDialogProps> & Partial<FormButtonsProps>;
 };
 
-export interface FormButtonsProps {
-  onCancel?: () => void;
-  onSubmit: (e: BaseSyntheticEvent) => void;
-}
-
-export type ComponentFormDialogProps<T> = DialogProps<T | null, boolean>;
+export type ComponentFormDialogProps<T> = FormButtonsProps &
+  DialogProps<T | null, boolean>;

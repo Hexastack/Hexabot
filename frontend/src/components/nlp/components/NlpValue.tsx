@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -15,7 +15,7 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -27,7 +27,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet } from "@/hooks/crud/useGet";
-import { useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -39,21 +39,20 @@ import { INlpValue } from "@/types/nlp-value.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { NlpValueDialog } from "../NlpValueDialog";
+import { NlpValueFormDialog } from "./NlpValueFormDialog";
 
 export const NlpValues = ({ entityId }: { entityId: string }) => {
-  const [direction, setDirection] = useState<"up" | "down">("up");
-  const deleteEntityDialogCtl = useDialog<string>(false);
-  const editValueDialogCtl = useDialog<INlpValue>(false);
-  const addNlpValueDialogCtl = useDialog<INlpValue>(false);
-  const hasPermission = useHasPermission();
-  const router = useRouter();
   const { t } = useTranslate();
   const { toast } = useToast();
+  const dialogs = useDialogs();
+  const router = useRouter();
+  const [direction, setDirection] = useState<"up" | "down">("up");
+  const hasPermission = useHasPermission();
   const { data: nlpEntity, refetch: refetchEntity } = useGet(entityId, {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
+  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
     $iLike: ["value"],
@@ -64,23 +63,20 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
+  const { mutate: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
+    onError: (error: Error) => {
+      toast.error(error.message || t("message.internal_server_error"));
     },
     onSuccess() {
-      deleteEntityDialogCtl.closeDialog();
-      toast.success(t("message.item_delete_success"));
       refetchEntity();
+      toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
-    onError: (error) => {
-      toast.error(error);
+  const { mutate: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
+    onError: (error: Error) => {
+      toast.error(error.message || t("message.internal_server_error"));
     },
-    onSuccess: () => {
-      deleteEntityDialogCtl.closeDialog();
-      setSelectedNlpValues([]);
+    onSuccess() {
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -90,11 +86,18 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editValueDialogCtl.openDialog(row),
+        action: (row) =>
+          dialogs.open(NlpValueFormDialog, { data: row, canHaveSynonyms }),
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteEntityDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteNlpValue(id);
+          }
+        },
       },
     ],
     t("label.operations"),
@@ -150,9 +153,18 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     return setDirection("down");
   }, []);
 
-  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpValues(selection as string[]);
+  };
+  const handleDeleteNlpValues = async () => {
+    const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+      mode: "selection",
+      count: selectedNlpValues.length,
+    });
+
+    if (isConfirmed) {
+      deleteNlpValues(selectedNlpValues);
+    }
   };
 
   return (
@@ -198,8 +210,8 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                     <Button
                       startIcon={<AddIcon />}
                       variant="contained"
-                      onClick={() => addNlpValueDialogCtl.openDialog()}
                       sx={{ float: "right" }}
+                      onClick={() => dialogs.open(NlpValueFormDialog, null)}
                     >
                       {t("button.add")}
                     </Button>
@@ -207,12 +219,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                   {selectedNlpValues.length > 0 && (
                     <Grid item>
                       <Button
-                        startIcon={<DeleteIcon />}
-                        variant="contained"
                         color="error"
-                        onClick={() =>
-                          deleteEntityDialogCtl.openDialog(undefined)
-                        }
+                        variant="contained"
+                        onClick={handleDeleteNlpValues}
+                        startIcon={<DeleteIcon />}
                       >
                         {t("button.delete")}
                       </Button>
@@ -221,30 +231,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                 </ButtonGroup>
               </Grid>
             </PageHeader>
-            <NlpValueDialog
-              {...addNlpValueDialogCtl}
-              canHaveSynonyms={canHaveSynonyms}
-              callback={() => {
-                refetchEntity();
-              }}
-            />
-            <DeleteDialog
-              {...deleteEntityDialogCtl}
-              callback={() => {
-                if (selectedNlpValues.length > 0) {
-                  deleteNlpValues(selectedNlpValues);
-                  setSelectedNlpValues([]);
-                  deleteEntityDialogCtl.closeDialog();
-                } else if (deleteEntityDialogCtl.data) {
-                  deleteNlpValue(deleteEntityDialogCtl.data);
-                }
-              }}
-            />
-            <NlpValueDialog
-              {...editValueDialogCtl}
-              canHaveSynonyms={canHaveSynonyms}
-              callback={() => {}}
-            />
             <Grid padding={1} marginTop={2} container>
               <DataGrid
                 columns={columns}
