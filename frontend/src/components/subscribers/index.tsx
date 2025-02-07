@@ -10,7 +10,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DeleteIcon from "@mui/icons-material/Close";
 import { Grid, IconButton, MenuItem, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -23,23 +23,19 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
-import { ILabel } from "@/types/label.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { EditSubscriberDialog } from "./EditSubscriberDialog";
+import { SubscriberFormDialog } from "./SubscriberFormDialog";
 
 export const Subscribers = () => {
   const { t } = useTranslate();
-  const editDialogCtl = useDialog<{
-    labels: ILabel[];
-    subscriber: ISubscriber;
-  }>(false);
+  const dialogs = useDialogs();
   const { data: labels } = useFind(
     {
       entity: EntityType.LABEL,
@@ -155,11 +151,7 @@ export const Subscribers = () => {
       [
         {
           label: ActionColumnLabel.Manage_Labels,
-          action: (row) =>
-            editDialogCtl.openDialog({
-              labels: labels || [],
-              subscriber: row,
-            }),
+          action: (row) => dialogs.open(SubscriberFormDialog, row),
         },
       ],
       t("label.operations"),
@@ -168,7 +160,6 @@ export const Subscribers = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <EditSubscriberDialog {...getDisplayDialogs(editDialogCtl)} />
       <PageHeader icon={AccountCircleIcon} title={t("title.subscribers")}>
         <Grid
           justifyContent="flex-end"
