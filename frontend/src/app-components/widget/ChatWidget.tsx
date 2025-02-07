@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
 import { useRouter } from "next/router";
@@ -25,8 +24,7 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const router = useRouter();
-  const pathname = router.pathname;
+  const { pathname } = useRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
