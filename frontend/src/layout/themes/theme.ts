@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Color, SimplePaletteColorOptions } from "@mui/material";
 import { grey, teal } from "@mui/material/colors";
@@ -129,7 +130,7 @@ export const theme = createTheme({
     MuiDialogActions: {
       styleOverrides: {
         root: {
-          paddingRight: "15px",
+          padding: "0.5rem",
           borderTop: borderLine,
           backgroundColor: COLOR_PALETTE.lighterGray,
         },
@@ -159,10 +160,9 @@ export const theme = createTheme({
     },
     MuiDialogContent: {
       styleOverrides: {
-        root: { marginTop: "20px" },
+        root: { paddingTop: "15px!important" },
       },
     },
-
     MuiTextField: {
       styleOverrides: {
         root: {
