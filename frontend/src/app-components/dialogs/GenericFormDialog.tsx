@@ -8,29 +8,30 @@
 
 import React from "react";
 
-import { FormDialog } from "@/app-components/dialogs";
+import { FormDialog as Wrapper } from "@/app-components/dialogs";
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 type GenericFormDialogProps<T> = ComponentFormDialogProps<T> & {
   Form: React.ElementType;
+  rowKey?: keyof T;
   addText?: TTranslationKeys;
   editText?: TTranslationKeys;
 };
 
 export const GenericFormDialog = <T,>({
   Form,
-  payload,
+  rowKey,
+  payload: data,
   ...rest
 }: GenericFormDialogProps<T>) => {
   const { t } = useTranslate();
-  const translationKey = payload ? rest.editText : rest.addText;
+  const hasRow = rowKey ? data?.[rowKey] : data;
+  const translationKey = hasRow ? rest.editText : rest.addText;
 
   return (
     <Form
-      data={payload}
-      Wrapper={FormDialog}
       onSuccess={() => {
         rest.onClose(true);
       }}
@@ -38,6 +39,7 @@ export const GenericFormDialog = <T,>({
         title: translationKey && t(translationKey),
         ...rest,
       }}
+      {...{ data, Wrapper }}
     />
   );
 };

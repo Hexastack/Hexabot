@@ -27,7 +27,7 @@ export const FormDialog = ({
     <Dialog fullWidth {...rest}>
       <DialogTitle onClose={onCancel}>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
-      <DialogActions style={{ padding: "0.5rem" }}>
+      <DialogActions>
         <DialogFormButtons
           {...{ onSubmit, onCancel, confirmButtonProps, cancelButtonProps }}
         />
