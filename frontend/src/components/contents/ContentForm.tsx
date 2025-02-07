@@ -166,8 +166,8 @@ export const ContentForm: FC<ComponentFormProps<ContentFormData>> = ({
         isAbsoluteUrl(value) || t("message.url_is_invalid"),
     },
   };
-  const { mutateAsync: createContent } = useCreate(EntityType.CONTENT);
-  const { mutateAsync: updateContent } = useUpdate(EntityType.CONTENT);
+  const { mutate: createContent } = useCreate(EntityType.CONTENT);
+  const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
@@ -178,7 +178,7 @@ export const ContentForm: FC<ComponentFormProps<ContentFormData>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const onSubmitForm = async (params: IContentAttributes) => {
+  const onSubmitForm = (params: IContentAttributes) => {
     if (content) {
       updateContent(
         { id: content.id, params: buildDynamicFields(params, contentType) },
