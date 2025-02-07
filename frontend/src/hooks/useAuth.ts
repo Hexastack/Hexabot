@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { useRouter } from "next/router";
 import { useContext } from "react";
 
@@ -33,12 +32,14 @@ export const useAuth = () => {
 
 export const useLogoutRedirection = () => {
   const router = useRouter();
+  const isDynamicPath = router.pathname.includes("[");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
+  const encodedPath = isDynamicPath
+    ? encodeURIComponent("/settings")
+    : encodeURIComponent(router.pathname);
   const logoutRedirection = async (fullReload: boolean = false) => {
     if (!hasPublicPath) {
-      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(
-        router.pathname,
-      )}`;
+      const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodedPath}`;
 
       if (fullReload) {
         window.location.replace(redirectUrl);
