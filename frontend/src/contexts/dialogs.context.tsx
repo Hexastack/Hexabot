@@ -137,6 +137,7 @@ function DialogsProvider(props: DialogProviderProps) {
           onClose={async (result) => {
             await closeDialog(promise, result);
           }}
+          onSubmit={() => {}}
           {...msgProps}
         />
       ))}

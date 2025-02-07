@@ -24,7 +24,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -32,19 +32,19 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
-import { IRole } from "@/types/role.types";
 import { IUser } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { EditUserDialog } from "./EditUserDialog";
-import { InvitationDialog } from "./InvitationDialog";
+import { CategoryFormDialog } from "./EditUserFormDialog";
+import { InviteUserFormFormDialog } from "./InviteUserFormDialog";
 
 export const Users = () => {
   const { ssoEnabled } = useConfig();
   const { t } = useTranslate();
   const { toast } = useToast();
+  const dialogs = useDialogs();
   const { user } = useAuth();
-  const { mutateAsync: updateUser } = useUpdate(EntityType.USER, {
+  const { mutate: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
       toast.error(error.message || t("message.internal_server_error"));
     },
@@ -52,8 +52,6 @@ export const Users = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const invitationDialogCtl = useDialog<IRole[]>(false);
-  const editDialogCtl = useDialog<{ user: IUser; roles: IRole[] }>(false);
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IUser>({
     $or: ["first_name", "last_name", "email"],
@@ -76,9 +74,9 @@ export const Users = () => {
       {
         label: ActionColumnLabel.Manage_Roles,
         action: (row) =>
-          editDialogCtl.openDialog({
-            roles: roles || [],
+          dialogs.open(CategoryFormDialog, {
             user: row,
+            roles: roles || [],
           }),
         requires: [PermissionAction.CREATE],
       },
@@ -151,14 +149,14 @@ export const Users = () => {
             ssoEnabled ||
             !hasPermission(EntityType.USER, PermissionAction.UPDATE)
           }
-          onChange={() => {
+          onChange={() =>
             updateUser({
               id: params.row.id,
               params: {
                 state: !params.row.state,
               },
-            });
-          }}
+            })
+          }
         />
       ),
     },
@@ -189,8 +187,6 @@ export const Users = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      <InvitationDialog {...getDisplayDialogs(invitationDialogCtl)} />
-      <EditUserDialog {...getDisplayDialogs(editDialogCtl)} />
       <PageHeader icon={faUsers} title={t("title.users")}>
         <Grid
           justifyContent="flex-end"
@@ -212,9 +208,7 @@ export const Users = () => {
                 sx={{
                   float: "right",
                 }}
-                onClick={() => {
-                  invitationDialogCtl.openDialog(roles);
-                }}
+                onClick={() => dialogs.open(InviteUserFormFormDialog)}
               >
                 {t("button.invite")}
               </Button>
