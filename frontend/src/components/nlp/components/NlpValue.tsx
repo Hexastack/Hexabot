@@ -156,6 +156,16 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpValues(selection as string[]);
   };
+  const handleDeleteNlpValues = async () => {
+    const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+      mode: "selection",
+      count: selectedNlpValues.length,
+    });
+
+    if (isConfirmed) {
+      deleteNlpValues(selectedNlpValues);
+    }
+  };
 
   return (
     <Grid container gap={2} flexDirection="column">
@@ -209,22 +219,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                   {selectedNlpValues.length > 0 && (
                     <Grid item>
                       <Button
-                        startIcon={<DeleteIcon />}
-                        variant="contained"
                         color="error"
-                        onClick={async () => {
-                          const isConfirmed = await dialogs.confirm(
-                            ConfirmDialogBody,
-                            {
-                              mode: "selection",
-                              count: selectedNlpValues.length,
-                            },
-                          );
-
-                          if (isConfirmed) {
-                            deleteNlpValues(selectedNlpValues);
-                          }
-                        }}
+                        variant="contained"
+                        onClick={handleDeleteNlpValues}
+                        startIcon={<DeleteIcon />}
                       >
                         {t("button.delete")}
                       </Button>
