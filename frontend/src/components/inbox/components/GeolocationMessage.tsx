@@ -8,14 +8,10 @@
 
 import { useRef } from "react";
 
+import { StdIncomingLocationMessage } from "@/types/message.types";
+
 export interface GeolocationMessageProps {
-  message: {
-    type: "location";
-    coordinates: {
-      lat: number;
-      lon: number;
-    };
-  };
+  message: StdIncomingLocationMessage;
 }
 
 const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
@@ -25,15 +21,10 @@ const GeolocationMessage: React.FC<GeolocationMessageProps> = ({ message }) => {
     throw new Error("Unable to find coordinates");
   }
 
-  const coordinates = {
-    lat: message?.coordinates?.lat || 0.0,
-    lng: message?.coordinates?.lon || 0.0,
-  };
+  const { lat, lon } = message?.coordinates || { lat: 0.0, lng: 0.0 };
   const openStreetMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
-    coordinates.lng - 0.1
-  },${coordinates.lat - 0.1},${coordinates.lng + 0.1},${
-    coordinates.lat + 0.1
-  }&layer=mapnik&marker=${coordinates.lat},${coordinates.lng}`;
+    lon - 0.1
+  },${lat - 0.1},${lon + 0.1},${lat + 0.1}&layer=mapnik&marker=${lat},${lon}`;
 
   return (
     <div
