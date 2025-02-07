@@ -30,7 +30,7 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutateAsync: sendInvitation } = useSendInvitation({
+  const { mutate: sendInvitation } = useSendInvitation({
     onSuccess: () => {
       rest.onSuccess?.();
       toast.success(t("message.success_invitation_sent"));
@@ -58,9 +58,8 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
       required: t("message.roles_is_required"),
     },
   };
-  const onSubmitForm = async (params: IInvitationAttributes) => {
+  const onSubmitForm = (params: IInvitationAttributes) =>
     sendInvitation(params);
-  };
 
   return (
     <Wrapper
