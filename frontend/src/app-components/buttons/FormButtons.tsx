@@ -13,7 +13,12 @@ import { Button, Grid } from "@mui/material";
 import { useTranslate } from "@/hooks/useTranslate";
 import { FormButtonsProps } from "@/types/common/dialogs.types";
 
-export const DialogFormButtons = ({ onCancel, onSubmit }: FormButtonsProps) => {
+export const DialogFormButtons = ({
+  onSubmit,
+  onCancel,
+  cancelButtonProps,
+  confirmButtonProps,
+}: FormButtonsProps) => {
   const { t } = useTranslate();
 
   return (
@@ -28,6 +33,7 @@ export const DialogFormButtons = ({ onCancel, onSubmit }: FormButtonsProps) => {
         variant="outlined"
         onClick={onCancel}
         startIcon={<CloseIcon />}
+        {...cancelButtonProps}
       >
         {t("button.cancel")}
       </Button>
@@ -36,6 +42,7 @@ export const DialogFormButtons = ({ onCancel, onSubmit }: FormButtonsProps) => {
         variant="contained"
         onClick={onSubmit}
         startIcon={<CheckIcon />}
+        {...confirmButtonProps}
       >
         {t("button.submit")}
       </Button>
