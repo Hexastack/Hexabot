@@ -73,14 +73,19 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     },
     payload: {},
   };
+  const typeValue = watch("type");
+  const titleValue = watch("title");
   const onSubmitForm = (params: IMenuItemAttributes) => {
+    const { url, ...rest } = params;
+    const payload = typeValue === "web_url" ? { ...rest, url } : rest;
+
     if (data?.row?.id) {
       updateMenu({
         id: data.row.id,
-        params,
+        params: payload,
       });
     } else {
-      createMenu({ ...params, parent: data?.parentId });
+      createMenu({ ...payload, parent: data?.parentId });
     }
   };
 
@@ -91,9 +96,6 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
       reset(DEFAULT_VALUES);
     }
   }, [reset, data?.row]);
-
-  const typeValue = watch("type");
-  const titleValue = watch("title");
 
   return (
     <Wrapper
