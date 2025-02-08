@@ -23,7 +23,7 @@ import { FC } from "react";
 
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useGet } from "@/hooks/crud/useGet";
-import { useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import useFormattedFileSize from "@/hooks/useFormattedFileSize";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useToast } from "@/hooks/useToast";
@@ -32,7 +32,7 @@ import { EntityType } from "@/services/types";
 import { IAttachment } from "@/types/attachment.types";
 import { PermissionAction } from "@/types/permission.types";
 
-import { DeleteDialog } from "../dialogs";
+import { ConfirmDialogBody } from "../dialogs";
 
 const AttachmentPreview = ({
   attachment,
@@ -85,8 +85,8 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
   });
   const { toast } = useToast();
   const { t } = useTranslate();
-  const deleteDialogCtl = useDialog<string>(false);
-  const { mutateAsync: deleteAttachment } = useDelete(EntityType.ATTACHMENT, {
+  const dialogs = useDialogs();
+  const { mutate: deleteAttachment } = useDelete(EntityType.ATTACHMENT, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -121,12 +121,6 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
           hasPermission(EntityType.ATTACHMENT, PermissionAction.DELETE) &&
           onChange ? (
             <>
-              <DeleteDialog
-                {...deleteDialogCtl}
-                callback={() => {
-                  deleteAttachment(attachment.id);
-                }}
-              />
               <CardActions sx={{ justifyContent: "center", flex: "1 1 50%" }}>
                 <Button
                   color="primary"
@@ -145,8 +139,14 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                   color="secondary"
                   variant="contained"
                   startIcon={<DeleteOutlineOutlinedIcon />}
-                  onClick={(e) => {
-                    deleteDialogCtl.openDialog();
+                  onClick={async (e) => {
+                    const isConfirmed = await dialogs.confirm(
+                      ConfirmDialogBody,
+                    );
+
+                    if (isConfirmed) {
+                      deleteAttachment(attachment.id);
+                    }
                     e.preventDefault();
                     e.stopPropagation();
                   }}
