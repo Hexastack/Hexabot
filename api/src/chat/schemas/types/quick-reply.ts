@@ -9,7 +9,6 @@
 import { z } from 'zod';
 
 import { attachmentPayloadSchema } from './attachment';
-import { PayloadType } from './message';
 
 export enum QuickReplyType {
   text = 'text',
@@ -25,11 +24,11 @@ export const cordinatesSchema = z.object({
 
 export const payloadSchema = z.discriminatedUnion('type', [
   z.object({
-    type: z.literal(PayloadType.location),
+    type: z.literal('location'),
     coordinates: cordinatesSchema,
   }),
   z.object({
-    type: z.literal(PayloadType.attachments),
+    type: z.literal('attachments'),
     attachment: attachmentPayloadSchema,
   }),
 ]);

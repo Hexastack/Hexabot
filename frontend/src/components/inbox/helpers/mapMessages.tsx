@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
@@ -20,6 +19,7 @@ import { buildURL } from "@/utils/URL";
 
 import { MessageAttachmentsViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
+import GeolocationMessage from "../components/GeolocationMessage";
 
 function hasSameSender(
   m1: IMessage | IMessageFull,
@@ -69,6 +69,14 @@ export function getMessageContent(
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
+  if ("coordinates" in message) {
+    content.push(
+      <Message.CustomContent>
+        <GeolocationMessage message={message} key={message.type} />
+      </Message.CustomContent>,
+    );
+  }
+
   if ("text" in message) {
     content.push(
       <Message.TextContent key={messageEntity.id} text={message.text} />,
@@ -85,6 +93,7 @@ export function getMessageContent(
     chips = message.quickReplies as { title: string }[];
     chipsIcon = <ReplyIcon color="disabled" />;
   }
+
   if (chips.length > 0)
     content.push(
       <Message.Footer style={{ marginTop: "5px" }}>
