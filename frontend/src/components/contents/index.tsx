@@ -14,7 +14,7 @@ import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import { DeleteDialog } from "@/app-components/dialogs";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -26,54 +26,38 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
-import { IContentType } from "@/types/content-type.types";
 import { IContent } from "@/types/content.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { ContentDialog } from "./ContentDialog";
-import { ContentImportDialog } from "./ContentImportDialog";
+import { ContentFormDialog } from "./ContentFormDialog";
+import { ContentImportFormDialog } from "./ContentImportFormDialog";
 
 export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
-  // Dialog Controls
-  const addDialogCtl = useDialog<{
-    content?: IContent;
-    contentType?: IContentType;
-  }>(false);
-  const editDialogCtl = useDialog<{
-    content?: IContent;
-    contentType?: IContentType;
-  }>(false);
-  const deleteDialogCtl = useDialog<string>(false);
+  const dialogs = useDialogs();
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContent>({
     $eq: [{ entity: String(query.id) }],
     $iLike: ["title"],
   });
-  const importDialogCtl = useDialog<{
-    contentType?: IContentType;
-  }>(false);
   const hasPermission = useHasPermission();
-  const { data: contentType } = useGet(String(query.id), {
-    entity: EntityType.CONTENT_TYPE,
-  });
   const { dataGridProps, refetch } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
     {
       params: searchPayload,
     },
   );
-  const { mutateAsync: updateContent } = useUpdate(EntityType.CONTENT, {
+  const { mutate: updateContent } = useUpdate(EntityType.CONTENT, {
     onError: (error) => {
       toast.error(error.message || t("message.internal_server_error"));
     },
@@ -81,9 +65,8 @@ export const Contents = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: deleteContent } = useDelete(EntityType.CONTENT, {
+  const { mutate: deleteContent } = useDelete(EntityType.CONTENT, {
     onSuccess: () => {
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -93,22 +76,25 @@ export const Contents = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (content) =>
-          editDialogCtl.openDialog({
-            contentType,
-            content,
-          }),
+        action: (row) =>
+          dialogs.open(ContentFormDialog, { content: row, contentType }),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (content) => deleteDialogCtl.openDialog(content.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteContent(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
     t("label.operations"),
   );
-  const { data } = useGet(String(query.id), {
+  const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
 
@@ -123,7 +109,9 @@ export const Contents = () => {
 
         <PageHeader
           icon={faAlignLeft}
-          chip={<Chip label={data?.name} size="medium" variant="title" />}
+          chip={
+            <Chip label={contentType?.name} size="medium" variant="title" />
+          }
           title={t("title.content")}
         >
           <Grid justifyContent="flex-end" gap={1} container alignItems="center">
@@ -135,7 +123,9 @@ export const Contents = () => {
                 <Button
                   startIcon={<AddIcon />}
                   variant="contained"
-                  onClick={() => addDialogCtl.openDialog({ contentType })}
+                  onClick={() =>
+                    dialogs.open(ContentFormDialog, { contentType })
+                  }
                   sx={{ float: "right" }}
                 >
                   {t("button.add")}
@@ -147,7 +137,15 @@ export const Contents = () => {
                 <Button
                   startIcon={<UploadIcon />}
                   variant="contained"
-                  onClick={() => importDialogCtl.openDialog({ contentType })}
+                  onClick={async () => {
+                    if (contentType) {
+                      await dialogs.open(ContentImportFormDialog, {
+                        row: null,
+                        contentType,
+                      });
+                      refetch();
+                    }
+                  }}
                   sx={{ float: "right" }}
                 >
                   {t("button.import")}
@@ -159,21 +157,6 @@ export const Contents = () => {
       </Grid>
       <Grid item>
         <Paper>
-          <ContentDialog {...getDisplayDialogs(addDialogCtl)} />
-          <ContentDialog {...getDisplayDialogs(editDialogCtl)} />
-          <ContentImportDialog
-            {...getDisplayDialogs(importDialogCtl)}
-            callback={() => {
-              refetch();
-            }}
-          />
-          <DeleteDialog
-            {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data) deleteContent(deleteDialogCtl.data);
-            }}
-          />
-
           <Grid padding={2} container>
             <Grid item width="100%">
               <DataGrid<IContent>
