@@ -41,8 +41,14 @@ const DEFAULT_PAYLOAD: IPermissionAttributes = {
   role: "",
 };
 const AccordionModelHead = () => (
-  <Grid container direction="row" minHeight="6rem" alignContent="center" mb={1}>
-    <Grid item width="6rem" />
+  <Grid
+    container
+    direction="row"
+    minHeight="3rem"
+    alignContent="center"
+    bgcolor="#0001"
+  >
+    <Grid item width="6rem" m="0.2rem" />
     <Grid item xs textAlign="left">
       <Typography fontWeight={700} fontSize="body2.fontSize">
         Action
@@ -95,17 +101,19 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
     EntityType.PERMISSION,
     options,
   );
-  const [expanded, setExpanded] = useState<string | false>(false);
+  const [expanded, setExpanded] = useState<string | undefined>();
   const [payload, setPayload] =
     useState<IPermissionAttributes>(DEFAULT_PAYLOAD);
   const reset = () => setPayload(DEFAULT_PAYLOAD);
-  const handleChange =
-    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-      setExpanded(isExpanded ? panel : false);
-    };
+  const handleChange = (panel: string) => () => {
+    setExpanded(panel === expanded ? "" : panel);
+    setPayload(DEFAULT_PAYLOAD);
+  };
 
   useEffect(() => {
-    if (expanded === false && models?.[0]?.id) setExpanded(models[0].id);
+    if (typeof expanded !== "string" && models?.[0]?.id) {
+      setExpanded(models[0].id);
+    }
   }, [models]);
 
   return (
@@ -139,7 +147,8 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
           <AccordionDetails sx={{ p: 0, m: 0 }}>
             <Paper
               sx={{
-                padding: 2,
+                m: 2,
+                border: "1px solid #0002",
               }}
             >
               <AccordionModelHead />
@@ -179,14 +188,21 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                           <Typography>{action}</Typography>
                         </Grid>
                         <Grid item xs>
-                          <Typography>{relation}</Typography>
+                          <Typography sx={{ ml: "0.2rem" }}>
+                            {relation}
+                          </Typography>
                         </Grid>
                       </Grid>
                     </>
                   );
                 })}
-              <Grid container minHeight="2.5rem" padding={1}>
-                <Grid item width="6rem" alignContent="center">
+              <Grid
+                container
+                minHeight="2.5rem"
+                padding="1rem 0"
+                borderTop="1px solid #0002"
+              >
+                <Grid item width="6rem" alignContent="center" pl="0.6rem">
                   <IconButton
                     size="small"
                     color="primary"
@@ -200,6 +216,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
                         });
                       reset();
                     }}
+                    disabled={!payload.action || !payload.relation}
                   >
                     <AddIcon fontSize="small" />
                   </IconButton>
