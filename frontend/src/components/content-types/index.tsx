@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { useRouter } from "next/router";
 
-import { DeleteDialog } from "@/app-components/dialogs";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,7 +21,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -33,16 +32,13 @@ import { IContentType } from "@/types/content-type.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { ContentTypeDialog } from "./ContentTypeDialog";
+import { ContentTypeFormDialog } from "./ContentTypeFormDialog";
 
 export const ContentTypes = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const router = useRouter();
-  // Dialog Controls
-  const addDialogCtl = useDialog<IContentType>(false);
-  const deleteDialogCtl = useDialog<string>(false);
-  const fieldsDialogCtl = useDialog<IContentType>(false);
+  const dialogs = useDialogs();
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContentType>({
     $iLike: ["name"],
@@ -53,18 +49,14 @@ export const ContentTypes = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteContentType } = useDelete(
-    EntityType.CONTENT_TYPE,
-    {
-      onSuccess: () => {
-        deleteDialogCtl.closeDialog();
-        toast.success(t("message.item_delete_success"));
-      },
-      onError: (error) => {
-        toast.error(error.message || t("message.internal_server_error"));
-      },
+  const { mutate: deleteContentType } = useDelete(EntityType.CONTENT_TYPE, {
+    onSuccess: () => {
+      toast.success(t("message.item_delete_success"));
     },
-  );
+    onError: (error) => {
+      toast.error(error.message || t("message.internal_server_error"));
+    },
+  });
   const hasPermission = useHasPermission();
   const actionColumns = useActionColumns<IContentType>(
     EntityType.CONTENT_TYPE,
@@ -75,12 +67,18 @@ export const ContentTypes = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => fieldsDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(ContentTypeFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteContentType(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -106,7 +104,7 @@ export const ContentTypes = () => {
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                onClick={() => addDialogCtl.openDialog()}
+                onClick={() => dialogs.open(ContentTypeFormDialog, null)}
                 sx={{ float: "right" }}
               >
                 {t("button.add")}
@@ -117,15 +115,6 @@ export const ContentTypes = () => {
       </PageHeader>
       <Grid item xs={12}>
         <Paper>
-          <ContentTypeDialog {...getDisplayDialogs(addDialogCtl)} />
-          <DeleteDialog
-            {...deleteDialogCtl}
-            callback={() => {
-              if (deleteDialogCtl?.data)
-                deleteContentType(deleteDialogCtl.data);
-            }}
-          />
-          <ContentTypeDialog {...getDisplayDialogs(fieldsDialogCtl)} />
           <Grid padding={2} container>
             <Grid item width="100%">
               <DataGrid
