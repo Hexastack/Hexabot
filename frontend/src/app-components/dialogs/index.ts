@@ -8,7 +8,6 @@
 
 export * from "./confirm/ConfirmDialog";
 export * from "./confirm/ConfirmDialogBody";
-export * from "./DeleteDialog";
 export * from "./DialogTitle";
 export * from "./FormDialog";
 export * from "./GenericFormDialog";
