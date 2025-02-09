@@ -7,11 +7,10 @@
  */
 
 import DownloadIcon from "@mui/icons-material/Download";
-import { Box, Button, Dialog, DialogContent, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { FC } from "react";
 
-import { DialogTitle } from "@/app-components/dialogs";
-import { useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
@@ -21,6 +20,8 @@ import {
   StdOutgoingAttachmentMessage,
 } from "@/types/message.types";
 
+import { AttachmentViewerFormDialog } from "./AttachmentViewerFormDialog";
+
 interface AttachmentInterface {
   name?: string;
   url?: string;
@@ -28,35 +29,27 @@ interface AttachmentInterface {
 
 const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
   [FileType.image]: ({ url }: AttachmentInterface) => {
-    const dialogCtl = useDialog(false);
+    const dialogs = useDialogs();
 
     if (url)
       return (
-        <>
-          <Dialog {...dialogCtl}>
-            <DialogTitle onClose={dialogCtl.closeDialog}>Image</DialogTitle>
-            <DialogContent>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                width="auto"
-                height={800}
-                style={{ objectFit: "contain", cursor: "pointer" }}
-                alt={url}
-                src={url}
-                onClick={dialogCtl.openDialog}
-              />
-            </DialogContent>
-          </Dialog>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            width="auto"
-            height={200}
-            style={{ objectFit: "contain", cursor: "pointer" }}
-            alt={url}
-            src={url}
-            onClick={dialogCtl.openDialog}
-          />
-        </>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          width="auto"
+          height={200}
+          style={{ objectFit: "contain", cursor: "pointer" }}
+          alt={url}
+          src={url}
+          onClick={() =>
+            dialogs.open(
+              AttachmentViewerFormDialog,
+              { url },
+              {
+                hasButtons: false,
+              },
+            )
+          }
+        />
       );
 
     return (
