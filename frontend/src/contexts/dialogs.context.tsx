@@ -47,6 +47,8 @@ export const DialogsContext = createContext<
 function DialogsProvider(props: DialogProviderProps) {
   const { children, unmountAfter = 1000 } = props;
   const [stack, setStack] = useState<DialogStackEntry<any, any>[]>([]);
+  let selectComponent: (typeof stack)[number]["Component"] | undefined =
+    undefined;
   const keyPrefix = useId();
   const nextId = useRef(0);
   const requestDialog = useCallback<OpenDialog>(
@@ -80,7 +82,10 @@ function DialogsProvider(props: DialogProviderProps) {
         msgProps: rest,
       };
 
-      setStack((prevStack) => [...prevStack, newEntry]);
+      if (selectComponent !== Component || !rest.isSingleton) {
+        selectComponent = Component;
+        setStack((prevStack) => [...prevStack, newEntry]);
+      }
 
       return promise;
     },
@@ -99,6 +104,7 @@ function DialogsProvider(props: DialogProviderProps) {
           prevStack.filter((entry) => entry.promise !== dialog),
         );
       }, unmountAfter);
+      selectComponent = undefined;
     },
     [unmountAfter],
   );

@@ -32,7 +32,7 @@ export const useDialogs = (): DialogHook => {
   const { open, close } = context;
   const confirm = React.useCallback<OpenConfirmDialog>(
     async (msg, { onClose, ...options } = {}) => {
-      const { count, mode, ...rest } = options;
+      const { count, mode, isSingleton, ...rest } = options;
 
       return open(
         ConfirmDialog,
@@ -44,6 +44,7 @@ export const useDialogs = (): DialogHook => {
           mode,
           count,
           onClose,
+          isSingleton,
         },
       );
     },

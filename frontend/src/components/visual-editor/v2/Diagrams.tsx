@@ -30,18 +30,12 @@ import {
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
-import {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { SyntheticEvent, useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "react-query";
 
-import { DeleteDialog } from "@/app-components/dialogs";
-import { MoveDialog } from "@/app-components/dialogs/MoveDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
+import { BlockMoveFormDialog } from "@/components/visual-editor/BlockMoveFormDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
@@ -50,7 +44,6 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -58,7 +51,7 @@ import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
-import BlockDialog from "../BlockDialog";
+import { BlockEditFormDialog } from "../BlockEditFormDialog";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 
@@ -75,9 +68,7 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const dialogs = useDialogs();
-  const deleteDialogCtl = useDialog<string[]>(false);
-  const moveDialogCtl = useDialog<string[] | string>(false);
-  const { mutateAsync: updateBlocks } = useUpdateMany(EntityType.BLOCK);
+  const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
     setViewerZoom,
@@ -86,7 +77,6 @@ const Diagrams = () => {
     selectedCategoryId,
     createNode,
   } = useVisualEditor();
-  const editDialogCtl = useDialog<IBlock>(false);
   const { searchPayload } = useSearch<IBlock>({
     $eq: [{ category: selectedCategoryId }],
   });
@@ -97,7 +87,9 @@ const Diagrams = () => {
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
-      onSuccess([{ id, zoom, offset }]) {
+      onSuccess(categories) {
+        const { id, zoom, offset } = categories[0] || {};
+
         if (flowId) {
           setSelectedCategoryId?.(flowId);
         } else if (id) {
@@ -113,12 +105,11 @@ const Diagrams = () => {
   const currentCategory = categories.find(
     ({ id }) => id === selectedCategoryId,
   );
-  const { mutateAsync: updateCategory } = useUpdate(EntityType.CATEGORY, {
+  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
     invalidate: false,
   });
-  const { mutateAsync: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
+  const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
     onSuccess: () => {
-      deleteDialogCtl.closeDialog();
       setSelectedBlockId(undefined);
     },
   });
@@ -159,9 +150,9 @@ const Diagrams = () => {
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
-  const handleChange = (_event: SyntheticEvent, newValue: number) => {
+  const onCategoryChange = (targetCategory: number) => {
     if (categories) {
-      const { id } = categories[newValue];
+      const { id } = categories[targetCategory];
 
       if (id) {
         setSelectedCategoryId?.(id);
@@ -171,6 +162,9 @@ const Diagrams = () => {
       }
     }
   };
+  const handleChange = (_event: SyntheticEvent, newValue: number) => {
+    onCategoryChange(newValue);
+  };
   const { data: blocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
     { hasCount: false, params: searchPayload },
@@ -178,7 +172,6 @@ const Diagrams = () => {
       enabled: !!selectedCategoryId,
     },
   );
-  const deleteCallbackRef = useRef<() => void | null>(() => {});
 
   useEffect(() => {
     // Case when categories are already cached
@@ -202,15 +195,14 @@ const Diagrams = () => {
       data: blocks,
       setter: setSelectedBlockId,
       updateFn: updateBlock,
-      onRemoveNode: (ids, next) => {
-        deleteDialogCtl.openDialog(ids);
-        deleteCallbackRef.current = next;
-      },
+      onRemoveNode: openDeleteDialog,
       onDbClickNode: (event, id) => {
         if (id) {
           const block = getBlockFromCache(id);
 
-          editDialogCtl.openDialog(block);
+          dialogs.open(BlockEditFormDialog, block, {
+            maxWidth: "md",
+          });
         }
       },
       targetPortChanged: ({
@@ -322,24 +314,24 @@ const Diagrams = () => {
     ),
   ]);
 
-  const handleLinkDeletion = async (linkId: string) => {
+  const handleLinkDeletion = (linkId: string, model: DiagramModel) => {
     const link = model?.getLink(linkId) as any;
     const sourceId = link?.sourcePort.parent.options.id;
     const targetId = link?.targetPort.parent.options.id;
 
     if (link?.sourcePort.options.label === BlockPorts.nextBlocksOutPort) {
-      await removeNextBlockLink(sourceId, targetId);
+      removeNextBlockLink(sourceId, targetId);
     } else if (
       link?.sourcePort.options.label === BlockPorts.attachmentOutPort
     ) {
-      await removeAttachmentLink(sourceId, targetId);
+      removeAttachedLink(sourceId, targetId);
     }
   };
-  const removeNextBlockLink = async (sourceId: string, targetId: string) => {
+  const removeNextBlockLink = (sourceId: string, targetId: string) => {
     const previousData = getBlockFromCache(sourceId);
     const nextBlocks = [...(previousData?.nextBlocks || [])];
 
-    await updateBlock(
+    updateBlock(
       {
         id: sourceId,
         params: {
@@ -361,8 +353,8 @@ const Diagrams = () => {
       },
     );
   };
-  const removeAttachmentLink = async (sourceId: string, targetId: string) => {
-    await updateBlock(
+  const removeAttachedLink = (sourceId: string, targetId: string) => {
+    updateBlock(
       {
         id: sourceId,
         params: { attachedBlock: null },
@@ -377,8 +369,8 @@ const Diagrams = () => {
       },
     );
   };
-  const handleBlocksDeletion = async (blockIds: string[]) => {
-    await deleteBlocks(blockIds, {
+  const handleBlocksDeletion = (blockIds: string[]) => {
+    deleteBlocks(blockIds, {
       onSuccess: () => {
         blockIds.forEach((blockId) => {
           const block = getBlockFromCache(blockId);
@@ -428,74 +420,93 @@ const Diagrams = () => {
       }
     });
   };
-  const cleanupAfterDeletion = () => {
-    deleteCallbackRef.current?.();
-    deleteCallbackRef.current = () => {};
-    deleteDialogCtl.closeDialog();
-  };
-  const handleDeleteButton = () => {
-    const selectedEntities = engine?.getModel().getSelectedEntities();
-    const ids = selectedEntities?.map((model) => model.getID());
+  const getSelectedIds = () => {
+    const entities = engine?.getModel().getSelectedEntities();
+    const ids = entities?.map((model) => model.getID());
 
-    if (ids && selectedEntities && ids.length > 0) {
-      deleteCallbackRef.current = () => {
-        selectedEntities.forEach((model) => {
-          model.setLocked(false);
-          model.remove();
-        });
-        engine?.repaintCanvas();
-      };
-      deleteDialogCtl.openDialog(ids);
+    return ids || [];
+  };
+  const getGroupedIds = (ids: string[]) => {
+    return ids.reduce(
+      (acc, str) => ({
+        ...acc,
+        ...(str.length === 36
+          ? { linkIds: [...acc.linkIds, str] }
+          : { blockIds: [...acc.blockIds, str] }),
+      }),
+      { linkIds: [] as string[], blockIds: [] as string[] },
+    );
+  };
+  const hasSelectedBlock = () => {
+    const ids = getSelectedIds();
+
+    return getGroupedIds(ids).blockIds.length > 0;
+  };
+  const openDeleteDialog = async () => {
+    const ids = getSelectedIds();
+    const model = engine?.getModel();
+
+    if (ids.length) {
+      const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+        mode: "selection",
+        count: ids.length,
+        isSingleton: true,
+      });
+
+      if (isConfirmed && model) {
+        onDelete(ids, model);
+      }
     }
   };
   const handleMoveButton = () => {
-    const selectedEntities = engine?.getModel().getSelectedEntities().reverse();
-    const ids = selectedEntities?.map((model) => model.getID());
+    const ids = getSelectedIds();
+    const { blockIds } = getGroupedIds(ids);
 
-    if (ids && selectedEntities) {
-      moveDialogCtl.openDialog(ids);
+    if (ids.length) {
+      dialogs.open(BlockMoveFormDialog, {
+        ids: blockIds,
+        onMove,
+        category: selectedCategoryId,
+        categories,
+      });
     }
   };
-  const onDelete = async () => {
-    const ids = deleteDialogCtl?.data;
-
+  const onDelete = (ids: string[], model: DiagramModel) => {
     if (!ids || ids?.length === 0) {
       return;
     }
-    const isLink = ids[0].length === 36;
 
-    if (isLink) {
-      await handleLinkDeletion(ids[0]);
-    } else {
-      await handleBlocksDeletion(ids);
+    const { linkIds, blockIds } = getGroupedIds(ids);
+
+    if (linkIds.length && !blockIds.length) {
+      linkIds.forEach((linkId) => handleLinkDeletion(linkId, model));
+    } else if (blockIds.length) {
+      handleBlocksDeletion(blockIds);
     }
-
-    cleanupAfterDeletion();
   };
-  const onMove = async (newCategoryId?: string) => {
-    if (!newCategoryId) {
-      return;
-    }
+  const onMove = (ids: string[], targetCategoryId: string) => {
+    if (ids.length) {
+      updateBlocks(
+        { ids, payload: { category: targetCategoryId } },
+        {
+          onSuccess() {
+            queryClient.invalidateQueries({
+              predicate: ({ queryKey }) => {
+                const [qType, qEntity] = queryKey;
 
-    const ids = moveDialogCtl?.data;
+                return (
+                  qType === QueryType.collection &&
+                  isSameEntity(qEntity, EntityType.BLOCK)
+                );
+              },
+            });
 
-    if (ids?.length && Array.isArray(ids)) {
-      await updateBlocks({ ids, payload: { category: newCategoryId } });
-
-      queryClient.invalidateQueries({
-        predicate: ({ queryKey }) => {
-          const [qType, qEntity] = queryKey;
-
-          return (
-            qType === QueryType.collection &&
-            isSameEntity(qEntity, EntityType.BLOCK)
-          );
+            onCategoryChange(
+              categories.findIndex(({ id }) => id === targetCategoryId),
+            );
+          },
         },
-      });
-
-      setSelectedCategoryId(newCategoryId);
-      setSelectedBlockId(undefined);
-      moveDialogCtl.closeDialog();
+      );
     }
   };
 
@@ -528,15 +539,6 @@ const Diagrams = () => {
       }}
     >
       <Box sx={{ width: "100%" }}>
-        <BlockDialog {...getDisplayDialogs(editDialogCtl)} />
-        <DeleteDialog<string[]> {...deleteDialogCtl} callback={onDelete} />
-        <MoveDialog
-          open={moveDialogCtl.open}
-          openDialog={moveDialogCtl.openDialog}
-          callback={onMove}
-          closeDialog={moveDialogCtl.closeDialog}
-          categories={categories}
-        />
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>
           <Grid
             sx={{
@@ -585,12 +587,10 @@ const Diagrams = () => {
                     backgroundColor: "#F8F8F8",
                     borderBottom: "none",
                     minHeight: "30px",
-
                     "&.Mui-selected": {
                       backgroundColor: "#EAF1F1",
                       zIndex: 1,
                       color: "#000",
-
                       backgroundSize: "20px 20px",
                       backgroundAttachment: "fixed",
                       backgroundPosition: "-1px -1px",
@@ -617,15 +617,14 @@ const Diagrams = () => {
                 ml: "5px",
                 borderRadius: "0",
                 minHeight: "30px",
-
                 border: "1px solid #DDDDDD",
                 backgroundColor: "#F8F8F8",
                 borderBottom: "none",
                 width: "42px",
                 minWidth: "42px",
               }}
-              onClick={async (e) => {
-                await dialogs.open(CategoryFormDialog, null);
+              onClick={(e) => {
+                dialogs.open(CategoryFormDialog, null);
                 e.preventDefault();
               }}
             >
@@ -653,10 +652,12 @@ const Diagrams = () => {
                   if (selectedBlockId) {
                     const block = getBlockFromCache(selectedBlockId);
 
-                    editDialogCtl.openDialog(block);
+                    dialogs.open(BlockEditFormDialog, block, {
+                      maxWidth: "md",
+                    });
                   }
                 }}
-                disabled={!selectedBlockId || selectedBlockId.length !== 24}
+                disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
               >
                 {t("button.edit")}
               </Button>
@@ -665,7 +666,7 @@ const Diagrams = () => {
                 variant="contained"
                 startIcon={<MoveUp />}
                 onClick={handleMoveButton}
-                disabled={!selectedBlockId || selectedBlockId.length !== 24}
+                disabled={!hasSelectedBlock()}
               >
                 {t("button.move")}
               </Button>
@@ -675,8 +676,8 @@ const Diagrams = () => {
                 variant="contained"
                 color="secondary"
                 startIcon={<DeleteIcon />}
-                onClick={handleDeleteButton}
-                disabled={!selectedBlockId}
+                onClick={() => openDeleteDialog()}
+                disabled={!getSelectedIds().length}
               >
                 {t("button.remove")}
               </Button>
@@ -698,7 +699,6 @@ const Diagrams = () => {
                   "&.MuiButtonGroup-contained:hover": {
                     boxShadow: "0 0 8px #0005",
                   },
-
                   "& .MuiButton-root": {
                     backgroundColor: "background.paper",
                   },
