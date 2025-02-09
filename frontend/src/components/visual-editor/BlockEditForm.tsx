@@ -109,7 +109,11 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   }, [block, reset]);
 
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
+    <Wrapper
+      open={!!WrapperProps?.open}
+      onSubmit={handleSubmit(onSubmitForm)}
+      {...WrapperProps}
+    >
       <BlockFormProvider methods={methods} block={block || undefined}>
         <ContentContainer>
           <ContentItem display="flex" gap={5}>
