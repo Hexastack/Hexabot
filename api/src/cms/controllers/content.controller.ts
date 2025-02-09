@@ -1,13 +1,10 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
-
-import fs from 'fs';
-import path from 'path';
 
 import {
   Body,
@@ -20,14 +17,12 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { BadRequestException } from '@nestjs/common/exceptions';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import Papa from 'papaparse';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
@@ -59,7 +54,6 @@ export class ContentController extends BaseController<
   constructor(
     private readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
-    private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
   ) {
     super(contentService);
@@ -92,29 +86,23 @@ export class ContentController extends BaseController<
   /**
    * Imports content from a CSV file based on the provided content type and file ID.
    *
-   * @param idTargetContentType - The content type to match the CSV data against.
-   * @param idFileToImport - The ID of the file to be imported.
-   *
+   * @param idTargetContentType - The content type to match the CSV data against.   *
    * @returns A promise that resolves to the newly created content documents.
    */
-  @Get('import/:idTargetContentType/:idFileToImport')
-  async import(
-    @Param()
-    {
-      idTargetContentType: targetContentType,
-      idFileToImport: fileToImport,
-    }: {
-      idTargetContentType: string;
-      idFileToImport: string;
-    },
+  @CsrfCheck(true)
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('idTargetContentType')
+    targetContentType: string,
   ) {
-    // Check params
-    if (!fileToImport || !targetContentType) {
-      this.logger.warn(`Parameters are missing`);
-      throw new NotFoundException(`Missing params`);
+    const datasetContent = file.buffer.toString('utf-8');
+    if (!targetContentType) {
+      this.logger.warn(`Parameter is missing`);
+      throw new NotFoundException(`Missing parameter`);
     }
 
-    // Find the content type that corresponds to the given content
     const contentType =
       await this.contentTypeService.findOne(targetContentType);
     if (!contentType) {
@@ -123,57 +111,11 @@ export class ContentController extends BaseController<
       );
       throw new NotFoundException(`Content type is not found`);
     }
-
-    // Get file location
-    const file = await this.attachmentService.findOne(fileToImport);
-    // Check if file is present
-    const filePath = file
-      ? path.join(config.parameters.uploadDir, file.location)
-      : undefined;
-
-    if (!file || !filePath || !fs.existsSync(filePath)) {
-      this.logger.warn(`Failed to find file type with id ${fileToImport}.`);
-      throw new NotFoundException(`File does not exist`);
-    }
-    //read file sync
-    const data = fs.readFileSync(filePath, 'utf8');
-
-    const result = Papa.parse<Record<string, string | boolean | number>>(data, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-    });
-
-    if (result.errors.length > 0) {
-      this.logger.warn(
-        `Errors parsing the file: ${JSON.stringify(result.errors)}`,
-      );
-
-      throw new BadRequestException(result.errors, {
-        cause: result.errors,
-        description: 'Error while parsing CSV',
-      });
-    }
-
-    const contentsDto = result.data.reduce(
-      (acc, { title, status, ...rest }) => [
-        ...acc,
-        {
-          title: String(title),
-          status: Boolean(status),
-          entity: targetContentType,
-          dynamicFields: Object.keys(rest)
-            .filter((key) =>
-              contentType.fields?.map((field) => field.name).includes(key),
-            )
-            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
-        },
-      ],
-      [],
+    return await this.contentService.parseAndSaveDataset(
+      datasetContent,
+      targetContentType,
+      contentType,
     );
-
-    // Create content
-    return await this.contentService.createMany(contentsDto);
   }
 
   /**

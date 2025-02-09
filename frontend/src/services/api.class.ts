@@ -240,14 +240,6 @@ export class ApiClient {
     return data;
   }
 
-  async importContent(contentTypeId: string, attachmentId: string) {
-    const { data } = await this.request.get(
-      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
-    );
-
-    return data;
-  }
-
   async predictNlp(text: string) {
     const { data } = await this.request.get<INlpDatasetSampleAttributes>(
       `${ROUTES.NLP_SAMPLE_PREDICT}`,
@@ -289,15 +281,18 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     return data;
   }
 
-  async import<T = TBasic>(file: File) {
+  async import<T = TBasic>(file: File, params?: any) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
     formData.append("file", file);
 
     const { data } = await this.request.post<T[], AxiosResponse<T[]>, FormData>(
-      `${ROUTES[this.type]}/import?_csrf=${_csrf}`,
+      `${ROUTES[this.type]}/import`,
       formData,
+      {
+        params: { _csrf , ...params },
+      }
     );
 
     return data;

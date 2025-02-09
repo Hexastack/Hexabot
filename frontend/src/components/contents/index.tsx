@@ -1,20 +1,22 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import UploadIcon from "@mui/icons-material/Upload";
 import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useQueryClient } from "react-query";
 
 import { DeleteDialog } from "@/app-components/dialogs";
+import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,9 +24,11 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
+import { useImport } from "@/hooks/crud/useImport";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -39,12 +43,12 @@ import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { ContentDialog } from "./ContentDialog";
-import { ContentImportDialog } from "./ContentImportDialog";
 
 export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
+  const queryClient = useQueryClient();
   // Dialog Controls
   const addDialogCtl = useDialog<{
     content?: IContent;
@@ -60,14 +64,11 @@ export const Contents = () => {
     $eq: [{ entity: String(query.id) }],
     $iLike: ["title"],
   });
-  const importDialogCtl = useDialog<{
-    contentType?: IContentType;
-  }>(false);
   const hasPermission = useHasPermission();
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
-  const { dataGridProps, refetch } = useFind(
+  const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
     {
       params: searchPayload,
@@ -111,6 +112,34 @@ export const Contents = () => {
   const { data } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
+  const { mutateAsync: importDataset, isLoading } = useImport(
+    EntityType.CONTENT,
+    {
+      onError: () => {
+        toast.error(t("message.import_failed"));
+      },
+      onSuccess: (data) => {
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) => {
+            const [_qType, qEntity] = queryKey;
+
+            return (
+              isSameEntity(qEntity, EntityType.CONTENT)
+            );
+          },
+        });
+        if (data.length) {
+          toast.success(t("message.success_import"));
+        } else {
+          toast.error(t("message.import_duplicated_data"));
+        }
+      },
+    },
+    { idTargetContentType: contentType?.id }
+  );
+  const handleImportChange = async (file: File) => {
+    await importDataset(file);
+  };
 
   return (
     <Grid container flexDirection="column" gap={3}>
@@ -144,14 +173,13 @@ export const Contents = () => {
             ) : null}
             {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
               <Grid item>
-                <Button
-                  startIcon={<UploadIcon />}
-                  variant="contained"
-                  onClick={() => importDialogCtl.openDialog({ contentType })}
-                  sx={{ float: "right" }}
-                >
-                  {t("button.import")}
-                </Button>
+                <FileUploadButton
+                accept="text/csv"
+                label={t("button.import")}
+                onChange={handleImportChange}
+                isLoading={isLoading}
+              />
+            
               </Grid>
             ) : null}
           </Grid>
@@ -161,12 +189,6 @@ export const Contents = () => {
         <Paper>
           <ContentDialog {...getDisplayDialogs(addDialogCtl)} />
           <ContentDialog {...getDisplayDialogs(editDialogCtl)} />
-          <ContentImportDialog
-            {...getDisplayDialogs(importDialogCtl)}
-            callback={() => {
-              refetch();
-            }}
-          />
           <DeleteDialog
             {...deleteDialogCtl}
             callback={() => {
