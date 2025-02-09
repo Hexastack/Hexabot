@@ -82,11 +82,7 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
   };
 
   return (
-    <Wrapper
-      open={!!WrapperProps?.open}
-      onSubmit={handleSubmit(onSubmitForm)}
-      {...WrapperProps}
-    >
+    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentItem>
           <FormLabel>{t("label.original_text")}</FormLabel>

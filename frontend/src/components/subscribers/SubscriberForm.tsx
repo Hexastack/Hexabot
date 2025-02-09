@@ -61,11 +61,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
   }, [data, reset]);
 
   return (
-    <Wrapper
-      open={!!WrapperProps?.open}
-      onSubmit={handleSubmit(onSubmitForm)}
-      {...WrapperProps}
-    >
+    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>

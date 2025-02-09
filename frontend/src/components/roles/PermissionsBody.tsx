@@ -117,7 +117,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
   }, [models]);
 
   return (
-    <Wrapper open={!!WrapperProps?.open} onSubmit={() => {}} {...WrapperProps}>
+    <Wrapper onSubmit={() => {}} {...WrapperProps}>
       <Typography fontWeight={700} sx={{ marginBottom: 2 }}>
         {role?.name}
       </Typography>

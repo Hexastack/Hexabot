@@ -53,7 +53,6 @@ export const ContentImportForm: FC<
 
   return (
     <Wrapper
-      open={!!WrapperProps?.open}
       onSubmit={handleImportClick}
       {...WrapperProps}
       confirmButtonProps={{

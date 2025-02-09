@@ -32,7 +32,6 @@ export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
 
   return (
     <Wrapper
-      open={!!WrapperProps?.open}
       onSubmit={() => {
         data?.onChange?.(selected);
         rest.onSuccess?.();

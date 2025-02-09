@@ -98,11 +98,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
   }, [reset, data?.row]);
 
   return (
-    <Wrapper
-      open={!!WrapperProps?.open}
-      onSubmit={handleSubmit(onSubmitForm)}
-      {...WrapperProps}
-    >
+    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentContainer flexDirection="row">
