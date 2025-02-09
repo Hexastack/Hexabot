@@ -20,7 +20,7 @@ export const AttachmentViewerForm: FC<
   ComponentFormProps<AttachmentViewerFormData>
 > = ({ data, Wrapper = Fragment, WrapperProps }) => {
   return (
-    <Wrapper open={!!WrapperProps?.open} {...WrapperProps}>
+    <Wrapper {...WrapperProps}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         width="auto"
