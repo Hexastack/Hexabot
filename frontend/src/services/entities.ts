@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
@@ -304,7 +303,6 @@ export const LlmHelperEntity = new schema.Entity(
     idAttribute: ({ name }) => name,
   },
 );
-
 
 export const StorageHelperEntity = new schema.Entity(
   EntityType.STORAGE_HELPER,
