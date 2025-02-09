@@ -71,11 +71,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   }, [data, reset]);
 
   return (
-    <Wrapper
-      open={!!WrapperProps?.open}
-      onSubmit={handleSubmit(onSubmitForm)}
-      {...WrapperProps}
-    >
+    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentItem>
@@ -93,5 +89,3 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
     </Wrapper>
   );
 };
-
-CategoryForm.displayName = "CategoryForm";
