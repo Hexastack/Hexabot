@@ -39,6 +39,7 @@ export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
 
   return (
     <Wrapper
+      open={!!WrapperProps?.open}
       onSubmit={handleMove}
       {...WrapperProps}
       confirmButtonProps={{
