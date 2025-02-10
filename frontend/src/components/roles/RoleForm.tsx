@@ -6,13 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-} from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -24,13 +17,9 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import {
-  INlpEntity,
-  INlpEntityAttributes,
-  NlpLookups,
-} from "@/types/nlp-entity.types";
+import { IRole, IRoleAttributes } from "@/types/role.types";
 
-export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
+export const RoleForm: FC<ComponentFormProps<IRole>> = ({
   data,
   Wrapper = Fragment,
   WrapperProps,
@@ -40,40 +29,33 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
   const { toast } = useToast();
   const options = {
     onError: (error: Error) => {
-      rest.onError?.();
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
-    onSuccess: () => {
+    onSuccess() {
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
     },
   };
-  const { mutate: createNlpEntity } = useCreate(EntityType.NLP_ENTITY, options);
-  const { mutate: updateNlpEntity } = useUpdate(EntityType.NLP_ENTITY, options);
+  const { mutate: createRole } = useCreate(EntityType.ROLE, options);
+  const { mutate: updateRole } = useUpdate(EntityType.ROLE, options);
   const {
+    handleSubmit,
     reset,
     register,
     formState: { errors },
-    handleSubmit,
-  } = useForm<INlpEntityAttributes>({
-    defaultValues: {
-      name: data?.name || "",
-      doc: data?.doc || "",
-      lookups: data?.lookups || ["keywords"],
-    },
+  } = useForm<IRoleAttributes>({
+    defaultValues: { name: "" },
   });
   const validationRules = {
     name: {
       required: t("message.name_is_required"),
     },
-    lookups: {},
-    isChecked: {},
   };
-  const onSubmitForm = (params: INlpEntityAttributes) => {
+  const onSubmitForm = (params: IRoleAttributes) => {
     if (data) {
-      updateNlpEntity({ id: data.id, params });
+      updateRole({ id: data.id, params });
     } else {
-      createNlpEntity(params);
+      createRole(params);
     }
   };
 
@@ -81,7 +63,6 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
     if (data) {
       reset({
         name: data.name,
-        doc: data.doc,
       });
     } else {
       reset();
@@ -92,42 +73,14 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          {!data ? (
-            <ContentItem>
-              <FormControl>
-                <FormLabel>{t("label.lookup_strategies")}</FormLabel>
-                <RadioGroup
-                  row
-                  {...register("lookups")}
-                  defaultValue="keywords"
-                >
-                  {Object.values(NlpLookups).map((nlpLookup, index) => (
-                    <FormControlLabel
-                      key={index}
-                      value={nlpLookup}
-                      control={<Radio {...register("lookups.0")} />}
-                      label={nlpLookup}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </ContentItem>
-          ) : null}
           <ContentItem>
             <Input
-              label={t("label.name")}
+              label={t("placeholder.name")}
               error={!!errors.name}
-              {...register("name", validationRules.name)}
               required
               autoFocus
               helperText={errors.name ? errors.name.message : null}
-            />
-          </ContentItem>
-          <ContentItem>
-            <Input
-              label={t("label.doc")}
-              {...register("doc")}
-              multiline={true}
+              {...register("name", validationRules.name)}
             />
           </ContentItem>
         </ContentContainer>

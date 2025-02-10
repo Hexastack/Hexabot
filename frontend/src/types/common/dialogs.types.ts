@@ -14,6 +14,7 @@ interface DialogExtraOptions {
   count?: number;
   maxWidth?: MuiDialogProps["maxWidth"];
   hasButtons?: boolean;
+  isSingleton?: boolean;
 }
 // context
 export interface OpenDialogOptions<R> extends DialogExtraOptions {
@@ -150,7 +151,9 @@ export interface DialogProviderProps {
 // form dialog
 export interface FormDialogProps
   extends FormButtonsProps,
-    Omit<MuiDialogProps, "onSubmit"> {
+    Omit<MuiDialogProps, "onSubmit" | "open">,
+    DialogExtraOptions {
+  open?: boolean;
   title?: string;
   children?: React.ReactNode;
 }

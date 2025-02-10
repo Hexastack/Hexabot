@@ -10,9 +10,8 @@ import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, Grid, Paper } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import React from "react";
 
-import { DeleteDialog } from "@/app-components/dialogs/DeleteDialog";
+import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,7 +21,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -33,18 +32,13 @@ import { PermissionAction } from "@/types/permission.types";
 import { IRole } from "@/types/role.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { PermissionsDialog } from "./PermissionsDialog";
-import { RoleDialog } from "./RoleDialog";
+import { PermissionBodyDialog } from "./PermissionsBodyDialog";
+import { RoleFormDialog } from "./RoleFormDialog";
 
 export const Roles = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const addDialogCtl = useDialog<IRole>(false);
-  const editDialogCtl = useDialog<IRole>(false);
-  const deleteDialogCtl = useDialog<string>(false);
-  const permissionDialogCtl = useDialog<{
-    role: IRole;
-  }>(false);
+  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { onSearch, searchPayload } = useSearch<IRole>({
     $iLike: ["name"],
@@ -55,12 +49,11 @@ export const Roles = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: deleteRole } = useDelete(EntityType.ROLE, {
+  const { mutate: deleteRole } = useDelete(EntityType.ROLE, {
     onError: (error) => {
       toast.error(error);
     },
     onSuccess() {
-      deleteDialogCtl.closeDialog();
       toast.success(t("message.item_delete_success"));
     },
   });
@@ -70,19 +63,25 @@ export const Roles = () => {
       {
         label: ActionColumnLabel.Permissions,
         action: (row) =>
-          permissionDialogCtl.openDialog({
-            role: row,
+          dialogs.open(PermissionBodyDialog, row, {
+            hasButtons: false,
           }),
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => editDialogCtl.openDialog(row),
+        action: (row) => dialogs.open(RoleFormDialog, row),
         requires: [PermissionAction.UPDATE],
       },
 
       {
         label: ActionColumnLabel.Delete,
-        action: (row) => deleteDialogCtl.openDialog(row.id),
+        action: async ({ id }) => {
+          const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
+
+          if (isConfirmed) {
+            deleteRole(id);
+          }
+        },
         requires: [PermissionAction.DELETE],
       },
     ],
@@ -125,17 +124,6 @@ export const Roles = () => {
 
   return (
     <Grid container gap={3} flexDirection="column">
-      {permissionDialogCtl.open ? (
-        <PermissionsDialog {...permissionDialogCtl} />
-      ) : null}
-      <RoleDialog {...getDisplayDialogs(addDialogCtl)} />
-      <RoleDialog {...getDisplayDialogs(editDialogCtl)} />
-      <DeleteDialog
-        {...deleteDialogCtl}
-        callback={() => {
-          if (deleteDialogCtl.data) deleteRole(deleteDialogCtl.data);
-        }}
-      />
       <PageHeader title={t("title.roles")} icon={faUniversalAccess}>
         <Grid
           justifyContent="flex-end"
@@ -156,9 +144,7 @@ export const Roles = () => {
                 sx={{
                   float: "right",
                 }}
-                onClick={() => {
-                  addDialogCtl.openDialog();
-                }}
+                onClick={() => dialogs.open(RoleFormDialog, null)}
               >
                 {t("button.add")}
               </Button>

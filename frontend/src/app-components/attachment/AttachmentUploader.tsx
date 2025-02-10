@@ -12,13 +12,13 @@ import { Box, Button, Divider, Grid, styled, Typography } from "@mui/material";
 import { ChangeEvent, DragEvent, FC, useState } from "react";
 
 import { useUpload } from "@/hooks/crud/useUpload";
-import { getDisplayDialogs, useDialog } from "@/hooks/useDialog";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { AttachmentResourceRef, IAttachment } from "@/types/attachment.types";
 
-import { AttachmentDialog } from "./AttachmentDialog";
+import { AttachmentFormDialog } from "./AttachmentFormDialog";
 import AttachmentThumbnail from "./AttachmentThumbnail";
 
 const FileUploadLabel = styled("label")(
@@ -81,6 +81,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
     undefined,
   );
   const { t } = useTranslate();
+  const dialogs = useDialogs();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const { toast } = useToast();
   const { mutateAsync: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
@@ -94,7 +95,6 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       onUploadComplete && onUploadComplete();
     },
   });
-  const libraryDialogCtl = useDialog<never>(false);
   const stopDefaults = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -138,11 +138,6 @@ const AttachmentUploader: FC<FileUploadProps> = ({
 
   return (
     <Grid>
-      <AttachmentDialog
-        {...getDisplayDialogs(libraryDialogCtl)}
-        callback={onChange}
-        accept={accept}
-      />
       <Grid container>
         <Grid item xs={enableMediaLibrary ? 5 : 12}>
           <HiddenInput
@@ -207,7 +202,16 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                 startIcon={<FolderCopyIcon />}
                 variant="contained"
                 color="primary"
-                onClick={() => libraryDialogCtl.openDialog()}
+                onClick={() =>
+                  dialogs.open(
+                    AttachmentFormDialog,
+                    {
+                      accept,
+                      onChange,
+                    },
+                    { maxWidth: "xl" },
+                  )
+                }
               >
                 {t("button.media_library")}
               </Button>

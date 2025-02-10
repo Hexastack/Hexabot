@@ -11,6 +11,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { Button, Grid } from "@mui/material";
 
 import { useTranslate } from "@/hooks/useTranslate";
+import { TTranslationKeys } from "@/i18n/i18n.types";
 import { FormButtonsProps } from "@/types/common/dialogs.types";
 
 export const DialogFormButtons = ({
@@ -20,6 +21,10 @@ export const DialogFormButtons = ({
   confirmButtonProps,
 }: FormButtonsProps) => {
   const { t } = useTranslate();
+  const cancelButtonTitle = (cancelButtonProps?.value ||
+    "button.cancel") as TTranslationKeys;
+  const confirmButtonTitle = (confirmButtonProps?.value ||
+    "button.submit") as TTranslationKeys;
 
   return (
     <Grid
@@ -35,16 +40,15 @@ export const DialogFormButtons = ({
         startIcon={<CloseIcon />}
         {...cancelButtonProps}
       >
-        {t("button.cancel")}
+        {t(cancelButtonTitle)}
       </Button>
       <Button
-        type="button"
         variant="contained"
         onClick={onSubmit}
         startIcon={<CheckIcon />}
         {...confirmButtonProps}
       >
-        {t("button.submit")}
+        {t(confirmButtonTitle)}
       </Button>
     </Grid>
   );
