@@ -113,7 +113,7 @@ const Diagrams = () => {
       setSelectedBlockId(undefined);
     },
   });
-  const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
   const debouncedUpdateCategory = useDebouncedUpdate(updateCategory, 300);
