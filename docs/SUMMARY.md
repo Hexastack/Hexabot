@@ -59,8 +59,9 @@
 
 ## Developer Guide
 
-* [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
 * [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
+* [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
+* [Contributors Installation Guide](developer-guide/contributors-installation-guide.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
 * [Extensions](developer-guide/extensions.md)
 * [Plugins](developer-guide/integrations/README.md)
@@ -71,7 +72,6 @@
 * [Hexabot API](developer-guide/hexabot-api.md)
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
 * [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
-* [Contributors Installation Guide](developer-guide/contributors-installation-guide.md)
 
 ## Key Concepts
 

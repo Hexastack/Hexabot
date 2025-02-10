@@ -21,7 +21,7 @@ Welcome to the Hexabot Documentation! Hexabot is a powerful and versatile open-s
 
 ## Key Features
 
-Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:q
+Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:
 
 * **Intuitive Visual Editor:** Build complex conversation flows without coding using our drag-and-drop interface and a diverse library of pre-built blocks.
 * **NLU Engine:** Leverage state-of-the-art NLU technology to understand user intent, extract key information, and deliver personalized responses.
