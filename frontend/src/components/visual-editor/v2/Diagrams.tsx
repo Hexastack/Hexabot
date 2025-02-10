@@ -198,11 +198,7 @@ const Diagrams = () => {
       onRemoveNode: openDeleteDialog,
       onDbClickNode: (event, id) => {
         if (id) {
-          const block = getBlockFromCache(id);
-
-          dialogs.open(BlockEditFormDialog, block, {
-            maxWidth: "md",
-          });
+          openEditDialog(id);
         }
       },
       targetPortChanged: ({
@@ -458,6 +454,14 @@ const Diagrams = () => {
       }
     }
   };
+  const openEditDialog = (selectedBlockId: string) => {
+    const block = getBlockFromCache(selectedBlockId);
+
+    dialogs.open(BlockEditFormDialog, block, {
+      maxWidth: "md",
+      isSingleton: true,
+    });
+  };
   const handleMoveButton = () => {
     const ids = getSelectedIds();
     const { blockIds } = getGroupedIds(ids);
@@ -650,11 +654,7 @@ const Diagrams = () => {
                 startIcon={<EditIcon />}
                 onClick={() => {
                   if (selectedBlockId) {
-                    const block = getBlockFromCache(selectedBlockId);
-
-                    dialogs.open(BlockEditFormDialog, block, {
-                      maxWidth: "md",
-                    });
+                    openEditDialog(selectedBlockId);
                   }
                 }}
                 disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
