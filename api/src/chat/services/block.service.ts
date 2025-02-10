@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -53,6 +53,31 @@ export class BlockService extends BaseService<
     protected readonly languageService: LanguageService,
   ) {
     super(repository);
+  }
+
+  async duplicateBlock(blockId: string) {
+    const block = await this.repository.findOne(blockId);
+    if (!block) {
+      throw new NotFoundException(`Unable to find ${blockId} to duplicate`);
+    }
+    const {
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      id: _id,
+      previousBlocks: _previousBlocks,
+      attachedBlock: _attachedBlock,
+      nextBlocks: _nextBlocks,
+      ...blockData
+    } = block;
+
+    return await this.repository.create({
+      ...blockData,
+      position: {
+        x: block.position.x,
+        y: block.position.y + 20,
+      },
+      name: `${block.name} (Copy)`,
+    });
   }
 
   /**
