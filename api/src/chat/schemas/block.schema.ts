@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,26 +9,23 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
+import { z } from 'zod';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { buildZodSchemaValidator } from '@/utils/helpers/zod-validation';
 import {
   TFilterPopulateFields,
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
-import { isValidMessage } from '../validation-rules/is-message';
-import { isPatternList } from '../validation-rules/is-pattern-list';
-import { isPosition } from '../validation-rules/is-position';
-import { isValidVarCapture } from '../validation-rules/is-valid-capture';
-
 import { Category } from './category.schema';
 import { Label } from './label.schema';
-import { CaptureVar } from './types/capture-var';
-import { BlockMessage } from './types/message';
+import { CaptureVar, captureVarSchema } from './types/capture-var';
+import { BlockMessage, blockMessageObjectSchema } from './types/message';
 import { BlockOptions } from './types/options';
-import { Pattern } from './types/pattern';
-import { Position } from './types/position';
+import { Pattern, patternSchema } from './types/pattern';
+import { Position, positionSchema } from './types/position';
 
 @Schema({ timestamps: true })
 export class BlockStub extends BaseSchema {
@@ -40,7 +37,7 @@ export class BlockStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    validate: isPatternList,
+    validate: buildZodSchemaValidator(z.array(patternSchema)),
     default: [],
   })
   patterns: Pattern[];
@@ -77,7 +74,7 @@ export class BlockStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    validate: isValidMessage,
+    validate: buildZodSchemaValidator(blockMessageObjectSchema),
   })
   message: BlockMessage;
 
@@ -110,14 +107,14 @@ export class BlockStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    validate: isValidVarCapture,
+    validate: buildZodSchemaValidator(z.array(captureVarSchema)),
     default: [],
   })
   capture_vars: CaptureVar[];
 
   @Prop({
     type: Object,
-    validate: isPosition,
+    validate: buildZodSchemaValidator(positionSchema),
   })
   position: Position;
 
