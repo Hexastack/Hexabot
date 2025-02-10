@@ -22,16 +22,20 @@ export const FormDialog = ({
   ...rest
 }: FormDialogProps) => {
   const onCancel = () => rest.onClose?.({}, "backdropClick");
-
-  return (
-    <Dialog fullWidth {...rest}>
-      <DialogTitle onClose={onCancel}>{title}</DialogTitle>
-      <DialogContent>{children}</DialogContent>
+  const dialogActions =
+    rest.hasButtons === false ? null : (
       <DialogActions style={{ padding: "0.5rem" }}>
         <DialogFormButtons
           {...{ onSubmit, onCancel, confirmButtonProps, cancelButtonProps }}
         />
       </DialogActions>
+    );
+
+  return (
+    <Dialog fullWidth {...rest}>
+      <DialogTitle onClose={onCancel}>{title}</DialogTitle>
+      <DialogContent>{children}</DialogContent>
+      {dialogActions}
     </Dialog>
   );
 };

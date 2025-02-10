@@ -7,16 +7,8 @@
  */
 
 import LinkIcon from "@mui/icons-material/Link";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  FormControl,
-  FormControlLabel,
-  Switch,
-} from "@mui/material";
-import { isAbsoluteUrl } from "next/dist/shared/lib/utils";
-import { FC, useEffect } from "react";
+import { FormControl, FormControlLabel, Switch } from "@mui/material";
+import { FC, Fragment, useEffect } from "react";
 import {
   Controller,
   ControllerRenderProps,
@@ -25,19 +17,16 @@ import {
 } from "react-hook-form";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import DialogButtons from "@/app-components/buttons/DialogButtons";
-import { DialogTitle } from "@/app-components/dialogs/DialogTitle";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
-import { ContentItem } from "@/app-components/dialogs/layouts/ContentItem";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { DialogControlProps } from "@/hooks/useDialog";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
+import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   ContentField,
   ContentFieldType,
@@ -45,6 +34,7 @@ import {
 } from "@/types/content-type.types";
 import { IContent, IContentAttributes } from "@/types/content.types";
 import { MIME_TYPES } from "@/utils/attachment";
+import { isAbsoluteUrl } from "@/utils/URL";
 
 interface ContentFieldInput {
   contentField: ContentField;
@@ -56,7 +46,6 @@ interface ContentFieldInput {
   >;
   idx: number;
 }
-
 const ContentFieldInput: React.FC<ContentFieldInput> = ({
   contentField: contentField,
   field,
@@ -139,14 +128,14 @@ const buildDynamicFields = (
   },
 });
 
-export type ContentDialogProps = DialogControlProps<{
+export type ContentFormData = {
   content?: IContent;
   contentType?: IContentType;
-}>;
-export const ContentDialog: FC<ContentDialogProps> = ({
-  open,
+};
+export const ContentForm: FC<ComponentFormProps<ContentFormData>> = ({
   data,
-  closeDialog,
+  Wrapper = Fragment,
+  WrapperProps,
   ...rest
 }) => {
   const { content, contentType } = data || {
@@ -177,43 +166,33 @@ export const ContentDialog: FC<ContentDialogProps> = ({
         isAbsoluteUrl(value) || t("message.url_is_invalid"),
     },
   };
-  const { mutateAsync: createContent } = useCreate(EntityType.CONTENT);
-  const { mutateAsync: updateContent } = useUpdate(EntityType.CONTENT);
-  const onSubmitForm = async (params: IContentAttributes) => {
+  const { mutate: createContent } = useCreate(EntityType.CONTENT);
+  const { mutate: updateContent } = useUpdate(EntityType.CONTENT);
+  const options = {
+    onError: (error: Error) => {
+      rest.onError?.();
+      toast.error(error.message || t("message.internal_server_error"));
+    },
+    onSuccess: () => {
+      rest.onSuccess?.();
+      toast.success(t("message.success_save"));
+    },
+  };
+  const onSubmitForm = (params: IContentAttributes) => {
     if (content) {
       updateContent(
         { id: content.id, params: buildDynamicFields(params, contentType) },
-        {
-          onError: () => {
-            toast.error(t("message.internal_server_error"));
-          },
-          onSuccess: () => {
-            closeDialog();
-            toast.success(t("message.success_save"));
-          },
-        },
+        options,
       );
     } else if (contentType) {
       createContent(
         { ...buildDynamicFields(params, contentType), entity: contentType.id },
-        {
-          onError: (error) => {
-            toast.error(error);
-          },
-          onSuccess: () => {
-            closeDialog();
-            toast.success(t("message.success_save"));
-          },
-        },
+        options,
       );
     } else {
       throw new Error("Content Type must be passed to the dialog form.");
     }
   };
-
-  useEffect(() => {
-    if (open) reset();
-  }, [open, reset]);
 
   useEffect(() => {
     if (content) {
@@ -224,47 +203,43 @@ export const ContentDialog: FC<ContentDialogProps> = ({
   }, [content, reset]);
 
   return (
-    <Dialog open={open} fullWidth maxWidth="md" onClose={closeDialog} {...rest}>
+    <Wrapper
+      open={!!WrapperProps?.open}
+      onSubmit={handleSubmit(onSubmitForm)}
+      {...WrapperProps}
+    >
       <form onSubmit={handleSubmit(onSubmitForm)}>
-        <DialogTitle onClose={closeDialog}>
-          {content ? t("title.edit_node") : t("title.new_content")}
-        </DialogTitle>
-        <DialogContent>
-          <ContentContainer>
-            {(contentType?.fields || []).map((contentField, index) => (
-              <ContentItem key={contentField.name}>
-                <Controller
-                  name={contentField.name}
-                  control={control}
-                  defaultValue={
-                    content ? content["dynamicFields"][contentField.name] : null
-                  }
-                  rules={
-                    contentField.name === "title"
-                      ? validationRules.title
-                      : contentField.type === ContentFieldType.URL
-                      ? validationRules.url
-                      : undefined
-                  }
-                  render={({ field }) => (
-                    <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
-                      <ContentFieldInput
-                        contentField={contentField}
-                        field={field}
-                        errors={errors}
-                        idx={index}
-                      />
-                    </FormControl>
-                  )}
-                />
-              </ContentItem>
-            ))}
-          </ContentContainer>
-        </DialogContent>
-        <DialogActions>
-          <DialogButtons closeDialog={closeDialog} />
-        </DialogActions>
+        <ContentContainer>
+          {(contentType?.fields || []).map((contentField, index) => (
+            <ContentItem key={contentField.name}>
+              <Controller
+                name={contentField.name}
+                control={control}
+                defaultValue={
+                  content ? content["dynamicFields"][contentField.name] : null
+                }
+                rules={
+                  contentField.name === "title"
+                    ? validationRules.title
+                    : contentField.type === ContentFieldType.URL
+                    ? validationRules.url
+                    : undefined
+                }
+                render={({ field }) => (
+                  <FormControl fullWidth sx={{ paddingTop: ".75rem" }}>
+                    <ContentFieldInput
+                      contentField={contentField}
+                      field={field}
+                      errors={errors}
+                      idx={index}
+                    />
+                  </FormControl>
+                )}
+              />
+            </ContentItem>
+          ))}
+        </ContentContainer>
       </form>
-    </Dialog>
+    </Wrapper>
   );
 };
