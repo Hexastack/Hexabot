@@ -53,6 +53,7 @@ import { CategoryRepository } from '../repositories/category.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { PayloadType } from '../schemas/types/message';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
@@ -335,5 +336,22 @@ describe('BlockController', () => {
         blockController.updateOne(blockToDelete.id, updateBlock),
       ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
     });
+  });
+
+  it('should update block trigger to postback menu', async () => {
+    jest.spyOn(blockService, 'updateOne');
+    const updateBlock: BlockUpdateDto = {
+      patterns: [
+        {
+          label: 'postback123',
+          value: 'postback123',
+          type: PayloadType.menu,
+        },
+      ],
+    };
+    const result = await blockController.updateOne(block.id, updateBlock);
+    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+
+    expect(result.patterns).toEqual(updateBlock.patterns);
   });
 });
