@@ -59,10 +59,11 @@
 
 ## Developer Guide
 
-* [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
-* [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
 * [Contributors Installation Guide](developer-guide/contributors-installation-guide.md)
 * [CLI Command Reference](developer-guide/cli-command-reference.md)
+* [Setup Node.js with NVM](developer-guide/setup-node.js-with-nvm.md)
+* [Setting Up Docker for Development and Production](developer-guide/setting-up-docker-for-development-and-production.md)
+* [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
 * [Extensions](developer-guide/extensions.md)
 * [Plugins](developer-guide/integrations/README.md)
   * [Hexabot Plugin Development](developer-guide/integrations/hexabot-plugin-development.md)
@@ -71,7 +72,7 @@
 * [Hexabot Live Chat Widget](developer-guide/hexabot-live-chat-widget.md)
 * [Hexabot API](developer-guide/hexabot-api.md)
 * [Hexabot NLU Engine](developer-guide/hexabot-nlu-engine.md)
-* [SMTP Configuration and Emails](developer-guide/smtp-configuration-and-emails.md)
+* [Training custom NLU Models with Ludwig AI](developer-guide/training-custom-nlu-models-with-ludwig-ai.md)
 
 ## Key Concepts
 
