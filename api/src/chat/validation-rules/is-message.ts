@@ -16,36 +16,11 @@ import {
 import {
   BlockMessage,
   blockMessageObjectSchema,
-  messageRegexSchema,
-  textSchema,
 } from '../schemas/types/message';
 
-/* eslint-disable no-console */
 export function isValidMessage(msg: any) {
-  if (typeof msg === 'string' && msg !== '') {
-    const result = messageRegexSchema.safeParse(msg);
-    if (!result.success) {
-      console.error('Block Model: Invalid custom code.', result.error);
-      return false;
-    }
-    return true;
-  } else if (Array.isArray(msg)) {
-    const result = textSchema.safeParse(msg);
-    if (!result.success) {
-      console.error('Block Model: Invalid text message array.', result.error);
-    }
-    return result.success;
-  } else if (typeof msg === 'object' && msg !== null) {
-    const result = blockMessageObjectSchema.safeParse(msg);
-    if (!result.success) {
-      console.error('Block Model: Object validation failed!', result.error);
-    }
-    return result.success;
-  }
-  console.log('Validation reached default false');
-  return false;
+  return blockMessageObjectSchema.safeParse(msg).success;
 }
-/* eslint-enable no-console */
 
 @ValidatorConstraint({ async: false })
 export class MessageValidator implements ValidatorConstraintInterface {
