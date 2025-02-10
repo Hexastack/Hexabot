@@ -14,6 +14,7 @@ interface DialogExtraOptions {
   count?: number;
   maxWidth?: MuiDialogProps["maxWidth"];
   hasButtons?: boolean;
+  isSingleton?: boolean;
 }
 // context
 export interface OpenDialogOptions<R> extends DialogExtraOptions {
