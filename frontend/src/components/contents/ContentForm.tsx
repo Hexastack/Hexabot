@@ -203,11 +203,7 @@ export const ContentForm: FC<ComponentFormProps<ContentFormData>> = ({
   }, [content, reset]);
 
   return (
-    <Wrapper
-      open={!!WrapperProps?.open}
-      onSubmit={handleSubmit(onSubmitForm)}
-      {...WrapperProps}
-    >
+    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           {(contentType?.fields || []).map((contentField, index) => (

@@ -62,13 +62,8 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
   };
 
   return (
-    <Wrapper open={!!WrapperProps?.open} onSubmit={() => {}} {...WrapperProps}>
-      <form>
-        <NlpDatasetSample
-          sample={data || undefined}
-          submitForm={onSubmitForm}
-        />
-      </form>
+    <Wrapper onSubmit={() => {}} {...WrapperProps}>
+      <NlpDatasetSample sample={data || undefined} submitForm={onSubmitForm} />
     </Wrapper>
   );
 };

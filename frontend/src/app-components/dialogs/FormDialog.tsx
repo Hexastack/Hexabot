@@ -32,7 +32,7 @@ export const FormDialog = ({
     );
 
   return (
-    <Dialog fullWidth {...rest}>
+    <Dialog open={!!rest?.open} fullWidth {...rest}>
       <DialogTitle onClose={onCancel}>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
       {dialogActions}

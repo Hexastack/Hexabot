@@ -83,7 +83,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
     },
     onSuccess: () => {
       modelRefetch();
-      toast.success(t("message.item_delete_success"));
+      toast.success(t("message.success_save"));
     },
   };
   const { mutate: createPermission } = useCreate(EntityType.PERMISSION, {
@@ -117,7 +117,7 @@ export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
   }, [models]);
 
   return (
-    <Wrapper open={!!WrapperProps?.open} onSubmit={() => {}} {...WrapperProps}>
+    <Wrapper onSubmit={() => {}} {...WrapperProps}>
       <Typography fontWeight={700} sx={{ marginBottom: 2 }}>
         {role?.name}
       </Typography>

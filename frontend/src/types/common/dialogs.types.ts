@@ -151,8 +151,9 @@ export interface DialogProviderProps {
 // form dialog
 export interface FormDialogProps
   extends FormButtonsProps,
-    Omit<MuiDialogProps, "onSubmit">,
+    Omit<MuiDialogProps, "onSubmit" | "open">,
     DialogExtraOptions {
+  open?: boolean;
   title?: string;
   children?: React.ReactNode;
 }
