@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,7 @@
 
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
@@ -24,7 +24,7 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const pathname = usePathname();
+  const { pathname } = useRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
