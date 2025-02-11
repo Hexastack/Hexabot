@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Add, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,6 +29,7 @@ import {
   DiagramEngine,
   DiagramModel,
   DiagramModelGenerics,
+  NodeModel,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
 import { SyntheticEvent, useCallback, useEffect, useState } from "react";
@@ -56,6 +58,7 @@ import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 
 import { AdvancedLinkModel } from "./AdvancedLink/AdvancedLinkModel";
+import { useDuplicateBlock } from "./hooks/useDuplicateBlock";
 
 const Diagrams = () => {
   const { t } = useTranslate();
@@ -80,6 +83,13 @@ const Diagrams = () => {
   const { searchPayload } = useSearch<IBlock>({
     $eq: [{ category: selectedCategoryId }],
   });
+  const selectedEntities = engine?.getModel()?.getSelectedEntities();
+  const selectedLinks = (selectedEntities || []).filter(
+    (entity) => entity instanceof AdvancedLinkModel,
+  );
+  const selectedBlocks = (selectedEntities || []).filter(
+    (entity) => entity instanceof NodeModel,
+  );
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -113,6 +123,7 @@ const Diagrams = () => {
       setSelectedBlockId(undefined);
     },
   });
+  const { mutate: duplicateBlock, isLoading } = useDuplicateBlock();
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
@@ -513,6 +524,11 @@ const Diagrams = () => {
       );
     }
   };
+  const handleDuplicateBlock = () => {
+    const ids = selectedBlocks[0].getID();
+
+    duplicateBlock({ blockId: ids });
+  };
 
   return (
     <div
@@ -669,6 +685,20 @@ const Diagrams = () => {
                 disabled={!hasSelectedBlock()}
               >
                 {t("button.move")}
+              </Button>
+              <Button
+                sx={{}}
+                size="small"
+                variant="contained"
+                startIcon={<DeleteIcon />}
+                onClick={handleDuplicateBlock}
+                disabled={
+                  selectedBlocks.length > 1 ||
+                  selectedBlocks.length === 0 ||
+                  selectedLinks.length > 0 || isLoading
+                }
+              >
+                {t("button.duplicate")}
               </Button>
               <Button
                 sx={{}}
