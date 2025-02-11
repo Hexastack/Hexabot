@@ -309,13 +309,8 @@ export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
 
 // is-valid-message-text validation
 export const validMessageTextSchema = z.object({
-  message: z.string(),
+  text: z.string(),
 });
-
-// is-message validation
-const MESSAGE_REGEX = /^function \(context\) \{[^]+\}/;
-
-export const messageRegexSchema = z.string().regex(MESSAGE_REGEX);
 
 export const textSchema = z.array(z.string().max(1000));
 
@@ -391,6 +386,7 @@ const attachmentBlockMessageSchema = z.object({
 
 // BlockMessage Schema
 export const blockMessageObjectSchema = z.union([
+  textSchema,
   pluginBlockMessageSchema,
   textBlockMessageSchema,
   buttonMessageSchema,
