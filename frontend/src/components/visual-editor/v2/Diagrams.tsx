@@ -1,12 +1,13 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Add, MoveUp } from "@mui/icons-material";
+
+import { Add, ContentCopyRounded, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
@@ -28,6 +29,7 @@ import {
   DiagramEngine,
   DiagramModel,
   DiagramModelGenerics,
+  NodeModel,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
 import { SyntheticEvent, useCallback, useEffect, useState } from "react";
@@ -37,6 +39,7 @@ import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
 import { BlockMoveFormDialog } from "@/components/visual-editor/BlockMoveFormDialog";
 import { isSameEntity } from "@/hooks/crud/helpers";
+import { useCreate } from "@/hooks/crud/useCreate";
 import { useDeleteFromCache } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
@@ -46,9 +49,10 @@ import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
+import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
-import { IBlock } from "@/types/block.types";
+import { IBlock, IBlockStub } from "@/types/block.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
@@ -80,6 +84,27 @@ const Diagrams = () => {
   const { searchPayload } = useSearch<IBlock>({
     $eq: [{ category: selectedCategoryId }],
   });
+  const selectedEntities = engine?.getModel()?.getSelectedEntities();
+  const selectedLinks = (selectedEntities || []).filter(
+    (entity) => entity instanceof AdvancedLinkModel,
+  );
+  const selectedBlocks = (selectedEntities || []).filter(
+    (entity) => entity instanceof NodeModel,
+  );
+  const { toast } = useToast();
+  const { mutate: duplicateBlock, isLoading: isDuplicatingBlock } = useCreate(
+    EntityType.BLOCK,
+    {
+      onError: () => {
+        toast.error(t("message.duplicate_block_error"));
+      },
+    },
+  );
+  const shouldDisableDuplicateButton =
+    selectedLinks.length >= 1 ||
+    selectedBlocks.length > 1 ||
+    selectedBlocks.length === 0 ||
+    isDuplicatingBlock;
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -172,6 +197,23 @@ const Diagrams = () => {
       enabled: !!selectedCategoryId,
     },
   );
+  const handleDuplicateBlock = () => {
+    const selectedBlock = selectedBlocks[0] as any;
+    const block = getBlockFromCache(selectedBlock.options.id) as IBlockStub;
+
+    if (!block) {
+      return;
+    }
+
+    duplicateBlock({
+      ...block,
+      name: `${block.name} (Copy)`,
+      position: {
+        x: block.position.x + 100,
+        y: block.position.y + 100,
+      },
+    });
+  };
 
   useEffect(() => {
     // Case when categories are already cached
@@ -669,6 +711,15 @@ const Diagrams = () => {
                 disabled={!hasSelectedBlock()}
               >
                 {t("button.move")}
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<ContentCopyRounded />}
+                onClick={handleDuplicateBlock}
+                disabled={shouldDisableDuplicateButton}
+              >
+                {t("button.duplicate")}
               </Button>
               <Button
                 sx={{}}
