@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { Add, ContentCopyRounded, MoveUp } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -52,7 +51,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
-import { IBlock, IBlockStub } from "@/types/block.types";
+import { IBlock } from "@/types/block.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
@@ -199,7 +198,7 @@ const Diagrams = () => {
   );
   const handleDuplicateBlock = () => {
     const selectedBlock = selectedBlocks[0] as any;
-    const block = getBlockFromCache(selectedBlock.options.id) as IBlockStub;
+    const block = getBlockFromCache(selectedBlock?.options?.id);
 
     if (!block) {
       return;
