@@ -309,7 +309,7 @@ export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;
 
 // is-valid-message-text validation
 export const validMessageTextSchema = z.object({
-  message: z.string(),
+  text: z.string(),
 });
 
 export const textSchema = z.array(z.string().max(1000));
