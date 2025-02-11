@@ -10,6 +10,6 @@ import { ZodSchema } from 'zod';
 
 export function buildZodSchemaValidator<T>(zodSchema: ZodSchema<T>) {
   return (data: unknown) => {
-    return zodSchema.safeParse(data);
+    return zodSchema.safeParse(data).success;
   };
 }
