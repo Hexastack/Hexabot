@@ -113,7 +113,8 @@
     "invalid_file_type": "Type de fichier invalide. Veuillez choisir un fichier dans un format pris en charge.",
     "select_category": "Sélectionner une catégorie",
     "logout_failed": "Une erreur s'est produite lors de la déconnexion",
-    "duplicate_labels_not_allowed": "Les étiquettes en double ne sont pas autorisées"
+    "duplicate_labels_not_allowed": "Les étiquettes en double ne sont pas autorisées",
+    "duplicate_block_error": "Une erreur est survenue lors de la duplication du bloc"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

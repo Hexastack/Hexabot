@@ -113,7 +113,8 @@
     "invalid_file_type": "Invalid file type. Please select a file in the supported format.",
     "select_category": "Select a flow",
     "logout_failed": "Something went wrong during logout",
-    "duplicate_labels_not_allowed": "Duplicate labels are not allowed"
+    "duplicate_labels_not_allowed": "Duplicate labels are not allowed",
+    "duplicate_block_error": "Something went wrong while duplicating block"
   },
   "menu": {
     "terms": "Terms of Use",
