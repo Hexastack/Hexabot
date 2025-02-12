@@ -10,22 +10,34 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { ExtensionService } from '@/utils/generics/extension-service';
 
 import BaseHelper from './lib/base-helper';
 import { HelperName, HelperRegistry, HelperType, TypeOfHelper } from './types';
 
 @Injectable()
-export class HelperService {
+export class HelperService extends ExtensionService<BaseHelper> {
   private registry: HelperRegistry = new Map();
 
   constructor(
-    private readonly settingService: SettingService,
-    private readonly logger: LoggerService,
+    protected readonly settingService: SettingService,
+    protected readonly logger: LoggerService,
   ) {
+    super(settingService, logger);
+
     // Init empty registry
     Object.values(HelperType).forEach((type: HelperType) => {
       this.registry.set(type, new Map());
     });
+  }
+
+  /**
+   * Retrieves the type of extension this service manages.
+   *
+   * @returns The type of extension this service manages.
+   */
+  protected getExtensionType(): 'helper' {
+    return 'helper';
   }
 
   /**
