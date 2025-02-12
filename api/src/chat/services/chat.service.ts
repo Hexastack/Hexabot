@@ -223,20 +223,60 @@ export class ChatService {
           throw new Error(`Subscriber with foreign ID ${foreignId} not found`);
         }
 
-        const sentMessage: MessageCreateDto = {
-          mid: event.getId(),
-          recipient: recipient.id,
-          message: event.getMessage(),
-          delivery: true,
-          read: false,
-        };
+        const mid = event.getId();
+        const message = await this.findMessageWithRetries(mid);
+        debugger;
 
-        this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+        if (!message) {
+          const sentMessage: MessageCreateDto = {
+            mid,
+            recipient: recipient.id,
+            message: event.getMessage(),
+            delivery: true,
+            read: false,
+          };
+
+          this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+        }
         this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo');
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
       }
     }
+  }
+
+  /**
+   * Retries finding a message by mid with exponential backoff.
+   *
+   * @param mid - The message ID.
+   * @param maxRetries - Max number of retries (default: 5).
+   * @param initialDelay - Initial delay in ms (default: 100).
+   * @returns True if the message is found, false otherwise.
+   */
+  async findMessageWithRetries(
+    mid: string,
+    maxRetries = 5,
+    initialDelay = 100,
+  ) {
+    let attempt = 0;
+    let delay = initialDelay;
+
+    while (attempt < maxRetries) {
+      const exists = await this.messageService.count({ mid });
+
+      if (exists > 0) {
+        return true; // Message exists
+      }
+
+      attempt++;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2; // Exponential backoff
+    }
+
+    this.logger.debug(
+      'Echo message not found after multiple attempts. Treating as an external echo.',
+    );
+    return false;
   }
 
   /**
