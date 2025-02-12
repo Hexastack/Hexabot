@@ -218,7 +218,7 @@ const Selectable: FC<SelectableProps> = ({
                 top: "20%",
                 transform: "translateY(-20%)",
               }} 
-              aria-label="loading"
+              aria-label="Loading..."
             />
           ) : null
         }
