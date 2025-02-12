@@ -105,6 +105,9 @@ describe('MessageService', () => {
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);
 
+  function toArray(value?: string | string[]): string[] {
+    return value ? (Array.isArray(value) ? value : [value]) : [];
+  }
   describe('findOneAndPopulate', () => {
     it('should find message by id, and populate its corresponding sender and recipient', async () => {
       jest.spyOn(messageRepository, 'findOneAndPopulate');
@@ -114,8 +117,13 @@ describe('MessageService', () => {
         message.id,
         undefined,
       );
+      const expectedFixture = messageFixtures.find(
+        ({ mid }) =>
+          JSON.stringify(toArray(mid)) === JSON.stringify(message.mid),
+      );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...expectedFixture,
+        mid: toArray(expectedFixture?.mid),
         sender,
         recipient,
         sentBy: user.id,
