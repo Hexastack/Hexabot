@@ -220,4 +220,69 @@ describe('ContentController', () => {
       expect(result).toEqual({ count: contentFixtures.length });
     });
   });
+
+  describe('importFile', () => {
+    it('should import content from a CSV file', async () => {
+      const mockCsvData = `other,title,status,image\nshould not appear,store 3,true,image.jpg`;
+      const file = {
+        buffer: Buffer.from(mockCsvData, 'utf-8'),
+      } as Express.Multer.File;
+      const targetContentType = 'Store';
+
+      const mockCsvContentDto = {
+        id: 'mock-content-id',
+        entity: '0',
+        title: 'store 3',
+        status: true,
+        dynamicFields: {
+          image: 'image.jpg',
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      jest
+        .spyOn(contentService, 'parseAndSaveDataset')
+        .mockResolvedValue([mockCsvContentDto]);
+      jest.spyOn(contentTypeService, 'findOne').mockResolvedValue({
+        id: 'mock-id',
+        name: 'Store',
+        fields: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await contentController.importFile(
+        file,
+        targetContentType,
+      );
+
+      expect(contentTypeService.findOne).toHaveBeenCalledWith(
+        targetContentType,
+      );
+      expect(contentService.parseAndSaveDataset).toHaveBeenCalledWith(
+        mockCsvData,
+        targetContentType,
+        {
+          id: 'mock-id',
+          name: 'Store',
+          fields: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      );
+      expect(result).toEqual([mockCsvContentDto]);
+    });
+
+    it('should throw NotFoundException if content type is not found', async () => {
+      jest.spyOn(contentTypeService, 'findOne').mockResolvedValue(null);
+      const file = {
+        buffer: Buffer.from('data', 'utf-8'),
+      } as Express.Multer.File;
+
+      await expect(
+        contentController.importFile(file, 'invalid-id'),
+      ).rejects.toThrow(new NotFoundException('Content type is not found'));
+    });
+  });
 });

@@ -135,7 +135,15 @@ export class ContentService extends BaseService<
         description: 'Error while parsing CSV',
       });
     }
-
+    if (!result.data.every((row) => row.title && row.status)) {
+      throw new BadRequestException(
+        'Missing required fields: "title" or "status"',
+        {
+          cause: 'Invalid CSV data',
+          description: 'CSV must include "title" and "status" columns',
+        },
+      );
+    }
     const contentsDto = result.data.reduce(
       (acc, { title, status, ...rest }) => [
         ...acc,
@@ -152,7 +160,7 @@ export class ContentService extends BaseService<
       ],
       [],
     );
-
+    this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
     try {
       return await this.createMany(contentsDto);
     } catch (err) {
