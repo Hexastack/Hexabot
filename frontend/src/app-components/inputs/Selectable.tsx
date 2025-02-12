@@ -73,7 +73,7 @@ const Selectable: FC<SelectableProps> = ({
   placeholder = "",
   onChange,
   onSelect,
-  loading,
+  loading = false,
 }) => {
   const [text, setText] = useState(defaultValue || "");
   const editableRef = useRef<HTMLDivElement>(null);
@@ -218,6 +218,7 @@ const Selectable: FC<SelectableProps> = ({
                 top: "20%",
                 transform: "translateY(-20%)",
               }} 
+              aria-label="loading"
             />
           ) : null
         }
