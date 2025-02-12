@@ -9,7 +9,6 @@ services:
         condition: service_healthy
 
   redis:
-    container_name: redis
     image: redis/redis-stack-server:7.2.0-v6
     networks:
       - cache-network
