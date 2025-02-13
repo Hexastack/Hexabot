@@ -217,6 +217,8 @@ const Selectable: FC<SelectableProps> = ({
                 right: 0,
                 top: "20%",
                 transform: "translateY(-20%)",
+                backgroundColor: "rgba(255, 255, 255, 0.7)",
+                borderRadius: "50%",
               }} 
               aria-label="Loading..."
             />
