@@ -67,7 +67,6 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
       hasCount: false,
     },
   );
-  const [loading, setLoading] = useState<boolean>(false);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const defaultValues: INlpSampleFormAttributes = useMemo(
@@ -120,16 +119,10 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     }, 400),
     [setValue],
   );
-
-  useQuery({
+  const { isLoading } = useQuery({
     queryKey: ["nlp-prediction", currentText],
     queryFn: async () => {
-      setLoading(true);
-      try{
-        return await apiClient.predictNlp(currentText);
-      }finally{
-        setLoading(false);
-      }
+      return await apiClient.predictNlp(currentText);
     },
     onSuccess: (result) => {
       const traitEntities: INlpDatasetTraitEntity[] = result.entities.filter(
@@ -148,7 +141,6 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     },
     enabled: !sample && !!currentText,
   });
-
   const findInsertIndex = (newItem: INlpDatasetKeywordEntity): number => {
     const index = keywordEntities.findIndex(
       (entity) => entity.start && newItem.start && entity.start > newItem.start,
@@ -234,7 +226,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                   })),
                 );
               }}
-              loading={loading}
+              loading={isLoading}
             />
           </ContentItem>
           <Box display="flex" flexDirection="column">
