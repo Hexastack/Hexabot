@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -51,6 +51,7 @@ import { CategoryRepository } from '../repositories/category.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { PayloadType } from '../schemas/types/message';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
@@ -330,5 +331,22 @@ describe('BlockController', () => {
         blockController.updateOne(blockToDelete.id, updateBlock),
       ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
     });
+  });
+
+  it('should update block trigger to postback menu', async () => {
+    jest.spyOn(blockService, 'updateOne');
+    const updateBlock: BlockUpdateDto = {
+      patterns: [
+        {
+          label: 'postback123',
+          value: 'postback123',
+          type: PayloadType.menu,
+        },
+      ],
+    };
+    const result = await blockController.updateOne(block.id, updateBlock);
+    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+
+    expect(result.patterns).toEqual(updateBlock.patterns);
   });
 });
