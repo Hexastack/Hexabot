@@ -96,9 +96,12 @@ export class MessageFull extends MessageStub {
   sentBy?: string; // sendBy is never populate
 }
 
+const MessageSchema = SchemaFactory.createForClass(MessageStub);
+MessageSchema.index({ mid: 1 });
+
 export const MessageModel: ModelDefinition = LifecycleHookManager.attach({
   name: Message.name,
-  schema: SchemaFactory.createForClass(MessageStub),
+  schema: MessageSchema,
 });
 
 export default MessageModel.schema;
