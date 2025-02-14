@@ -519,9 +519,11 @@ const Diagrams = () => {
       className="visual-editor"
       id="visual-editor"
       onDrop={(event) => {
-        const data = JSON.parse(
-          event.dataTransfer.getData("storm-diagram-node"),
-        );
+        const stormDiagramNode =
+          event.dataTransfer.getData("storm-diagram-node");
+
+        if (!stormDiagramNode) return;
+        const data = JSON.parse(stormDiagramNode);
 
         if (!data) {
           // eslint-disable-next-line no-console
