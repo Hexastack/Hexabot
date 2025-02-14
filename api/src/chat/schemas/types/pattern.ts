@@ -8,7 +8,7 @@
 
 import { z } from 'zod';
 
-import { PayloadType } from './message';
+import { PayloadType } from './button';
 
 export const payloadPatternSchema = z.object({
   label: z.string(),

@@ -18,6 +18,7 @@ import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
+import { PayloadType } from '@/chat/schemas/types/button';
 import { ContentTypeRepository } from '@/cms/repositories/content-type.repository';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
@@ -64,7 +65,7 @@ import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
-import { PayloadType, StdOutgoingListMessage } from '../schemas/types/message';
+import { StdOutgoingListMessage } from '../schemas/types/message';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { CategoryRepository } from './../repositories/category.repository';
