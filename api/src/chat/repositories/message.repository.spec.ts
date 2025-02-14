@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -60,7 +60,11 @@ describe('MessageRepository', () => {
   afterAll(closeInMongodConnection);
 
   describe('findOneAndPopulate', () => {
-    it('should find one message by id, and populate its sender and recipient', async () => {
+    function toArray(value?: string | string[]): string[] {
+      return value ? (Array.isArray(value) ? value : [value]) : [];
+    }
+
+    it('should find one message by id, and populate its sender and recipient (with mid being a string)', async () => {
       jest.spyOn(messageModel, 'findById');
       const message = (await messageRepository.findOne({ mid: 'mid-1' }))!;
       const sender = await subscriberRepository.findOne(message!['sender']);
@@ -71,8 +75,38 @@ describe('MessageRepository', () => {
       const result = await messageRepository.findOneAndPopulate(message.id);
 
       expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
+
+      const expectedFixture = messageFixtures.find(
+        ({ mid }) =>
+          JSON.stringify(toArray(mid)) === JSON.stringify(message.mid),
+      );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...expectedFixture,
+        mid: toArray(expectedFixture?.mid),
+        sender,
+        recipient,
+        sentBy: user.id,
+      });
+    });
+    it('should find one message by id, and populate its sender and recipient (with mid being a string array)', async () => {
+      jest.spyOn(messageModel, 'findById');
+      const message = (await messageRepository.findOne({ mid: 'mid-2' }))!;
+      const sender = await subscriberRepository.findOne(message!['sender']);
+      const recipient = await subscriberRepository.findOne(
+        message!['recipient'],
+      );
+      const user = (await userRepository.findOne(message!['sentBy']))!;
+      const result = await messageRepository.findOneAndPopulate(message.id);
+
+      expect(messageModel.findById).toHaveBeenCalledWith(message.id, undefined);
+
+      const expectedFixture = messageFixtures.find(
+        ({ mid }) =>
+          JSON.stringify(toArray(mid)) === JSON.stringify(message.mid),
+      );
+      expect(result).toEqualPayload({
+        ...expectedFixture,
+        mid: toArray(expectedFixture?.mid),
         sender,
         recipient,
         sentBy: user.id,
