@@ -30,6 +30,34 @@ Theses are just some examples of the hidden costs that are not so apparent from 
 
 * Do not open an issue on GitHub until you have collected positive feedback about the change. GitHub issues are primarily intended for bug reports and fixes.
 
+
+#### **How can i create my first contribution ?**
+
+- **Find an Issue:**
+  Start by finding an issue to work on. You can either create a new GitHub issue or pick one that has been assigned to you.
+
+- **Create a Branch:**
+  Create a new branch for your work. Use a descriptive name that reflects the issue or feature you're addressing (e.g., fix/login-bug or add/feature-x).
+
+- **Make Changes:**
+  Write or fix the code in your branch. Ensure your changes align with the project's coding standards and guidelines.
+
+- **Push Changes:**
+  Once your changes are ready, push your branch to GitHub.
+
+- **Open a Pull Request (PR):**
+  Create a pull request (PR) from your branch. Include a clear and concise description of your changes, explaining what the PR does and why it’s needed. Make sure to reference the related issue (e.g., "Fixes #123").
+  Note: At least two reviewers are required to approve the PR before it can be merged.
+
+- **Review Process:**
+  Team members will review your code, provide feedback, and suggest improvements. Be open to constructive criticism and ready to iterate on your work.
+
+- **Address Feedback:**
+  Make any necessary changes based on the feedback. Once you’ve addressed the comments, tag the reviewers to let them know your updates are ready for another review.
+
+- **Merge:**
+  Once your PR is approved by at least two reviewers, it will be merged into the main project. Congratulations, your code is now part of the project!
+
 #### **Do you have questions about the source code?**
 
 * Ask any question about how to use Hexabot in our [Discord Channel](https://discord.gg/rNb9t2MFkG).
