@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
@@ -22,6 +22,7 @@ import { RoleModel } from '@/user/schemas/role.schema';
 import { UserModel } from '@/user/schemas/user.schema';
 import { RoleService } from '@/user/services/role.service';
 import { UserService } from '@/user/services/user.service';
+import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { labelFixtures } from '@/utils/test/fixtures/label';
@@ -48,6 +49,7 @@ describe('LabelController', () => {
   let labelService: LabelService;
   let label: Label;
   let labelToDelete: Label;
+  let secondLabelToDelete: Label;
   let subscriberService: SubscriberService;
 
   beforeAll(async () => {
@@ -86,6 +88,9 @@ describe('LabelController', () => {
     label = (await labelService.findOne({ name: 'TEST_TITLE_1' })) as Label;
     labelToDelete = (await labelService.findOne({
       name: 'TEST_TITLE_2',
+    })) as Label;
+    secondLabelToDelete = (await labelService.findOne({
+      name: 'TEST_TITLE_3',
     })) as Label;
   });
 
@@ -228,6 +233,34 @@ describe('LabelController', () => {
       await expect(
         labelController.updateOne(labelToDelete.id, labelUpdateDto),
       ).rejects.toThrow(getUpdateOneError(Label.name, labelToDelete.id));
+    });
+  });
+
+  describe('deleteMany', () => {
+    it('should delete multiple labels', async () => {
+      const valuesToDelete = [label.id, secondLabelToDelete.id];
+
+      const result = await labelController.deleteMany(valuesToDelete);
+
+      expect(result.deletedCount).toEqual(valuesToDelete.length);
+      const remainingValues = await labelService.find({
+        _id: { $in: valuesToDelete },
+      });
+      expect(remainingValues.length).toBe(0);
+    });
+
+    it('should throw BadRequestException when no IDs are provided', async () => {
+      await expect(labelController.deleteMany([])).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw NotFoundException when provided IDs do not exist', async () => {
+      const nonExistentIds = [NOT_FOUND_ID, NOT_FOUND_ID.replace(/9/g, '8')];
+
+      await expect(labelController.deleteMany(nonExistentIds)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });
