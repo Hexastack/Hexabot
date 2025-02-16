@@ -32,7 +32,7 @@ export const SubscribersList = (props: {
   assignedTo: AssignedTo;
 }) => {
   const { query, push } = useRouter();
-  const subscriber = query.subscriber?.toString();
+  const subscriber = query.subscriber?.toString() || null;
   const { apiUrl } = useConfig();
   const { t, i18n } = useTranslate();
   const chat = useChat();
@@ -43,7 +43,7 @@ export const SubscribersList = (props: {
   }, 400);
 
   useEffect(() => {
-    if (chat && subscriber) {
+    if (chat) {
       chat.setSubscriberId(subscriber);
     }
   }, [chat, subscriber]);
