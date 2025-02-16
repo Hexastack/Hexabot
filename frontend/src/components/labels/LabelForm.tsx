@@ -9,7 +9,7 @@
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";

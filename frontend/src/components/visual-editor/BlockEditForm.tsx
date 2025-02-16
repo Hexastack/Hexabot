@@ -12,7 +12,7 @@ import { FormControlLabel, Grid, Switch, Tab, Tabs } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { TabPanel } from "@/app-components/tabs/TabPanel";

@@ -9,7 +9,7 @@
 import { MenuItem, Select } from "@mui/material";
 import { FC, Fragment, useState } from "react";
 
-import { ContentContainer } from "@/app-components/dialogs/";
+import { ContentContainer } from "@/app-components/dialogs";
 import { ICategory } from "@/types/category.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 

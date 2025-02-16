@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CheckIcon from "@mui/icons-material/Check";
 import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
@@ -16,8 +15,7 @@ import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 
-import { ContentItem } from "@/app-components/dialogs";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { Input } from "@/app-components/inputs/Input";
