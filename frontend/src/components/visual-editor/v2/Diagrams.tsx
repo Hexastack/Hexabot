@@ -203,13 +203,23 @@ const Diagrams = () => {
     if (!block) {
       return;
     }
+    const {
+      attachedBlock: _attachedBlock,
+      nextBlocks: _nextBlocks,
+      previousBlocks: _previousBlocks,
+      id: _id,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      position,
+      ...duplicateBlockDto
+    } = block;
 
     duplicateBlock({
-      ...block,
+      ...duplicateBlockDto,
       name: `${block.name} (Copy)`,
       position: {
-        x: block.position.x + 100,
-        y: block.position.y + 100,
+        x: position.x + 100,
+        y: position.y + 100,
       },
     });
   };
