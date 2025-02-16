@@ -341,4 +341,9 @@ export class BlockController extends BaseController<
     this.logger.log(`Successfully deleted blocks with IDs: ${ids}`);
     return deleteResult;
   }
+
+  @Post('/duplicate/:blockId')
+  async duplicateBlock(@Param('blockId') blockId: string) {
+    return this.blockService.duplicateBlock(blockId);
+  }
 }

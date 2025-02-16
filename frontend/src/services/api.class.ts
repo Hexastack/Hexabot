@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { AxiosInstance, AxiosResponse } from "axios";
 
 import { AttachmentResourceRef } from "@/types/attachment.types";
@@ -44,6 +43,7 @@ export const ROUTES = {
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
   CONTENT_IMPORT: "/content/import",
+  DUPLICATE_BLOCK: "/block/duplicate",
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
@@ -252,6 +252,14 @@ export class ApiClient {
     const { data } = await this.request.get<INlpDatasetSampleAttributes>(
       `${ROUTES.NLP_SAMPLE_PREDICT}`,
       { params: { text } },
+    );
+
+    return data;
+  }
+
+  async duplicateBlock(blockId: string) {
+    const { data } = await this.request.post(
+      `${ROUTES.DUPLICATE_BLOCK}/${blockId}`,
     );
 
     return data;
