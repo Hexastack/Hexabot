@@ -23,7 +23,7 @@ export const AttachmentViewerForm: FC<
     <Wrapper {...WrapperProps}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        width="auto"
+        width="100%"
         height={800}
         style={{
           cursor: "pointer",
