@@ -10,7 +10,7 @@ import { FC, Fragment, useState } from "react";
 import { useQuery } from "react-query";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";

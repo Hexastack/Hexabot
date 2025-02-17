@@ -17,7 +17,7 @@ import {
 } from "react-hook-form";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
