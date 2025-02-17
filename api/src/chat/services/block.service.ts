@@ -31,7 +31,7 @@ import {
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
 } from '../schemas/types/message';
-import { NlpPattern, Pattern, PayloadPattern } from '../schemas/types/pattern';
+import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
@@ -194,7 +194,7 @@ export class BlockService extends BaseService<
     block: Block | BlockFull,
   ): (RegExpMatchArray | string)[] | false {
     // Filter text patterns & Instanciate Regex patterns
-    const patterns: undefined | Pattern[] = block.patterns?.map((pattern) => {
+    const patterns = block.patterns?.map((pattern) => {
       if (
         typeof pattern === 'string' &&
         pattern.endsWith('/') &&

@@ -32,9 +32,26 @@ export const nlpPatternSchema = z.discriminatedUnion('match', [
 
 export type NlpPattern = z.infer<typeof nlpPatternSchema>;
 
+export const stringRegexPatternSchema = z.string().refine(
+  (value) => {
+    if (value.startsWith('/') && value.endsWith('/')) {
+      if (value.length === 2) return false;
+      try {
+        new RegExp(value.slice(1, -1), 'gi');
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+    return value !== '';
+  },
+  {
+    message: 'Invalid regex or empty string',
+  },
+);
+
 export const patternSchema = z.union([
-  z.string(),
-  z.instanceof(RegExp),
+  stringRegexPatternSchema,
   payloadPatternSchema,
   z.array(nlpPatternSchema),
 ]);
