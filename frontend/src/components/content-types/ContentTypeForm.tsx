@@ -8,13 +8,14 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useResetForm } from "@/hooks/useResetForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -94,16 +95,18 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      reset({
-        name: data.name,
-        fields: data.fields || FIELDS_FORM_DEFAULT_VALUES,
-      });
-    } else {
-      reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
-    }
-  }, [data, reset]);
+  useResetForm(
+    data,
+    reset,
+    {
+      name: data?.name,
+      fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
+    },
+    {
+      name: "",
+      fields: FIELDS_FORM_DEFAULT_VALUES,
+    },
+  );
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

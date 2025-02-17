@@ -6,13 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useResetForm } from "@/hooks/useResetForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -60,15 +61,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      reset({
-        label: data.label,
-      });
-    } else {
-      reset();
-    }
-  }, [data, reset]);
+  useResetForm(data, reset, { label: data?.label });
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
