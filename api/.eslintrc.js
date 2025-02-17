@@ -89,5 +89,6 @@ module.exports = {
       ],
       2,
     ],
+    'no-multiple-empty-lines': ['error', { max: 1 }],
   },
 };
