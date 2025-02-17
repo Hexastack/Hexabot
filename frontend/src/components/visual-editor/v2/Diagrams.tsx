@@ -82,7 +82,6 @@ const Diagrams = () => {
   const { searchPayload } = useSearch<IBlock>({
     $eq: [{ category: selectedCategoryId }],
   });
-  const selectedEntities = engine?.getModel()?.getSelectedEntities();
   const { toast } = useToast();
   const { mutate: duplicateBlock, isLoading: isDuplicatingBlock } = useCreate(
     EntityType.BLOCK,
@@ -92,10 +91,6 @@ const Diagrams = () => {
       },
     },
   );
-  const shouldDisableDuplicateButton =
-    selectedEntities?.length !== 1 ||
-    selectedEntities[0]?.getID()?.length !== 24 ||
-    isDuplicatingBlock;
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -189,10 +184,7 @@ const Diagrams = () => {
     },
   );
   const handleDuplicateBlock = () => {
-    if (!selectedEntities || selectedEntities.length !== 1) {
-      return;
-    }
-    const block = getBlockFromCache(selectedEntities[0].getID());
+    const block = getBlockFromCache(selectedEntities[0]);
 
     if (!block) {
       return;
@@ -558,6 +550,11 @@ const Diagrams = () => {
       );
     }
   };
+  const selectedEntities = getSelectedIds();
+  const shouldDisableDuplicateButton =
+    selectedEntities.length !== 1 ||
+    selectedEntities[0]?.length !== 24 ||
+    isDuplicatingBlock;
 
   return (
     <div
