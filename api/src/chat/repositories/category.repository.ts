@@ -65,8 +65,9 @@ export class CategoryRepository extends BaseRepository<
         category: id,
       });
       if (associatedBlocks) {
+        const category = await this.findOne({ _id: id });
         throw new ForbiddenException(
-          `Category ${id} has blocks associated with it`,
+          `Category ${category?.label || id} has blocks associated with it`,
         );
       }
     }
