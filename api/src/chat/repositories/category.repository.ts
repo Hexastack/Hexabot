@@ -54,7 +54,11 @@ export class CategoryRepository extends BaseRepository<
     criteria: TFilterQuery<Category>,
   ) {
     criteria = query.getQuery();
-    const ids = Array.isArray(criteria._id) ? criteria._id : [criteria._id];
+    const ids = Array.isArray(criteria._id?.$in)
+      ? criteria._id.$in
+      : Array.isArray(criteria._id)
+        ? criteria._id
+        : [criteria._id];
 
     for (const id of ids) {
       const associatedBlocks = await this.blockService.findOne({
