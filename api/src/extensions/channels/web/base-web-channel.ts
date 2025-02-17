@@ -29,7 +29,7 @@ import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
 import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
-import { Button, ButtonType } from '@/chat/schemas/types/button';
+import { Button, ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import {
   AnyMessage,
   ContentElement,
@@ -37,7 +37,6 @@ import {
   IncomingMessageType,
   OutgoingMessage,
   OutgoingMessageFormat,
-  PayloadType,
   StdEventType,
   StdOutgoingAttachmentMessage,
   StdOutgoingButtonsMessage,

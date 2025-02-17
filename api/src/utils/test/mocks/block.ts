@@ -12,12 +12,9 @@ import {
 } from '@/channel/lib/__test__/label.mock';
 import { BlockFull } from '@/chat/schemas/block.schema';
 import { FileType } from '@/chat/schemas/types/attachment';
-import { ButtonType } from '@/chat/schemas/types/button';
+import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import { CaptureVar } from '@/chat/schemas/types/capture-var';
-import {
-  OutgoingMessageFormat,
-  PayloadType,
-} from '@/chat/schemas/types/message';
+import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
 import { Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
