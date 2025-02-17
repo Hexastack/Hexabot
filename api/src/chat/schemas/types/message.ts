@@ -90,6 +90,7 @@ export enum PayloadType {
   attachments = 'attachments',
   quick_reply = 'quick_reply',
   button = 'button',
+  menu = 'menu',
 }
 
 export const payloadTypeSchema = z.nativeEnum(PayloadType);
