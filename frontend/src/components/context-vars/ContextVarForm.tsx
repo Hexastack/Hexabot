@@ -39,11 +39,11 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const { mutateAsync: createContextVar } = useCreate(
+  const { mutate: createContextVar } = useCreate(
     EntityType.CONTEXT_VAR,
     options,
   );
-  const { mutateAsync: updateContextVar } = useUpdate(
+  const { mutate: updateContextVar } = useUpdate(
     EntityType.CONTEXT_VAR,
     options,
   );

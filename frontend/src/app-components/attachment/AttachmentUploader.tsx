@@ -84,7 +84,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const dialogs = useDialogs();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const { toast } = useToast();
-  const { mutateAsync: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
+  const { mutate: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
     onError: () => {
       toast.error(t("message.upload_failed"));
     },
