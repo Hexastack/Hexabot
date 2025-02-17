@@ -7,13 +7,14 @@
  */
 
 import { Button, Grid, Link } from "@mui/material";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useResetForm } from "@/hooks/useResetForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -54,11 +55,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      reset({ labels: data?.labels });
-    }
-  }, [data, reset]);
+  useResetForm(data, reset, { labels: data?.labels });
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

@@ -7,13 +7,14 @@
  */
 
 import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useResetForm } from "@/hooks/useResetForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -80,17 +81,11 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      reset({
-        name: data.name,
-        label: data.label,
-        permanent: data.permanent,
-      });
-    } else {
-      reset();
-    }
-  }, [data, reset]);
+  useResetForm(data, reset, {
+    name: data?.name,
+    label: data?.label,
+    permanent: data?.permanent,
+  });
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

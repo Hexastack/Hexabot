@@ -7,7 +7,7 @@
  */
 
 import { useRouter } from "next/router";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
@@ -16,6 +16,7 @@ import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useResetForm } from "@/hooks/useResetForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -79,16 +80,10 @@ export const NlpValueForm: FC<
     }
   };
 
-  useEffect(() => {
-    if (data) {
-      reset({
-        value: data.value,
-        expressions: data.expressions,
-      });
-    } else {
-      reset();
-    }
-  }, [data, reset]);
+  useResetForm(data, reset, {
+    value: data?.value,
+    expressions: data?.expressions,
+  });
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
