@@ -28,7 +28,6 @@ import {
   DiagramEngine,
   DiagramModel,
   DiagramModelGenerics,
-  NodeModel,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
 import { SyntheticEvent, useCallback, useEffect, useState } from "react";
@@ -84,12 +83,6 @@ const Diagrams = () => {
     $eq: [{ category: selectedCategoryId }],
   });
   const selectedEntities = engine?.getModel()?.getSelectedEntities();
-  const selectedLinks = (selectedEntities || []).filter(
-    (entity) => entity instanceof AdvancedLinkModel,
-  );
-  const selectedBlocks = (selectedEntities || []).filter(
-    (entity) => entity instanceof NodeModel,
-  );
   const { toast } = useToast();
   const { mutate: duplicateBlock, isLoading: isDuplicatingBlock } = useCreate(
     EntityType.BLOCK,
@@ -100,9 +93,8 @@ const Diagrams = () => {
     },
   );
   const shouldDisableDuplicateButton =
-    selectedLinks.length >= 1 ||
-    selectedBlocks.length > 1 ||
-    selectedBlocks.length === 0 ||
+    selectedEntities?.length !== 1 ||
+    selectedEntities[0]?.getID()?.length !== 24 ||
     isDuplicatingBlock;
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
@@ -197,8 +189,10 @@ const Diagrams = () => {
     },
   );
   const handleDuplicateBlock = () => {
-    const selectedBlock = selectedBlocks[0] as any;
-    const block = getBlockFromCache(selectedBlock?.options?.id);
+    if (!selectedEntities || selectedEntities.length !== 1) {
+      return;
+    }
+    const block = getBlockFromCache(selectedEntities[0].getID());
 
     if (!block) {
       return;
