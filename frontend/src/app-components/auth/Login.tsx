@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
@@ -38,7 +39,7 @@ export const Login = () => {
   const { toast } = useToast();
   const router = useRouter();
   const { authenticate } = useAuth();
-  const { mutateAsync: login, isLoading } = useLogin({
+  const { mutate: login, isLoading } = useLogin({
     onSuccess: (data) => {
       if (data.state) authenticate(data);
       else {
@@ -49,7 +50,7 @@ export const Login = () => {
       toast.error(t("message.login_failure"));
     },
   });
-  const { mutateAsync: confirmAccount } = useConfirmAccount({
+  const { mutate: confirmAccount } = useConfirmAccount({
     onSuccess: () => {
       toast.success(t("message.reset_confirm_success"));
     },
@@ -76,8 +77,8 @@ export const Login = () => {
       required: t("message.password_is_required"),
     },
   };
-  const onSubmitForm = async (data: ILoginAttributes) => {
-    await login(data);
+  const onSubmitForm = (data: ILoginAttributes) => {
+    login(data);
   };
 
   useEffect(() => {

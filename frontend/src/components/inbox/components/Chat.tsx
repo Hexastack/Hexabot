@@ -39,7 +39,7 @@ export function Chat() {
   const { t, i18n } = useTranslate();
   const { subscriber } = useChat();
   const { user } = useAuth();
-  const { mutateAsync: createMessage } = useCreate(EntityType.MESSAGE);
+  const { mutate: createMessage } = useCreate(EntityType.MESSAGE);
   const { replyTo, messages, fetchNextPage, hasNextPage, isFetching } =
     useInfinitedLiveMessages();
 

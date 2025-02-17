@@ -46,7 +46,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     setSelectedTab(newValue);
   };
   const { toast } = useToast();
-  const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     onError: () => {
       rest.onError?.();
       toast.error(t("message.internal_server_error"));
@@ -94,7 +94,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
       required: t("message.name_is_required"),
     },
   };
-  const onSubmitForm = async (params: IBlockAttributes) => {
+  const onSubmitForm = (params: IBlockAttributes) => {
     if (block) {
       updateBlock({ id: block.id, params });
     }
