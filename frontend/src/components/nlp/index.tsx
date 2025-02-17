@@ -62,7 +62,7 @@ export const Nlp = ({
   };
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutateAsync: createSample } = useCreate<
+  const { mutate: createSample } = useCreate<
     EntityType.NLP_SAMPLE,
     INlpDatasetSampleAttributes,
     INlpSample,

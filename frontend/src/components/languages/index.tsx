@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import { Flag } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
@@ -52,7 +53,7 @@ export const Languages = () => {
       params: searchPayload,
     },
   );
-  const { mutateAsync: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
+  const { mutate: updateLanguage } = useUpdate(EntityType.LANGUAGE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -61,7 +62,7 @@ export const Languages = () => {
       toast.success(t("message.success_save"));
     },
   });
-  const { mutateAsync: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
+  const { mutate: deleteLanguage } = useDelete(EntityType.LANGUAGE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
