@@ -13,11 +13,13 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
@@ -29,6 +31,8 @@ export const SubscribersList = (props: {
   searchPayload: any;
   assignedTo: AssignedTo;
 }) => {
+  const { query, push } = useRouter();
+  const subscriber = query.subscriber?.toString() || null;
   const { apiUrl } = useConfig();
   const { t, i18n } = useTranslate();
   const chat = useChat();
@@ -37,6 +41,12 @@ export const SubscribersList = (props: {
   const handleLoadMore = debounce(() => {
     !isFetching && hasNextPage && fetchNextPage();
   }, 400);
+
+  useEffect(() => {
+    if (chat) {
+      chat.setSubscriberId(subscriber);
+    }
+  }, [chat, subscriber]);
 
   return (
     <>
@@ -52,7 +62,10 @@ export const SubscribersList = (props: {
         >
           {subscribers.map((subscriber) => (
             <Conversation
-              onClick={() => chat.setSubscriberId(subscriber.id)}
+              onClick={() => {
+                chat.setSubscriberId(subscriber.id);
+                push(`/${RouterType.INBOX}/subscribers/${subscriber.id}`);
+              }}
               className="changeColor"
               key={subscriber.id}
               active={chat.subscriber?.id === subscriber.id}
