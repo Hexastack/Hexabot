@@ -9,7 +9,7 @@
 import { FC, Fragment } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useSendInvitation } from "@/hooks/entities/invitation-hooks";

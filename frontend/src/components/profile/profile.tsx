@@ -15,8 +15,7 @@ import { FC } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useQueryClient } from "react-query";
 
-import { ContentItem } from "@/app-components/dialogs";
-import { ContentContainer } from "@/app-components/dialogs/layouts/ContentContainer";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Adornment } from "@/app-components/inputs/Adornment";
 import AvatarInput from "@/app-components/inputs/AvatarInput";
 import { Input } from "@/app-components/inputs/Input";
