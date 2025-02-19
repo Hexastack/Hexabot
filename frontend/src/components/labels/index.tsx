@@ -8,8 +8,10 @@
 
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Grid, Paper } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
+import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { useState } from "react";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -20,6 +22,7 @@ import {
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -48,14 +51,16 @@ export const Labels = () => {
       params: searchPayload,
     },
   );
-  const { mutate: deleteLabel } = useDelete(EntityType.LABEL, {
+  const options = {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
     onSuccess() {
       toast.success(t("message.item_delete_success"));
     },
-  });
+  };
+  const { mutate: deleteLabel } = useDelete(EntityType.LABEL, options);
+  const { mutate: deleteLabels } = useDeleteMany(EntityType.LABEL, options);
   const actionColumns = useActionColumns<ILabel>(
     EntityType.LABEL,
     [
@@ -78,6 +83,7 @@ export const Labels = () => {
     ],
     t("label.operations"),
   );
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const columns: GridColDef<ILabel>[] = [
     { field: "id", headerName: "ID" },
     {
@@ -123,7 +129,6 @@ export const Labels = () => {
 
       headerAlign: "left",
     },
-
     {
       minWidth: 140,
       field: "createdAt",
@@ -148,6 +153,9 @@ export const Labels = () => {
     },
     actionColumns,
   ];
+  const handleSelectionChange = (selection: GridRowSelectionModel) => {
+    setSelectedLabels(selection as string[]);
+  };
 
   return (
     <Grid container gap={3} flexDirection="column">
@@ -175,12 +183,35 @@ export const Labels = () => {
               </Button>
             </Grid>
           ) : null}
+          <Button
+            color="error"
+            variant="contained"
+            onClick={async () => {
+              const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                mode: "selection",
+                count: selectedLabels.length,
+              });
+
+              if (isConfirmed) {
+                deleteLabels(selectedLabels);
+              }
+            }}
+            disabled={!selectedLabels.length}
+            startIcon={<DeleteIcon />}
+          >
+            {t("button.delete")}
+          </Button>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
+            <DataGrid
+              columns={columns}
+              {...dataGridProps}
+              checkboxSelection
+              onRowSelectionModelChange={handleSelectionChange}
+            />
           </Grid>
         </Paper>
       </Grid>

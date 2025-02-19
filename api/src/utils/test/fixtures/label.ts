@@ -43,6 +43,17 @@ export const labels: TLabelFixtures['values'][] = [
     name: 'TEST_TITLE_2',
     title: 'test title 2',
   },
+  {
+    description: 'test description 3',
+    label_id: {
+      messenger: 'messenger',
+      web: 'web',
+      twitter: 'twitter',
+      dimelo: 'dimelo',
+    },
+    name: 'TEST_TITLE_3',
+    title: 'test title 3',
+  },
 ];
 
 export const labelFixtures = getFixturesWithDefaultValues<
