@@ -21,7 +21,7 @@ import { PluginName } from '@/plugins/types';
 import { Message } from '../message.schema';
 
 import { attachmentPayloadSchema } from './attachment';
-import { buttonSchema } from './button';
+import { buttonSchema, PayloadType } from './button';
 import { contentOptionsSchema } from './options';
 import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
 
@@ -84,13 +84,6 @@ export enum FileType {
 export const fileTypeSchema = z.nativeEnum(FileType);
 
 export type FileTypeLiteral = z.infer<typeof fileTypeSchema>;
-
-export enum PayloadType {
-  location = 'location',
-  attachments = 'attachments',
-  quick_reply = 'quick_reply',
-  button = 'button',
-}
 
 export const payloadTypeSchema = z.nativeEnum(PayloadType);
 
