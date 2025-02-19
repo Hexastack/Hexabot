@@ -26,9 +26,12 @@ import {
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { Role, RoleModel } from '../schemas/role.schema';
 import { User, UserFull, UserModel } from '../schemas/user.schema';
+
+import { InvitationRepository } from './invitation.repository';
 
 describe('UserRepository', () => {
   let roleRepository: RoleRepository;
@@ -57,6 +60,7 @@ describe('UserRepository', () => {
           UserModel,
           PermissionModel,
           RoleModel,
+          InvitationModel,
           AttachmentModel,
         ]),
       ],
@@ -64,6 +68,7 @@ describe('UserRepository', () => {
         LoggerService,
         UserRepository,
         RoleRepository,
+        InvitationRepository,
         PermissionRepository,
         EventEmitter2,
         {
