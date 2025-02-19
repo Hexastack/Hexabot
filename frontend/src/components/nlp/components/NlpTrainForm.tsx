@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
-
 import AddIcon from "@mui/icons-material/Add";
 import Check from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
