@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,7 +9,7 @@
 import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
@@ -31,8 +31,24 @@ export const Inbox = () => {
   });
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
+  const [searchText, setSearchText] = useState(localStorage.getItem("searchText") || "");
 
-  return (
+  useEffect(() => {
+    const storedSearchText = localStorage.getItem("searchTerm");
+
+    if (storedSearchText) {
+      setSearchText(storedSearchText);
+      onSearch(storedSearchText);
+    }
+  }, []);
+
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    onSearch(value);
+    localStorage.setItem("searchTerm", value);
+  };
+  
+return (
     <ChatProvider>
       <Grid
         container
@@ -48,9 +64,10 @@ export const Inbox = () => {
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
                 <Search
-                  onClearClick={() => onSearch("")}
+                  value={searchText}
+                  onClearClick={() => handleSearch("")}
                   className="changeColor"
-                  onChange={(v) => onSearch(v)}
+                  onChange={handleSearch}
                   placeholder="Search..."
                 />
               </Grid>
