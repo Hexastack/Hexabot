@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
-
 import { Box, CircularProgress, Input, styled } from "@mui/material";
 import randomSeed from "random-seed";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -211,7 +209,7 @@ const Selectable: FC<SelectableProps> = ({
         endAdornment={
           loading ? (
             <CircularProgress
-              size={20} 
+              size={20}
               style={{
                 position: "absolute",
                 right: 0,
@@ -219,7 +217,7 @@ const Selectable: FC<SelectableProps> = ({
                 transform: "translateY(-20%)",
                 backgroundColor: "rgba(255, 255, 255, 0.7)",
                 borderRadius: "50%",
-              }} 
+              }}
               aria-label="Loading..."
             />
           ) : null
