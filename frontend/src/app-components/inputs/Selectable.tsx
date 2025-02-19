@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
-
 import { Box, CircularProgress, Input, styled } from "@mui/material";
 import randomSeed from "random-seed";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
