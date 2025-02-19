@@ -39,11 +39,11 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const { mutateAsync: createContextVar } = useCreate(
+  const { mutate: createContextVar } = useCreate(
     EntityType.CONTEXT_VAR,
     options,
   );
-  const { mutateAsync: updateContextVar } = useUpdate(
+  const { mutate: updateContextVar } = useUpdate(
     EntityType.CONTEXT_VAR,
     options,
   );
@@ -72,7 +72,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       required: t("message.label_is_required"),
     },
   };
-  const onSubmitForm = async (params: IContextVarAttributes) => {
+  const onSubmitForm = (params: IContextVarAttributes) => {
     if (data) {
       updateContextVar({ id: data.id, params });
     } else {

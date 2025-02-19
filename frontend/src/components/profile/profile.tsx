@@ -34,7 +34,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
   const { t } = useTranslate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { mutateAsync: updateProfile, isLoading } = useUpdateProfile({
+  const { mutate: updateProfile, isLoading } = useUpdateProfile({
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -79,12 +79,12 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       },
     },
   };
-  const onSubmitForm = async ({
+  const onSubmitForm = ({
     password,
     password2: _password2,
     ...rest
   }: IProfileAttributes) => {
-    await updateProfile({
+    updateProfile({
       ...rest,
       password: password || undefined,
     });

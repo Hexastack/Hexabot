@@ -110,7 +110,7 @@ export default function NlpSample() {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: importDataset, isLoading } = useImport(
+  const { mutate: importDataset, isLoading } = useImport(
     EntityType.NLP_SAMPLE,
     {
       onError: () => {
@@ -297,8 +297,8 @@ export default function NlpSample() {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpSamples(selection as string[]);
   };
-  const handleImportChange = async (file: File) => {
-    await importDataset(file);
+  const handleImportChange = (file: File) => {
+    importDataset(file);
   };
 
   return (
