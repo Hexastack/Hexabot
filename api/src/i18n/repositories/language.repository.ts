@@ -48,10 +48,22 @@ export class LanguageRepository extends BaseRepository<
     _criteria: TFilterQuery<Language>,
   ): Promise<void> {
     if (_criteria._id) {
-      const language = await this.find(
-        typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
-      );
-      this.eventEmitter.emit('hook:language:delete', language);
+      const ids = Array.isArray(_criteria._id?.$in)
+        ? _criteria._id.$in
+        : Array.isArray(_criteria._id)
+          ? _criteria._id
+          : [_criteria._id];
+
+      for (const id of ids) {
+        const language = await this.findOne({
+          _id: id,
+        });
+        if (language) {
+          this.eventEmitter.emit('hook:language:delete', language);
+        } else {
+          throw new Error(`Language with id ${id} not found`);
+        }
+      }
     } else {
       throw new Error('Attempted to delete language using unknown criteria');
     }
