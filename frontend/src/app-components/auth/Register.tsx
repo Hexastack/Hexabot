@@ -1,10 +1,11 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
+
 
 import AbcIcon from "@mui/icons-material/Abc";
 import KeyIcon from "@mui/icons-material/Key";
@@ -53,7 +54,7 @@ export const Register = () => {
   const { t } = useTranslate();
   const router = useRouter();
   const { toast } = useToast();
-  const { mutateAsync: acceptInvite, isLoading } = useAcceptInvite({
+  const { mutate: acceptInvite, isLoading } = useAcceptInvite({
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },
@@ -108,11 +109,11 @@ export const Register = () => {
       },
     },
   };
-  const onSubmitForm = async ({
+  const onSubmitForm = ({
     password2: _password2,
     ...rest
   }: TRegisterExtendedPayload) => {
-    await acceptInvite(rest);
+    acceptInvite(rest);
   };
 
   useEffect(() => {

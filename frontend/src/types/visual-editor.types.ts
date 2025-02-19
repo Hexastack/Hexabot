@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import {
   DiagramEngine,
   DiagramModel,
@@ -39,7 +38,7 @@ export interface IVisualEditor {
 }
 export interface IVisualEditorContext {
   addNode: (payload: any) => NodeModel;
-  createNode;
+  createNode: (payload: any) => void;
   buildDiagram: (props: IVisualEditor) => {
     model: DiagramModel<DiagramModelGenerics>;
     engine: DiagramEngine;
