@@ -72,7 +72,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       required: t("message.label_is_required"),
     },
   };
-  const onSubmitForm = async (params: IContextVarAttributes) => {
+  const onSubmitForm = (params: IContextVarAttributes) => {
     if (data) {
       updateContextVar({ id: data.id, params });
     } else {

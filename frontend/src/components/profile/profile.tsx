@@ -79,7 +79,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
       },
     },
   };
-  const onSubmitForm = async ({
+  const onSubmitForm = ({
     password,
     password2: _password2,
     ...rest
