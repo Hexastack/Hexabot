@@ -32,8 +32,10 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { User, UserModel } from '../schemas/user.schema';
@@ -60,6 +62,7 @@ describe('PasswordResetService', () => {
           PermissionModel,
           AttachmentModel,
           LanguageModel,
+          InvitationModel,
         ]),
         JwtModule,
       ],
@@ -70,6 +73,7 @@ describe('PasswordResetService', () => {
         AttachmentService,
         AttachmentRepository,
         RoleRepository,
+        InvitationRepository,
         LanguageService,
         LanguageRepository,
         LoggerService,

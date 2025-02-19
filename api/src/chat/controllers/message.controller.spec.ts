@@ -22,8 +22,10 @@ import { I18nService } from '@/i18n/services/i18n.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
+import { InvitationModel } from '@/user/schemas/invitation.schema';
 import { PermissionModel } from '@/user/schemas/permission.schema';
 import { RoleModel } from '@/user/schemas/role.schema';
 import { User, UserModel } from '@/user/schemas/user.schema';
@@ -71,6 +73,7 @@ describe('MessageController', () => {
           MessageModel,
           UserModel,
           RoleModel,
+          InvitationModel,
           PermissionModel,
           AttachmentModel,
           MenuModel,
@@ -85,6 +88,7 @@ describe('MessageController', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        InvitationRepository,
         SubscriberRepository,
         ChannelService,
         AttachmentService,

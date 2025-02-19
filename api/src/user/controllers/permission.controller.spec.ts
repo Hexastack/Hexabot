@@ -20,9 +20,11 @@ import {
 } from '@/utils/test/test';
 
 import { PermissionCreateDto } from '../dto/permission.dto';
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { Model, ModelModel } from '../schemas/model.schema';
 import {
   Permission,
@@ -53,7 +55,12 @@ describe('PermissionController', () => {
       controllers: [PermissionController],
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([PermissionModel, ModelModel, RoleModel]),
+        MongooseModule.forFeature([
+          PermissionModel,
+          ModelModel,
+          RoleModel,
+          InvitationModel,
+        ]),
       ],
       providers: [
         LoggerService,
@@ -62,6 +69,7 @@ describe('PermissionController', () => {
         PermissionService,
         PermissionRepository,
         RoleRepository,
+        InvitationRepository,
         ModelRepository,
         EventEmitter2,
         {

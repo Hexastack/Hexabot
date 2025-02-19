@@ -26,9 +26,11 @@ import {
 } from '@/utils/test/test';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { Role, RoleFull, RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
@@ -55,6 +57,7 @@ describe('RoleController', () => {
           RoleModel,
           PermissionModel,
           UserModel,
+          InvitationModel,
           AttachmentModel,
         ]),
       ],
@@ -65,6 +68,7 @@ describe('RoleController', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        InvitationRepository,
         PermissionRepository,
         EventEmitter2,
         AttachmentService,
