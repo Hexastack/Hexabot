@@ -30,6 +30,7 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
+import { Label } from '../schemas/label.schema';
 import {
   Subscriber,
   SubscriberFull,
@@ -206,6 +207,26 @@ export class SubscriberService extends BaseService<
       } catch (err) {
         this.logger.error(err);
       }
+    }
+  }
+
+  /**
+   * Updates the `labels` field of a subscriber when a label is deleted.
+   *
+   * This method removes the deleted label from the `labels` field of all subscribers that have the label.
+   *
+   * @param label The label that is being deleted.
+   */
+  @OnEvent('hook:label:delete')
+  async handleLabelDelete(labels: Label[]) {
+    const subscribers = await this.find({
+      labels: { $in: labels.map((l) => l.id) },
+    });
+    for (const subscriber of subscribers) {
+      const updatedLabels = subscriber.labels.filter(
+        (label) => !labels.find((l) => l.id === label),
+      );
+      await this.updateOne(subscriber.id, { labels: updatedLabels });
     }
   }
 }

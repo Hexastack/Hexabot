@@ -7,6 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -25,6 +26,7 @@ import { getRandom } from '@/utils/helpers/safeRandom';
 import { BlockDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
+import { Label } from '../schemas/label.schema';
 import { Context } from '../schemas/types/context';
 import {
   BlockMessage,
@@ -603,5 +605,33 @@ export class BlockService extends BaseService<
       }
     }
     throw new Error('Invalid message format.');
+  }
+
+  /**
+   * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
+   *
+   *
+   * This method removes the deleted label from the `trigger_labels` and `assign_labels` fields of all blocks that have the label.
+   *
+   * @param label The label that is being deleted.
+   */
+  @OnEvent('hook:label:delete')
+  async handleLabelDelete(labels: Label[]) {
+    const blocks = await this.find({
+      $or: [
+        { trigger_labels: { $in: labels.map((l) => l.id) } },
+        { assign_labels: { $in: labels.map((l) => l.id) } },
+      ],
+    });
+
+    for (const block of blocks) {
+      const trigger_labels = block.trigger_labels.filter(
+        (labelId) => !labels.find((l) => l.id === labelId),
+      );
+      const assign_labels = block.assign_labels.filter(
+        (labelId) => !labels.find((l) => l.id === labelId),
+      );
+      await this.updateOne(block.id, { trigger_labels, assign_labels });
+    }
   }
 }
