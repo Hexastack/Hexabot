@@ -1,24 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import fs from 'fs';
-
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import {
-  Attachment,
-  AttachmentModel,
-} from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -48,10 +40,8 @@ describe('ContentController', () => {
   let contentController: ContentController;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
-  let attachmentService: AttachmentService;
   let contentType: ContentType | null;
   let content: Content | null;
-  let attachment: Attachment | null;
   let updatedContent;
   let pageQuery: PageQueryDto<Content>;
 
@@ -60,33 +50,23 @@ describe('ContentController', () => {
       controllers: [ContentController],
       imports: [
         rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-        ]),
+        MongooseModule.forFeature([ContentTypeModel, ContentModel]),
       ],
       providers: [
         LoggerService,
         ContentTypeService,
         ContentService,
         ContentRepository,
-        AttachmentService,
         ContentTypeRepository,
-        AttachmentRepository,
         EventEmitter2,
       ],
     }).compile();
     contentController = module.get<ContentController>(ContentController);
     contentService = module.get<ContentService>(ContentService);
-    attachmentService = module.get<AttachmentService>(AttachmentService);
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
     contentType = await contentTypeService.findOne({ name: 'Product' });
     content = await contentService.findOne({
       title: 'Jean',
-    });
-    attachment = await attachmentService.findOne({
-      name: 'store1.jpg',
     });
 
     pageQuery = getPageQuery<Content>({
@@ -243,91 +223,76 @@ describe('ContentController', () => {
   });
 
   describe('import', () => {
+    const mockCsvData: string = `other,title,status,image
+      should not appear,store 3,true,image.jpg`;
+
+    const file: Express.Multer.File = {
+      buffer: Buffer.from(mockCsvData, 'utf-8'),
+      originalname: 'test.csv',
+      mimetype: 'text/csv',
+      size: mockCsvData.length,
+      fieldname: 'file',
+      encoding: '7bit',
+      stream: null,
+      destination: '',
+      filename: '',
+      path: '',
+    } as unknown as Express.Multer.File;
+
     it('should import content from a CSV file', async () => {
-      const mockCsvData: string = `other,title,status,image
-should not appear,store 3,true,image.jpg`;
-
-      const mockCsvContentDto: ContentCreateDto = {
-        entity: '0',
-        title: 'store 3',
-        status: true,
-        dynamicFields: {
-          image: 'image.jpg',
-        },
-      };
-      jest.spyOn(contentService, 'createMany');
-      jest.spyOn(fs, 'existsSync').mockReturnValueOnce(true);
-      jest.spyOn(fs, 'readFileSync').mockReturnValueOnce(mockCsvData);
-
-      const contentType = await contentTypeService.findOne({
+      const mockContentType = {
+        id: '0',
         name: 'Store',
-      });
-
-      const result = await contentController.import({
-        idFileToImport: attachment!.id,
-        idTargetContentType: contentType!.id,
-      });
-      expect(contentService.createMany).toHaveBeenCalledWith([
-        { ...mockCsvContentDto, entity: contentType!.id },
+      } as unknown as ContentType;
+      jest
+        .spyOn(contentTypeService, 'findOne')
+        .mockResolvedValueOnce(mockContentType);
+      jest.spyOn(contentService, 'parseAndSaveDataset').mockResolvedValueOnce([
+        {
+          entity: mockContentType.id,
+          title: 'store 3',
+          status: true,
+          dynamicFields: {
+            image: 'image.jpg',
+          },
+          id: '',
+          createdAt: null as unknown as Date,
+          updatedAt: null as unknown as Date,
+        },
       ]);
 
-      expect(result).toEqualPayload(
-        [
-          {
-            ...mockCsvContentDto,
-            entity: contentType!.id,
-          },
-        ],
-        [...IGNORED_TEST_FIELDS, 'rag'],
+      const result = await contentController.import(file, mockContentType.id);
+      expect(contentService.parseAndSaveDataset).toHaveBeenCalledWith(
+        mockCsvData,
+        mockContentType.id,
+        mockContentType,
       );
+      expect(result).toEqual([
+        {
+          entity: mockContentType.id,
+          title: 'store 3',
+          status: true,
+          dynamicFields: {
+            image: 'image.jpg',
+          },
+          id: '',
+          createdAt: null as unknown as Date,
+          updatedAt: null as unknown as Date,
+        },
+      ]);
     });
 
     it('should throw NotFoundException if content type is not found', async () => {
+      jest.spyOn(contentTypeService, 'findOne').mockResolvedValueOnce(null);
       await expect(
-        contentController.import({
-          idFileToImport: attachment!.id,
-          idTargetContentType: NOT_FOUND_ID,
-        }),
+        contentController.import(file, 'INVALID_ID'),
       ).rejects.toThrow(new NotFoundException('Content type is not found'));
     });
 
-    it('should throw NotFoundException if file is not found in attachment database', async () => {
-      const contentType = await contentTypeService.findOne({
-        name: 'Product',
-      });
-      jest.spyOn(contentTypeService, 'findOne');
-      await expect(
-        contentController.import({
-          idFileToImport: NOT_FOUND_ID,
-          idTargetContentType: contentType!.id.toString(),
-        }),
-      ).rejects.toThrow(new NotFoundException('File does not exist'));
+    it('should throw NotFoundException if idTargetContentType is missing', async () => {
+      await expect(contentController.import(file, '')).rejects.toThrow(
+        new NotFoundException('Missing parameter'),
+      );
     });
-
-    it('should throw NotFoundException if file does not exist in the given path ', async () => {
-      jest.spyOn(fs, 'existsSync').mockReturnValue(false);
-      await expect(
-        contentController.import({
-          idFileToImport: attachment!.id,
-          idTargetContentType: contentType!.id,
-        }),
-      ).rejects.toThrow(new NotFoundException('File does not exist'));
-    });
-
-    it.each([
-      ['file param and content type params are missing', '', ''],
-      ['content type param is missing', '', NOT_FOUND_ID],
-      ['file param is missing', NOT_FOUND_ID, ''],
-    ])(
-      'should throw NotFoundException if %s',
-      async (_message, fileToImport, targetContentType) => {
-        await expect(
-          contentController.import({
-            idFileToImport: fileToImport,
-            idTargetContentType: targetContentType,
-          }),
-        ).rejects.toThrow(new NotFoundException('Missing params'));
-      },
-    );
   });
 });
