@@ -9,7 +9,7 @@
 import mongoose from 'mongoose';
 
 import { MessageCreateDto } from '@/chat/dto/message.dto';
-import { MessageModel, Message } from '@/chat/schemas/message.schema';
+import { Message, MessageModel } from '@/chat/schemas/message.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -27,7 +27,7 @@ const messages: MessageCreateDto[] = [
     delivery: true,
   },
   {
-    mid: 'mid-2',
+    mid: ['mid-2', 'mid-2.1'],
     sender: '1',
     recipient: '1',
     sentBy: '0',
