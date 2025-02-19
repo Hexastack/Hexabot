@@ -209,7 +209,7 @@ const Selectable: FC<SelectableProps> = ({
         endAdornment={
           loading ? (
             <CircularProgress
-              size={20} 
+              size={20}
               style={{
                 position: "absolute",
                 right: 0,
@@ -217,7 +217,7 @@ const Selectable: FC<SelectableProps> = ({
                 transform: "translateY(-20%)",
                 backgroundColor: "rgba(255, 255, 255, 0.7)",
                 borderRadius: "50%",
-              }} 
+              }}
               aria-label="Loading..."
             />
           ) : null
