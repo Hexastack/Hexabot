@@ -67,6 +67,8 @@
     "nlp_entity_name_is_invalid": "NLU Entity name format is invalid! Only `A-z`, `0-9` and `_` are allowed.",
     "nlp_unable_to_guess": "Unable to predict any meaning from the sentence.",
     "nlp_success_trained": "NLU Model has been successfully trained!",
+    "nlp_sample_annotation_success": "Successfully updated NLU samples by adding the entity values",
+    "nlp_sample_annotation_failure": "An error occurred while updating samples.",
     "no_user": "There are no subscribers at the moment.",
     "no_user_assigned": "No one is assigned to you.",
     "no_user_handledby_chatbot": "No one is handled currently by the chatbot",
@@ -576,7 +578,8 @@
     "text": "Text",
     "location": "Location",
     "mark_as_default": "Mark as Default",
-    "toggle": "Toggle button"
+    "toggle": "Toggle",
+    "annotate": "Annotate Dataset"
   },
   "input": {
     "search": "Search"

@@ -13,6 +13,7 @@ import { Button, Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useMutation } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -25,6 +26,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
+import { useApiClient } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
@@ -60,6 +62,19 @@ const NlpEntity = () => {
       toast.success(t("message.item_delete_success"));
     },
   });
+  const { apiClient } = useApiClient();
+  const { mutate: annotateSamples } = useMutation({
+    mutationFn: async (entityId: string) => {
+      await apiClient.annotateNlpSamples(entityId);
+    },
+    onError: () => {
+      toast.error(t("message.nlp_sample_annotation_failure"));
+    },
+    onSuccess: () => {
+      setSelectedNlpEntities([]);
+      toast.success(t("message.nlp_sample_annotation_success"));
+    },
+  });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
   const { onSearch, searchPayload } = useSearch<INlpEntity>({
     $or: ["name", "doc"],
@@ -91,6 +106,14 @@ const NlpEntity = () => {
             },
           ),
         requires: [PermissionAction.READ],
+      },
+      {
+        label: ActionColumnLabel.Annotate,
+        action: (row) => {
+          annotateSamples(row.id);
+        },
+        requires: [PermissionAction.CREATE],
+        isDisabled: (row) => !row.lookups.includes("keywords"),
       },
       {
         label: ActionColumnLabel.Edit,

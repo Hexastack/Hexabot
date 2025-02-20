@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,13 +10,15 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 
+import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import {
   NlpSampleEntity,
   NlpSampleEntityFull,
   NlpSampleEntityPopulate,
 } from '../schemas/nlp-sample-entity.schema';
-import { NlpSample } from '../schemas/nlp-sample.schema';
+import { NlpSample, NlpSampleStub } from '../schemas/nlp-sample.schema';
+import { NlpValue } from '../schemas/nlp-value.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
 import { NlpEntityService } from './nlp-entity.service';
@@ -75,5 +77,42 @@ export class NlpSampleEntityService extends BaseService<
     });
 
     return await this.createMany(sampleEntities);
+  }
+
+  /**
+   * Extracts entities from a given text sample by matching keywords defined in `NlpValue`.
+   * The function uses regular expressions to locate each keyword and returns an array of matches.
+   *
+   * @param sample - The text sample from which entities should be extracted.
+   * @param value - The entity value containing the primary keyword and its expressions.
+   * @returns - An array of extracted entity matches, including their positions.
+   */
+  extractKeywordEntities<S extends NlpSampleStub>(
+    sample: S,
+    value: NlpValue,
+  ): NlpSampleEntityCreateDto[] {
+    const keywords = [value.value, ...value.expressions];
+    const regex = `\\b(${keywords.join('|')})\\b`;
+    const regexPattern = new RegExp(regex, 'gi');
+    const matches: NlpSampleEntityCreateDto[] = [];
+    let match: RegExpExecArray | null;
+
+    // Find all matches in the text using the regex pattern
+    while ((match = regexPattern.exec(sample.text)) !== null) {
+      matches.push({
+        sample: sample.id,
+        entity: value.entity,
+        value: value.id,
+        start: match.index,
+        end: match.index + match[0].length,
+      });
+
+      // Prevent infinite loops when using a regex with an empty match
+      if (match.index === regexPattern.lastIndex) {
+        regexPattern.lastIndex++;
+      }
+    }
+
+    return matches;
   }
 }
