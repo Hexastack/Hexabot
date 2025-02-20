@@ -12,8 +12,6 @@ import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { stdOutgoingButtonsEnvelopeSchema } from './../../../chat/schemas/types/message';
 
 export class StdOutgoingButtonsEnvelopeBuilder {
-  private format: OutgoingMessageFormat.buttons = OutgoingMessageFormat.buttons;
-
   private text: string;
 
   private buttons: Button[] = [];
@@ -27,6 +25,11 @@ export class StdOutgoingButtonsEnvelopeBuilder {
 
   addButton(button: Button) {
     this.buttons.push(button);
+    return this;
+  }
+
+  setButtons(buttons: Button[]) {
+    this.buttons = buttons;
     return this;
   }
 

@@ -21,39 +21,21 @@ import { StdOutgoingListEnvelopeBuilder } from './envelope-builders/StdOutgoingL
 
 @Injectable()
 export class StdOutgoingEnvelopeFactory {
-  // Attempt 1:
-  // createBuilder<T extends keyof BuilderMap>(format: T): BuilderMap[T] {
-  //   switch (format) {
-  //     case OutgoingMessageFormat.text:
-  //       return new StdOutgoingTextEnvelopeBuilder() as BuilderMap[T];
-  //     case OutgoingMessageFormat.quickReplies:
-  //       return new StdOutgoingQuickReplyEnvelopeBuilder() as BuilderMap[T];
-  //     case OutgoingMessageFormat.buttons:
-  //       return new StdOutgoingButtonsEnvelopeBuilder() as BuilderMap[T];
-  //     case OutgoingMessageFormat.list:
-  //       return new StdOutgoingListEnvelopeBuilder() as BuilderMap[T];
-  //     case OutgoingMessageFormat.attachment:
-  //       return new StdOutgoingAttachmentEnvelopeBuilder() as BuilderMap[T];
-  //     default:
-  //       throw new Error(`Unsupported envelope format: ${format}`);
-  //   }
-  // }
+  private readonly builderMap: BuilderMap = {
+    [OutgoingMessageFormat.text]: new StdOutgoingTextEnvelopeBuilder(),
+    [OutgoingMessageFormat.quickReplies]:
+      new StdOutgoingQuickReplyEnvelopeBuilder(),
+    [OutgoingMessageFormat.buttons]: new StdOutgoingButtonsEnvelopeBuilder(),
+    [OutgoingMessageFormat.list]: new StdOutgoingListEnvelopeBuilder(),
+    [OutgoingMessageFormat.attachment]:
+      new StdOutgoingAttachmentEnvelopeBuilder(),
+  };
 
-  // Attempt 2
-  createBuilder<T extends keyof BuilderMap>(format: T): BuilderMap[T] {
-    const builderMap: BuilderMap = {
-      [OutgoingMessageFormat.text]: new StdOutgoingTextEnvelopeBuilder(),
-      [OutgoingMessageFormat.quickReplies]:
-        new StdOutgoingQuickReplyEnvelopeBuilder(),
-      [OutgoingMessageFormat.buttons]: new StdOutgoingButtonsEnvelopeBuilder(),
-      [OutgoingMessageFormat.list]: new StdOutgoingListEnvelopeBuilder(),
-      [OutgoingMessageFormat.attachment]:
-        new StdOutgoingAttachmentEnvelopeBuilder(),
-    };
-    const builder = builderMap[format];
+  getBuilder<T extends keyof BuilderMap>(format: T): BuilderMap[T] {
+    const builder = this.builderMap[format];
     if (!builder) {
       throw new Error(`format ${format} does not have a corresponding builder`);
     }
-    return builderMap[format];
+    return builder;
   }
 }

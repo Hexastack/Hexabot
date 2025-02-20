@@ -63,7 +63,6 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
-    StdOutgoingEnvelopeModule,
     ...(config.emails.isEnabled
       ? [
           MailerModule.forRoot({
@@ -146,6 +145,7 @@ const i18nOptions: I18nOptions = {
           max: config.cache.max,
         }),
     MigrationModule,
+    StdOutgoingEnvelopeModule,
     ...extraModules,
   ],
   controllers: [AppController],

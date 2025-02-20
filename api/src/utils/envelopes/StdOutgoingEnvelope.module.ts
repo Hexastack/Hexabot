@@ -13,6 +13,6 @@ import { StdOutgoingEnvelopeFactory } from './envelopeFactory';
 @Global()
 @Module({
   providers: [StdOutgoingEnvelopeFactory],
-  exports: [StdOutgoingEnvelopeFactory], // Export so other modules can use it
+  exports: [StdOutgoingEnvelopeFactory],
 })
 export class StdOutgoingEnvelopeModule {}

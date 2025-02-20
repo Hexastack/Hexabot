@@ -28,6 +28,10 @@ export class StdOutgoingQuickReplyEnvelopeBuilder {
     return this;
   }
 
+  setQuickReplies(stdQuickReplies: StdQuickReply[]) {
+    this.quickReplies = stdQuickReplies;
+  }
+
   build() {
     const stdOutgoingQuickReply = new StdOutgoingQuickReply(
       this.text,

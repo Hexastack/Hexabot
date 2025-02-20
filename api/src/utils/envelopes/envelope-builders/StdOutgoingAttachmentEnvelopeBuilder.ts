@@ -45,6 +45,7 @@ export class StdOutgoingAttachmentEnvelopeBuilder {
   }
 
   build() {
+    //todo: verify why id can be null
     let payload: { id: string } | { url: string };
     if (this.attachmentUrl) {
       payload = { url: this.attachmentUrl };
@@ -73,6 +74,7 @@ export class StdOutgoingAttachmentEnvelope {
 
   message: {
     attachment: {
+      //todo: verify why id can be null
       payload: { id: string } | { url: string };
       type: FileType;
     };
@@ -81,6 +83,7 @@ export class StdOutgoingAttachmentEnvelope {
 
   constructor(
     fileType: FileType,
+    //todo: verify why id can be null
     payload: { id: string } | { url: string },
     quickReplies?: StdQuickReply[],
   ) {
