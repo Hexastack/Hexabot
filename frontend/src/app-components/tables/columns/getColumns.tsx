@@ -1,13 +1,14 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CheckCircle } from "@mui/icons-material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
+import CachedIcon from "@mui/icons-material/Cached";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
@@ -41,6 +42,7 @@ export enum ActionColumnLabel {
   Fields = "Fields",
   Manage_Labels = "Manage_Labels",
   Toggle = "Toggle",
+  Annotate = "Annotate",
 }
 
 const ACTION_COLUMN_LABEL_MAP: Record<ActionColumnLabel, TTranslationKeys> = {
@@ -53,6 +55,7 @@ const ACTION_COLUMN_LABEL_MAP: Record<ActionColumnLabel, TTranslationKeys> = {
   [ActionColumnLabel.Fields]: "button.fields",
   [ActionColumnLabel.Manage_Labels]: "title.manage_labels",
   [ActionColumnLabel.Toggle]: "button.toggle",
+  [ActionColumnLabel.Annotate]: "button.annotate",
 } as const;
 
 export interface ActionColumn<T extends GridValidRowModel> {
@@ -88,7 +91,9 @@ function getIcon(label: ActionColumnLabel) {
     case ActionColumnLabel.Manage_Labels:
       return <LocalOfferIcon />;
     case ActionColumnLabel.Toggle:
-      return <CheckCircle />;
+      return <CheckCircleIcon />;
+    case ActionColumnLabel.Annotate:
+      return <CachedIcon />;
     default:
       return <></>;
   }
