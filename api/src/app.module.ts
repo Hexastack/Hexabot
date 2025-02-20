@@ -45,6 +45,7 @@ import { PluginsModule } from './plugins/plugins.module';
 import { SettingModule } from './setting/setting.module';
 import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
+import { StdOutgoingEnvelopeModule } from './utils/envelopes/StdOutgoingEnvelope.module';
 import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
 
@@ -62,6 +63,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
+    StdOutgoingEnvelopeModule,
     ...(config.emails.isEnabled
       ? [
           MailerModule.forRoot({
