@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import WarningIcon from "@mui/icons-material/Warning";
 import { Grid, IconButton, Paper, Typography, styled } from "@mui/material";
 import { FC, SVGProps } from "react";
 
@@ -18,6 +19,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes } from "@/types/block.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
+import { CustomBlocks } from "./CustomBlocks";
 import {
   ATTACHMENT_BLOCK_TEMPLATE,
   BUTTONS_BLOCK_TEMPLATE,
@@ -25,7 +27,6 @@ import {
   QUICK_REPLIES_BLOCK_TEMPLATE,
   SIMPLE_TEXT_BLOCK_TEMPLATE,
 } from "./constants";
-import { CustomBlocks } from "./CustomBlocks";
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
 const StyledIconButton = styled(IconButton)(
@@ -38,6 +39,7 @@ const StyledIconButton = styled(IconButton)(
     margin: "auto",
   }),
 );
+
 const StyledBlockTitle = styled(Typography)(
   SXStyleOptions({
     color: "text.primary",
@@ -58,8 +60,9 @@ export const StyledTitle = styled(Typography)(
 
 const StyledGrid = styled(Grid)<{ disabled: boolean }>(({ disabled }) =>
   SXStyleOptions({
-    opacity: disabled ? "0.5" : "0.9",
+    opacity: disabled ? "0.5" : "1", // Reduce opacity for disabled (deleted) blocks
     borderRadius: 1,
+    position: "relative", // Needed for warning icon positioning
   }),
 );
 
@@ -69,13 +72,14 @@ export const Block = ({
   disabled,
   blockTemplate,
   name,
+  warning, // New prop to show warning for deleted plugins
 }: {
   title: string;
   Icon?: FC<SVGProps<SVGSVGElement>>;
   disabled?: boolean;
-  onClick?: () => void;
   blockTemplate: Partial<IBlockAttributes>;
   name: string;
+  warning?: boolean; // Boolean to check if warning should be displayed
 }) => {
   const { createNode } = useVisualEditor();
 
@@ -97,17 +101,28 @@ export const Block = ({
     >
       <StyledIconButton
         onClick={() => {
+          if (disabled) return; // Prevent click action for deleted plugins
           const payload = {
             ...blockTemplate,
             name,
           };
-
           createNode(payload);
         }}
         disabled={disabled}
       >
-        <div>
+        <div style={{ position: "relative", display: "inline-block" }}>
           {Icon ? <Icon width="32px" height="32px" /> : null}
+          {warning && (
+            <WarningIcon
+              style={{
+                position: "absolute",
+                top: "-5px",
+                right: "-5px",
+                color: "red",
+                fontSize: "16px",
+              }}
+            />
+          )}
           <StyledBlockTitle>{title}</StyledBlockTitle>
         </div>
       </StyledIconButton>
