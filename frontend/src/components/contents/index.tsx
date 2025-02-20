@@ -100,7 +100,7 @@ export const Contents = () => {
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
-  const { mutateAsync: importDataset, isLoading } = useImport(
+  const { mutate: importDataset, isLoading } = useImport(
     EntityType.CONTENT,
     {
       onError: () => {
@@ -125,11 +125,11 @@ export const Contents = () => {
     },
     { idTargetContentType: contentType?.id }
   );
-  const handleImportChange = async (file: File) => {
-    await importDataset(file);
+  const handleImportChange = (file: File) => {
+    importDataset(file);
   };
-
-  return (
+  
+return (
     <Grid container flexDirection="column" gap={3}>
       <Grid item height="fit-content" container>
         <Link href="/content/types">

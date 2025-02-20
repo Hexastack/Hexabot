@@ -256,8 +256,8 @@ describe('ContentController', () => {
             image: 'image.jpg',
           },
           id: '',
-          createdAt: null as unknown as Date,
-          updatedAt: null as unknown as Date,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       ]);
 
@@ -267,7 +267,7 @@ describe('ContentController', () => {
         mockContentType.id,
         mockContentType,
       );
-      expect(result).toEqual([
+      expect(result).toEqualPayload([
         {
           entity: mockContentType.id,
           title: 'store 3',
@@ -276,8 +276,6 @@ describe('ContentController', () => {
             image: 'image.jpg',
           },
           id: '',
-          createdAt: null as unknown as Date,
-          updatedAt: null as unknown as Date,
         },
       ]);
     });
