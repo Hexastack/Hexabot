@@ -10,9 +10,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
@@ -44,19 +41,13 @@ describe('ContentService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-        ]),
+        MongooseModule.forFeature([ContentTypeModel, ContentModel]),
       ],
       providers: [
         ContentTypeRepository,
         ContentRepository,
-        AttachmentRepository,
         ContentTypeService,
         ContentService,
-        AttachmentService,
         LoggerService,
         EventEmitter2,
       ],
