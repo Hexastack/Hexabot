@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -25,6 +25,7 @@ import {
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 
+import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -201,7 +202,15 @@ describe('NlpSampleEntityService', () => {
     });
 
     it('should throw an error if stored entity or value cannot be found', async () => {
-      const sample = { id: 1, text: 'Hello world' } as any as NlpSample;
+      const sample: NlpSample = {
+        id: 's1',
+        text: 'Hello world',
+        language: null,
+        trained: false,
+        type: 'train',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       const entities = [
         { entity: 'greeting', value: 'Hello', start: 0, end: 5 },
       ];
@@ -212,6 +221,237 @@ describe('NlpSampleEntityService', () => {
       await expect(
         nlpSampleEntityService.storeSampleEntities(sample, entities),
       ).rejects.toThrow('Unable to find the stored entity or value');
+    });
+  });
+
+  describe('extractKeywordEntities', () => {
+    it('should extract entities when keywords are found', () => {
+      const sample = {
+        id: 's1',
+        text: 'Hello world, AI is amazing!',
+      } as NlpSample;
+      const value = {
+        id: 'v1',
+        entity: 'e1',
+        value: 'AI',
+        expressions: ['amazing'],
+      } as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's1',
+          entity: 'e1',
+          value: 'v1',
+          start: 13,
+          end: 15,
+        },
+        {
+          sample: 's1',
+          entity: 'e1',
+          value: 'v1',
+          start: 19,
+          end: 26,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should be case-insensitive', () => {
+      const sample = {
+        id: 's2',
+        text: 'I love ai and artificial intelligence.',
+      } as NlpSample;
+      const value = {
+        id: 'v2',
+        entity: 'e2',
+        value: 'AI',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's2',
+          entity: 'e2',
+          value: 'v2',
+          start: 7,
+          end: 9,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should extract multiple occurrences of the same keyword', () => {
+      const sample = {
+        id: 's3',
+        text: 'AI AI AI is everywhere.',
+      } as NlpSample;
+      const value = {
+        id: 'v3',
+        entity: 'e3',
+        value: 'AI',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
+          start: 0,
+          end: 2,
+        },
+        {
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
+          start: 3,
+          end: 5,
+        },
+        {
+          sample: 's3',
+          entity: 'e3',
+          value: 'v3',
+          start: 6,
+          end: 8,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should handle empty expressions array correctly', () => {
+      const sample = {
+        id: 's4',
+        text: 'Data science is great.',
+      } as NlpSample;
+      const value = {
+        id: 'v4',
+        entity: 'e4',
+        value: 'science',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's4',
+          entity: 'e4',
+          value: 'v4',
+          start: 5,
+          end: 12,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should return an empty array if no matches are found', () => {
+      const sample = { id: 'sample5', text: 'Hello world!' } as NlpSample;
+      const value = {
+        id: 'v5',
+        entity: 'e5',
+        value: 'Python',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual([]);
+    });
+
+    it('should match keywords as whole words only', () => {
+      const sample = {
+        id: 'sample6',
+        text: 'Technical claim.',
+      } as NlpSample;
+      const value = {
+        id: 'v6',
+        entity: 'e6',
+        value: 'AI',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      // Should not match "AI-powered" since it's not a standalone word
+      const expected: NlpSampleEntityCreateDto[] = [];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should handle special characters in the text correctly', () => {
+      const sample = { id: 's7', text: 'Hello, AI. AI? AI!' } as NlpSample;
+      const value = {
+        id: 'v7',
+        entity: 'e7',
+        value: 'AI',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
+          start: 7,
+          end: 9,
+        },
+        {
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
+          start: 11,
+          end: 13,
+        },
+        {
+          sample: 's7',
+          entity: 'e7',
+          value: 'v7',
+          start: 15,
+          end: 17,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
+    });
+
+    it('should handle regex special characters in keyword values correctly', () => {
+      const sample = {
+        id: 's10',
+        text: 'Find the,AI, in this text.',
+      } as NlpSample;
+
+      const value = {
+        id: 'v10',
+        entity: 'e10',
+        value: 'AI',
+        expressions: [],
+      } as unknown as NlpValue;
+
+      const expected: NlpSampleEntityCreateDto[] = [
+        {
+          sample: 's10',
+          entity: 'e10',
+          value: 'v10',
+          start: 9,
+          end: 11,
+        },
+      ];
+
+      expect(
+        nlpSampleEntityService.extractKeywordEntities(sample, value),
+      ).toEqual(expected);
     });
   });
 });
