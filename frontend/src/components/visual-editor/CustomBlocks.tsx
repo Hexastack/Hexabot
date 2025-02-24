@@ -22,6 +22,11 @@ export const CustomBlocks = () => {
     { hasCount: false },
   );
 
+  // Function to check if a plugin-related block is deleted
+  const isPluginDeleted = (customBlock) => {
+    return !customBlock.pluginExists; // Assuming `pluginExists` is returned from the API
+  };
+
   return customBlocks?.length ? (
     <>
       <Grid mb="2">
@@ -37,6 +42,8 @@ export const CustomBlocks = () => {
             Icon={PluginIcon}
             blockTemplate={customBlock.template}
             name={customBlock.template.name}
+            disabled={isPluginDeleted(customBlock)}
+            warning={isPluginDeleted(customBlock)} // Pass warning prop for visual indicator
           />
         ))}
       </Grid>
