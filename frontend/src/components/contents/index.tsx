@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,12 +9,13 @@
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import UploadIcon from "@mui/icons-material/Upload";
-import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
+import { Button, ButtonGroup, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
+import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
   ActionColumnLabel,
@@ -22,9 +23,11 @@ import {
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
+import { useImport } from "@/hooks/crud/useImport";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
@@ -38,12 +41,12 @@ import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import { ContentFormDialog } from "./ContentFormDialog";
-import { ContentImportFormDialog } from "./ContentImportFormDialog";
 
 export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
+  const queryClient = useQueryClient();
   const dialogs = useDialogs();
   // data fetching
   const { onSearch, searchPayload } = useSearch<IContent>({
@@ -51,7 +54,7 @@ export const Contents = () => {
     $iLike: ["title"],
   });
   const hasPermission = useHasPermission();
-  const { dataGridProps, refetch } = useFind(
+  const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
     {
       params: searchPayload,
@@ -97,8 +100,36 @@ export const Contents = () => {
   const { data: contentType } = useGet(String(query.id), {
     entity: EntityType.CONTENT_TYPE,
   });
+  const { mutate: importDataset, isLoading } = useImport(
+    EntityType.CONTENT,
+    {
+      onError: () => {
+        toast.error(t("message.import_failed"));
+      },
+      onSuccess: (data) => {
+        queryClient.removeQueries({
+          predicate: ({ queryKey }) => {
+            const [_qType, qEntity] = queryKey;
 
-  return (
+            return (
+              isSameEntity(qEntity, EntityType.CONTENT)
+            );
+          },
+        });
+        if (data.length) {
+          toast.success(t("message.success_import"));
+        } else {
+          toast.error(t("message.import_duplicated_data"));
+        }
+      },
+    },
+    { idTargetContentType: contentType?.id }
+  );
+  const handleImportChange = (file: File) => {
+    importDataset(file);
+  };
+  
+return (
     <Grid container flexDirection="column" gap={3}>
       <Grid item height="fit-content" container>
         <Link href="/content/types">
@@ -119,6 +150,7 @@ export const Contents = () => {
               <FilterTextfield onChange={onSearch} />
             </Grid>
             {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
+              <ButtonGroup sx={{ marginLeft: "auto" }}>
               <Grid item>
                 <Button
                   startIcon={<AddIcon />}
@@ -127,30 +159,19 @@ export const Contents = () => {
                     dialogs.open(ContentFormDialog, { contentType })
                   }
                   sx={{ float: "right" }}
-                >
-                  {t("button.add")}
-                </Button>
-              </Grid>
-            ) : null}
-            {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
-              <Grid item>
-                <Button
-                  startIcon={<UploadIcon />}
-                  variant="contained"
-                  onClick={async () => {
-                    if (contentType) {
-                      await dialogs.open(ContentImportFormDialog, {
-                        row: null,
-                        contentType,
-                      });
-                      refetch();
-                    }
-                  }}
-                  sx={{ float: "right" }}
-                >
-                  {t("button.import")}
-                </Button>
-              </Grid>
+                  >
+                    {t("button.add")}
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <FileUploadButton
+                  accept="text/csv"
+                  label={t("button.import")}
+                  onChange={handleImportChange}
+                  isLoading={isLoading}
+                />
+                </Grid>
+              </ButtonGroup>
             ) : null}
           </Grid>
         </PageHeader>

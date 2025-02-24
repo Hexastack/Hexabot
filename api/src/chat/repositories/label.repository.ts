@@ -82,9 +82,13 @@ export class LabelRepository extends BaseRepository<
     >,
     _criteria: TFilterQuery<Label>,
   ): Promise<void> {
-    const labels = await this.find(
-      typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
-    );
+    const ids = Array.isArray(_criteria._id?.$in)
+      ? _criteria._id.$in
+      : Array.isArray(_criteria._id)
+        ? _criteria._id
+        : [_criteria._id];
+
+    const labels = await this.find({ _id: { $in: ids } });
     this.eventEmitter.emit('hook:label:delete', labels);
   }
 }
