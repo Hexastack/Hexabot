@@ -9,6 +9,7 @@
 import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -31,21 +32,26 @@ export const Inbox = () => {
   });
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
-  const [searchText, setSearchText] = useState(localStorage.getItem("searchText") || "");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchText = searchParams.get("search") || "";
 
   useEffect(() => {
-    const storedSearchText = localStorage.getItem("searchTerm");
-
-    if (storedSearchText) {
-      setSearchText(storedSearchText);
-      onSearch(storedSearchText);
+    if (searchText) {
+      onSearch(searchText);
     }
-  }, []);
+  }, [searchText]);
 
   const handleSearch = (value: string) => {
-    setSearchText(value);
+    const params = new URLSearchParams(searchParams);
+
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    router.push(`?${params.toString()}`);
     onSearch(value);
-    localStorage.setItem("searchTerm", value);
   };
   
 return (
@@ -63,7 +69,7 @@ return (
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
-                <Search
+              <Search
                   value={searchText}
                   onClearClick={() => handleSearch("")}
                   className="changeColor"
