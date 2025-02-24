@@ -24,10 +24,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { ModelFull, ModelModel } from '../schemas/model.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
@@ -53,6 +55,7 @@ describe('ModelController', () => {
           UserModel,
           RoleModel,
           PermissionModel,
+          InvitationModel,
           ModelModel,
           AttachmentModel,
         ]),
@@ -68,6 +71,7 @@ describe('ModelController', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        InvitationRepository,
         PermissionRepository,
         EventEmitter2,
         {

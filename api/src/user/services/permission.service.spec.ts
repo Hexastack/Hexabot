@@ -21,9 +21,11 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { ModelModel, Model as ModelSchema } from '../schemas/model.schema';
 import {
   Permission,
@@ -46,12 +48,18 @@ describe('PermissionService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([ModelModel, PermissionModel, RoleModel]),
+        MongooseModule.forFeature([
+          ModelModel,
+          PermissionModel,
+          RoleModel,
+          InvitationModel,
+        ]),
       ],
       providers: [
         ModelRepository,
         PermissionService,
         RoleRepository,
+        InvitationRepository,
         PermissionRepository,
         EventEmitter2,
         {
