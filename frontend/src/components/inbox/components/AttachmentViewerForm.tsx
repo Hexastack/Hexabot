@@ -23,11 +23,11 @@ export const AttachmentViewerForm: FC<
     <Wrapper {...WrapperProps}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        width="auto"
-        height={800}
+        width="100%"
         style={{
           cursor: "pointer",
           objectFit: "contain",
+          maxHeight: "70vh",
         }}
         alt={data?.url}
         src={data?.url}
