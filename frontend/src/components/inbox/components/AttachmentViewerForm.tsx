@@ -24,10 +24,10 @@ export const AttachmentViewerForm: FC<
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         width="100%"
-        height={400}
         style={{
           cursor: "pointer",
           objectFit: "contain",
+          maxHeight: "70vh",
         }}
         alt={data?.url}
         src={data?.url}
