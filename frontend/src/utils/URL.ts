@@ -6,26 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export const getFromQuery = ({
-  key,
-  search,
-  defaultValue = "",
-}: {
-  key: string;
-  search?: string;
-  defaultValue?: string;
-}) => {
-  try {
-    const paramsString = search || window.location.search;
-    const searchParams = new URLSearchParams(paramsString);
-    const loadCampaign = searchParams.get(key) || defaultValue;
-
-    return loadCampaign;
-  } catch (e) {
-    return defaultValue;
-  }
-};
-
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
     return new URL(relativePath).toString();
