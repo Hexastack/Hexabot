@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+
 import KeyIcon from "@mui/icons-material/Key";
 import { FormControlLabel, MenuItem, Switch } from "@mui/material";
 import { ControllerRenderProps } from "react-hook-form";
@@ -121,7 +122,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             label={t("label.fallback_block")}
             helperText={t("help.fallback_block")}
             multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.id || null)}
+            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
             {...rest}
           />
         );
