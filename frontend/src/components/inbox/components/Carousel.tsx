@@ -29,7 +29,7 @@ import {
 
 const CARD_WIDTH = 300;
 const StyledIconButton = styled(IconButton)({
-  opacity: 0.1,
+  opacity: 0.2,
   zIndex: 9999,
   position: "absolute",
   top: "50%",
@@ -37,7 +37,9 @@ const StyledIconButton = styled(IconButton)({
   transition: "all 0.1s",
   ".carousel-wrapper:hover &": {
     opacity: 1,
+    backgroundColor: "#fff"
   },
+  backgroundColor: "#fff"
 });
 const StyledCarouselDiv = styled("div")({
   display: "flex",
