@@ -96,6 +96,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     });
   const currentText = watch("text");
   const currentType = watch("type");
+  const langauge = watch("language");
   const { apiClient } = useApiClient();
   const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
@@ -164,6 +165,16 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     reset(defaultValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(defaultValues)]);
+
+  const hasEmptyCurrentType = !currentType;
+  const hasEmptyCurrentText = !currentText;
+  const hasEmptyLanguage = !langauge;
+  const hasEmptyTraitEntitesValue = traitEntities.some((e) => !e.value);
+  const shouldDisableValidateButton =
+    hasEmptyCurrentType ||
+    hasEmptyCurrentText ||
+    hasEmptyTraitEntitesValue ||
+    hasEmptyLanguage;
 
   return (
     <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
@@ -441,14 +452,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             variant="contained"
             startIcon={<Check />}
             onClick={handleSubmit(onSubmitForm)}
-            disabled={
-              !(
-                currentText !== "" &&
-                currentType !== NlpSampleType.inbox &&
-                traitEntities.every((e) => e.value !== "") &&
-                keywordEntities.every((e) => e.value !== "")
-              )
-            }
+            disabled={shouldDisableValidateButton}
             type="submit"
           >
             {t("button.validate")}
