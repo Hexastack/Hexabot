@@ -6,14 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -32,7 +31,7 @@ import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format, QueryType } from "@/services/types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -44,6 +43,7 @@ const NlpEntity = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { mutate: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
@@ -71,6 +71,10 @@ const NlpEntity = () => {
       toast.error(t("message.nlp_sample_annotation_failure"));
     },
     onSuccess: () => {
+      queryClient.invalidateQueries([
+        QueryType.collection,
+        EntityType.NLP_SAMPLE,
+      ]);
       setSelectedNlpEntities([]);
       toast.success(t("message.nlp_sample_annotation_success"));
     },
