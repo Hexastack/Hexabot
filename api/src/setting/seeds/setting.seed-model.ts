@@ -86,6 +86,13 @@ export const DEFAULT_SETTINGS = [
     translatable: true,
   },
   {
+    group: 'chatbot_settings',
+    label: 'automate_inference',
+    value: true,
+    type: SettingType.checkbox,
+    weight: 7,
+  },
+  {
     group: 'contact',
     label: 'contact_email_recipient',
     value: 'admin@example.com',
