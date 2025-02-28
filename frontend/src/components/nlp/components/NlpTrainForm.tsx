@@ -49,11 +49,13 @@ import { INlpValue } from "@/types/nlp-value.types";
 type NlpDatasetSampleProps = {
   sample?: INlpDatasetSample;
   submitForm: (params: INlpSampleFormAttributes) => void;
+  isMutationLoading: boolean;
 };
 
 const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   sample,
   submitForm,
+  isMutationLoading,
 }) => {
   const { t } = useTranslate();
   const { data: entities, refetch: refetchEntities } = useFind(
@@ -174,7 +176,8 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     hasEmptyCurrentType ||
     hasEmptyCurrentText ||
     hasEmptyTraitEntitesValue ||
-    hasEmptyLanguage;
+    hasEmptyLanguage ||
+    isMutationLoading;
 
   return (
     <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
