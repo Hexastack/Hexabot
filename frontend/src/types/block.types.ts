@@ -64,7 +64,7 @@ export interface PayloadPattern {
   value: string;
   // @todo : rename 'attachment' to 'attachments'
   // @todo: If undefined, that means the payload could be either quick_reply or button
-  // We will move soon so that it will be a required attribute
+  // We should update soon so that it will be a required attribute
   type?: PayloadType;
 }
 
@@ -81,12 +81,14 @@ export type PatternType =
   | "nlp"
   | "menu"
   | "content"
+  | "outcome"
   | "payload"
   | "text";
 
 export interface IBlockAttributes {
   name: string;
   patterns?: Pattern[];
+  outcomes?: string[];
   trigger_labels?: string[];
   trigger_channels?: string[];
   assign_labels?: string[];

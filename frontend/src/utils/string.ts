@@ -14,3 +14,7 @@ export const slugify = (str: string) => {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "_");
 };
+
+export const getNamespace = (extensionName: string) => {
+  return extensionName.replaceAll("-", "_");
+};

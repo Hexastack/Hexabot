@@ -17,6 +17,7 @@ import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 import { StdPluginMessage } from "@/types/message.types";
 
+import { getNamespace } from "@/utils/string";
 import { useBlock } from "./BlockFormProvider";
 
 const PluginMessageForm = () => {
@@ -63,8 +64,7 @@ const PluginMessageForm = () => {
                 <SettingInput
                   setting={setting}
                   field={field}
-                  // @TODO : clean this later
-                  ns={message.plugin.replaceAll("-", "_")}
+                  ns={getNamespace(message.plugin)}
                 />
               </FormControl>
             )}

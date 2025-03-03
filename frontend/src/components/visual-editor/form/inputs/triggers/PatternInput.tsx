@@ -23,6 +23,7 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 
+import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
 
 const isRegex = (str: Pattern) => {
@@ -38,6 +39,8 @@ const getType = (pattern: Pattern): PatternType => {
       return "menu";
     } else if (pattern?.type === "content") {
       return "content";
+    } else if (pattern?.type === "outcome") {
+      return "outcome";
     } else {
       return "payload";
     }
@@ -67,7 +70,6 @@ const PatternInput: FC<PatternInputProps> = ({
   } = useFormContext<IBlockAttributes>();
   const [pattern, setPattern] = useState<Pattern>(value);
   const patternType = getType(value);
-  const isPostbackType = ["payload", "content", "menu"].includes(patternType);
   const registerInput = (
     errorMessage: string,
     idx: number,
@@ -100,15 +102,22 @@ const PatternInput: FC<PatternInputProps> = ({
           onChange={setPattern}
         />
       )}
-      
-      {isPostbackType ? (
-          <PostbackInput
-            onChange={(payload) => {
-              payload && setPattern(payload);
-            }}
-            defaultValue={pattern as PayloadPattern}
-          />
-        ) : null}
+      {["payload", "content", "menu"].includes(patternType) ? (
+        <PostbackInput
+          onChange={(payload) => {
+            payload && setPattern(payload);
+          }}
+          defaultValue={pattern as PayloadPattern}
+        />
+      ) : null}
+      {patternType === "outcome" ? (
+        <OutcomeInput
+          onChange={(payload) => {
+            payload && setPattern(payload);
+          }}
+          defaultValue={pattern as PayloadPattern}
+        />
+      ) : null}
       {typeof value === "string" && patternType === "regex" ? (
         <RegexInput
           {...registerInput(t("message.regex_is_empty"), idx, {

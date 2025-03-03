@@ -59,6 +59,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   const DEFAULT_VALUES = {
     name: block?.name || "",
     patterns: block?.patterns || [],
+    outcomes: block?.outcomes || [],
     trigger_labels: block?.trigger_labels || [],
     trigger_channels: block?.trigger_channels || [],
     options: block?.options || {
