@@ -40,4 +40,5 @@ export enum PayloadType {
   attachments = 'attachments',
   quick_reply = 'quick_reply',
   button = 'button',
+  outcome = 'outcome',
 }

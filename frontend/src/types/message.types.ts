@@ -30,6 +30,7 @@ export enum PayloadType {
   content = "content",
   quick_reply = "quick_reply",
   button = "button",
+  outcome = "outcome",
 }
 
 export enum FileType {

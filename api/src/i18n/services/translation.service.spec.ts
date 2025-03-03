@@ -136,6 +136,7 @@ describe('TranslationService', () => {
     const block: Block = {
       name: 'Ollama Plugin',
       patterns: [],
+      outcomes: [],
       assign_labels: [],
       trigger_channels: [],
       trigger_labels: [],
