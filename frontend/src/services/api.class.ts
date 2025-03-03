@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { AxiosInstance, AxiosResponse } from "axios";
 
 import { AttachmentResourceRef } from "@/types/attachment.types";
@@ -300,15 +299,18 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     return data;
   }
 
-  async import<T = TBasic>(file: File) {
+  async import<T = TBasic>(file: File, params?: any) {
     const { _csrf } = await this.getCsrf();
     const formData = new FormData();
 
     formData.append("file", file);
 
     const { data } = await this.request.post<T[], AxiosResponse<T[]>, FormData>(
-      `${ROUTES[this.type]}/import?_csrf=${_csrf}`,
+      `${ROUTES[this.type]}/import`,
       formData,
+      {
+        params: { _csrf , ...params },
+      }
     );
 
     return data;

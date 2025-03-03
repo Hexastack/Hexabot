@@ -6,14 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-/*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
- */
-
 import { z } from 'zod';
 
 import { PluginName } from '@/plugins/types';
@@ -21,7 +13,7 @@ import { PluginName } from '@/plugins/types';
 import { Message } from '../message.schema';
 
 import { attachmentPayloadSchema } from './attachment';
-import { buttonSchema } from './button';
+import { buttonSchema, PayloadType } from './button';
 import { contentOptionsSchema } from './options';
 import { QuickReplyType, stdQuickReplySchema } from './quick-reply';
 
@@ -62,6 +54,7 @@ export enum OutgoingMessageFormat {
   attachment = 'attachment',
   list = 'list',
   carousel = 'carousel',
+  system = 'system',
 }
 
 export const outgoingMessageFormatSchema = z.nativeEnum(OutgoingMessageFormat);
@@ -84,13 +77,6 @@ export enum FileType {
 export const fileTypeSchema = z.nativeEnum(FileType);
 
 export type FileTypeLiteral = z.infer<typeof fileTypeSchema>;
-
-export enum PayloadType {
-  location = 'location',
-  attachments = 'attachments',
-  quick_reply = 'quick_reply',
-  button = 'button',
-}
 
 export const payloadTypeSchema = z.nativeEnum(PayloadType);
 
@@ -152,6 +138,15 @@ export const stdOutgoingAttachmentMessageSchema = z.object({
 
 export type StdOutgoingAttachmentMessage = z.infer<
   typeof stdOutgoingAttachmentMessageSchema
+>;
+
+export const stdOutgoingSystemMessageSchema = z.object({
+  outcome: z.string().optional(), // "any" or any other string (in snake case)
+  data: z.any().optional(),
+});
+
+export type StdOutgoingSystemMessage = z.infer<
+  typeof stdOutgoingSystemMessageSchema
 >;
 
 export const pluginNameSchema = z
@@ -297,12 +292,30 @@ export type StdOutgoingAttachmentEnvelope = z.infer<
   typeof stdOutgoingAttachmentEnvelopeSchema
 >;
 
-export const stdOutgoingEnvelopeSchema = z.union([
+export const stdOutgoingSystemEnvelopeSchema = z.object({
+  format: z.literal(OutgoingMessageFormat.system),
+  message: stdOutgoingSystemMessageSchema,
+});
+
+export type StdOutgoingSystemEnvelope = z.infer<
+  typeof stdOutgoingSystemEnvelopeSchema
+>;
+
+export const stdOutgoingMessageEnvelopeSchema = z.union([
   stdOutgoingTextEnvelopeSchema,
   stdOutgoingQuickRepliesEnvelopeSchema,
   stdOutgoingButtonsEnvelopeSchema,
   stdOutgoingListEnvelopeSchema,
   stdOutgoingAttachmentEnvelopeSchema,
+]);
+
+export type StdOutgoingMessageEnvelope = z.infer<
+  typeof stdOutgoingMessageEnvelopeSchema
+>;
+
+export const stdOutgoingEnvelopeSchema = z.union([
+  stdOutgoingMessageEnvelopeSchema,
+  stdOutgoingSystemEnvelopeSchema,
 ]);
 
 export type StdOutgoingEnvelope = z.infer<typeof stdOutgoingEnvelopeSchema>;

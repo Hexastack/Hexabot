@@ -10,7 +10,7 @@ import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
@@ -39,11 +39,11 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       toast.success(t("message.success_save"));
     },
   };
-  const { mutateAsync: createContextVar } = useCreate(
+  const { mutate: createContextVar } = useCreate(
     EntityType.CONTEXT_VAR,
     options,
   );
-  const { mutateAsync: updateContextVar } = useUpdate(
+  const { mutate: updateContextVar } = useUpdate(
     EntityType.CONTEXT_VAR,
     options,
   );
@@ -72,7 +72,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       required: t("message.label_is_required"),
     },
   };
-  const onSubmitForm = async (params: IContextVarAttributes) => {
+  const onSubmitForm = (params: IContextVarAttributes) => {
     if (data) {
       updateContextVar({ id: data.id, params });
     } else {

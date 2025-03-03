@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -111,7 +110,7 @@ export default function NlpSample() {
       toast.success(t("message.item_delete_success"));
     },
   });
-  const { mutateAsync: importDataset, isLoading } = useImport(
+  const { mutate: importDataset, isLoading } = useImport(
     EntityType.NLP_SAMPLE,
     {
       onError: () => {
@@ -298,8 +297,8 @@ export default function NlpSample() {
   const handleSelectionChange = (selection: GridRowSelectionModel) => {
     setSelectedNlpSamples(selection as string[]);
   };
-  const handleImportChange = async (file: File) => {
-    await importDataset(file);
+  const handleImportChange = (file: File) => {
+    importDataset(file);
   };
 
   return (
@@ -397,26 +396,24 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            <Grid item>
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={async () => {
-                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                    mode: "selection",
-                    count: selectedNlpSamples.length,
-                  });
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              color="error"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedNlpSamples.length,
+                });
 
-                  if (isConfirmed) {
-                    deleteNlpSamples(selectedNlpSamples);
-                  }
-                }}
-                disabled={!selectedNlpSamples.length}
-              >
-                {t("button.delete")}
-              </Button>
-            </Grid>
+                if (isConfirmed) {
+                  deleteNlpSamples(selectedNlpSamples);
+                }
+              }}
+              disabled={!selectedNlpSamples.length}
+            >
+              {t("button.delete")}
+            </Button>
           </ButtonGroup>
         </Grid>
       </Grid>

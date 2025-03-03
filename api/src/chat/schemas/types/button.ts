@@ -34,3 +34,11 @@ export type PostBackButton = z.infer<typeof postBackButtonSchema>;
 export type WebUrlButton = z.infer<typeof webUrlButtonSchema>;
 
 export type Button = z.infer<typeof buttonSchema>;
+
+export enum PayloadType {
+  location = 'location',
+  attachments = 'attachments',
+  quick_reply = 'quick_reply',
+  button = 'button',
+  outcome = 'outcome',
+}

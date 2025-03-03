@@ -7,9 +7,11 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { ChannelName } from '@/channel/types';
 import { ContentService } from '@/cms/services/content.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
@@ -25,11 +27,14 @@ import { getRandom } from '@/utils/helpers/safeRandom';
 import { BlockDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
+import { Label } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import { Context } from '../schemas/types/context';
 import {
   BlockMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
+  StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
 import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
@@ -56,9 +61,74 @@ export class BlockService extends BaseService<
   }
 
   /**
+   * Filters an array of blocks based on the specified channel.
+   *
+   * This function ensures that only blocks that are either:
+   * - Not restricted to specific trigger channels (`trigger_channels` is undefined or empty), or
+   * - Explicitly allow the given channel (or the console channel)
+   *
+   * are included in the returned array.
+   *
+   * @param blocks - The list of blocks to be filtered.
+   * @param channel - The name of the channel to filter blocks by.
+   *
+   * @returns The filtered array of blocks that are allowed for the given channel.
+   */
+  filterBlocksByChannel<B extends Block | BlockFull>(
+    blocks: B[],
+    channel: ChannelName,
+  ) {
+    return blocks.filter((b) => {
+      return (
+        !b.trigger_channels ||
+        b.trigger_channels.length === 0 ||
+        [...b.trigger_channels, CONSOLE_CHANNEL_NAME].includes(channel)
+      );
+    });
+  }
+
+  /**
+   * Filters an array of blocks based on subscriber labels.
+   *
+   * This function selects blocks that either:
+   * - Have no trigger labels (making them applicable to all subscribers), or
+   * - Contain at least one trigger label that matches a label from the provided list.
+   *
+   * The filtered blocks are then **sorted** in descending order by the number of trigger labels,
+   * ensuring that blocks with more specific targeting (more trigger labels) are prioritized.
+   *
+   * @param blocks - The list of blocks to be filtered.
+   * @param labels - The list of subscriber labels to match against.
+   * @returns The filtered and sorted list of blocks.
+   */
+  filterBlocksBySubscriberLabels<B extends Block | BlockFull>(
+    blocks: B[],
+    profile?: Subscriber,
+  ) {
+    if (!profile) {
+      return blocks;
+    }
+
+    return (
+      blocks
+        .filter((b) => {
+          const triggerLabels = b.trigger_labels.map((l) =>
+            typeof l === 'string' ? l : l.id,
+          );
+          return (
+            triggerLabels.length === 0 ||
+            triggerLabels.some((l) => profile.labels.includes(l))
+          );
+        })
+        // Priority goes to block who target users with labels
+        .sort((a, b) => b.trigger_labels.length - a.trigger_labels.length)
+    );
+  }
+
+  /**
    * Find a block whose patterns matches the received event
    *
-   * @param blocks blocks Starting/Next blocks in the conversation flow
+   * @param filteredBlocks blocks Starting/Next blocks in the conversation flow
    * @param event Received channel's message
    *
    * @returns The block that matches
@@ -75,37 +145,15 @@ export class BlockService extends BaseService<
     let block: BlockFull | undefined = undefined;
     const payload = event.getPayload();
 
-    // Perform a filter on the specific channels
-    const channel = event.getHandler().getName();
-    blocks = blocks.filter((b) => {
-      return (
-        !b.trigger_channels ||
-        b.trigger_channels.length === 0 ||
-        [...b.trigger_channels, CONSOLE_CHANNEL_NAME].includes(channel)
-      );
-    });
-
-    // Perform a filter on trigger labels
-    let userLabels: string[] = [];
-    const profile = event.getSender();
-    if (profile && Array.isArray(profile.labels)) {
-      userLabels = profile.labels.map((l) => l);
-    }
-
-    blocks = blocks
-      .filter((b) => {
-        const trigger_labels = b.trigger_labels.map(({ id }) => id);
-        return (
-          trigger_labels.length === 0 ||
-          trigger_labels.some((l) => userLabels.includes(l))
-        );
-      })
-      // Priority goes to block who target users with labels
-      .sort((a, b) => b.trigger_labels.length - a.trigger_labels.length);
+    // Perform a filter to get the candidates blocks
+    const filteredBlocks = this.filterBlocksBySubscriberLabels(
+      this.filterBlocksByChannel(blocks, event.getHandler().getName()),
+      event.getSender(),
+    );
 
     // Perform a payload match & pick last createdAt
     if (payload) {
-      block = blocks
+      block = filteredBlocks
         .filter((b) => {
           return this.matchPayload(payload, b);
         })
@@ -129,7 +177,7 @@ export class BlockService extends BaseService<
       }
 
       // Perform a text pattern match
-      block = blocks
+      block = filteredBlocks
         .filter((b) => {
           return this.matchText(text, b);
         })
@@ -139,7 +187,7 @@ export class BlockService extends BaseService<
       if (!block && nlp) {
         // Find block pattern having the best match of nlp entities
         let nlpBest = 0;
-        blocks.forEach((b, index, self) => {
+        filteredBlocks.forEach((b, index, self) => {
           const nlpPattern = this.matchNLP(nlp, b);
           if (nlpPattern && nlpPattern.length > nlpBest) {
             nlpBest = nlpPattern.length;
@@ -290,6 +338,36 @@ export class BlockService extends BaseService<
           return false;
         }
       });
+    });
+  }
+
+  /**
+   * Matches an outcome-based block from a list of available blocks
+   * based on the outcome of a system message.
+   *
+   * @param blocks - An array of blocks to search for a matching outcome.
+   * @param envelope - The system message envelope containing the outcome to match.
+   *
+   * @returns - Returns the first matching block if found, otherwise returns `undefined`.
+   */
+  matchOutcome(
+    blocks: Block[],
+    event: EventWrapper<any, any>,
+    envelope: StdOutgoingSystemEnvelope,
+  ) {
+    // Perform a filter to get the candidates blocks
+    const filteredBlocks = this.filterBlocksBySubscriberLabels(
+      this.filterBlocksByChannel(blocks, event.getHandler().getName()),
+      event.getSender(),
+    );
+    return filteredBlocks.find((b) => {
+      return b.patterns
+        .filter(
+          (p) => typeof p === 'object' && 'type' in p && p.type === 'outcome',
+        )
+        .some((p: PayloadPattern) =>
+          ['any', envelope.message.outcome].includes(p.value),
+        );
     });
   }
 
@@ -603,5 +681,33 @@ export class BlockService extends BaseService<
       }
     }
     throw new Error('Invalid message format.');
+  }
+
+  /**
+   * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
+   *
+   *
+   * This method removes the deleted label from the `trigger_labels` and `assign_labels` fields of all blocks that have the label.
+   *
+   * @param label The label that is being deleted.
+   */
+  @OnEvent('hook:label:delete')
+  async handleLabelDelete(labels: Label[]) {
+    const blocks = await this.find({
+      $or: [
+        { trigger_labels: { $in: labels.map((l) => l.id) } },
+        { assign_labels: { $in: labels.map((l) => l.id) } },
+      ],
+    });
+
+    for (const block of blocks) {
+      const trigger_labels = block.trigger_labels.filter(
+        (labelId) => !labels.find((l) => l.id === labelId),
+      );
+      const assign_labels = block.assign_labels.filter(
+        (labelId) => !labels.find((l) => l.id === labelId),
+      );
+      await this.updateOne(block.id, { trigger_labels, assign_labels });
+    }
   }
 }

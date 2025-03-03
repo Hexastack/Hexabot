@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -23,8 +23,8 @@ import {
   PayloadPattern,
 } from "@/types/block.types";
 
+import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
-
 
 const isRegex = (str: Pattern) => {
   return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
@@ -39,6 +39,8 @@ const getType = (pattern: Pattern): PatternType => {
       return "menu";
     } else if (pattern?.type === "content") {
       return "content";
+    } else if (pattern?.type === "outcome") {
+      return "outcome";
     } else {
       return "payload";
     }
@@ -68,7 +70,6 @@ const PatternInput: FC<PatternInputProps> = ({
   } = useFormContext<IBlockAttributes>();
   const [pattern, setPattern] = useState<Pattern>(value);
   const patternType = getType(value);
-  const isPostbackType = ["payload", "content", "menu"].includes(patternType);
   const registerInput = (
     errorMessage: string,
     idx: number,
@@ -101,15 +102,22 @@ const PatternInput: FC<PatternInputProps> = ({
           onChange={setPattern}
         />
       )}
-      
-      {isPostbackType ? (
-          <PostbackInput
-            onChange={(payload) => {
-              payload && setPattern(payload);
-            }}
-            defaultValue={pattern as PayloadPattern}
-          />
-        ) : null}
+      {["payload", "content", "menu"].includes(patternType) ? (
+        <PostbackInput
+          onChange={(payload) => {
+            payload && setPattern(payload);
+          }}
+          defaultValue={pattern as PayloadPattern}
+        />
+      ) : null}
+      {patternType === "outcome" ? (
+        <OutcomeInput
+          onChange={(payload) => {
+            payload && setPattern(payload);
+          }}
+          defaultValue={pattern as PayloadPattern}
+        />
+      ) : null}
       {typeof value === "string" && patternType === "regex" ? (
         <RegexInput
           {...registerInput(t("message.regex_is_empty"), idx, {

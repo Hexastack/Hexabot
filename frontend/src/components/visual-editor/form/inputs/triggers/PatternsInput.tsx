@@ -6,14 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Abc,
-  Add,
-  Mouse,
-  PsychologyAlt,
-  RemoveCircleOutline,
-  Spellcheck,
-} from "@mui/icons-material";
+import AbcIcon from "@mui/icons-material/Abc";
+import AddIcon from "@mui/icons-material/Add";
+import MediationIcon from "@mui/icons-material/Mediation";
+import MouseIcon from "@mui/icons-material/Mouse";
+import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import SpellcheckIcon from "@mui/icons-material/Spellcheck";
 import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -79,16 +78,34 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
 
   const actions: DropdownButtonAction[] = useMemo(
     () => [
-      { icon: <Spellcheck />, name: "Exact Match", defaultValue: "" },
-      { icon: <Abc />, name: "Pattern Match", defaultValue: "//" },
-      { icon: <PsychologyAlt />, name: "Intent Match", defaultValue: [] },
       {
-        icon: <Mouse />,
-        name: "Interaction",
+        icon: <SpellcheckIcon />,
+        name: t("label.exact_match"),
+        defaultValue: "",
+      },
+      { icon: <AbcIcon />, name: t("label.pattern_match"), defaultValue: "//" },
+      {
+        icon: <PsychologyAltIcon />,
+        name: t("label.intent_match"),
+        defaultValue: [],
+      },
+      {
+        icon: <MouseIcon />,
+        name: t("label.interaction"),
         defaultValue: {
           label: t("label.get_started"),
           value: "GET_STARTED",
           type: PayloadType.button,
+          group: "general",
+        },
+      },
+      {
+        icon: <MediationIcon />,
+        name: t("label.outcome_match"),
+        defaultValue: {
+          label: t("label.any_outcome"),
+          value: "any",
+          type: PayloadType.outcome,
           group: "general",
         },
       },
@@ -129,7 +146,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                 color="error"
                 onClick={() => removeInput(idx)}
               >
-                <RemoveCircleOutline />
+                <RemoveCircleOutlineIcon />
               </IconButton>
             </Box>
           ))
@@ -140,7 +157,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
         label={t("button.add_pattern")}
         actions={actions}
         onClick={(action) => addInput(action.defaultValue as Pattern)}
-        icon={<Add />}
+        icon={<AddIcon />}
       />
     </Box>
   );

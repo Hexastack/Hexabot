@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -25,9 +25,11 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { PermissionRepository } from '@/user/repositories/permission.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
+import { InvitationModel } from '@/user/schemas/invitation.schema';
 import { PermissionModel } from '@/user/schemas/permission.schema';
 import { RoleModel } from '@/user/schemas/role.schema';
 import { UserModel } from '@/user/schemas/user.schema';
@@ -86,6 +88,7 @@ describe('BlockController', () => {
           LabelModel,
           CategoryModel,
           ContentModel,
+          InvitationModel,
           AttachmentModel,
           UserModel,
           RoleModel,
@@ -102,6 +105,7 @@ describe('BlockController', () => {
         UserRepository,
         RoleRepository,
         PermissionRepository,
+        InvitationRepository,
         LanguageRepository,
         BlockService,
         LabelService,
@@ -251,6 +255,7 @@ describe('BlockController', () => {
         name: 'block with nextBlocks',
         nextBlocks: [hasNextBlocks.id],
         patterns: ['Hi'],
+        outcomes: [],
         trigger_labels: [],
         assign_labels: [],
         trigger_channels: [],

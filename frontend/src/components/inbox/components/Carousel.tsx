@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
@@ -30,7 +29,7 @@ import {
 
 const CARD_WIDTH = 300;
 const StyledIconButton = styled(IconButton)({
-  opacity: 0.1,
+  opacity: 0.2,
   zIndex: 9999,
   position: "absolute",
   top: "50%",
@@ -38,7 +37,9 @@ const StyledIconButton = styled(IconButton)({
   transition: "all 0.1s",
   ".carousel-wrapper:hover &": {
     opacity: 1,
+    backgroundColor: "#fff"
   },
+  backgroundColor: "#fff"
 });
 const StyledCarouselDiv = styled("div")({
   display: "flex",

@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { Grid, Paper, Tab, Tabs } from "@mui/material";
 import dynamic from "next/dynamic";
@@ -63,7 +62,7 @@ export const Nlp = ({
   };
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutateAsync: createSample } = useCreate<
+  const { mutate: createSample } = useCreate<
     EntityType.NLP_SAMPLE,
     INlpDatasetSampleAttributes,
     INlpSample,

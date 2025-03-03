@@ -12,7 +12,7 @@ import { FormControlLabel, Grid, Switch, Tab, Tabs } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs/";
+import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { TabPanel } from "@/app-components/tabs/TabPanel";
@@ -46,7 +46,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     setSelectedTab(newValue);
   };
   const { toast } = useToast();
-  const { mutateAsync: updateBlock } = useUpdate(EntityType.BLOCK, {
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     onError: () => {
       rest.onError?.();
       toast.error(t("message.internal_server_error"));
@@ -59,6 +59,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   const DEFAULT_VALUES = {
     name: block?.name || "",
     patterns: block?.patterns || [],
+    outcomes: block?.outcomes || [],
     trigger_labels: block?.trigger_labels || [],
     trigger_channels: block?.trigger_channels || [],
     options: block?.options || {
@@ -94,7 +95,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
       required: t("message.name_is_required"),
     },
   };
-  const onSubmitForm = async (params: IBlockAttributes) => {
+  const onSubmitForm = (params: IBlockAttributes) => {
     if (block) {
       updateBlock({ id: block.id, params });
     }

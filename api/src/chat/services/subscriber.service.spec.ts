@@ -14,8 +14,10 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
+import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
+import { InvitationModel } from '@/user/schemas/invitation.schema';
 import { PermissionModel } from '@/user/schemas/permission.schema';
 import { RoleModel } from '@/user/schemas/role.schema';
 import { User, UserModel } from '@/user/schemas/user.schema';
@@ -55,6 +57,7 @@ describe('SubscriberService', () => {
           LabelModel,
           UserModel,
           RoleModel,
+          InvitationModel,
           PermissionModel,
           AttachmentModel,
         ]),
@@ -68,6 +71,7 @@ describe('SubscriberService', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        InvitationRepository,
         LoggerService,
         EventEmitter2,
         AttachmentService,

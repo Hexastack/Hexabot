@@ -6,9 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import Papa from 'papaparse';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
 import { LoggerService } from '@/logger/logger.service';
@@ -17,6 +17,7 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { ContentDto } from '../dto/content.dto';
 import { ContentRepository } from '../repositories/content.repository';
+import { ContentType } from '../schemas/content-type.schema';
 import {
   Content,
   ContentFull,
@@ -32,7 +33,6 @@ export class ContentService extends BaseService<
 > {
   constructor(
     readonly repository: ContentRepository,
-    private readonly attachmentService: AttachmentService,
     private readonly logger: LoggerService,
   ) {
     super(repository);
@@ -101,6 +101,70 @@ export class ContentService extends BaseService<
     } catch (err) {
       this.logger.error('Unable to count content', err, query);
       throw err;
+    }
+  }
+
+  /**
+   * Parses a CSV dataset and saves the content in the repository.
+   *
+   * @param data - The CSV data as a string to be parsed.
+   * @param targetContentType - The content type to associate with the parsed data.
+   * @param contentType - The content type metadata, including fields to validate the parsed data.
+   * @return A promise resolving to the created content objects.
+   */
+  async parseAndSaveDataset(
+    data: string,
+    targetContentType: string,
+    contentType: ContentType,
+  ) {
+    // Parse local CSV file
+    const result: {
+      errors: any[];
+      data: Array<Record<string, string>>;
+    } = Papa.parse(data, {
+      header: true,
+      skipEmptyLines: true,
+    });
+
+    if (result.errors && result.errors.length > 0) {
+      this.logger.warn(
+        `Errors parsing the file: ${JSON.stringify(result.errors)}`,
+      );
+      throw new BadRequestException(result.errors, {
+        cause: result.errors,
+        description: 'Error while parsing CSV',
+      });
+    }
+    if (!result.data.every((row) => row.title && row.status)) {
+      throw new BadRequestException(
+        'Missing required fields: "title" or "status"',
+        {
+          cause: 'Invalid CSV data',
+          description: 'CSV must include "title" and "status" columns',
+        },
+      );
+    }
+    const contentsDto = result.data.reduce(
+      (acc, { title, status, ...rest }) => [
+        ...acc,
+        {
+          title: String(title),
+          status: Boolean(status),
+          entity: targetContentType,
+          dynamicFields: Object.keys(rest)
+            .filter((key) =>
+              contentType.fields?.map((field) => field.name).includes(key),
+            )
+            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+        },
+      ],
+      [],
+    );
+    this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
+    try {
+      return await this.createMany(contentsDto);
+    } catch (err) {
+      this.logger.error('Error occurred when extracting data. ', err);
     }
   }
 }

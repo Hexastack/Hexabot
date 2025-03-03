@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,10 +9,7 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
-
-import { AttachmentModel } from '../attachment/schemas/attachment.schema';
 
 import { ContentTypeController } from './controllers/content-type.controller';
 import { ContentController } from './controllers/content.controller';
@@ -29,13 +26,7 @@ import { MenuService } from './services/menu.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      ContentModel,
-      ContentTypeModel,
-      AttachmentModel,
-      MenuModel,
-    ]),
-    AttachmentModule,
+    MongooseModule.forFeature([ContentModel, ContentTypeModel, MenuModel]),
     forwardRef(() => ChatModule),
   ],
   controllers: [ContentController, ContentTypeController, MenuController],
