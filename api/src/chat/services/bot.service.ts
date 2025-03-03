@@ -21,8 +21,11 @@ import {
   getDefaultConversationContext,
 } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
-import { IncomingMessageType } from '../schemas/types/message';
-import { SubscriberContext } from '../schemas/types/subscriberContext';
+import {
+  IncomingMessageType,
+  OutgoingMessageFormat,
+  StdOutgoingMessageEnvelope,
+} from '../schemas/types/message';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -40,40 +43,24 @@ export class BotService {
   ) {}
 
   /**
-   * Sends a processed message to the user based on a specified content block.
-   * Replaces tokens within the block with context data, handles fallback scenarios,
-   * and assigns relevant labels to the user.
+   * Sends a message to the subscriber via the appropriate messaging channel and handles related events.
    *
-   * @param event - The incoming message or action that triggered the bot's response.
+   * @param envelope - The outgoing message envelope containing the bot's response.
    * @param block - The content block containing the message and options to be sent.
    * @param context - Optional. The conversation context object, containing relevant data for personalization.
    * @param fallback - Optional. Boolean flag indicating if this is a fallback message when no appropriate response was found.
-   * @param conversationId - Optional. The conversation ID to link the message to a specific conversation thread.
-   *
-   * @returns A promise that resolves with the message response, including the message ID.
    */
   async sendMessageToSubscriber(
+    envelope: StdOutgoingMessageEnvelope,
     event: EventWrapper<any, any>,
     block: BlockFull,
     context?: Context,
     fallback?: boolean,
-    conservationId?: string,
   ) {
-    context = context || getDefaultConversationContext();
-    fallback = typeof fallback !== 'undefined' ? fallback : false;
     const options = block.options;
-    this.logger.debug('Sending message ... ', event.getSenderForeignId());
-    // Process message : Replace tokens with context data and then send the message
     const recipient = event.getSender();
-    const envelope = await this.blockService.processMessage(
-      block,
-      context,
-      recipient?.context as SubscriberContext,
-      fallback,
-      conservationId,
-    );
     // Send message through the right channel
-
+    this.logger.debug('Sending message ... ', event.getSenderForeignId());
     const response = await event
       .getHandler()
       .sendMessage(event, envelope, options, context);
@@ -114,35 +101,56 @@ export class BotService {
     );
 
     this.logger.debug('Assigned labels ', blockLabels);
-    return response;
   }
 
   /**
-   * Finds an appropriate reply block and sends it to the user.
-   * If there are additional blocks or attached blocks, it continues the conversation flow.
-   * Ends the conversation if no further blocks are available.
+   * Processes and executes a block, handling its associated messages and flow logic.
+   *
+   * The function performs the following steps:
+   * 1. Retrieves the conversation context and recipient information.
+   * 2. Generates an outgoing message envelope from the block.
+   * 3. Sends the message to the subscriber unless it's a system message.
+   * 4. Handles block chaining:
+   *    - If the block has an attached block, it recursively triggers the attached block.
+   *    - If the block has multiple possible next blocks, it determines the next block based on the outcome of the system message.
+   *    - If there are next blocks but no outcome-based matching, it updates the conversation state for the next steps.
+   * 5. If no further blocks exist, it ends the flow execution.
    *
    * @param event - The incoming message or action that initiated this response.
    * @param convo - The current conversation context and flow.
    * @param block - The content block to be processed and sent.
    * @param fallback - Boolean indicating if this is a fallback response in case no appropriate reply was found.
    *
-   * @returns A promise that continues or ends the conversation based on available blocks.
+   * @returns A promise that either continues or ends the flow execution based on the available blocks.
    */
-  async findBlockAndSendReply(
+  async triggerBlock(
     event: EventWrapper<any, any>,
     convo: Conversation,
     block: BlockFull,
-    fallback: boolean,
+    fallback: boolean = false,
   ) {
     try {
-      await this.sendMessageToSubscriber(
-        event,
+      const context = convo.context || getDefaultConversationContext();
+      const recipient = event.getSender();
+
+      const envelope = await this.blockService.processMessage(
         block,
-        convo.context,
+        context,
+        recipient?.context,
         fallback,
         convo.id,
       );
+
+      if (envelope.format !== OutgoingMessageFormat.system) {
+        await this.sendMessageToSubscriber(
+          envelope,
+          event,
+          block,
+          context,
+          fallback,
+        );
+      }
+
       if (block.attachedBlock) {
         // Sequential messaging ?
         try {
@@ -154,12 +162,7 @@ export class BotService {
               'No attached block to be found with id ' + block.attachedBlock,
             );
           }
-          return await this.findBlockAndSendReply(
-            event,
-            convo,
-            attachedBlock,
-            fallback,
-          );
+          return await this.triggerBlock(event, convo, attachedBlock, fallback);
         } catch (err) {
           this.logger.error('Unable to retrieve attached block', err);
           this.eventEmitter.emit('hook:conversation:end', convo, true);
@@ -168,20 +171,47 @@ export class BotService {
         Array.isArray(block.nextBlocks) &&
         block.nextBlocks.length > 0
       ) {
-        // Conversation continues : Go forward to next blocks
-        this.logger.debug('Conversation continues ...', convo.id);
-        const nextIds = block.nextBlocks.map(({ id }) => id);
         try {
-          await this.conversationService.updateOne(convo.id, {
-            current: block.id,
-            next: nextIds,
-          });
+          if (envelope.format === OutgoingMessageFormat.system) {
+            // System message: Trigger the next block based on the outcome
+            this.logger.debug(
+              'Matching the outcome against the next blocks ...',
+              convo.id,
+            );
+            const match = this.blockService.matchOutcome(
+              block.nextBlocks,
+              event,
+              envelope,
+            );
+
+            if (match) {
+              const nextBlock = await this.blockService.findOneAndPopulate(
+                match.id,
+              );
+              if (!nextBlock) {
+                throw new Error(
+                  'No attached block to be found with id ' +
+                    block.attachedBlock,
+                );
+              }
+              return await this.triggerBlock(event, convo, nextBlock, fallback);
+            } else {
+              this.logger.warn(
+                'Block outcome did not match any of the next blocks',
+                convo,
+              );
+            }
+          } else {
+            // Conversation continues : Go forward to next blocks
+            this.logger.debug('Conversation continues ...', convo.id);
+            const nextIds = block.nextBlocks.map(({ id }) => id);
+            await this.conversationService.updateOne(convo.id, {
+              current: block.id,
+              next: nextIds,
+            });
+          }
         } catch (err) {
-          this.logger.error(
-            'Unable to update conversation when going next',
-            convo,
-            err,
-          );
+          this.logger.error('Unable to continue the flow', convo, err);
           return;
         }
       } else {
@@ -275,12 +305,7 @@ export class BotService {
               // Otherwise, old captured const value may be replaced by another const value
               !fallback,
             );
-          await this.findBlockAndSendReply(
-            event,
-            updatedConversation,
-            next,
-            fallback,
-          );
+          await this.triggerBlock(event, updatedConversation, next, fallback);
         } catch (err) {
           this.logger.error('Unable to store context data!', err);
           return this.eventEmitter.emit('hook:conversation:end', convo, true);
@@ -376,12 +401,7 @@ export class BotService {
           subscriber.id,
           block.name,
         );
-        return this.findBlockAndSendReply(
-          event,
-          updatedConversation,
-          block,
-          false,
-        );
+        return this.triggerBlock(event, updatedConversation, block, false);
       } catch (err) {
         this.logger.error('Unable to store context data!', err);
         this.eventEmitter.emit('hook:conversation:end', convo, true);
@@ -459,7 +479,7 @@ export class BotService {
                 'No global fallback block defined, sending a message ...',
                 err,
               );
-              this.sendMessageToSubscriber(event, {
+              const globalFallbackBlock = {
                 id: 'global-fallback',
                 name: 'Global Fallback',
                 message: settings.chatbot_settings.fallback_message,
@@ -473,7 +493,19 @@ export class BotService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 attachedBlock: null,
-              } as any as BlockFull);
+              } as any as BlockFull;
+
+              const envelope = await this.blockService.processMessage(
+                globalFallbackBlock,
+                getDefaultConversationContext(),
+                { vars: {} }, // @TODO: use subscriber ctx
+              );
+
+              await this.sendMessageToSubscriber(
+                envelope as StdOutgoingMessageEnvelope,
+                event,
+                globalFallbackBlock,
+              );
             }
           }
           // Do nothing ...

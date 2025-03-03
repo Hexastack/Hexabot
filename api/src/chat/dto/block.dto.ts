@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -44,6 +44,14 @@ export class BlockCreateDto {
   @IsOptional()
   @IsPatternList({ message: 'Patterns list is invalid' })
   patterns?: Pattern[] = [];
+
+  @ApiPropertyOptional({
+    description: "Block's outcomes",
+    type: Array,
+  })
+  @IsOptional()
+  @IsArray({ message: 'Outcomes are invalid' })
+  outcomes?: string[] = [];
 
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()
@@ -120,6 +128,7 @@ export class BlockCreateDto {
 export class BlockUpdateDto extends PartialType(
   OmitType(BlockCreateDto, [
     'patterns',
+    'outcomes',
     'trigger_labels',
     'assign_labels',
     'trigger_channels',
@@ -129,6 +138,14 @@ export class BlockUpdateDto extends PartialType(
   @IsOptional()
   @IsPatternList({ message: 'Patterns list is invalid' })
   patterns?: Pattern[];
+
+  @ApiPropertyOptional({
+    description: "Block's outcomes",
+    type: Array,
+  })
+  @IsOptional()
+  @IsArray({ message: 'Outcomes are invalid' })
+  outcomes?: string[];
 
   @ApiPropertyOptional({ description: 'Block trigger labels', type: Array })
   @IsOptional()

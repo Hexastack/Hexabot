@@ -35,6 +35,7 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasNextBlocks',
     patterns: ['Hi'],
+    outcomes: [],
     category: null,
     options: {
       typing: 0,
@@ -53,6 +54,7 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'hasPreviousBlocks',
     patterns: ['colors'],
+    outcomes: [],
     category: null,
     options: {
       typing: 0,
@@ -90,6 +92,7 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'buttons',
     patterns: ['about'],
+    outcomes: [],
     category: null,
     options: {
       typing: 0,
@@ -127,6 +130,7 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'attachment',
     patterns: ['image'],
+    outcomes: [],
     category: null,
     options: {
       typing: 0,
@@ -153,6 +157,7 @@ export const blocks: TBlockFixtures['values'][] = [
   {
     name: 'test',
     patterns: ['yes'],
+    outcomes: [],
     category: null,
     //to be verified
     options: {

@@ -42,6 +42,12 @@ export class BlockStub extends BaseSchema {
   })
   patterns: Pattern[];
 
+  @Prop({
+    type: Object,
+    default: [],
+  })
+  outcomes: string[];
+
   @Prop([
     {
       type: MongooseSchema.Types.ObjectId,
