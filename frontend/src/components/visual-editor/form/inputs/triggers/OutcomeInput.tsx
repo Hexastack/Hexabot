@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,9 +22,9 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { theme } from "@/layout/themes/theme";
 import { EntityType } from "@/services/types";
 import { IBlock, PayloadPattern } from "@/types/block.types";
-
 import { PayloadType } from "@/types/message.types";
 import { getNamespace } from "@/utils/string";
+
 import { useBlock } from "../../BlockFormProvider";
 
 type PayloadOption = PayloadPattern & {
@@ -76,7 +76,6 @@ export const OutcomeInput = ({ defaultValue, onChange }: OutcomeInputProps) => {
         ),
     [block?.previousBlocks, getBlockFromCache],
   );
-
   const isOptionsReady =
     !defaultValue || options.find((o) => o.value === defaultValue.value);
 

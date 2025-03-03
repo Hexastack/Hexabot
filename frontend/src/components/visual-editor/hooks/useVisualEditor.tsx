@@ -256,7 +256,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
     payload.category = payload.category || selectedCategoryId;
-    console.log("====", payload);
+
     return createBlock(payload, {
       onSuccess({ id }) {
         addNode({
