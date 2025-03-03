@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -149,8 +149,8 @@ export class ContextVarController extends BaseController<ContextVar> {
   @CsrfCheck(true)
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
-    if (!ids || ids.length === 0) {
+  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
+    if (!ids?.length) {
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.contextVarService.deleteMany({

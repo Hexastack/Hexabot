@@ -325,8 +325,8 @@ export class BlockController extends BaseController<
   @CsrfCheck(true)
   @Delete('')
   @HttpCode(204)
-  async deleteMany(@Body('ids') ids: string[]): Promise<DeleteResult> {
-    if (!ids || ids.length === 0) {
+  async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
+    if (!ids?.length) {
       throw new BadRequestException('No IDs provided for deletion.');
     }
     const deleteResult = await this.blockService.deleteMany({
