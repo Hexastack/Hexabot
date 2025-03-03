@@ -21,8 +21,10 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { InvitationModel } from '../schemas/invitation.schema';
 import { PermissionModel } from '../schemas/permission.schema';
 import { RoleModel } from '../schemas/role.schema';
 import { UserModel } from '../schemas/user.schema';
@@ -43,6 +45,7 @@ describe('AuthService', () => {
           UserModel,
           RoleModel,
           PermissionModel,
+          InvitationModel,
           AttachmentModel,
         ]),
       ],
@@ -53,6 +56,7 @@ describe('AuthService', () => {
         UserRepository,
         RoleService,
         RoleRepository,
+        InvitationRepository,
         JwtService,
         EventEmitter2,
         AttachmentService,

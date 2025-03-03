@@ -14,6 +14,7 @@ import { Model } from 'mongoose';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 
 import { RoleDto } from '../dto/role.dto';
+import { Invitation } from '../schemas/invitation.schema';
 import { Permission } from '../schemas/permission.schema';
 import {
   Role,
@@ -34,6 +35,8 @@ export class RoleRepository extends BaseRepository<
     @InjectModel(Role.name) readonly model: Model<Role>,
     @InjectModel(Permission.name)
     private readonly permissionModel: Model<Permission>,
+    @InjectModel(Invitation.name)
+    private readonly invitationModel: Model<Invitation>,
   ) {
     super(eventEmitter, model, Role, ROLE_POPULATE, RoleFull);
   }
@@ -49,6 +52,7 @@ export class RoleRepository extends BaseRepository<
     const result = await this.model.deleteOne({ _id: id }).exec();
     if (result.deletedCount > 0) {
       await this.permissionModel.deleteMany({ role: id });
+      await this.invitationModel.deleteMany({ roles: id });
     }
     return result;
   }
