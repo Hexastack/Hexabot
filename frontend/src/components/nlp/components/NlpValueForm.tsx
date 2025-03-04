@@ -117,7 +117,7 @@ export const NlpValueForm: FC<
               name="expressions"
               control={control}
               render={({ field }) => (
-                <MultipleInput label="synonyms" {...field} />
+                <MultipleInput label={t("label.synonyms")} {...field} />
               )}
             />
           </ContentItem>
