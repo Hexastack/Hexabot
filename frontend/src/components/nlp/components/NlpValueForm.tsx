@@ -25,7 +25,7 @@ import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 export const NlpValueForm: FC<
   ComponentFormProps<{ data: INlpValue; canHaveSynonyms: boolean }>
 > = ({ data: props, Wrapper = Fragment, WrapperProps, ...rest }) => {
-  const { data, canHaveSynonyms } = props || {};
+  const { data } = props || {};
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
@@ -112,17 +112,15 @@ export const NlpValueForm: FC<
             />
           </ContentItem>
 
-          {canHaveSynonyms ? (
-            <ContentItem>
-              <Controller
-                name="expressions"
-                control={control}
-                render={({ field }) => (
-                  <MultipleInput label="synonyms" {...field} />
-                )}
-              />
-            </ContentItem>
-          ) : null}
+          <ContentItem>
+            <Controller
+              name="expressions"
+              control={control}
+              render={({ field }) => (
+                <MultipleInput label="synonyms" {...field} />
+              )}
+            />
+          </ContentItem>
         </ContentContainer>
       </form>
     </Wrapper>
