@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -15,9 +15,12 @@ import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
+import { HelperService } from '@/helper/helper.service';
+import { HelperType } from '@/helper/types';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
@@ -46,6 +49,9 @@ export class NlpSampleService extends BaseService<
     private readonly nlpEntityService: NlpEntityService,
     private readonly languageService: LanguageService,
     private readonly logger: LoggerService,
+    private readonly helperService: HelperService,
+    private readonly settingService: SettingService,
+    private readonly loggerService: LoggerService,
   ) {
     super(repository);
   }
@@ -205,6 +211,39 @@ export class NlpSampleService extends BaseService<
       } catch (err) {
         this.logger.warn('Unable to add message as a new inbox sample!', err);
       }
+    }
+  }
+
+  @OnEvent('hook:message:postCreate')
+  async handleInference(doc: THydratedDocument<Message>) {
+    const settings = await this.settingService.getSettings();
+    if (!settings.chatbot_settings.automate_inference) {
+      this.loggerService.log('Automated inference is disabled');
+      return;
+    }
+    this.loggerService.log('Automated inference running');
+    if ('text' in doc.message) {
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+      const { entities = [] } = await helper.predict(doc.message.text);
+      this.loggerService.debug(
+        `${helper.getName()} infered these entites`,
+        entities,
+      );
+
+      const foundSample = await this.repository.findOne({
+        text: doc.message.text,
+        type: 'inbox',
+      });
+      if (!foundSample) {
+        return;
+      }
+      await this.nlpSampleEntityService.storeSampleEntities(
+        foundSample,
+        entities,
+      );
+      await this.repository.updateOne(foundSample.id, {
+        type: 'train',
+      });
     }
   }
 }
