@@ -211,7 +211,12 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       startIcon={<AddIcon />}
                       variant="contained"
                       sx={{ float: "right" }}
-                      onClick={() => dialogs.open(NlpValueFormDialog, null)}
+                      onClick={() =>
+                        dialogs.open(NlpValueFormDialog, {
+                          data: null,
+                          canHaveSynonyms,
+                        })
+                      }
                     >
                       {t("button.add")}
                     </Button>
