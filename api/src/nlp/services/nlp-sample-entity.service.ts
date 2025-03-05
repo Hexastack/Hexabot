@@ -92,8 +92,8 @@ export class NlpSampleEntityService extends BaseService<
     value: NlpValue,
   ): NlpSampleEntityCreateDto[] {
     const keywords = [value.value, ...value.expressions];
-    const regex = `\\b(${keywords.join('|')})\\b`;
-    const regexPattern = new RegExp(regex, 'gi');
+    const regex = `(?<!\\p{L})${keywords.join('|')}(?!\\p{L})`;
+    const regexPattern = new RegExp(regex, 'giu');
     const matches: NlpSampleEntityCreateDto[] = [];
     let match: RegExpExecArray | null;
 
