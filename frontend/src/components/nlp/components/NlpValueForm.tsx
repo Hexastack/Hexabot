@@ -23,7 +23,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
 export type NlpValueFormProps = {
-  data?: INlpValue | null;
+  data: INlpValue | null;
   canHaveSynonyms?: boolean;
 };
 export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
