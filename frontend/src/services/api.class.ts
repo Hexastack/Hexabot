@@ -41,6 +41,7 @@ export const ROUTES = {
   FETCH_REMOTE_I18N: "/i18n",
   RESET: "/user/reset",
   NLP_SAMPLE_IMPORT: "/nlpsample/import",
+  NLP_SAMPLE_ANNOTATE: "/nlpsample/annotate",
   NLP_SAMPLE_PREDICT: "/nlpsample/message",
   CONTENT_IMPORT: "/content/import",
   // Entities
@@ -234,6 +235,24 @@ export class ApiClient {
     const { data } = await this.request.post(
       `${ROUTES.NLP_SAMPLE_IMPORT}/${attachmentId}`,
       { _csrf },
+    );
+
+    return data;
+  }
+
+  async annotateNlpSamples(entityId: string) {
+    const { _csrf } = await this.getCsrf();
+    const { data } = await this.request.post(
+      `${ROUTES.NLP_SAMPLE_ANNOTATE}/${entityId}`,
+      { _csrf },
+    );
+
+    return data;
+  }
+
+  async importContent(contentTypeId: string, attachmentId: string) {
+    const { data } = await this.request.get(
+      `${ROUTES.CONTENT_IMPORT}/${contentTypeId}/${attachmentId}`,
     );
 
     return data;

@@ -67,6 +67,8 @@
     "nlp_entity_name_is_invalid": "Le nom d'entité NLU n'est pas valide! Seuls `A-z`,` 0-9` et `_` sont autorisés.",
     "nlp_unable_to_guess": "Impossible de prédire le sens de la phrase.",
     "nlp_success_trained": "L'apprentissage du modèle NLU a été éffectué avec succès!",
+    "nlp_sample_annotation_success": "Mise à jour réussie des échantillons NLU en ajoutant les valeurs d'entité.",
+    "nlp_sample_annotation_failure": "Une erreur est survenue lors de la mise à jour des échantillons.",
     "no_user": "Il n'y a aucun abonné pour le moment",
     "no_user_assigned": "Aucun abonné n'est assigné à vous.",
     "no_user_handledby_chatbot": "Aucun abonné n'est géré actuellement par le chatbot",
@@ -585,7 +587,8 @@
     "text": "Texte",
     "location": "Emplacement",
     "mark_as_default": "Par Défaut",
-    "toggle": "Bouton de bascule"
+    "toggle": "Basculer",
+    "annotate": "Annoter les données"
   },
   "input": {
     "search": "Recherche"
