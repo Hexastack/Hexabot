@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -24,11 +24,16 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 
+import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityModel,
+} from '../schemas/nlp-entity.schema';
 import {
   NlpSampleEntity,
   NlpSampleEntityModel,
@@ -274,6 +279,76 @@ describe('NlpSampleService', () => {
       expect(result).toHaveLength(2);
       expect(result[0].text).toEqual('Hi');
       expect(result[1].text).toEqual('Bye');
+    });
+  });
+
+  describe('annotateWithKeywordEntity', () => {
+    it('should annotate samples when matching samples exist', async () => {
+      const entity = {
+        id: 'entity-id',
+        name: 'entity_name',
+        values: [
+          {
+            id: 'value-id',
+            value: 'keyword',
+            expressions: ['synonym1', 'synonym2'],
+          },
+        ],
+      } as NlpEntityFull;
+
+      const sampleText = 'This is a test sample with keyword in it.';
+      const samples = [{ id: 'sample-id', text: sampleText }] as NlpSample[];
+
+      const extractedMatches = [
+        { sample: 'sample-id', entity: 'test_entity', value: 'keyword' },
+      ] as NlpSampleEntityCreateDto[];
+
+      const findSpy = jest
+        .spyOn(nlpSampleService, 'find')
+        .mockResolvedValue(samples);
+      const extractSpy = jest
+        .spyOn(nlpSampleEntityService, 'extractKeywordEntities')
+        .mockReturnValue(extractedMatches);
+
+      const findOrCreateSpy = jest
+        .spyOn(nlpSampleEntityService, 'findOneOrCreate')
+        .mockResolvedValue({} as NlpSampleEntity);
+
+      await nlpSampleService.annotateWithKeywordEntity(entity);
+
+      expect(findSpy).toHaveBeenCalledWith({
+        text: { $regex: '\\b(keyword|synonym1|synonym2)\\b', $options: 'i' },
+        type: ['train', 'test'],
+      });
+
+      expect(extractSpy).toHaveBeenCalledWith(samples[0], entity.values[0]);
+      expect(findOrCreateSpy).toHaveBeenCalledWith(
+        extractedMatches[0],
+        extractedMatches[0],
+      );
+    });
+
+    it('should not annotate when no matching samples are found', async () => {
+      const entity = {
+        id: 'entity-id',
+        name: 'test_entity',
+        values: [
+          {
+            value: 'keyword',
+            expressions: ['synonym1', 'synonym2'],
+          },
+        ],
+      } as NlpEntityFull;
+
+      jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
+      const extractSpy = jest.spyOn(
+        nlpSampleEntityService,
+        'extractKeywordEntities',
+      );
+
+      await nlpSampleService.annotateWithKeywordEntity(entity);
+
+      expect(extractSpy).not.toHaveBeenCalled();
     });
   });
 });

@@ -12,6 +12,7 @@ import { Button, Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -24,12 +25,13 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
+import { useApiClient } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format, QueryType } from "@/services/types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -41,6 +43,7 @@ const NlpEntity = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
   const { mutate: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
@@ -57,6 +60,23 @@ const NlpEntity = () => {
     onSuccess: () => {
       setSelectedNlpEntities([]);
       toast.success(t("message.item_delete_success"));
+    },
+  });
+  const { apiClient } = useApiClient();
+  const { mutate: annotateSamples } = useMutation({
+    mutationFn: async (entityId: string) => {
+      await apiClient.annotateNlpSamples(entityId);
+    },
+    onError: () => {
+      toast.error(t("message.nlp_sample_annotation_failure"));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries([
+        QueryType.collection,
+        EntityType.NLP_SAMPLE,
+      ]);
+      setSelectedNlpEntities([]);
+      toast.success(t("message.nlp_sample_annotation_success"));
     },
   });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
@@ -90,6 +110,14 @@ const NlpEntity = () => {
             },
           ),
         requires: [PermissionAction.READ],
+      },
+      {
+        label: ActionColumnLabel.Annotate,
+        action: (row) => {
+          annotateSamples(row.id);
+        },
+        requires: [PermissionAction.CREATE],
+        isDisabled: (row) => !row.lookups.includes("keywords"),
       },
       {
         label: ActionColumnLabel.Edit,

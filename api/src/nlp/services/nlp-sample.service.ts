@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -21,8 +21,10 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
+import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpSampleCreateDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
+import { NlpEntityFull } from '../schemas/nlp-entity.schema';
 import {
   NlpSample,
   NlpSampleFull,
@@ -48,6 +50,22 @@ export class NlpSampleService extends BaseService<
     private readonly logger: LoggerService,
   ) {
     super(repository);
+  }
+
+  /**
+   * Fetches the samples and entities for a given sample type.
+   *
+   * @param type - The sample type (e.g., 'train', 'test').
+   * @returns An object containing the samples and entities.
+   */
+  public async getAllSamplesAndEntitiesByType(type: NlpSample['type']) {
+    const samples = await this.findAndPopulate({
+      type,
+    });
+
+    const entities = await this.nlpEntityService.findAllAndPopulate();
+
+    return { samples, entities };
   }
 
   /**
@@ -163,6 +181,53 @@ export class NlpSampleService extends BaseService<
     }
 
     return nlpSamples;
+  }
+
+  /**
+   * Iterates through all text samples stored in the database,
+   * checks if the given keyword exists within each sample, and if so, appends it as an entity.
+   * The function ensures that duplicate entities are not added and logs the updates.
+   *
+   * @param entity The entity
+   */
+  async annotateWithKeywordEntity(entity: NlpEntityFull) {
+    for (const value of entity.values) {
+      // For each value, get any sample that may contain the keyword or any of it's synonyms
+      const keywords = [value.value, ...value.expressions];
+      const samples = await this.find({
+        text: { $regex: `\\b(${keywords.join('|')})\\b`, $options: 'i' },
+        type: ['train', 'test'],
+      });
+
+      if (samples.length > 0) {
+        this.logger.debug(
+          `Annotating ${entity.name} - ${value.value} in ${samples.length} sample(s) ...`,
+        );
+
+        for (const sample of samples) {
+          try {
+            const matches: NlpSampleEntityCreateDto[] =
+              this.nlpSampleEntityService.extractKeywordEntities(sample, value);
+
+            if (!matches.length) {
+              throw new Error('Something went wrong, unable to match keywords');
+            }
+
+            const updates = matches.map((dto) =>
+              this.nlpSampleEntityService.findOneOrCreate(dto, dto),
+            );
+
+            await Promise.all(updates);
+
+            this.logger.debug(
+              `Successfully annotate sample with ${updates.length} matches: ${sample.text}`,
+            );
+          } catch (err) {
+            this.logger.error(`Failed to annotate sample: ${sample.text}`);
+          }
+        }
+      }
+    }
   }
 
   /**

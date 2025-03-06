@@ -31,6 +31,7 @@ import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
 
 import { HelperService } from '@/helper/helper.service';
+import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
@@ -74,6 +75,28 @@ export class NlpSampleController extends BaseController<
     super(nlpSampleService);
   }
 
+  @CsrfCheck(true)
+  @Post('annotate/:entityId')
+  async annotateWithKeywordEntity(@Param('entityId') entityId: string) {
+    const entity = await this.nlpEntityService.findOneAndPopulate(entityId);
+
+    if (!entity) {
+      throw new NotFoundException('Unable to find the keyword entity.');
+    }
+
+    if (!entity.lookups.includes('keywords')) {
+      throw new BadRequestException(
+        'Cannot annotate samples with a non-keyword entity',
+      );
+    }
+
+    await this.nlpSampleService.annotateWithKeywordEntity(entity);
+
+    return {
+      success: true,
+    };
+  }
+
   /**
    * Exports the NLP samples in a formatted JSON file, using the Rasa NLU format.
    *
@@ -91,7 +114,7 @@ export class NlpSampleController extends BaseController<
       type ? { type } : {},
     );
     const entities = await this.nlpEntityService.findAllAndPopulate();
-    const helper = await this.helperService.getDefaultNluHelper();
+    const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
     const result = await helper.format(samples, entities);
 
     // Sending the JSON data as a file
@@ -173,25 +196,8 @@ export class NlpSampleController extends BaseController<
    */
   @Get('message')
   async message(@Query('text') text: string) {
-    const helper = await this.helperService.getDefaultNluHelper();
+    const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
     return helper.predict(text);
-  }
-
-  /**
-   * Fetches the samples and entities for a given sample type.
-   *
-   * @param type - The sample type (e.g., 'train', 'test').
-   * @returns An object containing the samples and entities.
-   * @private
-   */
-  private async getSamplesAndEntitiesByType(type: NlpSample['type']) {
-    const samples = await this.nlpSampleService.findAndPopulate({
-      type,
-    });
-
-    const entities = await this.nlpEntityService.findAllAndPopulate();
-
-    return { samples, entities };
   }
 
   /**
@@ -202,10 +208,10 @@ export class NlpSampleController extends BaseController<
   @Get('train')
   async train() {
     const { samples, entities } =
-      await this.getSamplesAndEntitiesByType('train');
+      await this.nlpSampleService.getAllSamplesAndEntitiesByType('train');
 
     try {
-      const helper = await this.helperService.getDefaultNluHelper();
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const response = await helper.train?.(samples, entities);
       // Mark samples as trained
       await this.nlpSampleService.updateMany(
@@ -229,9 +235,9 @@ export class NlpSampleController extends BaseController<
   @Get('evaluate')
   async evaluate() {
     const { samples, entities } =
-      await this.getSamplesAndEntitiesByType('test');
+      await this.nlpSampleService.getAllSamplesAndEntitiesByType('test');
 
-    const helper = await this.helperService.getDefaultNluHelper();
+    const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
     return await helper.evaluate?.(samples, entities);
   }
 
