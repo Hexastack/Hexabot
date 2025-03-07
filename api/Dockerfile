@@ -2,8 +2,10 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# Install Python and build dependencies for node-gyp
+RUN apk add --no-cache python3 py3-pip build-base
 
+COPY package*.json ./
 COPY patches ./patches
 
 RUN npm ci
@@ -12,18 +14,15 @@ COPY . .
 
 RUN npm run build
 
+# Development stage
 FROM node:18-alpine AS development
 
 WORKDIR /app
 
 COPY package*.json ./
-
 COPY --from=builder /app/node_modules ./node_modules
-
 COPY --from=builder /app/src/extensions ./src/extensions
-
 COPY --from=builder /app/patches ./patches
-
 COPY . .
 
 ENV NODE_ENV=development
@@ -32,14 +31,13 @@ EXPOSE 3000
 
 CMD ["npm", "run", "start:debug"]
 
+# Production stage
 FROM node:18-alpine AS production
 
 WORKDIR /app
 
 COPY package*.json ./
-
 COPY --from=builder /app/src/extensions ./src/extensions
-
 COPY --from=builder /app/patches ./patches
 
 RUN npm ci --only=production

@@ -1,0 +1,85 @@
+services:
+  api_s1_n1:
+    build:
+      context: ../api_s1_n1
+      target: development
+    pull_policy: build
+    ports:
+      - 6001:3000
+    env_file: .env
+    networks:
+      - db-network
+      - app-network
+      - etcd-net
+    volumes:
+      - ../api_s1_n1/src:/app/src
+      - ../api_s1_n1/migrations:/app/migrations
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: "wget --spider http://localhost:3000"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  api_s1_n2:
+    build:
+      context: ../api_s1_n2
+      target: development
+    pull_policy: build
+    ports:
+      - 6002:3000
+    env_file: .env
+    networks:
+      - db-network
+      - app-network
+    volumes:
+      - ../api_s1_n2/src:/app/src
+      - ../api_s1_n2/migrations:/app/migrations
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: "wget --spider http://localhost:3000"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  api_s1_n3:
+    build:
+      context: ../api_s1_n3
+      target: development
+    pull_policy: build
+    ports:
+      - 6003:3000
+    env_file: .env
+    networks:
+      - db-network
+      - app-network
+      - server1-network
+    volumes:
+      - ../api_s1_n3/src:/app/src
+      - ../api_s1_n3/migrations:/app/migrations
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: "wget --spider http://localhost:3000"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongo-data:
+  api-data:
+
+networks:
+  db-network:
+  app-network:
+  server1-network:
+  etcd-net:
+    driver: bridge

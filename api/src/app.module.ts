@@ -47,6 +47,7 @@ import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
+import { ZookeeperService } from './zookeeper/zookeeper.service';
 
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
@@ -151,6 +152,7 @@ const i18nOptions: I18nOptions = {
     { provide: APP_GUARD, useClass: Ability },
     { provide: APP_GUARD, useClass: CsrfGuard },
     AppService,
+    ZookeeperService,
   ],
 })
 export class HexabotModule {}

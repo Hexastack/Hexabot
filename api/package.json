@@ -45,6 +45,7 @@
     "*.{js,ts}": "eslint --fix -c \".eslintrc-staged.js\""
   },
   "dependencies": {
+    "@markwylde/liferaft": "^1.3.6",
     "@nestjs-modules/mailer": "^1.11.2",
     "@nestjs/axios": "^3.0.3",
     "@nestjs/cache-manager": "^2.2.0",
@@ -92,7 +93,8 @@
     "slug": "^8.2.2",
     "ts-migrate-mongoose": "^3.8.4",
     "uuid": "^9.0.1",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "zookeeper": "^6.2.3"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.24",
