@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,7 +9,8 @@
 import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
@@ -31,8 +32,29 @@ export const Inbox = () => {
   });
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchText = searchParams.get("search") || "";
 
-  return (
+  useEffect(() => {
+    if (searchText) {
+      onSearch(searchText);
+    }
+  }, [searchText]);
+
+  const handleSearch = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    router.push(`?${params.toString()}`);
+    onSearch(value);
+  };
+  
+return (
     <ChatProvider>
       <Grid
         container
@@ -47,10 +69,11 @@ export const Inbox = () => {
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
-                <Search
-                  onClearClick={() => onSearch("")}
+              <Search
+                  value={searchText}
+                  onClearClick={() => handleSearch("")}
                   className="changeColor"
-                  onChange={(v) => onSearch(v)}
+                  onChange={handleSearch}
                   placeholder="Search..."
                 />
               </Grid>
