@@ -20,85 +20,115 @@ export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
 
   private isLeaderFlag = false;
 
-  private intervalId: any;
+  private readonly MASTER_NODE = '/master';
 
   private readonly logger = new Logger(ZookeeperService.name);
 
   private readonly connectionString = process.env.ZOOKEEPER_HOST || 'zoo1:2181';
 
-  async onModuleInit() {
-    this.client = new zookeeper({
-      connect: this.connectionString,
-      timeout: 5000,
-      debug_level: zookeeper.ZOO_LOG_LEVEL_WARN,
-      host_order_deterministic: false,
-    });
+  private count = 0;
 
-    this.client.connect((error: any) => {
-      if (error) {
-        this.logger.error('Zookeeper connection failed', error);
-        return;
-      }
-      this.logger.log('Connected to Zookeeper');
-      this.attemptToBecomeLeader();
-    });
-  }
+  constructor() {
+    if (!this.client) {
+      this.logger.log('Created many times', this.count);
+      this.client = new zookeeper({
+        connect: this.connectionString,
+        timeout: 5000,
+        debug_level: zookeeper.ZOO_LOG_LEVEL_WARN,
+        host_order_deterministic: false,
+      });
 
-  watchLeader() {
-    this.logger.log('Watching leader every 2000s');
-    this.intervalId = setInterval(() => {
-      this.watchLeaderNode();
-    }, 10000);
-  }
-
-  private attemptToBecomeLeader() {
-    const leaderPath = '/leader';
-
-    this.client.a_create(
-      leaderPath,
-      null,
-      zookeeper.ZOO_EPHEMERAL,
-      (error: any, path: string) => {
+      this.client.connect(async (error: any) => {
         if (error) {
-          // Leader already exists, so this instance is not the leader.
-          this.logger.warn('Leader already exists. Watching for changes...');
-          // this.watchLeaderNode(leaderPath);
-          this.isLeaderFlag = false;
-          clearInterval(this.intervalId);
-          this.watchLeader();
+          this.logger.error('Zookeeper connection failed', error);
+          return;
+        }
+        this.logger.log('✅ Connected to Zookeeper');
+        // await this.attemptToBecomeLeader();
+      });
+    }
+  }
+
+  async onModuleInit() {
+    // this.client = new zookeeper({
+    //   connect: this.connectionString,
+    //   timeout: 5000,
+    //   debug_level: zookeeper.ZOO_LOG_LEVEL_WARN,
+    //   host_order_deterministic: false,
+    // });
+    // this.client.connect(async (error: any) => {
+    //   if (error) {
+    //     this.logger.error('Zookeeper connection failed', error);
+    //     return;
+    //   }
+    //   this.logger.log('✅ Connected to Zookeeper');
+    //   // await this.attemptToBecomeLeader();
+    // });
+  }
+
+  /**
+   * Watcher callback that triggers when the master node is deleted.
+   */
+  private masterWatcher(type: number, state: number, path: string) {
+    if (type === zookeeper.ZOO_DELETED_EVENT) {
+      this.logger.log(
+        '⚠️ Master node deleted! Attempting to become the new master...',
+      );
+      this.attemptToBecomeLeader();
+    }
+  }
+
+  /**
+   * Tries to become the leader by creating an ephemeral node.
+   */
+  public async attemptToBecomeLeader() {
+    return new Promise((resolve, reject) => {
+      this.client.a_create(
+        this.MASTER_NODE,
+        'I am the master',
+        zookeeper.ZOO_EPHEMERAL,
+        (rc: number, error: any, path: string) => {
+          if (rc === 0) {
+            this.logger.log('🎉 This server is now the MASTER!');
+            this.isLeaderFlag = true;
+
+            resolve({ success: true });
+          } else if (rc === zookeeper.ZNODEEXISTS) {
+            this.logger.log(
+              '🔹 Master already exists. Watching for changes...',
+            );
+            this.isLeaderFlag = false;
+            this.watchMaster();
+            resolve({ success: true });
+          } else {
+            this.logger.error('❌ Error while creating master node:', error);
+            reject(error);
+          }
+        },
+      );
+    });
+  }
+
+  /**
+   * Watches the master node for deletion using `w_exists()`.
+   */
+  private watchMaster() {
+    this.client.w_exists(
+      this.MASTER_NODE,
+      async (rc: number, error: any, stat: any) => {
+        if (rc === 0 && stat) {
+          this.logger.log('👀 Watching master node for deletion...');
         } else {
-          clearInterval(this.intervalId);
-          // Successfully created the node: this instance is the leader.
-          this.isLeaderFlag = true;
-          this.logger.log(`Became leader! (node: ${path})`);
-          this.startCronJobsAndSeedDb();
+          this.logger.log('⚠️ No master found. Trying to become master...');
+          await this.attemptToBecomeLeader();
         }
       },
     );
   }
 
-  private watchLeaderNode(path: string = '/leader') {
-    // this.client.a_get(
-    //   path,
-    //   (event: any) => {
-    //     this.logger.log('Leader node changed. Reattempting leader election...');
-    //   },
-    //   (error: any, stat: any, data: any) => {
-    //     if (error) {
-    //       this.logger.error('Error watching leader node', error);
-    //     }
-    //   },
-    // );
-    this.attemptToBecomeLeader();
-  }
-
-  private startCronJobsAndSeedDb() {
-    // Your seeding and cron job logic goes here.
-    this.logger.log('Seeding DB...');
-    this.logger.log('Starting cron jobs...');
-  }
-
-  // This is the method that checks if the current instance is the leader.
+  /**
+   * Checks if this instance is the leader.
+   */
   public isLeader(): boolean {
     return this.isLeaderFlag;
   }
@@ -106,7 +136,7 @@ export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     if (this.client) {
       this.client.close();
-      this.logger.log('Zookeeper connection closed.');
+      this.logger.log('🔌 Zookeeper connection closed.');
     }
   }
 }

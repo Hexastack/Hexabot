@@ -28,6 +28,7 @@ import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
+import { ZookeeperService } from './zookeeper/zookeeper.service';
 
 async function bootstrap() {
   const isProduction = config.env.toLowerCase().includes('prod');
@@ -107,13 +108,29 @@ async function bootstrap() {
       logger.error('SMTP error', error.stack);
     } else throw error;
   });
+  const zookeperService = app.get<ZookeeperService>(ZookeeperService);
+  try {
+    //TODO: check rc possibles values
+    const logger = await app.resolve(LoggerService);
 
-  if (!isProduction) {
-    await seedDatabase(app);
+    const isZookeeperEnabled = !!process.env.zookeeper!;
+    if (isZookeeperEnabled) {
+      await zookeperService.attemptToBecomeLeader();
+      const isAllowedSeed =
+        (!isProduction && zookeperService.isLeader()) ||
+        (!isProduction && !isZookeeperEnabled);
+
+      if (isAllowedSeed) {
+        await seedDatabase(app);
+      }
+    }
     swagger(app);
-  }
 
-  await app.listen(3000);
+    await app.listen(3000);
+  } catch (error) {
+    console.log('exception', error);
+    process.exit(1);
+  }
 }
 
 bootstrap();

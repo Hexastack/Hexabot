@@ -160,4 +160,5 @@ export async function seedDatabase(app: INestApplicationContext) {
     logger.error('Unable to seed the database with nlp entities!');
     throw e;
   }
+  logger.log('Seeded Database!');
 }

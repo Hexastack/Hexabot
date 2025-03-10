@@ -35,6 +35,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
+import { CronjobModule } from './cronjob/cronjob.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
@@ -63,6 +64,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
+    CronjobModule,
     ...(config.emails.isEnabled
       ? [
           MailerModule.forRoot({
@@ -146,6 +148,7 @@ const i18nOptions: I18nOptions = {
         }),
     MigrationModule,
     ...extraModules,
+    CronjobModule,
   ],
   controllers: [AppController],
   providers: [
