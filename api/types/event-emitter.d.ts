@@ -119,6 +119,12 @@ declare module '@nestjs/event-emitter' {
         connection: Socket;
       }
     >;
+    cluster: TDefinition<
+      object,
+      {
+        leaderElected: boolean;
+      }
+    >;
   }
 
   /* hooks */

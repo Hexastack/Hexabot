@@ -37,6 +37,7 @@ import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
 import { CronjobModule } from './cronjob/cronjob.module';
+import { CustomEventEmitterModule } from './custom-event-emitter/custom-event-emitter.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
@@ -152,6 +153,7 @@ const i18nOptions: I18nOptions = {
     ...extraModules,
     CronjobModule,
     ZookeeperModule,
+    CustomEventEmitterModule,
   ],
   controllers: [AppController],
   providers: [

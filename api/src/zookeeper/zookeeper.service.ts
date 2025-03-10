@@ -9,6 +9,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import zookeeper from 'zookeeper';
 
+import { CustomEventEmitterService } from '@/custom-event-emitter/custom-event-emitter.service';
+
 @Injectable()
 export class ZookeeperService {
   private client: any;
@@ -23,7 +25,7 @@ export class ZookeeperService {
 
   private count = 0;
 
-  constructor() {
+  constructor(private customEventEmitterService: CustomEventEmitterService) {
     if (!this.client) {
       this.logger.log('Called consturctor');
 
@@ -59,7 +61,8 @@ export class ZookeeperService {
           if (rc === 0) {
             this.logger.log('🎉 This server is now the MASTER!');
             this.isLeaderFlag = true;
-
+            // emit event to re-run logic in case of crash while running cron job, seeding db, running migrations
+            this.customEventEmitterService.publicLeadershipEvent();
             resolve({ success: true });
           } else if (rc === zookeeper.ZNODEEXISTS) {
             this.logger.log(
