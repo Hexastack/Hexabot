@@ -150,8 +150,7 @@ export const config: Config = {
     dbName: process.env.MONGO_DB || 'hexabot',
     autoMigrate:
       // Either auto-migration is explicitly enabled and the node is primary (cluster case)
-      (process.env.MONGO_AUTO_MIGRATE === 'true' &&
-        (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
+      process.env.MONGO_AUTO_MIGRATE === 'true' ||
       // Otherwise, run only in dev mode
       !(process.env.NODE_ENV || 'development').toLowerCase().includes('prod'),
   },
@@ -193,5 +192,8 @@ export const config: Config = {
       retention: 3 * 24 * 60 * 60 * 1000, // 3 days
       retentionReset: 24 * 60 * 60 * 1000, // 1 day
     },
+  },
+  infra: {
+    clusterMode: process.env.IS_CLUSTER === 'true' ? true : false,
   },
 };

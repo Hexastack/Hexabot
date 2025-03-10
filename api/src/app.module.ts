@@ -15,6 +15,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 // eslint-disable-next-line import/order
 import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { CsrfGuard, CsrfModule } from '@tekuconcept/nestjs-csrf';
@@ -48,7 +49,7 @@ import { Ability } from './user/guards/ability.guard';
 import { UserModule } from './user/user.module';
 import idPlugin from './utils/schema-plugin/id.plugin';
 import { WebsocketModule } from './websocket/websocket.module';
-import { ZookeeperService } from './zookeeper/zookeeper.service';
+import { ZookeeperModule } from './zookeeper/zookeeper.module';
 
 const i18nOptions: I18nOptions = {
   fallbackLanguage: 'en',
@@ -64,6 +65,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     CronjobModule,
     ...(config.emails.isEnabled
       ? [
@@ -149,13 +151,13 @@ const i18nOptions: I18nOptions = {
     MigrationModule,
     ...extraModules,
     CronjobModule,
+    ZookeeperModule,
   ],
   controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: Ability },
     { provide: APP_GUARD, useClass: CsrfGuard },
     AppService,
-    ZookeeperService,
   ],
 })
 export class HexabotModule {}

@@ -14,6 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
 import { LoggerModule } from '@/logger/logger.module';
+import { ZookeeperModule } from '@/zookeeper/zookeeper.module';
 
 import { MigrationCommand } from './migration.command';
 import { MigrationModel } from './migration.schema';
@@ -25,6 +26,7 @@ import { MigrationService } from './migration.service';
     LoggerModule,
     HttpModule,
     AttachmentModule,
+    ZookeeperModule,
   ],
   providers: [
     MigrationService,

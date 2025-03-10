@@ -6,16 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import zookeeper from 'zookeeper';
 
 @Injectable()
-export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
+export class ZookeeperService {
   private client: any;
 
   private isLeaderFlag = false;
@@ -30,6 +25,8 @@ export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
 
   constructor() {
     if (!this.client) {
+      this.logger.log('Called consturctor');
+
       this.logger.log('Created many times', this.count);
       this.client = new zookeeper({
         connect: this.connectionString,
@@ -44,44 +41,15 @@ export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
           return;
         }
         this.logger.log('✅ Connected to Zookeeper');
-        // await this.attemptToBecomeLeader();
+        await this.attemptToBecomeLeader();
       });
-    }
-  }
-
-  async onModuleInit() {
-    // this.client = new zookeeper({
-    //   connect: this.connectionString,
-    //   timeout: 5000,
-    //   debug_level: zookeeper.ZOO_LOG_LEVEL_WARN,
-    //   host_order_deterministic: false,
-    // });
-    // this.client.connect(async (error: any) => {
-    //   if (error) {
-    //     this.logger.error('Zookeeper connection failed', error);
-    //     return;
-    //   }
-    //   this.logger.log('✅ Connected to Zookeeper');
-    //   // await this.attemptToBecomeLeader();
-    // });
-  }
-
-  /**
-   * Watcher callback that triggers when the master node is deleted.
-   */
-  private masterWatcher(type: number, state: number, path: string) {
-    if (type === zookeeper.ZOO_DELETED_EVENT) {
-      this.logger.log(
-        '⚠️ Master node deleted! Attempting to become the new master...',
-      );
-      this.attemptToBecomeLeader();
     }
   }
 
   /**
    * Tries to become the leader by creating an ephemeral node.
    */
-  public async attemptToBecomeLeader() {
+  private async attemptToBecomeLeader() {
     return new Promise((resolve, reject) => {
       this.client.a_create(
         this.MASTER_NODE,
@@ -131,12 +99,5 @@ export class ZookeeperService implements OnModuleInit, OnModuleDestroy {
    */
   public isLeader(): boolean {
     return this.isLeaderFlag;
-  }
-
-  async onModuleDestroy() {
-    if (this.client) {
-      this.client.close();
-      this.logger.log('🔌 Zookeeper connection closed.');
-    }
   }
 }

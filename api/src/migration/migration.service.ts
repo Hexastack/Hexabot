@@ -19,11 +19,14 @@ import leanDefaults from 'mongoose-lean-defaults';
 import leanGetters from 'mongoose-lean-getters';
 import leanVirtuals from 'mongoose-lean-virtuals';
 
+import { AppInstance } from '@/app.instance';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { seedDatabase } from '@/migration/seeders/seeder';
 import { MetadataService } from '@/setting/services/metadata.service';
 import idPlugin from '@/utils/schema-plugin/id.plugin';
+import { ZookeeperService } from '@/zookeeper/zookeeper.service';
 
 import { Migration, MigrationDocument } from './migration.schema';
 import {
@@ -48,7 +51,10 @@ export class MigrationService implements OnApplicationBootstrap {
     private readonly attachmentService: AttachmentService,
     @InjectModel(Migration.name)
     private readonly migrationModel: Model<Migration>,
+    private readonly zookeperService: ZookeeperService,
   ) {}
+
+  private isProduction = config.env.toLowerCase().includes('prod');
 
   async onApplicationBootstrap() {
     await this.ensureMigrationPathExists();
@@ -58,6 +64,27 @@ export class MigrationService implements OnApplicationBootstrap {
     }
     this.logger.log('Mongoose connection established!');
 
+    // const isAllowedSeed =
+    // (!this.isProduction && this.zookeperService.isLeader()) ||
+    // (!this.isProduction && !config.infra.clusterMode);
+    const singleNode = !this.isProduction && !config.infra.clusterMode;
+
+    const clusterMode = !this.isProduction && config.infra.clusterMode;
+    const isMaster =
+      (clusterMode && this.zookeperService.isLeader()) || singleNode;
+    if (isMaster) {
+      await seedDatabase(AppInstance.getApp());
+      await this.runMigrations();
+    }
+    // else if (singleNode) {
+    //   await seedDatabase(AppInstance.getApp());
+    //   await this.runMigrations();
+    // } else {
+    //   throw new Error('Cluster mode not setup correctly!');
+    // }
+  }
+
+  private async runMigrations() {
     if (!this.isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');
       await this.run({

@@ -8,12 +8,10 @@
 
 import { Module } from '@nestjs/common';
 
-import { ZookeeperModule } from '@/zookeeper/zookeeper.module';
-
-import { CronjobService } from './cronjob.service';
+import { ZookeeperService } from './zookeeper.service';
 
 @Module({
-  imports: [ZookeeperModule],
-  providers: [CronjobService],
+  providers: [ZookeeperService],
+  exports: [ZookeeperService],
 })
-export class CronjobModule {}
+export class ZookeeperModule {}
