@@ -47,6 +47,14 @@ export class ChatService {
     private readonly attachmentService: AttachmentService,
   ) {}
 
+  broadcastSendedMessages(event: EventWrapper<any, any>) {
+    this.websocketGateway.broadcast(
+      event.getSender(),
+      event.getEventType(),
+      event._adapter.raw,
+    );
+  }
+
   /**
    * Ends a given conversation (sets active to false)
    *
@@ -268,6 +276,7 @@ export class ChatService {
         // Already existing user profile
         // Exec lastvisit hook
         this.eventEmitter.emit('hook:user:lastvisit', subscriber);
+        this.broadcastSendedMessages(event);
       }
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
