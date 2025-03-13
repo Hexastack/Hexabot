@@ -8,6 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import Handlebars from 'handlebars';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -389,57 +390,71 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    const vars = { ...(subscriberContext?.vars || {}), ...context.vars };
-    // Replace context tokens with their values
-    Object.keys(vars).forEach((key) => {
-      if (typeof vars[key] === 'string' && vars[key].indexOf(':') !== -1) {
-        const tmp = vars[key].split(':');
-        vars[key] = tmp[1];
+    const mergedVars = { ...(subscriberContext?.vars || {}), ...context.vars };
+
+    // Process each var:
+    // - If a string contains a colon, take the substring after the colon.
+    // - If the value is not a string, JSON.stringify it.
+    const processedVars: { [key: string]: string } = {};
+    Object.keys(mergedVars).forEach((key) => {
+      let value = mergedVars[key];
+      if (typeof value === 'string' && value.indexOf(':') !== -1) {
+        const parts = value.split(':');
+        value = parts[1];
       }
-      text = text.replace(
-        '{context.vars.' + key + '}',
-        typeof vars[key] === 'string' ? vars[key] : JSON.stringify(vars[key]),
-      );
+      if (typeof value !== 'string') {
+        value = JSON.stringify(value);
+      }
+      processedVars[key] = value;
     });
 
-    // Replace context tokens about user location
+    // Process user_location if present
+    const processedUserLocation: any = {};
     if (context.user_location) {
+      processedUserLocation.lat = context.user_location.lat.toString();
+      processedUserLocation.lon = context.user_location.lon.toString();
+
       if (context.user_location.address) {
-        const userAddress = context.user_location.address;
-        Object.keys(userAddress).forEach((key) => {
-          text = text.replace(
-            '{context.user_location.address.' + key + '}',
-            typeof userAddress[key] === 'string'
-              ? userAddress[key]
-              : JSON.stringify(userAddress[key]),
-          );
+        const processedAddress: { [key: string]: string } = {};
+        Object.keys(context.user_location.address).forEach((key) => {
+          let value = context.user_location.address![key];
+          if (typeof value !== 'string') {
+            value = JSON.stringify(value);
+          }
+          processedAddress[key] = value;
         });
+        processedUserLocation.address = processedAddress;
       }
-      text = text.replace(
-        '{context.user_location.lat}',
-        context.user_location.lat.toString(),
-      );
-      text = text.replace(
-        '{context.user_location.lon}',
-        context.user_location.lon.toString(),
-      );
     }
 
-    // Replace tokens for user infos
-    Object.keys(context.user).forEach((key) => {
-      const userAttr = (context.user as any)[key];
-      text = text.replace(
-        '{context.user.' + key + '}',
-        typeof userAttr === 'string' ? userAttr : JSON.stringify(userAttr),
-      );
-    });
+    // Process user info tokens
+    const processedUser: { [key: string]: string } = {};
+    if (context.user) {
+      Object.keys(context.user).forEach((key) => {
+        let value = context.user![key];
+        if (typeof value !== 'string') {
+          value = JSON.stringify(value);
+        }
+        processedUser[key] = value;
+      });
+    }
 
-    // Replace contact infos tokens with their values
-    Object.keys(settings.contact).forEach((key) => {
-      text = text.replace('{contact.' + key + '}', settings.contact[key]);
-    });
+    // Process contact tokens from settings (assumed to be strings)
+    const processedContact = { ...settings.contact };
 
-    return text;
+    // Build the template context for Handlebars to match our token paths
+    const templateContext = {
+      context: {
+        vars: processedVars,
+        user_location: processedUserLocation,
+        user: processedUser,
+      },
+      contact: processedContact,
+    };
+
+    // Compile and run the Handlebars template
+    const compiledTemplate = Handlebars.compile(text);
+    return compiledTemplate(templateContext);
   }
 
   /**
