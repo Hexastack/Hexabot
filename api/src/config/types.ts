@@ -123,4 +123,7 @@ export type Config = {
       retentionReset: number;
     };
   };
+  infra: {
+    clusterMode: boolean;
+  };
 };

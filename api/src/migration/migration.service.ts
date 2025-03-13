@@ -19,9 +19,11 @@ import leanDefaults from 'mongoose-lean-defaults';
 import leanGetters from 'mongoose-lean-getters';
 import leanVirtuals from 'mongoose-lean-virtuals';
 
+import { AppInstance } from '@/app.instance';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { seedDatabase } from '@/migration/seeders/seeder';
 import { MetadataService } from '@/setting/services/metadata.service';
 import idPlugin from '@/utils/schema-plugin/id.plugin';
 
@@ -51,12 +53,17 @@ export class MigrationService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    const isProduction = config.env.toLowerCase().includes('prod');
+
     await this.ensureMigrationPathExists();
 
     if (mongoose.connection.readyState !== 1) {
       await this.connect();
     }
     this.logger.log('Mongoose connection established!');
+    if (!isProduction) {
+      await seedDatabase(AppInstance.getApp());
+    }
 
     if (!this.isCLI && config.mongo.autoMigrate) {
       this.logger.log('Executing migrations ...');

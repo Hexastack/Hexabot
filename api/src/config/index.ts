@@ -194,4 +194,7 @@ export const config: Config = {
       retentionReset: 24 * 60 * 60 * 1000, // 1 day
     },
   },
+  infra: {
+    clusterMode: process.env.IS_CLUSTER === 'true' ? true : false,
+  },
 };
