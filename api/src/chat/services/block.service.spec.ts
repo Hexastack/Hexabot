@@ -559,7 +559,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with ontext vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
+        '{{context.user.first_name}} {{context.user.last_name}}, email : {{context.vars.email}}',
         contextEmailVarInstance,
         subscriberContext,
         settings,
@@ -569,7 +569,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with context vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, phone : {context.vars.phone}',
+        '{{context.user.first_name}} {{context.user.last_name}}, phone : {{context.vars.phone}}',
         contextEmailVarInstance,
         subscriberContext,
         settings,
@@ -579,7 +579,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with settings contact infos', () => {
       const result = blockService.processText(
-        'Trying the settings : the name of company is <<{contact.company_name}>>',
+        'Trying the settings : the name of company is <<{{contact.company_name}}>>',
         contextBlankInstance,
         subscriberContext,
         settings,
