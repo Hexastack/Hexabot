@@ -16,6 +16,18 @@ const updateContextVarsHandleBarsSyntaxe2 = async (
   action: MigrationAction,
   { logger }: MigrationServices,
 ) => {
+  const LOG_MESSAGES = {
+    up: {
+      success: 'Successfully updated blocks to use handleBars syntaxe.',
+      noUpdates: 'No blocks were updated to use handleBars syntaxe.',
+      exception: 'Unable to update blocks to use handleBars syntaxe.',
+    },
+    down: {
+      success: 'Successfully rollbacked handleBars syntaxe.',
+      noUpdates: 'No blocks were rollbacked to not use handleBars syntxae.',
+      exception: 'Unable blocks to rollback handleBars syntaxe.',
+    },
+  };
   const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
 
   // Define the regex patterns based on UP or DOWN
@@ -77,40 +89,16 @@ const updateContextVarsHandleBarsSyntaxe2 = async (
     if (bulkOps.length > 0) {
       const result = await BlockModel.bulkWrite(bulkOps);
       if (result.matchedCount > 0) {
-        logger.log(
-          action === MigrationAction.UP
-            ? 'Successfully updated blocks to use handleBars syntax'
-            : 'Successfully updated blocks to not use handleBars syntax',
-        );
+        logger.log(LOG_MESSAGES[action].success);
         return true;
-      } else {
-        logger.log(
-          action === MigrationAction.UP
-            ? 'No blocks were updated (up)'
-            : 'No blocks were updated (down)',
-        );
-        return false;
       }
     } else {
-      logger.log(
-        action === MigrationAction.UP
-          ? 'No updates needed (up)'
-          : 'No updates needed (down)',
-      );
-      return false;
+      logger.log(LOG_MESSAGES[action].noUpdates);
+      return true;
     }
   } catch (err) {
-    logger.error(
-      action === MigrationAction.UP
-        ? 'Unable to update blocks to use handleBars syntax'
-        : 'Unable to update blocks to not use handleBars syntax',
-      err,
-    );
-    throw new Error(
-      action === MigrationAction.UP
-        ? 'Unable to update blocks to use handleBars syntax'
-        : 'Unable to update blocks to not use handleBars syntax',
-    );
+    logger.error(LOG_MESSAGES[action].exception, err);
+    throw new Error(LOG_MESSAGES[action].exception);
   }
 };
 
