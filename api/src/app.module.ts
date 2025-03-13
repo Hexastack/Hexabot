@@ -71,7 +71,15 @@ const i18nOptions: I18nOptions = {
               debug: false,
             }),
             template: {
-              adapter: new MjmlAdapter('ejs', { inlineCssEnabled: false }),
+              adapter: new MjmlAdapter(
+                'handlebars',
+                {
+                  inlineCssEnabled: false,
+                },
+                {
+                  handlebar: {},
+                },
+              ),
               dir: path.join(process.cwd(), 'dist', 'templates'),
               options: {
                 context: {
