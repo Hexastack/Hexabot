@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -65,7 +65,7 @@ function ReplacementTokens() {
           {(contextVars || []).map((v, index) => (
             <ListItem key={index}>
               <ListItemText
-                primary={`{context.vars.${v.name}}`}
+                primary={`{{context.vars.${v.name}}}`}
                 secondary={`${v.label}`}
               />
             </ListItem>
@@ -76,7 +76,7 @@ function ReplacementTokens() {
           {userInfos.map((v, index) => (
             <ListItem key={index}>
               <ListItemText
-                primary={`{context.user.${v.name}}`}
+                primary={`{{context.user.${v.name}}}`}
                 secondary={`${v.label}`}
               />
             </ListItem>
@@ -87,7 +87,7 @@ function ReplacementTokens() {
           {userLocation.map((v, index) => (
             <ListItem key={index}>
               <ListItemText
-                primary={`{context.user_location.${v.name}}`}
+                primary={`{{context.user_location.${v.name}}}`}
                 secondary={`${v.label}`}
               />
             </ListItem>
@@ -100,7 +100,7 @@ function ReplacementTokens() {
           {(contactInfos || []).map((v, index) => (
             <ListItem key={index}>
               <ListItemText
-                primary={`{contact.${v.label}}`}
+                primary={`{{contact.${v.label}}}`}
                 secondary={t(`label.${v.label}`, {
                   ns: "contact",
                 })}
