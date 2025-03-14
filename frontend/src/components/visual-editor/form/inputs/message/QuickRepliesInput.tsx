@@ -24,6 +24,7 @@ type QuickRepliesInput = {
   maxInput?: number;
 };
 
+
 const QuickRepliesInput: FC<QuickRepliesInput> = ({
   value,
   onChange,
@@ -49,15 +50,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
 
     updatedQuickReplies.splice(index, 1);
     setQuickReplies(
-      updatedQuickReplies.length
-        ? updatedQuickReplies
-        : [
-            createValueWithId({
-              content_type: QuickReplyType.text,
-              title: "",
-              payload: "",
-            }),
-          ],
+      updatedQuickReplies
     );
   };
   const updateInput = (index: number) => (p: StdQuickReply) => {
@@ -66,7 +59,7 @@ const QuickRepliesInput: FC<QuickRepliesInput> = ({
   };
 
   useEffect(() => {
-    onChange(quickReplies.map(({ value }) => value));
+      onChange(quickReplies.map(({ value }) => value));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quickReplies]);
 
