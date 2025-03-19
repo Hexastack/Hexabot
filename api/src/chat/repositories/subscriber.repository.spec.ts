@@ -175,14 +175,12 @@ describe('SubscriberRepository', () => {
 
       await subscriberRepository.updateOne(oldSubscriber.id, updates);
 
-      expect(eventEmitter.emit).toHaveBeenNthCalledWith(
-        3,
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
         'hook:subscriber:assign',
         expect.anything(),
         expect.anything(),
       );
-      expect(eventEmitter.emit).toHaveBeenNthCalledWith(
-        4,
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
         'hook:analytics:passation',
         expect.anything(),
         true, // Because assignedTo has changed

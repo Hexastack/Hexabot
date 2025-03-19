@@ -112,7 +112,7 @@ export abstract class BaseRepository<
     hooks.validate.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreateValidate(doc);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.preCreateValidate),
         doc,
       );
@@ -120,7 +120,7 @@ export abstract class BaseRepository<
 
     hooks.validate.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postCreateValidate(created);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.postCreateValidate),
         created,
       );
@@ -129,12 +129,15 @@ export abstract class BaseRepository<
     hooks.save.pre.execute(async function () {
       const doc = this as HydratedDocument<T>;
       await repository.preCreate(doc);
-      repository.emitter.emit(repository.getEventName(EHook.preCreate), doc);
+      await repository.emitter.emitAsync(
+        repository.getEventName(EHook.preCreate),
+        doc,
+      );
     });
 
     hooks.save.post.execute(async function (created: HydratedDocument<T>) {
       await repository.postCreate(created);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.postCreate),
         created,
       );
@@ -144,7 +147,7 @@ export abstract class BaseRepository<
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       const criteria = query.getQuery();
       await repository.preDelete(query, criteria);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.preDelete),
         query,
         criteria,
@@ -154,7 +157,7 @@ export abstract class BaseRepository<
     hooks?.deleteOne.post.execute(async function (result: DeleteResult) {
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteOne'>;
       await repository.postDelete(query, result);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.postDelete),
         query,
         result,
@@ -168,7 +171,7 @@ export abstract class BaseRepository<
     });
 
     hooks.deleteMany.post.execute(async function (result: DeleteResult) {
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.postDelete),
         result,
       );
@@ -184,7 +187,7 @@ export abstract class BaseRepository<
         throw new Error('Unable to run findOneAndUpdate pre hook');
       }
       await repository.preUpdate(query, criteria, updates);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.preUpdate),
         criteria,
         updates?.['$set'],
@@ -199,7 +202,7 @@ export abstract class BaseRepository<
         throw new Error('Unable to execute updateMany() pre-hook');
       }
       await repository.preUpdateMany(query, criteria, updates);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.preUpdateMany),
         criteria,
         updates?.['$set'],
@@ -209,7 +212,7 @@ export abstract class BaseRepository<
     hooks.updateMany.post.execute(async function (updated: any) {
       const query = this as Query<D, D, unknown, T, 'updateMany'>;
       await repository.postUpdateMany(query, updated);
-      repository.emitter.emit(
+      await repository.emitter.emitAsync(
         repository.getEventName(EHook.postUpdateMany),
         updated,
       );
@@ -224,7 +227,7 @@ export abstract class BaseRepository<
           query,
           plainToClass(repository.cls, updated, repository.transformOpts),
         );
-        repository.emitter.emit(
+        await repository.emitter.emitAsync(
           repository.getEventName(EHook.postUpdate),
           updated,
         );
@@ -500,14 +503,14 @@ export abstract class BaseRepository<
     }
 
     await this.preUpdateValidate(filterCriteria, queryUpdates);
-    this.emitter.emit(
+    await this.emitter.emitAsync(
       this.getEventName(EHook.preUpdateValidate),
       filterCriteria,
       queryUpdates,
     );
 
     await this.postUpdateValidate(filterCriteria, queryUpdates);
-    this.emitter.emit(
+    await this.emitter.emitAsync(
       this.getEventName(EHook.postUpdateValidate),
       filterCriteria,
       queryUpdates,
