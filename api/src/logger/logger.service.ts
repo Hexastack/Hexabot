@@ -52,7 +52,7 @@ export class LoggerService extends ConsoleLogger {
   private logArguments(type: LogLevel, message: string, args: any[]) {
     super[type](message);
     args.forEach((arg) => {
-      super[type](arg);
+      super[type](arg instanceof Error ? arg.stack : arg);
     });
   }
 }
