@@ -8,6 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import Handlebars from 'handlebars';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -29,7 +30,7 @@ import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
 import { Label } from '../schemas/label.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
-import { Context } from '../schemas/types/context';
+import { Context, TemplateContext } from '../schemas/types/context';
 import {
   BlockMessage,
   OutgoingMessageFormat,
@@ -372,14 +373,33 @@ export class BlockService extends BaseService<
   }
 
   /**
+   * Converts an old text template with single-curly placeholders, e.g. `{context.user.name}`,
+   * into a Handlebars-style template, e.g. `{{context.user.name}}`.
+   *
+   * @param str - The template string you want to convert.
+   * @returns The converted template string with Handlebars-style placeholders.
+   */
+  private toHandlebars(str: string) {
+    // If the string already contains {{ }}, assume it's already a handlebars template.
+    if (/\{\{.*\}\}/.test(str)) {
+      return str;
+    }
+
+    // Otherwise, replace single curly braces { } with double curly braces {{ }}.
+    return str.replaceAll(/{([^}]+)}/g, '{{$1}}');
+  }
+
+  /**
    * Replaces tokens with their context variables values in the provided text message
    *
-   * `You phone number is {context.vars.phone}`
+   * `You phone number is {{context.vars.phone}}`
    * Becomes
    * `You phone number is 6354-543-534`
    *
    * @param text - Text message
-   * @param context - Variable holding context values relative to the subscriber
+   * @param context - Object holding context variables relative to the conversation (temporary)
+   * @param subscriberContext - Object holding context values relative to the subscriber (permanent)
+   * @param settings - Settings Object
    *
    * @returns Text message with the tokens being replaced
    */
@@ -389,57 +409,21 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    const vars = { ...(subscriberContext?.vars || {}), ...context.vars };
-    // Replace context tokens with their values
-    Object.keys(vars).forEach((key) => {
-      if (typeof vars[key] === 'string' && vars[key].indexOf(':') !== -1) {
-        const tmp = vars[key].split(':');
-        vars[key] = tmp[1];
-      }
-      text = text.replace(
-        '{context.vars.' + key + '}',
-        typeof vars[key] === 'string' ? vars[key] : JSON.stringify(vars[key]),
-      );
-    });
+    // Build the template context for Handlebars to match our token paths
+    const templateContext: TemplateContext = {
+      context: {
+        ...context,
+        vars: {
+          ...(subscriberContext?.vars || {}),
+          ...(context.vars || {}),
+        },
+      },
+      contact: { ...settings.contact },
+    };
 
-    // Replace context tokens about user location
-    if (context.user_location) {
-      if (context.user_location.address) {
-        const userAddress = context.user_location.address;
-        Object.keys(userAddress).forEach((key) => {
-          text = text.replace(
-            '{context.user_location.address.' + key + '}',
-            typeof userAddress[key] === 'string'
-              ? userAddress[key]
-              : JSON.stringify(userAddress[key]),
-          );
-        });
-      }
-      text = text.replace(
-        '{context.user_location.lat}',
-        context.user_location.lat.toString(),
-      );
-      text = text.replace(
-        '{context.user_location.lon}',
-        context.user_location.lon.toString(),
-      );
-    }
-
-    // Replace tokens for user infos
-    Object.keys(context.user).forEach((key) => {
-      const userAttr = (context.user as any)[key];
-      text = text.replace(
-        '{context.user.' + key + '}',
-        typeof userAttr === 'string' ? userAttr : JSON.stringify(userAttr),
-      );
-    });
-
-    // Replace contact infos tokens with their values
-    Object.keys(settings.contact).forEach((key) => {
-      text = text.replace('{contact.' + key + '}', settings.contact[key]);
-    });
-
-    return text;
+    // Compile and run the Handlebars template
+    const compileTemplate = Handlebars.compile(this.toHandlebars(text));
+    return compileTemplate(templateContext);
   }
 
   /**
