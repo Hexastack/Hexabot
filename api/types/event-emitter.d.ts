@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { type OnEventOptions } from '@nestjs/event-emitter/dist/interfaces';
 import { type Session as ExpressSession } from 'express-session';
 import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
@@ -411,8 +412,5 @@ declare module '@nestjs/event-emitter' {
   declare function OnEvent<
     G extends EventNamespaces | ConstrainedString,
     H extends G,
-  >(
-    event: customEvent<G>,
-    options?: OnEventOptions | undefined,
-  ): OnEventMethodDecorator<H>;
+  >(event: customEvent<G>, options?: OnEventOptions): OnEventMethodDecorator<H>;
 }
