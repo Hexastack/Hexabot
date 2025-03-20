@@ -559,7 +559,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with ontext vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, email : {context.vars.email}',
+        '{{context.user.first_name}} {{context.user.last_name}}, email : {{context.vars.email}}',
         contextEmailVarInstance,
         subscriberContext,
         settings,
@@ -569,7 +569,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with context vars', () => {
       const result = blockService.processText(
-        '{context.user.first_name} {context.user.last_name}, phone : {context.vars.phone}',
+        '{{context.user.first_name}} {{context.user.last_name}}, phone : {{context.vars.phone}}',
         contextEmailVarInstance,
         subscriberContext,
         settings,
@@ -579,7 +579,7 @@ describe('BlockService', () => {
 
     it('should process text replacements with settings contact infos', () => {
       const result = blockService.processText(
-        'Trying the settings : the name of company is <<{contact.company_name}>>',
+        'Trying the settings : the name of company is <<{{contact.company_name}}>>',
         contextBlankInstance,
         subscriberContext,
         settings,
@@ -587,6 +587,146 @@ describe('BlockService', () => {
       expect(result).toEqual(
         'Trying the settings : the name of company is <<Your company name>>',
       );
+    });
+  });
+
+  describe('toHandlebars (private)', () => {
+    it('should convert single curly braces to double curly braces when no existing {{ }} are present', () => {
+      const input =
+        'Hello {context.user.name}, your phone is {context.vars.phone}';
+      // Access the private method using bracket notation
+      const result = blockService['toHandlebars'](input);
+      expect(result).toBe(
+        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}',
+      );
+    });
+
+    it('should leave strings that already contain double curly braces unchanged', () => {
+      const input =
+        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}';
+      const result = blockService['toHandlebars'](input);
+      expect(result).toBe(input);
+    });
+
+    it('should handle strings with no braces at all', () => {
+      const input = 'Hello world, no braces here';
+      const result = blockService['toHandlebars'](input);
+      // Should be unchanged since there are no placeholders
+      expect(result).toBe(input);
+    });
+
+    it('should handle multiple single placeholders correctly', () => {
+      const input = '{one} {two} {three}';
+      const result = blockService['toHandlebars'](input);
+      expect(result).toBe('{{one}} {{two}} {{three}}');
+    });
+  });
+
+  describe('processTokenReplacements', () => {
+    it('should replace tokens with context variables correctly', () => {
+      const text =
+        'Hello {context.user.name}, your phone is {context.vars.phone}';
+      const context = {
+        user: { name: 'John Doe' },
+        vars: { phone: '123-456-7890' },
+      } as unknown as Context;
+      const subscriberContext = {
+        // This can hold overlapping or additional vars
+        vars: {
+          otherVar: 'Some Value',
+        },
+      } as unknown as SubscriberContext;
+      const settings = {
+        contact: {
+          email: 'contact@example.com',
+        },
+      } as unknown as Settings;
+
+      const result = blockService.processTokenReplacements(
+        text,
+        context,
+        subscriberContext,
+        settings,
+      );
+      // Expect that single curly braces got turned into Handlebars placeholders
+      // and then replaced with actual values from the merged context
+      expect(result).toBe('Hello John Doe, your phone is 123-456-7890');
+    });
+
+    it('should merge subscriberContext.vars and context.vars correctly', () => {
+      const text =
+        'Subscriber var: {context.vars.subscriberVar}, Context var: {context.vars.contextVar}';
+      const context = {
+        user: {},
+        vars: {
+          contextVar: 'ContextValue',
+        },
+      } as unknown as Context;
+      const subscriberContext = {
+        vars: {
+          subscriberVar: 'SubscriberValue',
+        },
+      } as unknown as SubscriberContext;
+      const settings = {
+        contact: {},
+      } as unknown as Settings;
+
+      const result = blockService.processTokenReplacements(
+        text,
+        context,
+        subscriberContext,
+        settings,
+      );
+      expect(result).toBe(
+        'Subscriber var: SubscriberValue, Context var: ContextValue',
+      );
+    });
+
+    it('should use contact from settings if provided', () => {
+      const text = 'You can reach us at {{contact.email}}';
+      const context = {
+        user: { name: 'Alice' },
+        vars: {},
+      } as unknown as Context;
+      const subscriberContext = {
+        vars: {},
+      } as unknown as SubscriberContext;
+
+      const settings = {
+        contact: {
+          email: 'support@example.com',
+        },
+      } as unknown as Settings;
+
+      const result = blockService.processTokenReplacements(
+        text,
+        context,
+        subscriberContext,
+        settings,
+      );
+      expect(result).toBe('You can reach us at support@example.com');
+    });
+
+    it('should handle no placeholders gracefully', () => {
+      const text = 'No placeholders here.';
+      const context = {
+        user: {},
+        vars: {},
+      } as unknown as Context;
+      const subscriberContext = {
+        vars: {},
+      } as unknown as SubscriberContext;
+      const settings = {
+        contact: {},
+      } as unknown as Settings;
+
+      const result = blockService.processTokenReplacements(
+        text,
+        context,
+        subscriberContext,
+        settings,
+      );
+      expect(result).toBe('No placeholders here.');
     });
   });
 });
