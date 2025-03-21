@@ -2,36 +2,39 @@
   <mj-body>
     <mj-section>
       <mj-column>
-        <mj-image width="186px" src="https://hexabot.ai/assets/images/logo.png"></mj-image>
+        <mj-image
+          width="186px"
+          src="https://hexabot.ai/assets/images/logo.png"
+        ></mj-image>
         <mj-divider border-color="#000"></mj-divider>
         <mj-text font-size="16px" color="#000" font-family="helvetica">
-          <%= t('welcome') %>,
+          {{t 'welcome'}}
+        </mj-text>
+
+        <mj-text font-size="16px" color="#000" font-family="helvetica">
+          {{t 'invitation_for_account_creation'}} {{appName}} {{t 'account'}}.
         </mj-text>
 
         <mj-text font-size="16px" color="#000" font-family="helvetica"
-          ><%= `${t('invitation_for_account_creation')} ${this.appName}
-          ${t('account')}.` %></mj-text
-        >
-
-        <mj-text font-size="16px" color="#000" font-family="helvetica"
-          ><%= t('create_account') %></mj-text
+          >{{ t 'create_account'}}</mj-text
         >
         <mj-button
-          href="<%= this.appUrl %>/register/<%= token %>"
+          href="{{appUrl}}/register/{{token}}"
           font-size="16px"
           background-color="#000"
-          ><%= t('join') %></mj-button
+        >
+          {{t 'join'}}</mj-button
         >
       </mj-column>
     </mj-section>
     <mj-section>
       <mj-column>
         <mj-text font-size="16px" color="#000" font-family="helvetica"
-          ><%= t('best_regards') %></mj-text
-        >
+          >{{t 'best_regards'}}
+        </mj-text>
 
         <mj-text font-size="16px" color="#000" font-family="helvetica"
-          ><%= this.appName %></mj-text
+          >{{this.appName }}</mj-text
         >
       </mj-column>
     </mj-section>
