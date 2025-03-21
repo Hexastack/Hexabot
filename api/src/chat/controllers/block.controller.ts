@@ -127,24 +127,29 @@ export class BlockController extends BaseController<
     try {
       const plugins = this.pluginsService
         .getAllByType(PluginType.block)
-        .map((p) => ({
-          id: p.getName(),
-          namespace: p.getNamespace(),
-          template: {
-            ...p.template,
-            message: {
-              plugin: p.name,
-              args: p.getDefaultSettings().reduce(
-                (acc, setting) => {
-                  acc[setting.label] = setting.value;
-                  return acc;
-                },
-                {} as { [key: string]: any },
-              ),
+        .map(async (p) => {
+          const defaultSettings = await p.getDefaultSettings();
+
+          return {
+            id: p.getName(),
+            namespace: p.getNamespace(),
+            template: {
+              ...p.template,
+              message: {
+                plugin: p.name,
+                args: defaultSettings.reduce(
+                  (acc, setting) => {
+                    acc[setting.label] = setting.value;
+                    return acc;
+                  },
+                  {} as { [key: string]: any },
+                ),
+              },
             },
-          },
-          effects: typeof p.effects === 'object' ? Object.keys(p.effects) : [],
-        }));
+            effects:
+              typeof p.effects === 'object' ? Object.keys(p.effects) : [],
+          };
+        });
       return plugins;
     } catch (e) {
       this.logger.error(e);
