@@ -19,6 +19,7 @@ export interface INlpValueAttributes {
   expressions?: string[];
   metadata?: Record<string, any>;
   builtin?: boolean;
+  nlpSamplesCount?: number;
 }
 
 export interface INlpValueStub extends IBaseSchema, INlpValueAttributes {}

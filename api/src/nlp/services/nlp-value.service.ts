@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,11 +7,15 @@
  */
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
+import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -34,6 +38,7 @@ export class NlpValueService extends BaseService<
     readonly repository: NlpValueRepository,
     @Inject(forwardRef(() => NlpEntityService))
     private readonly nlpEntityService: NlpEntityService,
+    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
     super(repository);
   }
@@ -217,5 +222,122 @@ export class NlpValueService extends BaseService<
       return result;
     });
     return Promise.all(promises);
+  }
+
+  async findAndPopulateNlpValuesWithCount(
+    populate: string[],
+    filters?: TFilterQuery<NlpValue>,
+    pageQuery?: PageQueryDto<NlpValue>,
+  ) {
+    const { $and = [], ...rest } = filters || ({} as TFilterQuery<NlpValue>);
+
+    const entityValueModel = this.getRepository().model;
+
+    return entityValueModel
+      .aggregate<NlpValue>([
+        {
+          // support filters
+          $match: {
+            ...rest,
+            ...($and?.length && {
+              $and:
+                $and?.map((v) => {
+                  if (v.entity) {
+                    return {
+                      ...v,
+                      entity: new Types.ObjectId(String(v.entity)),
+                    };
+                  }
+
+                  return v;
+                }) || [],
+            }),
+          },
+        },
+        // support pageQuery
+        {
+          $skip: pageQuery?.skip || 0,
+        },
+        {
+          $limit: pageQuery?.limit || 10,
+        },
+        {
+          $sort: {
+            [pageQuery?.sort?.[0] || 'createdAt']:
+              pageQuery?.sort?.[1] === 'desc' ? -1 : 1,
+          },
+        },
+        {
+          $lookup: {
+            from: 'nlpsampleentities',
+            localField: '_id',
+            foreignField: 'value',
+            as: 'sampleEntities',
+          },
+        },
+        {
+          $unwind: {
+            path: '$sampleEntities',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'nlpsamples',
+            localField: 'sampleEntities.sample',
+            foreignField: '_id',
+            as: 'samples',
+          },
+        },
+        {
+          $lookup: {
+            from: 'nlpentities',
+            localField: 'entity',
+            foreignField: '_id',
+            as: 'entities',
+          },
+        },
+        {
+          $group: {
+            _id: '$_id',
+            value: { $first: '$value' },
+            expressions: { $first: '$expressions' },
+            builtin: { $first: '$builtin' },
+            metadata: { $first: '$metadata' },
+            createdAt: { $first: '$createdAt' },
+            updatedAt: { $first: '$updatedAt' },
+            entity: {
+              // support populate
+              $first: populate.some((p) =>
+                this.getRepository()
+                  .getPopulate()
+                  .map((p) => p.toString())
+                  .includes(p),
+              )
+                ? '$entities'
+                : '$entity',
+            },
+            //TODO when samples is empty array we need to return 0 not 1
+            nlpSamplesCount: {
+              $sum: { $cond: [{ $ifNull: ['samples', false] }, 1, 0] },
+            },
+          },
+        },
+        {
+          $project: {
+            id: '$_id',
+            _id: 0,
+            value: 1,
+            expressions: 1,
+            builtin: 1,
+            entity: 1,
+            metadata: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            nlpSamplesCount: 1,
+          },
+        },
+      ])
+      .exec();
   }
 }
