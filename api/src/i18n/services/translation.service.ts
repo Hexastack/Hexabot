@@ -45,8 +45,9 @@ export class TranslationService extends BaseService<Translation> {
    *
    * @returns An array of strings
    */
-  getBlockStrings(block: Block): string[] {
+  async getBlockStrings(block: Block): Promise<string[]> {
     let strings: string[] = [];
+
     if (Array.isArray(block.message)) {
       // Text Messages
       strings = strings.concat(block.message);
@@ -56,12 +57,11 @@ export class TranslationService extends BaseService<Translation> {
           PluginType.block,
           block.message.plugin,
         );
+        const defaultSettings = await plugin?.getDefaultSettings();
 
         // plugin
-        Object.entries(block.message.args).forEach(([l, arg]) => {
-          const setting = plugin
-            ?.getDefaultSettings()
-            .find(({ label }) => label === l);
+        Object.entries(block.message.args).forEach(async ([l, arg]) => {
+          const setting = defaultSettings?.find(({ label }) => label === l);
           if (setting?.translatable) {
             if (Array.isArray(arg)) {
               // array of text
@@ -123,10 +123,13 @@ export class TranslationService extends BaseService<Translation> {
     if (blocks.length === 0) {
       return [];
     }
-    return blocks.reduce((acc, block) => {
-      const strings = this.getBlockStrings(block);
-      return acc.concat(strings);
-    }, [] as string[]);
+    const allStrings: string[] = [];
+    for (const block of blocks) {
+      const strings = await this.getBlockStrings(block);
+      allStrings.push(...strings);
+      // allStrings = allStrings.concat(strings);
+    }
+    return allStrings;
   }
 
   /**
