@@ -127,7 +127,6 @@ export class TranslationService extends BaseService<Translation> {
     for (const block of blocks) {
       const strings = await this.getBlockStrings(block);
       allStrings.push(...strings);
-      // allStrings = allStrings.concat(strings);
     }
     return allStrings;
   }
