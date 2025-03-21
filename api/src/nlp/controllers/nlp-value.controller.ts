@@ -125,6 +125,22 @@ export class NlpValueController extends BaseController<
     return doc;
   }
 
+  @Get('')
+  async findAndPopulateNlpValuesWithCount(
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
+    @Query(PopulatePipe) populate: string[],
+    @Query(
+      new SearchFilterPipe<NlpValue>({ allowedFields: ['entity', 'value'] }),
+    )
+    filters?: TFilterQuery<NlpValue>,
+  ) {
+    return await this.nlpValueService.findAndPopulateNlpValuesWithCount(
+      populate,
+      filters,
+      pageQuery,
+    );
+  }
+
   /**
    * Retrieves a paginated list of NLP values.
    *
@@ -136,7 +152,7 @@ export class NlpValueController extends BaseController<
    *
    * @returns A promise resolving to a paginated list of NLP values.
    */
-  @Get()
+  // @Get('') disabled
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
     @Query(PopulatePipe) populate: string[],
