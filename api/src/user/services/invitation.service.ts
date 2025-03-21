@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+// eslint-disable-next-line import/order
+import { MailerService } from '@nestjs-modules/mailer';
 import {
   Inject,
   Injectable,
@@ -13,7 +15,6 @@ import {
   Optional,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { MailerService } from '@nestjs-modules/mailer';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -69,6 +70,8 @@ export class InvitationService extends BaseService<
           to: dto.email,
           template: 'invitation.mjml',
           context: {
+            appName: config.parameters.appName,
+            appUrl: config.uiBaseUrl,
             token: jwt,
             // TODO: Which language should we use?
             t: (key: string) =>
