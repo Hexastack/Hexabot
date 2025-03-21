@@ -113,6 +113,21 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     },
     {
       flex: 3,
+      field: "nlpSamplesCount",
+      headerName: t("label.nlp_samples_count"),
+      sortable: true,
+      disableColumnMenu: true,
+      renderHeader,
+      renderCell: ({ row }) => (
+        <Chip
+          id={(row.nlpSamplesCount || `nlpSamplesCount_${row.id}`).toString()}
+          label={row.nlpSamplesCount?.toString()}
+          variant="inbox"
+        />
+      ),
+    },
+    {
+      flex: 3,
       field: "synonyms",
       headerName: t("label.synonyms"),
       sortable: true,
@@ -124,7 +139,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       disableColumnMenu: true,
       renderHeader,
     },
-
     {
       maxWidth: 140,
       field: "createdAt",

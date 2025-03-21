@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,8 +10,11 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
+import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -34,6 +37,7 @@ export class NlpValueService extends BaseService<
     readonly repository: NlpValueRepository,
     @Inject(forwardRef(() => NlpEntityService))
     private readonly nlpEntityService: NlpEntityService,
+    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
     super(repository);
   }
@@ -217,5 +221,17 @@ export class NlpValueService extends BaseService<
       return result;
     });
     return Promise.all(promises);
+  }
+
+  async findAndPopulateNlpValuesWithCount(
+    populate: string[],
+    filters?: TFilterQuery<NlpValue>,
+    pageQuery?: PageQueryDto<NlpValue>,
+  ) {
+    return await this.repository.findAndPopulateNlpValuesWithCount(
+      populate,
+      filters,
+      pageQuery,
+    );
   }
 }
