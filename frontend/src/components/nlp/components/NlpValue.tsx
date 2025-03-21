@@ -55,7 +55,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $or: ["doc","value"]
+    $or: ["doc", "value"]
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE },
