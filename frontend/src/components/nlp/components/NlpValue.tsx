@@ -81,7 +81,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     },
   });
   const [selectedNlpValues, setSelectedNlpValues] = useState<string[]>([]);
-  const shouldIncludeSynonyms = nlpEntity?.lookups.includes("keywords");
+  const shouldIncludeSynonyms = !nlpEntity?.lookups.includes("trait");
   const actionColumns = useActionColumns<INlpValue>(
     EntityType.NLP_VALUE,
     [
