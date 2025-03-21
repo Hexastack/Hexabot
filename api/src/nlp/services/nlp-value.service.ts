@@ -7,7 +7,6 @@
  */
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Types } from 'mongoose';
 
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
@@ -229,115 +228,10 @@ export class NlpValueService extends BaseService<
     filters?: TFilterQuery<NlpValue>,
     pageQuery?: PageQueryDto<NlpValue>,
   ) {
-    const { $and = [], ...rest } = filters || ({} as TFilterQuery<NlpValue>);
-
-    const entityValueModel = this.getRepository().model;
-
-    return entityValueModel
-      .aggregate<NlpValue>([
-        {
-          // support filters
-          $match: {
-            ...rest,
-            ...($and?.length && {
-              $and:
-                $and?.map((v) => {
-                  if (v.entity) {
-                    return {
-                      ...v,
-                      entity: new Types.ObjectId(String(v.entity)),
-                    };
-                  }
-
-                  return v;
-                }) || [],
-            }),
-          },
-        },
-        // support pageQuery
-        {
-          $skip: pageQuery?.skip || 0,
-        },
-        {
-          $limit: pageQuery?.limit || 10,
-        },
-        {
-          $sort: {
-            [pageQuery?.sort?.[0] || 'createdAt']:
-              pageQuery?.sort?.[1] === 'desc' ? -1 : 1,
-          },
-        },
-        {
-          $lookup: {
-            from: 'nlpsampleentities',
-            localField: '_id',
-            foreignField: 'value',
-            as: 'sampleEntities',
-          },
-        },
-        {
-          $unwind: {
-            path: '$sampleEntities',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $lookup: {
-            from: 'nlpsamples',
-            localField: 'sampleEntities.sample',
-            foreignField: '_id',
-            as: 'samples',
-          },
-        },
-        {
-          $lookup: {
-            from: 'nlpentities',
-            localField: 'entity',
-            foreignField: '_id',
-            as: 'entities',
-          },
-        },
-        {
-          $group: {
-            _id: '$_id',
-            value: { $first: '$value' },
-            expressions: { $first: '$expressions' },
-            builtin: { $first: '$builtin' },
-            metadata: { $first: '$metadata' },
-            createdAt: { $first: '$createdAt' },
-            updatedAt: { $first: '$updatedAt' },
-            entity: {
-              // support populate
-              $first: populate.some((p) =>
-                this.getRepository()
-                  .getPopulate()
-                  .map((p) => p.toString())
-                  .includes(p),
-              )
-                ? '$entities'
-                : '$entity',
-            },
-            //TODO when samples is empty array we need to return 0 not 1
-            nlpSamplesCount: {
-              $sum: { $cond: [{ $ifNull: ['samples', false] }, 1, 0] },
-            },
-          },
-        },
-        {
-          $project: {
-            id: '$_id',
-            _id: 0,
-            value: 1,
-            expressions: 1,
-            builtin: 1,
-            entity: 1,
-            metadata: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            nlpSamplesCount: 1,
-          },
-        },
-      ])
-      .exec();
+    return await this.repository.findAndPopulateNlpValuesWithCount(
+      populate,
+      filters,
+      pageQuery,
+    );
   }
 }
