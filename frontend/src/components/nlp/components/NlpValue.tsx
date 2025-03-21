@@ -113,6 +113,14 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     },
     {
       flex: 3,
+      field: "doc",
+      headerName: t("label.doc"),
+      sortable: true,
+      disableColumnMenu: true,
+      renderHeader,
+    },
+    {
+      flex: 3,
       field: "synonyms",
       headerName: t("label.synonyms"),
       sortable: true,
