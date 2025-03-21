@@ -39,7 +39,7 @@ export class NlpValueCreateDto {
   @IsObject()
   metadata?: Record<string, any>;
 
-  @ApiPropertyOptional({ type: String })
+  @ApiPropertyOptional({ description: 'Nlp Value Description', type: String })
   @IsString()
   @IsOptional()
   doc?: string;
@@ -82,7 +82,7 @@ export class NlpValueUpdateDto {
   @IsObjectId({ message: 'Entity must be a valid ObjectId' })
   entity?: string | null;
 
-  @ApiPropertyOptional({ type: String })
+  @ApiPropertyOptional({ description: 'Nlp Value Description', type: String })
   @IsString()
   @IsOptional()
   doc?: string;
