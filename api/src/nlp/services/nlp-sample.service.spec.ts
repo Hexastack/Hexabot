@@ -12,10 +12,14 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -45,6 +49,7 @@ import {
 } from '../schemas/nlp-sample.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
+import { SettingRepository } from './../../setting/repositories/setting.repository';
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
@@ -72,6 +77,7 @@ describe('NlpSampleService', () => {
           NlpValueModel,
           NlpEntityModel,
           LanguageModel,
+          SettingModel,
         ]),
       ],
       providers: [
@@ -95,6 +101,10 @@ describe('NlpSampleService', () => {
             set: jest.fn(),
           },
         },
+        HelperService,
+        SettingService,
+        SettingRepository,
+        SettingSeeder,
       ],
     }).compile();
     nlpEntityService = module.get<NlpEntityService>(NlpEntityService);

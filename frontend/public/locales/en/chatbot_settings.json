@@ -8,7 +8,8 @@
     "fallback_block": "Fallback Block",
     "default_nlu_helper": "Default NLU Helper",
     "default_llm_helper": "Default LLM Helper",
-    "default_storage_helper": "Default Storage Helper"
+    "default_storage_helper": "Default Storage Helper",
+    "automate_inference": "Automate Inference"
   },
   "help": {
     "global_fallback": "Global fallback allows you to send custom messages when user entry does not match any of the block messages.",
