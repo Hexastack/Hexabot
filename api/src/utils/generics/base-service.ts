@@ -34,6 +34,10 @@ export abstract class BaseService<
     return this.repository;
   }
 
+  canPopulate(populate: string[]): boolean {
+    return this.repository.canPopulate(populate);
+  }
+
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,

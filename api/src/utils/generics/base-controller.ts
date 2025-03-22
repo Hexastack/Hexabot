@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -32,12 +32,7 @@ export abstract class BaseController<
    * @return - True if all populate fields are allowed, otherwise false.
    */
   protected canPopulate(populate: string[]): boolean {
-    return populate.some((p) =>
-      this.service
-        .getRepository()
-        .getPopulate()
-        .includes(p as P),
-    );
+    return this.service.canPopulate(populate);
   }
 
   /**
