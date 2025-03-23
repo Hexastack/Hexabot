@@ -8,9 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import Handlebars from 'handlebars';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import { ContentService } from '@/cms/services/content.service';
@@ -23,14 +21,15 @@ import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
-import { getRandom } from '@/utils/helpers/safeRandom';
+import { getRandomElement } from '@/utils/helpers/safeRandom';
 
 import { BlockDto } from '../dto/block.dto';
+import { EnvelopeFactory } from '../helpers/envelope-factory';
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockPopulate } from '../schemas/block.schema';
 import { Label } from '../schemas/label.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
-import { Context, TemplateContext } from '../schemas/types/context';
+import { Context } from '../schemas/types/context';
 import {
   BlockMessage,
   OutgoingMessageFormat,
@@ -51,7 +50,6 @@ export class BlockService extends BaseService<
   constructor(
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
-    private readonly attachmentService: AttachmentService,
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly logger: LoggerService,
@@ -373,23 +371,6 @@ export class BlockService extends BaseService<
   }
 
   /**
-   * Converts an old text template with single-curly placeholders, e.g. `{context.user.name}`,
-   * into a Handlebars-style template, e.g. `{{context.user.name}}`.
-   *
-   * @param str - The template string you want to convert.
-   * @returns The converted template string with Handlebars-style placeholders.
-   */
-  private toHandlebars(str: string) {
-    // If the string already contains {{ }}, assume it's already a handlebars template.
-    if (/\{\{.*\}\}/.test(str)) {
-      return str;
-    }
-
-    // Otherwise, replace single curly braces { } with double curly braces {{ }}.
-    return str.replaceAll(/{([^}]+)}/g, '{{$1}}');
-  }
-
-  /**
    * Replaces tokens with their context variables values in the provided text message
    *
    * `You phone number is {{context.vars.phone}}`
@@ -409,26 +390,23 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    // Build the template context for Handlebars to match our token paths
-    const templateContext: TemplateContext = {
-      context: {
+    return EnvelopeFactory.compileHandlerbarsTemplate(
+      text,
+      {
         ...context,
         vars: {
           ...(subscriberContext?.vars || {}),
           ...(context.vars || {}),
         },
       },
-      contact: { ...settings.contact },
-    };
-
-    // Compile and run the Handlebars template
-    const compileTemplate = Handlebars.compile(this.toHandlebars(text));
-    return compileTemplate(templateContext);
+      settings,
+    );
   }
 
   /**
    * Translates and replaces tokens with context variables values
    *
+   * @deprecated use EnvelopeFactory.processText() instead
    * @param text - Text to process
    * @param context - The context object
    *
@@ -440,32 +418,31 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    // Translate
-    text = this.i18n.t(text, {
-      lang: context.user.language,
-      defaultValue: text,
-    });
-    // Replace context tokens
-    text = this.processTokenReplacements(
-      text,
-      context,
-      subscriberContext,
+    const envelopeFactory = new EnvelopeFactory(
+      {
+        ...context,
+        vars: {
+          ...context.vars,
+          ...subscriberContext.vars,
+        },
+      },
       settings,
+      this.i18n,
     );
-    return text;
+
+    return envelopeFactory.processText(text);
   }
 
   /**
    * Return a randomly picked item of the array
    *
+   * @deprecated use helper getRandomElement() instead
    * @param array - Array of any type
    *
    * @returns A random item from the array
    */
   getRandom<T>(array: T[]): T {
-    return Array.isArray(array)
-      ? array[Math.floor(getRandom() * array.length)]
-      : array;
+    return getRandomElement(array);
   }
 
   /**
@@ -515,7 +492,7 @@ export class BlockService extends BaseService<
       // Text Message
       // Get random message from array
       const text = this.processText(
-        this.getRandom(blockMessage),
+        getRandomElement(blockMessage),
         context,
         subscriberContext,
         settings,

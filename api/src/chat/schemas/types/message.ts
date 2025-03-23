@@ -117,14 +117,18 @@ export const contentElementSchema = z
 
 export type ContentElement = z.infer<typeof contentElementSchema>;
 
+export const contentPaginationSchema = z.object({
+  total: z.number(),
+  skip: z.number(),
+  limit: z.number(),
+});
+
+export type ContentPagination = z.infer<typeof contentPaginationSchema>;
+
 export const stdOutgoingListMessageSchema = z.object({
   options: contentOptionsSchema,
   elements: z.array(contentElementSchema),
-  pagination: z.object({
-    total: z.number(),
-    skip: z.number(),
-    limit: z.number(),
-  }),
+  pagination: contentPaginationSchema,
 });
 
 export type StdOutgoingListMessage = z.infer<

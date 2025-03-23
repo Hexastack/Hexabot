@@ -49,8 +49,6 @@ import {
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
-  contextEmailVarInstance,
-  contextGetStartedInstance,
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
 import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
@@ -64,9 +62,7 @@ import { Block, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
-import { Context } from '../schemas/types/context';
 import { StdOutgoingListMessage } from '../schemas/types/message';
-import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
@@ -81,8 +77,6 @@ describe('BlockService', () => {
   let hasPreviousBlocks: Block;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
-  let settingService: SettingService;
-  let settings: Settings;
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -151,7 +145,6 @@ describe('BlockService', () => {
     }).compile();
     blockService = module.get<BlockService>(BlockService);
     contentService = module.get<ContentService>(ContentService);
-    settingService = module.get<SettingService>(SettingService);
     contentTypeService = module.get<ContentTypeService>(ContentTypeService);
     categoryRepository = module.get<CategoryRepository>(CategoryRepository);
     blockRepository = module.get<BlockRepository>(BlockRepository);
@@ -160,7 +153,6 @@ describe('BlockService', () => {
       name: 'hasPreviousBlocks',
     }))!;
     block = (await blockRepository.findOne({ name: 'hasNextBlocks' }))!;
-    settings = await settingService.getSettings();
   });
 
   afterEach(jest.clearAllMocks);
@@ -205,25 +197,6 @@ describe('BlockService', () => {
         undefined,
       );
       expect(result).toEqualPayload(blocksWithCategory);
-    });
-  });
-
-  describe('getRandom', () => {
-    it('should get a random message', () => {
-      const messages = [
-        'Hello, this is Nour',
-        'Oh ! How are you ?',
-        "Hmmm that's cool !",
-        'Corona virus',
-        'God bless you',
-      ];
-      const result = blockService.getRandom(messages);
-      expect(messages).toContain(result);
-    });
-
-    it('should return undefined when trying to get a random message from an empty array', () => {
-      const result = blockService.getRandom([]);
-      expect(result).toBe(undefined);
     });
   });
 
@@ -509,224 +482,6 @@ describe('BlockService', () => {
         skip: 2,
         limit: 2,
       });
-    });
-  });
-
-  describe('processText', () => {
-    const context: Context = {
-      ...contextGetStartedInstance,
-      channel: 'web-channel',
-      text: '',
-      payload: undefined,
-      nlp: { entities: [] },
-      vars: { age: 21, email: 'email@example.com' },
-      user_location: {
-        address: { address: 'sangafora' },
-        lat: 23,
-        lon: 16,
-      },
-      user: subscriberWithoutLabels,
-      skip: { '1': 0 },
-      attempt: 0,
-    };
-    const subscriberContext: SubscriberContext = {
-      ...subscriberContextBlankInstance,
-      vars: {
-        phone: '123456789',
-      },
-    };
-
-    it('should process empty text', () => {
-      const result = blockService.processText(
-        '',
-        context,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toEqual('');
-    });
-
-    it('should process text translation', () => {
-      const translation = { en: 'Welcome', fr: 'Bienvenue' };
-      const result = blockService.processText(
-        translation.en,
-        context,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toEqual(translation.fr);
-    });
-
-    it('should process text replacements with ontext vars', () => {
-      const result = blockService.processText(
-        '{{context.user.first_name}} {{context.user.last_name}}, email : {{context.vars.email}}',
-        contextEmailVarInstance,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toEqual('John Doe, email : email@example.com');
-    });
-
-    it('should process text replacements with context vars', () => {
-      const result = blockService.processText(
-        '{{context.user.first_name}} {{context.user.last_name}}, phone : {{context.vars.phone}}',
-        contextEmailVarInstance,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toEqual('John Doe, phone : 123456789');
-    });
-
-    it('should process text replacements with settings contact infos', () => {
-      const result = blockService.processText(
-        'Trying the settings : the name of company is <<{{contact.company_name}}>>',
-        contextBlankInstance,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toEqual(
-        'Trying the settings : the name of company is <<Your company name>>',
-      );
-    });
-  });
-
-  describe('toHandlebars (private)', () => {
-    it('should convert single curly braces to double curly braces when no existing {{ }} are present', () => {
-      const input =
-        'Hello {context.user.name}, your phone is {context.vars.phone}';
-      // Access the private method using bracket notation
-      const result = blockService['toHandlebars'](input);
-      expect(result).toBe(
-        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}',
-      );
-    });
-
-    it('should leave strings that already contain double curly braces unchanged', () => {
-      const input =
-        'Hello {{context.user.name}}, your phone is {{context.vars.phone}}';
-      const result = blockService['toHandlebars'](input);
-      expect(result).toBe(input);
-    });
-
-    it('should handle strings with no braces at all', () => {
-      const input = 'Hello world, no braces here';
-      const result = blockService['toHandlebars'](input);
-      // Should be unchanged since there are no placeholders
-      expect(result).toBe(input);
-    });
-
-    it('should handle multiple single placeholders correctly', () => {
-      const input = '{one} {two} {three}';
-      const result = blockService['toHandlebars'](input);
-      expect(result).toBe('{{one}} {{two}} {{three}}');
-    });
-  });
-
-  describe('processTokenReplacements', () => {
-    it('should replace tokens with context variables correctly', () => {
-      const text =
-        'Hello {context.user.name}, your phone is {context.vars.phone}';
-      const context = {
-        user: { name: 'John Doe' },
-        vars: { phone: '123-456-7890' },
-      } as unknown as Context;
-      const subscriberContext = {
-        // This can hold overlapping or additional vars
-        vars: {
-          otherVar: 'Some Value',
-        },
-      } as unknown as SubscriberContext;
-      const settings = {
-        contact: {
-          email: 'contact@example.com',
-        },
-      } as unknown as Settings;
-
-      const result = blockService.processTokenReplacements(
-        text,
-        context,
-        subscriberContext,
-        settings,
-      );
-      // Expect that single curly braces got turned into Handlebars placeholders
-      // and then replaced with actual values from the merged context
-      expect(result).toBe('Hello John Doe, your phone is 123-456-7890');
-    });
-
-    it('should merge subscriberContext.vars and context.vars correctly', () => {
-      const text =
-        'Subscriber var: {context.vars.subscriberVar}, Context var: {context.vars.contextVar}';
-      const context = {
-        user: {},
-        vars: {
-          contextVar: 'ContextValue',
-        },
-      } as unknown as Context;
-      const subscriberContext = {
-        vars: {
-          subscriberVar: 'SubscriberValue',
-        },
-      } as unknown as SubscriberContext;
-      const settings = {
-        contact: {},
-      } as unknown as Settings;
-
-      const result = blockService.processTokenReplacements(
-        text,
-        context,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toBe(
-        'Subscriber var: SubscriberValue, Context var: ContextValue',
-      );
-    });
-
-    it('should use contact from settings if provided', () => {
-      const text = 'You can reach us at {{contact.email}}';
-      const context = {
-        user: { name: 'Alice' },
-        vars: {},
-      } as unknown as Context;
-      const subscriberContext = {
-        vars: {},
-      } as unknown as SubscriberContext;
-
-      const settings = {
-        contact: {
-          email: 'support@example.com',
-        },
-      } as unknown as Settings;
-
-      const result = blockService.processTokenReplacements(
-        text,
-        context,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toBe('You can reach us at support@example.com');
-    });
-
-    it('should handle no placeholders gracefully', () => {
-      const text = 'No placeholders here.';
-      const context = {
-        user: {},
-        vars: {},
-      } as unknown as Context;
-      const subscriberContext = {
-        vars: {},
-      } as unknown as SubscriberContext;
-      const settings = {
-        contact: {},
-      } as unknown as Settings;
-
-      const result = blockService.processTokenReplacements(
-        text,
-        context,
-        subscriberContext,
-        settings,
-      );
-      expect(result).toBe('No placeholders here.');
     });
   });
 });
