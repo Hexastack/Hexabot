@@ -159,6 +159,14 @@ export class NlpValueRepository extends BaseRepository<
           },
         },
         {
+          $lookup: {
+            from: 'nlpentities',
+            localField: 'entity',
+            foreignField: '_id',
+            as: 'entities',
+          },
+        },
+        {
           $group: {
             _id: '$_id',
             value: { $first: '$value' },
