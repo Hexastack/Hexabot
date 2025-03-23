@@ -126,7 +126,7 @@ export class NlpValueController extends BaseController<
   }
 
   @Get('')
-  async findAndPopulateNlpValuesWithCount(
+  async findAndPopulateWithCount(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
     @Query(PopulatePipe) populate: string[],
     @Query(
@@ -134,7 +134,7 @@ export class NlpValueController extends BaseController<
     )
     filters: TFilterQuery<NlpValue>,
   ) {
-    return await this.nlpValueService.findAndPopulateNlpValuesWithCount(
+    return await this.nlpValueService.findAndPopulateWithCount(
       pageQuery,
       populate,
       filters,

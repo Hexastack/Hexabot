@@ -108,13 +108,13 @@ export class NlpValueRepository extends BaseRepository<
     }
   }
 
-  async findAndPopulateNlpValuesWithCount(
+  async findAndPopulateWithCount(
     { limit = 10, skip = 0, sort = ['createdAt', -1] }: PageQueryDto<NlpValue>,
     populate: string[],
     { $and = [], ...rest }: TFilterQuery<NlpValue>,
   ) {
     return this.model
-      .aggregate<NlpValue>([
+      .aggregate([
         {
           // support filters
           $match: {

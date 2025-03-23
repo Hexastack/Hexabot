@@ -221,12 +221,12 @@ export class NlpValueService extends BaseService<
     return Promise.all(promises);
   }
 
-  async findAndPopulateNlpValuesWithCount(
+  async findAndPopulateWithCount(
     pageQuery: PageQueryDto<NlpValue>,
     populate: string[],
     filters: TFilterQuery<NlpValue>,
   ) {
-    return await this.repository.findAndPopulateNlpValuesWithCount(
+    return await this.repository.findAndPopulateWithCount(
       pageQuery,
       populate,
       filters,
