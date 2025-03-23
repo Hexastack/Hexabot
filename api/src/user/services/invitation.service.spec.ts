@@ -7,7 +7,6 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Logger } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
@@ -73,7 +72,6 @@ describe('InvitationService', () => {
         InvitationService,
         LanguageRepository,
         LanguageService,
-        Logger,
         {
           provide: I18nService,
           useValue: {
