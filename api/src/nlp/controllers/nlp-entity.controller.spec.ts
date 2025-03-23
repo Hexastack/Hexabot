@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -11,11 +11,8 @@ import {
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
@@ -28,6 +25,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -53,7 +51,7 @@ describe('NlpEntityController', () => {
   let buitInEntityId: string | null;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [NlpEntityController],
       imports: [
         rootMongooseTestModule(installNlpValueFixtures),
@@ -64,19 +62,18 @@ describe('NlpEntityController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         NlpEntityService,
         NlpEntityRepository,
         NlpValueService,
         NlpSampleEntityRepository,
         NlpValueRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    nlpEntityController = module.get<NlpEntityController>(NlpEntityController);
-    nlpValueService = module.get<NlpValueService>(NlpValueService);
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
-
+    });
+    [nlpEntityController, nlpValueService, nlpEntityService] = await getMocks([
+      NlpEntityController,
+      NlpValueService,
+      NlpEntityService,
+    ]);
     intentEntityId =
       (
         await nlpEntityService.findOne({
@@ -90,9 +87,8 @@ describe('NlpEntityController', () => {
         })
       )?.id || null;
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

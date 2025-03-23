@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,11 +8,8 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   installMenuFixtures,
   rootMenuFixtures,
@@ -21,6 +18,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MenuRepository } from '../repositories/menu.repository';
 import { MenuModel } from '../schemas/menu.schema';
@@ -33,7 +31,7 @@ describe('MenuService', () => {
   let menuService: MenuService;
   let menuRepository: MenuRepository;
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installMenuFixtures),
         MongooseModule.forFeature([MenuModel]),
@@ -41,7 +39,6 @@ describe('MenuService', () => {
       providers: [
         MenuRepository,
         MenuService,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -50,15 +47,15 @@ describe('MenuService', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
       ],
-    }).compile();
-    menuService = module.get<MenuService>(MenuService);
-    menuRepository = module.get<MenuRepository>(MenuRepository);
+    });
+    [menuService, menuRepository] = await getMocks([
+      MenuService,
+      MenuRepository,
+    ]);
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
   describe('create', () => {

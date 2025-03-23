@@ -7,9 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -33,7 +31,6 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import {
@@ -58,6 +55,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
@@ -85,7 +83,7 @@ describe('BlockService', () => {
   let settings: Settings;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(async () => {
           await installContentFixtures();
@@ -118,7 +116,6 @@ describe('BlockService', () => {
           provide: PluginService,
           useValue: {},
         },
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -138,7 +135,6 @@ describe('BlockService', () => {
             })),
           },
         },
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -148,13 +144,22 @@ describe('BlockService', () => {
           },
         },
       ],
-    }).compile();
-    blockService = module.get<BlockService>(BlockService);
-    contentService = module.get<ContentService>(ContentService);
-    settingService = module.get<SettingService>(SettingService);
-    contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    categoryRepository = module.get<CategoryRepository>(CategoryRepository);
-    blockRepository = module.get<BlockRepository>(BlockRepository);
+    });
+    [
+      blockService,
+      contentService,
+      settingService,
+      contentTypeService,
+      categoryRepository,
+      blockRepository,
+    ] = await getMocks([
+      BlockService,
+      ContentService,
+      SettingService,
+      ContentTypeService,
+      CategoryRepository,
+      BlockRepository,
+    ]);
     category = (await categoryRepository.findOne({ label: 'default' }))!;
     hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',

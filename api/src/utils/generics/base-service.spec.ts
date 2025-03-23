@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
-
 import { DummyService } from '@/utils/test/dummy/services/dummy.service';
 import { closeInMongodConnection } from '@/utils/test/test';
 
 import { DummyModule } from '../test/dummy/dummy.module';
 import { DummyRepository } from '../test/dummy/repositories/dummy.repository';
+import { buildTestingMocks } from '../test/utils';
 
 describe('BaseService', () => {
   let dummyRepository: DummyRepository;
@@ -30,11 +29,13 @@ describe('BaseService', () => {
   };
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [DummyModule],
-    }).compile();
-    dummyRepository = module.get<DummyRepository>(DummyRepository);
-    dummyService = module.get<DummyService>(DummyService);
+    });
+    [dummyRepository, dummyService] = await getMocks([
+      DummyRepository,
+      DummyService,
+    ]);
   });
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);

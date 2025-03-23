@@ -7,11 +7,8 @@
  */
 
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -25,6 +22,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentCreateDto } from '../dto/content.dto';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
@@ -46,24 +44,24 @@ describe('ContentController', () => {
   let pageQuery: PageQueryDto<Content>;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [ContentController],
       imports: [
         rootMongooseTestModule(installContentFixtures),
         MongooseModule.forFeature([ContentTypeModel, ContentModel]),
       ],
       providers: [
-        LoggerService,
         ContentTypeService,
         ContentService,
         ContentRepository,
         ContentTypeRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    contentController = module.get<ContentController>(ContentController);
-    contentService = module.get<ContentService>(ContentService);
-    contentTypeService = module.get<ContentTypeService>(ContentTypeService);
+    });
+    [contentController, contentService, contentTypeService] = await getMocks([
+      ContentController,
+      ContentService,
+      ContentTypeService,
+    ]);
     contentType = await contentTypeService.findOne({ name: 'Product' });
     content = await contentService.findOne({
       title: 'Jean',

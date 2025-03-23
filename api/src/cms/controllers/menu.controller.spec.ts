@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,11 +7,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   installMenuFixtures,
   offerMenuFixture,
@@ -22,6 +19,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MenuRepository } from '../repositories/menu.repository';
 import { MenuModel } from '../schemas/menu.schema';
@@ -35,7 +33,7 @@ describe('MenuController', () => {
   let menuController: MenuController;
   let menuService: MenuService;
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installMenuFixtures),
         MongooseModule.forFeature([MenuModel]),
@@ -43,7 +41,6 @@ describe('MenuController', () => {
       providers: [
         MenuRepository,
         MenuService,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -52,12 +49,13 @@ describe('MenuController', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
       ],
       controllers: [MenuController],
-    }).compile();
-    menuController = module.get<MenuController>(MenuController);
-    menuService = module.get<MenuService>(MenuService);
+    });
+    [menuController, menuService] = await getMocks([
+      MenuController,
+      MenuService,
+    ]);
   });
 
   afterAll(closeInMongodConnection);
