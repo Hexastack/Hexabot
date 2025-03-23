@@ -109,44 +109,39 @@ export class NlpValueRepository extends BaseRepository<
   }
 
   async findAndPopulateNlpValuesWithCount(
+    { limit = 10, skip = 0, sort = ['createdAt', -1] }: PageQueryDto<NlpValue>,
     populate: string[],
-    filters?: TFilterQuery<NlpValue>,
-    pageQuery?: PageQueryDto<NlpValue>,
+    { $and = [], ...rest }: TFilterQuery<NlpValue>,
   ) {
-    const { $and = [], ...rest } = filters || ({} as TFilterQuery<NlpValue>);
-
     return this.model
       .aggregate<NlpValue>([
         {
           // support filters
           $match: {
             ...rest,
-            ...($and?.length && {
+            ...($and.length && {
               $and:
-                $and?.map((v) => {
-                  if (v.entity) {
-                    return {
-                      ...v,
-                      entity: new Types.ObjectId(String(v.entity)),
-                    };
-                  }
-
-                  return v;
-                }) || [],
+                $and.map(({ entity, ...rest }) =>
+                  entity
+                    ? {
+                        ...rest,
+                        entity: new Types.ObjectId(String(entity)),
+                      }
+                    : rest,
+                ) || [],
             }),
           },
         },
         // support pageQuery
         {
-          $skip: pageQuery?.skip || 0,
+          $limit: limit,
         },
         {
-          $limit: pageQuery?.limit || 10,
+          $skip: skip,
         },
         {
           $sort: {
-            [pageQuery?.sort?.[0] || 'createdAt']:
-              pageQuery?.sort?.[1] === 'desc' ? -1 : 1,
+            [sort[0]]: sort[1] === 'desc' ? -1 : 1,
           },
         },
         {
@@ -164,22 +159,6 @@ export class NlpValueRepository extends BaseRepository<
           },
         },
         {
-          $lookup: {
-            from: 'nlpsamples',
-            localField: 'sampleEntities.sample',
-            foreignField: '_id',
-            as: 'samples',
-          },
-        },
-        {
-          $lookup: {
-            from: 'nlpentities',
-            localField: 'entity',
-            foreignField: '_id',
-            as: 'entities',
-          },
-        },
-        {
           $group: {
             _id: '$_id',
             value: { $first: '$value' },
@@ -190,17 +169,10 @@ export class NlpValueRepository extends BaseRepository<
             updatedAt: { $first: '$updatedAt' },
             entity: {
               // support populate
-              $first: populate.some((p) =>
-                this.getPopulate()
-                  .map((p) => p.toString())
-                  .includes(p),
-              )
-                ? '$entities'
-                : '$entity',
+              $first: this.canPopulate(populate) ? '$entities' : '$entity',
             },
-            //TODO when samples is empty array we need to return 0 not 1
             nlpSamplesCount: {
-              $sum: { $cond: [{ $ifNull: ['samples', false] }, 1, 0] },
+              $sum: { $cond: [{ $ifNull: ['$sampleEntities', false] }, 1, 0] },
             },
           },
         },

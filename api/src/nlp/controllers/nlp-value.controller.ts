@@ -132,12 +132,12 @@ export class NlpValueController extends BaseController<
     @Query(
       new SearchFilterPipe<NlpValue>({ allowedFields: ['entity', 'value'] }),
     )
-    filters?: TFilterQuery<NlpValue>,
+    filters: TFilterQuery<NlpValue>,
   ) {
     return await this.nlpValueService.findAndPopulateNlpValuesWithCount(
+      pageQuery,
       populate,
       filters,
-      pageQuery,
     );
   }
 
