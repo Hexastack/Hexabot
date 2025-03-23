@@ -10,7 +10,6 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Handlebars from 'handlebars';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import { ContentService } from '@/cms/services/content.service';
@@ -51,7 +50,6 @@ export class BlockService extends BaseService<
   constructor(
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
-    private readonly attachmentService: AttachmentService,
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly logger: LoggerService,
