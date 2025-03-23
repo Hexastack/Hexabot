@@ -14,7 +14,6 @@ import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
@@ -37,7 +36,6 @@ export class NlpValueService extends BaseService<
     readonly repository: NlpValueRepository,
     @Inject(forwardRef(() => NlpEntityService))
     private readonly nlpEntityService: NlpEntityService,
-    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
     super(repository);
   }
@@ -224,14 +222,14 @@ export class NlpValueService extends BaseService<
   }
 
   async findAndPopulateNlpValuesWithCount(
+    pageQuery: PageQueryDto<NlpValue>,
     populate: string[],
-    filters?: TFilterQuery<NlpValue>,
-    pageQuery?: PageQueryDto<NlpValue>,
+    filters: TFilterQuery<NlpValue>,
   ) {
     return await this.repository.findAndPopulateNlpValuesWithCount(
+      pageQuery,
       populate,
       filters,
-      pageQuery,
     );
   }
 }
