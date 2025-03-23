@@ -12,7 +12,6 @@ import {
   Optional,
 } from '@nestjs/common';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import {
   SocketGet,
@@ -36,17 +35,13 @@ export class MessageService extends BaseService<
   MessagePopulate,
   MessageFull
 > {
-  private readonly logger: LoggerService;
-
   private readonly gateway: WebsocketGateway;
 
   constructor(
     private readonly messageRepository: MessageRepository,
-    @Optional() logger?: LoggerService,
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(messageRepository);
-    if (logger) this.logger = logger;
     if (gateway) this.gateway = gateway;
   }
 

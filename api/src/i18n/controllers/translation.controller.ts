@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -42,7 +41,6 @@ export class TranslationController extends BaseController<Translation> {
   constructor(
     private readonly languageService: LanguageService,
     private readonly translationService: TranslationService,
-    private readonly logger: LoggerService,
   ) {
     super(translationService);
   }

@@ -17,7 +17,6 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -52,7 +51,6 @@ export class BlockService extends BaseService<
     private readonly contentService: ContentService,
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
-    private readonly logger: LoggerService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
   ) {

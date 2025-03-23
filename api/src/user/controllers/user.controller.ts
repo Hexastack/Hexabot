@@ -38,7 +38,6 @@ import {
 } from '@/attachment/types';
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
@@ -78,7 +77,6 @@ export class ReadOnlyUserController extends BaseController<
     protected readonly invitationService: InvitationService,
     protected readonly permissionService: PermissionService,
     protected readonly attachmentService: AttachmentService,
-    protected readonly logger: LoggerService,
     protected readonly passwordResetService: PasswordResetService,
     protected readonly validateAccountService: ValidateAccountService,
   ) {

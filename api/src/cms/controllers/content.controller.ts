@@ -24,7 +24,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -54,7 +53,6 @@ export class ContentController extends BaseController<
   constructor(
     private readonly contentService: ContentService,
     private readonly contentTypeService: ContentTypeService,
-    private readonly logger: LoggerService,
   ) {
     super(contentService);
   }

@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Inject } from '@nestjs/common';
 import {
   EventEmitter2,
   IHookEntities,
@@ -27,6 +28,7 @@ import {
   UpdateWriteOpResult,
 } from 'mongoose';
 
+import { LoggerService } from '@/logger/logger.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
@@ -80,6 +82,9 @@ export abstract class BaseRepository<
   private readonly leanOpts = { virtuals: true, defaults: true, getters: true };
 
   eventEmitter: EventEmitter2;
+
+  @Inject(LoggerService)
+  readonly logger: LoggerService;
 
   constructor(
     readonly model: Model<T>,
