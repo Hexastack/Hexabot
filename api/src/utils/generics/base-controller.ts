@@ -6,8 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 
+import { LoggerService } from '@/logger/logger.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { DtoConfig } from '../types/dto.types';
@@ -24,6 +25,9 @@ export abstract class BaseController<
   Dto extends DtoConfig = object,
 > {
   eventEmitter: typeof this.service.eventEmitter;
+
+  @Inject(LoggerService)
+  readonly logger: LoggerService;
 
   constructor(protected readonly service: BaseService<T, P, TFull, Dto>) {
     this.eventEmitter = service.eventEmitter;

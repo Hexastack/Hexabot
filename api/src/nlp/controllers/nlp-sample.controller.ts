@@ -34,7 +34,6 @@ import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -68,7 +67,6 @@ export class NlpSampleController extends BaseController<
     private readonly nlpSampleService: NlpSampleService,
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
-    private readonly logger: LoggerService,
     private readonly languageService: LanguageService,
     private readonly helperService: HelperService,
   ) {

@@ -17,7 +17,6 @@ import Papa from 'papaparse';
 import { Message } from '@/chat/schemas/message.schema';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
@@ -47,7 +46,6 @@ export class NlpSampleService extends BaseService<
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
     private readonly languageService: LanguageService,
-    private readonly logger: LoggerService,
   ) {
     super(repository);
   }

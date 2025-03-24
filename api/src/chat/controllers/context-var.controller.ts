@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -41,10 +40,7 @@ import { ContextVarService } from '../services/context-var.service';
 @UseInterceptors(CsrfInterceptor)
 @Controller('contextvar')
 export class ContextVarController extends BaseController<ContextVar> {
-  constructor(
-    private readonly contextVarService: ContextVarService,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(private readonly contextVarService: ContextVarService) {
     super(contextVarService);
   }
 

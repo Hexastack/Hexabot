@@ -28,6 +28,7 @@ import {
   UpdateWriteOpResult,
 } from 'mongoose';
 
+import { LoggerService } from '@/logger/logger.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
@@ -82,6 +83,9 @@ export abstract class BaseRepository<
 
   @Inject(EventEmitter2)
   readonly eventEmitter: EventEmitter2;
+
+  @Inject(LoggerService)
+  readonly logger: LoggerService;
 
   constructor(
     readonly model: Model<T>,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -15,8 +15,6 @@ import {
 import { ModulesContainer } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-
-import { LoggerService } from '@/logger/logger.service';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
 import { SocketRequest } from '../utils/socket-request';
@@ -39,7 +37,6 @@ export class SocketEventDispatcherService implements OnModuleInit {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly modulesContainer: ModulesContainer,
-    private readonly logger: LoggerService,
   ) {}
 
   async handleEvent(

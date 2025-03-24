@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -49,10 +48,7 @@ export class LabelController extends BaseController<
   LabelPopulate,
   LabelFull
 > {
-  constructor(
-    private readonly labelService: LabelService,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(private readonly labelService: LabelService) {
     super(labelService);
   }
 

@@ -15,7 +15,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import {
   SocketGet,
@@ -48,7 +47,6 @@ export class SubscriberService extends BaseService<
 
   constructor(
     readonly repository: SubscriberRepository,
-    private readonly logger: LoggerService,
     protected attachmentService: AttachmentService,
     @Optional() gateway?: WebsocketGateway,
   ) {

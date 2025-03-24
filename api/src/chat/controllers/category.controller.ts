@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -38,10 +37,7 @@ import { CategoryService } from '../services/category.service';
 @UseInterceptors(CsrfInterceptor)
 @Controller('category')
 export class CategoryController extends BaseController<Category> {
-  constructor(
-    private readonly categoryService: CategoryService,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(private readonly categoryService: CategoryService) {
     super(categoryService);
   }
 
