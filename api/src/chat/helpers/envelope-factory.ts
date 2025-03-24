@@ -68,7 +68,7 @@ export class EnvelopeFactory {
    *
    * @returns Text message with the tokens being replaced
    */
-  static compileHandlerbarsTemplate(
+  static compileHandlebarsTemplate(
     text: string,
     context: Context,
     settings: Settings,
@@ -99,7 +99,7 @@ export class EnvelopeFactory {
       lang: this.context.user.language,
       defaultValue: result,
     });
-    result = EnvelopeFactory.compileHandlerbarsTemplate(
+    result = EnvelopeFactory.compileHandlebarsTemplate(
       result,
       this.context,
       this.settings,

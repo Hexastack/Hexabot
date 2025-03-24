@@ -92,12 +92,12 @@ describe('EnvelopeFactory', () => {
     });
   });
 
-  describe('compileHandlerbarsTemplate', () => {
+  describe('compileHandlebarsTemplate', () => {
     it('should replace tokens with context variables correctly', () => {
       const text =
         'Hello {{context.user.first_name}} {{context.user.last_name}}, your phone is {{context.vars.phone}}';
 
-      const result = EnvelopeFactory.compileHandlerbarsTemplate(
+      const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
         settings,
@@ -121,7 +121,7 @@ describe('EnvelopeFactory', () => {
         contact: {},
       } as unknown as Settings;
 
-      const result = EnvelopeFactory.compileHandlerbarsTemplate(
+      const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
         settings,
@@ -133,7 +133,7 @@ describe('EnvelopeFactory', () => {
 
     it('should use contact from settings if provided', () => {
       const text = 'You can reach us at {{contact.company_email}}';
-      const result = EnvelopeFactory.compileHandlerbarsTemplate(
+      const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
         settings,
@@ -143,7 +143,7 @@ describe('EnvelopeFactory', () => {
 
     it('should handle no placeholders gracefully', () => {
       const text = 'No placeholders here.';
-      const result = EnvelopeFactory.compileHandlerbarsTemplate(
+      const result = EnvelopeFactory.compileHandlebarsTemplate(
         text,
         context,
         settings,

@@ -390,7 +390,7 @@ export class BlockService extends BaseService<
     subscriberContext: SubscriberContext,
     settings: Settings,
   ): string {
-    return EnvelopeFactory.compileHandlerbarsTemplate(
+    return EnvelopeFactory.compileHandlebarsTemplate(
       text,
       {
         ...context,

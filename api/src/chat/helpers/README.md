@@ -34,7 +34,7 @@ The envelope helpers introduces two key components to streamline outgoing messag
 
 - **Template Conversion & Compilation:**  
   - **toHandlebars:** Converts legacy single-curly brace templates (e.g., `{context.user.name}`) into Handlebars-style (`{{context.user.name}}`).  
-  - **compileHandlerbarsTemplate:** Compiles and processes these templates by injecting contextual data, allowing dynamic content generation.
+  - **compileHandlebarsTemplate:** Compiles and processes these templates by injecting contextual data, allowing dynamic content generation.
 
 - **Localization:**  
   Processes input text for localization using an integrated i18n service, ensuring that messages are tailored to the user's language settings.
