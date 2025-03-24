@@ -38,7 +38,7 @@ export abstract class BaseBlockPlugin<
     this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 
-  async getDefaultSettings(): Promise<T> {
+  getDefaultSettings(): Promise<T> | T {
     return this.settings;
   }
 
