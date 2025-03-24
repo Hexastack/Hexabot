@@ -181,7 +181,11 @@ export class NlpSampleController extends BaseController<
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<NlpSample>({ allowedFields: ['text', 'type'] }))
+    @Query(
+      new SearchFilterPipe<NlpSample>({
+        allowedFields: ['text', 'type', 'language'],
+      }),
+    )
     filters?: TFilterQuery<NlpSample>,
   ) {
     return await this.count(filters);

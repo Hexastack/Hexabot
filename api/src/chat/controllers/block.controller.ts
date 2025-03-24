@@ -93,7 +93,7 @@ export class BlockController extends BaseController<
    * @returns An array containing the settings of the specified plugin.
    */
   @Get('customBlocks/settings')
-  findSettings(@Query('plugin') pluginName: PluginName) {
+  async findSettings(@Query('plugin') pluginName: PluginName) {
     try {
       if (!pluginName) {
         throw new BadRequestException(
@@ -110,7 +110,7 @@ export class BlockController extends BaseController<
         throw new NotFoundException('Plugin Not Found');
       }
 
-      return plugin.getDefaultSettings();
+      return await plugin.getDefaultSettings();
     } catch (e) {
       this.logger.error('Unable to fetch plugin settings', e);
       throw e;
@@ -123,29 +123,34 @@ export class BlockController extends BaseController<
    * @returns An array containing available custom blocks.
    */
   @Get('customBlocks')
-  findAll() {
+  async findAll() {
     try {
       const plugins = this.pluginsService
         .getAllByType(PluginType.block)
-        .map((p) => ({
-          id: p.getName(),
-          namespace: p.getNamespace(),
-          template: {
-            ...p.template,
-            message: {
-              plugin: p.name,
-              args: p.getDefaultSettings().reduce(
-                (acc, setting) => {
-                  acc[setting.label] = setting.value;
-                  return acc;
-                },
-                {} as { [key: string]: any },
-              ),
+        .map(async (p) => {
+          const defaultSettings = await p.getDefaultSettings();
+
+          return {
+            id: p.getName(),
+            namespace: p.getNamespace(),
+            template: {
+              ...p.template,
+              message: {
+                plugin: p.name,
+                args: defaultSettings.reduce(
+                  (acc, setting) => {
+                    acc[setting.label] = setting.value;
+                    return acc;
+                  },
+                  {} as { [key: string]: any },
+                ),
+              },
             },
-          },
-          effects: typeof p.effects === 'object' ? Object.keys(p.effects) : [],
-        }));
-      return plugins;
+            effects:
+              typeof p.effects === 'object' ? Object.keys(p.effects) : [],
+          };
+        });
+      return await Promise.all(plugins);
     } catch (e) {
       this.logger.error(e);
       throw e;

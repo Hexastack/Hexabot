@@ -93,7 +93,9 @@ export class NlpValueController extends BaseController<
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<NlpValue>({ allowedFields: ['entity', 'value'] }),
+      new SearchFilterPipe<NlpValue>({
+        allowedFields: ['entity', 'value', 'doc'],
+      }),
     )
     filters?: TFilterQuery<NlpValue>,
   ) {
@@ -142,7 +144,7 @@ export class NlpValueController extends BaseController<
     @Query(PopulatePipe) populate: string[],
     @Query(
       new SearchFilterPipe<NlpValue>({
-        allowedFields: ['entity', 'value'],
+        allowedFields: ['entity', 'value', 'doc'],
       }),
     )
     filters: TFilterQuery<NlpValue>,

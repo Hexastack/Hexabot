@@ -154,6 +154,7 @@ describe('NlpValueController', () => {
         expressions: ['synonym1', 'synonym2'],
         metadata: { firstkey: 'firstvalue', secondKey: 1995 },
         builtin: false,
+        doc: '',
       };
       const result = await nlpValueController.create(value);
       expect(result).toEqualPayload(value);
@@ -220,6 +221,7 @@ describe('NlpValueController', () => {
         value: 'updated',
         expressions: [],
         builtin: true,
+        doc: '',
       };
       const result = await nlpValueController.updateOne(
         positiveValue!.id,
@@ -238,6 +240,7 @@ describe('NlpValueController', () => {
           value: 'updated',
           expressions: [],
           builtin: true,
+          doc: '',
         }),
       ).rejects.toThrow(getUpdateOneError(NlpValue.name, jhonNlpValue!.id));
     });

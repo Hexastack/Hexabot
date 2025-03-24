@@ -89,8 +89,8 @@ export abstract class BaseRepository<
     this.registerLifeCycleHooks();
   }
 
-  getPopulate(): P[] {
-    return this.populate;
+  canPopulate(populate: string[]): boolean {
+    return populate.some((p) => this.populate.includes(p as P));
   }
 
   getEventName(suffix: EHook) {

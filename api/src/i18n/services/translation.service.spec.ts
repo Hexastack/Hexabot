@@ -130,7 +130,7 @@ describe('TranslationService', () => {
     expect(strings).toEqual(['Test message', 'Fallback message']);
   });
 
-  it('should return plugin-related strings from block message with translatable args', () => {
+  it('should return plugin-related strings from block message with translatable args', async () => {
     const block: Block = {
       name: 'Ollama Plugin',
       patterns: [],
@@ -201,7 +201,7 @@ describe('TranslationService', () => {
         return '/mock/path';
       }
 
-      getDefaultSettings() {
+      async getDefaultSettings() {
         return this.settings;
       }
     }
@@ -213,8 +213,7 @@ describe('TranslationService', () => {
       .spyOn(pluginService, 'getPlugin')
       .mockImplementation(() => mockedPlugin);
 
-    const result = service.getBlockStrings(block);
-
+    const result = await service.getBlockStrings(block);
     expect(result).toEqual(['String 2', 'String 3']);
   });
 
@@ -223,7 +222,7 @@ describe('TranslationService', () => {
     expect(strings).toEqual(['Global fallback message']);
   });
 
-  it('should return an array of strings from a block with a quick reply message', () => {
+  it('should return an array of strings from a block with a quick reply message', async () => {
     const block = {
       id: 'blockId',
       name: 'Test Block',
@@ -250,7 +249,7 @@ describe('TranslationService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Block;
-    const strings = service.getBlockStrings(block);
+    const strings = await service.getBlockStrings(block);
     expect(strings).toEqual([
       'Test message',
       'Quick reply 1',
@@ -259,7 +258,7 @@ describe('TranslationService', () => {
     ]);
   });
 
-  it('should return an array of strings from a block with a button message', () => {
+  it('should return an array of strings from a block with a button message', async () => {
     const block = {
       id: 'blockId',
       name: 'Test Block',
@@ -286,7 +285,7 @@ describe('TranslationService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Block;
-    const strings = service.getBlockStrings(block);
+    const strings = await service.getBlockStrings(block);
     expect(strings).toEqual([
       'Test message',
       'Button 1',
@@ -295,7 +294,7 @@ describe('TranslationService', () => {
     ]);
   });
 
-  it('should return an array of strings from a block with a text message', () => {
+  it('should return an array of strings from a block with a text message', async () => {
     const block = {
       id: 'blockId',
       name: 'Test Block',
@@ -312,11 +311,11 @@ describe('TranslationService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Block;
-    const strings = service.getBlockStrings(block);
+    const strings = await service.getBlockStrings(block);
     expect(strings).toEqual(['Test message', 'Fallback message']);
   });
 
-  it('should return an array of strings from a block with a nested message object', () => {
+  it('should return an array of strings from a block with a nested message object', async () => {
     const block = {
       id: 'blockId',
       name: 'Test Block',
@@ -335,11 +334,11 @@ describe('TranslationService', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Block;
-    const strings = service.getBlockStrings(block);
+    const strings = await service.getBlockStrings(block);
     expect(strings).toEqual(['Test message', 'Fallback message']);
   });
 
-  it('should handle different message formats in getBlockStrings', () => {
+  it('should handle different message formats in getBlockStrings', async () => {
     // Covers lines 54-60, 65
 
     // Test with an array message (line 54-57)
@@ -348,7 +347,7 @@ describe('TranslationService', () => {
       message: ['This is a text message'],
       options: { fallback: { message: ['Fallback message'] } },
     } as Block;
-    const strings1 = service.getBlockStrings(block1);
+    const strings1 = await service.getBlockStrings(block1);
     expect(strings1).toEqual(['This is a text message', 'Fallback message']);
 
     // Test with an object message (line 58-60)
@@ -357,7 +356,7 @@ describe('TranslationService', () => {
       message: { text: 'Another text message' },
       options: { fallback: { message: ['Fallback message'] } },
     } as Block;
-    const strings2 = service.getBlockStrings(block2);
+    const strings2 = await service.getBlockStrings(block2);
     expect(strings2).toEqual(['Another text message', 'Fallback message']);
 
     // Test a block without a fallback (line 65)
@@ -366,7 +365,7 @@ describe('TranslationService', () => {
       message: { text: 'Another test message' },
       options: {},
     } as Block;
-    const strings3 = service.getBlockStrings(block3);
+    const strings3 = await service.getBlockStrings(block3);
     expect(strings3).toEqual(['Another test message']);
   });
 });

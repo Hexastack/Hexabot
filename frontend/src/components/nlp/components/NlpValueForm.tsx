@@ -61,6 +61,7 @@ export const NlpValueForm: FC<
   >({
     defaultValues: {
       value: data?.value || "",
+      doc: data?.doc || "",
       expressions: data?.expressions || [],
     },
   });
@@ -84,6 +85,7 @@ export const NlpValueForm: FC<
       reset({
         value: data.value,
         expressions: data.expressions,
+        doc: data.doc,
       });
     } else {
       reset();
@@ -100,6 +102,13 @@ export const NlpValueForm: FC<
               required
               autoFocus
               {...register("value", validationRules.value)}
+            />
+          </ContentItem>
+          <ContentItem>
+            <Input
+              label={t("label.doc")}
+              {...register("doc")}
+              multiline={true}
             />
           </ContentItem>
 

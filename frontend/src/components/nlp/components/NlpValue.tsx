@@ -55,7 +55,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $iLike: ["value"],
+    $or: ["doc", "value"]
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE },
@@ -81,6 +81,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     },
   });
   const [selectedNlpValues, setSelectedNlpValues] = useState<string[]>([]);
+  const shouldIncludeSynonyms = !nlpEntity?.lookups.includes("trait");
   const actionColumns = useActionColumns<INlpValue>(
     EntityType.NLP_VALUE,
     [
@@ -102,6 +103,19 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     ],
     t("label.operations"),
   );
+  const synonymsColumn =  {
+    flex: 3,
+    field: "synonyms",
+    headerName: t("label.synonyms"),
+    sortable: true,
+    renderCell: (params) => {
+      return params.row?.expressions?.map((exp, index) => (
+        <Chip sx={{ margin: 0.8 }} label={exp} variant="inbox" key={index} />
+      ));
+    },
+    disableColumnMenu: true,
+    renderHeader,
+  };
   const columns: GridColDef<INlpValue>[] = [
     {
       flex: 3,
@@ -113,18 +127,13 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     },
     {
       flex: 3,
-      field: "synonyms",
-      headerName: t("label.synonyms"),
+      field: "doc",
+      headerName: t("label.doc"),
       sortable: true,
-      renderCell: (params) => {
-        return params.row?.expressions?.map((exp, index) => (
-          <Chip sx={{ margin: 0.8 }} label={exp} variant="inbox" key={index} />
-        ));
-      },
       disableColumnMenu: true,
       renderHeader,
     },
-
+    ...(shouldIncludeSynonyms ? [synonymsColumn] : []),
     {
       maxWidth: 140,
       field: "createdAt",

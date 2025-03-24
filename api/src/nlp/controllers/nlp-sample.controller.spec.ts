@@ -381,6 +381,7 @@ describe('NlpSampleController', () => {
         expressions: [],
         builtin: false,
         entity: priceValueEntity!.id,
+        doc: '',
       };
       const textSample = {
         text: 'How much does a BMW cost?',
