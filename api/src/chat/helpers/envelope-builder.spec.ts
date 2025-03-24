@@ -28,7 +28,7 @@ describe('EnvelopeBuilder', () => {
       stdOutgoingTextEnvelopeSchema,
     );
 
-    builder.text('Hello');
+    builder.setText('Hello');
 
     const result = builder.build();
     expect(result).toEqual({
@@ -46,9 +46,9 @@ describe('EnvelopeBuilder', () => {
       stdOutgoingTextEnvelopeSchema,
     );
 
-    builder.text('Hello world');
+    builder.setText('Hello world');
     // Retrieve current value with no argument
-    expect(builder.text()).toBe('Hello world');
+    expect(builder.getText()).toBe('Hello world');
   });
 
   it('should append items to array fields with appendToX methods', () => {
@@ -58,7 +58,7 @@ describe('EnvelopeBuilder', () => {
       stdOutgoingQuickRepliesEnvelopeSchema,
     );
 
-    builder.text('Choose an option');
+    builder.setText('Choose an option');
     builder.appendToQuickReplies({
       content_type: QuickReplyType.text,
       title: 'Yes',
@@ -76,8 +76,8 @@ describe('EnvelopeBuilder', () => {
       message: {
         text: 'Choose an option',
         quickReplies: [
-          { content_type: 'text', title: 'Yes', payload: 'yes' },
-          { content_type: 'text', title: 'No', payload: 'no' },
+          { content_type: QuickReplyType.text, title: 'Yes', payload: 'yes' },
+          { content_type: QuickReplyType.text, title: 'No', payload: 'no' },
         ],
       },
     });
@@ -97,7 +97,7 @@ describe('EnvelopeBuilder', () => {
 describe('getEnvelopeBuilder', () => {
   it('should return a builder for text format that passes validation with required field', () => {
     const builder = getEnvelopeBuilder(OutgoingMessageFormat.text);
-    builder.text('Hello from text envelope!');
+    builder.setText('Hello from text envelope!');
 
     const envelope = builder.build();
     expect(envelope.format).toBe(OutgoingMessageFormat.text);
@@ -106,7 +106,7 @@ describe('getEnvelopeBuilder', () => {
 
   it('should return a builder for quickReplies format that can append items', () => {
     const builder = getEnvelopeBuilder(OutgoingMessageFormat.quickReplies);
-    builder.text('Pick an option');
+    builder.setText('Pick an option');
     builder.appendToQuickReplies({
       content_type: QuickReplyType.text,
       title: 'Option A',

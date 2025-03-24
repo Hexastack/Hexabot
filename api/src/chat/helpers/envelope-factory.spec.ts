@@ -15,7 +15,7 @@ import {
   OutgoingMessageFormat,
 } from '../schemas/types/message';
 import { ContentOptions } from '../schemas/types/options';
-import { StdQuickReply } from '../schemas/types/quick-reply';
+import { QuickReplyType, StdQuickReply } from '../schemas/types/quick-reply';
 
 import { EnvelopeFactory } from './envelope-factory';
 
@@ -245,7 +245,7 @@ describe('EnvelopeFactory', () => {
       } as AttachmentPayload;
       const quickReplies = [
         {
-          content_type: 'text',
+          content_type: QuickReplyType.text,
           title: 'Yes {contact.company_name}',
           payload: 'do_{context.user.id}',
         },

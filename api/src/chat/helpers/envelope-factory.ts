@@ -130,7 +130,7 @@ export class EnvelopeFactory {
   buildTextEnvelope(text: string | string[]): StdOutgoingTextEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.text);
     const processedText = this.processText(text);
-    return builder.text(processedText).build();
+    return builder.setText(processedText).build();
   }
 
   /**
@@ -149,7 +149,7 @@ export class EnvelopeFactory {
   ): StdOutgoingQuickRepliesEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.quickReplies);
     const processedText = this.processText(text);
-    const envelope = builder.text(processedText);
+    const envelope = builder.setText(processedText);
 
     quickReplies.forEach((qr) => {
       envelope.appendToQuickReplies({
@@ -179,7 +179,7 @@ export class EnvelopeFactory {
   ): StdOutgoingButtonsEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.buttons);
     const processedText = this.processText(text);
-    const envelope = builder.text(processedText);
+    const envelope = builder.setText(processedText);
 
     buttons.forEach((btn) => {
       if (btn.type === ButtonType.postback) {
@@ -214,7 +214,7 @@ export class EnvelopeFactory {
     quickReplies: StdQuickReply[] = [],
   ): StdOutgoingAttachmentEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.attachment);
-    const envelope = builder.attachment(attachment);
+    const envelope = builder.setAttachment(attachment);
 
     quickReplies.forEach((qr) => {
       envelope.appendToQuickReplies({
@@ -247,9 +247,9 @@ export class EnvelopeFactory {
   ): StdOutgoingListEnvelope {
     const builder = this.getBuilder(format);
     return builder
-      .options(options)
-      .elements(elements)
-      .pagination(pagination)
+      .setOptions(options)
+      .setElements(elements)
+      .setPagination(pagination)
       .build();
   }
 
@@ -268,6 +268,6 @@ export class EnvelopeFactory {
     data?: unknown,
   ): StdOutgoingSystemEnvelope {
     const builder = this.getBuilder(OutgoingMessageFormat.system);
-    return builder.outcome(outcome).data(data).build();
+    return builder.setOutcome(outcome).setData(data).build();
   }
 }

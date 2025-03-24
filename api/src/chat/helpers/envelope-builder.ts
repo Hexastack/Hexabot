@@ -31,8 +31,11 @@ type ArrayKeys<T> = {
 }[keyof T];
 
 export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
-  [k in keyof T['message']]-?: ((arg: T['message'][k]) => IEnvelopeBuilder<T>) &
-    (() => T['message'][k]);
+  [K in keyof T['message'] as `set${Capitalize<string & K>}`]-?: (
+    arg: T['message'][K],
+  ) => IEnvelopeBuilder<T>;
+} & {
+  [K in keyof T['message'] as `get${Capitalize<string & K>}`]-?: () => T['message'][K];
 } & {
   [K in ArrayKeys<T['message']> as `appendTo${Capitalize<string & K>}`]: (
     item: NonNullable<T['message'][K]> extends (infer U)[] ? U : never,
@@ -40,6 +43,21 @@ export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
 } & {
   build(): T;
 };
+
+/**
+ * Extracts and transforms a property name into a standardized attribute name.
+ *
+ * @param prop - The property name from which to derive the attribute name.
+ * @param prefix - A regular expression that matches the prefix to remove from the property.
+ * @returns The transformed attribute name with its first character in lowercase.
+ */
+function getAttributeNameFromProp(prop: string, prefix: RegExp) {
+  // e.g. "appendToButtons" => "Buttons"
+  const rawKey = prop.toString().replace(prefix, '');
+  // e.g. "Buttons" -> "buttons"
+  const messageKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
+  return messageKey;
+}
 
 /**
  * Builds an envelope object (containing a `format` and a `message` property)
@@ -60,20 +78,20 @@ export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
  * @example
  * // Build a simple text envelope:
  * const env1 = EnvelopeBuilder(OutgoingMessageFormat.text)
- *   .text('Hello')
+ *   .setText('Hello')
  *   .build();
  *
  * @example
  * // Build a text envelope with quick replies:
  * const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
- *   .text('Hello')
- *   .quickReplies([])
+ *   .setText('Hello')
+ *   .setQuickReplies([])
  *   .build();
  *
  * @example
  * // Append multiple quickReplies items:
  * const env3 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
- *   .text('Are you interested?')
+ *   .setText('Are you interested?')
  *   .appendToQuickReplies({
  *     content_type: QuickReplyType.text,
  *     title: 'Yes',
@@ -89,7 +107,7 @@ export type IEnvelopeBuilder<T extends StdOutgoingEnvelope> = {
  * @example
  * // Build a system envelope with an outcome:
  * const env4 = EnvelopeBuilder(OutgoingMessageFormat.system)
- *   .outcome('success')
+ *   .setOutcome('success')
  *   .build();
  */
 export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
@@ -119,10 +137,7 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         }
 
         if (typeof prop === 'string' && prop.startsWith('appendTo')) {
-          // e.g. "appendToButtons" => "Buttons"
-          const rawKey = prop.replace(/^appendTo/, '');
-          // e.g. "Buttons" -> "buttons"
-          const messageKey = rawKey.charAt(0).toLowerCase() + rawKey.slice(1);
+          const messageKey = getAttributeNameFromProp(prop, /^appendTo/);
 
           return (item: unknown) => {
             // Initialize the array if needed
@@ -137,12 +152,16 @@ export function EnvelopeBuilder<T extends StdOutgoingEnvelope>(
         return (...args: unknown[]): unknown => {
           // If no arguments passed return current value.
           if (0 === args.length) {
-            return built.message[prop.toString()];
+            const messageKey = getAttributeNameFromProp(
+              prop.toString(),
+              /^get/,
+            );
+            return built.message[messageKey];
           }
 
           const value = args[0];
-
-          built.message[prop.toString()] = value;
+          const messageKey = getAttributeNameFromProp(prop.toString(), /^set/);
+          built.message[messageKey] = value;
           return builder;
         };
       },

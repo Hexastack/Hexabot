@@ -60,12 +60,12 @@ The envelope helpers introduce two key components to streamline outgoing message
 ```typescript
 // Build a simple text envelope:
 const env1 = EnvelopeBuilder(OutgoingMessageFormat.text)
-  .text('Hello')
+  .setText('Hello')
   .build();
 
 // Append multiple quick replies:
 const env2 = EnvelopeBuilder(OutgoingMessageFormat.quickReplies)
-  .text('Are you interested?')
+  .setText('Are you interested?')
   .appendToQuickReplies({
     content_type: QuickReplyType.text,
     title: 'Yes',
@@ -91,8 +91,8 @@ const textEnvelope = envelopeFactory.buildTextEnvelope('Hello, {context.user.nam
 const quickRepliesEnvelope = envelopeFactory.buildQuickRepliesEnvelope(
   'Do you want to proceed?',
   [
-    { content_type: 'text', title: 'Yes', payload: 'yes' },
-    { content_type: 'text', title: 'No', payload: 'no' }
+    { content_type: QuickReplyType.text, title: 'Yes', payload: 'yes' },
+    { content_type: QuickReplyType.text, title: 'No', payload: 'no' }
   ]
 );
 ```
