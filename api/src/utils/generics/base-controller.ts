@@ -23,7 +23,11 @@ export abstract class BaseController<
   TFull extends Omit<T, P> = never,
   Dto extends DtoConfig = object,
 > {
-  constructor(protected readonly service: BaseService<T, P, TFull, Dto>) {}
+  eventEmitter: typeof this.service.eventEmitter;
+
+  constructor(protected readonly service: BaseService<T, P, TFull, Dto>) {
+    this.eventEmitter = service.eventEmitter;
+  }
 
   /**
    * Checks if the given populate fields are allowed based on the allowed fields list.

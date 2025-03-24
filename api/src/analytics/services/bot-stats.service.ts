@@ -7,7 +7,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
@@ -21,7 +21,6 @@ import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
 export class BotStatsService extends BaseService<BotStats> {
   constructor(
     readonly repository: BotStatsRepository,
-    private readonly eventEmitter: EventEmitter2,
     private readonly logger: LoggerService,
   ) {
     super(repository);

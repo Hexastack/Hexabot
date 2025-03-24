@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -18,7 +18,7 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
+import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -29,11 +29,10 @@ import { SettingService } from '../services/setting.service';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('setting')
-export class SettingController {
-  constructor(
-    private readonly settingService: SettingService,
-    private readonly logger: LoggerService,
-  ) {}
+export class SettingController extends BaseController<Setting> {
+  constructor(private readonly settingService: SettingService) {
+    super(settingService);
+  }
 
   /**
    * Finds settings that match the provided filters and sorting options.
