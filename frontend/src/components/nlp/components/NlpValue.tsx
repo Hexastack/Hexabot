@@ -55,7 +55,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $iLike: ["value"],
+    $or: ["doc", "value"]
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE },
@@ -121,6 +121,14 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       flex: 3,
       field: "value",
       headerName: t("label.value"),
+      sortable: true,
+      disableColumnMenu: true,
+      renderHeader,
+    },
+    {
+      flex: 3,
+      field: "doc",
+      headerName: t("label.doc"),
       sortable: true,
       disableColumnMenu: true,
       renderHeader,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -157,6 +157,7 @@ describe('NlpValueController', () => {
         expressions: ['synonym1', 'synonym2'],
         metadata: { firstkey: 'firstvalue', secondKey: 1995 },
         builtin: false,
+        doc: '',
       };
       const result = await nlpValueController.create(value);
       expect(result).toEqualPayload(value);
@@ -223,6 +224,7 @@ describe('NlpValueController', () => {
         value: 'updated',
         expressions: [],
         builtin: true,
+        doc: '',
       };
       const result = await nlpValueController.updateOne(
         positiveValue!.id,
@@ -241,6 +243,7 @@ describe('NlpValueController', () => {
           value: 'updated',
           expressions: [],
           builtin: true,
+          doc: '',
         }),
       ).rejects.toThrow(getUpdateOneError(NlpValue.name, jhonNlpValue!.id));
     });
