@@ -60,7 +60,7 @@ export class TranslationService extends BaseService<Translation> {
         const defaultSettings = await plugin?.getDefaultSettings();
 
         // plugin
-        Object.entries(block.message.args).forEach(async ([l, arg]) => {
+        Object.entries(block.message.args).forEach(([l, arg]) => {
           const setting = defaultSettings?.find(({ label }) => label === l);
           if (setting?.translatable) {
             if (Array.isArray(arg)) {
