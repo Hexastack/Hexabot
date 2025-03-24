@@ -404,7 +404,7 @@ declare module '@nestjs/event-emitter' {
       listener: ListenerFn<H>,
     ): this;
 
-    public readonly event: TEventName;
+    readonly event: TEventName;
   }
 
   declare type OnEventMethodDecorator<
