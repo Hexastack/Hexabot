@@ -1,6 +1,6 @@
 # Envelope Helpers : Envelope Builder & Envelope Factory
 
-The envelope helpers introduces two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing, localizing, and validating messages in various formats with minimal boilerplate.
+The envelope helpers introduce two key components to streamline outgoing message envelope creation: the **Envelope Builder** and the **Envelope Factory**. Together, they offer a comprehensive solution for constructing, localizing, and validating messages in various formats with minimal boilerplate.
 
 ---
 
