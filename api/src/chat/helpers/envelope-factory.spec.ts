@@ -184,12 +184,12 @@ describe('EnvelopeFactory', () => {
       const input = "Choose {{context.user.first_name}}'s option";
       const quickReplies = [
         {
-          content_type: 'text',
+          content_type: QuickReplyType.text,
           title: 'Yes {{contact.company_name}}',
           payload: 'do_{{context.user.id}}',
         },
         {
-          content_type: 'text',
+          content_type: QuickReplyType.text,
           title: 'No {{contact.company_name}}',
           payload: 'dont_{{context.user.id}}',
         },
