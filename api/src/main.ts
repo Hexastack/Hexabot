@@ -22,7 +22,6 @@ import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
 import { LoggerService } from './logger/logger.service';
-import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionStore } from './utils/constants/session-store';
@@ -54,7 +53,7 @@ async function bootstrap() {
       settingService
         .getAllowedOrigins()
         .then((allowedOrigins) => {
-          if (!origin || allowedOrigins.has(origin)) {
+          if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
           } else {
             callback(new Error('Not allowed by CORS'));
@@ -109,7 +108,6 @@ async function bootstrap() {
   });
 
   if (!isProduction) {
-    await seedDatabase(app);
     swagger(app);
   }
 

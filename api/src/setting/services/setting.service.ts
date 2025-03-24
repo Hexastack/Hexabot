@@ -141,18 +141,15 @@ export class SettingService extends BaseService<Setting> {
     const settings = (await this.find({
       label: 'allowed_domains',
     })) as TextSetting[];
-
     const allowedDomains = settings.flatMap((setting) =>
       setting.value.split(',').filter((o) => !!o),
     );
 
-    const uniqueOrigins = new Set([
+    return [
       ...config.security.cors.allowOrigins,
       ...config.sockets.onlyAllowOrigins,
       ...allowedDomains,
-    ]);
-
-    return uniqueOrigins;
+    ];
   }
 
   /**
