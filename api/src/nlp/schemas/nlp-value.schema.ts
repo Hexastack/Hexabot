@@ -49,7 +49,7 @@ export class NlpValueStub extends BaseSchema {
   /**
    * Description of the entity's value purpose.
    */
-  @Prop({ type: String })
+  @Prop({ type: String, default: '' })
   doc?: string;
 
   /**
