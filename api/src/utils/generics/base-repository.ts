@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Inject } from '@nestjs/common';
 import {
   EventEmitter2,
   IHookEntities,
@@ -79,7 +80,8 @@ export abstract class BaseRepository<
 
   private readonly leanOpts = { virtuals: true, defaults: true, getters: true };
 
-  eventEmitter: EventEmitter2;
+  @Inject(EventEmitter2)
+  readonly eventEmitter: EventEmitter2;
 
   constructor(
     readonly model: Model<T>,
@@ -87,7 +89,6 @@ export abstract class BaseRepository<
     protected readonly populate: P[] = [],
     protected readonly clsPopulate?: new () => TFull,
   ) {
-    this.eventEmitter = new EventEmitter2();
     this.registerLifeCycleHooks();
   }
 
@@ -170,15 +171,21 @@ export abstract class BaseRepository<
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       const criteria = query.getQuery();
       await repository.preDelete(query, criteria);
+      await repository.eventEmitter.emitAsync(
+        repository.getEventName(EHook.preDelete),
+        query,
+        criteria,
+      );
     });
 
     hooks.deleteMany.post.execute(async function (result: DeleteResult) {
-      await repository.eventEmitter.emitAsync(
-        repository.getEventName(EHook.postDelete),
-        result,
-      );
       const query = this as Query<DeleteResult, D, unknown, T, 'deleteMany'>;
       await repository.postDelete(query, result);
+      await repository.eventEmitter.emitAsync(
+        repository.getEventName(EHook.postDelete),
+        query,
+        result,
+      );
     });
 
     hooks.findOneAndUpdate.pre.execute(async function () {

@@ -330,11 +330,18 @@ declare module '@nestjs/event-emitter' {
         : `hook:${G}:${TNormalizedOrCustomized<G>}`
       : never;
 
+  type TEventName = Exclude<
+    customEvent<EventNamespaces | ConstrainedString>,
+    `${string}:*`
+  >;
+
   interface ListenerFn<G extends EventNamespaces | ConstrainedString> {
     (value: EventValueOf<G>, ...values: any[]): void;
   }
 
   class EventEmitter2 {
+    constructor(options?: ConstructorOptions);
+
     emit<G extends EventNamespaces | ConstrainedString, H extends G>(
       customEvent: customEvent<G>,
       value: EventValueOf<H>,
@@ -396,6 +403,8 @@ declare module '@nestjs/event-emitter' {
       customEvent: customEvent<G>,
       listener: ListenerFn<H>,
     ): this;
+
+    public readonly event: TEventName;
   }
 
   declare type OnEventMethodDecorator<
