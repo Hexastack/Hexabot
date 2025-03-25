@@ -7,10 +7,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
@@ -36,7 +34,6 @@ import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { UserModel } from '@/user/schemas/user.schema';
 import { installMessageFixtures } from '@/utils/test/fixtures/message';
@@ -44,6 +41,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -66,7 +64,7 @@ describe('WebChannelHandler', () => {
   const webSettings = {};
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(async () => {
           await installMessageFixtures();
@@ -105,8 +103,6 @@ describe('WebChannelHandler', () => {
         MenuService,
         MenuRepository,
         WebChannelHandler,
-        EventEmitter2,
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -122,9 +118,11 @@ describe('WebChannelHandler', () => {
           },
         },
       ],
-    }).compile();
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    handler = module.get<WebChannelHandler>(WebChannelHandler);
+    });
+    [subscriberService, handler] = await getMocks([
+      SubscriberService,
+      WebChannelHandler,
+    ]);
 
     jest
       .spyOn(handler, 'getPublicUrl')

@@ -7,12 +7,9 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   installSettingFixtures,
   settingFixtures,
@@ -21,6 +18,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SettingRepository } from '../repositories/setting.repository';
 import { Setting, SettingModel } from '../schemas/setting.schema';
@@ -40,7 +38,7 @@ describe('SettingService', () => {
   };
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSettingFixtures),
         MongooseModule.forFeature([SettingModel]),
@@ -49,7 +47,6 @@ describe('SettingService', () => {
         SettingService,
         SettingRepository,
         SettingSeeder,
-        EventEmitter2,
         {
           provide: I18nService,
           useValue: {
@@ -64,12 +61,12 @@ describe('SettingService', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
       ],
-    }).compile();
-
-    settingService = module.get<SettingService>(SettingService);
-    settingRepository = module.get<SettingRepository>(SettingRepository);
+    });
+    [settingService, settingRepository] = await getMocks([
+      SettingService,
+      SettingRepository,
+    ]);
   });
 
   afterAll(closeInMongodConnection);

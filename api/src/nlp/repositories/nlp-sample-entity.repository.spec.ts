@@ -1,14 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -24,6 +22,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
@@ -47,7 +46,7 @@ describe('NlpSampleEntityRepository', () => {
   let languages: Language[];
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpSampleEntityFixtures),
         MongooseModule.forFeature([
@@ -63,22 +62,20 @@ describe('NlpSampleEntityRepository', () => {
         NlpEntityRepository,
         NlpValueRepository,
         LanguageRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
-      NlpSampleEntityRepository,
-    );
-    nlpEntityRepository = module.get<NlpEntityRepository>(NlpEntityRepository);
-    languageRepository = module.get<LanguageRepository>(LanguageRepository);
+    });
+    [nlpSampleEntityRepository, nlpEntityRepository, languageRepository] =
+      await getMocks([
+        NlpSampleEntityRepository,
+        NlpEntityRepository,
+        LanguageRepository,
+      ]);
     nlpSampleEntities = await nlpSampleEntityRepository.findAll();
     nlpEntities = await nlpEntityRepository.findAll();
     languages = await languageRepository.findAll();
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

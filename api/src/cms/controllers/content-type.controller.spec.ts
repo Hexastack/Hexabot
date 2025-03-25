@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,15 +7,12 @@
  */
 
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockService } from '@/chat/services/block.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
@@ -25,6 +22,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentTypeCreateDto } from '../dto/contentType.dto';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
@@ -44,7 +42,7 @@ describe('ContentTypeController', () => {
   let blockService: BlockService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [ContentTypeController],
       imports: [
         rootMongooseTestModule(installContentFixtures),
@@ -61,8 +59,6 @@ describe('ContentTypeController', () => {
         ContentTypeService,
         ContentService,
         AttachmentService,
-        LoggerService,
-        EventEmitter2,
         {
           provide: BlockService,
           useValue: {
@@ -70,13 +66,14 @@ describe('ContentTypeController', () => {
           },
         },
       ],
-    }).compile();
-    blockService = module.get<BlockService>(BlockService);
-    contentTypeController = module.get<ContentTypeController>(
-      ContentTypeController,
-    );
-    contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    contentService = module.get<ContentService>(ContentService);
+    });
+    [blockService, contentTypeController, contentTypeService, contentService] =
+      await getMocks([
+        BlockService,
+        ContentTypeController,
+        ContentTypeService,
+        ContentService,
+      ]);
     contentType = await contentTypeService.findOne({ name: 'Product' })!;
   });
 

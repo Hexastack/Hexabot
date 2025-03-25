@@ -6,15 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Test, TestingModule } from '@nestjs/testing';
-
 import { I18nService } from '@/i18n/services/i18n.service';
 import { BasePlugin } from '@/plugins/base-plugin.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginBlockTemplate } from '@/plugins/types';
 import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Block } from '../../chat/schemas/block.schema';
 import { BlockOptions } from '../../chat/schemas/types/options';
@@ -24,11 +22,11 @@ import { TranslationService } from '../services/translation.service';
 
 describe('TranslationService', () => {
   let service: TranslationService;
-  let i18nService: I18nService;
+  let i18nService: I18nService<unknown>;
   let pluginService: PluginService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       providers: [
         TranslationService,
         {
@@ -106,13 +104,13 @@ describe('TranslationService', () => {
             refreshDynamicTranslations: jest.fn(),
           },
         },
-        EventEmitter2,
       ],
-    }).compile();
-
-    service = module.get<TranslationService>(TranslationService);
-    i18nService = module.get<I18nService>(I18nService);
-    pluginService = module.get<PluginService>(PluginService);
+    });
+    [service, i18nService, pluginService] = await getMocks([
+      TranslationService,
+      I18nService,
+      PluginService,
+    ]);
   });
 
   it('should call refreshDynamicTranslations with translations from findAll', async () => {

@@ -7,11 +7,8 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
@@ -24,6 +21,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -50,7 +48,7 @@ describe('NlpValueController', () => {
   let negativeValue: NlpValue | null;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [NlpValueController],
       imports: [
         rootMongooseTestModule(installNlpValueFixtures),
@@ -61,25 +59,24 @@ describe('NlpValueController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         NlpValueRepository,
         NlpValueService,
         NlpSampleEntityRepository,
         NlpEntityService,
         NlpEntityRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    nlpValueController = module.get<NlpValueController>(NlpValueController);
-    nlpValueService = module.get<NlpValueService>(NlpValueService);
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
+    });
+    [nlpValueController, nlpValueService, nlpEntityService] = await getMocks([
+      NlpValueController,
+      NlpValueService,
+      NlpEntityService,
+    ]);
     jhonNlpValue = await nlpValueService.findOne({ value: 'jhon' });
     positiveValue = await nlpValueService.findOne({ value: 'positive' });
     negativeValue = await nlpValueService.findOne({ value: 'negative' });
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

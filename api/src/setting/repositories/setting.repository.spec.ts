@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,6 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { installSettingFixtures } from '@/utils/test/fixtures/setting';
@@ -16,6 +15,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Setting, SettingModel } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
@@ -28,22 +28,21 @@ describe('SettingRepository', () => {
   let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSettingFixtures),
         MongooseModule.forFeature([SettingModel]),
       ],
-      providers: [SettingRepository, EventEmitter2],
-    }).compile();
-
-    settingRepository = module.get<SettingRepository>(SettingRepository);
-    settingModel = module.get<Model<Setting>>(getModelToken(Setting.name));
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
+      providers: [SettingRepository],
+    });
+    [settingRepository, settingModel, eventEmitter] = await getMocks([
+      SettingRepository,
+      getModelToken(Setting.name),
+      EventEmitter2,
+    ]);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(jest.clearAllMocks);
 
   afterAll(closeInMongodConnection);
 

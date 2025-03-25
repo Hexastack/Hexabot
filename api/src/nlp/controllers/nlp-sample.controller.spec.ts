@@ -8,16 +8,13 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
@@ -32,6 +29,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -65,7 +63,7 @@ describe('NlpSampleController', () => {
   let languages: Language[];
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [NlpSampleController],
       imports: [
         rootMongooseTestModule(async () => {
@@ -82,7 +80,6 @@ describe('NlpSampleController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         NlpSampleRepository,
         NlpSampleEntityRepository,
         NlpEntityService,
@@ -93,7 +90,6 @@ describe('NlpSampleController', () => {
         NlpSampleEntityService,
         LanguageRepository,
         LanguageService,
-        EventEmitter2,
         HelperService,
         SettingRepository,
         SettingService,
@@ -113,26 +109,32 @@ describe('NlpSampleController', () => {
           },
         },
       ],
-    }).compile();
-    nlpSampleController = module.get<NlpSampleController>(NlpSampleController);
-    nlpSampleEntityService = module.get<NlpSampleEntityService>(
+    });
+    [
+      nlpSampleController,
+      nlpSampleEntityService,
+      nlpSampleService,
+      nlpEntityService,
+      nlpValueService,
+      languageService,
+    ] = await getMocks([
+      NlpSampleController,
       NlpSampleEntityService,
-    );
-    nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
-    nlpValueService = module.get<NlpValueService>(NlpValueService);
+      NlpSampleService,
+      NlpEntityService,
+      NlpValueService,
+      LanguageService,
+    ]);
     byeJhonSampleId =
       (
         await nlpSampleService.findOne({
           text: 'Bye Jhon',
         })
       )?.id || null;
-    languageService = module.get<LanguageService>(LanguageService);
     languages = await languageService.findAll();
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

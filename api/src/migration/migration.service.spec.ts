@@ -10,9 +10,7 @@ import fs from 'fs';
 
 import { HttpService } from '@nestjs/axios';
 import { ModuleRef } from '@nestjs/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -23,6 +21,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Migration, MigrationModel } from './migration.schema';
 import { MigrationService } from './migration.service';
@@ -34,7 +33,7 @@ describe('MigrationService', () => {
   let metadataService: MetadataService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks, resolveMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(async () => await Promise.resolve()),
         MongooseModule.forFeature([MetadataModel, MigrationModel]),
@@ -43,7 +42,6 @@ describe('MigrationService', () => {
         MetadataRepository,
         MetadataService,
         MigrationService,
-        EventEmitter2,
         {
           provide: LoggerService,
           useValue: {
@@ -74,11 +72,12 @@ describe('MigrationService', () => {
           useValue: jest.fn(),
         },
       ],
-    }).compile();
-
-    service = module.get<MigrationService>(MigrationService);
-    loggerService = await module.resolve<LoggerService>(LoggerService);
-    metadataService = module.get<MetadataService>(MetadataService);
+    });
+    [service, metadataService] = await getMocks([
+      MigrationService,
+      MetadataService,
+    ]);
+    [loggerService] = await resolveMocks([LoggerService]);
   });
 
   afterEach(jest.clearAllMocks);

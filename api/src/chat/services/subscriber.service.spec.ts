@@ -1,19 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -30,6 +27,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -49,7 +47,7 @@ describe('SubscriberService', () => {
   let allUsers: User[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([
@@ -72,17 +70,17 @@ describe('SubscriberService', () => {
         RoleService,
         RoleRepository,
         InvitationRepository,
-        LoggerService,
-        EventEmitter2,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    labelRepository = module.get<LabelRepository>(LabelRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
+    });
+    [labelRepository, userRepository, subscriberService, subscriberRepository] =
+      await getMocks([
+        LabelRepository,
+        UserRepository,
+        SubscriberService,
+        SubscriberRepository,
+      ]);
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
     allUsers = await userRepository.findAll();

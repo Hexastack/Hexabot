@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,10 +7,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
@@ -21,13 +19,13 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -45,7 +43,7 @@ describe('ValidateAccountService', () => {
   let validateAccountService: ValidateAccountService;
   let mailerService: MailerService;
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(async () => {
           await installLanguageFixtures();
@@ -71,7 +69,6 @@ describe('ValidateAccountService', () => {
         InvitationRepository,
         LanguageService,
         LanguageRepository,
-        LoggerService,
         {
           provide: MailerService,
           useValue: {
@@ -81,7 +78,6 @@ describe('ValidateAccountService', () => {
             ),
           },
         },
-        EventEmitter2,
         ValidateAccountService,
         {
           provide: I18nService,
@@ -98,18 +94,17 @@ describe('ValidateAccountService', () => {
           },
         },
       ],
-    }).compile();
-    validateAccountService = module.get<ValidateAccountService>(
+    });
+    [validateAccountService, mailerService] = await getMocks([
       ValidateAccountService,
-    );
+      MailerService,
+    ]);
+  });
 
-    mailerService = module.get<MailerService>(MailerService);
-  });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
+
   describe('sendConfirmationEmail', () => {
     it('should send an email with a token', async () => {
       const sendMailSpy = jest.spyOn(mailerService, 'sendMail');

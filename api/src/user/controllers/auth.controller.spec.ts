@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,10 +12,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
@@ -26,7 +24,6 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
@@ -34,6 +31,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -64,7 +62,7 @@ describe('AuthController', () => {
   let baseUser: UserCreateDto;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [LocalAuthController],
       imports: [
         rootMongooseTestModule(async () => {
@@ -81,14 +79,12 @@ describe('AuthController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         UserService,
         WebsocketGateway,
         SocketEventDispatcherService,
         AttachmentService,
         AttachmentRepository,
         UserRepository,
-        LoggerService,
         PermissionService,
         RoleService,
         RoleRepository,
@@ -114,7 +110,6 @@ describe('AuthController', () => {
             set: jest.fn(),
           },
         },
-        EventEmitter2,
         ValidateAccountService,
         {
           provide: I18nService,
@@ -123,12 +118,15 @@ describe('AuthController', () => {
           },
         },
       ],
-    }).compile();
-    authController = module.get<LocalAuthController>(LocalAuthController);
-    userService = module.get<UserService>(UserService);
-    invitationService = module.get<InvitationService>(InvitationService);
-    roleService = module.get<RoleService>(RoleService);
-    jwtService = module.get<JwtService>(JwtService);
+    });
+    [authController, userService, invitationService, roleService, jwtService] =
+      await getMocks([
+        LocalAuthController,
+        UserService,
+        InvitationService,
+        RoleService,
+        JwtService,
+      ]);
     role = await roleService.findOne({});
     baseUser = {
       email: 'test@testing.com',
@@ -142,9 +140,7 @@ describe('AuthController', () => {
     await invitationService.create(baseUser);
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

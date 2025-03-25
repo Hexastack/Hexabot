@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -24,6 +22,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -58,7 +57,7 @@ describe('NlpSampleEntityService', () => {
   let nlpValueService: NlpValueService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpSampleEntityFixtures),
         MongooseModule.forFeature([
@@ -77,22 +76,25 @@ describe('NlpSampleEntityService', () => {
         NlpSampleEntityService,
         NlpEntityService,
         NlpValueService,
-        EventEmitter2,
       ],
-    }).compile();
-    nlpSampleEntityService = module.get<NlpSampleEntityService>(
+    });
+    [
+      nlpSampleEntityService,
+      nlpSampleEntityRepository,
+      nlpEntityRepository,
+      languageRepository,
+      nlpSampleEntityService,
+      nlpEntityService,
+      nlpValueService,
+    ] = await getMocks([
       NlpSampleEntityService,
-    );
-    nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
-    );
-    nlpEntityRepository = module.get<NlpEntityRepository>(NlpEntityRepository);
-    languageRepository = module.get<LanguageRepository>(LanguageRepository);
-    nlpSampleEntityService = module.get<NlpSampleEntityService>(
+      NlpEntityRepository,
+      LanguageRepository,
       NlpSampleEntityService,
-    );
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
-    nlpValueService = module.get<NlpValueService>(NlpValueService);
+      NlpEntityService,
+      NlpValueService,
+    ]);
     nlpSampleEntities = await nlpSampleEntityRepository.findAll();
     nlpEntities = await nlpEntityRepository.findAll();
     languages = await languageRepository.findAll();

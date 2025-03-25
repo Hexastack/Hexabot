@@ -7,14 +7,11 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -35,6 +32,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
 import { LabelRepository } from '../repositories/label.repository';
@@ -55,7 +53,7 @@ describe('LabelController', () => {
   let subscriberService: SubscriberService;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [LabelController],
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
@@ -70,7 +68,6 @@ describe('LabelController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         LabelController,
         LabelService,
         LabelRepository,
@@ -81,14 +78,15 @@ describe('LabelController', () => {
         InvitationRepository,
         SubscriberService,
         SubscriberRepository,
-        EventEmitter2,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    labelService = module.get<LabelService>(LabelService);
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    labelController = module.get<LabelController>(LabelController);
+    });
+    [labelService, subscriberService, labelController] = await getMocks([
+      LabelService,
+      SubscriberService,
+      LabelController,
+    ]);
     label = (await labelService.findOne({ name: 'TEST_TITLE_1' })) as Label;
     labelToDelete = (await labelService.findOne({
       name: 'TEST_TITLE_2',

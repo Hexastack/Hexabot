@@ -1,19 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -33,6 +30,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MessageRepository } from '../repositories/message.repository';
 import { Message, MessageModel } from '../schemas/message.schema';
@@ -57,7 +55,7 @@ describe('MessageService', () => {
   let user: User;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installMessageFixtures),
         MongooseModule.forFeature([
@@ -71,7 +69,6 @@ describe('MessageService', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         AttachmentService,
         AttachmentRepository,
         UserService,
@@ -83,14 +80,15 @@ describe('MessageService', () => {
         SubscriberRepository,
         MessageService,
         MessageRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    messageService = module.get<MessageService>(MessageService);
-    messageRepository = module.get<MessageRepository>(MessageRepository);
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
+    });
+    [messageService, messageRepository, subscriberRepository, userRepository] =
+      await getMocks([
+        MessageService,
+        MessageRepository,
+        SubscriberRepository,
+        UserRepository,
+      ]);
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
     allMessages = await messageRepository.findAll();

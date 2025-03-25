@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,11 +7,8 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   contextVarFixtures,
@@ -23,6 +20,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import {
   ContextVarCreateDto,
@@ -41,22 +39,18 @@ describe('ContextVarController', () => {
   let contextVarToDelete: ContextVar;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [ContextVarController],
       imports: [
         rootMongooseTestModule(installContextVarFixtures),
         MongooseModule.forFeature([ContextVarModel]),
       ],
-      providers: [
-        LoggerService,
-        ContextVarService,
-        ContextVarRepository,
-        EventEmitter2,
-      ],
-    }).compile();
-    contextVarController =
-      module.get<ContextVarController>(ContextVarController);
-    contextVarService = module.get<ContextVarService>(ContextVarService);
+      providers: [ContextVarService, ContextVarRepository],
+    });
+    [contextVarController, contextVarService] = await getMocks([
+      ContextVarController,
+      ContextVarService,
+    ]);
     contextVar = (await contextVarService.findOne({
       label: 'test context var 1',
     }))!;

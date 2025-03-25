@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,12 +8,9 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -25,6 +22,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LanguageUpdateDto } from '../dto/language.dto';
 import { LanguageRepository } from '../repositories/language.repository';
@@ -39,7 +37,7 @@ describe('LanguageController', () => {
   let language: Language;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installLanguageFixtures),
         MongooseModule.forFeature([LanguageModel]),
@@ -48,7 +46,6 @@ describe('LanguageController', () => {
         LanguageController,
         LanguageService,
         LanguageRepository,
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -64,12 +61,12 @@ describe('LanguageController', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
-        EventEmitter2,
       ],
-    }).compile();
-    languageService = module.get<LanguageService>(LanguageService);
-    languageController = module.get<LanguageController>(LanguageController);
+    });
+    [languageService, languageController] = await getMocks([
+      LanguageService,
+      LanguageController,
+    ]);
     language = (await languageService.findOne({ code: 'en' })) as Language;
   });
 

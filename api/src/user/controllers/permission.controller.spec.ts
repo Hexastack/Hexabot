@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,16 +8,14 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { PermissionCreateDto } from '../dto/permission.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
@@ -51,7 +49,7 @@ describe('PermissionController', () => {
   let allPermissions: Permission[];
 
   beforeAll(async () => {
-    const permissionModuleRef = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [PermissionController],
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
@@ -63,7 +61,6 @@ describe('PermissionController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         RoleService,
         ModelService,
         PermissionService,
@@ -71,7 +68,6 @@ describe('PermissionController', () => {
         RoleRepository,
         InvitationRepository,
         ModelRepository,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -81,15 +77,14 @@ describe('PermissionController', () => {
           },
         },
       ],
-    }).compile();
-
-    permissionController =
-      permissionModuleRef.get<PermissionController>(PermissionController);
-    roleService = permissionModuleRef.get<RoleService>(RoleService);
-    modelService = permissionModuleRef.get<ModelService>(ModelService);
-    permissionService =
-      permissionModuleRef.get<PermissionService>(PermissionService);
-
+    });
+    [permissionController, roleService, modelService, permissionService] =
+      await getMocks([
+        PermissionController,
+        RoleService,
+        ModelService,
+        PermissionService,
+      ]);
     allPermissions = await permissionService.findAll();
     adminRole = (await roleService.findOne({ name: 'admin' })) as Role;
     contentModel = (await modelService.findOne({ name: 'Content' })) as Model;

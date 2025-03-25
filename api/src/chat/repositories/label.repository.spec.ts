@@ -6,12 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
-import { LoggerService } from '@/logger/logger.service';
 import { labelFixtures } from '@/utils/test/fixtures/label';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -20,6 +17,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Label, LabelFull, LabelModel } from '../schemas/label.schema';
 import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
@@ -34,22 +32,18 @@ describe('LabelRepository', () => {
   let users: Subscriber[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([LabelModel, SubscriberModel]),
       ],
-      providers: [
-        LabelRepository,
-        SubscriberRepository,
-        EventEmitter2,
-        LoggerService,
-      ],
-    }).compile();
-    labelRepository = module.get<LabelRepository>(LabelRepository);
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
-    labelModel = module.get<Model<Label>>(getModelToken('Label'));
+      providers: [LabelRepository, SubscriberRepository],
+    });
+    [labelRepository, subscriberRepository, labelModel] = await getMocks([
+      LabelRepository,
+      SubscriberRepository,
+      getModelToken(Label.name),
+    ]);
     users = await subscriberRepository.findAll();
   });
 

@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
@@ -17,6 +15,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -39,7 +38,7 @@ describe('RoleRepository', () => {
   let roleToDelete: Role;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
         MongooseModule.forFeature([
@@ -54,14 +53,15 @@ describe('RoleRepository', () => {
         RoleRepository,
         InvitationRepository,
         PermissionRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    roleRepository = module.get<RoleRepository>(RoleRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
-    permissionRepository =
-      module.get<PermissionRepository>(PermissionRepository);
-    roleModel = module.get<Model<Role>>(getModelToken('Role'));
+    });
+    [roleRepository, userRepository, permissionRepository, roleModel] =
+      await getMocks([
+        RoleRepository,
+        UserRepository,
+        PermissionRepository,
+        getModelToken(Role.name),
+      ]);
     role = (await roleRepository.findOne({ name: 'admin' })) as Role;
     users = (await userRepository.findAll()).filter((user) =>
       user.roles.includes(role.id),
@@ -71,9 +71,7 @@ describe('RoleRepository', () => {
     })) as Role;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

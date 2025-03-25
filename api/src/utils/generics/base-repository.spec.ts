@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,7 +7,6 @@
  */
 
 import { getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model, Types } from 'mongoose';
 
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
@@ -15,6 +14,7 @@ import { closeInMongodConnection } from '@/utils/test/test';
 
 import { DummyModule } from '../test/dummy/dummy.module';
 import { Dummy } from '../test/dummy/schemas/dummy.schema';
+import { buildTestingMocks } from '../test/utils';
 
 describe('BaseRepository', () => {
   let dummyModel: Model<Dummy>;
@@ -22,11 +22,13 @@ describe('BaseRepository', () => {
   let createdId: string;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [DummyModule],
-    }).compile();
-    dummyModel = module.get<Model<Dummy>>(getModelToken(Dummy.name));
-    dummyRepository = module.get<DummyRepository>(DummyRepository);
+    });
+    [dummyRepository, dummyModel] = await getMocks([
+      DummyRepository,
+      getModelToken(Dummy.name),
+    ]);
   });
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);

@@ -8,15 +8,12 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { roleFixtures } from '@/utils/test/fixtures/role';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -24,6 +21,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
@@ -49,7 +47,7 @@ describe('RoleController', () => {
   let rolePublic: Role;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [RoleController],
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
@@ -62,7 +60,6 @@ describe('RoleController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         PermissionService,
         UserService,
         UserRepository,
@@ -70,7 +67,6 @@ describe('RoleController', () => {
         RoleRepository,
         InvitationRepository,
         PermissionRepository,
-        EventEmitter2,
         AttachmentService,
         AttachmentRepository,
         {
@@ -82,18 +78,19 @@ describe('RoleController', () => {
           },
         },
       ],
-    }).compile();
-    roleController = module.get<RoleController>(RoleController);
-    roleService = module.get<RoleService>(RoleService);
-    permissionService = module.get<PermissionService>(PermissionService);
-    userService = module.get<UserService>(UserService);
+    });
+    [roleController, roleService, permissionService, userService] =
+      await getMocks([
+        RoleController,
+        RoleService,
+        PermissionService,
+        UserService,
+      ]);
     roleAdmin = (await roleService.findOne({ name: 'admin' })) as Role;
     rolePublic = (await roleService.findOne({ name: 'public' })) as Role;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

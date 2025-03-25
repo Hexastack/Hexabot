@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,14 +7,11 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   installModelFixtures,
   modelFixtures,
@@ -23,6 +20,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
@@ -47,7 +45,7 @@ describe('ModelController', () => {
   let permissionService: PermissionService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [ModelController],
       imports: [
         rootMongooseTestModule(installModelFixtures),
@@ -61,7 +59,6 @@ describe('ModelController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         PermissionService,
         AttachmentService,
         AttachmentRepository,
@@ -73,7 +70,6 @@ describe('ModelController', () => {
         RoleRepository,
         InvitationRepository,
         PermissionRepository,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -83,10 +79,12 @@ describe('ModelController', () => {
           },
         },
       ],
-    }).compile();
-    modelController = module.get<ModelController>(ModelController);
-    modelService = module.get<ModelService>(ModelService);
-    permissionService = module.get<PermissionService>(PermissionService);
+    });
+    [modelController, modelService, permissionService] = await getMocks([
+      ModelController,
+      ModelService,
+      PermissionService,
+    ]);
   });
 
   afterAll(closeInMongodConnection);

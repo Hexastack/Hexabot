@@ -7,10 +7,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import {
@@ -33,7 +31,6 @@ import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
@@ -41,6 +38,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -54,11 +52,9 @@ describe(`Web event wrapper`, () => {
   let handler: WebChannelHandler;
   const webSettings = {};
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
-        rootMongooseTestModule(async () => {
-          await installSubscriberFixtures();
-        }),
+        rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([
           SubscriberModel,
           AttachmentModel,
@@ -97,8 +93,6 @@ describe(`Web event wrapper`, () => {
         MenuService,
         MenuRepository,
         WebChannelHandler,
-        EventEmitter2,
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -114,8 +108,8 @@ describe(`Web event wrapper`, () => {
           },
         },
       ],
-    }).compile();
-    handler = module.get<WebChannelHandler>(WebChannelHandler);
+    });
+    [handler] = await getMocks([WebChannelHandler]);
   });
 
   afterAll(async () => {

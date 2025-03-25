@@ -7,13 +7,13 @@
  */
 
 import { BadRequestException, ExecutionContext } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { Model } from '@/user/schemas/model.schema';
 import { Permission } from '@/user/schemas/permission.schema';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment } from '../mocks/attachment.mock';
 import { Attachment } from '../schemas/attachment.schema';
@@ -29,7 +29,7 @@ describe('AttachmentGuard', () => {
   let attachmentService: AttachmentService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       providers: [
         AttachmentGuard,
         {
@@ -45,12 +45,15 @@ describe('AttachmentGuard', () => {
           useValue: { findOne: jest.fn() },
         },
       ],
-    }).compile();
+    });
 
-    guard = module.get<AttachmentGuard>(AttachmentGuard);
-    permissionService = module.get<PermissionService>(PermissionService);
-    modelService = module.get<ModelService>(ModelService);
-    attachmentService = module.get<AttachmentService>(AttachmentService);
+    [guard, permissionService, modelService, attachmentService] =
+      await getMocks([
+        AttachmentGuard,
+        PermissionService,
+        ModelService,
+        AttachmentService,
+      ]);
   });
 
   describe('canActivate', () => {

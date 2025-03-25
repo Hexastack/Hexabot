@@ -11,9 +11,7 @@ import fs from 'fs';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Request } from 'express';
 
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
@@ -40,6 +38,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
 import { AttachmentRepository } from '../repositories/attachment.repository';
@@ -59,10 +58,9 @@ describe('AttachmentController', () => {
   let attachmentToDelete: Attachment;
   let helperService: HelperService;
   let settingService: SettingService;
-  let loggerService: LoggerService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks, resolveMocks } = await buildTestingMocks({
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(async () => {
@@ -84,8 +82,6 @@ describe('AttachmentController', () => {
         SettingRepository,
         ModelService,
         ModelRepository,
-        LoggerService,
-        EventEmitter2,
         SettingSeeder,
         SettingService,
         HelperService,
@@ -98,17 +94,19 @@ describe('AttachmentController', () => {
           },
         },
       ],
-    }).compile();
-    attachmentController =
-      module.get<AttachmentController>(AttachmentController);
-    attachmentService = module.get<AttachmentService>(AttachmentService);
+    });
+    [attachmentController, attachmentService, helperService, settingService] =
+      await getMocks([
+        AttachmentController,
+        AttachmentService,
+        HelperService,
+        SettingService,
+      ]);
+    const [loggerService] = await resolveMocks([LoggerService]);
+
     attachmentToDelete = (await attachmentService.findOne({
       name: 'store1.jpg',
     }))!;
-
-    helperService = module.get<HelperService>(HelperService);
-    settingService = module.get<SettingService>(SettingService);
-    loggerService = await module.resolve<LoggerService>(LoggerService);
 
     helperService.register(
       new LocalStorageHelper(settingService, helperService, loggerService),
