@@ -124,9 +124,8 @@ export class ConversationService extends BaseService<
             `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
           );
           profile.context.vars[capture.context_var] = contextValue;
-        } else {
-          convo.context!.vars[capture.context_var] = contextValue;
         }
+        convo.context!.vars[capture.context_var] = contextValue;
       });
     }
 
