@@ -15,9 +15,12 @@ import { OnEvent } from '@nestjs/event-emitter';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
+import { HelperService } from '@/helper/helper.service';
+import { HelperType } from '@/helper/types';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { THydratedDocument } from '@/utils/types/filter.types';
 
@@ -48,6 +51,8 @@ export class NlpSampleService extends BaseService<
     private readonly nlpEntityService: NlpEntityService,
     private readonly languageService: LanguageService,
     private readonly logger: LoggerService,
+    private readonly helperService: HelperService,
+    private readonly settingService: SettingService,
   ) {
     super(repository);
   }
@@ -270,6 +275,36 @@ export class NlpSampleService extends BaseService<
       } catch (err) {
         this.logger.warn('Unable to add message as a new inbox sample!', err);
       }
+    }
+  }
+
+  @OnEvent('hook:message:postCreate')
+  async handleInference(doc: THydratedDocument<Message>) {
+    const settings = await this.settingService.getSettings();
+    if (!settings.chatbot_settings.automate_inference) {
+      this.logger.log('Automated inference is disabled');
+      return;
+    }
+    this.logger.log('Automated inference running');
+    if ('text' in doc.message) {
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+      const { entities = [] } = await helper.predict(doc.message.text);
+      this.logger.debug(`${helper.getName()} infered these entites`, entities);
+
+      const foundSample = await this.repository.findOne({
+        text: doc.message.text,
+        type: 'inbox',
+      });
+      if (!foundSample) {
+        return;
+      }
+      await this.nlpSampleEntityService.storeSampleEntities(
+        foundSample,
+        entities,
+      );
+      await this.repository.updateOne(foundSample.id, {
+        type: 'train',
+      });
     }
   }
 }
