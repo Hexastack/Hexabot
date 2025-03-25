@@ -116,7 +116,11 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
                 name="expressions"
                 control={control}
                 render={({ field }) => (
-                  <MultipleInput label={t("label.synonyms")} {...field} />
+                  <MultipleInput
+                    label={t("label.synonyms")}
+                    {...field}
+                    minInput={1}
+                  />
                 )}
               />
             </ContentItem>
