@@ -98,7 +98,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     });
   const currentText = watch("text");
   const currentType = watch("type");
-  const langauge = watch("language");
+  const language = watch("language");
   const { apiClient } = useApiClient();
   const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
@@ -170,7 +170,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
 
   const hasEmptyCurrentType = !currentType;
   const hasEmptyCurrentText = !currentText;
-  const hasEmptyLanguage = !langauge;
+  const hasEmptyLanguage = !language;
   const hasEmptyTraitEntitesValue = traitEntities.some((e) => !e.value);
   const shouldDisableValidateButton =
     hasEmptyCurrentType ||

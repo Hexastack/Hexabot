@@ -51,7 +51,6 @@ export class NlpSampleService extends BaseService<
     private readonly logger: LoggerService,
     private readonly helperService: HelperService,
     private readonly settingService: SettingService,
-    private readonly loggerService: LoggerService,
   ) {
     super(repository);
   }
@@ -218,17 +217,14 @@ export class NlpSampleService extends BaseService<
   async handleInference(doc: THydratedDocument<Message>) {
     const settings = await this.settingService.getSettings();
     if (!settings.chatbot_settings.automate_inference) {
-      this.loggerService.log('Automated inference is disabled');
+      this.logger.log('Automated inference is disabled');
       return;
     }
-    this.loggerService.log('Automated inference running');
+    this.logger.log('Automated inference running');
     if ('text' in doc.message) {
       const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const { entities = [] } = await helper.predict(doc.message.text);
-      this.loggerService.debug(
-        `${helper.getName()} infered these entites`,
-        entities,
-      );
+      this.logger.debug(`${helper.getName()} infered these entites`, entities);
 
       const foundSample = await this.repository.findOne({
         text: doc.message.text,
