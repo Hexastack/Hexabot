@@ -22,9 +22,16 @@ import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
-export const NlpValueForm: FC<
-  ComponentFormProps<{ data: INlpValue; canHaveSynonyms: boolean }>
-> = ({ data: props, Wrapper = Fragment, WrapperProps, ...rest }) => {
+export type NlpValueFormProps = {
+  data: INlpValue | null;
+  canHaveSynonyms?: boolean;
+};
+export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
+  data: props,
+  Wrapper = Fragment,
+  WrapperProps,
+  ...rest
+}) => {
   const { data, canHaveSynonyms } = props || {};
   const { t } = useTranslate();
   const { toast } = useToast();
@@ -118,7 +125,11 @@ export const NlpValueForm: FC<
                 name="expressions"
                 control={control}
                 render={({ field }) => (
-                  <MultipleInput label="synonyms" {...field} />
+                  <MultipleInput
+                    label={t("label.synonyms")}
+                    {...field}
+                    minInput={1}
+                  />
                 )}
               />
             </ContentItem>
