@@ -1,5 +1,6 @@
 /*
  * Copyright © 2025 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -11,9 +12,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
@@ -62,7 +60,6 @@ import { SubscriberService } from './services/subscriber.service';
       SubscriberModel,
       ConversationModel,
       SubscriberModel,
-      AttachmentModel,
     ]),
     forwardRef(() => ChannelModule),
     CmsModule,
@@ -98,8 +95,6 @@ import { SubscriberService } from './services/subscriber.service';
     ConversationService,
     ChatService,
     BotService,
-    AttachmentService,
-    AttachmentRepository,
   ],
   exports: [
     SubscriberService,
