@@ -125,24 +125,8 @@ export class NlpValueController extends BaseController<
     return doc;
   }
 
-  @Get('')
-  async findAndPopulateWithCount(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
-    @Query(PopulatePipe) populate: string[],
-    @Query(
-      new SearchFilterPipe<NlpValue>({ allowedFields: ['entity', 'value'] }),
-    )
-    filters: TFilterQuery<NlpValue>,
-  ) {
-    return await this.nlpValueService.findAndPopulateWithCount(
-      pageQuery,
-      populate,
-      filters,
-    );
-  }
-
   /**
-   * Retrieves a paginated list of NLP values.
+   * Retrieves a paginated list of NLP values with NLP Samples count.
    *
    * Supports filtering, pagination, and optional population of related entities.
    *
@@ -150,10 +134,10 @@ export class NlpValueController extends BaseController<
    * @param populate - An array of related entities to populate.
    * @param filters - Filters to apply when retrieving the NLP values.
    *
-   * @returns A promise resolving to a paginated list of NLP values.
+   * @returns A promise resolving to a paginated list of NLP values with NLP Samples count.
    */
-  // @Get('') disabled
-  async findPage(
+  @Get()
+  async findWithCount(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpValue>,
     @Query(PopulatePipe) populate: string[],
     @Query(
@@ -164,8 +148,8 @@ export class NlpValueController extends BaseController<
     filters: TFilterQuery<NlpValue>,
   ) {
     return this.canPopulate(populate)
-      ? await this.nlpValueService.findAndPopulate(filters, pageQuery)
-      : await this.nlpValueService.find(filters, pageQuery);
+      ? await this.nlpValueService.findAndPopulateWithCount(pageQuery, filters)
+      : await this.nlpValueService.findWithCount(pageQuery, filters);
   }
 
   /**
