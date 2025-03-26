@@ -246,6 +246,35 @@ export const blockGetStarted = {
   message: ['Welcome! How are you ? '],
 } as unknown as BlockFull;
 
+export const mockNlpBlock = {
+  ...baseBlockInstance,
+  name: 'Mock Nlp',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Mock Nlp', value: 'MOCK_NLP' },
+    [
+      {
+        entity: 'intent',
+        match: 'value',
+        value: 'greeting',
+      },
+      {
+        entity: 'intent',
+        match: 'value',
+        value: 'want',
+      },
+      {
+        entity: 'intent',
+        match: 'value',
+        value: 'affirmative',
+      },
+    ],
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Good to see you again '],
+} as unknown as BlockFull;
+
 const patternsProduct: Pattern[] = [
   'produit',
   [
@@ -285,3 +314,5 @@ export const blockCarouselMock = {
 } as unknown as BlockFull;
 
 export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];
+
+export const nlpBlocks: BlockFull[] = [blockGetStarted, mockNlpBlock];

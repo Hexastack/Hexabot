@@ -16,6 +16,7 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -53,6 +54,7 @@ export class BlockService extends BaseService<
     private readonly pluginService: PluginService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
+    protected readonly entityService: NlpEntityService,
   ) {
     super(repository);
   }
@@ -183,18 +185,13 @@ export class BlockService extends BaseService<
       // Perform an NLP Match
       if (!block && nlp) {
         // Find block pattern having the best match of nlp entities
-        let nlpBest = 0;
-        filteredBlocks.forEach((b, index, self) => {
-          const nlpPattern = this.matchNLP(nlp, b);
-          if (nlpPattern && nlpPattern.length > nlpBest) {
-            nlpBest = nlpPattern.length;
-            block = self[index];
-          }
+        const newBlocks = filteredBlocks.filter((b) => {
+          return this.matchNLP(nlp, b);
         });
+        block = (await this.matchBestNLP(newBlocks)) as BlockFull | undefined;
       }
     }
-    // Uknown event type => return false;
-    // this.logger.error('Unable to recognize event type while matching', event);
+
     return block;
   }
 
@@ -336,6 +333,81 @@ export class BlockService extends BaseService<
         }
       });
     });
+  }
+
+  /**
+   *  Identifies and returns the best-matching block based on NLP entity scores.
+   *
+   * This function evaluates a list of blocks by analyzing their associated NLP entities
+   * and scoring them based on predefined lookup entities. The block with the highest
+   * score is selected as the best match.
+   * @param blocks - Blocks on which to perform the filtering
+   *
+   * @returns The best block
+   */
+  async matchBestNLP(
+    blocks: Block[] | BlockFull[] | undefined,
+  ): Promise<Block | BlockFull | undefined> {
+    // @TODO make lookup scores configurable in hexabot settings
+    const lookupScores: { [key: string]: number } = {
+      trait: 2,
+      keywords: 1,
+    };
+
+    // No blocks to check against
+    if (blocks?.length === 0 || !blocks) {
+      return undefined;
+    }
+
+    // If there's only one block, return it immediately.
+    if (blocks.length === 1) {
+      return blocks[0];
+    }
+    let bestBlock: Block | BlockFull | undefined;
+    let highestScore = 0;
+
+    // Iterate over each block in blocks
+    for (const block of blocks) {
+      let nlpScore = 0;
+
+      // Gather all entity lookups for patterns that include an entity
+      const entityLookups = await Promise.all(
+        block.patterns
+          .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
+          .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p)
+          .map(async (pattern) => {
+            const entityName = pattern.entity;
+            return await this.entityService.findOne(
+              { name: entityName },
+              undefined,
+              { lookups: 1, _id: 0 },
+            );
+          }),
+      );
+
+      nlpScore += entityLookups.reduce((score, entityLookup) => {
+        if (
+          entityLookup &&
+          entityLookup.lookups[0] &&
+          lookupScores[entityLookup.lookups[0]]
+        ) {
+          return score + lookupScores[entityLookup.lookups[0]]; // Add points based on the lookup type
+        }
+        return score; // Return the current score if no match
+      }, 0);
+
+      // Update the best block if the current block has a higher NLP score
+      if (nlpScore > highestScore) {
+        highestScore = nlpScore;
+        bestBlock = block;
+      }
+    }
+
+    this.logger.debug(`Best Nlp Score obtained ${highestScore}`);
+    this.logger.debug(
+      `Best retrieved block based on NLP entities ${JSON.stringify(bestBlock)}`,
+    );
+    return bestBlock;
   }
 
   /**
