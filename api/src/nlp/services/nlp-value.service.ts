@@ -19,7 +19,9 @@ import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
   NlpValue,
   NlpValueFull,
+  NlpValueFullWithCount,
   NlpValuePopulate,
+  NlpValueWithCount,
 } from '../schemas/nlp-value.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
@@ -221,15 +223,17 @@ export class NlpValueService extends BaseService<
     return Promise.all(promises);
   }
 
+  async findWithCount(
+    pageQuery: PageQueryDto<NlpValue>,
+    filters: TFilterQuery<NlpValue>,
+  ): Promise<NlpValueWithCount[]> {
+    return await this.repository.findWithCount(pageQuery, filters);
+  }
+
   async findAndPopulateWithCount(
     pageQuery: PageQueryDto<NlpValue>,
-    populate: string[],
     filters: TFilterQuery<NlpValue>,
-  ) {
-    return await this.repository.findAndPopulateWithCount(
-      pageQuery,
-      populate,
-      filters,
-    );
+  ): Promise<NlpValueFullWithCount[]> {
+    return await this.repository.findAndPopulateWithCount(pageQuery, filters);
   }
 }
