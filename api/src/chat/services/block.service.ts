@@ -16,6 +16,8 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpCacheMapValues } from '@/nlp/schemas/types';
+import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -53,6 +55,7 @@ export class BlockService extends BaseService<
     private readonly pluginService: PluginService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
+    protected readonly entityService: NlpEntityService,
   ) {
     super(repository);
   }
@@ -181,20 +184,21 @@ export class BlockService extends BaseService<
         .shift();
 
       // Perform an NLP Match
+
       if (!block && nlp) {
-        // Find block pattern having the best match of nlp entities
-        let nlpBest = 0;
-        filteredBlocks.forEach((b, index, self) => {
-          const nlpPattern = this.matchNLP(nlp, b);
-          if (nlpPattern && nlpPattern.length > nlpBest) {
-            nlpBest = nlpPattern.length;
-            block = self[index];
-          }
-        });
+        // Use the `reduce` function to iterate over `filteredBlocks` and accumulate a new array `matchesWithPatterns`.
+        // This approach combines the matching of NLP patterns and filtering of blocks with empty or invalid matches
+        // into a single operation. This avoids the need for a separate mapping and filtering step, improving performance.
+        // For each block in `filteredBlocks`, we call `matchNLP` to find patterns that match the NLP data.
+        // If `matchNLP` returns a non-empty list of matched patterns, the block and its matched patterns are added
+        // to the accumulator array `acc`, which is returned as the final result.
+        // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
+        // all while iterating through the list only once.
+
+        block = await this.matchBestNLP(filteredBlocks, nlp);
       }
     }
-    // Uknown event type => return false;
-    // this.logger.error('Unable to recognize event type while matching', event);
+
     return block;
   }
 
@@ -304,7 +308,7 @@ export class BlockService extends BaseService<
   matchNLP(
     nlp: NLU.ParseEntities,
     block: Block | BlockFull,
-  ): NlpPattern[] | undefined {
+  ): NlpPattern[][] | undefined {
     // No nlp entities to check against
     if (nlp.entities.length === 0) {
       return undefined;
@@ -313,14 +317,13 @@ export class BlockService extends BaseService<
     const nlpPatterns = block.patterns?.filter((p) => {
       return Array.isArray(p);
     }) as NlpPattern[][];
-
     // No nlp patterns found
     if (nlpPatterns.length === 0) {
       return undefined;
     }
 
     // Find NLP pattern match based on best guessed entities
-    return nlpPatterns.find((entities: NlpPattern[]) => {
+    return nlpPatterns.filter((entities: NlpPattern[]) => {
       return entities.every((ev: NlpPattern) => {
         if (ev.match === 'value') {
           return nlp.entities.find((e) => {
@@ -336,6 +339,139 @@ export class BlockService extends BaseService<
         }
       });
     });
+  }
+
+  /**
+   * Matches the provided NLU parsed entities with patterns in a set of blocks and returns
+   * the block with the highest matching score.
+   *
+   * For each block, it checks the patterns against the NLU parsed entities, calculates
+   * a score for each match, and selects the block with the highest score.
+   *
+   * @param {BlockFull[]} blocks - An array of BlockFull objects representing potential matches.
+   * @param {NLU.ParseEntities} nlp - The NLU parsed entities used for pattern matching.
+   *
+   * @returns {Promise<BlockFull | undefined>} - A promise that resolves to the BlockFull
+   * with the highest match score, or undefined if no matches are found.
+   */
+  async matchBestNLP(
+    blocks: BlockFull[],
+    nlp: NLU.ParseEntities,
+  ): Promise<BlockFull | undefined> {
+    const scoredBlocks = await Promise.all(
+      blocks.map(async (block) => {
+        const matchedPatterns = this.matchNLP(nlp, block) || [];
+
+        const scores = await Promise.all(
+          matchedPatterns.map((pattern) =>
+            this.calculateBlockScore(pattern, nlp),
+          ),
+        );
+
+        const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
+
+        return { block, score: maxScore };
+      }),
+    );
+
+    const best = scoredBlocks.reduce(
+      (acc, curr) => (curr.score > acc.score ? curr : acc),
+      { block: undefined, score: 0 },
+    );
+
+    return best.block;
+  }
+
+  /**
+   * Computes the NLP score for a given block using its matched NLP patterns and parsed NLP entities.
+   *
+   * Each pattern is evaluated against the parsed NLP entities to determine matches based on entity name,
+   * value, and confidence. A score is computed using the entity's weight and the confidence level of the match.
+   * A penalty factor is optionally applied for entity-level matches to adjust the scoring.
+   *
+   * The function uses a cache (`nlpCacheMap`) to avoid redundant database lookups for entity metadata.
+   *
+   * @param patterns - The NLP patterns associated with the block.
+   * @param nlp - The parsed NLP entities from the user input.
+   * @param nlpCacheMap - A cache to reuse fetched entity metadata (e.g., weights and valid values).
+   * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
+   * @returns A numeric score representing how well the block matches the given NLP context.
+   */
+  async calculateBlockScore(
+    patterns: NlpPattern[],
+    nlp: NLU.ParseEntities,
+  ): Promise<number> {
+    if (!patterns.length) return 0;
+
+    const nlpCacheMap = await this.entityService.getNlpMap();
+    // @TODO Make nluPenaltyFactor configurable in UI settings
+    const nluPenaltyFactor = 0.95;
+    // Compute individual pattern scores using the cache
+    const patternScores: number[] = patterns.map((pattern) => {
+      const entityData = nlpCacheMap.get(pattern.entity);
+      if (!entityData) return 0;
+
+      const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
+        (e) => this.matchesEntityData(e, pattern, entityData),
+      );
+
+      return this.computePatternScore(
+        matchedEntity,
+        pattern,
+        entityData,
+        nluPenaltyFactor,
+      );
+    });
+
+    // Sum the scores
+    return patternScores.reduce((sum, score) => sum + score, 0);
+  }
+
+  /**
+   * Checks if a given `ParseEntity` from the NLP model matches the specified pattern
+   * and if its value exists within the values provided in the cache for the specified entity.
+   *
+   * @param e - The `ParseEntity` object from the NLP model, containing information about the entity and its value.
+   * @param pattern - The `NlpPattern` object representing the entity and value pattern to be matched.
+   * @param entityData - The `NlpCacheMapValues` object containing cached data, including entity values and weight, for the entity being matched.
+   *
+   * @returns A boolean indicating whether the `ParseEntity` matches the pattern and entity data from the cache.
+   *
+   * - The function compares the entity type between the `ParseEntity` and the `NlpPattern`.
+   * - If the pattern's match type is not `'value'`, it checks if the entity's value is present in the cache's `values` array.
+   * - If the pattern's match type is `'value'`, it further ensures that the entity's value matches the specified value in the pattern.
+   * - Returns `true` if all conditions are met, otherwise `false`.
+   */
+  private matchesEntityData(
+    e: NLU.ParseEntity,
+    pattern: NlpPattern,
+    entityData: NlpCacheMapValues,
+  ): boolean {
+    return (
+      e.entity === pattern.entity &&
+      entityData?.values.some((v) => v === e.value) &&
+      (pattern.match !== 'value' || e.value === pattern.value)
+    );
+  }
+
+  /**
+   * Computes the score for a given entity based on its confidence, weight, and penalty factor.
+   *
+   * @param entity - The `ParseEntity` to check, which may be `undefined` if no match is found.
+   * @param pattern - The `NlpPattern` object that specifies how to match the entity and its value.
+   * @param entityData - The cached data for the given entity, including `weight` and `values`.
+   * @param nlpPenaltyFactor - The penalty factor applied when the pattern's match type is 'entity'.
+   * @returns The computed score based on the entity's confidence, the cached weight, and the penalty factor.
+   */
+  private computePatternScore(
+    entity: NLU.ParseEntity | undefined,
+    pattern: NlpPattern,
+    entityData: NlpCacheMapValues,
+    nlpPenaltyFactor: number,
+  ): number {
+    if (!entity || !entity.confidence) return 0;
+    const penalty = pattern.match === 'entity' ? nlpPenaltyFactor : 1;
+    return entity.confidence * entityData.weight * penalty;
   }
 
   /**

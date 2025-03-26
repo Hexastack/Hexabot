@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,6 +7,7 @@
  */
 
 import { NLU } from '@/helper/types';
+import { NlpCacheMap } from '@/nlp/schemas/types';
 
 export const nlpEntitiesGreeting: NLU.ParseEntities = {
   entities: [
@@ -27,3 +28,52 @@ export const nlpEntitiesGreeting: NLU.ParseEntities = {
     },
   ],
 };
+
+export const mockNlpEntitiesSetOne: NLU.ParseEntities = {
+  entities: [
+    {
+      entity: 'intent',
+      value: 'greeting',
+      confidence: 0.999,
+    },
+    {
+      entity: 'firstname',
+      value: 'jhon',
+      confidence: 0.5,
+    },
+  ],
+};
+
+export const mockNlpEntitiesSetTwo: NLU.ParseEntities = {
+  entities: [
+    {
+      entity: 'intent',
+      value: 'greeting',
+      confidence: 0.94,
+    },
+    {
+      entity: 'firstname',
+      value: 'doe',
+      confidence: 0.33,
+    },
+  ],
+};
+
+export const mockNlpCacheMap: NlpCacheMap = new Map([
+  [
+    'intent',
+    {
+      id: '67e3e41eff551ca5be70559c',
+      weight: 1,
+      values: ['greeting', 'affirmation'],
+    },
+  ],
+  [
+    'firstname',
+    {
+      id: '67e3e41eff551ca5be70559d',
+      weight: 1,
+      values: ['jhon', 'doe'],
+    },
+  ],
+]);
