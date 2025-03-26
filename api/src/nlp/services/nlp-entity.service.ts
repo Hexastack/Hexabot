@@ -1,13 +1,18 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Cache } from 'cache-manager';
 
+import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
+import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { Lookup, NlpEntityDto } from '../dto/nlp-entity.dto';
@@ -17,7 +22,7 @@ import {
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityValue } from '../schemas/types';
+import { NlpCacheMap, NlpSampleEntityValue } from '../schemas/types';
 
 import { NlpValueService } from './nlp-value.service';
 
@@ -30,6 +35,7 @@ export class NlpEntityService extends BaseService<
 > {
   constructor(
     readonly repository: NlpEntityRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly nlpValueService: NlpValueService,
   ) {
     super(repository);
@@ -44,6 +50,28 @@ export class NlpEntityService extends BaseService<
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
+  }
+
+  /**
+   * Updates the `weight` field of a specific NLP entity by its ID.
+   *
+   * This method is part of the NLP-based blocks prioritization strategy.
+   * The weight influences the scoring of blocks when multiple blocks match a user's input.
+   * @param id - The unique identifier of the entity to update.
+   * @param updatedWeight - The new weight to assign. Must be a positive integer.
+   * @throws Error if the weight is not a positive integer.
+   * @returns A promise that resolves to the updated entity.
+   */
+  async updateWeight(id: string, updatedWeight: number): Promise<NlpEntity> {
+    if (!Number.isInteger(updatedWeight) || updatedWeight < 1) {
+      throw new Error('Weight must be a positive integer');
+    }
+
+    return await this.repository.updateOne(
+      id,
+      { weight: updatedWeight },
+      { new: true },
+    );
   }
 
   /**
@@ -96,5 +124,50 @@ export class NlpEntityService extends BaseService<
       this.findOneOrCreate({ name: e.entity }, { name: e.entity }),
     );
     return Promise.all(findOrCreate);
+  }
+
+  /**
+   * Clears the NLP map cache
+   */
+  async clearCache() {
+    await this.cacheManager.del(NLP_MAP_CACHE_KEY);
+  }
+
+  /**
+   * Event handler for Nlp Entity updates. Listens to 'hook:nlpEntity:*' events
+   * and invalidates the cache for nlp entities when triggered.
+   */
+  @OnEvent('hook:nlpEntity:*')
+  async handleNlpEntityUpdateEvent() {
+    this.clearCache();
+  }
+
+  /**
+   * Event handler for Nlp Value updates. Listens to 'hook:nlpValue:*' events
+   * and invalidates the cache for nlp values when triggered.
+   */
+  @OnEvent('hook:nlpValue:*')
+  async handleNlpValueUpdateEvent() {
+    this.clearCache();
+  }
+
+  /**
+   * Retrieves NLP entity lookup information for the given list of entity names.
+   *
+   * This method queries the database for lookups that match any of the provided
+   * entity names, transforms the result into a map structure where each key is
+   * the entity name and each value contains metadata (id, weight, and list of values),
+   * and caches the result using the configured cache key.
+   *
+   * @param entityNames - Array of entity names to retrieve lookup data for.
+   * @returns A Promise that resolves to a map of entity name to its corresponding lookup metadata.
+   */
+  @Cacheable(NLP_MAP_CACHE_KEY)
+  async getNlpMap(): Promise<NlpCacheMap> {
+    const entities = await this.findAllAndPopulate();
+    return entities.reduce((acc, curr) => {
+      acc.set(curr.name, curr);
+      return acc;
+    }, new Map());
   }
 }

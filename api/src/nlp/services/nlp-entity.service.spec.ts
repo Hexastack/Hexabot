@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
@@ -20,7 +21,11 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityModel,
+} from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
@@ -48,6 +53,12 @@ describe('nlpEntityService', () => {
         NlpValueService,
         NlpValueRepository,
         NlpSampleEntityRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+          },
+        },
       ],
     });
     [nlpEntityService, nlpEntityRepository, nlpValueRepository] =
@@ -117,6 +128,77 @@ describe('nlpEntityService', () => {
       expect(result).toEqualPayload(entitiesWithValues);
     });
   });
+  describe('NlpEntityService - updateWeight', () => {
+    let createdEntity: NlpEntity;
+    beforeEach(async () => {
+      createdEntity = await nlpEntityRepository.create({
+        name: 'testentity',
+        builtin: false,
+        weight: 3,
+      });
+    });
+
+    it('should update the weight of an NLP entity', async () => {
+      const newWeight = 8;
+
+      const updatedEntity = await nlpEntityService.updateWeight(
+        createdEntity.id,
+        newWeight,
+      );
+
+      expect(updatedEntity.weight).toBe(newWeight);
+    });
+
+    it('should handle updating weight of non-existent entity', async () => {
+      const nonExistentId = '507f1f77bcf86cd799439011'; // Example MongoDB ObjectId
+
+      try {
+        await nlpEntityService.updateWeight(nonExistentId, 5);
+        fail('Expected error was not thrown');
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+
+    it('should use default weight of 1 when creating entity without weight', async () => {
+      const createdEntity = await nlpEntityRepository.create({
+        name: 'entityWithoutWeight',
+        builtin: true,
+        // weight not specified
+      });
+
+      expect(createdEntity.weight).toBe(1);
+    });
+
+    it('should throw an error if weight is less than 1', async () => {
+      const invalidWeight = 0;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    it('should throw an error if weight is a decimal', async () => {
+      const invalidWeight = 2.5;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    it('should throw an error if weight is negative', async () => {
+      const invalidWeight = -3;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    afterEach(async () => {
+      // Clean the collection after each test
+      await nlpEntityRepository.deleteOne(createdEntity.id);
+    });
+  });
 
   describe('storeNewEntities', () => {
     it('should store new entities', async () => {
@@ -148,6 +230,49 @@ describe('nlpEntityService', () => {
       ];
 
       expect(result).toEqualPayload(storedEntites);
+    });
+  });
+  describe('getNlpMap', () => {
+    it('should return a NlpCacheMap with the correct structure', async () => {
+      // Arrange
+      const firstMockValues = {
+        id: '1',
+        weight: 1,
+      };
+      const firstMockEntity = {
+        name: 'intent',
+        ...firstMockValues,
+        values: [{ value: 'buy' }, { value: 'sell' }],
+      } as unknown as Partial<NlpEntityFull>;
+      const secondMockValues = {
+        id: '2',
+        weight: 5,
+      };
+      const secondMockEntity = {
+        name: 'subject',
+        ...secondMockValues,
+        values: [{ value: 'product' }],
+      } as unknown as Partial<NlpEntityFull>;
+      const mockEntities = [firstMockEntity, secondMockEntity];
+
+      // Mock findAndPopulate
+      jest
+        .spyOn(nlpEntityService, 'findAllAndPopulate')
+        .mockResolvedValue(mockEntities as unknown as NlpEntityFull[]);
+
+      // Act
+      const result = await nlpEntityService.getNlpMap();
+
+      expect(result).toBeInstanceOf(Map);
+      expect(result.size).toBe(2);
+      expect(result.get('intent')).toEqual({
+        name: 'intent',
+        ...firstMockEntity,
+      });
+      expect(result.get('subject')).toEqual({
+        name: 'subject',
+        ...secondMockEntity,
+      });
     });
   });
 });
