@@ -11,6 +11,7 @@ import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block } from '@/chat/schemas/block.schema';
 import { Conversation } from '@/chat/schemas/conversation.schema';
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
+import { SettingType } from '@/setting/schemas/types';
 
 export type PluginName = `${string}-plugin`;
 
@@ -23,7 +24,21 @@ export interface CustomBlocks {}
 
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = Omit<SettingCreateDto, 'weight'>;
+type EnforceTranslatable<T extends SettingType> = T extends
+  | 'text'
+  | 'multiple_text'
+  ? { translatable: boolean }
+  : { translatable: boolean };
+
+export type SettingCreateDtoStrict<
+  T extends SettingType,
+  S extends SettingCreateDto,
+> = S & EnforceTranslatable<T>;
+
+export type PluginSetting = Omit<
+  SettingCreateDtoStrict<SettingType, SettingCreateDto>,
+  'weight'
+>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,
