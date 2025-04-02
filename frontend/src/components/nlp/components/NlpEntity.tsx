@@ -166,6 +166,16 @@ const NlpEntity = () => {
       renderHeader,
     },
     {
+      maxWidth: 210,
+      field: "weight",
+      headerName: t("label.weight"),
+      renderCell: (val) => <Chip label={val.value} variant="title" />,
+      sortable: true,
+      disableColumnMenu: true,
+      resizable: false,
+      renderHeader,
+    },
+    {
       maxWidth: 90,
       field: "builtin",
       headerName: t("label.builtin"),
