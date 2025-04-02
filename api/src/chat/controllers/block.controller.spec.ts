@@ -352,6 +352,15 @@ describe('BlockController', () => {
     const result = await blockController.updateOne(block.id, updateBlock);
     expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
 
+    expect(
+      result.patterns.find(
+        (pattern) =>
+          typeof pattern === 'object' &&
+          'type' in pattern &&
+          pattern.type === PayloadType.menu &&
+          pattern,
+      ),
+    ).toBeDefined();
     expect(result.patterns).toEqual(updateBlock.patterns);
   });
 });
