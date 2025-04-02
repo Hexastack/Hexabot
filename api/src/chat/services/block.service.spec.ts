@@ -83,12 +83,14 @@ const mockNlpEntityService = {
       return Promise.resolve({
         lookups: ['trait'],
         id: '67e3e41eff551ca5be70559c',
+        weight: 1,
       });
     }
     if (query.name === 'firstname') {
       return Promise.resolve({
         lookups: ['trait'],
         id: '67e3e41eff551ca5be70559d',
+        weight: 1,
       });
     }
     return Promise.resolve(null); // Default response if the entity isn't found
@@ -444,7 +446,7 @@ describe('BlockService', () => {
             expect(nlpEntityService.findOne).toHaveBeenCalledWith(
               { name: p.entity },
               undefined,
-              { _id: 0, lookups: 1 },
+              { _id: 0, lookups: 1, weight: 1 },
             );
           });
       }
@@ -464,7 +466,7 @@ describe('BlockService', () => {
             expect(nlpEntityService.findOne).toHaveBeenCalledWith(
               { name: p.entity },
               undefined,
-              { _id: 0, lookups: 1 },
+              { _id: 0, lookups: 1, weight: 1 },
             );
           });
       }
