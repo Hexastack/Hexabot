@@ -39,14 +39,17 @@ export class LanguageRepository extends BaseRepository<
       Document<Language, any, any>,
       unknown,
       Language,
-      'deleteOne' | 'deleteMany'
+      'deleteOne'
     >,
     _criteria: TFilterQuery<Language>,
   ): Promise<void> {
     if (_criteria._id) {
-      const language = await this.find(
+      const language = await this.findOne(
         typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
       );
+      if (!language) {
+        return;
+      }
       this.eventEmitter.emit('hook:language:delete', language);
     } else {
       throw new Error('Attempted to delete language using unknown criteria');
