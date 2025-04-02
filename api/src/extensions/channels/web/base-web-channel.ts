@@ -241,7 +241,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: anyMessage.sender,
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid,
+          mid: anyMessage.mid?.[0],
           createdAt: anyMessage.createdAt,
         });
       } else {
@@ -250,7 +250,7 @@ export default abstract class BaseWebChannelHandler<
           ...message,
           author: 'chatbot',
           read: true, // Temporary fix as read is false in the bd
-          mid: anyMessage.mid || this.generateId(),
+          mid: anyMessage.mid?.[0] || this.generateId(),
           handover: !!anyMessage.handover,
           createdAt: anyMessage.createdAt,
         });
