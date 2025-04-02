@@ -348,12 +348,6 @@ export class BlockService extends BaseService<
   async matchBestNLP(
     blocks: Block[] | BlockFull[] | undefined,
   ): Promise<Block | BlockFull | undefined> {
-    // @TODO make lookup scores configurable in hexabot settings
-    const lookupScores: { [key: string]: number } = {
-      trait: 2,
-      keywords: 1,
-    };
-
     // No blocks to check against
     if (blocks?.length === 0 || !blocks) {
       return undefined;
@@ -380,18 +374,14 @@ export class BlockService extends BaseService<
             return await this.entityService.findOne(
               { name: entityName },
               undefined,
-              { lookups: 1, _id: 0 },
+              { lookups: 1, weight: 1, _id: 0 },
             );
           }),
       );
 
       nlpScore += entityLookups.reduce((score, entityLookup) => {
-        if (
-          entityLookup &&
-          entityLookup.lookups[0] &&
-          lookupScores[entityLookup.lookups[0]]
-        ) {
-          return score + lookupScores[entityLookup.lookups[0]]; // Add points based on the lookup type
+        if (entityLookup && entityLookup.lookups[0] && entityLookup.weight) {
+          return score + entityLookup.weight; // Add points based on the Nlp entity associated weight
         }
         return score; // Return the current score if no match
       }, 0);

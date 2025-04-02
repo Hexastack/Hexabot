@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,6 +12,7 @@ import {
   IsBoolean,
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -47,6 +48,14 @@ export class NlpEntityCreateDto {
   @IsBoolean()
   @IsOptional()
   builtin?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Nlp entity associated weight for next block triggering',
+    type: Number,
+  })
+  @IsNumber()
+  @IsOptional()
+  weight?: number;
 }
 
 export type NlpEntityDto = DtoConfig<{
