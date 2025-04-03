@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,9 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -19,7 +17,6 @@ import { MenuRepository } from '@/cms/repositories/menu.repository';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
@@ -40,6 +37,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MessageRepository } from '../repositories/message.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -64,7 +62,7 @@ describe('MessageController', () => {
   let allSubscribers: Subscriber[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [MessageController],
       imports: [
         rootMongooseTestModule(installMessageFixtures),
@@ -116,7 +114,6 @@ describe('MessageController', () => {
             getSettings: jest.fn(() => ({})),
           },
         },
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -125,13 +122,15 @@ describe('MessageController', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
       ],
-    }).compile();
-    messageService = module.get<MessageService>(MessageService);
-    userService = module.get<UserService>(UserService);
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    messageController = module.get<MessageController>(MessageController);
+    });
+    [messageService, userService, subscriberService, messageController] =
+      await getMocks([
+        MessageService,
+        UserService,
+        SubscriberService,
+        MessageController,
+      ]);
     message = (await messageService.findOne({ mid: 'mid-1' }))!;
     sender = (await subscriberService.findOne(message.sender!))!;
     recipient = (await subscriberService.findOne(message.recipient!))!;

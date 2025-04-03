@@ -1,14 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { BlockRepository } from '@/chat/repositories/block.repository';
@@ -18,11 +16,11 @@ import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
-import { LoggerService } from '@/logger/logger.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Content, ContentModel } from '../schemas/content.schema';
 
@@ -37,13 +35,12 @@ describe('ContentTypeRepository', () => {
   let blockService: BlockService;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installContentFixtures),
         MongooseModule.forFeature([ContentTypeModel, ContentModel, BlockModel]),
       ],
       providers: [
-        LoggerService,
         ContentRepository,
         ContentTypeRepository,
         BlockService,
@@ -54,18 +51,15 @@ describe('ContentTypeRepository', () => {
             findOne: jest.fn(),
           },
         },
-        EventEmitter2,
       ],
-    }).compile();
-    blockService = module.get<BlockService>(BlockService);
-    contentTypeRepository = module.get<ContentTypeRepository>(
-      ContentTypeRepository,
-    );
-    contentTypeModel = module.get<Model<ContentType>>(
-      getModelToken('ContentType'),
-    );
-
-    contentModel = module.get<Model<Content>>(getModelToken('Content'));
+    });
+    [blockService, contentTypeRepository, contentTypeModel, contentModel] =
+      await getMocks([
+        BlockService,
+        ContentTypeRepository,
+        getModelToken(ContentType.name),
+        getModelToken(Content.name),
+      ]);
   });
 
   afterAll(closeInMongodConnection);

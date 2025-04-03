@@ -8,7 +8,6 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
@@ -17,7 +16,6 @@ import {
   AttachmentModel,
 } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User, UserModel } from '@/user/schemas/user.schema';
 import {
@@ -30,6 +28,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Label, LabelModel } from '../schemas/label.schema';
 import {
@@ -55,7 +54,7 @@ describe('SubscriberRepository', () => {
   let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([
@@ -69,21 +68,26 @@ describe('SubscriberRepository', () => {
         SubscriberRepository,
         LabelRepository,
         UserRepository,
-        EventEmitter2,
-        LoggerService,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
-    labelRepository = module.get<LabelRepository>(LabelRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
-    attachmentRepository =
-      module.get<AttachmentRepository>(AttachmentRepository);
-    subscriberModel = module.get<Model<Subscriber>>(
-      getModelToken('Subscriber'),
-    );
+    });
+    [
+      subscriberRepository,
+      labelRepository,
+      userRepository,
+      attachmentRepository,
+      subscriberModel,
+      eventEmitter,
+    ] = await getMocks([
+      SubscriberRepository,
+      LabelRepository,
+      UserRepository,
+      AttachmentRepository,
+      getModelToken(Subscriber.name),
+      EventEmitter2,
+    ]);
+
     allLabels = await labelRepository.findAll();
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
@@ -95,7 +99,6 @@ describe('SubscriberRepository', () => {
         allUsers.find(({ id }) => subscriber.assignedTo === id) || null,
       avatar: allAttachments.find(({ id }) => subscriber.avatar === id) || null,
     }));
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
   afterEach(jest.clearAllMocks);

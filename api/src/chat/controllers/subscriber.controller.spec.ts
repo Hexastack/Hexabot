@@ -1,19 +1,16 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -32,6 +29,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -56,7 +54,7 @@ describe('SubscriberController', () => {
   let allUsers: User[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [SubscriberController],
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
@@ -71,7 +69,6 @@ describe('SubscriberController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         SubscriberRepository,
         SubscriberService,
         LabelService,
@@ -83,17 +80,17 @@ describe('SubscriberController', () => {
         RoleService,
         RoleRepository,
         InvitationRepository,
-        EventEmitter2,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    labelService = module.get<LabelService>(LabelService);
-    userService = module.get<UserService>(UserService);
-
-    subscriberController =
-      module.get<SubscriberController>(SubscriberController);
+    });
+    [subscriberService, labelService, userService, subscriberController] =
+      await getMocks([
+        SubscriberService,
+        LabelService,
+        UserService,
+        SubscriberController,
+      ]);
     subscriber = (await subscriberService.findOne({
       first_name: 'Jhon',
     }))!;

@@ -1,27 +1,25 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
-import { LoggerService } from '@/logger/logger.service';
 import { contentTypeFixtures } from '@/utils/test/fixtures/contenttype';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Content, ContentModel } from '../schemas/content.schema';
 
@@ -37,18 +35,18 @@ describe('ContentRepository', () => {
   let contentTypeModel: Model<ContentType>;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installContentFixtures),
         MongooseModule.forFeature([ContentTypeModel, ContentModel]),
       ],
-      providers: [LoggerService, ContentRepository, EventEmitter2],
-    }).compile();
-    contentRepository = module.get<ContentRepository>(ContentRepository);
-    contentModel = module.get<Model<Content>>(getModelToken('Content'));
-    contentTypeModel = module.get<Model<ContentType>>(
-      getModelToken('ContentType'),
-    );
+      providers: [ContentRepository],
+    });
+    [contentRepository, contentModel, contentTypeModel] = await getMocks([
+      ContentRepository,
+      getModelToken(Content.name),
+      getModelToken(ContentType.name),
+    ]);
   });
 
   afterAll(closeInMongodConnection);

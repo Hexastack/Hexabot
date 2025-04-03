@@ -1,14 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import {
@@ -19,6 +17,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Block, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
@@ -39,16 +38,18 @@ describe('BlockRepository', () => {
   let blockValidIds: string[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installBlockFixtures),
         MongooseModule.forFeature([BlockModel, CategoryModel, LabelModel]),
       ],
-      providers: [BlockRepository, CategoryRepository, EventEmitter2],
-    }).compile();
-    blockRepository = module.get<BlockRepository>(BlockRepository);
-    categoryRepository = module.get<CategoryRepository>(CategoryRepository);
-    blockModel = module.get<Model<Block>>(getModelToken('Block'));
+      providers: [BlockRepository, CategoryRepository],
+    });
+    [blockRepository, categoryRepository, blockModel] = await getMocks([
+      BlockRepository,
+      CategoryRepository,
+      getModelToken(Block.name),
+    ]);
     validIds = ['64abc1234def567890fedcba', '64abc1234def567890fedcbc'];
     validCategory = '64def5678abc123490fedcba';
 
