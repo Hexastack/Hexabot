@@ -58,7 +58,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     $or: ["doc", "value"],
   });
   const { dataGridProps } = useFind(
-    { entity: EntityType.NLP_VALUE },
+    { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {
       params: searchPayload,
     },
