@@ -126,14 +126,17 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       renderHeader,
     },
     {
-      flex: 3,
+      flex: 2,
       field: "nlpSamplesCount",
+      align: "center",
       headerName: t("label.nlp_samples_count"),
       sortable: true,
       disableColumnMenu: true,
+      headerAlign: "center",
       renderHeader,
       renderCell: ({ row }) => (
         <Chip
+          sx={{ alignContent: "center" }}
           id={(row.nlpSamplesCount || `nlpSamplesCount_${row.id}`).toString()}
           label={row.nlpSamplesCount?.toString()}
           variant="inbox"

@@ -117,24 +117,15 @@ export class NlpValueRepository extends BaseRepository<
   }
 
   private async aggregateWithCount<T extends 'full' | 'stub' = 'stub'>(
-    { limit = 10, skip = 0, sort = ['createdAt', -1] }: PageQueryDto<NlpValue>,
+    {
+      limit = 10,
+      skip = 0,
+      sort = ['createdAt', 'desc'],
+    }: PageQueryDto<NlpValue>,
     { $and = [], ...rest }: TFilterQuery<NlpValue>,
     populatePipelineStages: PipelineStage[] = [],
   ) {
     const pipeline: PipelineStage[] = [
-      // support pageQuery
-      {
-        $limit: limit,
-      },
-      {
-        $skip: skip,
-      },
-      {
-        $sort: {
-          [sort[0]]: sort[1] === 'desc' ? -1 : 1,
-          _id: sort[1] === 'desc' ? -1 : 1,
-        },
-      },
       {
         // support filters
         $match: {
@@ -151,6 +142,13 @@ export class NlpValueRepository extends BaseRepository<
               ) || [],
           }),
         },
+      },
+      // support pageQuery
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
       {
         $lookup: {
@@ -196,6 +194,12 @@ export class NlpValueRepository extends BaseRepository<
         },
       },
       ...populatePipelineStages,
+      {
+        $sort: {
+          [sort[0]]: sort[1].toString().startsWith('desc') ? -1 : 1,
+          _id: sort[1].toString().startsWith('desc') ? -1 : 1,
+        },
+      },
     ];
 
     return await this.model.aggregate<TNlpValueCountFormat<T>>(pipeline).exec();
