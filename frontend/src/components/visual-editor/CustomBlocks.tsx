@@ -22,18 +22,18 @@ export const CustomBlocks = () => {
     { entity: EntityType.CUSTOM_BLOCK },
     { hasCount: false },
   );
-  const memoizedCustomBlock = useMemo(
+  const memoizedCustomBlocks = useMemo(
     () => customBlocks.sort((a, b) => a.id.localeCompare(b.id)),
     [customBlocks],
   );
 
-  return memoizedCustomBlock.length ? (
+  return memoizedCustomBlocks.length ? (
     <>
       <Grid mb="2">
         <StyledTitle>{t("title.custom_blocks")}</StyledTitle>
       </Grid>
       <Grid container>
-        {memoizedCustomBlock.map((customBlock) => (
+        {memoizedCustomBlocks.map((customBlock) => (
           <Block
             key={customBlock.id}
             title={t(`title.${customBlock.namespace}`, {
