@@ -164,14 +164,13 @@ describe('SettingService', () => {
       expect(settingService.find).toHaveBeenCalledWith({
         label: 'allowed_domains',
       });
-      expect(result).toEqual(
-        new Set([
-          '*',
-          'https://example.com',
-          'https://test.com',
-          'https://another.com',
-        ]),
-      );
+      expect(result).toEqual([
+        '*',
+        'https://example.com',
+        'https://test.com',
+        'https://example.com',
+        'https://another.com',
+      ]);
     });
 
     it('should return the config allowed cors only if no settings are found', async () => {
@@ -182,7 +181,7 @@ describe('SettingService', () => {
       expect(settingService.find).toHaveBeenCalledWith({
         label: 'allowed_domains',
       });
-      expect(result).toEqual(new Set(['*']));
+      expect(result).toEqual(['*']);
     });
 
     it('should handle settings with empty values', async () => {
@@ -198,7 +197,7 @@ describe('SettingService', () => {
       expect(settingService.find).toHaveBeenCalledWith({
         label: 'allowed_domains',
       });
-      expect(result).toEqual(new Set(['*', 'https://example.com']));
+      expect(result).toEqual(['*', 'https://example.com']);
     });
   });
 });
