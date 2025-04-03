@@ -8,10 +8,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { LanguageDto } from '../dto/language.dto';
 import { Language } from '../schemas/language.schema';
@@ -25,31 +24,5 @@ export class LanguageRepository extends BaseRepository<
 > {
   constructor(@InjectModel(Language.name) readonly model: Model<Language>) {
     super(model, Language);
-  }
-
-  /**
-   * Pre-delete hook that triggers before an language is deleted.
-   *
-   * @param query The query used to delete the language.
-   * @param criteria The filter criteria used to find the language for deletion.
-   */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Language, any, any>,
-      unknown,
-      Language,
-      'deleteOne' | 'deleteMany'
-    >,
-    _criteria: TFilterQuery<Language>,
-  ): Promise<void> {
-    if (_criteria._id) {
-      const language = await this.find(
-        typeof _criteria === 'string' ? { _id: _criteria } : _criteria,
-      );
-      this.eventEmitter.emit('hook:language:delete', language);
-    } else {
-      throw new Error('Attempted to delete language using unknown criteria');
-    }
   }
 }
