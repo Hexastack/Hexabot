@@ -165,7 +165,7 @@ export class BotService {
           return await this.triggerBlock(event, convo, attachedBlock, fallback);
         } catch (err) {
           this.logger.error('Unable to retrieve attached block', err);
-          this.eventEmitter.emit('hook:conversation:end', convo, true);
+          this.eventEmitter.emit('hook:conversation:end', convo);
         }
       } else if (
         Array.isArray(block.nextBlocks) &&
@@ -200,7 +200,7 @@ export class BotService {
                 'Block outcome did not match any of the next blocks',
                 convo,
               );
-              this.eventEmitter.emit('hook:conversation:end', convo, false);
+              this.eventEmitter.emit('hook:conversation:end', convo);
             }
           } else {
             // Conversation continues : Go forward to next blocks
@@ -218,11 +218,11 @@ export class BotService {
       } else {
         // We need to end the conversation in this case
         this.logger.debug('No attached/next blocks to execute ...');
-        this.eventEmitter.emit('hook:conversation:end', convo, false);
+        this.eventEmitter.emit('hook:conversation:end', convo);
       }
     } catch (err) {
       this.logger.error('Unable to process/send message.', err);
-      this.eventEmitter.emit('hook:conversation:end', convo, true);
+      this.eventEmitter.emit('hook:conversation:end', convo);
     }
   }
 
@@ -309,19 +309,19 @@ export class BotService {
           await this.triggerBlock(event, updatedConversation, next, fallback);
         } catch (err) {
           this.logger.error('Unable to store context data!', err);
-          return this.eventEmitter.emit('hook:conversation:end', convo, true);
+          return this.eventEmitter.emit('hook:conversation:end', convo);
         }
         return true;
       } else {
         // Conversation is still active, but there's no matching block to call next
         // We'll end the conversation but this message is probably lost in time and space.
         this.logger.debug('No matching block found to call next ', convo.id);
-        this.eventEmitter.emit('hook:conversation:end', convo, false);
+        this.eventEmitter.emit('hook:conversation:end', convo);
         return false;
       }
     } catch (err) {
       this.logger.error('Unable to populate the next blocks!', err);
-      this.eventEmitter.emit('hook:conversation:end', convo, true);
+      this.eventEmitter.emit('hook:conversation:end', convo);
       throw err;
     }
   }
@@ -405,7 +405,7 @@ export class BotService {
         return this.triggerBlock(event, updatedConversation, block, false);
       } catch (err) {
         this.logger.error('Unable to store context data!', err);
-        this.eventEmitter.emit('hook:conversation:end', convo, true);
+        this.eventEmitter.emit('hook:conversation:end', convo);
       }
     } catch (err) {
       this.logger.error('Unable to start a new conversation with ', err);
