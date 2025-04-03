@@ -200,6 +200,7 @@ export class BotService {
                 'Block outcome did not match any of the next blocks',
                 convo,
               );
+              this.eventEmitter.emit('hook:conversation:end', convo, false);
             }
           } else {
             // Conversation continues : Go forward to next blocks
