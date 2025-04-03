@@ -137,8 +137,8 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       renderCell: ({ row }) => (
         <Chip
           sx={{ alignContent: "center" }}
-          id={(row.nlpSamplesCount || `nlpSamplesCount_${row.id}`).toString()}
-          label={row.nlpSamplesCount?.toString()}
+          id={row.id}
+          label={row.nlpSamplesCount || "N/A"}
           variant="inbox"
         />
       ),
