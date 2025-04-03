@@ -18,7 +18,6 @@ import {
   Req,
   UseInterceptors,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express'; // Import the Express request and response types
 
@@ -66,7 +65,6 @@ export class MessageController extends BaseController<
     private readonly subscriberService: SubscriberService,
     private readonly channelService: ChannelService,
     private readonly logger: LoggerService,
-    private readonly eventEmitter: EventEmitter2,
   ) {
     super(messageService);
   }

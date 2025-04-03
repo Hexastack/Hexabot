@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -25,7 +24,6 @@ import { SettingRepository } from './setting.repository';
 describe('SettingRepository', () => {
   let settingRepository: SettingRepository;
   let settingModel: Model<Setting>;
-  let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -35,10 +33,9 @@ describe('SettingRepository', () => {
       ],
       providers: [SettingRepository],
     });
-    [settingRepository, settingModel, eventEmitter] = await getMocks([
+    [settingRepository, settingModel] = await getMocks([
       SettingRepository,
       getModelToken(Setting.name),
-      EventEmitter2,
     ]);
   });
 
@@ -102,11 +99,11 @@ describe('SettingRepository', () => {
         label: 'theme',
       });
 
-      jest.spyOn(eventEmitter, 'emit');
+      jest.spyOn(settingRepository.eventEmitter, 'emit');
 
       await settingRepository.postUpdate({} as any, mockSetting);
 
-      expect(eventEmitter.emit).toHaveBeenCalledWith(
+      expect(settingRepository.eventEmitter.emit).toHaveBeenCalledWith(
         'hook:general:theme',
         mockSetting,
       );
