@@ -11,7 +11,7 @@ import path from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 // eslint-disable-next-line import/order
 import { MailerModule } from '@nestjs-modules/mailer';
-import { Module } from '@nestjs/common';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -33,12 +33,15 @@ import { AppService } from './app.service';
 import { AttachmentModule } from './attachment/attachment.module';
 import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
+import { CleanupModule } from './cleanup/cleanup.module';
+import { CleanupService } from './cleanup/cleanup.service';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
+import { LoggerService } from './logger/logger.service';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';
@@ -152,6 +155,7 @@ const i18nOptions: I18nOptions = {
           max: config.cache.max,
         }),
     MigrationModule,
+    CleanupModule,
     ...extraModules,
   ],
   controllers: [AppController],
@@ -161,4 +165,17 @@ const i18nOptions: I18nOptions = {
     AppService,
   ],
 })
-export class HexabotModule {}
+export class HexabotModule implements OnApplicationBootstrap {
+  constructor(
+    private readonly loggerService: LoggerService,
+    private readonly cleanupService: CleanupService,
+  ) {}
+
+  async onApplicationBootstrap() {
+    try {
+      await this.cleanupService.deleteUnusedSettings();
+    } catch (error) {
+      this.loggerService.error('Unable to delete unused settings', error);
+    }
+  }
+}
