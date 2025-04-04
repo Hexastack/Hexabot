@@ -35,7 +35,7 @@ import { ChannelModule } from './channel/channel.module';
 import { ChatModule } from './chat/chat.module';
 import { CmsModule } from './cms/cms.module';
 import { config } from './config';
-import { ExtensionModule } from './extention/extension.module';
+import { ExtensionModule } from './extension/extension.module';
 import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
