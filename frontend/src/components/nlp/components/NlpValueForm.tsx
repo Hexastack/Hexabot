@@ -73,7 +73,7 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
   >({
     defaultValues: {
       value: nlpValue?.value || "",
-      doc: data?.doc || "",
+      doc: nlpValue?.doc || "",
       expressions: nlpValue?.expressions || [],
     },
   });
@@ -97,7 +97,7 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
       reset({
         value: nlpValue.value,
         expressions: nlpValue.expressions,
-        doc: data.doc,
+        doc: nlpValue.doc,
       });
     } else {
       reset();
