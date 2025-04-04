@@ -164,7 +164,7 @@ export class MessageController extends BaseController<
         read: false,
         delivery: false,
       };
-      this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
+      this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
       return {
         success: true,
       };
