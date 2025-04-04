@@ -9,14 +9,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToClass } from 'class-transformer';
-import { Document, Model, PipelineStage, Query, Types } from 'mongoose';
+import mongoose, {
+  Document,
+  Model,
+  PipelineStage,
+  Query,
+  Types,
+} from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpValueDto } from '../dto/nlp-value.dto';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
@@ -28,7 +34,6 @@ import {
   TNlpValueCountFormat,
 } from '../schemas/nlp-value.schema';
 
-import { NlpEntityRepository } from './nlp-entity.repository';
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 
 @Injectable()
@@ -41,8 +46,6 @@ export class NlpValueRepository extends BaseRepository<
   constructor(
     @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
-    @Inject(forwardRef(() => NlpEntityRepository))
-    private readonly nlpEntityRepository: NlpEntityRepository,
   ) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
@@ -216,7 +219,9 @@ export class NlpValueRepository extends BaseRepository<
           ...rest,
           entity: plainToClass(
             NlpEntity,
-            await this.nlpEntityRepository.findOne(entity),
+            await mongoose
+              .model(NlpEntityModel.name, NlpEntityModel.schema)
+              .findById(entity),
             {
               excludePrefixes: ['_'],
             },

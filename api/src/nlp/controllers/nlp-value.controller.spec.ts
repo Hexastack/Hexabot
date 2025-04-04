@@ -18,6 +18,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
