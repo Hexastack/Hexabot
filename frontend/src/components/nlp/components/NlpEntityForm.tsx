@@ -60,6 +60,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
       name: data?.name || "",
       doc: data?.doc || "",
       lookups: data?.lookups || ["keywords"],
+      weight: data?.weight || 1,
     },
   });
   const validationRules = {
@@ -82,6 +83,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
       reset({
         name: data.name,
         doc: data.doc,
+        weight: data.weight,
       });
     } else {
       reset();
@@ -130,6 +132,14 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               multiline={true}
             />
           </ContentItem>
+          <ContentItem>
+          <Input
+            label={t("label.weight")}
+            {...register("weight", { valueAsNumber: true })}
+            type="number"
+            inputProps={{ min: 1, step: 1 }} // Restricts input to positive integers only
+          />
+        </ContentItem>
         </ContentContainer>
       </form>
     </Wrapper>
