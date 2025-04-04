@@ -55,10 +55,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $or: ["doc", "value"]
+    $or: ["doc", "value"],
   });
   const { dataGridProps } = useFind(
-    { entity: EntityType.NLP_VALUE },
+    { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {
       params: searchPayload,
     },
@@ -103,7 +103,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     ],
     t("label.operations"),
   );
-  const synonymsColumn =  {
+  const synonymsColumn = {
     flex: 3,
     field: "synonyms",
     headerName: t("label.synonyms"),
@@ -124,6 +124,24 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
+    },
+    {
+      flex: 2,
+      field: "nlpSamplesCount",
+      align: "center",
+      headerName: t("label.nlp_samples_count"),
+      sortable: true,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      renderHeader,
+      renderCell: ({ row }) => (
+        <Chip
+          sx={{ alignContent: "center" }}
+          id={row.id}
+          label={row.nlpSamplesCount}
+          variant="inbox"
+        />
+      ),
     },
     {
       flex: 3,

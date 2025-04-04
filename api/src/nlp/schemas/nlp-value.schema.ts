@@ -106,6 +106,18 @@ export class NlpValueFull extends NlpValueStub {
   entity: NlpEntity;
 }
 
+export class NlpValueWithCount extends NlpValue {
+  nlpSamplesCount: number;
+}
+
+export class NlpValueFullWithCount extends NlpValueFull {
+  nlpSamplesCount: number;
+}
+
+export class NlpValueFullWithCountDto {
+  nlpSamplesCount: number;
+}
+
 export type NlpValueDocument = THydratedDocument<NlpValue>;
 
 export const NlpValueModel: ModelDefinition = LifecycleHookManager.attach({
@@ -121,3 +133,7 @@ export type NlpValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_VALUE_POPULATE: NlpValuePopulate[] = ['entity'];
+
+export type TNlpValueCountFormat<T> = T extends 'stub'
+  ? NlpValueWithCount
+  : NlpValueFullWithCount;

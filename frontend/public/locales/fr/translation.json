@@ -334,6 +334,7 @@
     "nlp": "NLU",
     "nlp_entity": "Entité NLU",
     "nlp_entity_value": "Valeur NLU",
+    "nlp_samples_count": "Nombre des échantillons",
     "value": "Valeur",
     "lookups": "Stratégies",
     "lookup_strategies": "Stratégie de recherche",
