@@ -32,7 +32,6 @@ interface Boundaries {
   right: number,
   top: number,
   bottom: number,
-
 }
 
 interface Dimensions {
@@ -109,7 +108,7 @@ const calculateOverlapRatio = (
   targetDimension: number
 ): number => {
   const maxRange = Math.max(sourceDimension, targetDimension);
-  
+
   return overlapAmount / maxRange;
 };
 /**
