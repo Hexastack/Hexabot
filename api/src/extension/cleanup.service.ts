@@ -25,6 +25,14 @@ export class CleanupService {
     private readonly channelService: ChannelService,
   ) {}
 
+  /**
+   * Deletes unused settings with the specified criteria.
+   *
+   * @param criteria - An array of criteria objects containing:
+   *                   - suffix: Regex pattern to match setting groups
+   *                   - namespaces: Array of namespaces to exclude from deletion
+   * @returns A promise that resolves to the result of the deletion operation.
+   */
   private async deleteManyBySuffixAndNamespaces(
     criteria: TCriteria[],
   ): Promise<DeleteResult> {
@@ -35,19 +43,33 @@ export class CleanupService {
     });
   }
 
+  /**
+   * Retrieves a list of channel Namespaces.
+   *
+   * @returns An array of channel Namespaces.
+   */
   public getChannelNamespaces(): TExtractNamespace<'channel'>[] {
     return this.channelService
       .getAll()
       .map((channel) => channel.getNamespace<TExtractExtension<'channel'>>());
   }
 
+  /**
+   * Retrieves a list of helper Namespaces.
+   *
+   * @returns An array of helper Namespaces.
+   */
   public getHelperNamespaces(): TExtractNamespace<'helper'>[] {
     return this.helperService
       .getAll()
       .map((helper) => helper.getNamespace<TExtractExtension<'helper'>>());
   }
 
-  public async pruneExtensionSettings() {
+  /**
+   * Prune extensions unused settings.
+   *
+   */
+  public async pruneExtensionSettings(): Promise<void> {
     const channels = this.getChannelNamespaces();
     const helpers = this.getHelperNamespaces();
     const { deletedCount } = await this.deleteManyBySuffixAndNamespaces([
