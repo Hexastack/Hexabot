@@ -11,16 +11,163 @@ import styled from "@emotion/styled";
 import {
   DefaultLinkFactory,
   DefaultLinkWidget,
+  NodeModel,
   PortModel
 } from "@projectstorm/react-diagrams";
 
 import { AdvancedLinkModel } from "./AdvancedLinkModel";
+
+const PROXIMITY_THRESHOLD = 500;
+const MIN_DISTANCE = 0.1;
+const MAX_DISTANCE = 2000;
+const CONTROL_POINT_PADDING = 10;
 
 interface Point {
   x: number;
   y: number;
 }
 
+interface Boundaries {
+  left: number,
+  right: number,
+  top: number,
+  bottom: number,
+
+}
+
+interface Dimensions {
+  width: number,
+  height: number,
+}
+// Helper function to get port dimensions
+const getPortDimensions = (port: PortModel): Dimensions => {
+  return {
+    width: port.width || CONTROL_POINT_PADDING,
+    height: port.height || CONTROL_POINT_PADDING,
+  };
+};
+// Helper function to calculate port center point
+const getPortCenterPoint = (port: PortModel): Point => {
+  const portSize = getPortDimensions(port);
+
+  return {
+    x: port.getPosition().x + portSize.width / 2,
+    y: port.getPosition().y + portSize.height / 2,
+  };
+};
+/**
+ * Logarithmic scaling function that adjusts between 1.5 and 2 based on distance,
+ * minimum distance, and maximum distance.
+ * @param distance - The distance to scale.
+ * @param minDistance - A small value to prevent division by zero or too small values.
+ * @param maxDistance - The maximum expected distance.
+ */
+const logFactor = (
+  distance: number,
+  minDistance: number,
+  maxDistance: number
+): number => {
+  const scale = Math.log(distance + minDistance) / Math.log(maxDistance + minDistance);
+
+  return 1.5 + scale * 0.5; // Scaled to range between 1.5 and 2
+};
+/**
+ * Calculates the horizontal (X-axis) overlap in pixels between two node boundaries.
+ * Returns 0 if there is no overlap.
+ */
+const calculateXOverlap = (
+  sourceBounds: Boundaries,
+  targetBounds: Boundaries
+): number => {
+  return Math.max(
+    0,
+    Math.min(sourceBounds.right, targetBounds.right) -
+      Math.max(sourceBounds.left, targetBounds.left)
+  );
+};
+/**
+ * Calculates the vertical (Y-axis) overlap in pixels between two node boundaries.
+ * Returns 0 if there is no overlap.
+ */
+const calculateYOverlap = (
+  sourceBounds: Boundaries,
+  targetBounds: Boundaries
+): number => {
+  return Math.max(
+    0,
+    Math.min(sourceBounds.bottom, targetBounds.bottom) -
+      Math.max(sourceBounds.top, targetBounds.top)
+  );
+};
+/**
+ * Converts an overlap amount into a ratio (0 to 1) based on the larger of the two node dimensions.
+ * Useful for dynamically adjusting offsets based on how much nodes visually intersect.
+ */
+const calculateOverlapRatio = (
+  overlapAmount: number,
+  sourceDimension: number,
+  targetDimension: number
+): number => {
+  const maxRange = Math.max(sourceDimension, targetDimension);
+  
+  return overlapAmount / maxRange;
+};
+/**
+ * Computes the Euclidean distance between two points.
+ * Used to scale offsets and curve control points based on how far apart nodes are.
+ */
+const calculateDistance = (startPoint: Point, endPoint: Point): number => {
+  return Math.sqrt(
+    Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2)
+  );
+};
+/**
+ * Calculates the bounding box of a node based on its position and size.
+ * Returns an object with `left`, `right`, `top`, and `bottom` properties representing the node's edges.
+ */
+const calculateNodeBoundaries = (node: NodeModel): Boundaries => {
+  return {
+    left: node.getPosition().x,
+    right: node.getPosition().x + node.width,
+    top: node.getPosition().y,
+    bottom: node.getPosition().y + node.height,
+  };
+};
+/**
+ * Calculates a single control point for a cubic Bézier curve.
+ * Adjusts based on direction, dynamic offset, and node boundaries.
+ */
+const calculateControlPoint = (
+  anchor: Point,
+  horizontalOffset: number,
+  verticalOffset: number,
+  verticalDirection: number,
+  nodeBounds: Boundaries,
+  isStart: boolean,
+  controlPointPadding: number
+): Point => {
+  let x =
+    anchor.x + (isStart ? horizontalOffset : -horizontalOffset);
+  let y =
+    anchor.y + (isStart ? verticalDirection * verticalOffset : -verticalDirection * verticalOffset);
+
+  // Apply minimum horizontal constraint
+  x = isStart
+    ? Math.max(x, nodeBounds.right + controlPointPadding)
+    : Math.min(x, nodeBounds.left - controlPointPadding);
+
+  // Apply vertical constraint based on direction
+  y =
+    verticalDirection > 0
+      ? isStart
+        ? Math.max(y, nodeBounds.bottom + controlPointPadding)
+        : Math.min(y, nodeBounds.top - controlPointPadding)
+      : isStart
+      ? Math.min(y, nodeBounds.top - controlPointPadding)
+      : Math.max(y, nodeBounds.bottom + controlPointPadding);
+
+  return { x, y };
+};
 const createCurvedPath = (start: Point, end: Point, nodeHeight: number) => {
   const controlPoint1X = start.x + nodeHeight - 20;
   const controlPoint1Y = start.y - nodeHeight;
@@ -35,79 +182,40 @@ const createBackwardCurvedPath = (
 ) => {
   // Set a threshold for node proximity, below which dynamic adjustments to offsets are applied
   // This helps in reducing abrupt curve steepness when nodes are close to each other
-  const proximityThreshold = 500;
+  const proximityThreshold = PROXIMITY_THRESHOLD;
+  const minDistance = MIN_DISTANCE;
+  const maxDistance = MAX_DISTANCE;
   const sourceNode = sourcePort.getNode();
   const targetNode = targetPort.getNode();
-  // **NEW:** Get port dimensions for better alignment
-  const sourcePortSize = { width: sourcePort.width || 10, height: sourcePort.height || 10 };
-  const targetPortSize = { width: targetPort.width || 10, height: targetPort.height || 10 };
   // Get node dimensions
   const sourceNodeWidth = sourceNode.width;
   const targetNodeWidth = targetNode.width;
   const sourceNodeHeight = sourceNode.height;
   const targetNodeHeight = targetNode.height;
   // Get node boundaries
-  const sourceNodeBounds = {
-    left: sourceNode.getPosition().x,
-    right: sourceNode.getPosition().x + sourceNodeWidth,
-    top: sourceNode.getPosition().y,
-    bottom: sourceNode.getPosition().y + sourceNodeHeight,
-  };
-  const targetNodeBounds = {
-    left: targetNode.getPosition().x,
-    right: targetNode.getPosition().x + targetNodeWidth,
-    top: targetNode.getPosition().y,
-    bottom: targetNode.getPosition().y + targetNodeHeight,
-  };
+  const sourceNodeBounds: Boundaries = calculateNodeBoundaries(sourceNode);
+  const targetNodeBounds: Boundaries = calculateNodeBoundaries(targetNode);
   // **NEW:** Adjust `start` and `end` to match the exact center of ports
-  const adjustedStart: Point = {
-    x: sourcePort.getPosition().x + sourcePortSize.width / 2,
-    y: sourcePort.getPosition().y + sourcePortSize.height / 2,
-  };
-  const adjustedEnd: Point = {
-    x: targetPort.getPosition().x + targetPortSize.width / 2,
-    y: targetPort.getPosition().y + targetPortSize.height / 2,
-  };
+  const adjustedStart: Point = getPortCenterPoint(sourcePort);
+  const adjustedEnd: Point = getPortCenterPoint(targetPort);
   // Calculate the distance between nodes
-  const nodeDistance = Math.sqrt(
-    Math.pow(adjustedEnd.x - adjustedStart.x, 2) + Math.pow(adjustedEnd.y - adjustedStart.y, 2)
-  );
-  // Logarithmic scaling function that adjusts between 1.5 and 2 based on distance
-  const logFactor = (distance: number) => {
-    const minDistance = 0.1; // A small value to prevent division by zero or too small values
-    const maxDistance = 2000; // A maximum value for nodeDistance where the function plateaus
-    // Logarithmic scale function to map distance to a factor between 1.5 and 2
-    const scale = Math.log(distance + minDistance) / Math.log(maxDistance + minDistance);
-
-    // Scale result to range between 1.5 and 2
-    return 1.5 + scale * (2 - 1.5);
-  };
+  const nodeDistance: number = calculateDistance(adjustedStart, adjustedEnd);
   // Use node dimensions and distance to calculate dynamic offsets
-  const horizontalOffset = Math.max(sourceNodeWidth, targetNodeWidth);
-  const verticalOffset = Math.max(sourceNodeHeight, targetNodeHeight);
+  const horizontalOffset: number = Math.max(sourceNodeWidth, targetNodeWidth);
+  const verticalOffset: number = Math.max(sourceNodeHeight, targetNodeHeight);
 
   // Dynamic factor, adjusting horizontal and vertical offsets based on the distance
-  let adjustedHorizontalOffset = horizontalOffset * logFactor(nodeDistance);
-  let adjustedVerticalOffset = verticalOffset * logFactor(nodeDistance);
+  let adjustedHorizontalOffset: number = horizontalOffset * logFactor(nodeDistance, minDistance, maxDistance);
+  let adjustedVerticalOffset: number = verticalOffset * logFactor(nodeDistance, minDistance, maxDistance);
 
   // Horizontal overlap ratio (0 = no overlap, 1 = fully overlapping horizontally)
-  const xOverlapAmount = Math.max(
-    0,
-    Math.min(sourceNodeBounds.right, targetNodeBounds.right) -
-    Math.max(sourceNodeBounds.left, targetNodeBounds.left)
-  );
-  const maxXRange = Math.max(sourceNodeWidth, targetNodeWidth);
-  const xOverlapRatio = xOverlapAmount / maxXRange;
+  const xOverlapAmount: number = calculateXOverlap(sourceNodeBounds, targetNodeBounds);
+  const xOverlapRatio: number = calculateOverlapRatio(xOverlapAmount, sourceNodeWidth, targetNodeWidth);
   // Vertical overlap ratio (0 = no overlap, 1 = fully overlapping vertically)
-  const yOverlapAmount = Math.max(
-    0,
-    Math.min(sourceNodeBounds.bottom, targetNodeBounds.bottom) -
-    Math.max(sourceNodeBounds.top, targetNodeBounds.top)
-  );
-  const maxYRange = Math.max(sourceNodeHeight, targetNodeHeight);
-  const yOverlapRatio = yOverlapAmount / maxYRange;
+  const yOverlapAmount: number = calculateYOverlap(sourceNodeBounds, targetNodeBounds);
+  const yOverlapRatio: number = calculateOverlapRatio(yOverlapAmount, sourceNodeHeight, targetNodeHeight);
   // Determine vertical direction for Y alignment
-  const verticalDirection = adjustedEnd.y >= adjustedStart.y ? 1 : -1;
+  const verticalDirection: number = adjustedEnd.y >= adjustedStart.y ? 1 : -1;
 
   // If Node Distance is small, multiply offsets by overlap ratios
   // to avoid abrupt curve steepness
@@ -116,25 +224,27 @@ const createBackwardCurvedPath = (
     adjustedVerticalOffset *= yOverlapRatio;
   }
   // Compute control points with dynamic offset
-  let controlPoint1X = adjustedStart.x + adjustedHorizontalOffset;
-  let controlPoint1Y = adjustedStart.y + verticalDirection * adjustedVerticalOffset;
-
-  let controlPoint2X = adjustedEnd.x - adjustedHorizontalOffset;
-  let controlPoint2Y = adjustedEnd.y - verticalDirection * adjustedVerticalOffset;
-
-  controlPoint1X = Math.max(controlPoint1X, sourceNodeBounds.right + 10);
-  controlPoint2X = Math.min(controlPoint2X, targetNodeBounds.left - 10);
-
-  controlPoint1Y = verticalDirection > 0
-    ? Math.max(controlPoint1Y, sourceNodeBounds.bottom + 10)
-    : Math.min(controlPoint1Y, sourceNodeBounds.top - 10);
-
-  controlPoint2Y = verticalDirection > 0
-    ? Math.min(controlPoint2Y, targetNodeBounds.top - 10)
-    : Math.max(controlPoint2Y, targetNodeBounds.bottom + 10);
+  const controlPoint1 = calculateControlPoint(
+    adjustedStart,
+    adjustedHorizontalOffset,
+    adjustedVerticalOffset,
+    verticalDirection,
+    sourceNodeBounds,
+    true,
+    CONTROL_POINT_PADDING
+  );
+  const controlPoint2 = calculateControlPoint(
+    adjustedEnd,
+    adjustedHorizontalOffset,
+    adjustedVerticalOffset,
+    verticalDirection,
+    targetNodeBounds,
+    false,
+    CONTROL_POINT_PADDING
+  );
 
   // Return the cubic Bezier curve
-  return `M ${adjustedStart.x},${adjustedStart.y} C ${controlPoint1X},${controlPoint1Y} ${controlPoint2X},${controlPoint2Y} ${adjustedEnd.x},${adjustedEnd.y}`;
+  return `M ${adjustedStart.x},${adjustedStart.y} C ${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${adjustedEnd.x},${adjustedEnd.y}`;
 };
 
 namespace S {
@@ -196,12 +306,8 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
     const isBackward = startPoint.x - endPoint.x > 12;
 
     if (isSelfLoop) {
-      const sourcePortSize = { width:sourcePort.width || 10, height:sourcePort.height || 10 };
       // Adjust start Point to match the exact source port's centre
-      const adjustedStartPoint: Point = {
-        x: sourcePortPosition.x + sourcePortSize.width / 2,
-        y: sourcePortPosition.y + sourcePortSize.height / 2,
-      };
+      const adjustedStartPoint: Point = getPortCenterPoint(sourcePort);
       // Handle self-loop (curved) links
       const targetPortHeight = targetPort.height;
       const targetNdeHeight =
