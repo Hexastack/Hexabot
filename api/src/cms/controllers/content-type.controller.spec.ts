@@ -13,6 +13,7 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockService } from '@/chat/services/block.service';
+import { ContentTypeType } from '@/setting/schemas/types';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
@@ -100,27 +101,27 @@ describe('ContentTypeController', () => {
           {
             name: 'address',
             label: 'Address',
-            type: 'text',
+            type: ContentTypeType.text,
           },
           {
             name: 'image',
             label: 'Image',
-            type: 'file',
+            type: ContentTypeType.file,
           },
           {
             name: 'description',
             label: 'Description',
-            type: 'html',
+            type: ContentTypeType.html,
           },
           {
             name: 'rooms',
             label: 'Rooms',
-            type: 'file',
+            type: ContentTypeType.file,
           },
           {
             name: 'price',
             label: 'Price',
-            type: 'file',
+            type: ContentTypeType.file,
           },
         ],
       };

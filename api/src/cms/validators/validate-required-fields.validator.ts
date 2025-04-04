@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -12,6 +12,8 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
+import { ContentTypeType } from '@/setting/schemas/types';
+
 import { FieldType } from '../dto/contentType.dto';
 
 @ValidatorConstraint({ name: 'validateRequiredFields', async: false })
@@ -20,12 +22,12 @@ export class ValidateRequiredFields implements ValidatorConstraintInterface {
     {
       name: 'title',
       label: 'Title',
-      type: 'text',
+      type: ContentTypeType.text,
     },
     {
       name: 'status',
       label: 'Status',
-      type: 'checkbox',
+      type: ContentTypeType.checkbox,
     },
   ];
 

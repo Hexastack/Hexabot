@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -19,6 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { ContentTypeType } from '@/setting/schemas/types';
 import { DtoConfig } from '@/utils/types/dto.types';
 
 import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
@@ -34,11 +35,11 @@ export class FieldType {
   label: string;
 
   @IsString()
-  @IsEnum(['text', 'url', 'textarea', 'checkbox', 'file', 'html'], {
+  @IsEnum(ContentTypeType, {
     message:
       "type must be one of the following values: 'text', 'url', 'textarea', 'checkbox', 'file', 'html'",
   })
-  type: string;
+  type: ContentTypeType;
 }
 
 export class ContentTypeCreateDto {
