@@ -57,7 +57,7 @@ const createBackwardCurvedPath = (
     left: targetNode.getPosition().x,
     right: targetNode.getPosition().x + targetNodeWidth,
     top: targetNode.getPosition().y,
-    bottom: targetNode.getPosition().y +targetNodeHeight,
+    bottom: targetNode.getPosition().y + targetNodeHeight,
   };
   // **NEW:** Adjust `start` and `end` to match the exact center of ports
   const adjustedStart: Point = {
@@ -73,7 +73,7 @@ const createBackwardCurvedPath = (
     Math.pow(adjustedEnd.x - adjustedStart.x, 2) + Math.pow(adjustedEnd.y - adjustedStart.y, 2)
   );
   // Logarithmic scaling function that adjusts between 1.5 and 2 based on distance
-  const logFactor = (distance) => {
+  const logFactor = (distance: number) => {
     const minDistance = 0.1; // A small value to prevent division by zero or too small values
     const maxDistance = 2000; // A maximum value for nodeDistance where the function plateaus
     // Logarithmic scale function to map distance to a factor between 1.5 and 2
@@ -87,9 +87,7 @@ const createBackwardCurvedPath = (
   const verticalOffset = Math.max(sourceNodeHeight, targetNodeHeight);
 
   // Dynamic factor, adjusting horizontal and vertical offsets based on the distance
-  let adjustedHorizontalOffset = horizontalOffset*  logFactor(nodeDistance);
-
-  ;
+  let adjustedHorizontalOffset = horizontalOffset * logFactor(nodeDistance);
   let adjustedVerticalOffset = verticalOffset * logFactor(nodeDistance);
 
   // Horizontal overlap ratio (0 = no overlap, 1 = fully overlapping horizontally)
@@ -114,8 +112,8 @@ const createBackwardCurvedPath = (
   // If Node Distance is small, multiply offsets by overlap ratios
   // to avoid abrupt curve steepness
   if (nodeDistance < proximityThreshold) {
-    adjustedHorizontalOffset *= xOverlapRatio; 
-    adjustedVerticalOffset *= yOverlapRatio;  
+    adjustedHorizontalOffset *= xOverlapRatio;
+    adjustedVerticalOffset *= yOverlapRatio;
   }
   // Compute control points with dynamic offset
   let controlPoint1X = adjustedStart.x + adjustedHorizontalOffset;
@@ -205,7 +203,7 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
         y: sourcePortPosition.y + sourcePortSize.height / 2,
       };
       // Handle self-loop (curved) links
-      const targetPortHeight =targetPort.height;
+      const targetPortHeight = targetPort.height;
       const targetNdeHeight =
         (targetPort.getPosition().y -
         targetPort.getNode().getPosition().y) *
