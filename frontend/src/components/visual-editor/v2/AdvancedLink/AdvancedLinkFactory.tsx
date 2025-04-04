@@ -33,6 +33,9 @@ const createBackwardCurvedPath = (
   sourcePort: PortModel,
   targetPort: PortModel,
 ) => {
+  // Set a threshold for node proximity, below which dynamic adjustments to offsets are applied
+  // This helps in reducing abrupt curve steepness when nodes are close to each other
+  const proximityThreshold = 500;
   const sourceNode = sourcePort.getNode();
   const targetNode = targetPort.getNode();
   // **NEW:** Get port dimensions for better alignment
@@ -110,7 +113,7 @@ const createBackwardCurvedPath = (
 
   // If Node Distance is small, multiply offsets by overlap ratios
   // to avoid abrupt curve steepness
-  if (nodeDistance < 500) {
+  if (nodeDistance < proximityThreshold) {
     adjustedHorizontalOffset *= xOverlapRatio; 
     adjustedVerticalOffset *= yOverlapRatio;  
   }
