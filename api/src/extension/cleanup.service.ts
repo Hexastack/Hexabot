@@ -38,7 +38,7 @@ export class CleanupService {
   ): Promise<DeleteResult> {
     return await this.settingService.deleteMany({
       $or: criteria.map(({ suffix, namespaces }) => ({
-        group: { $regex: suffix, $nin: namespaces },
+        group: { $regex: new RegExp(`${suffix}$`), $nin: namespaces },
       })),
     });
   }
