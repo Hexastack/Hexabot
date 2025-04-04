@@ -20,11 +20,12 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
+import { INlpEntity, NlpLookups } from "@/types/nlp-entity.types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
 export type NlpValueFormProps = {
-  data: INlpValue | null;
-  canHaveSynonyms?: boolean;
+  defaultValues?: INlpValue;
+  presetValues: INlpEntity;
 };
 export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
   data: props,
@@ -32,14 +33,18 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
   WrapperProps,
   ...rest
 }) => {
-  const { data, canHaveSynonyms } = props || {};
+  const { defaultValues: nlpValue, presetValues: nlpEntity } = props || {
+    defaultValues: null,
+    presetValues: null,
+  };
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
-  const { refetch: refetchEntity } = useGet(data?.entity || String(query.id), {
+  const { refetch: refetchEntity } = useGet(nlpEntity?.id!, {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
+  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { mutate: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
       rest.onError?.();
@@ -67,9 +72,9 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
     }
   >({
     defaultValues: {
-      value: data?.value || "",
+      value: nlpValue?.value || "",
       doc: data?.doc || "",
-      expressions: data?.expressions || [],
+      expressions: nlpValue?.expressions || [],
     },
   });
   const validationRules = {
@@ -80,24 +85,24 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
     description: {},
   };
   const onSubmitForm = async (params: INlpValueAttributes) => {
-    if (data) {
-      updateNlpValue({ id: data.id, params });
+    if (nlpValue) {
+      updateNlpValue({ id: nlpValue.id, params });
     } else {
       createNlpValue({ ...params, entity: String(query.id) });
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (nlpValue) {
       reset({
-        value: data.value,
-        expressions: data.expressions,
+        value: nlpValue.value,
+        expressions: nlpValue.expressions,
         doc: data.doc,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [nlpValue, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

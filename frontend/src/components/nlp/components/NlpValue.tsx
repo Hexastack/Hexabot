@@ -34,7 +34,6 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
-import { NlpLookups } from "@/types/nlp-entity.types";
 import { INlpValue } from "@/types/nlp-value.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -52,7 +51,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
     $or: ["doc", "value"]
@@ -88,7 +86,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       {
         label: ActionColumnLabel.Edit,
         action: (row) =>
-          dialogs.open(NlpValueFormDialog, { data: row, canHaveSynonyms }),
+          dialogs.open(NlpValueFormDialog, {
+            defaultValues: row,
+            presetValues: nlpEntity,
+          }),
       },
       {
         label: ActionColumnLabel.Delete,
@@ -222,8 +223,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       sx={{ float: "right" }}
                       onClick={() =>
                         dialogs.open(NlpValueFormDialog, {
-                          data: null,
-                          canHaveSynonyms,
+                          presetValues: nlpEntity,
                         })
                       }
                     >
