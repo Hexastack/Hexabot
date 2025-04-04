@@ -74,7 +74,6 @@ describe('CleanupService', () => {
       CleanupService,
       SettingService,
       HelperService,
-      ,
     ]);
 
     const [loggerService] = await resolveMocks([LoggerService]);
