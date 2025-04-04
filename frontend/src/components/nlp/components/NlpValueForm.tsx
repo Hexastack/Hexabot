@@ -25,7 +25,7 @@ import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
 export type NlpValueFormProps = {
   defaultValues?: INlpValue;
-  presetValues: INlpEntity;
+  presetValues: INlpEntity | undefined;
 };
 export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
   data: props,

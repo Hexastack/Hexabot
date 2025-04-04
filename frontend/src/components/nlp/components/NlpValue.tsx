@@ -53,7 +53,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   });
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $or: ["doc", "value"]
+    $or: ["doc", "value"],
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE },
@@ -104,7 +104,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     ],
     t("label.operations"),
   );
-  const synonymsColumn =  {
+  const synonymsColumn = {
     flex: 3,
     field: "synonyms",
     headerName: t("label.synonyms"),
