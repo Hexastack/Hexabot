@@ -12,7 +12,6 @@ import { Injectable, Optional, StreamableFile } from '@nestjs/common';
 
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
@@ -23,7 +22,6 @@ import { Attachment } from '../schemas/attachment.schema';
 export class AttachmentService extends BaseService<Attachment> {
   constructor(
     readonly repository: AttachmentRepository,
-    private readonly logger: LoggerService,
     @Optional() private readonly helperService: HelperService,
   ) {
     super(repository);

@@ -24,7 +24,6 @@ import { Request } from 'express'; // Import the Express request and response ty
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -64,7 +63,6 @@ export class MessageController extends BaseController<
     private readonly messageService: MessageService,
     private readonly subscriberService: SubscriberService,
     private readonly channelService: ChannelService,
-    private readonly logger: LoggerService,
   ) {
     super(messageService);
   }

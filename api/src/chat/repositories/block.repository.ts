@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
@@ -17,7 +17,6 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
-import { LoggerService } from '@/logger/logger.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -36,10 +35,7 @@ export class BlockRepository extends BaseRepository<
   BlockFull,
   BlockDto
 > {
-  constructor(
-    @InjectModel(Block.name) readonly model: Model<Block>,
-    @Optional() private readonly logger?: LoggerService,
-  ) {
+  constructor(@InjectModel(Block.name) readonly model: Model<Block>) {
     super(model, Block, BLOCK_POPULATE, BlockFull);
   }
 

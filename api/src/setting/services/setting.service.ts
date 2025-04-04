@@ -13,7 +13,6 @@ import { Cache } from 'cache-manager';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
-import { LoggerService } from '@/logger/logger.service';
 import {
   ALLOWED_ORIGINS_CACHE_KEY,
   SETTING_CACHE_KEY,
@@ -32,7 +31,6 @@ export class SettingService extends BaseService<Setting> {
   constructor(
     readonly repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly logger: LoggerService,
     private readonly seeder: SettingSeeder,
   ) {
     super(repository);

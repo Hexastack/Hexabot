@@ -9,7 +9,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { ConversationDto } from '../dto/conversation.dto';
@@ -36,7 +35,6 @@ export class ConversationService extends BaseService<
 > {
   constructor(
     readonly repository: ConversationRepository,
-    private readonly logger: LoggerService,
     private readonly contextVarService: ContextVarService,
     private readonly subscriberService: SubscriberService,
   ) {

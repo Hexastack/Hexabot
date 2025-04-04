@@ -11,7 +11,6 @@ import Papa from 'papaparse';
 
 import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -31,10 +30,7 @@ export class ContentService extends BaseService<
   ContentFull,
   ContentDto
 > {
-  constructor(
-    readonly repository: ContentRepository,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(readonly repository: ContentRepository) {
     super(repository);
   }
 

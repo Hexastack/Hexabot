@@ -23,7 +23,6 @@ import {
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginName, PluginType } from '@/plugins/types';
@@ -57,7 +56,6 @@ export class BlockController extends BaseController<
 > {
   constructor(
     private readonly blockService: BlockService,
-    private readonly logger: LoggerService,
     private readonly categoryService: CategoryService,
     private readonly labelService: LabelService,
     private readonly userService: UserService,
