@@ -96,7 +96,7 @@ describe('CleanupService', () => {
         ...cleanupService.getHelperNamespaces(),
       ];
 
-      await cleanupService.deleteUnusedSettings();
+      await cleanupService.pruneExtensionSettings();
       const cleanSettings = await settingService.findAll();
       const filteredSettings = initialSettings.filter(
         ({ group }) =>

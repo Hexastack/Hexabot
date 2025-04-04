@@ -25,7 +25,9 @@ export class CleanupService {
     private readonly channelService: ChannelService,
   ) {}
 
-  private async deleteMany(criteria: TCriteria[]): Promise<DeleteResult> {
+  private async deleteManyBySuffixAndNamespaces(
+    criteria: TCriteria[],
+  ): Promise<DeleteResult> {
     return await this.settingService.deleteMany({
       $or: criteria.map(({ suffix, namespaces }) => ({
         group: { $regex: suffix, $nin: namespaces },
@@ -45,17 +47,17 @@ export class CleanupService {
       .map((helper) => helper.getNamespace<TExtractExtension<'helper'>>());
   }
 
-  public async deleteUnusedSettings() {
+  public async pruneExtensionSettings() {
     const channels = this.getChannelNamespaces();
     const helpers = this.getHelperNamespaces();
-    const { deletedCount } = await this.deleteMany([
+    const { deletedCount } = await this.deleteManyBySuffixAndNamespaces([
       { suffix: '_channel', namespaces: channels },
       { suffix: '_helper', namespaces: helpers },
     ]);
 
     if (deletedCount > 0) {
       this.loggerService.log(
-        `${deletedCount} unused setting${deletedCount === 1 ? '' : 's'} are successfully deleted!`,
+        `${deletedCount} unused setting${deletedCount === 1 ? '' : 's'} ${deletedCount === 1 ? 'is' : 'are'} successfully deleted!`,
       );
     }
   }
