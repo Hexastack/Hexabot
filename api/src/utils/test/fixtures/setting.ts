@@ -11,6 +11,7 @@ import mongoose from 'mongoose';
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingType } from '@/setting/schemas/types';
+import { getRandom } from '@/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [
   {
@@ -89,6 +90,41 @@ export const settingFixtures: SettingCreateDto[] = [
     value: 'US',
     type: SettingType.text,
     weight: 10,
+  },
+  {
+    group: `${getRandom()}_channel`,
+    label: `${getRandom()}`,
+    value: '',
+    type: SettingType.text,
+    weight: 11,
+  },
+  {
+    group: `${getRandom()}_helper`,
+    label: `${getRandom()}`,
+    value: '',
+    type: SettingType.text,
+    weight: 12,
+  },
+  {
+    group: `${getRandom()}_channel`,
+    label: `${getRandom()}`,
+    value: '',
+    type: SettingType.text,
+    weight: 13,
+  },
+  {
+    group: `${getRandom()}_helper`,
+    label: `${getRandom()}`,
+    value: '',
+    type: SettingType.text,
+    weight: 14,
+  },
+  {
+    group: 'local_storage_helper',
+    label: 'default storage helper label',
+    value: 'local-storage-helper',
+    type: SettingType.text,
+    weight: 15,
   },
 ];
 
