@@ -16,6 +16,7 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -47,7 +48,7 @@ export class SubscriberRepository extends BaseRepository<
   async postCreate(created: SubscriberDocument): Promise<void> {
     this.eventEmitter.emit(
       'hook:stats:entry',
-      'new_users',
+      BotStatsType.new_users,
       'New users',
       created,
     );

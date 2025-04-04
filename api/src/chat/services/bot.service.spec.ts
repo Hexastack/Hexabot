@@ -243,8 +243,8 @@ describe('BlockService', () => {
     await botService.startConversation(event, block);
     expect(hasBotSpoken).toEqual(true);
     expect(triggeredEvents).toEqual([
-      ['popular', 'hasNextBlocks'],
-      ['new_conversations', 'New conversations'],
+      ['popular', 'hasNextBlocks', webSubscriber],
+      ['new_conversations', 'New conversations', webSubscriber],
     ]);
     clearMock.mockClear();
   });
@@ -301,7 +301,7 @@ describe('BlockService', () => {
     const captured = await botService.processConversationMessage(event);
     expect(captured).toBe(true);
     expect(triggeredEvents).toEqual([
-      ['existing_conversations', 'Existing conversations'],
+      ['existing_conversations', 'Existing conversations', webSubscriber],
     ]);
     clearMock.mockClear();
   });
