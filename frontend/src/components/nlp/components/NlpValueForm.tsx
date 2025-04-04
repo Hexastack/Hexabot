@@ -44,7 +44,7 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
+  const canHaveSynonyms = nlpEntity?.lookups.includes(NlpLookups.keywords);
   const { mutate: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
       rest.onError?.();
