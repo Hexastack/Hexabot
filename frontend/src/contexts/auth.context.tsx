@@ -8,7 +8,7 @@
 
 import getConfig from "next/config";
 import { useRouter } from "next/router";
-import { createContext, ReactNode, useEffect, useState } from "react";
+import { createContext, ReactNode } from "react";
 import {
   QueryObserverResult,
   RefetchOptions,
@@ -25,7 +25,6 @@ import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChann
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
-import { getFromQuery } from "@/utils/URL";
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -51,10 +50,8 @@ const { publicRuntimeConfig } = getConfig();
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
   const { i18n } = useTranslate();
-  const [isReady, setIsReady] = useState(false);
   const queryClient = useQueryClient();
   const updateLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -66,11 +63,11 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const authRedirection = async (isAuthenticated: boolean) => {
     if (isAuthenticated) {
-      const redirect = getFromQuery({ search, key: "redirect" });
-      const nextPage = redirect && decodeURIComponent(redirect);
-
-      if (nextPage?.startsWith("/")) {
-        await router.push(nextPage);
+      if (
+        router.query.redirect &&
+        router.query.redirect.toString().startsWith("/")
+      ) {
+        await router.push(router.query.redirect.toString());
       } else if (hasPublicPath) {
         await router.push(RouterType.HOME);
       }
@@ -109,14 +106,9 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     router.reload();
   });
 
-  useEffect(() => {
-    const search = location.search;
-
-    setSearch(search);
-    setIsReady(true);
-  }, []);
-
-  if (!isReady || isLoading) return <Progress />;
+  if (isLoading) {
+    return <Progress />;
+  }
 
   return (
     <AuthContext.Provider
