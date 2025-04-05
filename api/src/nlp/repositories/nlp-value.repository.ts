@@ -221,7 +221,8 @@ export class NlpValueRepository extends BaseRepository<
             NlpEntity,
             await mongoose
               .model(NlpEntityModel.name, NlpEntityModel.schema)
-              .findById(entity),
+              .findById(entity)
+              .lean(),
             {
               excludePrefixes: ['_'],
             },
