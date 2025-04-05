@@ -20,6 +20,7 @@ import mongoose, {
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
@@ -31,7 +32,7 @@ import {
   NlpValueFullWithCount,
   NlpValuePopulate,
   NlpValueWithCount,
-  TNlpValueCountFormat,
+  TNlpValueCount,
 } from '../schemas/nlp-value.schema';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
@@ -119,31 +120,38 @@ export class NlpValueRepository extends BaseRepository<
     }
   }
 
-  private async aggregateWithCount<T extends 'full' | 'stub' = 'stub'>(
+  /**
+   * Performs an aggregation to retrieve NLP values with their sample counts.
+   *
+   * @param pageQuery - The pagination parameters
+   * @param filterQuery - The filter criteria
+   * @param populatePipelineStages - Optional additional pipeline stages for populating related data
+   * @returns Aggregated results with sample counts
+   */
+  private async aggregateWithCount<F extends Format>(
+    format: F,
     {
       limit = 10,
       skip = 0,
       sort = ['createdAt', 'desc'],
     }: PageQueryDto<NlpValue>,
     { $and = [], ...rest }: TFilterQuery<NlpValue>,
-    populatePipelineStages: PipelineStage[] = [],
-  ) {
+  ): Promise<TNlpValueCount<F>[]> {
     const pipeline: PipelineStage[] = [
       {
         // support filters
         $match: {
           ...rest,
-          ...($and.length && {
-            $and:
-              $and.map(({ entity, ...rest }) =>
-                entity
-                  ? {
-                      ...rest,
-                      entity: new Types.ObjectId(String(entity)),
-                    }
-                  : rest,
-              ) || [],
-          }),
+          ...($and.length
+            ? {
+                $and: $and.map(({ entity, ...rest }) => ({
+                  ...rest,
+                  ...(entity
+                    ? { entity: new Types.ObjectId(String(entity)) }
+                    : {}),
+                })),
+              }
+            : {}),
         },
       },
       // support pageQuery
@@ -196,92 +204,96 @@ export class NlpValueRepository extends BaseRepository<
           nlpSamplesCount: 1,
         },
       },
-      ...populatePipelineStages,
+      ...(format === Format.FULL
+        ? [
+            {
+              $lookup: {
+                from: 'nlpentities',
+                localField: 'entity',
+                foreignField: '_id',
+                as: 'entity',
+              },
+            },
+            {
+              $unwind: '$entity',
+            },
+          ]
+        : []),
       {
         $sort: {
-          [sort[0]]: sort[1].toString().startsWith('desc') ? -1 : 1,
-          _id: sort[1].toString().startsWith('desc') ? -1 : 1,
+          [sort[0]]:
+            typeof sort[1] === 'number'
+              ? sort[1]
+              : sort[1].toString().toLowerCase() === 'desc'
+                ? -1
+                : 1,
+          _id:
+            typeof sort[1] === 'number'
+              ? sort[1]
+              : sort[1].toString().toLowerCase() === 'desc'
+                ? -1
+                : 1,
         },
       },
     ];
 
-    return await this.model.aggregate<TNlpValueCountFormat<T>>(pipeline).exec();
+    return await this.model.aggregate<TNlpValueCount<F>>(pipeline).exec();
   }
 
-  private async plainToClass<T extends 'full' | 'stub'>(
-    format: 'full' | 'stub',
-    aggregatedResults: (NlpValueWithCount | NlpValueFullWithCount)[],
-  ): Promise<TNlpValueCountFormat<T>[]> {
-    if (format === 'full') {
-      const nestedNlpEntities: NlpValueFullWithCount[] = [];
-      for (const { entity, ...rest } of aggregatedResults) {
-        const plainNlpValue = {
+  private async plainToClass<F extends Format>(
+    format: F,
+    aggregatedResults: TNlpValueCount<F>[],
+  ): Promise<TNlpValueCount<F>[]> {
+    const result: typeof aggregatedResults = [];
+
+    for (const item of aggregatedResults as TNlpValueCount<F>[]) {
+      if (format === Format.FULL) {
+        const { entity, ...rest } = item;
+        const entityData = await mongoose
+          .model(NlpEntityModel.name, NlpEntityModel.schema)
+          .findById(entity)
+          .lean();
+
+        const plainNlpValue: NlpValueFull = {
           ...rest,
-          entity: plainToClass(
-            NlpEntity,
-            await mongoose
-              .model(NlpEntityModel.name, NlpEntityModel.schema)
-              .findById(entity)
-              .lean(),
-            {
-              excludePrefixes: ['_'],
-            },
-          ),
+          entity: plainToClass(NlpEntity, entityData, {
+            excludePrefixes: ['_'],
+          }),
         };
-        nestedNlpEntities.push(
+
+        result.push(
           plainToClass(NlpValueFullWithCount, plainNlpValue, {
             excludePrefixes: ['_'],
-          }),
+          }) as TNlpValueCount<F>,
         );
-      }
-      return nestedNlpEntities as TNlpValueCountFormat<T>[];
-    } else {
-      const nestedNlpEntities: NlpValueWithCount[] = [];
-      for (const aggregatedResult of aggregatedResults) {
-        nestedNlpEntities.push(
-          plainToClass(NlpValueWithCount, aggregatedResult, {
+      } else {
+        result.push(
+          plainToClass(NlpValueWithCount, item, {
             excludePrefixes: ['_'],
-          }),
+          }) as TNlpValueCount<F>,
         );
       }
-      return nestedNlpEntities as TNlpValueCountFormat<T>[];
     }
+
+    return result;
   }
 
-  async findWithCount(
+  async findWithCount<F extends Format>(
+    format: F,
     pageQuery: PageQueryDto<NlpValue>,
     filterQuery: TFilterQuery<NlpValue>,
-  ): Promise<NlpValueWithCount[]> {
-    const aggregatedResults = await this.aggregateWithCount<'stub'>(
-      pageQuery,
-      filterQuery,
-    );
+  ): Promise<TNlpValueCount<F>[]> {
+    try {
+      const aggregatedResults = await this.aggregateWithCount(
+        format,
+        pageQuery,
+        filterQuery,
+      );
 
-    return await this.plainToClass<'stub'>('stub', aggregatedResults);
-  }
-
-  async findAndPopulateWithCount(
-    pageQuery: PageQueryDto<NlpValue>,
-    filterQuery: TFilterQuery<NlpValue>,
-  ): Promise<NlpValueFullWithCount[]> {
-    const aggregatedResults = await this.aggregateWithCount<'full'>(
-      pageQuery,
-      filterQuery,
-      [
-        {
-          $lookup: {
-            from: 'nlpentities',
-            localField: 'entity',
-            foreignField: '_id',
-            as: 'entity',
-          },
-        },
-        {
-          $unwind: '$entity',
-        },
-      ],
-    );
-
-    return await this.plainToClass<'full'>('full', aggregatedResults);
+      return await this.plainToClass(format, aggregatedResults);
+    } catch (error) {
+      this.logger.error(`Error in findWithCount: ${error.message}`, error);
+      throw error;
+    }
   }
 }

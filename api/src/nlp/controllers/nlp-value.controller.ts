@@ -30,6 +30,7 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValueCreateDto, NlpValueUpdateDto } from '../dto/nlp-value.dto';
 import {
@@ -147,9 +148,11 @@ export class NlpValueController extends BaseController<
     )
     filters: TFilterQuery<NlpValue>,
   ) {
-    return this.canPopulate(populate)
-      ? await this.nlpValueService.findAndPopulateWithCount(pageQuery, filters)
-      : await this.nlpValueService.findWithCount(pageQuery, filters);
+    return await this.nlpValueService.findWithCount(
+      this.canPopulate(populate) ? Format.FULL : Format.STUB,
+      pageQuery,
+      filters,
+    );
   }
 
   /**

@@ -12,6 +12,7 @@ import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -19,9 +20,8 @@ import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
   NlpValue,
   NlpValueFull,
-  NlpValueFullWithCount,
   NlpValuePopulate,
-  NlpValueWithCount,
+  TNlpValueCount,
 } from '../schemas/nlp-value.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
@@ -223,17 +223,11 @@ export class NlpValueService extends BaseService<
     return Promise.all(promises);
   }
 
-  async findWithCount(
+  async findWithCount<F extends Format>(
+    format: F,
     pageQuery: PageQueryDto<NlpValue>,
     filters: TFilterQuery<NlpValue>,
-  ): Promise<NlpValueWithCount[]> {
-    return await this.repository.findWithCount(pageQuery, filters);
-  }
-
-  async findAndPopulateWithCount(
-    pageQuery: PageQueryDto<NlpValue>,
-    filters: TFilterQuery<NlpValue>,
-  ): Promise<NlpValueFullWithCount[]> {
-    return await this.repository.findAndPopulateWithCount(pageQuery, filters);
+  ): Promise<TNlpValueCount<F>[]> {
+    return await this.repository.findWithCount(format, pageQuery, filters);
   }
 }
