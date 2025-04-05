@@ -9,13 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToClass } from 'class-transformer';
-import mongoose, {
-  Document,
-  Model,
-  PipelineStage,
-  Query,
-  Types,
-} from 'mongoose';
+import { Document, Model, PipelineStage, Query, Types } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -23,7 +17,7 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValueDto } from '../dto/nlp-value.dto';
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
+import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
@@ -47,6 +41,8 @@ export class NlpValueRepository extends BaseRepository<
   constructor(
     @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
+    @InjectModel(NlpEntity.name)
+    private readonly nlpEntityModel: Model<NlpEntity>,
   ) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
@@ -249,14 +245,11 @@ export class NlpValueRepository extends BaseRepository<
     for (const item of aggregatedResults as TNlpValueCount<F>[]) {
       if (format === Format.FULL) {
         const { entity, ...rest } = item;
-        const entityData = await mongoose
-          .model(NlpEntityModel.name, NlpEntityModel.schema)
-          .findById(entity)
-          .lean();
+        const nlpEntityData = await this.nlpEntityModel.findById(entity).lean();
 
         const plainNlpValue: NlpValueFull = {
           ...rest,
-          entity: plainToClass(NlpEntity, entityData, {
+          entity: plainToClass(NlpEntity, nlpEntityData, {
             excludePrefixes: ['_'],
           }),
         };
