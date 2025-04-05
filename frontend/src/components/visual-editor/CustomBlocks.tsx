@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,6 +7,7 @@
  */
 
 import { Grid } from "@mui/material";
+import { useMemo } from "react";
 
 import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
 import { useFind } from "@/hooks/crud/useFind";
@@ -17,18 +18,22 @@ import { Block, StyledTitle } from "./Aside";
 
 export const CustomBlocks = () => {
   const { t } = useTranslate();
-  const { data: customBlocks } = useFind(
+  const { data: customBlocks = [] } = useFind(
     { entity: EntityType.CUSTOM_BLOCK },
     { hasCount: false },
   );
+  const memoizedCustomBlocks = useMemo(
+    () => customBlocks.sort((a, b) => a.id.localeCompare(b.id)),
+    [customBlocks],
+  );
 
-  return customBlocks?.length ? (
+  return memoizedCustomBlocks.length ? (
     <>
       <Grid mb="2">
         <StyledTitle>{t("title.custom_blocks")}</StyledTitle>
       </Grid>
       <Grid container>
-        {customBlocks?.map((customBlock) => (
+        {memoizedCustomBlocks.map((customBlock) => (
           <Block
             key={customBlock.id}
             title={t(`title.${customBlock.namespace}`, {
