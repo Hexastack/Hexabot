@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { plainToClass } from 'class-transformer';
+import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
   Model,
@@ -48,8 +48,6 @@ export class NlpValueRepository extends BaseRepository<
   constructor(
     @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
-    @InjectModel(NlpEntity.name)
-    private readonly nlpEntityModel: Model<NlpEntity>,
   ) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
@@ -236,36 +234,28 @@ export class NlpValueRepository extends BaseRepository<
   private async plainToClass<F extends Format>(
     format: F,
     aggregatedResults: TNlpValueCount<F>[],
+    options: ClassTransformOptions = { excludePrefixes: ['_'] },
   ): Promise<TNlpValueCount<F>[]> {
-    const result: typeof aggregatedResults = [];
-
-    for (const item of aggregatedResults as TNlpValueCount<F>[]) {
+    return aggregatedResults.map(({ entity, ...rest }) => {
       if (format === Format.FULL) {
-        const { entity, ...rest } = item;
-        const nlpEntityData = await this.nlpEntityModel.findById(entity).lean();
-
-        const plainNlpValue: NlpValueFull = {
-          ...rest,
-          entity: plainToClass(NlpEntity, nlpEntityData, {
+        return plainToClass(
+          NlpValueFullWithCount,
+          {
+            ...rest,
+            entity: plainToClass(NlpEntity, entity, options),
+          },
+          {
             excludePrefixes: ['_'],
-          }),
-        };
-
-        result.push(
-          plainToClass(NlpValueFullWithCount, plainNlpValue, {
-            excludePrefixes: ['_'],
-          }) as TNlpValueCount<F>,
-        );
+          },
+        ) as TNlpValueCount<F>;
       } else {
-        result.push(
-          plainToClass(NlpValueWithCount, item, {
-            excludePrefixes: ['_'],
-          }) as TNlpValueCount<F>,
-        );
+        return plainToClass(
+          NlpValueWithCount,
+          { entity, ...rest },
+          options,
+        ) as TNlpValueCount<F>;
       }
-    }
-
-    return result;
+    });
   }
 
   async findWithCount<F extends Format>(
