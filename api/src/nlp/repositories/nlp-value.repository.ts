@@ -123,10 +123,10 @@ export class NlpValueRepository extends BaseRepository<
   /**
    * Performs an aggregation to retrieve NLP values with their sample counts.
    *
+   * @param format - The format can be full or stub
    * @param pageQuery - The pagination parameters
    * @param filterQuery - The filter criteria
-   * @param populatePipelineStages - Optional additional pipeline stages for populating related data
-   * @returns Aggregated results with sample counts
+   * @returns Aggregated Nlp Value results with sample counts
    */
   private async aggregateWithCount<F extends Format>(
     format: F,
