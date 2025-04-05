@@ -62,7 +62,7 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
           settingService
             .getAllowedOrigins()
             .then((allowedOrigins) => {
-              if (origin && allowedOrigins.has(origin)) {
+              if (origin && allowedOrigins.includes(origin)) {
                 cb(null, true);
               } else {
                 // eslint-disable-next-line no-console
