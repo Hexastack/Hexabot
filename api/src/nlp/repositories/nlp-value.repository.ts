@@ -9,7 +9,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToClass } from 'class-transformer';
-import { Document, Model, PipelineStage, Query, Types } from 'mongoose';
+import {
+  Document,
+  Model,
+  PipelineStage,
+  Query,
+  SortOrder,
+  Types,
+} from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -217,18 +224,8 @@ export class NlpValueRepository extends BaseRepository<
         : []),
       {
         $sort: {
-          [sort[0]]:
-            typeof sort[1] === 'number'
-              ? sort[1]
-              : sort[1].toString().toLowerCase() === 'desc'
-                ? -1
-                : 1,
-          _id:
-            typeof sort[1] === 'number'
-              ? sort[1]
-              : sort[1].toString().toLowerCase() === 'desc'
-                ? -1
-                : 1,
+          [sort[0]]: this.getSortDirection(sort[1]),
+          _id: this.getSortDirection(sort[1]),
         },
       },
     ];
@@ -288,5 +285,13 @@ export class NlpValueRepository extends BaseRepository<
       this.logger.error(`Error in findWithCount: ${error.message}`, error);
       throw error;
     }
+  }
+
+  private getSortDirection(sortOrder: SortOrder) {
+    return typeof sortOrder === 'number'
+      ? sortOrder
+      : sortOrder.toString().toLowerCase() === 'desc'
+        ? -1
+        : 1;
   }
 }
