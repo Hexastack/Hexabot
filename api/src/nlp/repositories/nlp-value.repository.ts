@@ -147,7 +147,6 @@ export class NlpValueRepository extends BaseRepository<
   ): Promise<TNlpValueCount<F>[]> {
     const pipeline: PipelineStage[] = [
       {
-        // support filters
         $match: {
           ...rest,
           ...($and.length
@@ -162,7 +161,6 @@ export class NlpValueRepository extends BaseRepository<
             : {}),
         },
       },
-      // support pageQuery
       {
         $skip: skip,
       },
@@ -174,42 +172,34 @@ export class NlpValueRepository extends BaseRepository<
           from: 'nlpsampleentities',
           localField: '_id',
           foreignField: 'value',
-          as: 'sampleEntities',
+          as: '_sampleEntities',
         },
       },
       {
         $unwind: {
-          path: '$sampleEntities',
+          path: '$_sampleEntities',
           preserveNullAndEmptyArrays: true,
         },
       },
       {
         $group: {
           _id: '$_id',
-          value: { $first: '$value' },
-          expressions: { $first: '$expressions' },
-          builtin: { $first: '$builtin' },
-          metadata: { $first: '$metadata' },
-          createdAt: { $first: '$createdAt' },
-          updatedAt: { $first: '$updatedAt' },
-          entity: { $first: '$entity' },
+          _originalDoc: {
+            $first: {
+              $unsetField: { input: '$$ROOT', field: 'nlpSamplesCount' },
+            },
+          },
           nlpSamplesCount: {
-            $sum: { $cond: [{ $ifNull: ['$sampleEntities', false] }, 1, 0] },
+            $sum: { $cond: [{ $ifNull: ['$_sampleEntities', false] }, 1, 0] },
           },
         },
       },
       {
-        $project: {
-          id: '$_id',
-          _id: 0,
-          value: 1,
-          expressions: 1,
-          builtin: 1,
-          entity: 1,
-          metadata: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          nlpSamplesCount: 1,
+        $replaceWith: {
+          $mergeObjects: [
+            '$_originalDoc',
+            { nlpSamplesCount: '$nlpSamplesCount' },
+          ],
         },
       },
       ...(format === Format.FULL
