@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClassTransformOptions, plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import {
   Document,
   Model,
@@ -24,7 +24,6 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValueDto } from '../dto/nlp-value.dto';
-import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
@@ -119,6 +118,14 @@ export class NlpValueRepository extends BaseRepository<
     } else {
       throw new Error('Attempted to delete a NLP value using unknown criteria');
     }
+  }
+
+  private getSortDirection(sortOrder: SortOrder) {
+    return typeof sortOrder === 'number'
+      ? sortOrder
+      : sortOrder.toString().toLowerCase() === 'desc'
+        ? -1
+        : 1;
   }
 
   /**
@@ -231,33 +238,6 @@ export class NlpValueRepository extends BaseRepository<
     return await this.model.aggregate<TNlpValueCount<F>>(pipeline).exec();
   }
 
-  private async plainToClass<F extends Format>(
-    format: F,
-    aggregatedResults: TNlpValueCount<F>[],
-    options: ClassTransformOptions = { excludePrefixes: ['_'] },
-  ): Promise<TNlpValueCount<F>[]> {
-    return aggregatedResults.map(({ entity, ...rest }) => {
-      if (format === Format.FULL) {
-        return plainToClass(
-          NlpValueFullWithCount,
-          {
-            ...rest,
-            entity: plainToClass(NlpEntity, entity, options),
-          },
-          {
-            excludePrefixes: ['_'],
-          },
-        ) as TNlpValueCount<F>;
-      } else {
-        return plainToClass(
-          NlpValueWithCount,
-          { entity, ...rest },
-          options,
-        ) as TNlpValueCount<F>;
-      }
-    });
-  }
-
   async findWithCount<F extends Format>(
     format: F,
     pageQuery: PageQueryDto<NlpValue>,
@@ -270,18 +250,18 @@ export class NlpValueRepository extends BaseRepository<
         filterQuery,
       );
 
-      return await this.plainToClass(format, aggregatedResults);
+      if (format === Format.FULL) {
+        return plainToInstance(NlpValueFullWithCount, aggregatedResults, {
+          excludePrefixes: ['_'],
+        }) as TNlpValueCount<F>[];
+      }
+
+      return plainToInstance(NlpValueWithCount, aggregatedResults, {
+        excludePrefixes: ['_'],
+      }) as TNlpValueCount<F>[];
     } catch (error) {
       this.logger.error(`Error in findWithCount: ${error.message}`, error);
       throw error;
     }
-  }
-
-  private getSortDirection(sortOrder: SortOrder) {
-    return typeof sortOrder === 'number'
-      ? sortOrder
-      : sortOrder.toString().toLowerCase() === 'desc'
-        ? -1
-        : 1;
   }
 }
