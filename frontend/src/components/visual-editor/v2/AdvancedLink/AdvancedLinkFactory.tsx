@@ -309,13 +309,13 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
       const adjustedStartPoint: Point = getPortCenterPoint(sourcePort);
       // Handle self-loop (curved) links
       const targetPortHeight = targetPort.height;
-      const targetNdeHeight =
+      const targetNodeHeight =
         (targetPort.getPosition().y -
         targetPort.getNode().getPosition().y) *
           2 +
         targetPortHeight;
 
-      path = createCurvedPath(adjustedStartPoint, endPoint, targetNdeHeight);
+      path = createCurvedPath(adjustedStartPoint, endPoint, targetNodeHeight);
     } else if (isBackward) {
       // Handle backward (leftward) link with refined function
       path = createBackwardCurvedPath(sourcePort, targetPort);
