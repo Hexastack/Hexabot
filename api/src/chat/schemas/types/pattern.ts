@@ -8,6 +8,8 @@
 
 import { z } from 'zod';
 
+import { BlockFull } from '../block.schema';
+
 import { PayloadType } from './button';
 
 export const payloadPatternSchema = z.object({
@@ -57,3 +59,8 @@ export const patternSchema = z.union([
 ]);
 
 export type Pattern = z.infer<typeof patternSchema>;
+
+export type MatchResult = {
+  block: BlockFull;
+  matchedPattern: NlpPattern[];
+};

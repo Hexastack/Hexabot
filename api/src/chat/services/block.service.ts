@@ -17,6 +17,7 @@ import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
+import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -36,7 +37,11 @@ import {
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
-import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
+import {
+  MatchResult,
+  NlpPattern,
+  PayloadPattern,
+} from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
@@ -55,6 +60,7 @@ export class BlockService extends BaseService<
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly entityService: NlpEntityService,
+    protected readonly valueService: NlpValueService,
   ) {
     super(repository);
   }
@@ -183,12 +189,41 @@ export class BlockService extends BaseService<
         .shift();
 
       // Perform an NLP Match
+
       if (!block && nlp) {
-        // Find block pattern having the best match of nlp entities
-        const newBlocks = filteredBlocks.filter((b) => {
-          return this.matchNLP(nlp, b);
-        });
-        block = (await this.matchBestNLP(newBlocks)) as BlockFull | undefined;
+        // Use the `reduce` function to iterate over `filteredBlocks` and accumulate a new array `matchesWithPatterns`.
+        // This approach combines the matching of NLP patterns and filtering of blocks with empty or invalid matches
+        // into a single operation. This avoids the need for a separate mapping and filtering step, improving performance.
+        // For each block in `filteredBlocks`, we call `matchNLP` to find patterns that match the NLP data.
+        // If `matchNLP` returns a non-empty list of matched patterns, the block and its matched patterns are added
+        // to the accumulator array `acc`, which is returned as the final result.
+        // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
+        // all while iterating through the list only once.
+        const matchesWithPatterns = filteredBlocks.reduce<MatchResult[]>(
+          (acc, b) => {
+            const matchedPattern = this.matchNLP(nlp, b);
+
+            if (matchedPattern && matchedPattern.length > 0) {
+              acc.push({ block: b, matchedPattern });
+            }
+            return acc;
+          },
+          [],
+        );
+
+        // Log the matched patterns
+        this.logger.debug(
+          `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
+        );
+
+        // Proceed with matching the best NLP block
+        if (matchesWithPatterns.length > 0) {
+          block = (await this.matchBestNLP(
+            matchesWithPatterns.map((m) => m.block),
+            matchesWithPatterns.map((p) => p.matchedPattern),
+            nlp,
+          )) as BlockFull | undefined;
+        }
       }
     }
 
@@ -336,68 +371,120 @@ export class BlockService extends BaseService<
   }
 
   /**
-   *  Identifies and returns the best-matching block based on NLP entity scores.
+   * Matches the best block based on NLP pattern scoring.
+   * The function calculates the NLP score for each block based on the matched patterns and selected entity weights,
+   * and returns the block with the highest score.
    *
-   * This function evaluates a list of blocks by analyzing their associated NLP entities
-   * and scoring them based on predefined lookup entities. The block with the highest
-   * score is selected as the best match.
-   * @param blocks - Blocks on which to perform the filtering
-   *
-   * @returns The best block
+   * @param blocks - Array of blocks to match with patterns
+   * @param matchedPatterns - Array of matched NLP patterns corresponding to each block
+   * @param nlp - The NLP parsed entities to compare against
+   * @returns The block with the highest NLP score, or undefined if no valid block is found
    */
   async matchBestNLP(
-    blocks: Block[] | BlockFull[] | undefined,
+    blocks: (Block | BlockFull)[] | undefined,
+    matchedPatterns: NlpPattern[][],
+    nlp: NLU.ParseEntities,
   ): Promise<Block | BlockFull | undefined> {
-    // No blocks to check against
-    if (blocks?.length === 0 || !blocks) {
-      return undefined;
-    }
+    if (!blocks || blocks.length === 0) return undefined;
+    if (blocks.length === 1) return blocks[0];
 
-    // If there's only one block, return it immediately.
-    if (blocks.length === 1) {
-      return blocks[0];
-    }
     let bestBlock: Block | BlockFull | undefined;
     let highestScore = 0;
 
-    // Iterate over each block in blocks
-    for (const block of blocks) {
-      let nlpScore = 0;
+    const entityCache = new Map<
+      string,
+      { id: string; weight: number; values: string[] }
+    >();
 
-      // Gather all entity lookups for patterns that include an entity
-      const entityLookups = await Promise.all(
-        block.patterns
-          .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
-          .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p)
-          .map(async (pattern) => {
-            const entityName = pattern.entity;
-            return await this.entityService.findOne(
-              { name: entityName },
-              undefined,
-              { lookups: 1, weight: 1, _id: 0 },
-            );
-          }),
+    // Iterate through all blocks and calculate their NLP score
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      const patterns = matchedPatterns[i];
+
+      // If compatible, calculate the NLP score for this block
+      const nlpScore = await this.calculateBlockScore(
+        patterns,
+        nlp,
+        entityCache,
       );
 
-      nlpScore += entityLookups.reduce((score, entityLookup) => {
-        if (entityLookup && entityLookup.lookups[0] && entityLookup.weight) {
-          return score + entityLookup.weight; // Add points based on the Nlp entity associated weight
-        }
-        return score; // Return the current score if no match
-      }, 0);
-
-      // Update the best block if the current block has a higher NLP score
       if (nlpScore > highestScore) {
         highestScore = nlpScore;
         bestBlock = block;
       }
     }
 
-    this.logger.debug(`Best Nlp Score obtained ${highestScore}`);
-    this.logger.debug(
-      `Best retrieved block based on NLP entities ${JSON.stringify(bestBlock)}`,
-    );
+    this.logger.debug(`Best NLP score obtained: ${highestScore}`);
+    this.logger.debug(`Best block selected: ${JSON.stringify(bestBlock)}`);
+
     return bestBlock;
+  }
+
+  /**
+   * Calculates the NLP score for a single block based on the matched patterns and parsed NLP entities.
+   * The score is calculated by matching each entity in the pattern with the parsed NLP entities and evaluating
+   * their confidence and weight from the database.
+   *
+   * @param patterns - The NLP patterns matched for the block
+   * @param nlp - The parsed NLP entities
+   * @param entityCache - A cache for storing previously fetched entity data to avoid redundant DB calls
+   * @returns The calculated NLP score for the block
+   */
+  async calculateBlockScore(
+    patterns: NlpPattern[],
+    nlp: NLU.ParseEntities,
+    entityCache: Map<string, { id: string; weight: number; values: string[] }>,
+  ): Promise<number> {
+    let nlpScore = 0;
+
+    const patternScores = await Promise.all(
+      patterns.map(async (pattern) => {
+        const entityName = pattern.entity;
+
+        // Retrieve entity data from cache or database if not cached
+        let entityData = entityCache.get(entityName);
+        if (!entityData) {
+          const entityLookup = await this.entityService.findOne(
+            { name: entityName },
+            undefined,
+            { lookups: 1, weight: 1, _id: 1 },
+          );
+          if (!entityLookup?.id || !entityLookup.weight) return 0;
+
+          const valueLookups = await this.valueService.find(
+            { entity: entityLookup.id },
+            undefined,
+            { value: 1, _id: 0 },
+          );
+          const values = valueLookups.map((v) => v.value);
+
+          // Cache the entity data
+          entityData = {
+            id: entityLookup.id,
+            weight: entityLookup.weight,
+            values,
+          };
+          entityCache.set(entityName, entityData);
+        }
+
+        // Check if the NLP entity matches with the cached data
+        const matchedEntity = nlp.entities.find(
+          (e) =>
+            e.entity === entityName &&
+            entityData?.values.some((v) => v === e.value) &&
+            (pattern.match !== 'value' || e.value === pattern.value),
+        );
+
+        return matchedEntity?.confidence
+          ? matchedEntity.confidence * entityData.weight
+          : 0;
+      }),
+    );
+
+    // Sum up the scores for all patterns
+    nlpScore = patternScores.reduce((sum, score) => sum + score, 0);
+
+    return nlpScore;
   }
 
   /**

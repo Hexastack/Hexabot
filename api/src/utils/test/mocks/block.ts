@@ -16,7 +16,7 @@ import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import { CaptureVar } from '@/chat/schemas/types/capture-var';
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
-import { Pattern } from '@/chat/schemas/types/pattern';
+import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
 import { modelInstance } from './misc';
@@ -246,6 +246,32 @@ export const blockGetStarted = {
   message: ['Welcome! How are you ? '],
 } as unknown as BlockFull;
 
+export const mockNlpPatternsSetOne: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'jhon',
+  },
+];
+
+export const mockNlpPatternsSetTwo: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'affirmation',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'mark',
+  },
+];
+
 export const mockNlpBlock = {
   ...baseBlockInstance,
   name: 'Mock Nlp',
@@ -254,21 +280,19 @@ export const mockNlpBlock = {
     '/we*lcome/',
     { label: 'Mock Nlp', value: 'MOCK_NLP' },
     [
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'greeting',
-      },
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'want',
-      },
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'affirmative',
-      },
+      ...mockNlpPatternsSetOne,
+      [
+        {
+          entity: 'intent',
+          match: 'value',
+          value: 'greeting',
+        },
+        {
+          entity: 'firstname',
+          match: 'value',
+          value: 'doe',
+        },
+      ],
     ],
   ],
   trigger_labels: customerLabelsMock,

@@ -123,6 +123,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               required
               autoFocus
               helperText={errors.name ? errors.name.message : null}
+              disabled={data?.builtin}
             />
           </ContentItem>
           <ContentItem>
@@ -130,6 +131,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               label={t("label.doc")}
               {...register("doc")}
               multiline={true}
+              disabled={data?.builtin}
             />
           </ContentItem>
           <ContentItem>
