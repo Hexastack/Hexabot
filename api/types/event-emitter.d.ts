@@ -120,6 +120,21 @@ declare module '@nestjs/event-emitter' {
         connection: Socket;
       }
     >;
+    highlight: TDefinition<
+      object,
+      {
+        block: {
+          userId: string;
+          flowId: string;
+          blockId: string;
+        };
+        error: {
+          userId: string;
+          flowId: string;
+          blockId: string;
+        };
+      }
+    >;
   }
 
   /* hooks */

@@ -474,10 +474,11 @@ export class BlockService extends BaseService<
   async processMessage(
     block: Block | BlockFull,
     context: Context,
-    subscriberContext: SubscriberContext,
+    recipient: Subscriber,
     fallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
+    const subscriberContext = recipient.context as SubscriberContext;
     const settings = await this.settingService.getSettings();
     const blockMessage: BlockMessage =
       fallback && block.options?.fallback
@@ -566,6 +567,23 @@ export class BlockService extends BaseService<
       const attachmentPayload = blockMessage.attachment.payload;
       if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
+
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.foreign_id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         throw new Error(
           'Remote attachments in blocks are no longer supported!',
         );
@@ -614,6 +632,22 @@ export class BlockService extends BaseService<
         };
         return envelope;
       } catch (err) {
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.foreign_id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         this.logger.error(
           'Unable to retrieve content for list template process',
           err,
@@ -635,6 +669,22 @@ export class BlockService extends BaseService<
 
         return envelope;
       } catch (e) {
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.foreign_id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         this.logger.error('Plugin was unable to load/process ', e);
         throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
       }

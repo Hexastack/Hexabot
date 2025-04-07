@@ -46,7 +46,7 @@ import {
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
-  subscriberContextBlankInstance,
+  subscriber,
 } from '@/utils/test/mocks/conversation';
 import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
 import {
@@ -429,7 +429,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 0 },
         },
-        subscriberContextBlankInstance,
+        subscriber,
         false,
         'conv_id',
       );
@@ -463,7 +463,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 2 },
         },
-        subscriberContextBlankInstance,
+        subscriber,
         false,
         'conv_id',
       );
