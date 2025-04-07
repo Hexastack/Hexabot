@@ -137,9 +137,3 @@ export type AnySetting =
   | MultipleAttachmentSetting;
 
 export type SettingDict = { [group: string]: Setting[] };
-
-export type Field = {
-  name: string;
-  label: string;
-  type: ContentTypeType;
-};
