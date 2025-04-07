@@ -21,6 +21,9 @@ const PROXIMITY_THRESHOLD = 500;
 const MIN_DISTANCE = 0.1;
 const MAX_DISTANCE = 2000;
 const CONTROL_POINT_PADDING = 10;
+const BACKWARD_LINK_THRESHOLD = 12; // pixels
+const MIN_SCALE_FACTOR = 1.5;
+const MAX_SCALE_FACTOR = 2.0;
 
 interface Point {
   x: number;
@@ -68,7 +71,7 @@ const logFactor = (
 ): number => {
   const scale = Math.log(distance + minDistance) / Math.log(maxDistance + minDistance);
 
-  return 1.5 + scale * 0.5; // Scaled to range between 1.5 and 2
+  return MIN_SCALE_FACTOR + scale * (MAX_SCALE_FACTOR - MIN_SCALE_FACTOR); // Scaled to range between 1.5 and 2
 };
 /**
  * Calculates the horizontal (X-axis) overlap in pixels between two node boundaries.
@@ -309,11 +312,10 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
     selected: boolean,
     path: string,
   ) {  
-
+    const backwardLinkThreshold = BACKWARD_LINK_THRESHOLD;
     const sourcePort = model.getSourcePort();
     const targetPort = model.getTargetPort();
-    const isSelfLoop =
-    sourcePort.getNode() === targetPort.getNode();
+    const isSelfLoop = sourcePort.getNode() === targetPort.getNode();
     const sourcePortPosition = sourcePort.getPosition();
     const targetPortPosition = targetPort.getPosition();
     const startPoint: Point = {
@@ -325,7 +327,7 @@ export class AdvancedLinkFactory extends DefaultLinkFactory {
       y: targetPortPosition.y + 20,
     };
     // Check if it's a backward link (moving left)
-    const isBackward = startPoint.x - endPoint.x > 12;
+    const isBackward = startPoint.x - endPoint.x > backwardLinkThreshold;
 
     if (isSelfLoop) {
       // Adjust start Point to match the exact source port's centre
