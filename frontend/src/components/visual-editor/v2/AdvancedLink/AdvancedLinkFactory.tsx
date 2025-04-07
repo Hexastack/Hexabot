@@ -133,6 +133,31 @@ const calculateNodeBoundaries = (node: NodeModel): Boundaries => {
   };
 };
 /**
+ * Calculates the width and height of a node based on the position of one of its ports.
+ * 
+ * This approach avoids relying on the node's width and height properties,
+ * which may not be accurate or available at render time due to asynchronous rendering behavior.
+ * 
+ * Instead, it uses the relative position of the port to infer the size of the node.
+ * Assumes that the port's position reflects the visual layout and placement on the node.
+ *
+ * @param port - A PortModel instance attached to the node
+ * @returns An object containing the inferred width and height of the node
+ */
+const calculateNodeDimension = (port: PortModel): Dimensions => {
+  // Get the top-left position of the node
+  const nodePos = port.getNode().getPosition();
+  // Get the top-left position of the port
+  const portPos = port.getPosition();
+  // Width is the horizontal distance from the node's left to the port's right edge
+  const width = (portPos.x - nodePos.x) + port.width;
+  // Height is estimated by doubling the vertical offset from the node to the port
+  // (port is vertically centered), then adding the port's height
+  const height = Math.abs(portPos.y - nodePos.y) * 2 + port.height;
+
+  return { width, height };
+};
+/**
  * Calculates a single control point for a cubic Bézier curve.
  * Adjusts based on direction, dynamic offset, and node boundaries.
  */
@@ -187,10 +212,8 @@ const createBackwardCurvedPath = (
   const sourceNode = sourcePort.getNode();
   const targetNode = targetPort.getNode();
   // Get node dimensions
-  const sourceNodeWidth = sourceNode.width;
-  const targetNodeWidth = targetNode.width;
-  const sourceNodeHeight = sourceNode.height;
-  const targetNodeHeight = targetNode.height;
+  const { width: sourceNodeWidth, height: sourceNodeHeight } = calculateNodeDimension(sourcePort);
+  const { width: targetNodeWidth, height: targetNodeHeight } = calculateNodeDimension(targetPort);
   // Get node boundaries
   const sourceNodeBounds: Boundaries = calculateNodeBoundaries(sourceNode);
   const targetNodeBounds: Boundaries = calculateNodeBoundaries(targetNode);
