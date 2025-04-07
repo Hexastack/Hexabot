@@ -262,16 +262,19 @@ describe('NlpEntityController', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw exception when nlp entity is builtin', async () => {
+    it('should update the NLP entity even if it is builtin', async () => {
       const updateNlpEntity: NlpEntityCreateDto = {
-        name: 'updated',
+        name: 'intent',
         doc: '',
         lookups: ['trait'],
-        builtin: false,
+        builtin: true,
+        weight: 2,
       };
-      await expect(
-        nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
-      ).rejects.toThrow(MethodNotAllowedException);
+      const result = await nlpEntityController.updateOne(
+        buitInEntityId!,
+        updateNlpEntity,
+      );
+      expect(result).toEqual(expect.objectContaining(updateNlpEntity));
     });
   });
   describe('deleteMany', () => {

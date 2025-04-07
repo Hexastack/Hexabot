@@ -157,11 +157,6 @@ export class NlpEntityController extends BaseController<
       this.logger.warn(`Unable to update NLP Entity by id ${id}`);
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
-    if (nlpEntity.builtin) {
-      throw new MethodNotAllowedException(
-        `Cannot update builtin NLP Entity ${nlpEntity.name}`,
-      );
-    }
 
     return await this.nlpEntityService.updateOne(id, updateNlpEntityDto);
   }
