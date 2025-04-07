@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookOperationMap,
+  OnEvent,
+} from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -254,7 +258,6 @@ export class WebsocketGateway
     const { sockets } = this.io.sockets;
     this.logger.log(`Client id: ${client.id} connected`);
     this.logger.debug(`Number of connected clients: ${sockets?.size}`);
-
     this.eventEmitter.emit(`hook:websocket:connection`, client);
   }
 
@@ -404,5 +407,26 @@ export class WebsocketGateway
       response,
     );
     return response.getPromise();
+  }
+
+  @OnEvent('hook:highlight:block')
+  async handleHighlightBlock(
+    payload: IHookOperationMap['highlight']['operations']['block'],
+  ) {
+    this.logger.log(
+      'broadcasting event highlight:flow through socketio ',
+      payload,
+    );
+    // todo: fix emit event to subscriber
+    this.io.emit('highlight:flow', payload);
+  }
+
+  @OnEvent('hook:highlight:error')
+  async highlightBlockErrored(
+    payload: IHookOperationMap['highlight']['operations']['error'],
+  ) {
+    this.logger.warn('hook:highlight:error ', payload);
+    // todo: fix emit event to subscriber
+    this.io.emit('highlight:error', payload);
   }
 }
