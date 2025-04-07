@@ -35,6 +35,7 @@ export class ContentField {
   label: string;
 
   @IsString()
+  @IsNotEmpty()
   @IsEnum(FieldType, {
     message:
       "type must be one of the following values: 'text', 'url', 'textarea', 'checkbox', 'file', 'html'",
