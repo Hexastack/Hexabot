@@ -392,7 +392,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       engine.repaintCanvas();
     }, 220);
   }
-  useSubscribe("highlight:flow", handleHighlightFlow);
+  useSubscribe("highlight:block", handleHighlightFlow);
 
   useSubscribe("highlight:error", handleHighlightErroredBlock);
 
