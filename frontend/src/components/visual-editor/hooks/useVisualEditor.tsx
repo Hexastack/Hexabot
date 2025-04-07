@@ -345,7 +345,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     const triggeredFlowUrl = `/${RouterType.VISUAL_EDITOR}/flows/${triggeredFlow}`;
 
     if (window.location.href !== triggeredFlowUrl) {
-      await router.push(triggeredFlow);
+      await router.push(triggeredFlowUrl);
     }
   }
 
