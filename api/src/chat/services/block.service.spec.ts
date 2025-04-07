@@ -381,59 +381,6 @@ describe('BlockService', () => {
     });
   });
 
-  // describe('matchBestNLP', () => {
-  //   it('should return undefined if blocks is empty', async () => {
-  //     const result = await blockService.matchBestNLP([]);
-  //     expect(result).toBeUndefined();
-  //   });
-
-  //   it('should return the only block if there is one', async () => {
-  //     const result = await blockService.matchBestNLP([blockEmpty]);
-  //     expect(result).toBe(blockEmpty);
-  //   });
-
-  //   it('should correctly select the best block based on NLP scores', async () => {
-  //     const result = await blockService.matchBestNLP(nlpBlocks);
-  //     expect(result).toBe(mockNlpBlock);
-
-  //     // Iterate over each block
-  //     for (const block of nlpBlocks) {
-  //       // Flatten the patterns array and filter valid NLP patterns
-  //       block.patterns
-  //         .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
-  //         .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p) // Filter only valid patterns with entity and match
-  //         .forEach((p) => {
-  //           // Check if findOne was called with the correct entity
-  //           expect(nlpEntityService.findOne).toHaveBeenCalledWith(
-  //             { name: p.entity },
-  //             undefined,
-  //             { _id: 0, lookups: 1, weight: 1 },
-  //           );
-  //         });
-  //     }
-  //   });
-
-  //   it('should return the block with the highest combined score', async () => {
-  //     const result = await blockService.matchBestNLP(nlpBlocks);
-  //     expect(result).toBe(mockNlpBlock);
-  //     // Iterate over each block
-  //     for (const block of nlpBlocks) {
-  //       // Flatten the patterns array and filter valid NLP patterns
-  //       block.patterns
-  //         .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
-  //         .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p) // Filter only valid patterns with entity and match
-  //         .forEach((p) => {
-  //           // Check if findOne was called with the correct entity
-  //           expect(nlpEntityService.findOne).toHaveBeenCalledWith(
-  //             { name: p.entity },
-  //             undefined,
-  //             { _id: 0, lookups: 1, weight: 1 },
-  //           );
-  //         });
-  //     }
-  //   });
-  // });
-
   describe('matchBestNLP', () => {
     it('should return the block with the highest NLP score', async () => {
       const blocks = [mockNlpBlock, blockGetStarted]; // You can add more blocks with different patterns and scores
@@ -448,16 +395,14 @@ describe('BlockService', () => {
         matchedPatterns,
         nlp,
       );
-      // Assert that the block with the highest NLP score is selected
-      expect(bestBlock).toEqual(mockNlpBlock); // Adjust based on which block should be selected
 
       // Ensure calculateBlockScore was called at least once for each block
       expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(2); // Called for each block
 
       // Restore the spy after the test
       calculateBlockScoreSpy.mockRestore();
-      // Assert that the block with the highest NLP score is returned
-      expect(bestBlock).toEqual(mockNlpBlock); // Adjust this as per the expected behavior
+      // Assert that the block with the highest NLP score is selected
+      expect(bestBlock).toEqual(mockNlpBlock);
     });
 
     it('should return undefined if no blocks match or the list is empty', async () => {
