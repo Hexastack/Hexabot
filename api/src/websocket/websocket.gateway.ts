@@ -413,12 +413,7 @@ export class WebsocketGateway
   async handleHighlightBlock(
     payload: IHookOperationMap['highlight']['operations']['block'],
   ) {
-    this.logger.log(
-      'broadcasting event highlight:flow through socketio ',
-      payload,
-    );
-    // todo: fix emit event to subscriber
-    this.io.emit('highlight:flow', payload);
+    this.io.to(`blocks:${payload.userId}`).emit('highlight:block', payload);
   }
 
   @OnEvent('hook:highlight:error')
@@ -426,7 +421,6 @@ export class WebsocketGateway
     payload: IHookOperationMap['highlight']['operations']['error'],
   ) {
     this.logger.warn('hook:highlight:error ', payload);
-    // todo: fix emit event to subscriber
-    this.io.emit('highlight:error', payload);
+    this.io.to(`blocks:${payload.userId}`).emit('highlight:error', payload);
   }
 }

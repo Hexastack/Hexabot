@@ -41,8 +41,10 @@ export const SocketProvider = (props: PropsWithChildren) => {
   const [connected, setConnected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  // todo: fix we aren't sending auth token
-  const socket = useMemo(() => new SocketIoClient(apiUrl), [apiUrl]);
+  const socket = useMemo(
+    () => new SocketIoClient(apiUrl, { auth: user }),
+    [apiUrl],
+  );
 
   useEffect(() => {
     if (user && apiUrl)
