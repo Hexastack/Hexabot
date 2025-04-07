@@ -19,12 +19,12 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { ContentTypeType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/schemas/types';
 import { DtoConfig } from '@/utils/types/dto.types';
 
 import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
 
-export class FieldType {
+export class ContentField {
   @IsString()
   @IsNotEmpty()
   @Matches(/^[a-z][a-z_0-9]*$/)
@@ -35,11 +35,11 @@ export class FieldType {
   label: string;
 
   @IsString()
-  @IsEnum(ContentTypeType, {
+  @IsEnum(FieldType, {
     message:
       "type must be one of the following values: 'text', 'url', 'textarea', 'checkbox', 'file', 'html'",
   })
-  type: ContentTypeType;
+  type: FieldType;
 }
 
 export class ContentTypeCreateDto {
@@ -48,13 +48,16 @@ export class ContentTypeCreateDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional({ description: 'Content type fields', type: FieldType })
+  @ApiPropertyOptional({
+    description: 'Content type fields',
+    type: ContentField,
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Validate(ValidateRequiredFields)
-  @Type(() => FieldType)
-  fields?: FieldType[];
+  @Type(() => ContentField)
+  fields?: ContentField[];
 }
 
 export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}

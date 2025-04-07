@@ -13,7 +13,7 @@ import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
-import { ContentTypeType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/schemas/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -28,12 +28,12 @@ export const contentTypeDefaultValues: TContentTypeFixtures['defaultValues'] = {
     {
       name: 'title',
       label: 'Title',
-      type: ContentTypeType.text,
+      type: FieldType.text,
     },
     {
       name: 'status',
       label: 'Status',
-      type: ContentTypeType.checkbox,
+      type: FieldType.checkbox,
     },
   ],
 };
@@ -45,27 +45,27 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: ContentTypeType.checkbox,
+        type: FieldType.checkbox,
       },
       {
         name: 'description',
         label: 'Description',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: ContentTypeType.file,
+        type: FieldType.file,
       },
       {
         name: 'subtitle',
         label: 'Image',
-        type: ContentTypeType.file,
+        type: FieldType.file,
       },
     ],
   },
@@ -75,22 +75,22 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: ContentTypeType.checkbox,
+        type: FieldType.checkbox,
       },
       {
         name: 'address',
         label: 'Address',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: ContentTypeType.file,
+        type: FieldType.file,
       },
     ],
   },
@@ -100,22 +100,22 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: ContentTypeType.checkbox,
+        type: FieldType.checkbox,
       },
       {
         name: 'address',
         label: 'Address',
-        type: ContentTypeType.text,
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: ContentTypeType.file,
+        type: FieldType.file,
       },
     ],
   },

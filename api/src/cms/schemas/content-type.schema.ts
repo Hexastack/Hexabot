@@ -12,7 +12,7 @@ import mongoose from 'mongoose';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
-import { FieldType } from '../dto/contentType.dto';
+import { ContentField } from '../dto/contentType.dto';
 
 @Schema({ timestamps: true })
 export class ContentType extends BaseSchema {
@@ -41,7 +41,7 @@ export class ContentType extends BaseSchema {
       },
     ],
   })
-  fields: FieldType[];
+  fields: ContentField[];
 }
 
 export const ContentTypeModel: ModelDefinition = LifecycleHookManager.attach({

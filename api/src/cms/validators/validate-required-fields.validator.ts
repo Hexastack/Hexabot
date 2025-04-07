@@ -12,26 +12,26 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { ContentTypeType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/schemas/types';
 
-import { FieldType } from '../dto/contentType.dto';
+import { ContentField } from '../dto/contentType.dto';
 
 @ValidatorConstraint({ name: 'validateRequiredFields', async: false })
 export class ValidateRequiredFields implements ValidatorConstraintInterface {
-  private readonly REQUIRED_FIELDS: FieldType[] = [
+  private readonly REQUIRED_FIELDS: ContentField[] = [
     {
       name: 'title',
       label: 'Title',
-      type: ContentTypeType.text,
+      type: FieldType.text,
     },
     {
       name: 'status',
       label: 'Status',
-      type: ContentTypeType.checkbox,
+      type: FieldType.checkbox,
     },
   ];
 
-  validate(fields: FieldType[]): boolean {
+  validate(fields: ContentField[]): boolean {
     const errors: string[] = [];
 
     this.REQUIRED_FIELDS.forEach((requiredField, index) => {

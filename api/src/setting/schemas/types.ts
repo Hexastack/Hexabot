@@ -20,7 +20,7 @@ export enum SettingType {
   multiple_attachment = 'multiple_attachment',
 }
 
-export enum ContentTypeType {
+export enum FieldType {
   text = 'text',
   url = 'url',
   textarea = 'textarea',
