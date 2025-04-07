@@ -143,7 +143,7 @@ export class BotService {
       this.eventEmitter.emit('hook:highlight:block', {
         flowId: block.category!.id,
         blockId: block.id,
-        userId: recipient.foreign_id,
+        userId: recipient.id,
       });
       if (envelope.format !== OutgoingMessageFormat.system) {
         await this.sendMessageToSubscriber(
@@ -315,7 +315,7 @@ export class BotService {
           if (next && next.id !== fallbackBlock?.id) {
             this.eventEmitter.emit('hook:highlight:error', {
               flowId: matchedBlock!.category!.id,
-              userId: convo.sender.foreign_id,
+              userId: convo.sender.id,
               blockId: next.id!,
             });
           }
