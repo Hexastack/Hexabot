@@ -79,7 +79,6 @@ export class BlockService extends BaseService<
   @SocketGet('/block/subscribe/')
   @SocketPost('/block/subscribe/')
   subscribe(@SocketReq() req: SocketRequest, @SocketRes() res: SocketResponse) {
-    debugger;
     try {
       if (req.session.web?.profile?.id) {
         this.gateway.io.socketsJoin(`blocks:${req.session.web.profile.id}`);
