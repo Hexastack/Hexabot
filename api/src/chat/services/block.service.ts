@@ -16,6 +16,7 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpCacheMap } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -391,10 +392,7 @@ export class BlockService extends BaseService<
     let bestBlock: Block | BlockFull | undefined;
     let highestScore = 0;
 
-    const entityCache = new Map<
-      string,
-      { id: string; weight: number; values: string[] }
-    >();
+    const nlpCacheMap: NlpCacheMap = new Map();
 
     // Iterate through all blocks and calculate their NLP score
     for (let i = 0; i < blocks.length; i++) {
@@ -405,7 +403,7 @@ export class BlockService extends BaseService<
       const nlpScore = await this.calculateBlockScore(
         patterns,
         nlp,
-        entityCache,
+        nlpCacheMap,
       );
 
       if (nlpScore > highestScore) {
@@ -427,13 +425,13 @@ export class BlockService extends BaseService<
    *
    * @param patterns - The NLP patterns matched for the block
    * @param nlp - The parsed NLP entities
-   * @param entityCache - A cache for storing previously fetched entity data to avoid redundant DB calls
+   * @param nlpCacheMap - A cache for storing previously fetched entity data to avoid redundant DB calls
    * @returns The calculated NLP score for the block
    */
   async calculateBlockScore(
     patterns: NlpPattern[],
     nlp: NLU.ParseEntities,
-    entityCache: Map<string, { id: string; weight: number; values: string[] }>,
+    nlpCacheMap: NlpCacheMap,
   ): Promise<number> {
     let nlpScore = 0;
 
@@ -442,7 +440,7 @@ export class BlockService extends BaseService<
         const entityName = pattern.entity;
 
         // Retrieve entity data from cache or database if not cached
-        let entityData = entityCache.get(entityName);
+        let entityData = nlpCacheMap.get(entityName);
         if (!entityData) {
           const entityLookup = await this.entityService.findOne(
             { name: entityName },
@@ -464,7 +462,7 @@ export class BlockService extends BaseService<
             weight: entityLookup.weight,
             values,
           };
-          entityCache.set(entityName, entityData);
+          nlpCacheMap.set(entityName, entityData);
         }
 
         // Check if the NLP entity matches with the cached data
