@@ -52,7 +52,6 @@
     "@types/react": "18.3.2",
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "eslint-config-next": "14.2.3",
     "random-seed": "^0.3.0",
     "typescript": "^5.5.3"
   },
