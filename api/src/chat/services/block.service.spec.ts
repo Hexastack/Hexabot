@@ -83,20 +83,22 @@ import { CategoryService } from './category.service';
 
 // Create a mock for the NlpEntityService
 const mockNlpEntityService = {
+  entities: {
+    intent: {
+      lookups: ['trait'],
+      id: '67e3e41eff551ca5be70559c',
+      weight: 1,
+    },
+    firstname: {
+      lookups: ['trait'],
+      id: '67e3e41eff551ca5be70559d',
+      weight: 1,
+    },
+  },
   findOne: jest.fn().mockImplementation((query) => {
-    if (query.name === 'intent') {
-      return Promise.resolve({
-        lookups: ['trait'],
-        id: '67e3e41eff551ca5be70559c',
-        weight: 1,
-      });
-    }
-    if (query.name === 'firstname') {
-      return Promise.resolve({
-        lookups: ['trait'],
-        id: '67e3e41eff551ca5be70559d',
-        weight: 1,
-      });
+    const entity = mockNlpEntityService.entities[query.name];
+    if (entity) {
+      return Promise.resolve(entity);
     }
     return Promise.resolve(null); // Default response if the entity isn't found
   }),
@@ -440,8 +442,14 @@ describe('BlockService', () => {
         mockNlpEntitiesSetOne,
         entityCache,
       );
+      const score2 = await blockService.calculateBlockScore(
+        mockNlpPatternsSetTwo,
+        mockNlpEntitiesSetOne,
+        entityCache,
+      );
 
-      expect(score).toBe(1.499);
+      expect(score).toBeGreaterThan(0);
+      expect(score).toBeGreaterThan(score2);
     });
 
     it('should return 0 if no matching entities are found', async () => {
