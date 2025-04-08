@@ -349,13 +349,19 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     }
   }
 
-  async function handleHighlightFlow(payload: any) {
+  async function handleHighlightFlow(payload: {
+    flowId: string;
+    blockId: string;
+    userId: string;
+  }) {
     await removeHighlights();
 
     await redirectToTriggeredFlow(selectedCategoryId, payload.flowId);
 
     setTimeout(() => {
-      const block = engine?.getModel().getNode(payload.blockId) as NodeModel;
+      const block = engine?.getModel().getNode(payload.blockId) as
+        | NodeModel
+        | undefined;
 
       if (!block) {
         return;
@@ -372,12 +378,18 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     }, 200);
   }
 
-  async function handleHighlightErroredBlock(payload: any) {
+  async function handleHighlightErroredBlock(payload: {
+    flowId: string;
+    blockId: string;
+    userId: string;
+  }) {
     await removeHighlights();
 
     await redirectToTriggeredFlow(selectedCategoryId, payload.flowId);
     setTimeout(() => {
-      const block = engine?.getModel().getNode(payload.blockId) as NodeModel;
+      const block = engine?.getModel().getNode(payload.blockId) as
+        | NodeModel
+        | undefined;
 
       if (!block) {
         return;
@@ -390,7 +402,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       block.setHasErrored(true);
 
       engine.repaintCanvas();
-    }, 220);
+    }, 200);
   }
   useSubscribe("highlight:block", handleHighlightFlow);
 
