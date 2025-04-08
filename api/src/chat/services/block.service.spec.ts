@@ -389,7 +389,14 @@ describe('BlockService', () => {
       // Spy on calculateBlockScore to check if it's called
       const calculateBlockScoreSpy = jest
         .spyOn(blockService, 'calculateBlockScore')
-        .mockResolvedValue(1.499); // Mock return value
+        .mockImplementation((patterns) => {
+          // Return different scores based on the block patterns
+          if (patterns === mockNlpPatternsSetOne) {
+            return Promise.resolve(1.499);
+          } else {
+            return Promise.resolve(0);
+          }
+        });
       const bestBlock = await blockService.matchBestNLP(
         blocks,
         matchedPatterns,
@@ -456,6 +463,10 @@ describe('BlockService', () => {
         { id: string; weight: number; values: string[] }
       >();
 
+      // Create spies on the services
+      const entityServiceSpy = jest.spyOn(mockNlpEntityService, 'findOne');
+      const valueServiceSpy = jest.spyOn(mockNlpValueService, 'find');
+
       // First call should calculate and cache entity data
       await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
@@ -463,6 +474,8 @@ describe('BlockService', () => {
         entityCache,
       );
       const cacheSizeBefore = entityCache.size;
+      const entityCallsBefore = entityServiceSpy.mock.calls.length;
+      const valueCallsBefore = valueServiceSpy.mock.calls.length;
 
       // Second call should use cached entity data, without redundant DB calls
       await blockService.calculateBlockScore(
@@ -471,9 +484,18 @@ describe('BlockService', () => {
         entityCache,
       );
       const cacheSizeAfter = entityCache.size;
+      const entityCallsAfter = entityServiceSpy.mock.calls.length;
+      const valueCallsAfter = valueServiceSpy.mock.calls.length;
 
       // Assert that the cache size hasn't increased after the second call
       expect(cacheSizeBefore).toBe(cacheSizeAfter);
+      // Assert that the services weren't called again
+      expect(entityCallsAfter).toBe(entityCallsBefore);
+      expect(valueCallsAfter).toBe(valueCallsBefore);
+
+      // Cleanup
+      entityServiceSpy.mockRestore();
+      valueServiceSpy.mockRestore();
     });
   });
 
