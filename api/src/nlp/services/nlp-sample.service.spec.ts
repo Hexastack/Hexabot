@@ -10,9 +10,14 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
+import { SettingRepository } from '@/setting/repositories/setting.repository';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -70,6 +75,7 @@ describe('NlpSampleService', () => {
           NlpValueModel,
           NlpEntityModel,
           LanguageModel,
+          SettingModel,
         ]),
       ],
       providers: [
@@ -83,7 +89,10 @@ describe('NlpSampleService', () => {
         NlpEntityService,
         NlpValueService,
         LanguageService,
-
+        SettingService,
+        SettingRepository,
+        SettingSeeder,
+        HelperService,
         {
           provide: CACHE_MANAGER,
           useValue: {
