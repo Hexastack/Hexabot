@@ -37,6 +37,7 @@ import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
 import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpCacheMap } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -432,20 +433,17 @@ describe('BlockService', () => {
 
   describe('calculateBlockScore', () => {
     it('should calculate the correct NLP score for a block', async () => {
-      const entityCache = new Map<
-        string,
-        { id: string; weight: number; values: string[] }
-      >();
+      const nlpCacheMap: NlpCacheMap = new Map();
 
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
-        entityCache,
+        nlpCacheMap,
       );
       const score2 = await blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
-        entityCache,
+        nlpCacheMap,
       );
 
       expect(score).toBeGreaterThan(0);
@@ -453,23 +451,17 @@ describe('BlockService', () => {
     });
 
     it('should return 0 if no matching entities are found', async () => {
-      const entityCache = new Map<
-        string,
-        { id: string; weight: number; values: string[] }
-      >();
+      const nlpCacheMap: NlpCacheMap = new Map();
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
-        entityCache,
+        nlpCacheMap,
       );
 
       expect(score).toBe(0); // No matching entity, so score should be 0
     });
     it('should correctly use entity cache to avoid redundant database calls', async () => {
-      const entityCache = new Map<
-        string,
-        { id: string; weight: number; values: string[] }
-      >();
+      const nlpCacheMap: NlpCacheMap = new Map();
 
       // Create spies on the services
       const entityServiceSpy = jest.spyOn(mockNlpEntityService, 'findOne');
@@ -479,9 +471,9 @@ describe('BlockService', () => {
       await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
-        entityCache,
+        nlpCacheMap,
       );
-      const cacheSizeBefore = entityCache.size;
+      const cacheSizeBefore = nlpCacheMap.size;
       const entityCallsBefore = entityServiceSpy.mock.calls.length;
       const valueCallsBefore = valueServiceSpy.mock.calls.length;
 
@@ -489,9 +481,9 @@ describe('BlockService', () => {
       await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
-        entityCache,
+        nlpCacheMap,
       );
-      const cacheSizeAfter = entityCache.size;
+      const cacheSizeAfter = nlpCacheMap.size;
       const entityCallsAfter = entityServiceSpy.mock.calls.length;
       const valueCallsAfter = valueServiceSpy.mock.calls.length;
 
