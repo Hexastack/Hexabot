@@ -46,6 +46,7 @@ import { AttachmentGuard } from '../guards/attachment-ability.guard';
 import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
+import { attachmentSizeLimits } from '../utilities';
 
 @UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
@@ -131,10 +132,26 @@ export class AttachmentController extends BaseController<Attachment> {
     {
       resourceRef,
       access = AttachmentAccess.Public,
+      maxSize,
     }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
+    }
+
+    // Determine the size limit
+    const sizeLimit =
+      maxSize ??
+      attachmentSizeLimits[resourceRef] ??
+      config.parameters.maxUploadSize;
+
+    // Validate file sizes against the limit
+    for (const file of files.file) {
+      if (file.size > sizeLimit) {
+        throw new BadRequestException(
+          `File ${file.originalname} exceeds maximum size of ${sizeLimit} bytes`,
+        );
+      }
     }
 
     const userId = req.session?.passport?.user?.id;

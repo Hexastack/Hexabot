@@ -194,4 +194,24 @@ export const config: Config = {
       retentionReset: 24 * 60 * 60 * 1000, // 1 day
     },
   },
+  attachmentSizeLimits: {
+    settingAttachmentSizeLimit: process.env.SETTING_ATTACHMENT_MAX_SIZE_IN_BYTES
+      ? Number(process.env.SETTING_ATTACHMENT_MAX_SIZE_IN_BYTES)
+      : 5 * 1024 * 1024,
+    userAvatarSizeLimit: process.env.USER_AVATAR_MAX_SIZE_IN_BYTES
+      ? Number(process.env.USER_AVATAR_MAX_SIZE_IN_BYTES)
+      : 2 * 1024 * 1024,
+    subscriberAvatarSizeLimit: process.env.SUBSCRIBER_AVATAR_MAX_SIZE_IN_BYTES
+      ? Number(process.env.SUBSCRIBER_AVATAR_MAX_SIZE_IN_BYTES)
+      : 2 * 1024 * 1024,
+    blockAttachmentSizeLimit: process.env.BLOCK_ATTACHMENT_MAX_SIZE_IN_BYTES
+      ? Number(process.env.BLOCK_ATTACHMENT_MAX_SIZE_IN_BYTES)
+      : 5 * 1024 * 1024,
+    contentAttachmentSizeLimit: process.env.CONTENT_ATTACHMENT_MAX_SIZE_IN_BYTES
+      ? Number(process.env.CONTENT_ATTACHMENT_MAX_SIZE_IN_BYTES)
+      : 10 * 1024 * 1024,
+    messageAttachmentSizeLimit: process.env.MESSAGE_ATTACHMENT_MAX_SIZE_IN_BYTES
+      ? Number(process.env.MESSAGE_ATTACHMENT_MAX_SIZE_IN_BYTES)
+      : 10 * 1024 * 1024,
+  },
 };

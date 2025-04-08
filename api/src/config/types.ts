@@ -123,4 +123,12 @@ export type Config = {
       retentionReset: number;
     };
   };
+  attachmentSizeLimits: {
+    settingAttachmentSizeLimit: number;
+    userAvatarSizeLimit: number;
+    subscriberAvatarSizeLimit: number;
+    blockAttachmentSizeLimit: number;
+    contentAttachmentSizeLimit: number;
+    messageAttachmentSizeLimit: number;
+  };
 };

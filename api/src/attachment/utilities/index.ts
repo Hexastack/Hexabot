@@ -109,3 +109,26 @@ export const isAttachmentResourceRefArray = (
     refList.every(isAttachmentResourceRef)
   );
 };
+
+/**
+ * Retrieves the maximum size limit for a given resource reference.
+ *
+ * @param resourceRef - The resource reference to check.
+ * @returns The maximum size limit in bytes.
+ */
+export const attachmentSizeLimits: Partial<
+  Record<AttachmentResourceRef, number>
+> = {
+  [AttachmentResourceRef.SettingAttachment]:
+    config.attachmentSizeLimits.settingAttachmentSizeLimit,
+  [AttachmentResourceRef.UserAvatar]:
+    config.attachmentSizeLimits.userAvatarSizeLimit,
+  [AttachmentResourceRef.SubscriberAvatar]:
+    config.attachmentSizeLimits.subscriberAvatarSizeLimit,
+  [AttachmentResourceRef.BlockAttachment]:
+    config.attachmentSizeLimits.blockAttachmentSizeLimit,
+  [AttachmentResourceRef.ContentAttachment]:
+    config.attachmentSizeLimits.contentAttachmentSizeLimit,
+  [AttachmentResourceRef.MessageAttachment]:
+    config.attachmentSizeLimits.messageAttachmentSizeLimit,
+};

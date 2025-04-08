@@ -154,4 +154,12 @@ export class AttachmentContextParamDto {
   @IsIn(Object.values(AttachmentAccess))
   @IsOptional()
   access?: AttachmentAccess;
+
+  @ApiPropertyOptional({
+    description: 'Maximum file size in bytes for this upload',
+    type: Number,
+  })
+  @IsNumber()
+  @IsOptional()
+  maxSize?: number;
 }
