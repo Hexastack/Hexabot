@@ -41,10 +41,7 @@ export const SocketProvider = (props: PropsWithChildren) => {
   const [connected, setConnected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const socket = useMemo(
-    () => new SocketIoClient(apiUrl, { auth: user }),
-    [apiUrl],
-  );
+  const socket = useMemo(() => new SocketIoClient(apiUrl), [apiUrl]);
 
   useEffect(() => {
     if (user && apiUrl)

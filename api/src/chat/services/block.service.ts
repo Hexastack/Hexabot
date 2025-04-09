@@ -81,11 +81,14 @@ export class BlockService extends BaseService<
   subscribe(@SocketReq() req: SocketRequest, @SocketRes() res: SocketResponse) {
     try {
       if (req.session.web?.profile?.id) {
-        this.gateway.io.socketsJoin(`blocks:${req.session.web.profile.id}`);
+        const room = `blocks:${req.session.web.profile.id}`;
+        this.gateway.io.socketsJoin(room);
+        this.logger.log('Subscribed to socket room', room);
         return res.status(200).json({
           success: true,
         });
       } else {
+        this.logger.error('Unable to subscribe to highlight blocks room');
         throw new Error('Unable to join highlight blocks room');
       }
     } catch (e) {
