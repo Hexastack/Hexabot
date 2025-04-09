@@ -17,7 +17,11 @@
       "browser_video_unsupport": "Browser does not support the video element.",
       "download": "Download",
       "unsupported_file_type": "This file type is not supported.",
-      "unsupported_file_size": "This file size is not supported."
+      "unsupported_file_size": "This file size is not supported.",
+      "image_error": "Image not found",
+      "file_error": "File not found",
+      "audio_error": "Audio not found",
+      "video_error": "Video not found"
     }
   }
 }

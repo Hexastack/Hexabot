@@ -47,6 +47,25 @@ export class SettingService extends BaseService<Setting> {
     if (count === 0) {
       await this.seeder.seed(data);
     }
+
+    // const imagePath = path.join(process.cwd(), 'assets', 'hexavatar.png');
+
+    // const imageBuffer = fs.readFileSync(imagePath);
+    // await this.attachmentService.store(imageBuffer, {
+    //   access: AttachmentAccess.Public,
+    //   name: 'hexavatar.png',
+    //   createdBy: 'system',
+    //   size: imageBuffer.length,
+    //   type: 'png',
+    //   createdByRef: AttachmentCreatedByRef.System,
+    //   resourceRef: AttachmentResourceRef.SettingAttachment,
+    //   channel: {
+    //     'web-channel': '',
+    //     'console-channel': '',
+    //     'discord-channel': '',
+    //     'whatsapp-channel': '',
+    //   },
+    // });
   }
 
   /**

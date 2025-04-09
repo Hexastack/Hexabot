@@ -8,7 +8,7 @@
 
 import DownloadIcon from "@mui/icons-material/Download";
 import { Box, Button, Typography } from "@mui/material";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useDialogs } from "@/hooks/useDialogs";
 import { useGetAttachmentMetadata } from "@/hooks/useGetAttachmentMetadata";
@@ -30,11 +30,17 @@ interface AttachmentInterface {
 const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
   [FileType.image]: ({ url }: AttachmentInterface) => {
     const dialogs = useDialogs();
+    const [imageErrored, setImageErrored] = useState(false);
+    const { t } = useTranslate();
 
+    if (imageErrored) {
+      return <p>{t("message.image_error")}</p>;
+    }
     if (url)
       return (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          onError={() => setImageErrored(true)}
           width="auto"
           height={200}
           style={{ objectFit: "contain", cursor: "pointer" }}
@@ -59,10 +65,23 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     );
   },
   [FileType.audio]: (props: AttachmentInterface) => {
-    return <audio controls src={props.url} />;
+    const [audioErrored, setAudioErrored] = useState(false);
+    const { t } = useTranslate();
+
+    if (audioErrored) {
+      return <p>{t("message.video_error")}</p>;
+    }
+
+    return (
+      <audio controls src={props.url} onError={() => setAudioErrored(true)} />
+    );
   },
   [FileType.file]: (props: AttachmentInterface) => {
     const { t } = useTranslate();
+
+    if (!props.url) {
+      return <p>{t("message.file_error")}</p>;
+    }
 
     return (
       <Box>
@@ -84,11 +103,20 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
       </Box>
     );
   },
-  [FileType.video]: ({ url }: AttachmentInterface) => (
-    <video controls width="250">
-      <source src={url} />
-    </video>
-  ),
+  [FileType.video]: ({ url }: AttachmentInterface) => {
+    const [videoErrored, setVideoErrored] = useState(false);
+    const { t } = useTranslate();
+
+    if (videoErrored) {
+      return <p>{t("message.video_error")}</p>;
+    }
+
+    return (
+      <video controls width="250">
+        <source src={url} onError={() => setVideoErrored(true)} />
+      </video>
+    );
+  },
   [FileType.unknown]: ({ url }: AttachmentInterface) => <>Unknown Type:{url}</>,
 };
 
