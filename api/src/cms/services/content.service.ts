@@ -145,7 +145,7 @@ export class ContentService extends BaseService<
         ...acc,
         {
           title: String(title),
-          status: Boolean(status),
+          status: status.trim().toLowerCase() === 'true',
           entity: targetContentType,
           dynamicFields: Object.keys(rest)
             .filter((key) =>
