@@ -12,6 +12,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
+import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -57,21 +58,33 @@ export class TranslationService extends BaseService<Translation> {
           PluginType.block,
           block.message.plugin,
         );
-        const defaultSettings = await plugin?.getDefaultSettings();
+        const defaultSettings = (await plugin?.getDefaultSettings()) || [];
+        const filteredSettings = defaultSettings.filter(
+          ({ translatable, type }) =>
+            [
+              SettingType.text,
+              SettingType.textarea,
+              SettingType.multiple_text,
+            ].includes(type) &&
+            (translatable === undefined || translatable === true),
+        );
+        const settingTypeMap = new Map(
+          filteredSettings.map((setting) => [setting.label, setting.type]),
+        );
 
-        // plugin
-        Object.entries(block.message.args).forEach(([l, arg]) => {
-          const setting = defaultSettings?.find(({ label }) => label === l);
-          if (setting?.translatable) {
-            if (Array.isArray(arg)) {
-              // array of text
-              strings = strings.concat(arg);
-            } else if (typeof arg === 'string') {
-              // text
-              strings.push(arg);
-            }
+        for (const [key, value] of Object.entries(block.message.args)) {
+          switch (settingTypeMap.get(key)) {
+            case SettingType.multiple_text:
+              strings = strings.concat(value);
+              break;
+            case SettingType.text:
+            case SettingType.textarea:
+              strings.push(value);
+              break;
+            default:
+              break;
           }
-        });
+        }
       } else if ('text' in block.message && Array.isArray(block.message.text)) {
         // array of text
         strings = strings.concat(block.message.text);
