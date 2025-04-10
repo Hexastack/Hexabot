@@ -42,4 +42,5 @@ export enum PayloadType {
   button = 'button',
   outcome = 'outcome',
   menu = 'menu',
+  content = 'content',
 }
