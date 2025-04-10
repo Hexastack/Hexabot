@@ -73,7 +73,9 @@ export class TranslationService extends BaseService<Translation> {
         );
 
         for (const [key, value] of Object.entries(block.message.args)) {
-          switch (settingTypeMap.get(key)) {
+          const settingType = settingTypeMap.get(key);
+
+          switch (settingType) {
             case SettingType.multiple_text:
               strings = strings.concat(value);
               break;
