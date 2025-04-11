@@ -14,6 +14,7 @@ import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, styled } from "@mui/material";
+import { ListenerHandle } from "@projectstorm/react-canvas-core";
 import { DiagramEngine, PortWidget } from "@projectstorm/react-diagrams-core";
 import clsx from "clsx";
 import * as React from "react";
@@ -242,6 +243,7 @@ class NodeWidget extends React.Component<
   NodeWidgetProps & WithTranslation,
   NodeWidgetState
 > {
+  listener: ListenerHandle | undefined;
   config: {
     type: TBlock;
     color: string;
@@ -253,15 +255,30 @@ class NodeWidget extends React.Component<
     this.config = getBlockConfig(this.props.node.message as any);
   }
 
+  componentDidMount() {
+    this.listener = this.props.node.registerListener({
+      stateChanged: () => this.forceUpdate(),
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.listener) {
+      this.listener.deregister();
+    }
+  }
+
   render() {
     const { t, i18n, tReady } = this.props;
+    const selectedStyling = clsx(
+      "custom-node",
+      this.props.node.isSelected() ? "selected" : "",
+      this.props.node.isHighlighted() ? "high-lighted" : "",
+      this.props.node.hasErrored() ? "high-light-error" : "",
+    );
 
     return (
       <div
-        className={clsx(
-          "custom-node",
-          this.props.node.isSelected() ? "selected" : "",
-        )}
+        className={selectedStyling}
         style={{
           border: `1px solid ${this.config.color}`,
         }}
