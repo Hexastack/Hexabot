@@ -54,7 +54,7 @@ export const SubscribersList = (props: {
       <Grid padding={2}>
         <Title title={t(props.assignedTo)} icon={InboxIcon} />
       </Grid>
-      {subscribers?.length > 0 && (
+      {subscribers?.length > 0 ? (
         <ConversationList
           scrollable
           loading={isFetching}
@@ -91,6 +91,10 @@ export const SubscribersList = (props: {
             </Conversation>
           ))}
         </ConversationList>
+      ) : (
+        <Grid p={1} color="gray" textAlign="center">
+          {t("message.no_result_found")}
+        </Grid>
       )}
     </>
   );
