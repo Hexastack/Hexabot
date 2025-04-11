@@ -20,7 +20,6 @@
     "*.{ts,tsx}": "eslint --fix -c \".eslintrc-staged.json\""
   },
   "dependencies": {
-    "@types/emoji-js": "^3.5.2",
     "autolinker": "^4.0.0",
     "dayjs": "^1.11.12",
     "emoji-js": "^3.8.0",
@@ -30,6 +29,7 @@
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@types/emoji-js": "^3.5.2",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
