@@ -88,4 +88,10 @@ export class WebhookController {
     this.logger.log('Channel notification : ', req.method, channel);
     return await this.channelService.handle(channel, req, res);
   }
+
+  @Roles('public')
+  @Get(':channel/not-found')
+  async handleNotFound(@Res() res: Response) {
+    return res.status(404).send({ error: 'Not found!' });
+  }
 }
