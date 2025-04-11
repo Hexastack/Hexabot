@@ -13,6 +13,7 @@ import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
+import { FieldType } from '@/setting/schemas/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
@@ -27,12 +28,12 @@ export const contentTypeDefaultValues: TContentTypeFixtures['defaultValues'] = {
     {
       name: 'title',
       label: 'Title',
-      type: 'text',
+      type: FieldType.text,
     },
     {
       name: 'status',
       label: 'Status',
-      type: 'checkbox',
+      type: FieldType.checkbox,
     },
   ],
 };
@@ -44,27 +45,27 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: 'checkbox',
+        type: FieldType.checkbox,
       },
       {
         name: 'description',
         label: 'Description',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: 'file',
+        type: FieldType.file,
       },
       {
         name: 'subtitle',
         label: 'Image',
-        type: 'file',
+        type: FieldType.file,
       },
     ],
   },
@@ -74,22 +75,22 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: 'checkbox',
+        type: FieldType.checkbox,
       },
       {
         name: 'address',
         label: 'Address',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: 'file',
+        type: FieldType.file,
       },
     ],
   },
@@ -99,22 +100,22 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       {
         name: 'title',
         label: 'Title',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: 'checkbox',
+        type: FieldType.checkbox,
       },
       {
         name: 'address',
         label: 'Address',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'image',
         label: 'Image',
-        type: 'file',
+        type: FieldType.file,
       },
     ],
   },
