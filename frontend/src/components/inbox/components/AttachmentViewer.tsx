@@ -33,7 +33,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const [imageErrored, setImageErrored] = useState(false);
     const { t } = useTranslate();
 
-    if (imageErrored) {
+    if (imageErrored || !url) {
       return <p>{t("message.image_error")}</p>;
     }
     if (url)
@@ -68,8 +68,8 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     const [audioErrored, setAudioErrored] = useState(false);
     const { t } = useTranslate();
 
-    if (audioErrored) {
-      return <p>{t("message.video_error")}</p>;
+    if (audioErrored || !props.url) {
+      return <p>{t("message.audio_error")}</p>;
     }
 
     return (
