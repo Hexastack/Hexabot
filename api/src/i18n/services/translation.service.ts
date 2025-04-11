@@ -12,6 +12,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
+import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 
@@ -62,6 +63,21 @@ export class TranslationService extends BaseService<Translation> {
         // plugin
         Object.entries(block.message.args).forEach(([l, arg]) => {
           const setting = defaultSettings?.find(({ label }) => label === l);
+          const isTranslatableSettingWithNoDefaultValue =
+            setting?.translatable == undefined &&
+            (setting?.type === SettingType.textarea ||
+              setting?.type === SettingType.text ||
+              setting?.type === SettingType.multiple_text);
+          if (isTranslatableSettingWithNoDefaultValue) {
+            if (Array.isArray(arg)) {
+              // array of text
+              strings = strings.concat(arg);
+            } else if (typeof arg === 'string') {
+              // text
+              strings.push(arg);
+            }
+          }
+
           if (setting?.translatable) {
             if (Array.isArray(arg)) {
               // array of text
