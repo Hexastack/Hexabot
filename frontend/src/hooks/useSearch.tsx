@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,12 +7,13 @@
  */
 
 import { debounce } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { useRouter } from "next/router";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import {
-  TParamItem,
-  TBuildParamProps,
   TBuildInitialParamProps,
+  TBuildParamProps,
+  TParamItem,
 } from "@/types/search.types";
 
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
@@ -52,13 +53,38 @@ const buildNeqInitialParams = <T,>({
   );
 
 export const useSearch = <T,>(params: TParamItem<T>) => {
-  const [searchText, setSearchText] = useState<string>("");
-  const onSearch = debounce(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
-      setSearchText(typeof e === "string" ? e : e.target.value);
-    },
-    300,
+  const router = useRouter();
+  const [searchText, setSearchText] = useState<string>(
+    (router.query.search as string) || "",
   );
+
+  useEffect(() => {
+    if (router.query.search !== searchText) {
+      setSearchText((router.query.search as string) || "");
+    }
+  }, [router.query.search]);
+
+  const updateQueryParams = useCallback(
+    debounce(async (newSearchText: string) => {
+      await router.replace(
+        {
+          pathname: router.pathname,
+          query: { ...router.query, search: newSearchText || undefined },
+        },
+        undefined,
+        { shallow: true },
+      );
+    }, 300),
+    [router],
+  );
+  const onSearch = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
+  ) => {
+    const newSearchText = typeof e === "string" ? e : e.target.value;
+
+    setSearchText(newSearchText);
+    updateQueryParams(newSearchText);
+  };
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
@@ -67,6 +93,7 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   } = params;
 
   return {
+    searchText,
     onSearch,
     searchPayload: {
       where: {
