@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ⁉️ Question / Problem
+    url: https://discord.gg/rNb9t2MFkG
+    about: Ask support questions and get help from the Hexabot community on Discord.
+  - name: 💬 Connect with Hexabot Contributors on Discord
+    url: https://discord.gg/rNb9t2MFkG
+    about: Join the community discussion, share ideas, or chat with contributors and users on Discord.
+  - name: 🧩 Discover & publish an Hexabot Extension/Integration
+    url: https://hexabot.ai/extensions
+    about: Browse the Hexabot Extension Hub or learn how to publish your own.
+  - name: 📦 Write your own Hexabot Extension/Integrations
+    url: https://docs.hexabot.ai/developer-guide/integrations/hexabot-plugin-development
+    about: Access the developer guide and resources for building your own Hexabot plugins.
