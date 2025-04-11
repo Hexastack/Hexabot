@@ -133,7 +133,6 @@ export class AttachmentController extends BaseController<Attachment> {
       access = AttachmentAccess.Public,
     }: AttachmentContextParamDto,
   ): Promise<Attachment[]> {
-    debugger;
     if (!files || !Array.isArray(files?.file) || files.file.length === 0) {
       throw new BadRequestException('No file was selected');
     }
