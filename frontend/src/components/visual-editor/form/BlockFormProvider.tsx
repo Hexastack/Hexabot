@@ -15,7 +15,15 @@ import { IBlock, IBlockAttributes } from "@/types/block.types";
 const BlockContext = createContext<IBlock | undefined>(undefined);
 
 // Custom hook to use block context
-export const useBlock = () => useContext(BlockContext);
+export const useBlock = () => {
+  const context = useContext(BlockContext);
+
+  if (!context) {
+    throw new Error("useBlock must be used within an BlockContext");
+  }
+
+  return context;
+};
 
 // This component wraps FormProvider and adds block to its context
 function BlockFormProvider({
