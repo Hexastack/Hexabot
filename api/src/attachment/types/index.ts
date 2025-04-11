@@ -15,7 +15,6 @@ import { Readable, Stream } from 'stream';
 export enum AttachmentCreatedByRef {
   User = 'User',
   Subscriber = 'Subscriber',
-  System = 'System',
 }
 
 /**

@@ -331,8 +331,6 @@ export default abstract class ChannelHandler<
       return attachment.url;
     } else {
       return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
-
-      // throw new TypeError('Unable to resolve the attachment public URL.');
     }
   }
 
