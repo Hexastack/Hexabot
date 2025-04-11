@@ -8,7 +8,8 @@
     "fallback_block": "Bloc de secours",
     "default_nlu_helper": "Utilitaire NLU par défaut",
     "default_llm_helper": "Utilitaire LLM par défaut",
-    "default_storage_helper": "Utilitaire de stockage par défaut"
+    "default_storage_helper": "Utilitaire de stockage par défaut",
+    "automate_inference": "Inférence Automatisée"
   },
   "help": {
     "global_fallback": "La réponse de secours globale vous permet d'envoyer des messages personnalisés lorsque l'entrée de l'utilisateur ne correspond à aucun des messages des blocs.",
