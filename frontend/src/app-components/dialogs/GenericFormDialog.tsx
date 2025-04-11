@@ -24,11 +24,13 @@ export const GenericFormDialog = <T,>({
   Form,
   rowKey,
   payload: data,
+  editText,
+  addText,
   ...rest
 }: GenericFormDialogProps<T>) => {
   const { t } = useTranslate();
   const hasRow = rowKey ? data?.[rowKey] : data;
-  const translationKey = hasRow ? rest.editText : rest.addText;
+  const translationKey = hasRow ? editText : addText;
 
   return (
     <Form

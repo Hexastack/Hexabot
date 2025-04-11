@@ -7,11 +7,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import {
   installPermissionFixtures,
   permissionFixtures,
@@ -20,6 +17,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
@@ -45,7 +43,7 @@ describe('PermissionService', () => {
   let permission: Permission;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
         MongooseModule.forFeature([
@@ -61,7 +59,6 @@ describe('PermissionService', () => {
         RoleRepository,
         InvitationRepository,
         PermissionRepository,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -70,22 +67,21 @@ describe('PermissionService', () => {
             set: jest.fn(),
           },
         },
-        LoggerService,
       ],
-    }).compile();
-    permissionService = module.get<PermissionService>(PermissionService);
-    roleRepository = module.get<RoleRepository>(RoleRepository);
-    modelRepository = module.get<ModelRepository>(ModelRepository);
-    permissionRepository =
-      module.get<PermissionRepository>(PermissionRepository);
+    });
+    [permissionService, roleRepository, modelRepository, permissionRepository] =
+      await getMocks([
+        PermissionService,
+        RoleRepository,
+        ModelRepository,
+        PermissionRepository,
+      ]);
     permission = (await permissionRepository.findOne({
       action: Action.CREATE,
     })) as Permission;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

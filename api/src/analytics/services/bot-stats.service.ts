@@ -7,11 +7,10 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
@@ -19,11 +18,7 @@ import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
 
 @Injectable()
 export class BotStatsService extends BaseService<BotStats> {
-  constructor(
-    readonly repository: BotStatsRepository,
-    private readonly eventEmitter: EventEmitter2,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(readonly repository: BotStatsRepository) {
     super(repository);
   }
 
@@ -98,8 +93,9 @@ export class BotStatsService extends BaseService<BotStats> {
     ) {
       this.eventEmitter.emit(
         'hook:stats:entry',
-        'retention',
+        BotStatsType.retention,
         'Retentioned users',
+        subscriber,
       );
     }
   }
@@ -111,7 +107,11 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  async handleStatEntry(type: BotStatsType, name: string): Promise<void> {
+  async handleStatEntry(
+    type: BotStatsType,
+    name: string,
+    _subscriber: Subscriber,
+  ): Promise<void> {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);

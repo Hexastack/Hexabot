@@ -19,7 +19,6 @@ import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
@@ -40,7 +39,6 @@ export class InvitationService extends BaseService<
     @Inject(InvitationRepository)
     readonly repository: InvitationRepository,
     @Inject(JwtService) private readonly jwtService: JwtService,
-    private logger: LoggerService,
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
     @Optional() private readonly mailerService?: MailerService,

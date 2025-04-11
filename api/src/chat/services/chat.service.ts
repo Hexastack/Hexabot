@@ -11,6 +11,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -96,7 +97,10 @@ export class ChatService {
    * @param sentMessage - The message that has been sent
    */
   @OnEvent('hook:chatbot:sent')
-  async handleSentMessage(sentMessage: MessageCreateDto) {
+  async handleSentMessage(
+    sentMessage: MessageCreateDto,
+    _event: EventWrapper<any, any>,
+  ) {
     if (sentMessage.mid) {
       try {
         const message = await this.messageService.findOneOrCreate(
@@ -146,11 +150,17 @@ export class ChatService {
       }
 
       this.websocketGateway.broadcastMessageReceived(populatedMsg, subscriber);
-      this.eventEmitter.emit('hook:stats:entry', 'incoming', 'Incoming');
       this.eventEmitter.emit(
         'hook:stats:entry',
-        'all_messages',
+        BotStatsType.incoming,
+        'Incoming',
+        subscriber,
+      );
+      this.eventEmitter.emit(
+        'hook:stats:entry',
+        BotStatsType.all_messages,
         'All Messages',
+        subscriber,
       );
     } catch (err) {
       this.logger.error('Unable to log received message.', err, event);
@@ -244,8 +254,8 @@ export class ChatService {
           read: false,
         };
 
-        this.eventEmitter.emit('hook:chatbot:sent', sentMessage);
-        this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo');
+        this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+        this.eventEmitter.emit('hook:stats:entry', 'echo', 'Echo', recipient);
       } catch (err) {
         this.logger.error('Unable to log echo message', err, event);
       }

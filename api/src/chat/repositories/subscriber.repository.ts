@@ -7,7 +7,6 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
@@ -17,6 +16,7 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -36,11 +36,8 @@ export class SubscriberRepository extends BaseRepository<
   SubscriberFull,
   SubscriberDto
 > {
-  constructor(
-    readonly eventEmitter: EventEmitter2,
-    @InjectModel(Subscriber.name) readonly model: Model<Subscriber>,
-  ) {
-    super(eventEmitter, model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
+  constructor(@InjectModel(Subscriber.name) readonly model: Model<Subscriber>) {
+    super(model, Subscriber, SUBSCRIBER_POPULATE, SubscriberFull);
   }
 
   /**
@@ -51,7 +48,7 @@ export class SubscriberRepository extends BaseRepository<
   async postCreate(created: SubscriberDocument): Promise<void> {
     this.eventEmitter.emit(
       'hook:stats:entry',
-      'new_users',
+      BotStatsType.new_users,
       'New users',
       created,
     );

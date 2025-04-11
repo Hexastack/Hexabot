@@ -30,7 +30,6 @@ import { diskStorage, memoryStorage } from 'multer';
 
 import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
@@ -52,10 +51,7 @@ import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 @Controller('attachment')
 @UseGuards(AttachmentGuard)
 export class AttachmentController extends BaseController<Attachment> {
-  constructor(
-    private readonly attachmentService: AttachmentService,
-    private readonly logger: LoggerService,
-  ) {
+  constructor(private readonly attachmentService: AttachmentService) {
     super(attachmentService);
   }
 

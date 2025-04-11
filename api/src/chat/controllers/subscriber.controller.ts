@@ -21,7 +21,6 @@ import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { LoggerService } from '@/logger/logger.service';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -50,7 +49,6 @@ export class SubscriberController extends BaseController<
   constructor(
     private readonly subscriberService: SubscriberService,
     private readonly attachmentService: AttachmentService,
-    private readonly logger: LoggerService,
   ) {
     super(subscriberService);
   }

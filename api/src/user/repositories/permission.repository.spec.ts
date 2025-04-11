@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import {
@@ -19,6 +17,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
@@ -44,7 +43,7 @@ describe('PermissionRepository', () => {
   let permissionToDelete: Permission;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
         MongooseModule.forFeature([
@@ -59,16 +58,15 @@ describe('PermissionRepository', () => {
         RoleRepository,
         PermissionRepository,
         InvitationRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    roleRepository = module.get<RoleRepository>(RoleRepository);
-    modelRepository = module.get<ModelRepository>(ModelRepository);
-    permissionRepository =
-      module.get<PermissionRepository>(PermissionRepository);
-    permissionModel = module.get<Model<Permission>>(
-      getModelToken('Permission'),
-    );
+    });
+    [roleRepository, modelRepository, permissionRepository, permissionModel] =
+      await getMocks([
+        RoleRepository,
+        ModelRepository,
+        PermissionRepository,
+        getModelToken(Permission.name),
+      ]);
     permission = (await permissionRepository.findOne({
       action: Action.CREATE,
     })) as Permission;
@@ -77,9 +75,7 @@ describe('PermissionRepository', () => {
     })) as Permission;
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

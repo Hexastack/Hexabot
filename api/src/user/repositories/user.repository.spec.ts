@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,13 +7,10 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { userFixtures } from '@/utils/test/fixtures/user';
@@ -22,6 +19,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -53,7 +51,7 @@ describe('UserRepository', () => {
   ];
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installPermissionFixtures),
         MongooseModule.forFeature([
@@ -65,12 +63,10 @@ describe('UserRepository', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         UserRepository,
         RoleRepository,
         InvitationRepository,
         PermissionRepository,
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -80,10 +76,12 @@ describe('UserRepository', () => {
           },
         },
       ],
-    }).compile();
-    roleRepository = module.get<RoleRepository>(RoleRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
-    userModel = module.get<Model<User>>(getModelToken('User'));
+    });
+    [roleRepository, userRepository, userModel] = await getMocks([
+      RoleRepository,
+      UserRepository,
+      getModelToken(User.name),
+    ]);
     user = await userRepository.findOne({ username: 'admin' });
     allRoles = await roleRepository.findAll();
   });

@@ -8,9 +8,7 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -22,7 +20,6 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
@@ -46,6 +43,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
@@ -53,6 +51,7 @@ import { CategoryRepository } from '../repositories/category.repository';
 import { LabelRepository } from '../repositories/label.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
@@ -79,7 +78,7 @@ describe('BlockController', () => {
   ];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [BlockController],
       imports: [
         rootMongooseTestModule(installBlockFixtures),
@@ -117,7 +116,6 @@ describe('BlockController', () => {
         PermissionService,
         LanguageService,
         PluginService,
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -133,7 +131,6 @@ describe('BlockController', () => {
             getSettings: jest.fn(() => ({})),
           },
         },
-        EventEmitter2,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -143,10 +140,12 @@ describe('BlockController', () => {
           },
         },
       ],
-    }).compile();
-    blockController = module.get<BlockController>(BlockController);
-    blockService = module.get<BlockService>(BlockService);
-    categoryService = module.get<CategoryService>(CategoryService);
+    });
+    [blockController, blockService, categoryService] = await getMocks([
+      BlockController,
+      BlockService,
+      CategoryService,
+    ]);
     category = (await categoryService.findOne({ label: 'default' }))!;
     block = (await blockService.findOne({ name: 'first' }))!;
     blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
@@ -335,5 +334,57 @@ describe('BlockController', () => {
         blockController.updateOne(blockToDelete.id, updateBlock),
       ).rejects.toThrow(getUpdateOneError(Block.name, blockToDelete.id));
     });
+  });
+
+  it('should update block trigger to postback menu', async () => {
+    jest.spyOn(blockService, 'updateOne');
+    const updateBlock: BlockUpdateDto = {
+      patterns: [
+        {
+          label: 'postback123',
+          value: 'postback123',
+          type: PayloadType.menu,
+        },
+      ],
+    };
+    const result = await blockController.updateOne(block.id, updateBlock);
+    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+
+    expect(
+      result.patterns.find(
+        (pattern) =>
+          typeof pattern === 'object' &&
+          'type' in pattern &&
+          pattern.type === PayloadType.menu &&
+          pattern,
+      ),
+    ).toBeDefined();
+    expect(result.patterns).toEqual(updateBlock.patterns);
+  });
+
+  it('should update the block trigger with a content payloadType payload', async () => {
+    jest.spyOn(blockService, 'updateOne');
+    const updateBlock: BlockUpdateDto = {
+      patterns: [
+        {
+          label: 'Content label',
+          value: 'Content value',
+          type: PayloadType.content,
+        },
+      ],
+    };
+    const result = await blockController.updateOne(block.id, updateBlock);
+    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+
+    expect(
+      result.patterns.find(
+        (pattern) =>
+          typeof pattern === 'object' &&
+          'type' in pattern &&
+          pattern.type === PayloadType.content &&
+          pattern,
+      ),
+    ).toBeDefined();
+    expect(result.patterns).toEqual(updateBlock.patterns);
   });
 });

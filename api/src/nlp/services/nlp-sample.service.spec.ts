@@ -8,14 +8,11 @@
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -23,6 +20,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -63,7 +61,7 @@ describe('NlpSampleService', () => {
   let languages: Language[];
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpSampleEntityFixtures),
         MongooseModule.forFeature([
@@ -85,8 +83,7 @@ describe('NlpSampleService', () => {
         NlpEntityService,
         NlpValueService,
         LanguageService,
-        EventEmitter2,
-        LoggerService,
+
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -96,21 +93,26 @@ describe('NlpSampleService', () => {
           },
         },
       ],
-    }).compile();
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
-    nlpSampleService = module.get<NlpSampleService>(NlpSampleService);
-    nlpSampleEntityService = module.get<NlpSampleEntityService>(
+    });
+    [
+      nlpEntityService,
+      nlpSampleService,
+      nlpSampleEntityService,
+      nlpSampleRepository,
+      nlpSampleEntityRepository,
+      nlpSampleEntityRepository,
+      languageService,
+      languageRepository,
+    ] = await getMocks([
+      NlpEntityService,
+      NlpSampleService,
       NlpSampleEntityService,
-    );
-    nlpSampleRepository = module.get<NlpSampleRepository>(NlpSampleRepository);
-    nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
+      NlpSampleRepository,
       NlpSampleEntityRepository,
-    );
-    nlpSampleEntityRepository = module.get<NlpSampleEntityRepository>(
       NlpSampleEntityRepository,
-    );
-    languageService = module.get<LanguageService>(LanguageService);
-    languageRepository = module.get<LanguageRepository>(LanguageRepository);
+      LanguageService,
+      LanguageRepository,
+    ]);
     noNlpSample = await nlpSampleService.findOne({ text: 'No' });
     nlpSampleEntity = await nlpSampleEntityRepository.findOne({
       sample: noNlpSample!.id,
@@ -118,9 +120,7 @@ describe('NlpSampleService', () => {
     languages = await languageRepository.findAll();
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 

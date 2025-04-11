@@ -10,7 +10,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -34,7 +33,6 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { installBlockFixtures } from '@/utils/test/fixtures/block';
@@ -44,6 +42,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -81,7 +80,7 @@ describe('BlockService', () => {
   let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(async () => {
           await installSubscriberFixtures();
@@ -105,7 +104,6 @@ describe('BlockService', () => {
         JwtModule,
       ],
       providers: [
-        EventEmitter2,
         BlockRepository,
         CategoryRepository,
         WebsocketGateway,
@@ -141,7 +139,6 @@ describe('BlockService', () => {
           provide: PluginService,
           useValue: {},
         },
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -168,12 +165,15 @@ describe('BlockService', () => {
           },
         },
       ],
-    }).compile();
-    subscriberService = module.get<SubscriberService>(SubscriberService);
-    botService = module.get<BotService>(BotService);
-    blockService = module.get<BlockService>(BlockService);
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
-    handler = module.get<WebChannelHandler>(WebChannelHandler);
+    });
+    [subscriberService, botService, blockService, eventEmitter, handler] =
+      await getMocks([
+        SubscriberService,
+        BotService,
+        BlockService,
+        EventEmitter2,
+        WebChannelHandler,
+      ]);
   });
 
   afterEach(jest.clearAllMocks);
@@ -243,8 +243,8 @@ describe('BlockService', () => {
     await botService.startConversation(event, block);
     expect(hasBotSpoken).toEqual(true);
     expect(triggeredEvents).toEqual([
-      ['popular', 'hasNextBlocks'],
-      ['new_conversations', 'New conversations'],
+      ['popular', 'hasNextBlocks', webSubscriber],
+      ['new_conversations', 'New conversations', webSubscriber],
     ]);
     clearMock.mockClear();
   });
@@ -301,7 +301,7 @@ describe('BlockService', () => {
     const captured = await botService.processConversationMessage(event);
     expect(captured).toBe(true);
     expect(triggeredEvents).toEqual([
-      ['existing_conversations', 'Existing conversations'],
+      ['existing_conversations', 'Existing conversations', webSubscriber],
     ]);
     clearMock.mockClear();
   });

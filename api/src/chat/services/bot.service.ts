@@ -9,6 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -65,8 +66,18 @@ export class BotService {
       .getHandler()
       .sendMessage(event, envelope, options, context);
 
-    this.eventEmitter.emit('hook:stats:entry', 'outgoing', 'Outgoing');
-    this.eventEmitter.emit('hook:stats:entry', 'all_messages', 'All Messages');
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      BotStatsType.outgoing,
+      'Outgoing',
+      recipient,
+    );
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      BotStatsType.all_messages,
+      'All Messages',
+      recipient,
+    );
 
     // Trigger sent message event
     const sentMessage: MessageCreateDto = {
@@ -165,7 +176,7 @@ export class BotService {
           return await this.triggerBlock(event, convo, attachedBlock, fallback);
         } catch (err) {
           this.logger.error('Unable to retrieve attached block', err);
-          this.eventEmitter.emit('hook:conversation:end', convo, true);
+          this.eventEmitter.emit('hook:conversation:end', convo);
         }
       } else if (
         Array.isArray(block.nextBlocks) &&
@@ -200,6 +211,7 @@ export class BotService {
                 'Block outcome did not match any of the next blocks',
                 convo,
               );
+              this.eventEmitter.emit('hook:conversation:end', convo);
             }
           } else {
             // Conversation continues : Go forward to next blocks
@@ -217,11 +229,11 @@ export class BotService {
       } else {
         // We need to end the conversation in this case
         this.logger.debug('No attached/next blocks to execute ...');
-        this.eventEmitter.emit('hook:conversation:end', convo, false);
+        this.eventEmitter.emit('hook:conversation:end', convo);
       }
     } catch (err) {
       this.logger.error('Unable to process/send message.', err);
-      this.eventEmitter.emit('hook:conversation:end', convo, true);
+      this.eventEmitter.emit('hook:conversation:end', convo);
     }
   }
 
@@ -292,7 +304,12 @@ export class BotService {
 
       if (next) {
         // Increment stats about popular blocks
-        this.eventEmitter.emit('hook:stats:entry', 'popular', next.name);
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          BotStatsType.popular,
+          next.name,
+          convo.sender,
+        );
         // Go next!
         this.logger.debug('Respond to nested conversion! Go next ', next.id);
         try {
@@ -308,19 +325,19 @@ export class BotService {
           await this.triggerBlock(event, updatedConversation, next, fallback);
         } catch (err) {
           this.logger.error('Unable to store context data!', err);
-          return this.eventEmitter.emit('hook:conversation:end', convo, true);
+          return this.eventEmitter.emit('hook:conversation:end', convo);
         }
         return true;
       } else {
         // Conversation is still active, but there's no matching block to call next
         // We'll end the conversation but this message is probably lost in time and space.
         this.logger.debug('No matching block found to call next ', convo.id);
-        this.eventEmitter.emit('hook:conversation:end', convo, false);
+        this.eventEmitter.emit('hook:conversation:end', convo);
         return false;
       }
     } catch (err) {
       this.logger.error('Unable to populate the next blocks!', err);
-      this.eventEmitter.emit('hook:conversation:end', convo, true);
+      this.eventEmitter.emit('hook:conversation:end', convo);
       throw err;
     }
   }
@@ -351,8 +368,9 @@ export class BotService {
 
       this.eventEmitter.emit(
         'hook:stats:entry',
-        'existing_conversations',
+        BotStatsType.existing_conversations,
         'Existing conversations',
+        subscriber,
       );
       this.logger.debug('Conversation has been captured! Responding ...');
       return await this.handleIncomingMessage(conversation, event);
@@ -372,10 +390,15 @@ export class BotService {
    * @param block - Starting block
    */
   async startConversation(event: EventWrapper<any, any>, block: BlockFull) {
-    // Increment popular stats
-    this.eventEmitter.emit('hook:stats:entry', 'popular', block.name);
     // Launching a new conversation
     const subscriber = event.getSender();
+    // Increment popular stats
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      BotStatsType.popular,
+      block.name,
+      subscriber,
+    );
 
     try {
       const convo = await this.conversationService.create({
@@ -383,8 +406,9 @@ export class BotService {
       });
       this.eventEmitter.emit(
         'hook:stats:entry',
-        'new_conversations',
+        BotStatsType.new_conversations,
         'New conversations',
+        subscriber,
       );
 
       try {
@@ -404,7 +428,7 @@ export class BotService {
         return this.triggerBlock(event, updatedConversation, block, false);
       } catch (err) {
         this.logger.error('Unable to store context data!', err);
-        this.eventEmitter.emit('hook:conversation:end', convo, true);
+        this.eventEmitter.emit('hook:conversation:end', convo);
       }
     } catch (err) {
       this.logger.error('Unable to start a new conversation with ', err);

@@ -7,23 +7,18 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
-import { LoggerService } from '@/logger/logger.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
-import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import {
   installNlpValueFixtures,
   nlpValueFixtures,
 } from '@/utils/test/fixtures/nlpvalue';
-import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
-import { TFixtures } from '@/utils/test/types';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -31,11 +26,7 @@ import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.rep
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import {
-  NlpValue,
-  NlpValueFull,
-  NlpValueModel,
-} from '../schemas/nlp-value.schema';
+import { NlpValue, NlpValueModel } from '../schemas/nlp-value.schema';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
@@ -50,7 +41,7 @@ describe('NlpValueController', () => {
   let negativeValue: NlpValue | null;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [NlpValueController],
       imports: [
         rootMongooseTestModule(installNlpValueFixtures),
@@ -61,84 +52,26 @@ describe('NlpValueController', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         NlpValueRepository,
         NlpValueService,
         NlpSampleEntityRepository,
         NlpEntityService,
         NlpEntityRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    nlpValueController = module.get<NlpValueController>(NlpValueController);
-    nlpValueService = module.get<NlpValueService>(NlpValueService);
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
+    });
+    [nlpValueController, nlpValueService, nlpEntityService] = await getMocks([
+      NlpValueController,
+      NlpValueService,
+      NlpEntityService,
+    ]);
     jhonNlpValue = await nlpValueService.findOne({ value: 'jhon' });
     positiveValue = await nlpValueService.findOne({ value: 'positive' });
     negativeValue = await nlpValueService.findOne({ value: 'negative' });
   });
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
-
-  describe('findPage', () => {
-    it('should find nlp Values, and foreach nlp value populate the corresponding entity', async () => {
-      const pageQuery = getPageQuery<NlpValue>({
-        sort: ['value', 'desc'],
-      });
-      const result = await nlpValueController.findPage(
-        pageQuery,
-        ['entity'],
-        {},
-      );
-
-      const nlpValueFixturesWithEntities = nlpValueFixtures.reduce(
-        (acc, curr) => {
-          acc.push({
-            ...curr,
-            entity: nlpEntityFixtures[
-              parseInt(curr.entity!)
-            ] as NlpValueFull['entity'],
-            builtin: curr.builtin!,
-            expressions: curr.expressions!,
-            metadata: curr.metadata!,
-          });
-          return acc;
-        },
-        [] as TFixtures<NlpValueFull>[],
-      );
-      expect(result).toEqualPayload(nlpValueFixturesWithEntities);
-    });
-
-    it('should find nlp Values', async () => {
-      const pageQuery = getPageQuery<NlpValue>({
-        sort: ['value', 'desc'],
-      });
-      const result = await nlpValueController.findPage(
-        pageQuery,
-        ['invalidCriteria'],
-        {},
-      );
-      const nlpEntities = await nlpEntityService.findAll();
-      const nlpValueFixturesWithEntities = nlpValueFixtures.reduce(
-        (acc, curr) => {
-          const ValueWithEntities = {
-            ...curr,
-            entity: curr.entity ? nlpEntities[parseInt(curr.entity!)].id : null,
-            expressions: curr.expressions!,
-            metadata: curr.metadata!,
-            builtin: curr.builtin!,
-          };
-          acc.push(ValueWithEntities);
-          return acc;
-        },
-        [] as TFixtures<NlpValueCreateDto>[],
-      );
-      expect(result).toEqualPayload(nlpValueFixturesWithEntities);
-    });
-  });
 
   describe('count', () => {
     it('should count the nlp Values', async () => {

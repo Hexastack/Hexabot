@@ -1,14 +1,12 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { installSettingFixtures } from '@/utils/test/fixtures/setting';
@@ -16,6 +14,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Setting, SettingModel } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
@@ -25,25 +24,22 @@ import { SettingRepository } from './setting.repository';
 describe('SettingRepository', () => {
   let settingRepository: SettingRepository;
   let settingModel: Model<Setting>;
-  let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSettingFixtures),
         MongooseModule.forFeature([SettingModel]),
       ],
-      providers: [SettingRepository, EventEmitter2],
-    }).compile();
-
-    settingRepository = module.get<SettingRepository>(SettingRepository);
-    settingModel = module.get<Model<Setting>>(getModelToken(Setting.name));
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
+      providers: [SettingRepository],
+    });
+    [settingRepository, settingModel] = await getMocks([
+      SettingRepository,
+      getModelToken(Setting.name),
+    ]);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  afterEach(jest.clearAllMocks);
 
   afterAll(closeInMongodConnection);
 
@@ -103,11 +99,11 @@ describe('SettingRepository', () => {
         label: 'theme',
       });
 
-      jest.spyOn(eventEmitter, 'emit');
+      jest.spyOn(settingRepository.eventEmitter, 'emit');
 
       await settingRepository.postUpdate({} as any, mockSetting);
 
-      expect(eventEmitter.emit).toHaveBeenCalledWith(
+      expect(settingRepository.eventEmitter.emit).toHaveBeenCalledWith(
         'hook:general:theme',
         mockSetting,
       );

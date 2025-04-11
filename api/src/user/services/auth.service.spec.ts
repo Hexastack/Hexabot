@@ -1,25 +1,23 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationRepository } from '../repositories/invitation.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -38,7 +36,7 @@ describe('AuthService', () => {
   let userRepository: UserRepository;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installUserFixtures),
         MongooseModule.forFeature([
@@ -50,7 +48,6 @@ describe('AuthService', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         AuthService,
         UserService,
         UserRepository,
@@ -58,13 +55,14 @@ describe('AuthService', () => {
         RoleRepository,
         InvitationRepository,
         JwtService,
-        EventEmitter2,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    authService = module.get<AuthService>(AuthService);
-    userRepository = module.get<UserRepository>(UserRepository);
+    });
+    [authService, userRepository] = await getMocks([
+      AuthService,
+      UserRepository,
+    ]);
     jest.spyOn(userRepository, 'findOne');
   });
 

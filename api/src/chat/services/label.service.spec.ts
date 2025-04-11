@@ -6,14 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import {
   installLabelFixtures,
   labelFixtures,
@@ -24,6 +21,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LabelRepository } from '../repositories/label.repository';
 import { Label, LabelFull, LabelModel } from '../schemas/label.schema';
@@ -42,7 +40,7 @@ describe('LabelService', () => {
   let labelsWithUsers: LabelFull[];
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installLabelFixtures),
         MongooseModule.forFeature([
@@ -52,20 +50,19 @@ describe('LabelService', () => {
         ]),
       ],
       providers: [
-        LoggerService,
         LabelService,
         LabelRepository,
         SubscriberService,
         AttachmentService,
         AttachmentRepository,
         SubscriberRepository,
-        EventEmitter2,
       ],
-    }).compile();
-    labelService = module.get<LabelService>(LabelService);
-    labelRepository = module.get<LabelRepository>(LabelRepository);
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
+    });
+    [labelService, labelRepository, subscriberRepository] = await getMocks([
+      LabelService,
+      LabelRepository,
+      SubscriberRepository,
+    ]);
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
     labelsWithUsers = allLabels.map((label) => ({

@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
@@ -17,7 +15,6 @@ import {
   AttachmentModel,
 } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LoggerService } from '@/logger/logger.service';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User, UserModel } from '@/user/schemas/user.schema';
 import {
@@ -30,6 +27,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { Label, LabelModel } from '../schemas/label.schema';
 import {
@@ -52,10 +50,9 @@ describe('SubscriberRepository', () => {
   let allSubscribers: Subscriber[];
   let allAttachments: Attachment[];
   let subscribersWithPopulatedFields: SubscriberFull[];
-  let eventEmitter: EventEmitter2;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([
@@ -69,21 +66,24 @@ describe('SubscriberRepository', () => {
         SubscriberRepository,
         LabelRepository,
         UserRepository,
-        EventEmitter2,
-        LoggerService,
         AttachmentService,
         AttachmentRepository,
       ],
-    }).compile();
-    subscriberRepository =
-      module.get<SubscriberRepository>(SubscriberRepository);
-    labelRepository = module.get<LabelRepository>(LabelRepository);
-    userRepository = module.get<UserRepository>(UserRepository);
-    attachmentRepository =
-      module.get<AttachmentRepository>(AttachmentRepository);
-    subscriberModel = module.get<Model<Subscriber>>(
-      getModelToken('Subscriber'),
-    );
+    });
+    [
+      subscriberRepository,
+      labelRepository,
+      userRepository,
+      attachmentRepository,
+      subscriberModel,
+    ] = await getMocks([
+      SubscriberRepository,
+      LabelRepository,
+      UserRepository,
+      AttachmentRepository,
+      getModelToken(Subscriber.name),
+    ]);
+
     allLabels = await labelRepository.findAll();
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
@@ -95,7 +95,6 @@ describe('SubscriberRepository', () => {
         allUsers.find(({ id }) => subscriber.assignedTo === id) || null,
       avatar: allAttachments.find(({ id }) => subscriber.avatar === id) || null,
     }));
-    eventEmitter = module.get<EventEmitter2>(EventEmitter2);
   });
 
   afterEach(jest.clearAllMocks);
@@ -171,16 +170,16 @@ describe('SubscriberRepository', () => {
       jest
         .spyOn(subscriberRepository, 'findOne')
         .mockResolvedValue(oldSubscriber);
-      jest.spyOn(eventEmitter, 'emit');
+      jest.spyOn(subscriberRepository.eventEmitter, 'emit');
 
       await subscriberRepository.updateOne(oldSubscriber.id, updates);
 
-      expect(eventEmitter.emit).toHaveBeenCalledWith(
+      expect(subscriberRepository.eventEmitter.emit).toHaveBeenCalledWith(
         'hook:subscriber:assign',
         expect.anything(),
         expect.anything(),
       );
-      expect(eventEmitter.emit).toHaveBeenCalledWith(
+      expect(subscriberRepository.eventEmitter.emit).toHaveBeenCalledWith(
         'hook:analytics:passation',
         expect.anything(),
         true, // Because assignedTo has changed
@@ -198,16 +197,16 @@ describe('SubscriberRepository', () => {
       jest
         .spyOn(subscriberRepository, 'findOne')
         .mockResolvedValue(oldSubscriber);
-      jest.spyOn(eventEmitter, 'emit');
+      jest.spyOn(subscriberRepository.eventEmitter, 'emit');
 
       await subscriberRepository.updateOne(oldSubscriber.id, updates);
 
-      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+      expect(subscriberRepository.eventEmitter.emit).not.toHaveBeenCalledWith(
         'hook:subscriber:assign',
         expect.anything(),
         expect.anything(),
       );
-      expect(eventEmitter.emit).not.toHaveBeenCalledWith(
+      expect(subscriberRepository.eventEmitter.emit).not.toHaveBeenCalledWith(
         'hook:analytics:passation',
         expect.anything(),
         expect.anything(),

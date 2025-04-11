@@ -6,11 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, Inject } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
 import { ProjectionType, QueryOptions } from 'mongoose';
 
+import { LoggerService } from '@/logger/logger.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
@@ -26,9 +27,14 @@ export abstract class BaseService<
   Dto extends DtoConfig = object,
   U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
 > {
-  constructor(
-    protected readonly repository: BaseRepository<T, P, TFull, Dto>,
-  ) {}
+  eventEmitter: typeof this.repository.eventEmitter;
+
+  @Inject(LoggerService)
+  readonly logger: LoggerService;
+
+  constructor(protected readonly repository: BaseRepository<T, P, TFull, Dto>) {
+    this.eventEmitter = repository.eventEmitter;
+  }
 
   getRepository() {
     return this.repository;

@@ -7,9 +7,7 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test } from '@nestjs/testing';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
@@ -18,7 +16,6 @@ import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentModel } from '@/cms/schemas/content.schema';
 import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import {
@@ -31,6 +28,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
 import { BlockRepository } from '../repositories/block.repository';
@@ -50,7 +48,7 @@ describe('CategoryController', () => {
   let categoryToDelete: Category;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       controllers: [CategoryController],
       imports: [
         rootMongooseTestModule(installCategoryFixtures),
@@ -75,7 +73,6 @@ describe('CategoryController', () => {
           provide: PluginService,
           useValue: {},
         },
-        LoggerService,
         {
           provide: I18nService,
           useValue: {
@@ -97,11 +94,12 @@ describe('CategoryController', () => {
             findOne: jest.fn(),
           },
         },
-        EventEmitter2,
       ],
-    }).compile();
-    categoryService = module.get<CategoryService>(CategoryService);
-    categoryController = module.get<CategoryController>(CategoryController);
+    });
+    [categoryService, categoryController] = await getMocks([
+      CategoryService,
+      CategoryController,
+    ]);
     category = (await categoryService.findOne({
       label: 'test category 1',
     })) as Category;
@@ -111,6 +109,7 @@ describe('CategoryController', () => {
   });
 
   afterEach(jest.clearAllMocks);
+
   afterAll(closeInMongodConnection);
 
   describe('findPage', () => {

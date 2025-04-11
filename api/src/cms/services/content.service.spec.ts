@@ -6,13 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
-import { LoggerService } from '@/logger/logger.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   contentFixtures,
@@ -23,6 +20,7 @@ import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
@@ -38,7 +36,7 @@ describe('ContentService', () => {
   let contentRepository: ContentRepository;
 
   beforeAll(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installContentFixtures),
         MongooseModule.forFeature([ContentTypeModel, ContentModel]),
@@ -48,18 +46,16 @@ describe('ContentService', () => {
         ContentRepository,
         ContentTypeService,
         ContentService,
-        LoggerService,
-        EventEmitter2,
       ],
-    }).compile();
-    contentService = module.get<ContentService>(ContentService);
-    contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    contentRepository = module.get<ContentRepository>(ContentRepository);
+    });
+    [contentService, contentTypeService, contentRepository] = await getMocks([
+      ContentService,
+      ContentTypeService,
+      ContentRepository,
+    ]);
   });
 
-  afterAll(async () => {
-    await closeInMongodConnection();
-  });
+  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
