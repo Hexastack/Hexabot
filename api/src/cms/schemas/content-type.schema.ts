@@ -9,6 +9,7 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
+import { FieldType } from '@/setting/schemas/types';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
@@ -32,12 +33,12 @@ export class ContentType extends BaseSchema {
       {
         name: 'title',
         label: 'Title',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: 'checkbox',
+        type: FieldType.checkbox,
       },
     ],
   })
