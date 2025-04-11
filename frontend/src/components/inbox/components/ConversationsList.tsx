@@ -88,10 +88,8 @@ export const SubscribersList = (props: {
           ))}
         </ConversationList>
       ) : (
-        <Grid paddingX={2}>
-          <p style={{ textAlign: "center", color: "#999", marginTop: "1rem" }}>
-            {t("message.no_result_found")}
-          </p>
+        <Grid p={1} color="gray" textAlign="center">
+          {t("message.no_result_found")}
         </Grid>
       )}
     </>
