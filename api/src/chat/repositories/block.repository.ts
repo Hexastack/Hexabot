@@ -90,7 +90,6 @@ export class BlockRepository extends BaseRepository<
       | UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
     const update: BlockUpdateDto = updates?.['$set'];
-
     if (update?.category) {
       const movedBlock = await this.findOne(criteria);
 
