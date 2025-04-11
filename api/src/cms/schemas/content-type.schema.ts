@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,8 +9,11 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
+import { FieldType } from '@/setting/schemas/types';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+
+import { ContentField } from '../dto/contentType.dto';
 
 @Schema({ timestamps: true })
 export class ContentType extends BaseSchema {
@@ -30,20 +33,16 @@ export class ContentType extends BaseSchema {
       {
         name: 'title',
         label: 'Title',
-        type: 'text',
+        type: FieldType.text,
       },
       {
         name: 'status',
         label: 'Status',
-        type: 'checkbox',
+        type: FieldType.checkbox,
       },
     ],
   })
-  fields: {
-    name: string;
-    label: string;
-    type: string;
-  }[];
+  fields: ContentField[];
 }
 
 export const ContentTypeModel: ModelDefinition = LifecycleHookManager.attach({
