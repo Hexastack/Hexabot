@@ -20,6 +20,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { EntityType, RouterType } from "@/services/types";
+import { extractQueryParamsUrl } from "@/utils/URL";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
@@ -53,7 +54,7 @@ export const SubscribersList = (props: {
       <Grid padding={2}>
         <Title title={t(props.assignedTo)} icon={InboxIcon} />
       </Grid>
-      {subscribers?.length > 0 && (
+      {subscribers?.length > 0 ? (
         <ConversationList
           scrollable
           loading={isFetching}
@@ -64,7 +65,10 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                push(`/${RouterType.INBOX}/subscribers/${subscriber.id}`);
+                push({
+                  pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
+                  query: extractQueryParamsUrl(window.location.href),
+                });
               }}
               className="changeColor"
               key={subscriber.id}
@@ -87,6 +91,10 @@ export const SubscribersList = (props: {
             </Conversation>
           ))}
         </ConversationList>
+      ) : (
+        <Grid p={1} color="gray" textAlign="center">
+          {t("message.no_result_found")}
+        </Grid>
       )}
     </>
   );

@@ -47,6 +47,7 @@
     "random-seed": "^0.3.0"
   },
   "devDependencies": {
+    "@types/qs": "^6.9.15",
     "@types/node": "20.12.12",
     "@types/random-seed": "^0.3.5",
     "@types/react": "18.3.2",
