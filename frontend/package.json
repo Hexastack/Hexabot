@@ -28,7 +28,6 @@
     "@mui/x-data-grid": "^7.3.2",
     "@projectstorm/react-canvas-core": "^7.0.3",
     "@projectstorm/react-diagrams": "^7.0.4",
-    "@types/qs": "^6.9.15",
     "axios": "^1.7.7",
     "eazychart-css": "^0.2.1-alpha.0",
     "eazychart-react": "^0.8.0-alpha.0",
@@ -44,9 +43,11 @@
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
     "react-query": "^3.39.3",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "random-seed": "^0.3.0"
   },
   "devDependencies": {
+    "@types/qs": "^6.9.15",
     "@types/node": "20.12.12",
     "@types/random-seed": "^0.3.5",
     "@types/react": "18.3.2",
@@ -57,7 +58,6 @@
     "eslint-import-resolver-typescript": "~3.6.1",
     "eslint-plugin-header": "^3.1.1",
     "lint-staged": "^15.3.0",
-    "random-seed": "^0.3.0",
     "typescript": "^5.5.3"
   },
   "engines": {

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,13 +9,21 @@
 import { createContext, ReactNode, useContext } from "react";
 import { FormProvider, UseFormReturn } from "react-hook-form";
 
-import { IBlockAttributes, IBlock } from "@/types/block.types";
+import { IBlock, IBlockAttributes } from "@/types/block.types";
 
 // Create a custom context for the block value
 const BlockContext = createContext<IBlock | undefined>(undefined);
 
 // Custom hook to use block context
-export const useBlock = () => useContext(BlockContext);
+export const useBlock = () => {
+  const context = useContext(BlockContext);
+
+  if (!context) {
+    throw new Error("useBlock must be used within an BlockContext");
+  }
+
+  return context;
+};
 
 // This component wraps FormProvider and adds block to its context
 function BlockFormProvider({
@@ -23,7 +31,7 @@ function BlockFormProvider({
   methods,
   block,
 }: {
-  methods: UseFormReturn<IBlockAttributes, any, undefined>;
+  methods: UseFormReturn<IBlockAttributes>;
   block: IBlock | undefined;
   children: ReactNode;
 }) {

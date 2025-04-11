@@ -334,6 +334,7 @@
     "nlp": "NLU",
     "nlp_entity": "Entity",
     "nlp_entity_value": "Value",
+    "nlp_samples_count": "Samples count",
     "value": "Value",
     "synonyms": "Synonyms",
     "lookups": "Lookups",

@@ -16,6 +16,7 @@ import {
   TFilterPopulateFields,
   THydratedDocument,
 } from '@/utils/types/filter.types';
+import { TStubOrFull } from '@/utils/types/format.types';
 
 import { NlpEntity, NlpEntityFull } from './nlp-entity.schema';
 import { NlpValueMap } from './types';
@@ -106,6 +107,14 @@ export class NlpValueFull extends NlpValueStub {
   entity: NlpEntity;
 }
 
+export class NlpValueWithCount extends NlpValue {
+  nlpSamplesCount: number;
+}
+
+export class NlpValueFullWithCount extends NlpValueFull {
+  nlpSamplesCount: number;
+}
+
 export type NlpValueDocument = THydratedDocument<NlpValue>;
 
 export const NlpValueModel: ModelDefinition = LifecycleHookManager.attach({
@@ -121,3 +130,9 @@ export type NlpValuePopulate = keyof TFilterPopulateFields<
 >;
 
 export const NLP_VALUE_POPULATE: NlpValuePopulate[] = ['entity'];
+
+export type TNlpValueCount<T> = TStubOrFull<
+  T,
+  NlpValueWithCount,
+  NlpValueFullWithCount
+>;

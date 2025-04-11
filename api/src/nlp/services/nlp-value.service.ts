@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,6 +10,9 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValueCreateDto, NlpValueDto } from '../dto/nlp-value.dto';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -18,6 +21,7 @@ import {
   NlpValue,
   NlpValueFull,
   NlpValuePopulate,
+  TNlpValueCount,
 } from '../schemas/nlp-value.schema';
 import { NlpSampleEntityValue } from '../schemas/types';
 
@@ -217,5 +221,13 @@ export class NlpValueService extends BaseService<
       return result;
     });
     return Promise.all(promises);
+  }
+
+  async findWithCount<F extends Format>(
+    format: F,
+    pageQuery: PageQueryDto<NlpValue>,
+    filters: TFilterQuery<NlpValue>,
+  ): Promise<TNlpValueCount<F>[]> {
+    return await this.repository.findWithCount(format, pageQuery, filters);
   }
 }

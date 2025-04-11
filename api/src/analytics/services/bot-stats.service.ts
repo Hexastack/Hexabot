@@ -93,8 +93,9 @@ export class BotStatsService extends BaseService<BotStats> {
     ) {
       this.eventEmitter.emit(
         'hook:stats:entry',
-        'retention',
+        BotStatsType.retention,
         'Retentioned users',
+        subscriber,
       );
     }
   }
@@ -106,7 +107,11 @@ export class BotStatsService extends BaseService<BotStats> {
    * @param name - The name or identifier of the statistics entry (e.g., a specific feature or component being tracked).
    */
   @OnEvent('hook:stats:entry')
-  async handleStatEntry(type: BotStatsType, name: string): Promise<void> {
+  async handleStatEntry(
+    type: BotStatsType,
+    name: string,
+    _subscriber: Subscriber,
+  ): Promise<void> {
     const day = new Date();
     day.setMilliseconds(0);
     day.setSeconds(0);
