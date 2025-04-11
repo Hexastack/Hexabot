@@ -139,6 +139,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
+          weight: 1,
         },
         entity2: {
           id: new ObjectId().toString(),
@@ -147,6 +148,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
+          weight: 1,
         },
       });
       jest.spyOn(NlpValue, 'getValueMap').mockReturnValue({
@@ -207,6 +209,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           lookups: [],
+          weight: 1,
         },
       });
 

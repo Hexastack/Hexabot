@@ -31,6 +31,15 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
+import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
+import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
+import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
+import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
+import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpCacheMap } from '@/nlp/schemas/types';
+import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
+import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import {
@@ -43,12 +52,18 @@ import {
   blockGetStarted,
   blockProductListMock,
   blocks,
+  mockNlpBlock,
+  mockNlpPatternsSetOne,
+  mockNlpPatternsSetTwo,
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
-import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
+import {
+  mockNlpEntitiesSetOne,
+  nlpEntitiesGreeting,
+} from '@/utils/test/mocks/nlp';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -61,11 +76,46 @@ import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
 import { StdOutgoingListMessage } from '../schemas/types/message';
+import { NlpPattern } from '../schemas/types/pattern';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
+// Create a mock for the NlpEntityService
+const mockNlpEntityService = {
+  entities: {
+    intent: {
+      lookups: ['trait'],
+      id: '67e3e41eff551ca5be70559c',
+      weight: 1,
+    },
+    firstname: {
+      lookups: ['trait'],
+      id: '67e3e41eff551ca5be70559d',
+      weight: 1,
+    },
+  },
+  findOne: jest.fn().mockImplementation((query) => {
+    const entity = mockNlpEntityService.entities[query.name];
+    if (entity) {
+      return Promise.resolve(entity);
+    }
+    return Promise.resolve(null); // Default response if the entity isn't found
+  }),
+};
+
+const mockNlpValueService = {
+  find: jest.fn().mockImplementation((query) => {
+    if (query.entity === '67e3e41eff551ca5be70559c') {
+      return Promise.resolve([{ value: 'greeting' }, { value: 'affirmation' }]); // Simulating multiple values for 'intent'
+    }
+    if (query.entity === '67e3e41eff551ca5be70559d') {
+      return Promise.resolve([{ value: 'jhon' }, { value: 'doe' }]); // Simulating multiple values for 'firstname'
+    }
+    return Promise.resolve([]); // Default response for no matching entity
+  }),
+};
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
@@ -91,6 +141,9 @@ describe('BlockService', () => {
           AttachmentModel,
           LabelModel,
           LanguageModel,
+          NlpEntityModel,
+          NlpSampleEntityModel,
+          NlpValueModel,
         ]),
       ],
       providers: [
@@ -106,6 +159,17 @@ describe('BlockService', () => {
         ContentService,
         AttachmentService,
         LanguageService,
+        NlpEntityRepository,
+        NlpValueRepository,
+        NlpSampleEntityRepository,
+        {
+          provide: NlpEntityService, // Mocking NlpEntityService
+          useValue: mockNlpEntityService,
+        },
+        {
+          provide: NlpValueService, // Mocking NlpValueService
+          useValue: mockNlpValueService,
+        },
         {
           provide: PluginService,
           useValue: {},
@@ -317,6 +381,121 @@ describe('BlockService', () => {
         patterns: [[{ entity: 'product', match: 'value', value: 'pizza' }]],
       });
       expect(result).toEqual(undefined);
+    });
+  });
+
+  describe('matchBestNLP', () => {
+    it('should return the block with the highest NLP score', async () => {
+      const blocks = [mockNlpBlock, blockGetStarted]; // You can add more blocks with different patterns and scores
+      const matchedPatterns = [mockNlpPatternsSetOne, mockNlpPatternsSetTwo];
+      const nlp = mockNlpEntitiesSetOne;
+      // Spy on calculateBlockScore to check if it's called
+      const calculateBlockScoreSpy = jest
+        .spyOn(blockService, 'calculateBlockScore')
+        .mockImplementation((patterns) => {
+          // Return different scores based on the block patterns
+          if (patterns === mockNlpPatternsSetOne) {
+            return Promise.resolve(1.499);
+          } else {
+            return Promise.resolve(0);
+          }
+        });
+      const bestBlock = await blockService.matchBestNLP(
+        blocks,
+        matchedPatterns,
+        nlp,
+      );
+
+      // Ensure calculateBlockScore was called at least once for each block
+      expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(2); // Called for each block
+
+      // Restore the spy after the test
+      calculateBlockScoreSpy.mockRestore();
+      // Assert that the block with the highest NLP score is selected
+      expect(bestBlock).toEqual(mockNlpBlock);
+    });
+
+    it('should return undefined if no blocks match or the list is empty', async () => {
+      const blocks: Block[] = []; // Empty block array
+      const matchedPatterns: NlpPattern[][] = [];
+      const nlp = mockNlpEntitiesSetOne;
+
+      const bestBlock = await blockService.matchBestNLP(
+        blocks,
+        matchedPatterns,
+        nlp,
+      );
+
+      // Assert that undefined is returned when no blocks are available
+      expect(bestBlock).toBeUndefined();
+    });
+  });
+
+  describe('calculateBlockScore', () => {
+    it('should calculate the correct NLP score for a block', async () => {
+      const nlpCacheMap: NlpCacheMap = new Map();
+
+      const score = await blockService.calculateBlockScore(
+        mockNlpPatternsSetOne,
+        mockNlpEntitiesSetOne,
+        nlpCacheMap,
+      );
+      const score2 = await blockService.calculateBlockScore(
+        mockNlpPatternsSetTwo,
+        mockNlpEntitiesSetOne,
+        nlpCacheMap,
+      );
+
+      expect(score).toBeGreaterThan(0);
+      expect(score).toBeGreaterThan(score2);
+    });
+
+    it('should return 0 if no matching entities are found', async () => {
+      const nlpCacheMap: NlpCacheMap = new Map();
+      const score = await blockService.calculateBlockScore(
+        mockNlpPatternsSetTwo,
+        mockNlpEntitiesSetOne,
+        nlpCacheMap,
+      );
+
+      expect(score).toBe(0); // No matching entity, so score should be 0
+    });
+    it('should correctly use entity cache to avoid redundant database calls', async () => {
+      const nlpCacheMap: NlpCacheMap = new Map();
+
+      // Create spies on the services
+      const entityServiceSpy = jest.spyOn(mockNlpEntityService, 'findOne');
+      const valueServiceSpy = jest.spyOn(mockNlpValueService, 'find');
+
+      // First call should calculate and cache entity data
+      await blockService.calculateBlockScore(
+        mockNlpPatternsSetOne,
+        mockNlpEntitiesSetOne,
+        nlpCacheMap,
+      );
+      const cacheSizeBefore = nlpCacheMap.size;
+      const entityCallsBefore = entityServiceSpy.mock.calls.length;
+      const valueCallsBefore = valueServiceSpy.mock.calls.length;
+
+      // Second call should use cached entity data, without redundant DB calls
+      await blockService.calculateBlockScore(
+        mockNlpPatternsSetOne,
+        mockNlpEntitiesSetOne,
+        nlpCacheMap,
+      );
+      const cacheSizeAfter = nlpCacheMap.size;
+      const entityCallsAfter = entityServiceSpy.mock.calls.length;
+      const valueCallsAfter = valueServiceSpy.mock.calls.length;
+
+      // Assert that the cache size hasn't increased after the second call
+      expect(cacheSizeBefore).toBe(cacheSizeAfter);
+      // Assert that the services weren't called again
+      expect(entityCallsAfter).toBe(entityCallsBefore);
+      expect(valueCallsAfter).toBe(valueCallsBefore);
+
+      // Cleanup
+      entityServiceSpy.mockRestore();
+      valueServiceSpy.mockRestore();
     });
   });
 

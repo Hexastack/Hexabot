@@ -109,6 +109,7 @@ describe('NlpEntityController', () => {
             ) as NlpEntityFull['values'],
             lookups: curr.lookups!,
             builtin: curr.builtin!,
+            weight: curr.weight!,
           });
           return acc;
         },
@@ -163,6 +164,7 @@ describe('NlpEntityController', () => {
         name: 'sentiment',
         lookups: ['trait'],
         builtin: false,
+        weight: 1,
       };
       const result = await nlpEntityController.create(sentimentEntity);
       expect(result).toEqualPayload(sentimentEntity);
@@ -214,6 +216,7 @@ describe('NlpEntityController', () => {
         updatedAt: firstNameEntity!.updatedAt,
         lookups: firstNameEntity!.lookups,
         builtin: firstNameEntity!.builtin,
+        weight: firstNameEntity!.weight,
       };
       const result = await nlpEntityController.findOne(firstNameEntity!.id, [
         'values',
@@ -238,6 +241,7 @@ describe('NlpEntityController', () => {
         doc: '',
         lookups: ['trait'],
         builtin: false,
+        weight: 1,
       };
       const result = await nlpEntityController.updateOne(
         firstNameEntity!.id,
@@ -258,16 +262,19 @@ describe('NlpEntityController', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw exception when nlp entity is builtin', async () => {
+    it('should update the NLP entity even if it is builtin', async () => {
       const updateNlpEntity: NlpEntityCreateDto = {
-        name: 'updated',
+        name: 'intent',
         doc: '',
         lookups: ['trait'],
-        builtin: false,
+        builtin: true,
+        weight: 2,
       };
-      await expect(
-        nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
-      ).rejects.toThrow(MethodNotAllowedException);
+      const result = await nlpEntityController.updateOne(
+        buitInEntityId!,
+        updateNlpEntity,
+      );
+      expect(result).toEqual(expect.objectContaining(updateNlpEntity));
     });
   });
   describe('deleteMany', () => {
