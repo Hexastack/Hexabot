@@ -54,15 +54,15 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
     ...(config.sockets.cookie && { cookie: config.sockets.cookie }),
     ...(config.sockets.onlyAllowOrigins && {
       cors: {
-        origin: (origin, cb) => {
+        origin: async (origin, cb) => {
           // Retrieve the allowed origins from the settings
           const app = AppInstance.getApp();
           const settingService = app.get<SettingService>(SettingService);
 
-          settingService
+          await settingService
             .getAllowedOrigins()
             .then((allowedOrigins) => {
-              if (origin && allowedOrigins.has(origin)) {
+              if (origin && allowedOrigins.includes(origin)) {
                 cb(null, true);
               } else {
                 // eslint-disable-next-line no-console

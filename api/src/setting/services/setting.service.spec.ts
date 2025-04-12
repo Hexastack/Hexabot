@@ -195,7 +195,7 @@ describe('SettingService', () => {
       expect(settingService.find).toHaveBeenCalledWith({
         label: 'allowed_domains',
       });
-      expect(result).toEqual(new Set(['*', 'https://example.com']));
+      expect(result).toEqual(['*', 'https://example.com']);
     });
   });
 });
