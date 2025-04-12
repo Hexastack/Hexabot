@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -26,7 +26,7 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const { onSearch, searchPayload } = useSearch<ISubscriber>({
+  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>({
     $or: ["first_name", "last_name"],
   });
   const [channels, setChannels] = useState<string[]>([]);
@@ -48,6 +48,7 @@ export const Inbox = () => {
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
                 <Search
+                  value={searchText}
                   onClearClick={() => onSearch("")}
                   className="changeColor"
                   onChange={(v) => onSearch(v)}

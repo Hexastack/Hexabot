@@ -171,42 +171,38 @@ describe('BlockRepository', () => {
 
   describe('prepareBlocksInCategoryUpdateScope', () => {
     it('should update blocks within the scope based on category and ids', async () => {
-      jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
-        id: blockValidIds[0],
-        category: 'oldCategory',
-        nextBlocks: [blockValidIds[1]],
-        attachedBlock: blockValidIds[1],
-      } as Block);
-
-      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+      jest.spyOn(blockRepository, 'find').mockResolvedValue([
+        {
+          id: blockValidIds[0],
+          category: category.id,
+          nextBlocks: [blockValidIds[1]],
+          attachedBlock: blockValidIds[2],
+        },
+      ] as Block[]);
+      jest.spyOn(blockRepository, 'updateOne');
 
       await blockRepository.prepareBlocksInCategoryUpdateScope(
         validCategory,
         blockValidIds,
       );
 
-      expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[0], {
+      expect(blockRepository.updateOne).toHaveBeenCalledWith(blockValidIds[0], {
         nextBlocks: [blockValidIds[1]],
-        attachedBlock: blockValidIds[1],
+        attachedBlock: blockValidIds[2],
       });
     });
 
     it('should not update blocks if the category already matches', async () => {
-      jest.spyOn(blockRepository, 'findOne').mockResolvedValue({
-        id: validIds[0],
-        category: validCategory,
-        nextBlocks: [],
-        attachedBlock: null,
-      } as unknown as Block);
-
-      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+      jest.spyOn(blockRepository, 'find').mockResolvedValue([]);
+      jest.spyOn(blockRepository, 'updateOne');
 
       await blockRepository.prepareBlocksInCategoryUpdateScope(
-        validCategory,
-        validIds,
+        category.id,
+        blockValidIds,
       );
 
-      expect(mockUpdateOne).not.toHaveBeenCalled();
+      expect(blockRepository.find).toHaveBeenCalled();
+      expect(blockRepository.updateOne).not.toHaveBeenCalled();
     });
   });
 

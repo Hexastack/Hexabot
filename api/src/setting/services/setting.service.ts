@@ -135,7 +135,7 @@ export class SettingService extends BaseService<Setting> {
    * @returns A promise that resolves to a set of allowed origins
    */
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
-  async getAllowedOrigins() {
+  async getAllowedOrigins(): Promise<string[]> {
     const settings = (await this.find({
       label: 'allowed_domains',
     })) as TextSetting[];
@@ -150,7 +150,7 @@ export class SettingService extends BaseService<Setting> {
       ...allowedDomains,
     ]);
 
-    return uniqueOrigins;
+    return Array.from(uniqueOrigins);
   }
 
   /**

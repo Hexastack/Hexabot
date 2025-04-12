@@ -6,21 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { GenericFormDialog } from "@/app-components/dialogs";
-import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
+export enum Format {
+  NONE = 0,
+  STUB = 1,
+  BASIC = 2,
+  FULL = 3,
+}
 
-import { NlpValueForm, NlpValueFormProps } from "./NlpValueForm";
-
-export const NlpValueFormDialog = <
-  T extends NlpValueFormProps = NlpValueFormProps,
->(
-  props: ComponentFormDialogProps<T>,
-) => (
-  <GenericFormDialog<T>
-    Form={NlpValueForm}
-    rowKey="defaultValues"
-    addText="title.new_nlp_entity_value"
-    editText="title.edit_nlp_value"
-    {...props}
-  />
-);
+export type TStubOrFull<TF, TStub, TFull> = TF extends Format.STUB
+  ? TStub
+  : TFull;

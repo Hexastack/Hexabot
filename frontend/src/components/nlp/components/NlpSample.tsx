@@ -392,6 +392,7 @@ export default function NlpSample() {
                   `nlpsample/export${type ? `?type=${type}` : ""}`,
                 )}
                 startIcon={<DownloadIcon />}
+                disabled={dataGridProps?.rows?.length === 0}
               >
                 {t("button.export")}
               </Button>

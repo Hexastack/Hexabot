@@ -34,7 +34,6 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
-import { NlpLookups } from "@/types/nlp-entity.types";
 import { INlpValue } from "@/types/nlp-value.types";
 import { PermissionAction } from "@/types/permission.types";
 import { getDateTimeFormatter } from "@/utils/date";
@@ -52,13 +51,12 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const canHaveSynonyms = nlpEntity?.lookups?.[0] === NlpLookups.keywords;
   const { onSearch, searchPayload } = useSearch<INlpValue>({
     $eq: [{ entity: entityId }],
-    $or: ["doc", "value"]
+    $or: ["doc", "value"],
   });
   const { dataGridProps } = useFind(
-    { entity: EntityType.NLP_VALUE },
+    { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {
       params: searchPayload,
     },
@@ -88,7 +86,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       {
         label: ActionColumnLabel.Edit,
         action: (row) =>
-          dialogs.open(NlpValueFormDialog, { data: row, canHaveSynonyms }),
+          dialogs.open(NlpValueFormDialog, {
+            defaultValues: row,
+            presetValues: nlpEntity,
+          }),
       },
       {
         label: ActionColumnLabel.Delete,
@@ -103,7 +104,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     ],
     t("label.operations"),
   );
-  const synonymsColumn =  {
+  const synonymsColumn = {
     flex: 3,
     field: "synonyms",
     headerName: t("label.synonyms"),
@@ -124,6 +125,24 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
       sortable: true,
       disableColumnMenu: true,
       renderHeader,
+    },
+    {
+      flex: 2,
+      field: "nlpSamplesCount",
+      align: "center",
+      headerName: t("label.nlp_samples_count"),
+      sortable: true,
+      disableColumnMenu: true,
+      headerAlign: "center",
+      renderHeader,
+      renderCell: ({ row }) => (
+        <Chip
+          sx={{ alignContent: "center" }}
+          id={row.id}
+          label={row.nlpSamplesCount}
+          variant="inbox"
+        />
+      ),
     },
     {
       flex: 3,
@@ -220,7 +239,11 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       startIcon={<AddIcon />}
                       variant="contained"
                       sx={{ float: "right" }}
-                      onClick={() => dialogs.open(NlpValueFormDialog, null)}
+                      onClick={() =>
+                        dialogs.open(NlpValueFormDialog, {
+                          presetValues: nlpEntity,
+                        })
+                      }
                     >
                       {t("button.add")}
                     </Button>

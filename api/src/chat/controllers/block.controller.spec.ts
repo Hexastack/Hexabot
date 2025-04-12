@@ -361,4 +361,30 @@ describe('BlockController', () => {
     ).toBeDefined();
     expect(result.patterns).toEqual(updateBlock.patterns);
   });
+
+  it('should update the block trigger with a content payloadType payload', async () => {
+    jest.spyOn(blockService, 'updateOne');
+    const updateBlock: BlockUpdateDto = {
+      patterns: [
+        {
+          label: 'Content label',
+          value: 'Content value',
+          type: PayloadType.content,
+        },
+      ],
+    };
+    const result = await blockController.updateOne(block.id, updateBlock);
+    expect(blockService.updateOne).toHaveBeenCalledWith(block.id, updateBlock);
+
+    expect(
+      result.patterns.find(
+        (pattern) =>
+          typeof pattern === 'object' &&
+          'type' in pattern &&
+          pattern.type === PayloadType.content &&
+          pattern,
+      ),
+    ).toBeDefined();
+    expect(result.patterns).toEqual(updateBlock.patterns);
+  });
 });
