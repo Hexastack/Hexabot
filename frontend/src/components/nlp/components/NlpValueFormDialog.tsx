@@ -18,6 +18,7 @@ export const NlpValueFormDialog = <
 ) => (
   <GenericFormDialog<T>
     Form={NlpValueForm}
+    rowKey="defaultValues"
     addText="title.new_nlp_entity_value"
     editText="title.edit_nlp_value"
     {...props}

@@ -66,7 +66,13 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const { reset, register, handleSubmit, control } = useForm<
+  const {
+    reset,
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<
     INlpValueAttributes & {
       expressions: string[];
     }
@@ -111,8 +117,10 @@ export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
           <ContentItem>
             <Input
               label={t("placeholder.nlp_value")}
+              error={!!errors.value}
               required
               autoFocus
+              helperText={errors.value ? errors.value.message : null}
               {...register("value", validationRules.value)}
             />
           </ContentItem>
