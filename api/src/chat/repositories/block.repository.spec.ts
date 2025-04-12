@@ -54,7 +54,6 @@ describe('BlockRepository', () => {
     validCategory = '64def5678abc123490fedcba';
 
     category = (await categoryRepository.findOne({ label: 'default' }))!;
-
     hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
     }))!;
