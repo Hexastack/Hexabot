@@ -172,22 +172,24 @@ export class BlockRepository extends BaseRepository<
     category: string,
     ids: string[],
   ): Promise<void> {
-    for (const id of ids) {
-      const oldState = await this.findOne(id);
-      if (oldState && oldState.category !== category) {
-        const updatedNextBlocks = oldState.nextBlocks?.filter((nextBlock) =>
-          ids.includes(nextBlock),
-        );
+    const blocks = await this.find({
+      _id: { $in: ids },
+      category: { $ne: category },
+    });
 
-        const updatedAttachedBlock = ids.includes(oldState.attachedBlock || '')
-          ? oldState.attachedBlock
-          : null;
+    for (const { id, nextBlocks, attachedBlock } of blocks) {
+      const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
+        ids.includes(nextBlock),
+      );
 
-        await this.updateOne(id, {
-          nextBlocks: updatedNextBlocks,
-          attachedBlock: updatedAttachedBlock,
-        });
-      }
+      const updatedAttachedBlock = ids.includes(attachedBlock || '')
+        ? attachedBlock
+        : null;
+
+      await this.updateOne(id, {
+        nextBlocks: updatedNextBlocks,
+        attachedBlock: updatedAttachedBlock,
+      });
     }
   }
 
