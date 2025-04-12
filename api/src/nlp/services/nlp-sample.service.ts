@@ -257,6 +257,10 @@ export class NlpSampleService extends BaseService<
       (deletedLanguage) => deletedLanguage.id,
     );
 
+    this.logger.debug(
+      `Found ${deletedLanguagesIds.length} languages to clean up`,
+    );
+
     if (deletedLanguagesIds.length > 0) {
       await this.updateMany(
         {
@@ -267,7 +271,11 @@ export class NlpSampleService extends BaseService<
         {
           language: null,
         },
-      );
+      ).then((result) => {
+        this.logger.debug(
+          `Cleaned up languageId from ${result.modifiedCount} NLP samples`,
+        );
+      });
     }
   }
 
