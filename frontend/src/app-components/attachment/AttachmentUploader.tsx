@@ -101,8 +101,8 @@ const AttachmentUploader: FC<FileUploadProps> = ({
       onSuccess: (data) => {
         toast.success(t("message.success_save"));
         setAttachment(data);
-        onChange && onChange(data);
-        onUploadComplete && onUploadComplete();
+        onChange?.(data);
+        onUploadComplete?.();
       },
     },
   );
