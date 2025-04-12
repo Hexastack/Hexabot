@@ -20,19 +20,31 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
+import { INlpEntity, NlpLookups } from "@/types/nlp-entity.types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
-export const NlpValueForm: FC<
-  ComponentFormProps<{ data: INlpValue; canHaveSynonyms: boolean }>
-> = ({ data: props, Wrapper = Fragment, WrapperProps, ...rest }) => {
-  const { data, canHaveSynonyms } = props || {};
+export type NlpValueFormProps = {
+  defaultValues?: INlpValue;
+  presetValues: INlpEntity | undefined;
+};
+export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
+  data: props,
+  Wrapper = Fragment,
+  WrapperProps,
+  ...rest
+}) => {
+  const { defaultValues: nlpValue, presetValues: nlpEntity } = props || {
+    defaultValues: null,
+    presetValues: null,
+  };
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();
-  const { refetch: refetchEntity } = useGet(data?.entity || String(query.id), {
+  const { refetch: refetchEntity } = useGet(nlpEntity?.id!, {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
+  const canHaveSynonyms = nlpEntity?.lookups.includes(NlpLookups.keywords);
   const { mutate: createNlpValue } = useCreate(EntityType.NLP_VALUE, {
     onError: () => {
       rest.onError?.();
@@ -54,15 +66,21 @@ export const NlpValueForm: FC<
       toast.success(t("message.success_save"));
     },
   });
-  const { reset, register, handleSubmit, control } = useForm<
+  const {
+    reset,
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<
     INlpValueAttributes & {
       expressions: string[];
     }
   >({
     defaultValues: {
-      value: data?.value || "",
-      doc: data?.doc || "",
-      expressions: data?.expressions || [],
+      value: nlpValue?.value || "",
+      doc: nlpValue?.doc || "",
+      expressions: nlpValue?.expressions || [],
     },
   });
   const validationRules = {
@@ -73,24 +91,24 @@ export const NlpValueForm: FC<
     description: {},
   };
   const onSubmitForm = async (params: INlpValueAttributes) => {
-    if (data) {
-      updateNlpValue({ id: data.id, params });
+    if (nlpValue) {
+      updateNlpValue({ id: nlpValue.id, params });
     } else {
       createNlpValue({ ...params, entity: String(query.id) });
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (nlpValue) {
       reset({
-        value: data.value,
-        expressions: data.expressions,
-        doc: data.doc,
+        value: nlpValue.value,
+        expressions: nlpValue.expressions,
+        doc: nlpValue.doc,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [nlpValue, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -99,8 +117,10 @@ export const NlpValueForm: FC<
           <ContentItem>
             <Input
               label={t("placeholder.nlp_value")}
+              error={!!errors.value}
               required
               autoFocus
+              helperText={errors.value ? errors.value.message : null}
               {...register("value", validationRules.value)}
             />
           </ContentItem>
@@ -118,7 +138,11 @@ export const NlpValueForm: FC<
                 name="expressions"
                 control={control}
                 render={({ field }) => (
-                  <MultipleInput label="synonyms" {...field} />
+                  <MultipleInput
+                    label={t("label.synonyms")}
+                    {...field}
+                    minInput={1}
+                  />
                 )}
               />
             </ContentItem>
