@@ -256,16 +256,19 @@ export class NlpSampleService extends BaseService<
     const deletedLanguagesIds = deletedLanguages.map(
       (deletedLanguage) => deletedLanguage.id,
     );
-    await this.updateMany(
-      {
-        language: {
-          $in: deletedLanguagesIds,
+
+    if (deletedLanguagesIds.length > 0) {
+      await this.updateMany(
+        {
+          language: {
+            $in: deletedLanguagesIds,
+          },
         },
-      },
-      {
-        language: null,
-      },
-    );
+        {
+          language: null,
+        },
+      );
+    }
   }
 
   @OnEvent('hook:message:preCreate')
