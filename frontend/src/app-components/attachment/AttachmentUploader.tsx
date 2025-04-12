@@ -8,7 +8,15 @@
 
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import FolderCopyIcon from "@mui/icons-material/FolderCopy";
-import { Box, Button, Divider, Grid, styled, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  Grid,
+  styled,
+  Typography,
+} from "@mui/material";
 import { ChangeEvent, DragEvent, FC, useState } from "react";
 
 import { useUpload } from "@/hooks/crud/useUpload";
@@ -84,17 +92,20 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const dialogs = useDialogs();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const { toast } = useToast();
-  const { mutate: uploadAttachment } = useUpload(EntityType.ATTACHMENT, {
-    onError: () => {
-      toast.error(t("message.upload_failed"));
+  const { mutate: uploadAttachment, isLoading } = useUpload(
+    EntityType.ATTACHMENT,
+    {
+      onError: () => {
+        toast.error(t("message.upload_failed"));
+      },
+      onSuccess: (data) => {
+        toast.success(t("message.success_save"));
+        setAttachment(data);
+        onChange && onChange(data);
+        onUploadComplete && onUploadComplete();
+      },
     },
-    onSuccess: (data) => {
-      toast.success(t("message.success_save"));
-      setAttachment(data);
-      onChange && onChange(data);
-      onUploadComplete && onUploadComplete();
-    },
-  });
+  );
   const stopDefaults = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -167,7 +178,9 @@ const AttachmentUploader: FC<FileUploadProps> = ({
               alignItems="center"
               sx={{ padding: "20px" }}
             >
-              {attachment ? (
+              {isLoading ? (
+                <CircularProgress />
+              ) : attachment ? (
                 <AttachmentThumbnail
                   id={attachment.id}
                   format="full"
