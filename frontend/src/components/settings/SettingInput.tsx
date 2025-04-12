@@ -121,7 +121,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             label={t("label.fallback_block")}
             helperText={t("help.fallback_block")}
             multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.id || null)}
+            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
             {...rest}
           />
         );
