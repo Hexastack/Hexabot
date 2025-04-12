@@ -50,11 +50,11 @@ async function bootstrap() {
 
   const settingService = app.get<SettingService>(SettingService);
   app.enableCors({
-    origin: (origin, callback) => {
-      settingService
+    origin: async (origin, callback) => {
+      await settingService
         .getAllowedOrigins()
         .then((allowedOrigins) => {
-          if (!origin || allowedOrigins.has(origin)) {
+          if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
           } else {
             callback(new Error('Not allowed by CORS'));
