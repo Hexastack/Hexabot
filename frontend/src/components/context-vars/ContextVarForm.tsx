@@ -151,17 +151,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
                     validate: (pattern) => {
                       try {
                         if (pattern) {
-                          const parsedPattern = new RegExp(
-                            pattern.slice(1, -1),
-                          );
-
-                          if (pattern.slice(1, -1) === "") {
-                            return true;
-                          }
-
-                          if (String(parsedPattern) !== pattern) {
-                            throw t("message.regex_is_invalid");
-                          }
+                          new RegExp(pattern.slice(1, -1));
 
                           return true;
                         }
