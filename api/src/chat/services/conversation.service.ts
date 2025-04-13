@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BaseService } from '@/utils/generics/base-service';
@@ -114,16 +114,28 @@ export class ConversationService extends BaseService<
         contextValue =
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
-        if (
-          profile.context?.vars &&
-          contextVars[capture.context_var]?.permanent
-        ) {
-          Logger.debug(
-            `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
+        const context_var = contextVars[capture.context_var];
+        const { permanent, pattern = '' } = context_var || {};
+        const isValidContextValue = new RegExp(pattern.slice(1, -1)).test(
+          `${contextValue}`,
+        );
+        if (isValidContextValue) {
+          if (profile.context?.vars && permanent) {
+            this.logger.debug(
+              `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
+            );
+            profile.context.vars[capture.context_var] = contextValue;
+          }
+          convo.context!.vars[capture.context_var] = contextValue;
+        } else {
+          this.logger.warn(
+            `ContextVar[${capture.context_var}] value does not match the pattern!`,
           );
-          profile.context.vars[capture.context_var] = contextValue;
+          this.logger.debug(`value:"${contextValue}" pattern:"${pattern}"`);
+          this.logger.warn(
+            `ContextVar[${capture.context_var}] update skipped!`,
+          );
         }
-        convo.context!.vars[capture.context_var] = contextValue;
       });
     }
 
