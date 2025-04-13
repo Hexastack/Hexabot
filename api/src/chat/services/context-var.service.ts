@@ -30,7 +30,7 @@ export class ContextVarService extends BaseService<
    * Retrieves a mapping of context variable names to their corresponding `ContextVar` objects for a given block.
    *
    * @param {Block | BlockFull} block - The block containing the capture variables to retrieve context variables for.
-   * @returns {Promise<Record<string, ContextVar | undefined>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects.
+   * @returns {Promise<Record<string, ContextVar | undefined>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects or undefined if not found.
    */
   async getContextVarsByBlock(
     block: Block | BlockFull,
