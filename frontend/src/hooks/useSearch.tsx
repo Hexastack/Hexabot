@@ -79,7 +79,9 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   );
 
   useEffect(() => {
-    updateQueryParams(searchText);
+    if (searchText) {
+      updateQueryParams(searchText);
+    }
   }, [searchText]);
 
   const {
