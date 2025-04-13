@@ -59,16 +59,21 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   );
   const [isActive, setIsActive] = useState(false);
   const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
+    async (newSearchText: string) => {
+      const query = { ...router.query, search: newSearchText || undefined };
+
+      if (!newSearchText) {
+        delete query.search;
+      }
+
+      await router.push(
         {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
+          query,
         },
         undefined,
         { shallow: true },
       );
-    }, 300),
+    },
     [router],
   );
   const onSearch = debounce(
@@ -79,9 +84,7 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   );
 
   useEffect(() => {
-    if (searchText) {
-      updateQueryParams(searchText);
-    }
+    updateQueryParams(searchText);
   }, [searchText]);
 
   const {
