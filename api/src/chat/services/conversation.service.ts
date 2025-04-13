@@ -116,9 +116,17 @@ export class ConversationService extends BaseService<
 
         const context_var = contextVars[capture.context_var];
         const { permanent, pattern = '' } = context_var || {};
-        const isValidContextValue = new RegExp(pattern.slice(1, -1)).test(
-          `${contextValue}`,
-        );
+        const isValidContextValue = (() => {
+          try {
+            return new RegExp(pattern.slice(1, -1)).test(`${contextValue}`);
+          } catch (error) {
+            this.logger.error(
+              `Invalid regex pattern for ContextVar[${capture.context_var}]: ${pattern}`,
+            );
+            return false;
+          }
+        })();
+
         if (isValidContextValue) {
           if (profile.context?.vars && permanent) {
             this.logger.debug(
