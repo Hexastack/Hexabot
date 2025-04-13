@@ -57,13 +57,13 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   const [searchText, setSearchText] = useState<string>(
     (router.query.search as string) || "",
   );
-
-  useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
-    }
-  }, [router.query.search]);
-
+  const [isActive, setIsActive] = useState(false);
+  const {
+    $eq: eqInitialParams,
+    $neq: neqInitialParams,
+    $or: orParams,
+    $iLike: iLikeParams,
+  } = params;
   const updateQueryParams = useCallback(
     debounce(async (newSearchText: string) => {
       await router.replace(
@@ -77,24 +77,20 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
     }, 300),
     [router],
   );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
+  const onSearch = debounce(
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      setSearchText(typeof e === "string" ? e : e.target.value);
+    },
+    300,
+  );
 
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
-  const {
-    $eq: eqInitialParams,
-    $iLike: iLikeParams,
-    $neq: neqInitialParams,
-    $or: orParams,
-  } = params;
+  useEffect(() => {
+    updateQueryParams(searchText);
+  }, [searchText]);
 
   return {
-    searchText,
     onSearch,
+    searchText,
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
@@ -103,6 +99,16 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
           ...buildOrParams({ params: orParams, searchText }),
           ...buildILikeParams({ params: iLikeParams, searchText }),
         }),
+      },
+    },
+    textFieldProps: {
+      value: isActive ? undefined : searchText,
+      onChange: onSearch,
+      onMouseOver: () => {
+        setIsActive(true);
+      },
+      onMouseLeave: () => {
+        setIsActive(false);
       },
     },
   };
