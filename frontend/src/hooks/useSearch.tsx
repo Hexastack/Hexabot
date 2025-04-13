@@ -58,12 +58,6 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
     (router.query.search as string) || "",
   );
   const [isActive, setIsActive] = useState(false);
-  const {
-    $eq: eqInitialParams,
-    $neq: neqInitialParams,
-    $or: orParams,
-    $iLike: iLikeParams,
-  } = params;
   const updateQueryParams = useCallback(
     debounce(async (newSearchText: string) => {
       await router.replace(
@@ -87,6 +81,13 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   useEffect(() => {
     updateQueryParams(searchText);
   }, [searchText]);
+
+  const {
+    $eq: eqInitialParams,
+    $neq: neqInitialParams,
+    $or: orParams,
+    $iLike: iLikeParams,
+  } = params;
 
   return {
     onSearch,
