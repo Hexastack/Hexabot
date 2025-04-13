@@ -27,11 +27,11 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
   const { searchPayload, textFieldProps } = useSearch<ISubscriber>({
     $or: ["first_name", "last_name"],
   });
   const [channels, setChannels] = useState<string[]>([]);
+  const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
 
   return (
     <ChatProvider>
