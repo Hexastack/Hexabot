@@ -96,7 +96,7 @@ export class ChatService {
    *
    * @param sentMessage - The message that has been sent
    */
-  @OnEvent('hook:chatbot:sent')
+  @OnEvent('hook:chatbot:sent', { promisify: true })
   async handleSentMessage(
     sentMessage: MessageCreateDto,
     _event: EventWrapper<any, any>,

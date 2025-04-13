@@ -88,7 +88,7 @@ export class BotService {
       read: false,
       delivery: false,
     };
-    this.eventEmitter.emit('hook:chatbot:sent', sentMessage, event);
+    await this.eventEmitter.emitAsync('hook:chatbot:sent', sentMessage, event);
 
     // analytics log block or local fallback
     if (fallback) {
@@ -425,7 +425,12 @@ export class BotService {
           subscriber.id,
           block.name,
         );
-        return this.triggerBlock(event, updatedConversation, block, false);
+        return await this.triggerBlock(
+          event,
+          updatedConversation,
+          block,
+          false,
+        );
       } catch (err) {
         this.logger.error('Unable to store context data!', err);
         this.eventEmitter.emit('hook:conversation:end', convo);
