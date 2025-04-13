@@ -9,7 +9,7 @@
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Grid, Paper, Switch } from "@mui/material";
+import { Button, Chip, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -109,6 +109,15 @@ export const ContextVars = () => {
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",
+    },
+    {
+      flex: 1,
+      field: "pattern",
+      headerName: t("label.regex"),
+      disableColumnMenu: true,
+      renderHeader,
+      headerAlign: "left",
+      renderCell: ({ row }) => <Chip label={row?.pattern} variant="role" />,
     },
     {
       maxWidth: 120,

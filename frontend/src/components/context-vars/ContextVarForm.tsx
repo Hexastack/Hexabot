@@ -12,6 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
+import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -20,6 +21,8 @@ import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { IContextVar, IContextVarAttributes } from "@/types/context-var.types";
 import { slugify } from "@/utils/string";
+
+import { isRegex } from "../visual-editor/form/inputs/triggers/PatternInput";
 
 export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
   data,
@@ -59,6 +62,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
       name: data?.name || "",
       label: data?.label || "",
       permanent: data?.permanent || false,
+      pattern: data?.pattern || "",
     },
   });
   const validationRules = {
@@ -86,6 +90,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
         name: data.name,
         label: data.label,
         permanent: data.permanent,
+        pattern: data.pattern,
       });
     } else {
       reset();
@@ -134,6 +139,48 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
               )}
             />
             <FormHelperText>{t("help.permanent")}</FormHelperText>
+          </ContentItem>
+          <ContentItem>
+            <Controller
+              name="pattern"
+              control={control}
+              render={({ field: { value, ...rest } }) => (
+                <RegexInput
+                  {...rest}
+                  {...register("pattern", {
+                    validate: (pattern) => {
+                      try {
+                        if (pattern) {
+                          const parsedPattern = new RegExp(
+                            pattern.slice(1, -1),
+                          );
+
+                          if (pattern.slice(1, -1) === "") {
+                            return true;
+                          }
+
+                          if (String(parsedPattern) !== pattern) {
+                            throw t("message.regex_is_invalid");
+                          }
+
+                          return true;
+                        }
+
+                        return false;
+                      } catch (_e) {
+                        return t("message.regex_is_invalid");
+                      }
+                    },
+                    setValueAs: (v) => (isRegex(v) ? v : `/${v}/`),
+                  })}
+                  error={!!errors.pattern}
+                  value={value?.slice(1, -1) || ""}
+                  label={t("label.regex")}
+                  onChange={rest.onChange}
+                  helperText={errors.pattern ? errors.pattern.message : null}
+                />
+              )}
+            />
           </ContentItem>
         </ContentContainer>
       </form>
