@@ -84,9 +84,9 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
 
   const {
     $eq: eqInitialParams,
+    $iLike: iLikeParams,
     $neq: neqInitialParams,
     $or: orParams,
-    $iLike: iLikeParams,
   } = params;
 
   return {
