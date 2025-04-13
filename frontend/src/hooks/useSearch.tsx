@@ -90,8 +90,8 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   } = params;
 
   return {
-    onSearch,
     searchText,
+    onSearch,
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
