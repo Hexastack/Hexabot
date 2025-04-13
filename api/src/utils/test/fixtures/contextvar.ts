@@ -18,6 +18,7 @@ type TContentVarFixtures = FixturesTypeBuilder<ContextVar, ContextVarCreateDto>;
 
 export const contentVarDefaultValues: TContentVarFixtures['defaultValues'] = {
   permanent: false,
+  pattern: '/.+/',
 };
 
 const contextVars: TContentVarFixtures['values'][] = [

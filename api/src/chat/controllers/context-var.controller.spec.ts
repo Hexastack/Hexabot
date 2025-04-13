@@ -103,6 +103,7 @@ describe('ContextVarController', () => {
         label: 'contextVarLabel2',
         name: 'test_add',
         permanent: false,
+        pattern: '/.+/',
       };
       const result = await contextVarController.create(contextVarCreateDto);
 
