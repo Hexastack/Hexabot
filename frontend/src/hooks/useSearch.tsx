@@ -60,15 +60,11 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   const [isActive, setIsActive] = useState(false);
   const updateQueryParams = useCallback(
     async (newSearchText: string) => {
-      const query = { ...router.query, search: newSearchText || undefined };
-
-      if (!newSearchText) {
-        delete query.search;
-      }
+      const { search, ...rest } = { ...router.query, search: newSearchText };
 
       await router.push(
         {
-          query,
+          query: newSearchText ? { ...rest, search } : rest,
         },
         undefined,
         { shallow: true },
