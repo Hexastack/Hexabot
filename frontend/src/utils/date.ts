@@ -15,8 +15,20 @@ export const getDateTimeFormatter = (date: Date) => ({
   },
 });
 
-export const normalizeDate = (locale: string, dateField?: Date | string) =>
-  (typeof dateField === "string"
-    ? new Date(dateField)
-    : dateField
-  )?.toLocaleString(locale);
+/**
+ * Normalizes and formats a date using the provided locale
+ *
+ * @param {string} locale - The locale to use for formatting (e.g., 'en-US', 'fr-FR')
+ * @param {Date | string} dateField - The date to format, either as Date object or string
+ * @returns {string | undefined} Formatted date string, or undefined if dateField is undefined
+ */
+export const normalizeDate = (
+  locale: string = "en-US",
+  dateField?: Date | string,
+) => {
+  if (!dateField) return undefined;
+
+  const date = typeof dateField === "string" ? new Date(dateField) : dateField;
+
+  return !isNaN(date.getTime()) ? date.toLocaleString(locale) : undefined;
+};
