@@ -117,16 +117,18 @@ describe('nlpEntityService', () => {
       expect(result).toEqualPayload(entitiesWithValues);
     });
   });
-
   describe('NlpEntityService - updateWeight', () => {
-    it('should update the weight of an NLP entity', async () => {
-      const createdEntity = await nlpEntityRepository.create({
+    let createdEntity: NlpEntity;
+    beforeEach(async () => {
+      createdEntity = await nlpEntityRepository.create({
         name: 'testentity',
-        builtin: true,
-        weight: 1,
+        builtin: false,
+        weight: 3,
       });
+    });
 
-      const newWeight = 3;
+    it('should update the weight of an NLP entity', async () => {
+      const newWeight = 8;
 
       const updatedEntity = await nlpEntityService.updateWeight(
         createdEntity.id,
@@ -134,6 +136,56 @@ describe('nlpEntityService', () => {
       );
 
       expect(updatedEntity.weight).toBe(newWeight);
+    });
+
+    it('should handle updating weight of non-existent entity', async () => {
+      const nonExistentId = '507f1f77bcf86cd799439011'; // Example MongoDB ObjectId
+
+      try {
+        await nlpEntityService.updateWeight(nonExistentId, 5);
+        fail('Expected error was not thrown');
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+
+    it('should use default weight of 1 when creating entity without weight', async () => {
+      const createdEntity = await nlpEntityRepository.create({
+        name: 'entityWithoutWeight',
+        builtin: true,
+        // weight not specified
+      });
+
+      expect(createdEntity.weight).toBe(1);
+    });
+
+    it('should throw an error if weight is less than 1', async () => {
+      const invalidWeight = 0;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    it('should throw an error if weight is a decimal', async () => {
+      const invalidWeight = 2.5;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    it('should throw an error if weight is negative', async () => {
+      const invalidWeight = -3;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a positive integer');
+    });
+
+    afterEach(async () => {
+      // Clean the collection after each test
+      await nlpEntityRepository.deleteOne(createdEntity.id);
     });
   });
 
