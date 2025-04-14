@@ -320,8 +320,14 @@ export class NlpSampleService extends BaseService<
     this.logger.log('Automated inference running');
     if ('text' in doc.message) {
       const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
-      const { entities = [] } = await helper.predict(doc.message.text);
-      this.logger.debug(`${helper.getName()} infered these entites`, entities);
+      let { entities = [] } = await helper.predict(doc.message.text);
+      this.logger.debug(
+        `${helper.getName()} inferred these entities`,
+        entities,
+      );
+
+      const inferredLanguage = entities.find((e) => e.entity === 'language');
+      entities = entities.filter((e) => e.entity !== 'language');
 
       const foundSample = await this.repository.findOne({
         text: doc.message.text,
@@ -330,12 +336,25 @@ export class NlpSampleService extends BaseService<
       if (!foundSample) {
         return;
       }
+
       await this.nlpSampleEntityService.storeSampleEntities(
         foundSample,
         entities,
       );
+
+      const language = await this.languageService.findOne(
+        { code: inferredLanguage?.value },
+        undefined,
+        { _id: 1 },
+      );
+
+      if (!language) {
+        this.logger.warn('Unable to find inferred language', inferredLanguage);
+      }
+
       await this.repository.updateOne(foundSample.id, {
         type: 'train',
+        ...(language && { language: language.id }),
       });
     }
   }
