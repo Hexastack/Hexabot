@@ -146,24 +146,23 @@ export class MessageService extends BaseService<
     >,
     criteria: TFilterQuery<Attachment>,
   ) {
-    // todo: handle deleteMany
     try {
       this.logger.log(
         'deleting attachment messages containing deleted images',
         criteria,
       );
-      const foundAttachment = await this.attachmentService.findOne(criteria);
-      if (!foundAttachment) {
-        return;
+      const foundAttachments = await this.attachmentService.find(criteria);
+
+      for (const attachment of foundAttachments) {
+        await this.updateMany(
+          {
+            'message.attachment.payload.id': attachment.id,
+          },
+          {
+            ['message.attachment.payload.id' as any]: null,
+          },
+        );
       }
-      await this.updateMany(
-        {
-          'message.attachment.payload.id': criteria._id,
-        },
-        {
-          ['message.attachment.payload.id' as any]: null,
-        },
-      );
     } catch (error) {
       this.logger.error(
         'Unable to cleanup old messages with attachment ids',
