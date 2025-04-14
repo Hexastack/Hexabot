@@ -64,7 +64,6 @@ import { SubscriberService } from './services/subscriber.service';
       AttachmentModel,
     ]),
     forwardRef(() => ChannelModule),
-    AttachmentModule,
     CmsModule,
     AttachmentModule,
     EventEmitter2,
