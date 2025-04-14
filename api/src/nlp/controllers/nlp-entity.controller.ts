@@ -158,6 +158,20 @@ export class NlpEntityController extends BaseController<
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
 
+    if (nlpEntity.builtin) {
+      // Only allow weight update for builtin entities
+      if (updateNlpEntityDto.weight) {
+        return await this.nlpEntityService.updateWeight(
+          id,
+          updateNlpEntityDto.weight,
+        );
+      } else {
+        throw new MethodNotAllowedException(
+          `Cannot update builtin NLP Entity ${nlpEntity.name} except for weight`,
+        );
+      }
+    }
+
     return await this.nlpEntityService.updateOne(id, updateNlpEntityDto);
   }
 

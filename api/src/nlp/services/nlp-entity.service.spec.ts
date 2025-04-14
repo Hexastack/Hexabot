@@ -118,6 +118,25 @@ describe('nlpEntityService', () => {
     });
   });
 
+  describe('NlpEntityService - updateWeight', () => {
+    it('should update the weight of an NLP entity', async () => {
+      const createdEntity = await nlpEntityRepository.create({
+        name: 'testentity',
+        builtin: true,
+        weight: 1,
+      });
+
+      const newWeight = 3;
+
+      const updatedEntity = await nlpEntityService.updateWeight(
+        createdEntity.id,
+        newWeight,
+      );
+
+      expect(updatedEntity.weight).toBe(newWeight);
+    });
+  });
+
   describe('storeNewEntities', () => {
     it('should store new entities', async () => {
       const result = await nlpEntityService.storeNewEntities(
