@@ -262,19 +262,65 @@ describe('NlpEntityController', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should update the NLP entity even if it is builtin', async () => {
+    it('should throw an exception if entity is builtin but weight not provided', async () => {
       const updateNlpEntity: NlpEntityCreateDto = {
-        name: 'intent',
+        name: 'updated',
         doc: '',
         lookups: ['trait'],
-        builtin: true,
-        weight: 2,
+        builtin: false,
       };
+      await expect(
+        nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
+      ).rejects.toThrow(MethodNotAllowedException);
+    });
+
+    it('should update weight if entity is builtin and weight is provided', async () => {
+      const updatedNlpEntity: NlpEntityCreateDto = {
+        name: 'updated',
+        doc: '',
+        lookups: ['trait'],
+        builtin: false,
+        weight: 4,
+      };
+      const findOneSpy = jest.spyOn(nlpEntityService, 'findOne');
+      const updateWeightSpy = jest.spyOn(nlpEntityService, 'updateWeight');
+
       const result = await nlpEntityController.updateOne(
         buitInEntityId!,
-        updateNlpEntity,
+        updatedNlpEntity,
       );
-      expect(result).toEqual(expect.objectContaining(updateNlpEntity));
+
+      expect(findOneSpy).toHaveBeenCalledWith(buitInEntityId!);
+      expect(updateWeightSpy).toHaveBeenCalledWith(
+        buitInEntityId!,
+        updatedNlpEntity.weight,
+      );
+      expect(result.weight).toBe(updatedNlpEntity.weight);
+    });
+
+    it('should update only the weight of the builtin entity', async () => {
+      const updatedNlpEntity: NlpEntityCreateDto = {
+        name: 'updated',
+        doc: '',
+        lookups: ['trait'],
+        builtin: false,
+        weight: 4,
+      };
+      const originalEntity = await nlpEntityService.findOne(buitInEntityId!);
+
+      const result = await nlpEntityController.updateOne(
+        buitInEntityId!,
+        updatedNlpEntity,
+      );
+
+      // Check weight is updated
+      expect(result.weight).toBe(updatedNlpEntity.weight);
+
+      Object.entries(originalEntity!).forEach(([key, value]) => {
+        if (key !== 'weight' && key !== 'updatedAt') {
+          expect(result[key as keyof typeof result]).toEqual(value);
+        }
+      });
     });
   });
   describe('deleteMany', () => {

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -44,6 +44,21 @@ export class NlpEntityService extends BaseService<
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
+  }
+  /**
+   * Updates the `weight` field of a specific NLP entity by its ID.
+   *
+   * @param id - The unique identifier of the entity to update.
+   * @param updatedWeight - The new weight value to be assigned to the entity.
+   * @returns A promise that resolves to the updated entity.
+   */
+
+  async updateWeight(id: string, updatedWeight: number) {
+    return this.repository.updateOne(
+      id,
+      { weight: updatedWeight },
+      { new: true },
+    );
   }
 
   /**
