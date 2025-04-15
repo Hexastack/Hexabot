@@ -154,9 +154,7 @@ export class SocketIoClient {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;
     }
-    if (response.statusCode === 429) {
-      return response;
-    }
+
     throw new Error(
       `Request failed with status code ${response.statusCode}: ${JSON.stringify(
         response.body,
