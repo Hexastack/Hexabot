@@ -31,7 +31,7 @@ export class SocketIoClient {
     // Socket options
     ackTimeout: 1000,
     // auth: undefined,
-    retries: 3,
+    retries: 0,
 
     // Manager options
     autoConnect: true,
@@ -152,6 +152,9 @@ export class SocketIoClient {
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response;
+    }
+    if (response.statusCode === 429) {
       return response;
     }
     throw new Error(
