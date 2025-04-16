@@ -30,7 +30,17 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
     throw new Error("Unable to detect type for file message");
   }
   if (message.data.type === "unknown") {
-    return <p className="error-message">unknown file type</p>;
+    return (
+      <div
+        className="sc-message--file"
+        style={{
+          color: colors.text,
+          backgroundColor: colors.bg,
+        }}
+      >
+        <p className="error-message">{t("messages.unsupported_file_type")}</p>;
+      </div>
+    );
   }
   if (
     message.data &&
