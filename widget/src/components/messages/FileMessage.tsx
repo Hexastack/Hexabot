@@ -38,7 +38,9 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
           backgroundColor: colors.bg,
         }}
       >
-        <p className="error-message">{t("messages.unsupported_file_type")}</p>;
+        <p className="error-message">
+          {t("messages.file_message.unsupported_file_type")}
+        </p>
       </div>
     );
   }
