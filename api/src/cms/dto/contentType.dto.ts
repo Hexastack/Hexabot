@@ -40,7 +40,7 @@ export class ContentField {
     message:
       "type must be one of the following values: 'text', 'url', 'textarea', 'checkbox', 'file', 'html'",
   })
-  type: `${FieldType}`;
+  type: `${FieldType}` | FieldType;
 }
 
 export class ContentTypeCreateDto {
