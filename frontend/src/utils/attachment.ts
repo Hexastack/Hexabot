@@ -12,7 +12,7 @@ import { FileType, TAttachmentForeignKey } from "@/types/message.types";
 import { buildURL } from "./URL";
 
 export const MIME_TYPES = {
-  images: ["image/jpeg", "image/png", "image/webp", "image/bmp"],
+  images: ["image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"],
   videos: [
     "video/mp4",
     "video/webm",
