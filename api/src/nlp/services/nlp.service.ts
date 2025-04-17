@@ -42,9 +42,12 @@ export class NlpService {
       const helper = await this.helperService.getDefaultNluHelper();
       const foreignId = await helper.addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
-      return await this.nlpEntityService.updateOne(entity._id, {
-        foreign_id: foreignId,
-      });
+      return await this.nlpEntityService.updateOne(
+        { _id: entity._id },
+        {
+          foreign_id: foreignId,
+        },
+      );
     } catch (err) {
       this.logger.error('Unable to sync a new entity', err);
       return entity;
