@@ -121,7 +121,9 @@
     "file_error": "Fichier introuvable",
     "audio_error": "Audio introuvable",
     "video_error": "Vidéo introuvable",
-    "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement"
+    "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement",
+    "weight_positive_integer_error": "Le poids doit être un nombre entier positif",
+    "weight_required_error": "Le poids est requis ou bien invalide"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

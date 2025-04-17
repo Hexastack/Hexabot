@@ -135,11 +135,29 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
             />
           </ContentItem>
           <ContentItem>
-          <Input
-            label={t("label.weight")}
-            {...register("weight", { valueAsNumber: true })}
-            type="number"
-            inputProps={{ min: 1, step: 1 }} // Restricts input to positive integers only
+            <Input
+              label={t("label.weight")}
+              {...register("weight", {
+                valueAsNumber: true,
+                required: t("message.weight_required_error"),
+                min: {
+                  value: 1,
+                  message: t("message.weight_positive_integer_error"),
+                },
+                validate: (value) =>
+                  Number.isInteger(value) && value > 0
+                    ? true
+                    : t("message.weight_positive_integer_error"),
+              })}
+              type="number"
+              inputProps={{
+                min: 1,
+                step: 1,
+                inputMode: "numeric",
+                pattern: "[1-9][0-9]*",
+              }}
+              error={!!errors.weight}
+              helperText={errors.weight?.message}
           />
         </ContentItem>
         </ContentContainer>
