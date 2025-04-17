@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -104,9 +104,12 @@ export class NlpService {
       const helper = await this.helperService.getDefaultNluHelper();
       const foreignId = await helper.addValue(value);
       this.logger.debug('New value successfully synced!', foreignId);
-      return await this.nlpValueService.updateOne(value._id, {
-        foreign_id: foreignId,
-      });
+      return await this.nlpValueService.updateOne(
+        { _id: value._id },
+        {
+          foreign_id: foreignId,
+        },
+      );
     } catch (err) {
       this.logger.error('Unable to sync a new value', err);
       return value;
