@@ -116,7 +116,9 @@
     "select_category": "Select a flow",
     "logout_failed": "Something went wrong during logout",
     "duplicate_labels_not_allowed": "Duplicate labels are not allowed",
-    "duplicate_block_error": "Something went wrong while duplicating block"
+    "duplicate_block_error": "Something went wrong while duplicating block",
+    "weight_required_error": "Weight is required or invalid.",
+    "weight_positive_integer_error": "Weight must be a positive integer" 
   },
   "menu": {
     "terms": "Terms of Use",

@@ -116,7 +116,9 @@
     "select_category": "Sélectionner une catégorie",
     "logout_failed": "Une erreur s'est produite lors de la déconnexion",
     "duplicate_labels_not_allowed": "Les étiquettes en double ne sont pas autorisées",
-    "duplicate_block_error": "Une erreur est survenue lors de la duplication du bloc"
+    "duplicate_block_error": "Une erreur est survenue lors de la duplication du bloc",
+    "weight_positive_integer_error": "Le poids doit être un nombre entier positif",
+    "weight_required_error": "Le poids est requis ou bien invalide"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
