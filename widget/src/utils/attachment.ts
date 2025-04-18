@@ -21,7 +21,7 @@ export function getFileType(mimeType: string): FileType {
 }
 
 export const MIME_TYPES = {
-  images: ["image/jpeg", "image/png", "image/webp", "image/bmp"],
+  images: ["image/jpeg", "image/png", "image/webp", "image/bmp", "image/gif"],
   videos: [
     "video/mp4",
     "video/webm",
