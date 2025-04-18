@@ -48,7 +48,7 @@ export class NlpEntityRepository extends BaseRepository<
    * @param created - The newly created NLP entity document.
    */
   async postCreate(_created: NlpEntityDocument): Promise<void> {
-    if (!_created) {
+    if (!_created.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpEntity:create', _created);
     }
