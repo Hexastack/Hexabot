@@ -14,6 +14,39 @@ import { Direction, TMessage } from "../../types/message.types";
 import FileIcon from "../icons/FileIcon";
 import "./FileMessage.scss";
 
+const getFileMessageType = (
+  message: TMessage,
+): "image" | "audio" | "video" | "file" | "unknown" => {
+  if (!("type" in message.data)) {
+    throw new Error("Unable to detect type for file message");
+  }
+
+  const type = message.data.type;
+
+  if (type === "unknown") {
+    return "unknown";
+  }
+
+  if (["image", "audio", "video", "file"].includes(type)) {
+    return type as "image" | "audio" | "video" | "file";
+  }
+
+  throw new Error("Unknown type for file message");
+};
+const hasUrl = (
+  message: TMessage,
+): message is TMessage & { data: { url: string } } => {
+  return (
+    typeof message === "object" &&
+    message !== null &&
+    "data" in message &&
+    typeof message.data === "object" &&
+    message.data !== null &&
+    "url" in message.data &&
+    typeof message.data.url === "string"
+  );
+};
+
 interface FileMessageProps {
   message: TMessage;
 }
@@ -25,11 +58,9 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
   const [videoErrored, setVideoErrored] = useState(false);
   const [audioErrored, setAudioErrored] = useState(false);
   const [imageErrored, setImageErrored] = useState(false);
+  const type = getFileMessageType(message);
 
-  if (!("type" in message.data)) {
-    throw new Error("Unable to detect type for file message");
-  }
-  if (message.data.type === "unknown") {
+  if (type === "unknown") {
     return (
       <div
         className="sc-message--file"
@@ -44,15 +75,6 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
       </div>
     );
   }
-  if (
-    message.data &&
-    message.data.type !== "image" &&
-    message.data.type !== "audio" &&
-    message.data.type !== "video" &&
-    message.data.type !== "file"
-  ) {
-    throw new Error("Unknown type for file message");
-  }
 
   return (
     <div
@@ -62,7 +84,7 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
         backgroundColor: colors.bg,
       }}
     >
-      {message.data.type === "image" && (
+      {type === "image" && (
         <div className="sc-message--file-icon">
           {imageErrored ? (
             <p
@@ -76,14 +98,14 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
           ) : (
             <img
               onError={() => setImageErrored(true)}
-              src={message?.data?.url}
+              src={hasUrl(message) ? message.data.url : ""}
               className="sc-image"
               alt="File"
             />
           )}
         </div>
       )}
-      {message.data.type === "audio" && (
+      {type === "audio" && (
         <div className="sc-message--file-audio">
           {audioErrored ? (
             <p
@@ -96,12 +118,12 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
             </p>
           ) : (
             <audio controls onError={() => setAudioErrored(true)}>
-              <source src={message.data.url} />
+              <source src={hasUrl(message) ? message.data.url : ""} />
             </audio>
           )}
         </div>
       )}
-      {message.data.type === "video" && (
+      {type === "video" && (
         <div className="sc-message--file-video">
           {videoErrored ? (
             <p
@@ -114,13 +136,13 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
             </p>
           ) : (
             <video controls width="100%" onError={() => setVideoErrored(true)}>
-              <source src={message.data.url} />
+              <source src={hasUrl(message) ? message.data.url : ""} />
               {t("messages.file_message.browser_video_unsupport")}
             </video>
           )}
         </div>
       )}
-      {message.data.type === "file" && (
+      {type === "file" && (
         <div
           className="sc-message--file-download"
           style={{
@@ -128,13 +150,13 @@ const FileMessage: React.FC<FileMessageProps> = ({ message }) => {
             backgroundColor: colors.bg,
           }}
         >
-          {!message?.data?.url ? (
+          {!hasUrl(message) ? (
             <p className="error-message" style={{ padding: 0 }}>
               {t("messages.file_message.file_error")}
             </p>
           ) : (
             <a
-              href={message.data.url ? message.data.url : "#"}
+              href={hasUrl(message) ? message.data.url : "#"}
               target="_blank"
               rel="noopener noreferrer"
               download
