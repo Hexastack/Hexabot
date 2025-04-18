@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Optional,
+} from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
@@ -21,6 +25,15 @@ import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
+import {
+  SocketGet,
+  SocketPost,
+} from '@/websocket/decorators/socket-method.decorator';
+import { SocketReq } from '@/websocket/decorators/socket-req.decorator';
+import { SocketRes } from '@/websocket/decorators/socket-res.decorator';
+import { SocketRequest } from '@/websocket/utils/socket-request';
+import { SocketResponse } from '@/websocket/utils/socket-response';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { BlockDto } from '../dto/block.dto';
 import { EnvelopeFactory } from '../helpers/envelope-factory';
@@ -46,6 +59,8 @@ export class BlockService extends BaseService<
   BlockFull,
   BlockDto
 > {
+  private readonly gateway: WebsocketGateway;
+
   constructor(
     readonly repository: BlockRepository,
     private readonly contentService: ContentService,
@@ -53,8 +68,33 @@ export class BlockService extends BaseService<
     private readonly pluginService: PluginService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
+    @Optional() gateway?: WebsocketGateway,
   ) {
     super(repository);
+    if (gateway) {
+      this.gateway = gateway;
+    }
+  }
+
+  @SocketGet('/block/subscribe/')
+  @SocketPost('/block/subscribe/')
+  subscribe(@SocketReq() req: SocketRequest, @SocketRes() res: SocketResponse) {
+    try {
+      if (req.session.web?.profile?.id) {
+        const room = `blocks:${req.session.web.profile.id}`;
+        this.gateway.io.socketsJoin(room);
+        this.logger.log('Subscribed to socket room', room);
+        return res.status(200).json({
+          success: true,
+        });
+      } else {
+        this.logger.error('Unable to subscribe to highlight blocks room');
+        throw new Error('Unable to join highlight blocks room');
+      }
+    } catch (e) {
+      this.logger.error('Websocket subscription', e);
+      throw new InternalServerErrorException(e);
+    }
   }
 
   /**
@@ -474,10 +514,11 @@ export class BlockService extends BaseService<
   async processMessage(
     block: Block | BlockFull,
     context: Context,
-    subscriberContext: SubscriberContext,
+    recipient: Subscriber,
     fallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
+    const subscriberContext = recipient.context as SubscriberContext;
     const settings = await this.settingService.getSettings();
     const blockMessage: BlockMessage =
       fallback && block.options?.fallback
@@ -566,6 +607,23 @@ export class BlockService extends BaseService<
       const attachmentPayload = blockMessage.attachment.payload;
       if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
+
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         throw new Error(
           'Remote attachments in blocks are no longer supported!',
         );
@@ -614,6 +672,22 @@ export class BlockService extends BaseService<
         };
         return envelope;
       } catch (err) {
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         this.logger.error(
           'Unable to retrieve content for list template process',
           err,
@@ -635,6 +709,22 @@ export class BlockService extends BaseService<
 
         return envelope;
       } catch (e) {
+        const flowId =
+          typeof block.category === 'object'
+            ? // @ts-expect-error : block always has category
+              block!.category.id
+            : block.category;
+        if (flowId) {
+          this.logger.log('triggered: hook:highlight:error');
+          this.eventEmitter.emit('hook:highlight:error', {
+            flowId,
+            userId: recipient.id,
+            blockId: block.id,
+          });
+        } else {
+          this.logger.warn('Unable to trigger: hook:highlight:error');
+        }
+
         this.logger.error('Plugin was unable to load/process ', e);
         throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
       }
