@@ -26,7 +26,7 @@ import {
 import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
 
-const isRegex = (str: Pattern) => {
+export const isRegex = (str: Pattern) => {
   return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
 };
 const getType = (pattern: Pattern): PatternType => {

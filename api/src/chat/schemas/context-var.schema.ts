@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,7 +10,10 @@ import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
+import { buildZodSchemaValidator } from '@/utils/helpers/zod-validation';
 import { THydratedDocument } from '@/utils/types/filter.types';
+
+import { stringRegexPatternSchema } from './types/pattern';
 
 @Schema({ timestamps: true })
 export class ContextVar extends BaseSchema {
@@ -39,6 +42,13 @@ export class ContextVar extends BaseSchema {
     default: false,
   })
   permanent: boolean;
+
+  @Prop({
+    type: String,
+    validate: buildZodSchemaValidator(stringRegexPatternSchema),
+    default: '/.+/',
+  })
+  pattern?: string;
 }
 
 export const ContextVarModel: ModelDefinition = LifecycleHookManager.attach({
