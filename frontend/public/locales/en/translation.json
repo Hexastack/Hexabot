@@ -116,7 +116,11 @@
     "select_category": "Select a flow",
     "logout_failed": "Something went wrong during logout",
     "duplicate_labels_not_allowed": "Duplicate labels are not allowed",
-    "duplicate_block_error": "Something went wrong while duplicating block"
+    "duplicate_block_error": "Something went wrong while duplicating block",
+    "image_error": "Image not found",
+    "file_error": "File not found",
+    "audio_error": "Audio not found",
+    "video_error": "Video not found"
   },
   "menu": {
     "terms": "Terms of Use",
