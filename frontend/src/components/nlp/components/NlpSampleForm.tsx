@@ -29,7 +29,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutate: updateSample } = useUpdate<
+  const { mutate: updateSample, isLoading: isUpdatingSample } = useUpdate<
     EntityType.NLP_SAMPLE,
     INlpDatasetSampleAttributes
   >(EntityType.NLP_SAMPLE, {
@@ -63,7 +63,11 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
 
   return (
     <Wrapper onSubmit={() => {}} {...WrapperProps}>
-      <NlpDatasetSample sample={data || undefined} submitForm={onSubmitForm} />
+      <NlpDatasetSample
+        sample={data || undefined}
+        submitForm={onSubmitForm}
+        isMutationLoading={isUpdatingSample}
+      />{" "}
     </Wrapper>
   );
 };
