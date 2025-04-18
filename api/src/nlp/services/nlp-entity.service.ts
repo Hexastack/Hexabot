@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -44,6 +44,28 @@ export class NlpEntityService extends BaseService<
    */
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
+  }
+  /**
+   * Updates the `weight` field of a specific NLP entity by its ID.
+   *
+   * This method is part of the NLP-based blocks prioritization strategy.
++  * The weight influences the scoring of blocks when multiple blocks match a user's input.
+   * @param id - The unique identifier of the entity to update.
+ * @param updatedWeight - The new weight to assign. Must be a positive integer.
+ * @throws Error if the weight is not a positive integer.
+    * @returns A promise that resolves to the updated entity.
+   */
+
+  async updateWeight(id: string, updatedWeight: number) {
+    if (!Number.isInteger(updatedWeight) || updatedWeight < 1) {
+      throw new Error('Weight must be a positive integer');
+    }
+
+    return this.repository.updateOne(
+      id,
+      { weight: updatedWeight },
+      { new: true },
+    );
   }
 
   /**

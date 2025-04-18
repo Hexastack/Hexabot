@@ -372,6 +372,7 @@ describe('NlpSampleController', () => {
         lookups: ['trait'],
         doc: '',
         builtin: false,
+        weight: 1,
       };
       const priceValueEntity = await nlpEntityService.findOne({
         name: 'intent',
