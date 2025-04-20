@@ -20,7 +20,7 @@ export const SIMPLE_TEXT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: ["Hi"],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
   },
   message: ["Hi back !"],
   starts_conversation: false,
@@ -30,7 +30,7 @@ export const ATTACHMENT_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: ["image"],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
   },
   message: {
     attachment: {
@@ -46,7 +46,7 @@ export const QUICK_REPLIES_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: ["colors"],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
   },
   message: {
     text: "What's your favorite color?",
@@ -71,7 +71,7 @@ export const BUTTONS_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: ["about"],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
   },
   message: {
     text: "What would you like to know about us?",
@@ -92,7 +92,7 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   patterns: ["coffee"],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
     content: {
       display: OutgoingMessageFormat.list,
       limit: 2,
@@ -131,7 +131,7 @@ export const CUSTOM_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   capture_vars: [],
   options: {
     typing: 0,
-    fallback: { active: false, max_attempts: 1, message: [] },
+    fallback: { active: false, max_attempts: 0, message: [] },
   },
   starts_conversation: false,
   message: {
