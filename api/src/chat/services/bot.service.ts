@@ -275,7 +275,6 @@ export class BotService {
         !matchedBlock &&
         event.getMessageType() === IncomingMessageType.message &&
         fallbackOptions.active &&
-        convo.context?.attempt &&
         convo.context.attempt < fallbackOptions.max_attempts
       ) {
         // Trigger block fallback
