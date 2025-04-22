@@ -145,7 +145,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
                   message: t("message.weight_positive_integer_error"),
                 },
                 validate: (value) =>
-                  Number.isInteger(value) && value > 0
+                  Number.isInteger(value) && value! > 0
                     ? true
                     : t("message.weight_positive_integer_error"),
               })}

@@ -19,7 +19,7 @@ export interface INlpEntityAttributes {
   lookups: Lookup[];
   doc?: string;
   builtin?: boolean;
-  weight: number;
+  weight?: number;
 }
 
 export enum NlpLookups {
