@@ -337,6 +337,7 @@ export default abstract class BaseWebChannelHandler<
     // Get the allowed origins
     const origins: string[] = settings.allowed_domains.split(',');
     const foundOrigin = origins
+      .filter((origin) => origin.trim() !== '*') // Skip "*"
       .map((origin) => {
         try {
           return new URL(origin.trim()).origin;
