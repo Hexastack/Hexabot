@@ -200,6 +200,7 @@ export class BlockService extends BaseService<
         // to the accumulator array `acc`, which is returned as the final result.
         // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
         // all while iterating through the list only once.
+
         const matchesWithPatterns = filteredBlocks.reduce<MatchResult[]>(
           (acc, b) => {
             const matchedPattern = this.matchNLP(nlp, b);
@@ -212,6 +213,8 @@ export class BlockService extends BaseService<
           [],
         );
 
+        // @TODO Make nluPenaltyFactor configurable in UI settings
+        const nluPenaltyFactor = 0.95;
         // Log the matched patterns
         this.logger.debug(
           `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
@@ -223,6 +226,7 @@ export class BlockService extends BaseService<
             matchesWithPatterns.map((m) => m.block),
             matchesWithPatterns.map((p) => p.matchedPattern),
             nlp,
+            nluPenaltyFactor,
           )) as BlockFull | undefined;
         }
       }
@@ -346,14 +350,12 @@ export class BlockService extends BaseService<
     const nlpPatterns = block.patterns?.filter((p) => {
       return Array.isArray(p);
     }) as NlpPattern[][];
-
     // No nlp patterns found
     if (nlpPatterns.length === 0) {
       return undefined;
     }
-
     // Find NLP pattern match based on best guessed entities
-    return nlpPatterns.find((entities: NlpPattern[]) => {
+    const pattern = nlpPatterns.find((entities: NlpPattern[]) => {
       return entities.every((ev: NlpPattern) => {
         if (ev.match === 'value') {
           return nlp.entities.find((e) => {
@@ -369,22 +371,28 @@ export class BlockService extends BaseService<
         }
       });
     });
+    this.logger.log(`THE PATTERN ${JSON.stringify(pattern)}`);
+    return pattern;
   }
 
   /**
-   * Matches the best block based on NLP pattern scoring.
-   * The function calculates the NLP score for each block based on the matched patterns and selected entity weights,
-   * and returns the block with the highest score.
+   * Selects the best-matching block based on NLP pattern scoring.
    *
-   * @param blocks - Array of blocks to match with patterns
-   * @param matchedPatterns - Array of matched NLP patterns corresponding to each block
-   * @param nlp - The NLP parsed entities to compare against
-   * @returns The block with the highest NLP score, or undefined if no valid block is found
+   * This function evaluates each block by calculating a score derived from its matched NLP patterns,
+   * the parsed NLP entities, and a penalty factor. It compares the scores across all blocks and
+   * returns the one with the highest calculated score.
+   *
+   * @param blocks - An array of candidate blocks to evaluate.
+   * @param matchedPatterns - A two-dimensional array of matched NLP patterns corresponding to each block.
+   * @param nlp - The parsed NLP entities used for scoring.
+   * @param nlpPenaltyFactor - A numeric penalty factor applied during scoring to influence block selection.
+   * @returns The block with the highest NLP score, or undefined if no valid block is found.
    */
   async matchBestNLP(
     blocks: (Block | BlockFull)[] | undefined,
     matchedPatterns: NlpPattern[][],
     nlp: NLU.ParseEntities,
+    nlpPenaltyFactor: number,
   ): Promise<Block | BlockFull | undefined> {
     if (!blocks || blocks.length === 0) return undefined;
     if (blocks.length === 1) return blocks[0];
@@ -398,12 +406,12 @@ export class BlockService extends BaseService<
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       const patterns = matchedPatterns[i];
-
       // If compatible, calculate the NLP score for this block
       const nlpScore = await this.calculateBlockScore(
         patterns,
         nlp,
         nlpCacheMap,
+        nlpPenaltyFactor,
       );
 
       if (nlpScore > highestScore) {
@@ -419,19 +427,25 @@ export class BlockService extends BaseService<
   }
 
   /**
-   * Calculates the NLP score for a single block based on the matched patterns and parsed NLP entities.
-   * The score is calculated by matching each entity in the pattern with the parsed NLP entities and evaluating
-   * their confidence and weight from the database.
+   * Computes the NLP score for a given block using its matched NLP patterns and parsed NLP entities.
    *
-   * @param patterns - The NLP patterns matched for the block
-   * @param nlp - The parsed NLP entities
-   * @param nlpCacheMap - A cache for storing previously fetched entity data to avoid redundant DB calls
-   * @returns The calculated NLP score for the block
+   * Each pattern is evaluated against the parsed NLP entities to determine matches based on entity name,
+   * value, and confidence. A score is computed using the entity's weight and the confidence level of the match.
+   * A penalty factor is optionally applied for entity-level matches to adjust the scoring.
+   *
+   * The function uses a cache (`nlpCacheMap`) to avoid redundant database lookups for entity metadata.
+   *
+   * @param patterns - The NLP patterns associated with the block.
+   * @param nlp - The parsed NLP entities from the user input.
+   * @param nlpCacheMap - A cache to store and reuse fetched entity metadata (e.g., weights and valid values).
+   * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
+   * @returns A numeric score representing how well the block matches the given NLP context.
    */
   async calculateBlockScore(
     patterns: NlpPattern[],
     nlp: NLU.ParseEntities,
     nlpCacheMap: NlpCacheMap,
+    nlpPenaltyFactor: number,
   ): Promise<number> {
     let nlpScore = 0;
 
@@ -472,9 +486,10 @@ export class BlockService extends BaseService<
             entityData?.values.some((v) => v === e.value) &&
             (pattern.match !== 'value' || e.value === pattern.value),
         );
-
         return matchedEntity?.confidence
-          ? matchedEntity.confidence * entityData.weight
+          ? matchedEntity.confidence *
+              entityData.weight *
+              (pattern.match === 'entity' ? nlpPenaltyFactor : 1)
           : 0;
       }),
     );

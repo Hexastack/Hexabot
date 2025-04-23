@@ -272,6 +272,18 @@ export const mockNlpPatternsSetTwo: NlpPattern[] = [
   },
 ];
 
+export const mockNlpPatternsSetThree: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'entity',
+  },
+];
+
 export const mockNlpBlock = {
   ...baseBlockInstance,
   name: 'Mock Nlp',
@@ -297,6 +309,19 @@ export const mockNlpBlock = {
   ],
   trigger_labels: customerLabelsMock,
   message: ['Good to see you again '],
+} as unknown as BlockFull;
+
+export const mockModifiedNlpBlock = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp', value: 'MODIFIED_MOCK_NLP' },
+    [...mockNlpPatternsSetThree],
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Hello there'],
 } as unknown as BlockFull;
 
 const patternsProduct: Pattern[] = [
