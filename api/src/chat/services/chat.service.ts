@@ -278,7 +278,6 @@ export class ChatService {
       let subscriber = await this.subscriberService.findOne({
         foreign_id: foreignId,
       });
-
       if (!subscriber) {
         const subscriberData = await handler.getSubscriberData(event);
         subscriberData.channel = event.getChannelData();
@@ -287,12 +286,12 @@ export class ChatService {
         if (!subscriber) {
           throw new Error('Unable to create a new subscriber');
         }
-      } else {
-        // Already existing user profile
-        // Exec lastvisit hook
-        this.eventEmitter.emit('hook:user:lastvisit', subscriber);
-        this.broadcastSentMessages(event);
       }
+      event.setSender(subscriber);
+      // Already existing user profile
+      // Exec lastvisit hook
+      this.eventEmitter.emit('hook:user:lastvisit', subscriber);
+      this.broadcastSentMessages(event);
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
