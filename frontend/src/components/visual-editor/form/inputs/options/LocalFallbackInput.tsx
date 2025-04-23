@@ -70,6 +70,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
                     value >= 0 ||
                     t("message.invalid_max_fallback_attempt_limit"),
                 },
+                valueAsNumber: true,
               })}
               helperText={
                 errors.options?.fallback?.max_attempts
@@ -81,7 +82,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
                 setFallback({
                   ...fallback,
                   max_attempts: parseInt(e.target.value) || 0,
-                  active: fallback.max_attempts > 0,
+                  active: parseInt(e.target.value) > 0,
                 });
               }}
             />
