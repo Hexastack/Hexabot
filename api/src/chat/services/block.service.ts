@@ -371,7 +371,6 @@ export class BlockService extends BaseService<
         }
       });
     });
-    this.logger.log(`THE PATTERN ${JSON.stringify(pattern)}`);
     return pattern;
   }
 
