@@ -355,7 +355,7 @@ export class BlockService extends BaseService<
       return undefined;
     }
     // Find NLP pattern match based on best guessed entities
-    const pattern = nlpPatterns.find((entities: NlpPattern[]) => {
+    return nlpPatterns.find((entities: NlpPattern[]) => {
       return entities.every((ev: NlpPattern) => {
         if (ev.match === 'value') {
           return nlp.entities.find((e) => {
@@ -371,7 +371,6 @@ export class BlockService extends BaseService<
         }
       });
     });
-    return pattern;
   }
 
   /**
