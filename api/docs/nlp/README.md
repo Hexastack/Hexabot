@@ -82,7 +82,7 @@ For each entity in the block's pattern:
         - `Confidence` is a value between 0 and 1, returned by the NLU engine.
         - `Weight` is a configured importance factor for that specific entity type.
 - If the match is a wildcard (i.e., the block accepts any value):
-   - A **penalty factor** is applied to slightly reduce its contribution:
+    - A **penalty factor** is applied to slightly reduce its contribution:
     ``confidence × weight × penaltyFactor``. This encourages more specific matches when available.
 
 ### Scoring Formula Summary

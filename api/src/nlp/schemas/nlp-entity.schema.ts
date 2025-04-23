@@ -61,7 +61,7 @@ export class NlpEntityStub extends BaseSchema {
   /**
    * Entity's weight used to determine the next block to trigger in the conversational flow.
    */
-  @Prop({ type: Number, default: 1 })
+  @Prop({ type: Number, default: 1, min: 0 })
   weight: number;
 
   /**
