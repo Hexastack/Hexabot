@@ -60,7 +60,7 @@ When multiple blocks receive similar scores, penalty factors can help break the 
 Input: intent = enquiry, subject = insurance
 
 Block A: intent = enquiry, subject = Any
-Block B: subject = insurance, subject = insurance
+Block B: intent = enquiry, subject = insurance
 Block C: subject = insurance
 
 Scoring Summary:
