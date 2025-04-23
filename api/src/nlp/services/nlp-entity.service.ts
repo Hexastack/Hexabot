@@ -49,11 +49,11 @@ export class NlpEntityService extends BaseService<
    * Updates the `weight` field of a specific NLP entity by its ID.
    *
    * This method is part of the NLP-based blocks prioritization strategy.
-+  * The weight influences the scoring of blocks when multiple blocks match a user's input.
+   * The weight influences the scoring of blocks when multiple blocks match a user's input.
    * @param id - The unique identifier of the entity to update.
- * @param updatedWeight - The new weight to assign. Must be a positive integer.
- * @throws Error if the weight is not a positive integer.
-    * @returns A promise that resolves to the updated entity.
+   * @param updatedWeight - The new weight to assign. Must be a positive integer.
+   * @throws Error if the weight is not a positive integer.
+   * @returns A promise that resolves to the updated entity.
    */
 
   async updateWeight(id: string, updatedWeight: number) {
