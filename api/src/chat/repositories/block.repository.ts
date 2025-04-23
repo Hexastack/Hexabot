@@ -205,17 +205,30 @@ export class BlockRepository extends BaseRepository<
     otherBlocks: Block[],
     ids: string[],
   ): Promise<void> {
+    // Fetch all moved blocks with their nextBlocks
+    const movedBlocks = await this.find({ _id: { $in: ids } });
+
+    // Build a set of all blocks the moved blocks are pointing to
+    const movedBlockLinkTargets = new Set<string>();
+    for (const block of movedBlocks) {
+      block.nextBlocks?.forEach((id) => movedBlockLinkTargets.add(id));
+    }
+
     for (const block of otherBlocks) {
       if (block.attachedBlock && ids.includes(block.attachedBlock)) {
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const nextBlocks = block.nextBlocks?.filter(
-        (nextBlock) => !ids.includes(nextBlock),
-      );
+      if (block.nextBlocks?.length) {
+        const updatedNextBlocks = block.nextBlocks.filter((nextBlockId) => {
+          return (
+            !ids.includes(nextBlockId) || movedBlockLinkTargets.has(block.id)
+          );
+        });
 
-      if (nextBlocks?.length) {
-        await this.updateOne(block.id, { nextBlocks });
+        if (updatedNextBlocks.length !== block.nextBlocks.length) {
+          await this.updateOne(block.id, { nextBlocks: updatedNextBlocks });
+        }
       }
     }
   }
