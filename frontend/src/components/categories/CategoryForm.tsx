@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { useRouter } from "next/router";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -15,7 +16,7 @@ import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { ICategory, ICategoryAttributes } from "@/types/category.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 
@@ -27,14 +28,16 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const router = useRouter();
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
       toast.error(error || t("message.internal_server_error"));
     },
-    onSuccess: () => {
+    onSuccess: (response: ICategory) => {
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
+      router.push(`/${RouterType.VISUAL_EDITOR}/flows/${response.id}`);
     },
   };
   const { mutate: createCategory } = useCreate(EntityType.CATEGORY, options);
