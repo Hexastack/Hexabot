@@ -38,7 +38,7 @@ Block B: Pattern: subject: claim
 Input: intent = issue, subject = insurance
 Block A: intent = enquiry, subject = insurance
 Block B: subject = insurance
-➤    Block B is selected — Block A mismatches on `intent`.
+➤ Block B is selected — Block A mismatches on intent.
 ```
 
 ### Exclusion Due to Extra Patterns
@@ -64,12 +64,12 @@ Block B: subject = insurance, subject = insurance
 Block C: subject = insurance
 
 Scoring Summary:
-- Block A matches both patterns, but `subject = Any` is considered less specific.
+- Block A matches both patterns, but subject = Any is considered less specific.
 - Block B has a redundant but fully specific match.
 - Block C matches only one pattern.
 
 ➤ Block A and Block B have similar raw scores.
-➤ A **penalty factor** is applied to Block A due to its use of `Any`, reducing its final score.
+➤ A penalty factor is applied to Block A due to its use of Any, reducing its final score.
 ➤ Block B is selected.
 ```
 
