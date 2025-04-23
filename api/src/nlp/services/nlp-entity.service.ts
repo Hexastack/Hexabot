@@ -45,6 +45,7 @@ export class NlpEntityService extends BaseService<
   async deleteCascadeOne(id: string) {
     return await this.repository.deleteOne(id);
   }
+
   /**
    * Updates the `weight` field of a specific NLP entity by its ID.
    *
@@ -55,13 +56,12 @@ export class NlpEntityService extends BaseService<
    * @throws Error if the weight is not a positive integer.
    * @returns A promise that resolves to the updated entity.
    */
-
   async updateWeight(id: string, updatedWeight: number) {
     if (!Number.isInteger(updatedWeight) || updatedWeight < 1) {
       throw new Error('Weight must be a positive integer');
     }
 
-    return this.repository.updateOne(
+    return await this.repository.updateOne(
       id,
       { weight: updatedWeight },
       { new: true },
