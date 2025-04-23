@@ -1,7 +1,7 @@
 # NLP Block Scoring
-## Purpose 
+## Purpose
 
-**NLP Block Scoring** is  mechanism used to select the most relevant response block based on:
+**NLP Block Scoring** is a mechanism used to select the most relevant response block based on:
 
 - Matching patterns between user input and block definitions
 - Configurable weights assigned to each entity type
