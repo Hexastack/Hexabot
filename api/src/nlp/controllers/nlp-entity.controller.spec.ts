@@ -313,9 +313,11 @@ describe('NlpEntityController', () => {
         builtin: false,
         weight: 4,
       };
-      const originalEntity = await nlpEntityService.findOne(buitInEntityId!);
+      const originalEntity: NlpEntity | null = await nlpEntityService.findOne(
+        buitInEntityId!,
+      );
 
-      const result = await nlpEntityController.updateOne(
+      const result: NlpEntity = await nlpEntityController.updateOne(
         buitInEntityId!,
         updatedNlpEntity,
       );

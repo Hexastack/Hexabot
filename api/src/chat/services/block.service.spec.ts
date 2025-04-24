@@ -85,12 +85,6 @@ import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
-// Create a mock for the NlpEntityService
-// const mockNlpEntityService: Partial<Record<keyof NlpEntityService, jest.Mock>> =
-//   {
-//     getNlpMap: jest.fn().mockResolvedValue(mockNlpCacheMap),
-//   };
-
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;

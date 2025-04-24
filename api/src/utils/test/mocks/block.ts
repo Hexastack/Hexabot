@@ -284,7 +284,7 @@ export const mockNlpPatternsSetThree: NlpPattern[] = [
   },
 ];
 
-export const mockNlpBlock = {
+export const mockNlpBlock: BlockFull = {
   ...baseBlockInstance,
   name: 'Mock Nlp',
   patterns: [
@@ -311,7 +311,7 @@ export const mockNlpBlock = {
   message: ['Good to see you again '],
 } as unknown as BlockFull;
 
-export const mockModifiedNlpBlock = {
+export const mockModifiedNlpBlock: BlockFull = {
   ...baseBlockInstance,
   name: 'Modified Mock Nlp',
   patterns: [

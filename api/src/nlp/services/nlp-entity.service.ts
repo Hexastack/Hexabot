@@ -62,7 +62,7 @@ export class NlpEntityService extends BaseService<
    * @throws Error if the weight is not a positive integer.
    * @returns A promise that resolves to the updated entity.
    */
-  async updateWeight(id: string, updatedWeight: number) {
+  async updateWeight(id: string, updatedWeight: number): Promise<NlpEntity> {
     if (!Number.isInteger(updatedWeight) || updatedWeight < 1) {
       throw new Error('Weight must be a positive integer');
     }
@@ -166,6 +166,9 @@ export class NlpEntityService extends BaseService<
   async getNlpMap(entityNames: string[]): Promise<NlpCacheMap> {
     const lookups = await this.findAndPopulate({ name: { $in: entityNames } });
     const map: NlpCacheMap = new Map();
+    if (!lookups.length) {
+      return map; // Return empty map if no entities found
+    }
     for (const lookup of lookups) {
       map.set(lookup.name, {
         id: lookup.id,
