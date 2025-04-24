@@ -16,9 +16,9 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpCacheMap } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
-import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
@@ -61,7 +61,6 @@ export class BlockService extends BaseService<
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
     protected readonly entityService: NlpEntityService,
-    protected readonly valueService: NlpValueService,
   ) {
     super(repository);
   }
@@ -410,7 +409,6 @@ export class BlockService extends BaseService<
         nlpCacheMap,
         nlpPenaltyFactor,
       );
-
       if (nlpScore > highestScore) {
         highestScore = nlpScore;
         bestBlock = block;
@@ -446,52 +444,49 @@ export class BlockService extends BaseService<
   ): Promise<number> {
     let nlpScore = 0;
 
-    const patternScores = await Promise.all(
-      patterns.map(async (pattern) => {
-        const entityName = pattern.entity;
+    // Collect all unique entity names from patterns
+    const entityNames = [...new Set(patterns.map((pattern) => pattern.entity))];
 
-        // Retrieve entity data from cache or database if not cached
-        let entityData = nlpCacheMap.get(entityName);
-        if (!entityData) {
-          const entityLookup = await this.entityService.findOne(
-            { name: entityName },
-            undefined,
-            { lookups: 1, weight: 1, _id: 1 },
-          );
-          if (!entityLookup?.id || !entityLookup.weight) return 0;
-
-          const valueLookups = await this.valueService.find(
-            { entity: entityLookup.id },
-            undefined,
-            { value: 1, _id: 0 },
-          );
-          const values = valueLookups.map((v) => v.value);
-
-          // Cache the entity data
-          entityData = {
-            id: entityLookup.id,
-            weight: entityLookup.weight,
-            values,
-          };
-          nlpCacheMap.set(entityName, entityData);
-        }
-
-        // Check if the NLP entity matches with the cached data
-        const matchedEntity = nlp.entities.find(
-          (e) =>
-            e.entity === entityName &&
-            entityData?.values.some((v) => v === e.value) &&
-            (pattern.match !== 'value' || e.value === pattern.value),
-        );
-        return matchedEntity?.confidence
-          ? matchedEntity.confidence *
-              entityData.weight *
-              (pattern.match === 'entity' ? nlpPenaltyFactor : 1)
-          : 0;
-      }),
+    // Check the cache for existing lookups first
+    const uncachedEntityNames = entityNames.filter(
+      (name) => !nlpCacheMap.has(name),
     );
+    // Fetch only uncached entities in one query, with values already populated
+    const entityLookups: NlpEntityFull[] = uncachedEntityNames.length
+      ? await this.entityService.findAndPopulate({
+          name: { $in: uncachedEntityNames },
+        })
+      : [];
 
-    // Sum up the scores for all patterns
+    // Populate the cache with the fetched lookups
+    entityLookups.forEach((lookup) => {
+      nlpCacheMap.set(lookup.name, {
+        id: lookup.id,
+        weight: lookup.weight,
+        values: lookup.values?.map((v) => v.value) ?? [],
+      });
+    });
+
+    // Calculate the score for each pattern
+    const patternScores = patterns.map((pattern) => {
+      const entityData = nlpCacheMap.get(pattern.entity);
+      if (!entityData) return 0;
+
+      const matchedEntity = nlp.entities.find(
+        (e) =>
+          e.entity === pattern.entity &&
+          entityData.values.includes(e.value) &&
+          (pattern.match !== 'value' || e.value === pattern.value),
+      );
+
+      return matchedEntity?.confidence
+        ? matchedEntity.confidence *
+            entityData.weight *
+            (pattern.match === 'entity' ? nlpPenaltyFactor : 1)
+        : 0;
+    });
+
+    // Sum up all scores
     nlpScore = patternScores.reduce((sum, score) => sum + score, 0);
 
     return nlpScore;

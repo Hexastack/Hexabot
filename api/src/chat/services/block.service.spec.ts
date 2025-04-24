@@ -85,39 +85,24 @@ import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
 // Create a mock for the NlpEntityService
-const mockNlpEntityService = {
-  entities: {
-    intent: {
-      lookups: ['trait'],
-      id: '67e3e41eff551ca5be70559c',
-      weight: 1,
-    },
-    firstname: {
-      lookups: ['trait'],
-      id: '67e3e41eff551ca5be70559d',
-      weight: 1,
-    },
-  },
-  findOne: jest.fn().mockImplementation((query) => {
-    const entity = mockNlpEntityService.entities[query.name];
-    if (entity) {
-      return Promise.resolve(entity);
-    }
-    return Promise.resolve(null); // Default response if the entity isn't found
-  }),
-};
+const mockNlpEntityService: Partial<Record<keyof NlpEntityService, jest.Mock>> =
+  {
+    findAndPopulate: jest.fn().mockResolvedValue([
+      {
+        _id: '67e3e41eff551ca5be70559c',
+        name: 'intent',
+        weight: 1,
+        values: [{ value: 'greeting' }, { value: 'affirmation' }],
+      },
+      {
+        _id: '67e3e41eff551ca5be70559d',
+        name: 'firstname',
+        weight: 1,
+        values: [{ value: 'jhon' }, { value: 'doe' }],
+      },
+    ]),
+  };
 
-const mockNlpValueService = {
-  find: jest.fn().mockImplementation((query) => {
-    if (query.entity === '67e3e41eff551ca5be70559c') {
-      return Promise.resolve([{ value: 'greeting' }, { value: 'affirmation' }]); // Simulating multiple values for 'intent'
-    }
-    if (query.entity === '67e3e41eff551ca5be70559d') {
-      return Promise.resolve([{ value: 'jhon' }, { value: 'doe' }]); // Simulating multiple values for 'firstname'
-    }
-    return Promise.resolve([]); // Default response for no matching entity
-  }),
-};
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
@@ -169,8 +154,8 @@ describe('BlockService', () => {
           useValue: mockNlpEntityService,
         },
         {
-          provide: NlpValueService, // Mocking NlpValueService
-          useValue: mockNlpValueService,
+          provide: NlpValueService,
+          useValue: {},
         },
         {
           provide: PluginService,
@@ -513,41 +498,40 @@ describe('BlockService', () => {
     it('should correctly use entity cache to avoid redundant database calls', async () => {
       const nlpCacheMap: NlpCacheMap = new Map();
 
-      // Create spies on the services
-      const entityServiceSpy = jest.spyOn(mockNlpEntityService, 'findOne');
-      const valueServiceSpy = jest.spyOn(mockNlpValueService, 'find');
+      // Spy on findAndPopulate
+      const findAndPopulateSpy = jest.spyOn(
+        mockNlpEntityService,
+        'findAndPopulate',
+      );
 
-      // First call should calculate and cache entity data
+      // First call: should trigger findAndPopulate and cache results
       await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
         nlpCacheMap,
         nlpPenaltyFactor,
       );
-      const cacheSizeBefore = nlpCacheMap.size;
-      const entityCallsBefore = entityServiceSpy.mock.calls.length;
-      const valueCallsBefore = valueServiceSpy.mock.calls.length;
 
-      // Second call should use cached entity data, without redundant DB calls
+      const cacheSizeAfterFirstCall = nlpCacheMap.size;
+      const callsAfterFirstCall = findAndPopulateSpy.mock.calls.length;
+
+      // should not call findAndPopulate again since data is cached
       await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
         nlpCacheMap,
         nlpPenaltyFactor,
       );
-      const cacheSizeAfter = nlpCacheMap.size;
-      const entityCallsAfter = entityServiceSpy.mock.calls.length;
-      const valueCallsAfter = valueServiceSpy.mock.calls.length;
 
-      // Assert that the cache size hasn't increased after the second call
-      expect(cacheSizeBefore).toBe(cacheSizeAfter);
-      // Assert that the services weren't called again
-      expect(entityCallsAfter).toBe(entityCallsBefore);
-      expect(valueCallsAfter).toBe(valueCallsBefore);
+      const cacheSizeAfterSecondCall = nlpCacheMap.size;
+      const callsAfterSecondCall = findAndPopulateSpy.mock.calls.length;
+
+      expect(cacheSizeAfterSecondCall).toBe(cacheSizeAfterFirstCall);
+      expect(callsAfterSecondCall).toBe(callsAfterFirstCall); // No new call
+      expect(findAndPopulateSpy).toHaveBeenCalledTimes(1); // Should only be called once
 
       // Cleanup
-      entityServiceSpy.mockRestore();
-      valueServiceSpy.mockRestore();
+      findAndPopulateSpy.mockRestore();
     });
   });
 
