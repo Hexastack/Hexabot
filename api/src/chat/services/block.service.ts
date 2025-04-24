@@ -209,12 +209,13 @@ export class BlockService extends BaseService<
           return acc;
         }, []);
 
-        // @TODO Make nluPenaltyFactor configurable in UI settings
-        const nluPenaltyFactor = 0.95;
         // Log the matched patterns
         this.logger.debug(
           `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
         );
+
+        // Retrieve Nlu Penalty Factor from global settings
+        const nluPenaltyFactor = await this.getDefaultNluPenaltyFactor();
 
         // Proceed with matching the best NLP block
         if (matchesWithPatterns.length > 0) {
@@ -442,6 +443,64 @@ export class BlockService extends BaseService<
       `Best retrieved block based on NLP entities ${JSON.stringify(bestBlock)}`,
     );
     return bestBlock;
+  }
+
+  /**
+   * Computes the NLP score for a given block using its matched NLP patterns and parsed NLP entities.
+   *
+   * Each pattern is evaluated against the parsed NLP entities to determine matches based on entity name,
+   * value, and confidence. A score is computed using the entity's weight and the confidence level of the match.
+   * A penalty factor is optionally applied for entity-level matches to adjust the scoring.
+   *
+   * The function uses a cache (`nlpCacheMap`) to avoid redundant database lookups for entity metadata.
+   *
+   * @param patterns - The NLP patterns associated with the block.
+   * @param nlp - The parsed NLP entities from the user input.
+   * @param nlpCacheMap - A cache to reuse fetched entity metadata (e.g., weights and valid values).
+   * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
+   * @returns A numeric score representing how well the block matches the given NLP context.
+   */
+  async calculateBlockScore(
+    patterns: NlpPattern[],
+    nlp: NLU.ParseEntities,
+    nlpCacheMap: NlpCacheMap,
+    nlpPenaltyFactor: number,
+  ): Promise<number> {
+    // Compute individual pattern scores using the cache
+    const patternScores: number[] = patterns.map((pattern) => {
+      const entityData = nlpCacheMap.get(pattern.entity);
+      if (!entityData) return 0;
+
+      const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
+        (e) =>
+          e.entity === pattern.entity &&
+          entityData?.values.some((v) => v === e.value) &&
+          (pattern.match !== 'value' || e.value === pattern.value),
+      );
+
+      return matchedEntity?.confidence
+        ? matchedEntity.confidence *
+            entityData.weight *
+            (pattern.match === 'entity' ? nlpPenaltyFactor : 1)
+        : 0;
+    });
+
+    // Sum the scores
+    return patternScores.reduce((sum, score) => sum + score, 0);
+  }
+
+  /**
+   * Retrieves the default NLU penalty factor from chatbot settings.
+   *
+   * This factor is used in NLU-based block scoring to reduce the influence
+   * of generic or broad entity matches (e.g. patterns using "Any").
+   * It helps prioritize blocks with more specific and confident entity matches.
+   *
+   * @returns {Promise<number>} The configured default NLU penalty factor.
+   */
+  async getDefaultNluPenaltyFactor(): Promise<number> {
+    const settings: Settings = await this.settingService.getSettings();
+    return settings.chatbot_settings.default_nlu_penalty_factor;
   }
 
   /**
