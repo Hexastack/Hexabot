@@ -60,7 +60,7 @@ export const patternSchema = z.union([
 
 export type Pattern = z.infer<typeof patternSchema>;
 
-export type MatchResult = {
+export type NlpPatternMatchResult = {
   block: BlockFull;
   matchedPattern: NlpPattern[];
 };

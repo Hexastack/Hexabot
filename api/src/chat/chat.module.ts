@@ -16,11 +16,9 @@ import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
-import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
-import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
 import { UserModule } from '@/user/user.module';
 
+import { NlpModule } from '@/nlp/nlp.module';
 import { BlockController } from './controllers/block.controller';
 import { CategoryController } from './controllers/category.controller';
 import { ContextVarController } from './controllers/context-var.controller';
@@ -71,6 +69,7 @@ import { SubscriberService } from './services/subscriber.service';
     AttachmentModule,
     EventEmitter2,
     UserModule,
+    NlpModule,
   ],
   controllers: [
     CategoryController,
@@ -88,9 +87,6 @@ import { SubscriberService } from './services/subscriber.service';
     MessageRepository,
     SubscriberRepository,
     ConversationRepository,
-    NlpEntityRepository,
-    NlpSampleEntityRepository,
-    NlpValueRepository,
     CategoryService,
     ContextVarService,
     LabelService,
@@ -114,3 +110,4 @@ import { SubscriberService } from './services/subscriber.service';
   ],
 })
 export class ChatModule {}
+

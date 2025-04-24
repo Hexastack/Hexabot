@@ -39,8 +39,8 @@ import {
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
 import {
-  MatchResult,
   NlpPattern,
+  NlpPatternMatchResult,
   PayloadPattern,
 } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
@@ -201,17 +201,16 @@ export class BlockService extends BaseService<
         // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
         // all while iterating through the list only once.
 
-        const matchesWithPatterns = filteredBlocks.reduce<MatchResult[]>(
-          (acc, b) => {
-            const matchedPattern = this.matchNLP(nlp, b);
+        const matchesWithPatterns = filteredBlocks.reduce<
+          NlpPatternMatchResult[]
+        >((acc, b) => {
+          const matchedPattern = this.matchNLP(nlp, b);
 
-            if (matchedPattern && matchedPattern.length > 0) {
-              acc.push({ block: b, matchedPattern });
-            }
-            return acc;
-          },
-          [],
-        );
+          if (matchedPattern && matchedPattern.length > 0) {
+            acc.push({ block: b, matchedPattern });
+          }
+          return acc;
+        }, []);
 
         // @TODO Make nluPenaltyFactor configurable in UI settings
         const nluPenaltyFactor = 0.95;
