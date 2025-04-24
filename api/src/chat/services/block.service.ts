@@ -16,7 +16,6 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpCacheMap } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -39,6 +38,7 @@ import {
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
 import {
+  isNlpPattern,
   NlpPattern,
   NlpPatternMatchResult,
   PayloadPattern,
@@ -395,15 +395,25 @@ export class BlockService extends BaseService<
 
     let bestBlock: Block | BlockFull | undefined;
     let highestScore = 0;
-
-    const nlpCacheMap: NlpCacheMap = new Map();
-
+    const entityNames: string[] = blocks.flatMap((block) =>
+      block.patterns.flatMap((patternGroup) => {
+        if (Array.isArray(patternGroup)) {
+          return patternGroup.flatMap((pattern) =>
+            isNlpPattern(pattern) ? [pattern.entity] : [],
+          );
+        }
+        return []; // Skip non-array patternGroups
+      }),
+    );
+    const uniqueEntityNames: string[] = [...new Set(entityNames)];
+    const nlpCacheMap: NlpCacheMap =
+      await this.entityService.getNlpMap(uniqueEntityNames);
     // Iterate through all blocks and calculate their NLP score
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i];
       const patterns = matchedPatterns[i];
       // If compatible, calculate the NLP score for this block
-      const nlpScore = await this.calculateBlockScore(
+      const nlpScore: number = await this.calculateBlockScore(
         patterns,
         nlp,
         nlpCacheMap,
@@ -432,7 +442,7 @@ export class BlockService extends BaseService<
    *
    * @param patterns - The NLP patterns associated with the block.
    * @param nlp - The parsed NLP entities from the user input.
-   * @param nlpCacheMap - A cache to store and reuse fetched entity metadata (e.g., weights and valid values).
+   * @param nlpCacheMap - A cache to reuse fetched entity metadata (e.g., weights and valid values).
    * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
    * @returns A numeric score representing how well the block matches the given NLP context.
    */
@@ -442,40 +452,15 @@ export class BlockService extends BaseService<
     nlpCacheMap: NlpCacheMap,
     nlpPenaltyFactor: number,
   ): Promise<number> {
-    let nlpScore = 0;
-
-    // Collect all unique entity names from patterns
-    const entityNames = [...new Set(patterns.map((pattern) => pattern.entity))];
-
-    // Check the cache for existing lookups first
-    const uncachedEntityNames = entityNames.filter(
-      (name) => !nlpCacheMap.has(name),
-    );
-    // Fetch only uncached entities in one query, with values already populated
-    const entityLookups: NlpEntityFull[] = uncachedEntityNames.length
-      ? await this.entityService.findAndPopulate({
-          name: { $in: uncachedEntityNames },
-        })
-      : [];
-
-    // Populate the cache with the fetched lookups
-    entityLookups.forEach((lookup) => {
-      nlpCacheMap.set(lookup.name, {
-        id: lookup.id,
-        weight: lookup.weight,
-        values: lookup.values?.map((v) => v.value) ?? [],
-      });
-    });
-
-    // Calculate the score for each pattern
-    const patternScores = patterns.map((pattern) => {
+    // Compute individual pattern scores using the cache
+    const patternScores: number[] = patterns.map((pattern) => {
       const entityData = nlpCacheMap.get(pattern.entity);
       if (!entityData) return 0;
 
-      const matchedEntity = nlp.entities.find(
+      const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
         (e) =>
           e.entity === pattern.entity &&
-          entityData.values.includes(e.value) &&
+          entityData?.values.some((v) => v === e.value) &&
           (pattern.match !== 'value' || e.value === pattern.value),
       );
 
@@ -486,10 +471,8 @@ export class BlockService extends BaseService<
         : 0;
     });
 
-    // Sum up all scores
-    nlpScore = patternScores.reduce((sum, score) => sum + score, 0);
-
-    return nlpScore;
+    // Sum the scores
+    return patternScores.reduce((sum, score) => sum + score, 0);
   }
 
   /**

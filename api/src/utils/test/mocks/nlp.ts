@@ -7,6 +7,7 @@
  */
 
 import { NLU } from '@/helper/types';
+import { NlpCacheMap } from '@/nlp/schemas/types';
 
 export const nlpEntitiesGreeting: NLU.ParseEntities = {
   entities: [
@@ -57,3 +58,22 @@ export const mockNlpEntitiesSetTwo: NLU.ParseEntities = {
     },
   ],
 };
+
+export const mockNlpCacheMap: NlpCacheMap = new Map([
+  [
+    'intent',
+    {
+      id: '67e3e41eff551ca5be70559c',
+      weight: 1,
+      values: ['greeting', 'affirmation'],
+    },
+  ],
+  [
+    'firstname',
+    {
+      id: '67e3e41eff551ca5be70559d',
+      weight: 1,
+      values: ['jhon', 'doe'],
+    },
+  ],
+]);

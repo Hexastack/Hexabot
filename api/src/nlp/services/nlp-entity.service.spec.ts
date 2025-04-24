@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
@@ -20,7 +21,11 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
+import {
+  NlpEntity,
+  NlpEntityFull,
+  NlpEntityModel,
+} from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
@@ -48,6 +53,12 @@ describe('nlpEntityService', () => {
         NlpValueService,
         NlpValueRepository,
         NlpSampleEntityRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+          },
+        },
       ],
     });
     [nlpEntityService, nlpEntityRepository, nlpValueRepository] =
@@ -219,6 +230,60 @@ describe('nlpEntityService', () => {
       ];
 
       expect(result).toEqualPayload(storedEntites);
+    });
+  });
+  describe('getNlpMap', () => {
+    it('should return a NlpCacheMap with the correct structure', async () => {
+      // Arrange
+      const firstMockValues = {
+        id: '1',
+        weight: 1,
+      };
+      const firstMockLookup = {
+        name: 'intent',
+        ...firstMockValues,
+        values: [{ value: 'buy' }, { value: 'sell' }],
+      } as unknown as Partial<NlpEntityFull>;
+      const secondMockValues = {
+        id: '2',
+        weight: 5,
+      };
+      const secondMockLook = {
+        name: 'subject',
+        ...secondMockValues,
+        values: [{ value: 'product' }],
+      } as unknown as Partial<NlpEntityFull>;
+      const mockLookups = [firstMockLookup, secondMockLook];
+
+      const entityNames = ['intent', 'subject'];
+
+      // Mock findAndPopulate
+      jest
+        .spyOn(nlpEntityService, 'findAndPopulate')
+        .mockResolvedValue(mockLookups as unknown as NlpEntityFull[]);
+
+      // Act
+      const result = await nlpEntityService.getNlpMap(entityNames);
+
+      expect(result).toBeInstanceOf(Map);
+      expect(result.size).toBe(2);
+      expect(result.get('intent')).toEqual({
+        ...firstMockValues,
+        values: ['buy', 'sell'],
+      });
+      expect(result.get('subject')).toEqual({
+        ...secondMockValues,
+        values: ['product'],
+      });
+    });
+
+    it('should return an empty map if no lookups are found', async () => {
+      jest.spyOn(nlpEntityService, 'findAndPopulate').mockResolvedValue([]);
+
+      const result = await nlpEntityService.getNlpMap(['nonexistent']);
+
+      expect(result).toBeInstanceOf(Map);
+      expect(result.size).toBe(0);
     });
   });
 });

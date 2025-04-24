@@ -6,8 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Cache } from 'cache-manager';
 
+import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
+import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { Lookup, NlpEntityDto } from '../dto/nlp-entity.dto';
@@ -17,7 +22,7 @@ import {
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityValue } from '../schemas/types';
+import { NlpCacheMap, NlpSampleEntityValue } from '../schemas/types';
 
 import { NlpValueService } from './nlp-value.service';
 
@@ -30,6 +35,7 @@ export class NlpEntityService extends BaseService<
 > {
   constructor(
     readonly repository: NlpEntityRepository,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly nlpValueService: NlpValueService,
   ) {
     super(repository);
@@ -118,5 +124,56 @@ export class NlpEntityService extends BaseService<
       this.findOneOrCreate({ name: e.entity }, { name: e.entity }),
     );
     return Promise.all(findOrCreate);
+  }
+
+  /**
+   * Clears the NLP map cache
+   */
+  async clearCache() {
+    this.cacheManager.del(NLP_MAP_CACHE_KEY);
+  }
+
+  /**
+   * Event handler for Nlp Entity updates. Listens to 'hook:nlpEntity:*' events
+   * and invalidates the cache for nlp entities when triggered.
+   */
+  @OnEvent('hook:nlpEntity:*')
+  async handleNlpEntityUpdateEvent() {
+    this.clearCache();
+  }
+
+  /**
+   * Event handler for Nlp Value updates. Listens to 'hook:nlpValue:*' events
+   * and invalidates the cache for nlp values when triggered.
+   */
+  @OnEvent('hook:nlpValue:*')
+  async handleNlpValueUpdateEvent() {
+    this.clearCache();
+  }
+
+  /**
+   * Retrieves NLP entity lookup information for the given list of entity names.
+   *
+   * This method queries the database for lookups that match any of the provided
+   * entity names, transforms the result into a map structure where each key is
+   * the entity name and each value contains metadata (id, weight, and list of values),
+   * and caches the result using the configured cache key.
+   *
+   * @param entityNames - Array of entity names to retrieve lookup data for.
+   * @returns A Promise that resolves to a map of entity name to its corresponding lookup metadata.
+   */
+  @Cacheable(NLP_MAP_CACHE_KEY)
+  async getNlpMap(entityNames: string[]): Promise<NlpCacheMap> {
+    const lookups = await this.findAndPopulate({ name: { $in: entityNames } });
+    const map: NlpCacheMap = new Map();
+    for (const lookup of lookups) {
+      map.set(lookup.name, {
+        id: lookup.id,
+        weight: lookup.weight,
+        values: lookup.values?.map((v) => v.value) ?? [],
+      });
+    }
+
+    return map;
   }
 }

@@ -64,3 +64,16 @@ export type NlpPatternMatchResult = {
   block: BlockFull;
   matchedPattern: NlpPattern[];
 };
+
+export function isNlpPattern(
+  pattern: unknown,
+): pattern is { entity: string; match: 'entity' | 'value' } {
+  return (
+    (typeof pattern === 'object' &&
+      pattern !== null &&
+      'entity' in pattern &&
+      'match' in pattern &&
+      (pattern as any).match === 'entity') ||
+    (pattern as any).match === 'value'
+  );
+}

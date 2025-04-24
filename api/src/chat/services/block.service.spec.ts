@@ -63,6 +63,7 @@ import {
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
 import {
+  mockNlpCacheMap,
   mockNlpEntitiesSetOne,
   nlpEntitiesGreeting,
 } from '@/utils/test/mocks/nlp';
@@ -85,23 +86,10 @@ import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
 // Create a mock for the NlpEntityService
-const mockNlpEntityService: Partial<Record<keyof NlpEntityService, jest.Mock>> =
-  {
-    findAndPopulate: jest.fn().mockResolvedValue([
-      {
-        _id: '67e3e41eff551ca5be70559c',
-        name: 'intent',
-        weight: 1,
-        values: [{ value: 'greeting' }, { value: 'affirmation' }],
-      },
-      {
-        _id: '67e3e41eff551ca5be70559d',
-        name: 'firstname',
-        weight: 1,
-        values: [{ value: 'jhon' }, { value: 'doe' }],
-      },
-    ]),
-  };
+// const mockNlpEntityService: Partial<Record<keyof NlpEntityService, jest.Mock>> =
+//   {
+//     getNlpMap: jest.fn().mockResolvedValue(mockNlpCacheMap),
+//   };
 
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
@@ -112,6 +100,7 @@ describe('BlockService', () => {
   let hasPreviousBlocks: Block;
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
+  let nlpEntityService: NlpEntityService;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -149,10 +138,7 @@ describe('BlockService', () => {
         NlpEntityRepository,
         NlpValueRepository,
         NlpSampleEntityRepository,
-        {
-          provide: NlpEntityService, // Mocking NlpEntityService
-          useValue: mockNlpEntityService,
-        },
+        NlpEntityService,
         {
           provide: NlpValueService,
           useValue: {},
@@ -196,12 +182,14 @@ describe('BlockService', () => {
       contentTypeService,
       categoryRepository,
       blockRepository,
+      nlpEntityService,
     ] = await getMocks([
       BlockService,
       ContentService,
       ContentTypeService,
       CategoryRepository,
       BlockRepository,
+      NlpEntityService,
     ]);
     category = (await categoryRepository.findOne({ label: 'default' }))!;
     hasPreviousBlocks = (await blockRepository.findOne({
@@ -374,6 +362,9 @@ describe('BlockService', () => {
   describe('matchBestNLP', () => {
     const nlpPenaltyFactor = 2;
     it('should return the block with the highest NLP score', async () => {
+      jest
+        .spyOn(nlpEntityService, 'getNlpMap')
+        .mockResolvedValue(mockNlpCacheMap);
       const blocks = [mockNlpBlock, blockGetStarted]; // You can add more blocks with different patterns and scores
       const matchedPatterns = [mockNlpPatternsSetOne, mockNlpPatternsSetTwo];
       const nlp = mockNlpEntitiesSetOne;
@@ -399,6 +390,9 @@ describe('BlockService', () => {
     });
 
     it('should return the block with the highest NLP score applying penalties', async () => {
+      jest
+        .spyOn(nlpEntityService, 'getNlpMap')
+        .mockResolvedValue(mockNlpCacheMap);
       const blocks = [mockNlpBlock, mockModifiedNlpBlock]; // You can add more blocks with different patterns and scores
       const matchedPatterns = [mockNlpPatternsSetOne, mockNlpPatternsSetThree];
       const nlp = mockNlpEntitiesSetOne;
@@ -424,6 +418,9 @@ describe('BlockService', () => {
     });
 
     it('should return undefined if no blocks match or the list is empty', async () => {
+      jest
+        .spyOn(nlpEntityService, 'getNlpMap')
+        .mockResolvedValue(mockNlpCacheMap);
       const blocks: Block[] = []; // Empty block array
       const matchedPatterns: NlpPattern[][] = [];
       const nlp = mockNlpEntitiesSetOne;
@@ -443,18 +440,16 @@ describe('BlockService', () => {
   describe('calculateBlockScore', () => {
     const nlpPenaltyFactor = 0.9;
     it('should calculate the correct NLP score for a block', async () => {
-      const nlpCacheMap: NlpCacheMap = new Map();
-
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
-        nlpCacheMap,
+        mockNlpCacheMap,
         nlpPenaltyFactor,
       );
       const score2 = await blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
-        nlpCacheMap,
+        mockNlpCacheMap,
         nlpPenaltyFactor,
       );
 
@@ -464,18 +459,16 @@ describe('BlockService', () => {
     });
 
     it('should calculate the correct NLP score for a block and apply penalties ', async () => {
-      const nlpCacheMap: NlpCacheMap = new Map();
-
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
-        nlpCacheMap,
+        mockNlpCacheMap,
         nlpPenaltyFactor,
       );
       const score2 = await blockService.calculateBlockScore(
         mockNlpPatternsSetThree,
         mockNlpEntitiesSetOne,
-        nlpCacheMap,
+        mockNlpCacheMap,
         nlpPenaltyFactor,
       );
 
@@ -494,44 +487,6 @@ describe('BlockService', () => {
       );
 
       expect(score).toBe(0); // No matching entity, so score should be 0
-    });
-    it('should correctly use entity cache to avoid redundant database calls', async () => {
-      const nlpCacheMap: NlpCacheMap = new Map();
-
-      // Spy on findAndPopulate
-      const findAndPopulateSpy = jest.spyOn(
-        mockNlpEntityService,
-        'findAndPopulate',
-      );
-
-      // First call: should trigger findAndPopulate and cache results
-      await blockService.calculateBlockScore(
-        mockNlpPatternsSetOne,
-        mockNlpEntitiesSetOne,
-        nlpCacheMap,
-        nlpPenaltyFactor,
-      );
-
-      const cacheSizeAfterFirstCall = nlpCacheMap.size;
-      const callsAfterFirstCall = findAndPopulateSpy.mock.calls.length;
-
-      // should not call findAndPopulate again since data is cached
-      await blockService.calculateBlockScore(
-        mockNlpPatternsSetOne,
-        mockNlpEntitiesSetOne,
-        nlpCacheMap,
-        nlpPenaltyFactor,
-      );
-
-      const cacheSizeAfterSecondCall = nlpCacheMap.size;
-      const callsAfterSecondCall = findAndPopulateSpy.mock.calls.length;
-
-      expect(cacheSizeAfterSecondCall).toBe(cacheSizeAfterFirstCall);
-      expect(callsAfterSecondCall).toBe(callsAfterFirstCall); // No new call
-      expect(findAndPopulateSpy).toHaveBeenCalledTimes(1); // Should only be called once
-
-      // Cleanup
-      findAndPopulateSpy.mockRestore();
     });
   });
 
