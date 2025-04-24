@@ -14,8 +14,8 @@ It enables more intelligent and context-aware block selection in conversational 
 
 A user input contains entities that directly match a block’s patterns.
 ```bash
-Example: Input: intent = enquiry, subject = claim
-Block A: Patterns: intent: enquiry, subject: claim
+Example: Input: intent = enquiry & subject = claim
+Block A: Patterns: intent: enquiry & subject: claim
 Block A will be selected.
 ```
 
@@ -26,7 +26,7 @@ A block may match only some patterns but have high-confidence input on those mat
 
 ```bash
 Example:
-Input: intent = issue (confidence: 0.92), subject = claim (confidence: 0.65)
+Input: intent = issue (confidence: 0.92) & subject = claim (confidence: 0.65)
 Block A: Pattern: intent: issue
 Block B: Pattern: subject: claim
 ➤ Block A gets a high score based on confidence × weight (assuming both weights are equal to 1).
@@ -35,8 +35,8 @@ Block B: Pattern: subject: claim
 ### Multiple Blocks with Similar Patterns
 
 ```bash
-Input: intent = issue, subject = insurance
-Block A: intent = enquiry, subject = insurance
+Input: intent = issue & subject = insurance
+Block A: intent = enquiry & subject = insurance
 Block B: subject = insurance
 ➤ Block B is selected — Block A mismatches on intent.
 ```
@@ -46,9 +46,9 @@ Block B: subject = insurance
 If a block contains patterns that require entities not present in the user input, the block is excluded from scoring altogether. No penalties are applied — the block simply isn't considered a valid candidate.
 
 ```bash
-Input: intent = issue, subject = insurance
-Block A: intent = enquiry, subject = insurance, location = office
-Block B: subject = insurance, time = morning
+Input: intent = issue & subject = insurance
+Block A: intent = enquiry & subject = insurance & location = office
+Block B: subject = insurance & time = morning
 ➤ Neither block is selected due to unmatched required patterns (`location`, `time`)
 ```
 
@@ -57,10 +57,10 @@ Block B: subject = insurance, time = morning
 When multiple blocks receive similar scores, penalty factors can help break the tie — especially in cases where patterns are less specific (e.g., using `Any` as a value).
 
 ```bash
-Input: intent = enquiry, subject = insurance
+Input: intent = enquiry & subject = insurance
 
-Block A: intent = enquiry, subject = Any
-Block B: intent = enquiry, subject = insurance
+Block A: intent = enquiry & subject = Any
+Block B: intent = enquiry & subject = insurance
 Block C: subject = insurance
 
 Scoring Summary:
