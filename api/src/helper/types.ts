@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { z } from 'zod';
+
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
@@ -15,13 +17,15 @@ import BaseNlpHelper from './lib/base-nlp-helper';
 import BaseStorageHelper from './lib/base-storage-helper';
 
 export namespace NLU {
-  export interface ParseEntity {
-    entity: string; // Entity name
-    value: string; // Value name
-    confidence: number;
-    start?: number;
-    end?: number;
-  }
+  const ParseEntitySchema = z.object({
+    entity: z.string(),
+    value: z.string(),
+    confidence: z.number().min(0).max(1),
+    start: z.number().optional(),
+    end: z.number().optional(),
+  });
+
+  export type ParseEntity = z.infer<typeof ParseEntitySchema>;
 
   export interface ParseEntities {
     entities: ParseEntity[];
