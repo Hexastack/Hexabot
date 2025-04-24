@@ -374,7 +374,7 @@ describe('BlockService', () => {
         nlpPenaltyFactor,
       );
 
-      // // Ensure calculateBlockScore was called at least once for each block
+      // Ensure calculateBlockScore was called at least once for each block
       expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(2); // Called for each block
 
       // Restore the spy after the test
