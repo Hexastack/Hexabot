@@ -215,7 +215,12 @@ export class BlockService extends BaseService<
         );
 
         // Retrieve Nlu Penalty Factor from global settings
-        const nluPenaltyFactor = await this.getDefaultNluPenaltyFactor();
+        const nluPenaltyFactor: number =
+          await this.getDefaultNluPenaltyFactor();
+
+        if (nluPenaltyFactor < 0 || nluPenaltyFactor > 1) {
+          throw new Error('Penalty Factor must be between 0 and 1.');
+        }
 
         // Proceed with matching the best NLP block
         if (matchesWithPatterns.length > 0) {

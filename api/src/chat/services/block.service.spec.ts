@@ -363,7 +363,7 @@ describe('BlockService', () => {
   });
 
   describe('matchBestNLP', () => {
-    const nlpPenaltyFactor = 2;
+    const nlpPenaltyFactor = 0.95;
     it('should return the block with the highest NLP score', async () => {
       jest
         .spyOn(nlpEntityService, 'getNlpMap')
@@ -417,7 +417,7 @@ describe('BlockService', () => {
       // Restore the spy after the test
       calculateBlockScoreSpy.mockRestore();
       // Assert that the block with the highest NLP score is selected
-      expect(bestBlock).toEqual(mockModifiedNlpBlock);
+      expect(bestBlock).toEqual(mockNlpBlock);
     });
 
     it('should return undefined if no blocks match or the list is empty', async () => {
