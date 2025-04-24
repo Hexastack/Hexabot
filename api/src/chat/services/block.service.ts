@@ -38,7 +38,8 @@ import {
 } from '../schemas/types/message';
 import {
   NlpPattern,
-  PayloadPattern
+  NlpPatternMatchResult,
+  PayloadPattern,
 } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
@@ -188,11 +189,42 @@ export class BlockService extends BaseService<
       // Perform an NLP Match
 
       if (!block && nlp) {
-        // Find block pattern having the best match of nlp entities
-        const newBlocks = filteredBlocks.filter((b) => {
-          return this.matchNLP(nlp, b);
-        });
-        block = (await this.matchBestNLP(newBlocks)) as BlockFull | undefined;
+        // Use the `reduce` function to iterate over `filteredBlocks` and accumulate a new array `matchesWithPatterns`.
+        // This approach combines the matching of NLP patterns and filtering of blocks with empty or invalid matches
+        // into a single operation. This avoids the need for a separate mapping and filtering step, improving performance.
+        // For each block in `filteredBlocks`, we call `matchNLP` to find patterns that match the NLP data.
+        // If `matchNLP` returns a non-empty list of matched patterns, the block and its matched patterns are added
+        // to the accumulator array `acc`, which is returned as the final result.
+        // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
+        // all while iterating through the list only once.
+
+        const matchesWithPatterns = filteredBlocks.reduce<
+          NlpPatternMatchResult[]
+        >((acc, b) => {
+          const matchedPattern = this.matchNLP(nlp, b);
+
+          if (matchedPattern && matchedPattern.length > 0) {
+            acc.push({ block: b, matchedPattern });
+          }
+          return acc;
+        }, []);
+
+        // @TODO Make nluPenaltyFactor configurable in UI settings
+        const nluPenaltyFactor = 0.95;
+        // Log the matched patterns
+        this.logger.debug(
+          `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
+        );
+
+        // Proceed with matching the best NLP block
+        if (matchesWithPatterns.length > 0) {
+          block = (await this.matchBestNLP(
+            matchesWithPatterns.map((m) => m.block),
+            matchesWithPatterns.map((p) => p.matchedPattern),
+            nlp,
+            nluPenaltyFactor,
+          )) as BlockFull | undefined;
+        }
       }
     }
 
