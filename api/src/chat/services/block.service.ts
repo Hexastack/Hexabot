@@ -412,7 +412,7 @@ export class BlockService extends BaseService<
       const block = blocks[i];
       const patterns = matchedPatterns[i];
       // If compatible, calculate the NLP score for this block
-      const nlpScore: number = await this.calculateBlockScore(
+      const nlpScore: number = this.calculateBlockScore(
         patterns,
         nlp,
         nlpCacheMap,
@@ -445,12 +445,12 @@ export class BlockService extends BaseService<
    * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
    * @returns A numeric score representing how well the block matches the given NLP context.
    */
-  async calculateBlockScore(
+  calculateBlockScore(
     patterns: NlpPattern[],
     nlp: NLU.ParseEntities,
     nlpCacheMap: NlpCacheMap,
     nlpPenaltyFactor: number,
-  ): Promise<number> {
+  ): number {
     // Compute individual pattern scores using the cache
     const patternScores: number[] = patterns.map((pattern) => {
       const entityData = nlpCacheMap.get(pattern.entity);

@@ -434,13 +434,13 @@ describe('BlockService', () => {
   describe('calculateBlockScore', () => {
     const nlpPenaltyFactor = 0.9;
     it('should calculate the correct NLP score for a block', async () => {
-      const score = await blockService.calculateBlockScore(
+      const score = blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
         mockNlpCacheMap,
         nlpPenaltyFactor,
       );
-      const score2 = await blockService.calculateBlockScore(
+      const score2 = blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
         mockNlpCacheMap,
@@ -453,13 +453,13 @@ describe('BlockService', () => {
     });
 
     it('should calculate the correct NLP score for a block and apply penalties ', async () => {
-      const score = await blockService.calculateBlockScore(
+      const score = blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
         mockNlpCacheMap,
         nlpPenaltyFactor,
       );
-      const score2 = await blockService.calculateBlockScore(
+      const score2 = blockService.calculateBlockScore(
         mockNlpPatternsSetThree,
         mockNlpEntitiesSetOne,
         mockNlpCacheMap,
@@ -473,7 +473,7 @@ describe('BlockService', () => {
 
     it('should return 0 if no matching entities are found', async () => {
       const nlpCacheMap: NlpCacheMap = new Map();
-      const score = await blockService.calculateBlockScore(
+      const score = blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
         nlpCacheMap,
