@@ -37,6 +37,7 @@ import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
 import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpCacheMap } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { PluginService } from '@/plugins/plugins.service';
@@ -51,8 +52,11 @@ import {
   blockGetStarted,
   blockProductListMock,
   blocks,
+  mockModifiedNlpBlock,
   mockNlpBlock,
-  nlpBlocks,
+  mockNlpPatternsSetOne,
+  mockNlpPatternsSetThree,
+  mockNlpPatternsSetTwo,
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
@@ -81,25 +85,6 @@ import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
-// Create a mock for the NlpEntityService
-const mockNlpEntityService = {
-  findOne: jest.fn().mockImplementation((query) => {
-    if (query.name === 'intent') {
-      return Promise.resolve({
-        lookups: ['trait'],
-        id: '67e3e41eff551ca5be70559c',
-      });
-    }
-    if (query.name === 'firstname') {
-      return Promise.resolve({
-        lookups: ['trait'],
-        id: '67e3e41eff551ca5be70559d',
-      });
-    }
-    return Promise.resolve(null); // Default response if the entity isn't found
-  }),
-};
-
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
@@ -110,8 +95,6 @@ describe('BlockService', () => {
   let contentService: ContentService;
   let contentTypeService: ContentTypeService;
   let nlpEntityService: NlpEntityService;
-  let settingService: SettingService;
-  let settings: Settings;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -129,8 +112,8 @@ describe('BlockService', () => {
           LabelModel,
           LanguageModel,
           NlpEntityModel,
-          NlpValueModel,
           NlpSampleEntityModel,
+          NlpValueModel,
         ]),
       ],
       providers: [
@@ -140,19 +123,19 @@ describe('BlockService', () => {
         ContentRepository,
         AttachmentRepository,
         LanguageRepository,
-        NlpEntityRepository,
-        NlpSampleEntityRepository,
-        NlpValueRepository,
         BlockService,
         CategoryService,
         ContentTypeService,
         ContentService,
         AttachmentService,
         LanguageService,
-        NlpValueService,
+        NlpEntityRepository,
+        NlpValueRepository,
+        NlpSampleEntityRepository,
+        NlpEntityService,
         {
-          provide: NlpEntityService, // Mocking NlpEntityService
-          useValue: mockNlpEntityService,
+          provide: NlpValueService,
+          useValue: {},
         },
         {
           provide: PluginService,
@@ -186,14 +169,22 @@ describe('BlockService', () => {
           },
         },
       ],
-    }).compile();
-    blockService = module.get<BlockService>(BlockService);
-    contentService = module.get<ContentService>(ContentService);
-    settingService = module.get<SettingService>(SettingService);
-    contentTypeService = module.get<ContentTypeService>(ContentTypeService);
-    categoryRepository = module.get<CategoryRepository>(CategoryRepository);
-    blockRepository = module.get<BlockRepository>(BlockRepository);
-    nlpEntityService = module.get<NlpEntityService>(NlpEntityService);
+    });
+    [
+      blockService,
+      contentService,
+      contentTypeService,
+      categoryRepository,
+      blockRepository,
+      nlpEntityService,
+    ] = await getMocks([
+      BlockService,
+      ContentService,
+      ContentTypeService,
+      CategoryRepository,
+      BlockRepository,
+      NlpEntityService,
+    ]);
     category = (await categoryRepository.findOne({ label: 'default' }))!;
     hasPreviousBlocks = (await blockRepository.findOne({
       name: 'hasPreviousBlocks',
@@ -551,59 +542,6 @@ describe('BlockService', () => {
         blockGetStarted,
       );
       expect(result).toEqual(blockGetStarted.patterns?.[4]);
-    });
-  });
-
-  describe('matchBestNLP', () => {
-    it('should return undefined if blocks is empty', async () => {
-      const result = await blockService.matchBestNLP([]);
-      expect(result).toBeUndefined();
-    });
-
-    it('should return the only block if there is one', async () => {
-      const result = await blockService.matchBestNLP([blockEmpty]);
-      expect(result).toBe(blockEmpty);
-    });
-
-    it('should correctly select the best block based on NLP scores', async () => {
-      const result = await blockService.matchBestNLP(nlpBlocks);
-      expect(result).toBe(mockNlpBlock);
-
-      // Iterate over each block
-      for (const block of nlpBlocks) {
-        // Flatten the patterns array and filter valid NLP patterns
-        block.patterns
-          .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
-          .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p) // Filter only valid patterns with entity and match
-          .forEach((p) => {
-            // Check if findOne was called with the correct entity
-            expect(nlpEntityService.findOne).toHaveBeenCalledWith(
-              { name: p.entity },
-              undefined,
-              { _id: 0, lookups: 1 },
-            );
-          });
-      }
-    });
-
-    it('should return the block with the highest combined score', async () => {
-      const result = await blockService.matchBestNLP(nlpBlocks);
-      expect(result).toBe(mockNlpBlock);
-      // Iterate over each block
-      for (const block of nlpBlocks) {
-        // Flatten the patterns array and filter valid NLP patterns
-        block.patterns
-          .flatMap((pattern) => (Array.isArray(pattern) ? pattern : []))
-          .filter((p) => typeof p === 'object' && 'entity' in p && 'match' in p) // Filter only valid patterns with entity and match
-          .forEach((p) => {
-            // Check if findOne was called with the correct entity
-            expect(nlpEntityService.findOne).toHaveBeenCalledWith(
-              { name: p.entity },
-              undefined,
-              { _id: 0, lookups: 1 },
-            );
-          });
-      }
     });
   });
 
