@@ -200,16 +200,15 @@ export class BlockService extends BaseService<
         // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
         // all while iterating through the list only once.
 
-        const matchesWithPatterns = filteredBlocks.reduce<
-          NlpPatternMatchResult[]
-        >((acc, b) => {
-          const matchedPattern = this.matchNLP(nlp, b);
+        const matchesWithPatterns: NlpPatternMatchResult[] =
+          filteredBlocks.reduce<NlpPatternMatchResult[]>((acc, b) => {
+            const matchedPattern = this.matchNLP(nlp, b);
 
-          if (matchedPattern && matchedPattern.length > 0) {
-            acc.push({ block: b, matchedPattern });
-          }
-          return acc;
-        }, []);
+            if (matchedPattern && matchedPattern.length > 0) {
+              acc.push({ block: b, matchedPattern });
+            }
+            return acc;
+          }, []);
 
         // Log the matched patterns
         this.logger.debug(
