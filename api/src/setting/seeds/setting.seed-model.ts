@@ -40,6 +40,18 @@ export const DEFAULT_SETTINGS = [
   },
   {
     group: 'chatbot_settings',
+    label: 'default_nlu_penalty_factor',
+    value: 0.95,
+    type: SettingType.number,
+    config: {
+      min: 0,
+      max: 1,
+      step: 0.01,
+    },
+    weight: 3,
+  },
+  {
+    group: 'chatbot_settings',
     label: 'default_storage_helper',
     value: 'local-storage-helper',
     type: SettingType.select,
@@ -49,18 +61,6 @@ export const DEFAULT_SETTINGS = [
       entity: 'Helper',
       idKey: 'name',
       labelKey: 'name',
-    },
-    weight: 3,
-  },
-  {
-    group: 'chatbot_settings',
-    label: 'default_nlu_penalty_factor',
-    value: 0.95,
-    type: SettingType.number,
-    config: {
-      min: 0,
-      max: 1,
-      step: 0.01,
     },
     weight: 4,
   },
