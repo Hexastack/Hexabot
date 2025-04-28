@@ -177,19 +177,29 @@ export class BlockRepository extends BaseRepository<
       category: { $ne: category },
     });
 
-    for (const { id, nextBlocks, attachedBlock } of blocks) {
-      const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
-        ids.includes(nextBlock),
-      );
+    const concurrencyLimit = 10;
 
-      const updatedAttachedBlock = ids.includes(attachedBlock || '')
-        ? attachedBlock
-        : null;
+    const tasks = blocks.map(
+      ({ id, nextBlocks, attachedBlock }) =>
+        async () => {
+          const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
+            ids.includes(nextBlock),
+          );
 
-      await this.updateOne(id, {
-        nextBlocks: updatedNextBlocks,
-        attachedBlock: updatedAttachedBlock,
-      });
+          const updatedAttachedBlock = ids.includes(attachedBlock || '')
+            ? attachedBlock
+            : null;
+
+          await this.updateOne(id, {
+            nextBlocks: updatedNextBlocks,
+            attachedBlock: updatedAttachedBlock,
+          });
+        },
+    );
+
+    for (let i = 0; i < tasks.length; i += concurrencyLimit) {
+      const batch = tasks.slice(i, i + concurrencyLimit);
+      await Promise.all(batch.map((task) => task()));
     }
   }
 
@@ -214,9 +224,12 @@ export class BlockRepository extends BaseRepository<
       block.nextBlocks?.forEach((id) => movedBlockLinkTargets.add(id));
     }
 
-    for (const block of otherBlocks) {
+    const concurrencyLimit = 10;
+    const allUpdateTasks = otherBlocks.map((block) => async () => {
+      const promises: Promise<any>[] = [];
+
       if (block.attachedBlock && ids.includes(block.attachedBlock)) {
-        await this.updateOne(block.id, { attachedBlock: null });
+        promises.push(this.updateOne(block.id, { attachedBlock: null }));
       }
 
       if (block.nextBlocks?.length) {
@@ -227,9 +240,18 @@ export class BlockRepository extends BaseRepository<
         });
 
         if (updatedNextBlocks.length !== block.nextBlocks.length) {
-          await this.updateOne(block.id, { nextBlocks: updatedNextBlocks });
+          promises.push(
+            this.updateOne(block.id, { nextBlocks: updatedNextBlocks }),
+          );
         }
       }
+
+      await Promise.all(promises);
+    });
+
+    for (let i = 0; i < allUpdateTasks.length; i += concurrencyLimit) {
+      const batch = allUpdateTasks.slice(i, i + concurrencyLimit);
+      await Promise.all(batch.map((task) => task()));
     }
   }
 
