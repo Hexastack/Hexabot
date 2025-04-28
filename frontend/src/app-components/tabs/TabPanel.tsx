@@ -24,19 +24,12 @@ export function TabPanel(props: TabPanelProps & GridProps) {
       item
       xs
       role="tabpanel"
+      hidden={value !== index}
       id={`vertical-tabpanel-${index}`}
       aria-labelledby={`vertical-tab-${index}`}
-      sx={{
-        display: "block",
-        visibility: value === index ? "visible" : "hidden",
-        height: value === index ? "auto" : 0,
-        overflow: "hidden",
-        position: value === index ? "relative" : "absolute",
-        ...sx,
-      }}
       {...other}
     >
-      <Grid container sx={{ flexDirection: "column" }}>
+      <Grid container sx={{ flexDirection: "column", ...sx }}>
         {children}
       </Grid>
     </Grid>
