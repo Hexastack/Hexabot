@@ -165,7 +165,12 @@ export default class LlmNluHelper
   }
 
   async predict(text: string): Promise<NLU.ParseEntities> {
-    const settings = await this.getSettings();
+    const settings: LlmNluHelperSettings | undefined =
+      await this.loadSettings();
+    if (!settings) {
+      this.logger.error('Failed to load settings for Llm Nlu inference');
+      return { entities: [] };
+    }
     const helper = await this.helperService.getDefaultLlmHelper();
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     // Detect language
