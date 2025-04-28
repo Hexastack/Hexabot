@@ -60,14 +60,18 @@ export default class LlmNluHelper
           await this.getSettings();
 
         if (settings) {
+          this.logger.log(`Llm Nlu Helper Settings successfully loaded`);
           return settings;
         }
 
         this.logger.warn(
-          `Settings not available yet, retrying... (${retryCount + 1}/${maxRetries})`,
+          `Llm Nlu Helper Settings not available yet, retrying... (${retryCount + 1}/${maxRetries})`,
         );
       } catch (error) {
-        this.logger.error('Error while loading settings:', error);
+        this.logger.error(
+          'Error while loading Llm Nlu Helper Settings:',
+          error,
+        );
         return undefined;
       }
 
