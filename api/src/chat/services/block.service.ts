@@ -21,6 +21,7 @@ import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
@@ -489,8 +490,18 @@ export class BlockService extends BaseService<
     const settings: Settings = await this.settingService.getSettings();
     const nluPenaltyFactor =
       settings.chatbot_settings.default_nlu_penalty_factor;
+
+    if (typeof nluPenaltyFactor !== 'number') {
+      this.logger.error(
+        'NLU Penalty Factor setting is missing or invalid. Using fallback...',
+      );
+      return FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
+    }
     if (nluPenaltyFactor < 0 || nluPenaltyFactor > 1) {
-      this.logger.error('NLU Penalty Factor must be between 0 and 1');
+      this.logger.error(
+        'NLU Penalty Factor must be between 0 and 1. Using fallback...',
+      );
+      return FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
     }
     return nluPenaltyFactor;
   }

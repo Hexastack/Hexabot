@@ -798,9 +798,9 @@ const addDefaultStorageHelper = async ({ logger }: MigrationServices) => {
         upsert: true,
       },
     );
-    logger.log('Successfuly added the default local storage helper setting');
+    logger.log('Successfully added the default local storage helper setting');
   } catch (err) {
-    logger.error('Unable to add the default local storage helper setting');
+    logger.error('Unable to add the default local storage helper setting', err);
   }
 };
 
@@ -811,9 +811,12 @@ const removeDefaultStorageHelper = async ({ logger }: MigrationServices) => {
       group: 'chatbot_settings',
       label: 'default_storage_helper',
     });
-    logger.log('Successfuly removed the default local storage helper setting');
+    logger.log('Successfully removed the default local storage helper setting');
   } catch (err) {
-    logger.error('Unable to remove the default local storage helper setting');
+    logger.error(
+      'Unable to remove the default local storage helper setting',
+      err,
+    );
   }
 };
 

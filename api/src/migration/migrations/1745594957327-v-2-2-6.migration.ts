@@ -37,9 +37,9 @@ const addDefaultNluPenaltyFactor = async ({ logger }: MigrationServices) => {
         upsert: true,
       },
     );
-    logger.log('Successfuly added the default NLU penalty factor setting');
+    logger.log('Successfully added the default NLU penalty factor setting');
   } catch (err) {
-    logger.error('Unable to add the default NLU penalty factor setting');
+    logger.error('Unable to add the default NLU penalty factor setting', err);
   }
 };
 
@@ -50,9 +50,12 @@ const removeDefaultNluPenaltyFactor = async ({ logger }: MigrationServices) => {
       group: 'chatbot_settings',
       label: 'default_nlu_penalty_factor',
     });
-    logger.log('Successfuly removed the default NLU penalty factor setting');
+    logger.log('Successfully removed the default NLU penalty factor setting');
   } catch (err) {
-    logger.error('Unable to remove the default NLU penalty factor setting');
+    logger.error(
+      'Unable to remove the default NLU penalty factor setting',
+      err,
+    );
   }
 };
 
