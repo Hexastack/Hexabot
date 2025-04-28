@@ -491,7 +491,12 @@ export class BlockService extends BaseService<
    */
   async getDefaultNluPenaltyFactor(): Promise<number> {
     const settings: Settings = await this.settingService.getSettings();
-    return settings.chatbot_settings.default_nlu_penalty_factor;
+    const nluPenaltyFactor =
+      settings.chatbot_settings.default_nlu_penalty_factor;
+    if (nluPenaltyFactor < 0 || nluPenaltyFactor > 1) {
+      this.logger.error('NLU Penalty Factor must be between 0 and 1');
+    }
+    return nluPenaltyFactor;
   }
 
   /**

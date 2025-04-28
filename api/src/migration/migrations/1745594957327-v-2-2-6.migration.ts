@@ -52,7 +52,7 @@ const removeDefaultNluPenaltyFactor = async ({ logger }: MigrationServices) => {
     });
     logger.log('Successfuly removed the default NLU penalty factor setting');
   } catch (err) {
-    logger.error('Unable to remove the default local storage helper setting');
+    logger.error('Unable to remove the default NLU penalty factor setting');
   }
 };
 
