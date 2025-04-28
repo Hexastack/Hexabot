@@ -65,15 +65,13 @@ export type NlpPatternMatchResult = {
   matchedPattern: NlpPattern[];
 };
 
-export function isNlpPattern(
-  pattern: unknown,
-): pattern is { entity: string; match: 'entity' | 'value' } {
+export function isNlpPattern(pattern: NlpPattern) {
   return (
     (typeof pattern === 'object' &&
       pattern !== null &&
       'entity' in pattern &&
       'match' in pattern &&
-      (pattern as any).match === 'entity') ||
-    (pattern as any).match === 'value'
+      pattern.match === 'entity') ||
+    pattern.match === 'value'
   );
 }
