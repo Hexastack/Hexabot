@@ -205,6 +205,14 @@ export class BotService {
                     block.attachedBlock,
                 );
               }
+
+              await this.conversationService.storeContextData(
+                convo,
+                nextBlock,
+                event,
+                false,
+              );
+
               return await this.triggerBlock(event, convo, nextBlock, fallback);
             } else {
               this.logger.warn(
