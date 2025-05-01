@@ -416,9 +416,9 @@ const ChatProvider: React.FC<{
 
     return () => {
       socketCtx.socket.io.off("reconnect", reSubscribe);
-      socketCtx.socket.io.on("close", endConnection);
-      socketCtx.socket.io.on("reconnect_error", endConnection);
-      socketCtx.socket.io.on("reconnect_failed", endConnection);
+      socketCtx.socket.io.off("close", endConnection);
+      socketCtx.socket.io.off("reconnect_error", endConnection);
+      socketCtx.socket.io.off("reconnect_failed", endConnection);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

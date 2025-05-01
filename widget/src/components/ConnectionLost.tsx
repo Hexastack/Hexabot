@@ -33,18 +33,7 @@ const ConnectionLost: React.FC = () => {
       style={{ backgroundColor: colors.messageList.bg }}
     >
       {loading ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            gap: "1rem",
-          }}
-        >
+        <div className="sc-chat--attempt-reconnect">
           <h3>{t("messages.attempting_reconnect")}</h3>
           <LoadingIcon color={colors.button.text} />
         </div>
