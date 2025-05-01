@@ -288,10 +288,8 @@ export class ChatService {
         }
       }
       event.setSender(subscriber);
-      // Already existing user profile
       // Exec lastvisit hook
       this.eventEmitter.emit('hook:user:lastvisit', subscriber);
-      this.broadcastSentMessages(event);
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
 
