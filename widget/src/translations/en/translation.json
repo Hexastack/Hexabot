@@ -22,6 +22,7 @@
       "file_error": "File not found",
       "audio_error": "Audio not found",
       "video_error": "Video not found"
-    }
+    },
+    "attempting_reconnect": "Attempting to reconnect..."
   }
 }
