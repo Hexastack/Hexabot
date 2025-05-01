@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -18,47 +18,31 @@ const LoadingIcon: FC<
     <svg
       width={size}
       height={size}
-      viewBox="0 0 50 50"
+      viewBox="0 0 200 200"
       xmlns="http://www.w3.org/2000/svg"
-      fill={color}
       {...rest}
     >
-      <circle cx="25" cy="25" r="20" stroke="none" fill="none">
-        <animate
-          attributeName="r"
-          begin="0s"
-          dur="1.5s"
-          values="20; 0"
-          keyTimes="0; 1"
-          repeatCount="indefinite"
-        />
-        <animate
-          attributeName="stroke-opacity"
-          begin="0s"
-          dur="1.5s"
-          values="1; 0"
-          keyTimes="0; 1"
-          repeatCount="indefinite"
-        />
-      </circle>
-      <circle cx="25" cy="25" r="20" stroke="none" fill="none">
-        <animate
-          attributeName="r"
-          begin="0.75s"
-          dur="1.5s"
-          values="20; 0"
-          keyTimes="0; 1"
-          repeatCount="indefinite"
-        />
-        <animate
-          attributeName="stroke-opacity"
-          begin="0.75s"
-          dur="1.5s"
-          values="1; 0"
-          keyTimes="0; 1"
-          repeatCount="indefinite"
-        />
-      </circle>
+      {[40, 100, 160].map((cx, index) => (
+        <circle
+          key={cx}
+          fill={color}
+          stroke={color}
+          strokeWidth="15"
+          r="15"
+          cx={cx}
+          cy="100"
+        >
+          <animate
+            attributeName="opacity"
+            calcMode="spline"
+            dur="2s"
+            values="1;0;1"
+            keySplines=".5 0 .5 1;.5 0 .5 1"
+            repeatCount="indefinite"
+            begin={`-${(0.4 - index * 0.2).toFixed(1)}s`}
+          />
+        </circle>
+      ))}
     </svg>
   );
 };

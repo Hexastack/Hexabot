@@ -48,8 +48,8 @@ export const config: Config = {
       return;
     },
     serveClient: false,
-    pingTimeout: 60000,
-    pingInterval: 25000,
+    pingTimeout: 3000,
+    pingInterval: 10_000,
     maxHttpBufferSize: 10e7,
     allowUpgrades: true,
     cookie: false,
