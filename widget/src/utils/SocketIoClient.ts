@@ -29,19 +29,19 @@ export class SocketIoClient {
    */
   static defaultConfig: SocketIoClientConfig = {
     // Socket options
-    ackTimeout: 1000,
     // auth: undefined,
-    retries: 3,
 
     // Manager options
     autoConnect: true,
     // parser: undefined,
-    // randomizationFactor:0.5,
+    randomizationFactor: 0.5,
     reconnection: true,
     reconnectionAttempts: 100,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     timeout: 20000,
+    retries: 0,
+    ackTimeout: 15_000,
 
     // Low Level Options
     addTrailingSlash: true, // eg: https://domain.path/ => https://domain.path/
@@ -154,6 +154,7 @@ export class SocketIoClient {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;
     }
+
     throw new Error(
       `Request failed with status code ${response.statusCode}: ${JSON.stringify(
         response.body,

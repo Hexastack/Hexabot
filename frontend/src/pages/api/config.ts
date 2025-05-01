@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,6 +7,8 @@
  */
 
 import type { NextApiRequest, NextApiResponse } from "next";
+
+import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
 
 type ResponseData = {
   apiUrl: string;
@@ -18,11 +20,15 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>,
 ) {
-  res.status(200).json({
+  const MB = 1024 * 1024;
+  const config: ResponseData = {
     apiUrl: process.env.NEXT_PUBLIC_API_ORIGIN || "http://localhost:4000",
-    ssoEnabled: process.env.NEXT_PUBLIC_SSO_ENABLED === "true" || false,
-    maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
-      ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-      : 20 * 1024 * 1024, // 20 MB in bytes
-  });
+    ssoEnabled: parseEnvBoolean(process.env.NEXT_PUBLIC_SSO_ENABLED, false),
+    maxUploadSize: parseEnvNumber(
+      process.env.UPLOAD_MAX_SIZE_IN_BYTES,
+      20 * MB,
+    ),
+  };
+
+  res.status(200).json(config);
 }
