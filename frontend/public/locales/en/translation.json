@@ -120,7 +120,8 @@
     "image_error": "Image not found",
     "file_error": "File not found",
     "audio_error": "Audio not found",
-    "video_error": "Video not found"
+    "video_error": "Video not found",
+    "missing_fields_error": "Please make sure that all required fields are filled"
   },
   "menu": {
     "terms": "Terms of Use",

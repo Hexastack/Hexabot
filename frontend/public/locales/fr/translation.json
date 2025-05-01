@@ -120,7 +120,8 @@
     "image_error": "Image introuvable",
     "file_error": "Fichier introuvable",
     "audio_error": "Audio introuvable",
-    "video_error": "Vidéo introuvable"
+    "video_error": "Vidéo introuvable",
+    "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

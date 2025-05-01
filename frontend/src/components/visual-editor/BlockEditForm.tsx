@@ -100,6 +100,9 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
       updateBlock({ id: block.id, params });
     }
   };
+  const onSubmitError = () => {
+    toast.error(t("message.missing_fields_error"));
+  };
 
   useEffect(() => {
     if (block) {
@@ -110,7 +113,10 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   }, [block, reset]);
 
   return (
-    <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
+    <Wrapper
+      onSubmit={handleSubmit(onSubmitForm, onSubmitError)}
+      {...WrapperProps}
+    >
       <BlockFormProvider methods={methods} block={block || undefined}>
         <ContentContainer>
           <ContentItem display="flex" gap={5}>
