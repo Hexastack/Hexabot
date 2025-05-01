@@ -6,9 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export type Config = {
-  apiUrl: string;
-  channel: string;
-  language: string;
-  maxUploadSize: number;
+export const parseEnvNumber = (
+  value: string | undefined,
+  fallback: number,
+): number => {
+  const parsed = Number(value);
+
+  return isNaN(parsed) ? fallback : parsed;
+};
+// Utility to parse environment variable as boolean
+export const parseEnvBoolean = (
+  value: string | undefined,
+  fallback: boolean,
+): boolean => {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  return value.toLowerCase() === "true";
 };

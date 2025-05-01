@@ -293,17 +293,23 @@ const ChatProvider: React.FC<{
         : OutgoingMessageState.sending,
     );
     setMessage("");
-    const sentMessage = await socketCtx.socket.post<TMessage>(
-      `/webhook/${config.channel}/`,
-      {
-        data: {
-          ...data,
-          author: data.author ?? participants[1].id,
+    try {
+      // when the request timeout it throws exception & break frontend
+      const sentMessage = await socketCtx.socket.post<TMessage>(
+        `/webhook/${config.channel}/`,
+        {
+          data: {
+            ...data,
+            author: data.author ?? participants[1].id,
+          },
         },
-      },
-    );
+      );
 
-    handleNewIOMessage(sentMessage.body);
+      handleNewIOMessage(sentMessage.body);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("Unable to subscribe user", error);
+    }
   };
   const handleSubscription = useCallback(
     async (firstName?: string, lastName?: string) => {
