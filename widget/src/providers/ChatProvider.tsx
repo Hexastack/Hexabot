@@ -405,11 +405,20 @@ const ChatProvider: React.FC<{
         handleSubscription(profile.first_name, profile.last_name);
       }
     };
+    const endConnection = () => {
+      setConnectionState(0);
+    };
 
     socketCtx.socket.io.on("reconnect", reSubscribe);
+    socketCtx.socket.io.on("close", endConnection);
+    socketCtx.socket.io.on("reconnect_error", endConnection);
+    socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
       socketCtx.socket.io.off("reconnect", reSubscribe);
+      socketCtx.socket.io.on("close", endConnection);
+      socketCtx.socket.io.on("reconnect_error", endConnection);
+      socketCtx.socket.io.on("reconnect_failed", endConnection);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
