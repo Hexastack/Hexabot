@@ -788,6 +788,7 @@ export default abstract class BaseWebChannelHandler<
 
       const type = event.getEventType();
       if (type) {
+        this.broadcast(profile, type, event._adapter.raw);
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);
