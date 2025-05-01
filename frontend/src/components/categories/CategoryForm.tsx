@@ -34,10 +34,10 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
       rest.onError?.();
       toast.error(error || t("message.internal_server_error"));
     },
-    onSuccess: (response: ICategory) => {
+    onSuccess: (category: ICategory) => {
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
-      router.push(`/${RouterType.VISUAL_EDITOR}/flows/${response.id}`);
+      router.push(`/${RouterType.VISUAL_EDITOR}/flows/${category.id}`);
     },
   };
   const { mutate: createCategory } = useCreate(EntityType.CATEGORY, options);
