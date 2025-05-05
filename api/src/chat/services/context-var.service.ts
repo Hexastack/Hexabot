@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -30,11 +30,11 @@ export class ContextVarService extends BaseService<
    * Retrieves a mapping of context variable names to their corresponding `ContextVar` objects for a given block.
    *
    * @param {Block | BlockFull} block - The block containing the capture variables to retrieve context variables for.
-   * @returns {Promise<Record<string, ContextVar>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects.
+   * @returns {Promise<Record<string, ContextVar | undefined>>} A promise that resolves to a record mapping context variable names to `ContextVar` objects or undefined if not found.
    */
   async getContextVarsByBlock(
     block: Block | BlockFull,
-  ): Promise<Record<string, ContextVar>> {
+  ): Promise<Record<string, ContextVar | undefined>> {
     const vars = await this.find({
       name: { $in: block.capture_vars.map(({ context_var }) => context_var) },
     });
