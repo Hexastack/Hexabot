@@ -49,19 +49,6 @@ export class ChatService {
   ) {}
 
   /**
-   * Synchronize sent messages cross opened websocket connections of the same account
-   *
-   * @param event - The received event
-   */
-  private broadcastSentMessages(event: EventWrapper<any, any>) {
-    this.websocketGateway.broadcast(
-      event.getSender(),
-      event.getEventType(),
-      event._adapter.raw,
-    );
-  }
-
-  /**
    * Ends a given conversation (sets active to false)
    *
    * @param convo - The conversation to end
