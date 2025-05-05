@@ -11,11 +11,13 @@ import {
   IsArray,
   IsBoolean,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Matches,
+  Min,
 } from 'class-validator';
 
 import { DtoConfig } from '@/utils/types/dto.types';
@@ -52,9 +54,12 @@ export class NlpEntityCreateDto {
   @ApiPropertyOptional({
     description: 'Nlp entity associated weight for next block triggering',
     type: Number,
+    minimum: 1,
   })
   @IsNumber()
   @IsOptional()
+  @Min(1, { message: 'Weight must be a positive integer' })
+  @IsInt({ message: 'Weight must be an integer' })
   weight?: number;
 }
 

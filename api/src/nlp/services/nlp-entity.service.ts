@@ -130,7 +130,7 @@ export class NlpEntityService extends BaseService<
    * Clears the NLP map cache
    */
   async clearCache() {
-    this.cacheManager.del(NLP_MAP_CACHE_KEY);
+    await this.cacheManager.del(NLP_MAP_CACHE_KEY);
   }
 
   /**
@@ -166,9 +166,6 @@ export class NlpEntityService extends BaseService<
   async getNlpMap(entityNames: string[]): Promise<NlpCacheMap> {
     const lookups = await this.findAndPopulate({ name: { $in: entityNames } });
     const map: NlpCacheMap = new Map();
-    if (!lookups.length) {
-      return map; // Return empty map if no entities found
-    }
     for (const lookup of lookups) {
       map.set(lookup.name, {
         id: lookup.id,

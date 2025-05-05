@@ -74,7 +74,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockRepository } from '../repositories/block.repository';
-import { Block, BlockModel } from '../schemas/block.schema';
+import { Block, BlockFull, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
@@ -415,7 +415,7 @@ describe('BlockService', () => {
       jest
         .spyOn(nlpEntityService, 'getNlpMap')
         .mockResolvedValue(mockNlpCacheMap);
-      const blocks: Block[] = []; // Empty block array
+      const blocks: BlockFull[] = []; // Empty block array
       const matchedPatterns: NlpPattern[][] = [];
       const nlp = mockNlpEntitiesSetOne;
 

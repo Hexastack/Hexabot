@@ -26,7 +26,10 @@ export enum NlpSampleState {
   inbox = 'inbox',
 }
 
-export type NlpCacheMap = Map<
-  string,
-  { id: string; weight: number; values: string[] }
->;
+export type NlpCacheMap = Map<string, NlpCacheMapValues>;
+
+export type NlpCacheMapValues = {
+  id: string;
+  weight: number;
+  values: string[];
+};

@@ -13,7 +13,7 @@ It enables more intelligent and context-aware block selection in conversational 
 ### Standard Matching
 
 A user input contains entities that directly match a block’s patterns.
-```bash
+```ts
 Example: Input: intent = enquiry & subject = claim
 Block A: Patterns: intent: enquiry & subject: claim
 Block A will be selected.
@@ -24,7 +24,7 @@ Block A will be selected.
 A block may match only some patterns but have high-confidence input on those matched ones, making it a better candidate than others with full matches but low-confidence entities.
 **Note: Confidence is multiplied by a pre-defined weight for each entity type.**
 
-```bash
+```ts
 Example:
 Input: intent = issue (confidence: 0.92) & subject = claim (confidence: 0.65)
 Block A: Pattern: intent: issue
@@ -34,7 +34,7 @@ Block B: Pattern: subject: claim
 
 ### Multiple Blocks with Similar Patterns
 
-```bash
+```ts
 Input: intent = issue & subject = insurance
 Block A: intent = enquiry & subject = insurance
 Block B: subject = insurance
@@ -45,7 +45,7 @@ Block B: subject = insurance
 
 If a block contains patterns that require entities not present in the user input, the block is excluded from scoring altogether. No penalties are applied — the block simply isn't considered a valid candidate.
 
-```bash
+```ts
 Input: intent = issue & subject = insurance
 Block A: intent = enquiry & subject = insurance & location = office
 Block B: subject = insurance & time = morning
@@ -56,7 +56,7 @@ Block B: subject = insurance & time = morning
 
 When multiple blocks receive similar scores, penalty factors can help break the tie — especially in cases where patterns are less specific (e.g., using `Any` as a value).
 
-```bash
+```ts
 Input: intent = enquiry & subject = insurance
 
 Block A: intent = enquiry & subject = Any
@@ -80,7 +80,7 @@ For each entity in the block's pattern:
 - If the entity `matches` an entity in the user input:
     - the score is increased by: `confidence × weight`
         - `Confidence` is a value between 0 and 1, returned by the NLU engine.
-        - `Weight` is a configured importance factor for that specific entity type.
+        - `Weight` (default value is `1`) is a configured importance factor for that specific entity type.
 - If the match is a wildcard (i.e., the block accepts any value):
     - A **penalty factor** is applied to slightly reduce its contribution:
     ``confidence × weight × penaltyFactor``. This encourages more specific matches when available.
@@ -89,7 +89,7 @@ For each entity in the block's pattern:
 
 For each matched entity: 
 
-```bash
+```ts
 score += confidence × weight × [optional penalty factor if wildcard]
 ```
 
