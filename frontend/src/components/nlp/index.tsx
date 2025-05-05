@@ -62,7 +62,7 @@ export const Nlp = ({
   };
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutate: createSample } = useCreate<
+  const { mutate: createSample, isLoading } = useCreate<
     EntityType.NLP_SAMPLE,
     INlpDatasetSampleAttributes,
     INlpSample,
@@ -91,7 +91,10 @@ export const Nlp = ({
         <Grid container flexDirection="row">
           <Grid item xs={7}>
             <Paper>
-              <NlpDatasetSample submitForm={onSubmitForm} />
+              <NlpDatasetSample
+                submitForm={onSubmitForm}
+                isMutationLoading={isLoading}
+              />
             </Paper>
           </Grid>
           <Grid item xs={5} pl={2}>
