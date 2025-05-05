@@ -219,9 +219,13 @@ export class BlockService extends BaseService<
 
         // Proceed with matching the best NLP block
         if (matchesWithPatterns.length > 0) {
+          const matchedBlocks = matchesWithPatterns.map((m) => m.block);
+          const matchedPatterns = matchesWithPatterns.map(
+            (p) => p.matchedPattern,
+          );
           block = await this.matchBestNLP(
-            matchesWithPatterns.map((m) => m.block),
-            matchesWithPatterns.map((p) => p.matchedPattern),
+            matchedBlocks,
+            matchedPatterns,
             nlp,
             nluPenaltyFactor,
           );
@@ -447,8 +451,8 @@ export class BlockService extends BaseService<
     nlpCacheMap: NlpCacheMap,
     nlpPenaltyFactor: number,
   ): number {
-    // Compute individual pattern scores using the cache
     if (!patterns.length) return 0;
+    // Compute individual pattern scores using the cache
     const patternScores: number[] = patterns.map((pattern) => {
       const entityData = nlpCacheMap.get(pattern.entity);
       if (!entityData) return 0;
