@@ -21,6 +21,7 @@ import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
@@ -210,12 +211,14 @@ export class BlockService extends BaseService<
             return acc;
           }, []);
 
-        // @TODO Make nluPenaltyFactor configurable in UI settings
-        const nluPenaltyFactor = 0.95;
         // Log the matched patterns
         this.logger.debug(
           `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
         );
+
+        // Retrieve Nlu Penalty Factor from global settings
+        const nluPenaltyFactor: number =
+          await this.getDefaultNluPenaltyFactor();
 
         // Proceed with matching the best NLP block
         if (matchesWithPatterns.length > 0) {
@@ -472,6 +475,35 @@ export class BlockService extends BaseService<
 
     // Sum the scores
     return patternScores.reduce((sum, score) => sum + score, 0);
+  }
+
+  /**
+   * Retrieves the default NLU penalty factor from chatbot settings.
+   *
+   * This factor is used in NLU-based block scoring to reduce the influence
+   * of generic or broad entity matches (e.g. patterns using "Any").
+   * It helps prioritize blocks with more specific and confident entity matches.
+   *
+   * @returns {Promise<number>} The configured default NLU penalty factor.
+   */
+  async getDefaultNluPenaltyFactor(): Promise<number> {
+    const settings: Settings = await this.settingService.getSettings();
+    const nluPenaltyFactor =
+      settings.chatbot_settings.default_nlu_penalty_factor;
+
+    if (typeof nluPenaltyFactor !== 'number') {
+      this.logger.error(
+        'NLU Penalty Factor setting is missing or invalid. Using fallback...',
+      );
+      return FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
+    }
+    if (nluPenaltyFactor < 0 || nluPenaltyFactor > 1) {
+      this.logger.error(
+        'NLU Penalty Factor must be between 0 and 1. Using fallback...',
+      );
+      return FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
+    }
+    return nluPenaltyFactor;
   }
 
   /**
