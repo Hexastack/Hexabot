@@ -16,6 +16,7 @@ import { Document, Query } from 'mongoose';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
+import { NLU } from '@/helper/types';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
@@ -303,5 +304,47 @@ export class NlpSampleService extends BaseService<
         this.logger.warn('Unable to add message as a new inbox sample!', err);
       }
     }
+  }
+
+  async upgradeSampleWithEntities(
+    entities: NLU.ParseEntity[],
+    createdMessage: Message,
+  ) {
+    if (!('text' in createdMessage.message)) {
+      this.logger.warn('Received message without text attribute');
+      return;
+    }
+    const inferredLanguage = entities.find((e) => e.entity === 'language');
+    const entitiesWithoutLanguage = entities.filter(
+      (e) => e.entity !== 'language',
+    );
+
+    const foundSample = await this.repository.findOne({
+      text: createdMessage.message.text,
+      type: 'inbox',
+    });
+    if (!foundSample) {
+      return;
+    }
+
+    await this.nlpSampleEntityService.storeSampleEntities(
+      foundSample,
+      entitiesWithoutLanguage,
+    );
+
+    const language = await this.languageService.findOne(
+      { code: inferredLanguage?.value },
+      undefined,
+      { _id: 1 },
+    );
+
+    if (!language) {
+      this.logger.warn('Unable to find inferred language', inferredLanguage);
+    }
+
+    await this.repository.updateOne(foundSample.id, {
+      type: 'train',
+      ...(language && { language: language.id }),
+    });
   }
 }

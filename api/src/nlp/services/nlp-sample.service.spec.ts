@@ -83,7 +83,6 @@ describe('NlpSampleService', () => {
         NlpEntityService,
         NlpValueService,
         LanguageService,
-
         {
           provide: CACHE_MANAGER,
           useValue: {

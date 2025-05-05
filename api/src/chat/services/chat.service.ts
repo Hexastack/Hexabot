@@ -29,6 +29,7 @@ import { Conversation } from '../schemas/conversation.schema';
 import { SubscriberDocument } from '../schemas/subscriber.schema';
 import { OutgoingMessage } from '../schemas/types/message';
 
+import { NlpSampleService } from './../../nlp/services/nlp-sample.service';
 import { BotService } from './bot.service';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
@@ -46,6 +47,7 @@ export class ChatService {
     private readonly websocketGateway: WebsocketGateway,
     private readonly helperService: HelperService,
     private readonly attachmentService: AttachmentService,
+    private nlpSampleService: NlpSampleService,
   ) {}
 
   /**
@@ -142,6 +144,15 @@ export class ChatService {
     this.logger.debug('Logging message', received);
     try {
       const msg = await this.messageService.create(received);
+      const nlpEntites = event.getNLP();
+
+      if (nlpEntites?.entities) {
+        await this.nlpSampleService.upgradeSampleWithEntities(
+          nlpEntites.entities,
+          msg,
+        );
+      }
+
       const populatedMsg = await this.messageService.findOneAndPopulate(msg.id);
 
       if (!populatedMsg) {
@@ -340,9 +351,6 @@ export class ChatService {
         await event.preprocess();
       }
 
-      // Trigger message received event
-      this.eventEmitter.emit('hook:chatbot:received', event);
-
       if (subscriber?.assignedTo) {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
         return;
@@ -357,6 +365,9 @@ export class ChatService {
           this.logger.error('Unable to perform NLP parse', err);
         }
       }
+
+      // Trigger message received event
+      this.eventEmitter.emit('hook:chatbot:received', event);
 
       this.botService.handleMessageEvent(event);
     } catch (err) {
