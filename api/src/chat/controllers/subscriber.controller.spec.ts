@@ -6,11 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER, CacheModule } from '@nestjs/cache-manager';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import { LoggerModule } from '@/logger/logger.module';
+import { SettingRepository } from '@/setting/repositories/setting.repository';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
+import { SettingModule } from '@/setting/setting.module';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -57,6 +65,29 @@ describe('SubscriberController', () => {
     const { getMocks } = await buildTestingMocks({
       controllers: [SubscriberController],
       imports: [
+        CacheModule.register({
+          isGlobal: true,
+          ttl: 60 * 1000,
+          max: 100,
+        }),
+        EventEmitterModule.forRoot({
+          // set this to `true` to use wildcards
+          wildcard: true,
+          // the delimiter used to segment namespaces
+          delimiter: ':',
+          // set this to `true` if you want to emit the newListener event
+          newListener: false,
+          // set this to `true` if you want to emit the removeListener event
+          removeListener: false,
+          // the maximum amount of listeners that can be assigned to an event
+          maxListeners: 10,
+          // show event name in memory leak message when more than maximum amount of listeners is assigned
+          verboseMemoryLeak: false,
+          // disable throwing uncaughtException if an error event is emitted and it has no listeners
+          ignoreErrors: false,
+        }),
+        LoggerModule,
+        SettingModule,
         rootMongooseTestModule(installSubscriberFixtures),
         MongooseModule.forFeature([
           SubscriberModel,
@@ -66,6 +97,7 @@ describe('SubscriberController', () => {
           InvitationModel,
           PermissionModel,
           AttachmentModel,
+          SettingModel,
         ]),
       ],
       providers: [
@@ -82,6 +114,17 @@ describe('SubscriberController', () => {
         InvitationRepository,
         AttachmentService,
         AttachmentRepository,
+        SettingService,
+        SettingSeeder,
+        SettingRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            get: jest.fn(),
+            set: jest.fn(),
+          },
+        },
       ],
     });
     [subscriberService, labelService, userService, subscriberController] =

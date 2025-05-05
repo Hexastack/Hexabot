@@ -52,6 +52,8 @@ import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
+import { SubscriberService } from './subscriber.service';
+
 @Injectable()
 export class BlockService extends BaseService<
   Block,
@@ -68,6 +70,7 @@ export class BlockService extends BaseService<
     private readonly pluginService: PluginService,
     protected readonly i18n: I18nService,
     protected readonly languageService: LanguageService,
+    private subscriberService: SubscriberService,
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(repository);
@@ -78,19 +81,33 @@ export class BlockService extends BaseService<
 
   @SocketGet('/block/subscribe/')
   @SocketPost('/block/subscribe/')
-  subscribe(@SocketReq() req: SocketRequest, @SocketRes() res: SocketResponse) {
+  async subscribe(
+    @SocketReq() req: SocketRequest,
+    @SocketRes() res: SocketResponse,
+  ) {
     try {
-      if (req.session.web?.profile?.id) {
-        const room = `blocks:${req.session.web.profile.id}`;
-        this.gateway.io.socketsJoin(room);
-        this.logger.log('Subscribed to socket room', room);
-        return res.status(200).json({
-          success: true,
-        });
-      } else {
-        this.logger.error('Unable to subscribe to highlight blocks room');
-        throw new Error('Unable to join highlight blocks room');
+      const subscriberForeignId = req.session.passport?.user?.id;
+      if (!subscriberForeignId) {
+        this.logger.warn('Missing subscriber foreign ID in session');
+        throw new Error('Invalid session or user not authenticated');
       }
+
+      const subscriber = await this.subscriberService.findOne({
+        foreign_id: subscriberForeignId,
+      });
+
+      if (!subscriber) {
+        this.logger.warn(
+          `Subscriber not found for foreign ID ${subscriberForeignId}`,
+        );
+        throw new Error('Subscriber not found');
+      }
+      const room = `blocks:${subscriber.id}`;
+      this.gateway.io.socketsJoin(room);
+      this.logger.log('Subscribed to socket room', room);
+      return res.status(200).json({
+        success: true,
+      });
     } catch (e) {
       this.logger.error('Websocket subscription', e);
       throw new InternalServerErrorException(e);

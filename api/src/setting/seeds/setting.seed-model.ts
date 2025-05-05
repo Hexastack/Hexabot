@@ -86,6 +86,13 @@ export const DEFAULT_SETTINGS = [
     translatable: true,
   },
   {
+    group: 'chatbot_settings',
+    label: 'enable_debug',
+    value: false,
+    type: SettingType.checkbox,
+    weight: 7,
+  },
+  {
     group: 'contact',
     label: 'contact_email_recipient',
     value: 'admin@example.com',

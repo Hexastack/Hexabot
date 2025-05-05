@@ -39,6 +39,7 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 
+import { SettingService } from './../setting/services/setting.service';
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';
@@ -54,6 +55,7 @@ export class WebsocketGateway
     private readonly logger: LoggerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
+    private settingService: SettingService,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -413,15 +415,24 @@ export class WebsocketGateway
   async handleHighlightBlock(
     payload: IHookOperationMap['highlight']['operations']['block'],
   ) {
-    this.logger.log('highlighting block', payload);
+    const isHighlightEnabled = await this.settingService.isHighlightEnabled();
+    if (!isHighlightEnabled) {
+      return;
+    }
     this.io.to(`blocks:${payload.userId}`).emit('highlight:block', payload);
+    this.logger.log('highlighting block', payload);
   }
 
   @OnEvent('hook:highlight:error')
   async highlightBlockErrored(
     payload: IHookOperationMap['highlight']['operations']['error'],
   ) {
-    this.logger.warn('hook:highlight:error', payload);
+    const isHighlightEnabled = await this.settingService.isHighlightEnabled();
+    if (!isHighlightEnabled) {
+      return;
+    }
+
     this.io.to(`blocks:${payload.userId}`).emit('highlight:error', payload);
+    this.logger.warn('hook:highlight:error', payload);
   }
 }
