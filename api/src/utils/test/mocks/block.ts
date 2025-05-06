@@ -291,22 +291,22 @@ export const mockNlpBlock: BlockFull = {
     'Hello',
     '/we*lcome/',
     { label: 'Mock Nlp', value: 'MOCK_NLP' },
+
+    mockNlpPatternsSetOne,
     [
-      ...mockNlpPatternsSetOne,
-      [
-        {
-          entity: 'intent',
-          match: 'value',
-          value: 'greeting',
-        },
-        {
-          entity: 'firstname',
-          match: 'value',
-          value: 'doe',
-        },
-      ],
+      {
+        entity: 'intent',
+        match: 'value',
+        value: 'greeting',
+      },
+      {
+        entity: 'firstname',
+        match: 'value',
+        value: 'doe',
+      },
     ],
   ],
+
   trigger_labels: customerLabelsMock,
   message: ['Good to see you again '],
 } as unknown as BlockFull;
@@ -318,12 +318,49 @@ export const mockModifiedNlpBlock: BlockFull = {
     'Hello',
     '/we*lcome/',
     { label: 'Modified Mock Nlp', value: 'MODIFIED_MOCK_NLP' },
-    [...mockNlpPatternsSetThree],
+    mockNlpPatternsSetThree,
   ],
   trigger_labels: customerLabelsMock,
   message: ['Hello there'],
 } as unknown as BlockFull;
 
+export const mockModifiedNlpBlockOne: BlockFull = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp One',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp One', value: 'MODIFIED_MOCK_NLP_ONE' },
+    mockNlpPatternsSetTwo,
+    [
+      {
+        entity: 'firstname',
+        match: 'entity',
+      },
+    ],
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Hello Sir'],
+} as unknown as BlockFull;
+
+export const mockModifiedNlpBlockTwo: BlockFull = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp Two',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp Two', value: 'MODIFIED_MOCK_NLP_TWO' },
+    [
+      {
+        entity: 'firstname',
+        match: 'entity',
+      },
+    ],
+    mockNlpPatternsSetThree,
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Hello Madam'],
+} as unknown as BlockFull;
 const patternsProduct: Pattern[] = [
   'produit',
   [

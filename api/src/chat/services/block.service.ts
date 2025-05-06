@@ -16,7 +16,7 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { NlpCacheMap, NlpCacheMapValues } from '@/nlp/schemas/types';
+import { NlpCacheMapValues } from '@/nlp/schemas/types';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
@@ -37,12 +37,7 @@ import {
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
-import {
-  isNlpPattern,
-  NlpPattern,
-  NlpPatternMatchResult,
-  PayloadPattern,
-} from '../schemas/types/pattern';
+import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
@@ -200,36 +195,7 @@ export class BlockService extends BaseService<
         // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
         // all while iterating through the list only once.
 
-        const matchesWithPatterns: NlpPatternMatchResult[] =
-          filteredBlocks.reduce<NlpPatternMatchResult[]>((acc, b) => {
-            const matchedPattern = this.matchNLP(nlp, b);
-
-            if (matchedPattern && matchedPattern.length > 0) {
-              acc.push({ block: b, matchedPattern });
-            }
-            return acc;
-          }, []);
-
-        // @TODO Make nluPenaltyFactor configurable in UI settings
-        const nluPenaltyFactor = 0.95;
-        // Log the matched patterns
-        this.logger.debug(
-          `Matched patterns: ${JSON.stringify(matchesWithPatterns.map((p) => p.matchedPattern))}`,
-        );
-
-        // Proceed with matching the best NLP block
-        if (matchesWithPatterns.length > 0) {
-          const matchedBlocks = matchesWithPatterns.map((m) => m.block);
-          const matchedPatterns = matchesWithPatterns.map(
-            (p) => p.matchedPattern,
-          );
-          block = await this.matchBestNLP(
-            matchedBlocks,
-            matchedPatterns,
-            nlp,
-            nluPenaltyFactor,
-          );
-        }
+        block = await this.matchBestNLP(filteredBlocks, nlp);
       }
     }
 
@@ -342,7 +308,7 @@ export class BlockService extends BaseService<
   matchNLP(
     nlp: NLU.ParseEntities,
     block: Block | BlockFull,
-  ): NlpPattern[] | undefined {
+  ): NlpPattern[][] | undefined {
     // No nlp entities to check against
     if (nlp.entities.length === 0) {
       return undefined;
@@ -355,8 +321,9 @@ export class BlockService extends BaseService<
     if (nlpPatterns.length === 0) {
       return undefined;
     }
+
     // Find NLP pattern match based on best guessed entities
-    return nlpPatterns.find((entities: NlpPattern[]) => {
+    return nlpPatterns.filter((entities: NlpPattern[]) => {
       return entities.every((ev: NlpPattern) => {
         if (ev.match === 'value') {
           return nlp.entities.find((e) => {
@@ -375,59 +342,44 @@ export class BlockService extends BaseService<
   }
 
   /**
-   * Selects the best-matching block based on NLP pattern scoring.
+   * Matches the provided NLU parsed entities with patterns in a set of blocks and returns
+   * the block with the highest matching score.
    *
-   * This function evaluates each block by calculating a score derived from its matched NLP patterns,
-   * the parsed NLP entities, and a penalty factor. It compares the scores across all blocks and
-   * returns the one with the highest calculated score.
+   * For each block, it checks the patterns against the NLU parsed entities, calculates
+   * a score for each match, and selects the block with the highest score.
    *
-   * @param blocks - An array of candidate blocks to evaluate.
-   * @param matchedPatterns - A two-dimensional array of matched NLP patterns corresponding to each block.
-   * @param nlp - The parsed NLP entities used for scoring.
-   * @param nlpPenaltyFactor - A numeric penalty factor applied during scoring to influence block selection.
-   * @returns The block with the highest NLP score, or undefined if no valid block is found.
+   * @param {BlockFull[]} blocks - An array of BlockFull objects representing potential matches.
+   * @param {NLU.ParseEntities} nlp - The NLU parsed entities used for pattern matching.
+   *
+   * @returns {Promise<BlockFull | undefined>} - A promise that resolves to the BlockFull
+   * with the highest match score, or undefined if no matches are found.
    */
   async matchBestNLP(
     blocks: BlockFull[],
-    matchedPatterns: NlpPattern[][],
     nlp: NLU.ParseEntities,
-    nlpPenaltyFactor: number,
   ): Promise<BlockFull | undefined> {
-    if (!blocks || blocks.length === 0) return undefined;
-    if (blocks.length === 1) return blocks[0];
+    const scoredBlocks = await Promise.all(
+      blocks.map(async (block) => {
+        const matchedPatterns = this.matchNLP(nlp, block) || [];
 
-    let bestBlock: BlockFull | undefined;
-    let highestScore = 0;
-    const entityNames = this.extractNlpEntityNames(blocks);
-    const uniqueEntityNames = [...new Set(entityNames)];
-    const nlpCacheMap: NlpCacheMap =
-      await this.entityService.getNlpMap(uniqueEntityNames);
-    // Iterate through all blocks and calculate their NLP score
-    for (let i = 0; i < blocks.length; i++) {
-      const block = blocks[i];
-      const patterns = matchedPatterns[i];
-      // If compatible, calculate the NLP score for this block
-      const nlpScore = this.calculateBlockScore(
-        patterns,
-        nlp,
-        nlpCacheMap,
-        nlpPenaltyFactor,
-      );
-      if (nlpScore > highestScore) {
-        highestScore = nlpScore;
-        bestBlock = block;
-      }
-    }
+        const scores = await Promise.all(
+          matchedPatterns.map((pattern) =>
+            this.calculateBlockScore(pattern, nlp),
+          ),
+        );
 
-    if (bestBlock) {
-      this.logger.debug(`Best NLP score obtained: ${highestScore}`);
-      this.logger.debug(`Best block selected:`, {
-        id: bestBlock.id,
-        name: bestBlock.name,
-      });
-    }
+        const maxScore = scores.length > 0 ? Math.max(...scores) : 0;
 
-    return bestBlock;
+        return { block, score: maxScore };
+      }),
+    );
+
+    const best = scoredBlocks.reduce(
+      (acc, curr) => (curr.score > acc.score ? curr : acc),
+      { block: undefined, score: 0 },
+    );
+
+    return best.block;
   }
 
   /**
@@ -445,13 +397,15 @@ export class BlockService extends BaseService<
    * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
    * @returns A numeric score representing how well the block matches the given NLP context.
    */
-  calculateBlockScore(
+  async calculateBlockScore(
     patterns: NlpPattern[],
     nlp: NLU.ParseEntities,
-    nlpCacheMap: NlpCacheMap,
-    nlpPenaltyFactor: number,
-  ): number {
+  ): Promise<number> {
     if (!patterns.length) return 0;
+
+    const nlpCacheMap = await this.entityService.getNlpMap();
+    // @TODO Make nluPenaltyFactor configurable in UI settings
+    const nluPenaltyFactor = 0.95;
     // Compute individual pattern scores using the cache
     const patternScores: number[] = patterns.map((pattern) => {
       const entityData = nlpCacheMap.get(pattern.entity);
@@ -465,34 +419,12 @@ export class BlockService extends BaseService<
         matchedEntity,
         pattern,
         entityData,
-        nlpPenaltyFactor,
+        nluPenaltyFactor,
       );
     });
 
     // Sum the scores
     return patternScores.reduce((sum, score) => sum + score, 0);
-  }
-
-  /**
-   * Extracts the names of NLP entities from a given list of blocks.
-   * This method recursively goes through each block, pattern group, and pattern,
-   * filtering for valid NLP patterns and extracting the `entity` field.
-   * The resulting array contains the names of all the NLP entities found across all patterns.
-   *
-   * @param blocks - An array of `BlockFull` objects containing patterns.
-   * @returns An array of NLP entity names as strings.
-   */
-  private extractNlpEntityNames(blocks: BlockFull[]): string[] {
-    return blocks.flatMap((block) =>
-      block.patterns.flatMap((patternGroup) => {
-        if (Array.isArray(patternGroup)) {
-          return patternGroup.flatMap((pattern) =>
-            isNlpPattern(pattern) ? [pattern.entity] : [],
-          );
-        }
-        return []; // Skip non-array patternGroups
-      }),
-    );
   }
 
   /**

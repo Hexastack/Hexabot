@@ -239,7 +239,7 @@ describe('nlpEntityService', () => {
         id: '1',
         weight: 1,
       };
-      const firstMockLookup = {
+      const firstMockEntity = {
         name: 'intent',
         ...firstMockValues,
         values: [{ value: 'buy' }, { value: 'sell' }],
@@ -248,42 +248,31 @@ describe('nlpEntityService', () => {
         id: '2',
         weight: 5,
       };
-      const secondMockLook = {
+      const secondMockEntity = {
         name: 'subject',
         ...secondMockValues,
         values: [{ value: 'product' }],
       } as unknown as Partial<NlpEntityFull>;
-      const mockLookups = [firstMockLookup, secondMockLook];
-
-      const entityNames = ['intent', 'subject'];
+      const mockEntities = [firstMockEntity, secondMockEntity];
 
       // Mock findAndPopulate
       jest
-        .spyOn(nlpEntityService, 'findAndPopulate')
-        .mockResolvedValue(mockLookups as unknown as NlpEntityFull[]);
+        .spyOn(nlpEntityService, 'findAllAndPopulate')
+        .mockResolvedValue(mockEntities as unknown as NlpEntityFull[]);
 
       // Act
-      const result = await nlpEntityService.getNlpMap(entityNames);
+      const result = await nlpEntityService.getNlpMap();
 
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(2);
       expect(result.get('intent')).toEqual({
-        ...firstMockValues,
-        values: ['buy', 'sell'],
+        name: 'intent',
+        ...firstMockEntity,
       });
       expect(result.get('subject')).toEqual({
-        ...secondMockValues,
-        values: ['product'],
+        name: 'subject',
+        ...secondMockEntity,
       });
-    });
-
-    it('should return an empty map if no lookups are found', async () => {
-      jest.spyOn(nlpEntityService, 'findAndPopulate').mockResolvedValue([]);
-
-      const result = await nlpEntityService.getNlpMap(['nonexistent']);
-
-      expect(result).toBeInstanceOf(Map);
-      expect(result.size).toBe(0);
     });
   });
 });

@@ -163,17 +163,11 @@ export class NlpEntityService extends BaseService<
    * @returns A Promise that resolves to a map of entity name to its corresponding lookup metadata.
    */
   @Cacheable(NLP_MAP_CACHE_KEY)
-  async getNlpMap(entityNames: string[]): Promise<NlpCacheMap> {
-    const lookups = await this.findAndPopulate({ name: { $in: entityNames } });
-    const map: NlpCacheMap = new Map();
-    for (const lookup of lookups) {
-      map.set(lookup.name, {
-        id: lookup.id,
-        weight: lookup.weight,
-        values: lookup.values?.map((v) => v.value) ?? [],
-      });
-    }
-
-    return map;
+  async getNlpMap(): Promise<NlpCacheMap> {
+    const entities = await this.findAllAndPopulate();
+    return entities.reduce((acc, curr) => {
+      acc.set(curr.name, curr);
+      return acc;
+    }, new Map());
   }
 }
