@@ -76,6 +76,25 @@ describe('flatten', () => {
     });
   });
 
+  it('should handle arrays as values without recursing into them', () => {
+    const object = {
+      items: [1, 2, 3],
+      nested: {
+        moreItems: [4, 5, 6],
+        deepNested: {
+          evenMoreItems: [7, 8, 9],
+        },
+      },
+    };
+    const result = flatten(object);
+
+    expect(result).toStrictEqual({
+      items: [1, 2, 3],
+      'nested.moreItems': [4, 5, 6],
+      'nested.deepNested.evenMoreItems': [7, 8, 9],
+    });
+  });
+
   it('should support an object without nested object', () => {
     const object = {
       name: 'name',
