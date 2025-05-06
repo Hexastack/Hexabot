@@ -21,7 +21,6 @@ import {
   Model,
   ProjectionType,
   Query,
-  QueryOptions,
   SortOrder,
   UpdateQuery,
   UpdateWithAggregationPipeline,
@@ -29,7 +28,11 @@ import {
 } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  TFilterQuery,
+  TFlattenOption,
+  TQueryOptions,
+} from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
@@ -94,6 +97,24 @@ export abstract class BaseRepository<
     protected readonly clsPopulate?: new () => TFull,
   ) {
     this.registerLifeCycleHooks();
+  }
+
+  private flatten(obj: object, prefix: string = '', result = {}) {
+    for (const [key, value] of Object.entries(obj)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        this.flatten(value, path, result);
+      } else {
+        result[path] = value;
+      }
+    }
+
+    return result;
   }
 
   canPopulate(populate: string[]): boolean {
@@ -495,18 +516,20 @@ export abstract class BaseRepository<
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
     dto: UpdateQuery<DtoInfer<DtoAction.Update, Dto, D>>,
-    options: QueryOptions<D> | null = {
-      new: true,
-    },
+    options?: TQueryOptions<D>,
   ): Promise<T> {
+    const { flatten, ...rest } = {
+      new: true,
+      ...options,
+    };
     const query = this.model.findOneAndUpdate<T>(
       {
         ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
       },
       {
-        $set: dto,
+        $set: flatten ? this.flatten(dto) : dto,
       },
-      options,
+      rest,
     );
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
@@ -541,9 +564,10 @@ export abstract class BaseRepository<
   async updateMany<D extends Partial<U>>(
     filter: TFilterQuery<T>,
     dto: UpdateQuery<D>,
+    options?: TFlattenOption,
   ): Promise<UpdateWriteOpResult> {
     return await this.model.updateMany<T>(filter, {
-      $set: dto,
+      $set: options?.flatten ? this.flatten(dto) : dto,
     });
   }
 

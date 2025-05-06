@@ -1,12 +1,17 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { HydratedDocument, QuerySelector, RootQuerySelector } from 'mongoose';
+import {
+  HydratedDocument,
+  QueryOptions,
+  QuerySelector,
+  RootQuerySelector,
+} from 'mongoose';
 
 export type TFilterKeysOfType<T, U> = {
   [K in keyof T]: T[K] extends U ? K : never;
@@ -137,3 +142,7 @@ export type TFilterQuery<T, S = TReplaceId<T>> = (
   WithoutGenericAny<RootQuerySelector<S>>;
 
 export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
+
+export type TFlattenOption = { flatten?: boolean };
+
+export type TQueryOptions<D> = (QueryOptions<D> & TFlattenOption) | null;
