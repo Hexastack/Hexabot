@@ -45,6 +45,23 @@ describe('flatten', () => {
     });
   });
 
+  it('should support object with flattened keys', () => {
+    const object = {
+      'user.name': {
+        id: 'Alice',
+      },
+      nested: {
+        'country.name': 'France',
+      },
+    };
+    const result = flatten(object);
+
+    expect(result).toStrictEqual({
+      'nested.country.name': 'France',
+      'user.name.id': 'Alice',
+    });
+  });
+
   it('should support custom prefix', () => {
     const object = {
       isoCode: 'tun',
