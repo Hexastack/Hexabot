@@ -158,12 +158,11 @@ export class NlpEntityService extends BaseService<
   /**
    * Retrieves NLP entity lookup information for the given list of entity names.
    *
-   * This method queries the database for lookups that match any of the provided
-   * entity names, transforms the result into a map structure where each key is
+   * This method queries the database for nlp entities,
+   * transforms the result into a map structure where each key is
    * the entity name and each value contains metadata (id, weight, and list of values),
    * and caches the result using the configured cache key.
    *
-   * @param entityNames - Array of entity names to retrieve lookup data for.
    * @returns A Promise that resolves to a map of entity name to its corresponding lookup metadata.
    */
   @Cacheable(NLP_MAP_CACHE_KEY)

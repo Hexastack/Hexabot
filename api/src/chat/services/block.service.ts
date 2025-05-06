@@ -305,7 +305,7 @@ export class BlockService extends BaseService<
       return undefined;
     }
 
-    const nlpPatterns = block.patterns?.filter((p) => {
+    const nlpPatterns = block.patterns.filter((p) => {
       return Array.isArray(p);
     }) as NlpPattern[][];
     // No nlp patterns found
@@ -313,7 +313,7 @@ export class BlockService extends BaseService<
       return undefined;
     }
 
-    // Find NLP pattern match based on best guessed entities
+    // Filter NLP patterns match based on best guessed entities
     return nlpPatterns.filter((entities: NlpPattern[]) => {
       return entities.every((ev: NlpPattern) => {
         if (ev.match === 'value') {
