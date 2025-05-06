@@ -13,7 +13,6 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -56,7 +55,6 @@ export class NlpEntityCreateDto {
     type: Number,
     minimum: 1,
   })
-  @IsNumber()
   @IsOptional()
   @Min(1, { message: 'Weight must be a positive integer' })
   @IsInt({ message: 'Weight must be an integer' })
