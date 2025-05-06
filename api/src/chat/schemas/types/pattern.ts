@@ -8,8 +8,6 @@
 
 import { z } from 'zod';
 
-import { BlockFull } from '../block.schema';
-
 import { PayloadType } from './button';
 
 export const payloadPatternSchema = z.object({
@@ -59,19 +57,3 @@ export const patternSchema = z.union([
 ]);
 
 export type Pattern = z.infer<typeof patternSchema>;
-
-export type NlpPatternMatchResult = {
-  block: BlockFull;
-  matchedPattern: NlpPattern[];
-};
-
-export function isNlpPattern(pattern: NlpPattern) {
-  return (
-    (typeof pattern === 'object' &&
-      pattern !== null &&
-      'entity' in pattern &&
-      'match' in pattern &&
-      pattern.match === 'entity') ||
-    pattern.match === 'value'
-  );
-}
