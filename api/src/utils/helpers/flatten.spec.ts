@@ -111,4 +111,8 @@ describe('flatten', () => {
 
     expect(result).toStrictEqual({});
   });
+
+  it('should throw an error if data is an array', () => {
+    expect(() => flatten([])).toThrow('Data should be an object!');
+  });
 });

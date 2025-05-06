@@ -18,6 +18,10 @@ export const flatten = (
   prefix: string | undefined = undefined,
   result: object = {},
 ): object => {
+  if (Array.isArray(data)) {
+    throw new Error('Data should be an object!');
+  }
+
   for (const [key, value] of Object.entries(data)) {
     const path = prefix ? `${prefix}.${key}` : key;
 
