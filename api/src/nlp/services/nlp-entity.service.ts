@@ -63,15 +63,11 @@ export class NlpEntityService extends BaseService<
    * @returns A promise that resolves to the updated entity.
    */
   async updateWeight(id: string, updatedWeight: number): Promise<NlpEntity> {
-    if (updatedWeight < 0) {
-      throw new Error('Weight must be a positive number');
+    if (updatedWeight <= 0) {
+      throw new Error('Weight must be a strictly positive number');
     }
 
-    return await this.repository.updateOne(
-      id,
-      { weight: updatedWeight },
-      { new: true },
-    );
+    return await this.repository.updateOne(id, { weight: updatedWeight });
   }
 
   /**
@@ -139,7 +135,11 @@ export class NlpEntityService extends BaseService<
    */
   @OnEvent('hook:nlpEntity:*')
   async handleNlpEntityUpdateEvent() {
-    this.clearCache();
+    try {
+      await this.clearCache();
+    } catch (error) {
+      this.logger.error('Failed to clear NLP entity cache', error);
+    }
   }
 
   /**
@@ -148,7 +148,11 @@ export class NlpEntityService extends BaseService<
    */
   @OnEvent('hook:nlpValue:*')
   async handleNlpValueUpdateEvent() {
-    this.clearCache();
+    try {
+      await this.clearCache();
+    } catch (error) {
+      this.logger.error('Failed to clear NLP value cache', error);
+    }
   }
 
   /**

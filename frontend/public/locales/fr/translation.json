@@ -122,7 +122,7 @@
     "audio_error": "Audio introuvable",
     "video_error": "Vidéo introuvable",
     "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement",
-    "weight_positive_number_error": "Le poids doit être un nombre positif",
+    "weight_positive_number_error": "Le poids doit être un nombre strictement positif",
     "weight_required_error": "Le poids est requis ou bien invalide"
   },
   "menu": {

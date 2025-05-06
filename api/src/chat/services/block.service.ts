@@ -395,22 +395,22 @@ export class BlockService extends BaseService<
     const nlpCacheMap = await this.entityService.getNlpMap();
     // @TODO Make nluPenaltyFactor configurable in UI settings
     const nluPenaltyFactor = 0.95;
-    // Compute individual pattern scores using the cache
-    const patternScores: number[] = patterns.map((pattern) => {
-      const entityData = nlpCacheMap.get(pattern.entity);
-      if (!entityData) return 0;
+    const patternScores: number[] = patterns
+      .filter(({ entity }) => nlpCacheMap.has(entity))
+      .map((pattern) => {
+        const entityData = nlpCacheMap.get(pattern.entity);
 
-      const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
-        (e) => this.matchesEntityData(e, pattern, entityData),
-      );
+        const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
+          (e) => this.matchesEntityData(e, pattern, entityData!),
+        );
 
-      return this.computePatternScore(
-        matchedEntity,
-        pattern,
-        entityData,
-        nluPenaltyFactor,
-      );
-    });
+        return this.computePatternScore(
+          matchedEntity,
+          pattern,
+          entityData!,
+          nluPenaltyFactor,
+        );
+      });
 
     // Sum the scores
     return patternScores.reduce((sum, score) => sum + score, 0);

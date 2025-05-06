@@ -123,7 +123,7 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a positive number" 
+    "weight_positive_number_error": "Weight must be a strictly positive number" 
   },
   "menu": {
     "terms": "Terms of Use",

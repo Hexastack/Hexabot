@@ -61,7 +61,14 @@ export class NlpEntityStub extends BaseSchema {
   /**
    * Entity's weight used to determine the next block to trigger in the conversational flow.
    */
-  @Prop({ type: Number, default: 1, min: 0 })
+  @Prop({
+    type: Number,
+    default: 1,
+    validate: {
+      validator: (value: number) => value > 0,
+      message: 'Weight must be a strictly positive number',
+    },
+  })
   weight: number;
 
   /**
