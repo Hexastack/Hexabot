@@ -148,7 +148,7 @@ describe('BaseRepository', () => {
       });
     });
 
-    it('should updated and flatten by id and return one dummy data', async () => {
+    it('should update and flatten by id and return one dummy data', async () => {
       jest.spyOn(dummyModel, 'findOneAndUpdate');
       const result = await dummyRepository.updateOne(
         createdId,
