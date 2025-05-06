@@ -384,8 +384,6 @@ export class BlockService extends BaseService<
    *
    * @param patterns - The NLP patterns associated with the block.
    * @param nlp - The parsed NLP entities from the user input.
-   * @param nlpCacheMap - A cache to reuse fetched entity metadata (e.g., weights and valid values).
-   * @param nlpPenaltyFactor - A multiplier applied to scores when the pattern match type is 'entity'.
    * @returns A numeric score representing how well the block matches the given NLP context.
    */
   async calculateBlockScore(

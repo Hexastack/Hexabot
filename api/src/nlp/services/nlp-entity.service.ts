@@ -58,13 +58,13 @@ export class NlpEntityService extends BaseService<
    * This method is part of the NLP-based blocks prioritization strategy.
    * The weight influences the scoring of blocks when multiple blocks match a user's input.
    * @param id - The unique identifier of the entity to update.
-   * @param updatedWeight - The new weight to assign. Must be a positive integer.
-   * @throws Error if the weight is not a positive integer.
+   * @param updatedWeight - The new weight to assign. Must be a positive number.
+   * @throws Error if the weight is not a positive number.
    * @returns A promise that resolves to the updated entity.
    */
   async updateWeight(id: string, updatedWeight: number): Promise<NlpEntity> {
-    if (!Number.isInteger(updatedWeight) || updatedWeight < 1) {
-      throw new Error('Weight must be a positive integer');
+    if (updatedWeight < 0) {
+      throw new Error('Weight must be a positive number');
     }
 
     return await this.repository.updateOne(

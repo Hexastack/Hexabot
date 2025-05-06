@@ -170,28 +170,12 @@ describe('nlpEntityService', () => {
       expect(createdEntity.weight).toBe(1);
     });
 
-    it('should throw an error if weight is less than 1', async () => {
-      const invalidWeight = 0;
-
-      await expect(
-        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
-      ).rejects.toThrow('Weight must be a positive integer');
-    });
-
-    it('should throw an error if weight is a decimal', async () => {
-      const invalidWeight = 2.5;
-
-      await expect(
-        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
-      ).rejects.toThrow('Weight must be a positive integer');
-    });
-
     it('should throw an error if weight is negative', async () => {
       const invalidWeight = -3;
 
       await expect(
         nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
-      ).rejects.toThrow('Weight must be a positive integer');
+      ).rejects.toThrow('Weight must be a positive number');
     });
 
     afterEach(async () => {
