@@ -186,15 +186,6 @@ export class BlockService extends BaseService<
       // Perform an NLP Match
 
       if (!block && nlp) {
-        // Use the `reduce` function to iterate over `filteredBlocks` and accumulate a new array `matchesWithPatterns`.
-        // This approach combines the matching of NLP patterns and filtering of blocks with empty or invalid matches
-        // into a single operation. This avoids the need for a separate mapping and filtering step, improving performance.
-        // For each block in `filteredBlocks`, we call `matchNLP` to find patterns that match the NLP data.
-        // If `matchNLP` returns a non-empty list of matched patterns, the block and its matched patterns are added
-        // to the accumulator array `acc`, which is returned as the final result.
-        // This ensures that only blocks with valid matches are kept, and blocks with no matches are excluded,
-        // all while iterating through the list only once.
-
         block = await this.matchBestNLP(filteredBlocks, nlp);
       }
     }
