@@ -17,7 +17,7 @@ export const flatten = (
   data: object,
   prefix: string | undefined = undefined,
   result: object = {},
-) => {
+): object => {
   for (const [key, value] of Object.entries(data)) {
     const path = prefix ? `${prefix}.${key}` : key;
 
