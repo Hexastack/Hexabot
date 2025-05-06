@@ -9,6 +9,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -152,7 +153,7 @@ describe('nlpEntityService', () => {
     });
 
     it('should handle updating weight of non-existent entity', async () => {
-      const nonExistentId = '507f1f77bcf86cd799439011'; // Example MongoDB ObjectId
+      const nonExistentId = NOT_FOUND_ID;
 
       try {
         await nlpEntityService.updateWeight(nonExistentId, 5);
