@@ -125,13 +125,8 @@ declare module '@nestjs/event-emitter' {
       {
         block: {
           userId: string;
-          flowId: string;
           blockId: string;
-        };
-        error: {
-          userId: string;
-          flowId: string;
-          blockId: string;
+          highlightType: HighlightType;
         };
       }
     >;
@@ -438,3 +433,5 @@ declare module '@nestjs/event-emitter' {
     H extends G,
   >(event: customEvent<G>, options?: OnEventOptions): OnEventMethodDecorator<H>;
 }
+
+export type HighlightType = 'highlight' | 'error' | 'fallback';

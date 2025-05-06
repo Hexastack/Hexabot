@@ -269,3 +269,32 @@
     transform: scale(1.04);
   }
 }
+
+.node:has(.fallback-highlight) {
+  box-shadow: 0 0 14px 6px rgba(0, 255, 0, 0.6);
+  z-index: 10;
+  transform: scale(1.04);
+  cursor: grab;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  animation: highlightPulseFallback 0.8s ease-out infinite;
+}
+
+@keyframes highlightPulseFallback {
+  0% {
+    box-shadow: 0 0 0 rgba(0, 255, 0, 0.2);
+    transform: scale(1);
+  }
+  20% {
+    box-shadow: 0 0 30px 12px rgba(0, 255, 0, 1);
+    transform: scale(1.1);
+  }
+  60% {
+    box-shadow: 0 0 20px 6px rgba(0, 255, 0, 0.7);
+    transform: scale(1.06);
+  }
+  100% {
+    box-shadow: 0 0 10px 4px rgba(0, 255, 0, 0.6);
+    transform: scale(1.04);
+  }
+}

@@ -46,6 +46,7 @@ const addNode = (block: IBlock) => {
     starts_conversation: !!block?.starts_conversation,
     _hasErrored: false,
     _isHighlighted: false,
+    _hasFallbacked: false,
   });
 
   node.setPosition(block.position.x, block.position.y);
@@ -272,7 +273,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     });
   };
 
-  async function removeHighlights() {
+  async function clearHighlights() {
     return new Promise((resolve) => {
       if (!engine) {
         return;
@@ -283,14 +284,16 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       nodes.forEach((node) => {
         if (node.isHighlighted()) {
           node.setHighlighted(false);
-          node.setSelected(false);
         }
+
         if (node.hasErrored()) {
           node.setHasErrored(false);
         }
+        if (node.hasFallbacked()) {
+          node.setHasFallbacked(false);
+        }
       });
 
-      engine.repaintCanvas();
       resolve(true);
     });
   }
@@ -346,67 +349,49 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
 
     if (window.location.href !== triggeredFlowUrl) {
       await router.push(triggeredFlowUrl);
+      await wait(200);
     }
+  }
+
+  function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async function handleHighlightFlow(payload: {
     flowId: string;
     blockId: string;
-    userId: string;
+    highlightType: "highlight" | "error" | "fallback";
   }) {
-    await removeHighlights();
-
     await redirectToTriggeredFlow(selectedCategoryId, payload.flowId);
 
-    setTimeout(() => {
-      const block = engine?.getModel().getNode(payload.blockId) as
-        | NodeModel
-        | undefined;
+    await clearHighlights();
+    const block = engine?.getModel().getNode(payload.blockId) as
+      | NodeModel
+      | undefined;
 
-      if (!block) {
-        return;
-      }
+    if (!block) {
+      return;
+    }
 
-      if (!isBlockVisibleOnCanvas(block)) {
-        centerBlockInView(block);
-      }
+    if (!isBlockVisibleOnCanvas(block)) {
+      centerBlockInView(block);
+    }
 
-      block.setSelected(true);
-      block.setHighlighted(true);
+    switch (payload.highlightType) {
+      case "highlight":
+        block.setHighlighted(true);
+        break;
+      case "error":
+        block.setHasErrored(true);
+        break;
+      case "fallback":
+        block.setHasFallbacked(true);
+        break;
+    }
 
-      engine.repaintCanvas();
-    }, 200);
-  }
-
-  async function handleHighlightErroredBlock(payload: {
-    flowId: string;
-    blockId: string;
-    userId: string;
-  }) {
-    await removeHighlights();
-
-    await redirectToTriggeredFlow(selectedCategoryId, payload.flowId);
-    setTimeout(() => {
-      const block = engine?.getModel().getNode(payload.blockId) as
-        | NodeModel
-        | undefined;
-
-      if (!block) {
-        return;
-      }
-
-      if (!isBlockVisibleOnCanvas(block)) {
-        centerBlockInView(block);
-      }
-
-      block.setHasErrored(true);
-
-      engine.repaintCanvas();
-    }, 200);
+    block.setSelected(true);
   }
   useSubscribe("highlight:block", handleHighlightFlow);
-
-  useSubscribe("highlight:error", handleHighlightErroredBlock);
 
   return (
     <VisualEditorContext.Provider

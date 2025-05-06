@@ -12,6 +12,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Socket, io } from 'socket.io-client';
 
+import { BlockRepository } from '@/chat/repositories/block.repository';
+import { BlockModel } from '@/chat/schemas/block.schema';
 import { LoggerModule } from '@/logger/logger.module';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
@@ -41,6 +43,7 @@ describe('WebsocketGateway', () => {
         SettingSeeder,
         SettingRepository,
         SocketEventDispatcherService,
+        BlockRepository,
       ],
       imports: [
         CacheModule.register({
@@ -64,6 +67,7 @@ describe('WebsocketGateway', () => {
           // disable throwing uncaughtException if an error event is emitted and it has no listeners
           ignoreErrors: false,
         }),
+        // ChatModule,
         LoggerModule,
         SettingModule,
         rootMongooseTestModule(({ uri, dbName }) => {
@@ -71,7 +75,7 @@ describe('WebsocketGateway', () => {
           process.env.MONGO_DB = dbName;
           return Promise.resolve();
         }),
-        MongooseModule.forFeature([SettingModel]),
+        MongooseModule.forFeature([SettingModel, BlockModel]),
       ],
     });
     app = module.createNestApplication();

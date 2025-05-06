@@ -28,6 +28,7 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
+import { BlockRepository } from '@/chat/repositories/block.repository';
 import { MessageFull } from '@/chat/schemas/message.schema';
 import {
   Subscriber,
@@ -56,6 +57,7 @@ export class WebsocketGateway
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
     private settingService: SettingService,
+    private blockRepository: BlockRepository,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -412,27 +414,28 @@ export class WebsocketGateway
   }
 
   @OnEvent('hook:highlight:block')
-  async handleHighlightBlock(
-    payload: IHookOperationMap['highlight']['operations']['block'],
-  ) {
+  async handleHighlightBlock({
+    blockId,
+    highlightType,
+    userId,
+  }: IHookOperationMap['highlight']['operations']['block']) {
     const isHighlightEnabled = await this.settingService.isHighlightEnabled();
     if (!isHighlightEnabled) {
       return;
     }
-    this.io.to(`blocks:${payload.userId}`).emit('highlight:block', payload);
-    this.logger.log('highlighting block', payload);
-  }
-
-  @OnEvent('hook:highlight:error')
-  async highlightBlockErrored(
-    payload: IHookOperationMap['highlight']['operations']['error'],
-  ) {
-    const isHighlightEnabled = await this.settingService.isHighlightEnabled();
-    if (!isHighlightEnabled) {
+    const blockFull = await this.blockRepository.findOneAndPopulate(blockId);
+    if (!blockFull) {
+      this.logger.warn(
+        `Unable to find block to highligh with ${highlightType}`,
+        blockId,
+      );
       return;
     }
-
-    this.io.to(`blocks:${payload.userId}`).emit('highlight:error', payload);
-    this.logger.warn('hook:highlight:error', payload);
+    this.io.to(`blocks:${userId}`).emit('highlight:block', {
+      flowId: blockFull.category?.id,
+      blockId: blockFull.id,
+      highlightType,
+    });
+    this.logger.log(`highlighting block ${highlightType}`, { blockId });
   }
 }

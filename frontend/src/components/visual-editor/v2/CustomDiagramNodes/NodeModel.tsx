@@ -26,6 +26,7 @@ export interface NodeModelOptions extends BaseModelOptions {
   starts_conversation?: boolean;
   _isHighlighted: boolean;
   _hasErrored: boolean;
+  _hasFallbacked: boolean;
 }
 
 export class NodeModel extends StormNodeModel {
@@ -40,9 +41,14 @@ export class NodeModel extends StormNodeModel {
   starts_conversation?: boolean;
   _isHighlighted: boolean = false;
   _hasErrored: boolean = false;
+  _hasFallbacked: boolean = false;
 
   constructor(
-    options: NodeModelOptions = { _isHighlighted: false, _hasErrored: false },
+    options: NodeModelOptions = {
+      _isHighlighted: false,
+      _hasErrored: false,
+      _hasFallbacked: false,
+    },
   ) {
     super({
       ...options,
@@ -82,18 +88,29 @@ export class NodeModel extends StormNodeModel {
   }
   setHighlighted(isHighlighted: boolean) {
     this._isHighlighted = isHighlighted;
-  }
-
-  isHighlighted(): boolean {
-    return this._isHighlighted;
+    this.fireEvent({ isHighlighted }, "stateChanged");
   }
 
   setHasErrored(hasErrored: boolean) {
     this._hasErrored = hasErrored;
     this.fireEvent({ hasErrored }, "stateChanged");
   }
+
+  setHasFallbacked(hasFallback: boolean) {
+    this._hasFallbacked = hasFallback;
+    this.fireEvent({ hasFallback }, "stateChanged");
+  }
+
+  isHighlighted(): boolean {
+    return this._isHighlighted;
+  }
+
   hasErrored(): boolean {
     return this._hasErrored;
+  }
+
+  hasFallbacked(): boolean {
+    return this._hasFallbacked;
   }
 
   serialize() {

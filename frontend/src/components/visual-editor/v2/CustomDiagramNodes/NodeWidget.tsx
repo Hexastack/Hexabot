@@ -274,6 +274,7 @@ class NodeWidget extends React.Component<
       this.props.node.isSelected() ? "selected" : "",
       this.props.node.isHighlighted() ? "high-lighted" : "",
       this.props.node.hasErrored() ? "high-light-error" : "",
+      this.props.node.hasFallbacked() ? "fallback-highlight" : "",
     );
 
     return (

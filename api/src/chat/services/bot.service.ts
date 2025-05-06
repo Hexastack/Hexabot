@@ -152,9 +152,9 @@ export class BotService {
         convo.id,
       );
       this.eventEmitter.emit('hook:highlight:block', {
-        flowId: block.category!.id,
         blockId: block.id,
         userId: recipient.id,
+        highlightType: fallback ? 'fallback' : 'highlight',
       });
       if (envelope.format !== OutgoingMessageFormat.system) {
         await this.sendMessageToSubscriber(
@@ -327,13 +327,11 @@ export class BotService {
             );
           await this.triggerBlock(event, updatedConversation, next, fallback);
         } catch (err) {
-          if (next && next.id !== fallbackBlock?.id) {
-            this.eventEmitter.emit('hook:highlight:error', {
-              flowId: matchedBlock!.category!.id,
-              userId: convo.sender.id,
-              blockId: next.id!,
-            });
-          }
+          this.eventEmitter.emit('hook:highlight:block', {
+            userId: convo.sender.id,
+            blockId: next.id!,
+            highlightType: fallback ? 'fallback' : 'error',
+          });
           this.logger.error('Unable to store context data!', err);
           return this.eventEmitter.emit('hook:conversation:end', convo);
         }
