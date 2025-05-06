@@ -21,7 +21,6 @@ import {
   Model,
   ProjectionType,
   Query,
-  QueryOptions,
   SortOrder,
   UpdateQuery,
   UpdateWithAggregationPipeline,
@@ -29,8 +28,13 @@ import {
 } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  TFilterQuery,
+  TFlattenOption,
+  TQueryOptions,
+} from '@/utils/types/filter.types';
 
+import { flatten } from '../helpers/flatten';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
 
@@ -495,18 +499,20 @@ export abstract class BaseRepository<
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
     dto: UpdateQuery<DtoInfer<DtoAction.Update, Dto, D>>,
-    options: QueryOptions<D> | null = {
-      new: true,
-    },
+    options?: TQueryOptions<D>,
   ): Promise<T> {
+    const { shouldFlatten, ...rest } = {
+      new: true,
+      ...options,
+    };
     const query = this.model.findOneAndUpdate<T>(
       {
         ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
       },
       {
-        $set: dto,
+        $set: shouldFlatten ? flatten(dto) : dto,
       },
-      options,
+      rest,
     );
     const filterCriteria = query.getFilter();
     const queryUpdates = query.getUpdate();
@@ -541,9 +547,10 @@ export abstract class BaseRepository<
   async updateMany<D extends Partial<U>>(
     filter: TFilterQuery<T>,
     dto: UpdateQuery<D>,
+    options?: TFlattenOption,
   ): Promise<UpdateWriteOpResult> {
     return await this.model.updateMany<T>(filter, {
-      $set: dto,
+      $set: options?.shouldFlatten ? flatten(dto) : dto,
     });
   }
 

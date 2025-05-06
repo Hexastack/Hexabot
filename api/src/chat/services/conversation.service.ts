@@ -175,9 +175,15 @@ export class ConversationService extends BaseService<
       const criteria =
         typeof convo.sender === 'object' ? convo.sender.id : convo.sender;
 
-      await this.subscriberService.updateOne(criteria, {
-        context: profile.context,
-      });
+      await this.subscriberService.updateOne(
+        criteria,
+        {
+          context: profile.context,
+        },
+        {
+          shouldFlatten: true,
+        },
+      );
 
       return updatedConversation;
     } catch (err) {

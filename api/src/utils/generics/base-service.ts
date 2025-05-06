@@ -9,10 +9,14 @@
 import { ConflictException, Inject } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
-import { ProjectionType, QueryOptions } from 'mongoose';
+import { ProjectionType } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  TFilterQuery,
+  TFlattenOption,
+  TQueryOptions,
+} from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
@@ -188,13 +192,17 @@ export abstract class BaseService<
   async updateOne(
     criteria: string | TFilterQuery<T>,
     dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
-    options?: QueryOptions<Partial<U>> | null,
+    options?: TQueryOptions<Partial<U>>,
   ): Promise<T> {
     return await this.repository.updateOne(criteria, dto, options);
   }
 
-  async updateMany(filter: TFilterQuery<T>, dto: Partial<U>) {
-    return await this.repository.updateMany(filter, dto);
+  async updateMany(
+    filter: TFilterQuery<T>,
+    dto: Partial<U>,
+    options?: TFlattenOption,
+  ) {
+    return await this.repository.updateMany(filter, dto, options);
   }
 
   async deleteOne(criteria: string | TFilterQuery<T>) {

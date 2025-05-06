@@ -12,9 +12,17 @@ import { Model, Types } from 'mongoose';
 import { DummyRepository } from '@/utils/test/dummy/repositories/dummy.repository';
 import { closeInMongodConnection } from '@/utils/test/test';
 
+import { flatten } from '../helpers/flatten';
 import { DummyModule } from '../test/dummy/dummy.module';
 import { Dummy } from '../test/dummy/schemas/dummy.schema';
 import { buildTestingMocks } from '../test/utils';
+
+import { BaseSchema } from './base-schema';
+
+const FLATTEN_PAYLOAD = {
+  dummy: 'updated dummy text',
+  dynamicField: { field1: 'value1', field2: 'value2' },
+} as const satisfies Omit<Dummy, keyof BaseSchema>;
 
 describe('BaseRepository', () => {
   let dummyModel: Model<Dummy>;
@@ -137,6 +145,32 @@ describe('BaseRepository', () => {
       );
       expect(result).toEqualPayload({
         dummy: 'updated dummy text 2',
+      });
+    });
+
+    it('should update and flatten by id and return one dummy data', async () => {
+      jest.spyOn(dummyModel, 'findOneAndUpdate');
+      const result = await dummyRepository.updateOne(
+        createdId,
+        FLATTEN_PAYLOAD,
+        {
+          new: true,
+          shouldFlatten: true,
+        },
+      );
+
+      expect(dummyModel.findOneAndUpdate).toHaveBeenCalledWith(
+        { _id: createdId },
+        {
+          $set: flatten(FLATTEN_PAYLOAD),
+        },
+        {
+          new: true,
+        },
+      );
+      expect(result).toEqualPayload({
+        dummy: 'updated dummy text',
+        dynamicField: { field1: 'value1', field2: 'value2' },
       });
     });
 
