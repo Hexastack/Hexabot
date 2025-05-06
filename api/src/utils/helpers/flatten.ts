@@ -12,6 +12,7 @@
  * @param prefix - The optional base key to prefix to the current object's keys
  * @param result - The optional accumulator for the flattened object  data
  * @returns A new object with flattened keys
+ * @throws Error if the data is an array
  */
 export const flatten = (
   data: object,
