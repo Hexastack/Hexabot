@@ -11,8 +11,8 @@ import {
   IsArray,
   IsBoolean,
   IsIn,
-  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Matches,
@@ -53,11 +53,10 @@ export class NlpEntityCreateDto {
   @ApiPropertyOptional({
     description: 'Nlp entity associated weight for next block triggering',
     type: Number,
-    minimum: 1,
   })
   @IsOptional()
-  @Min(1, { message: 'Weight must be a positive integer' })
-  @IsInt({ message: 'Weight must be an integer' })
+  @Min(0.01, { message: 'Weight must be positive' })
+  @IsNumber()
   weight?: number;
 }
 

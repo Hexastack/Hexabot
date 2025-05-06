@@ -141,18 +141,18 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
                 valueAsNumber: true,
                 required: t("message.weight_required_error"),
                 min: {
-                  value: 1,
-                  message: t("message.weight_positive_integer_error"),
+                  value: 0.01,
+                  message: t("message.weight_positive_number_error"),
                 },
                 validate: (value) =>
-                  value && Number.isInteger(value) && value! > 0
+                  value && value! > 0
                     ? true
-                    : t("message.weight_positive_integer_error"),
+                    : t("message.weight_positive_number_error"),
               })}
               type="number"
               inputProps={{
-                min: 1,
-                step: 1,
+                min: 0.01,
+                step: 0.01,
                 inputMode: "numeric",
                 pattern: "[1-9][0-9]*",
               }}

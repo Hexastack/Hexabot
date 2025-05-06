@@ -311,7 +311,7 @@ describe('NlpEntityController', () => {
         doc: '',
         lookups: ['trait'],
         builtin: false,
-        weight: 4,
+        weight: 8,
       };
       const originalEntity: NlpEntity | null = await nlpEntityService.findOne(
         buitInEntityId!,
