@@ -99,7 +99,7 @@ export abstract class BaseRepository<
     this.registerLifeCycleHooks();
   }
 
-  private flatten(obj: object, prefix: string = '', result = {}) {
+  private flatten(obj: object, prefix: string = '', result: object = {}) {
     for (const [key, value] of Object.entries(obj)) {
       const path = prefix ? `${prefix}.${key}` : key;
 
