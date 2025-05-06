@@ -143,6 +143,6 @@ export type TFilterQuery<T, S = TReplaceId<T>> = (
 
 export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
 
-export type TFlattenOption = { flatten?: boolean };
+export type TFlattenOption = { shouldFlatten?: boolean };
 
 export type TQueryOptions<D> = (QueryOptions<D> & TFlattenOption) | null;

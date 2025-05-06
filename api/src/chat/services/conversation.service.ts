@@ -181,7 +181,7 @@ export class ConversationService extends BaseService<
           context: profile.context,
         },
         {
-          flatten: true,
+          shouldFlatten: true,
         },
       );
 

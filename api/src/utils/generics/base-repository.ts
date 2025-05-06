@@ -34,6 +34,7 @@ import {
   TQueryOptions,
 } from '@/utils/types/filter.types';
 
+import { flatten } from '../helpers/flatten';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
 
@@ -97,24 +98,6 @@ export abstract class BaseRepository<
     protected readonly clsPopulate?: new () => TFull,
   ) {
     this.registerLifeCycleHooks();
-  }
-
-  private flatten(obj: object, prefix: string = '', result: object = {}) {
-    for (const [key, value] of Object.entries(obj)) {
-      const path = prefix ? `${prefix}.${key}` : key;
-
-      if (
-        typeof value === 'object' &&
-        value !== null &&
-        !Array.isArray(value)
-      ) {
-        this.flatten(value, path, result);
-      } else {
-        result[path] = value;
-      }
-    }
-
-    return result;
   }
 
   canPopulate(populate: string[]): boolean {
@@ -518,7 +501,7 @@ export abstract class BaseRepository<
     dto: UpdateQuery<DtoInfer<DtoAction.Update, Dto, D>>,
     options?: TQueryOptions<D>,
   ): Promise<T> {
-    const { flatten, ...rest } = {
+    const { shouldFlatten, ...rest } = {
       new: true,
       ...options,
     };
@@ -527,7 +510,7 @@ export abstract class BaseRepository<
         ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
       },
       {
-        $set: flatten ? this.flatten(dto) : dto,
+        $set: shouldFlatten ? flatten(dto) : dto,
       },
       rest,
     );
@@ -567,7 +550,7 @@ export abstract class BaseRepository<
     options?: TFlattenOption,
   ): Promise<UpdateWriteOpResult> {
     return await this.model.updateMany<T>(filter, {
-      $set: options?.flatten ? this.flatten(dto) : dto,
+      $set: options?.shouldFlatten ? flatten(dto) : dto,
     });
   }
 
