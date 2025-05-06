@@ -16,7 +16,7 @@ import {
   IsOptional,
   IsString,
   Matches,
-  Min,
+  Validate,
 } from 'class-validator';
 
 import { DtoConfig } from '@/utils/types/dto.types';
@@ -55,8 +55,10 @@ export class NlpEntityCreateDto {
     type: Number,
   })
   @IsOptional()
-  @Min(0.01, { message: 'Weight must be positive' })
-  @IsNumber()
+  @Validate((value) => value > 0, {
+    message: 'Weight must be a strictly positive number',
+  })
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   weight?: number;
 }
 

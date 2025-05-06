@@ -57,6 +57,8 @@ describe('nlpEntityService', () => {
           provide: CACHE_MANAGER,
           useValue: {
             del: jest.fn(),
+            set: jest.fn(),
+            get: jest.fn(),
           },
         },
       ],
@@ -175,7 +177,7 @@ describe('nlpEntityService', () => {
 
       await expect(
         nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
-      ).rejects.toThrow('Weight must be a positive number');
+      ).rejects.toThrow('Weight must be a strictly positive number');
     });
 
     afterEach(async () => {

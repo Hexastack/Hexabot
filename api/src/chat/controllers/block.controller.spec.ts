@@ -20,7 +20,6 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
@@ -128,7 +127,6 @@ describe('BlockController', () => {
         PermissionService,
         LanguageService,
         PluginService,
-        LoggerService,
         NlpEntityService,
         NlpEntityRepository,
         NlpSampleEntityRepository,

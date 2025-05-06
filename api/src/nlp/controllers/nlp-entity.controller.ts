@@ -9,6 +9,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -166,7 +167,7 @@ export class NlpEntityController extends BaseController<
           updateNlpEntityDto.weight,
         );
       } else {
-        throw new MethodNotAllowedException(
+        throw new ConflictException(
           `Cannot update builtin NLP Entity ${nlpEntity.name} except for weight`,
         );
       }
