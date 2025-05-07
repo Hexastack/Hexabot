@@ -16,7 +16,7 @@ import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
-import { NlpCacheMapValues } from '@/nlp/schemas/types';
+import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
 import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
@@ -403,7 +403,6 @@ export class BlockService extends BaseService<
         const matchedEntity: NLU.ParseEntity | undefined = nlp.entities.find(
           (e) => this.matchesEntityData(e, pattern, entityData!),
         );
-
         return this.computePatternScore(
           matchedEntity,
           pattern,
@@ -434,11 +433,11 @@ export class BlockService extends BaseService<
   private matchesEntityData(
     e: NLU.ParseEntity,
     pattern: NlpPattern,
-    entityData: NlpCacheMapValues,
+    entityData: NlpEntityFull,
   ): boolean {
     return (
       e.entity === pattern.entity &&
-      entityData?.values.some((v) => v === e.value) &&
+      entityData.values?.some((v) => v.value === e.value) &&
       (pattern.match !== 'value' || e.value === pattern.value)
     );
   }
@@ -455,7 +454,7 @@ export class BlockService extends BaseService<
   private computePatternScore(
     entity: NLU.ParseEntity | undefined,
     pattern: NlpPattern,
-    entityData: NlpCacheMapValues,
+    entityData: NlpEntityFull,
     nlpPenaltyFactor: number,
   ): number {
     if (!entity || !entity.confidence) return 0;

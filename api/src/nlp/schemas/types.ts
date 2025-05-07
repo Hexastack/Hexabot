@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NlpEntityStub } from './nlp-entity.schema';
+import { NlpEntityFull, NlpEntityStub } from './nlp-entity.schema';
 import { NlpValueStub } from './nlp-value.schema';
 
 export interface NlpSampleEntityValue {
@@ -26,10 +26,4 @@ export enum NlpSampleState {
   inbox = 'inbox',
 }
 
-export type NlpCacheMap = Map<string, NlpCacheMapValues>;
-
-export type NlpCacheMapValues = {
-  id: string;
-  weight: number;
-  values: string[];
-};
+export type NlpCacheMap = Map<string, NlpEntityFull>;
