@@ -22,11 +22,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import {
-  NlpEntity,
-  NlpEntityFull,
-  NlpEntityModel,
-} from '../schemas/nlp-entity.schema';
+import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
 import { NlpValueModel } from '../schemas/nlp-value.schema';
 
@@ -91,7 +87,7 @@ describe('nlpEntityService', () => {
   describe('findOneAndPopulate', () => {
     it('should return a nlp entity with populate', async () => {
       const firstNameNlpEntity = await nlpEntityRepository.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityService.findOneAndPopulate(
         firstNameNlpEntity!.id,
@@ -112,7 +108,7 @@ describe('nlpEntityService', () => {
     it('should return all nlp entities with populate', async () => {
       const pageQuery = getPageQuery<NlpEntity>({ sort: ['name', 'desc'] });
       const firstNameNlpEntity = await nlpEntityRepository.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityService.findPageAndPopulate(
         { _id: firstNameNlpEntity!.id },
@@ -221,45 +217,37 @@ describe('nlpEntityService', () => {
   });
   describe('getNlpMap', () => {
     it('should return a NlpCacheMap with the correct structure', async () => {
-      // Arrange
-      const firstMockValues = {
-        id: '1',
-        weight: 1,
-      };
-      const firstMockEntity = {
-        name: 'intent',
-        ...firstMockValues,
-        values: [{ value: 'buy' }, { value: 'sell' }],
-      } as unknown as Partial<NlpEntityFull>;
-      const secondMockValues = {
-        id: '2',
-        weight: 5,
-      };
-      const secondMockEntity = {
-        name: 'subject',
-        ...secondMockValues,
-        values: [{ value: 'product' }],
-      } as unknown as Partial<NlpEntityFull>;
-      const mockEntities = [firstMockEntity, secondMockEntity];
-
-      // Mock findAndPopulate
-      jest
-        .spyOn(nlpEntityService, 'findAllAndPopulate')
-        .mockResolvedValue(mockEntities as unknown as NlpEntityFull[]);
-
       // Act
       const result = await nlpEntityService.getNlpMap();
 
       expect(result).toBeInstanceOf(Map);
-      expect(result.size).toBe(2);
-      expect(result.get('intent')).toEqual({
-        name: 'intent',
-        ...firstMockEntity,
-      });
-      expect(result.get('subject')).toEqual({
-        name: 'subject',
-        ...secondMockEntity,
-      });
+      expect(result.get('firstname')).toEqual(
+        expect.objectContaining({
+          name: 'firstname',
+          lookups: ['keywords'],
+          doc: '',
+          builtin: false,
+          weight: 1,
+          values: [
+            expect.objectContaining({
+              value: 'jhon',
+              expressions: ['john', 'joohn', 'jhonny'],
+              builtin: true,
+              doc: '',
+            }),
+          ],
+        }),
+      );
+      expect(result.get('subject')).toEqual(
+        expect.objectContaining({
+          name: 'subject',
+          lookups: ['trait'],
+          doc: '',
+          builtin: false,
+          weight: 1,
+          values: [],
+        }),
+      );
     });
   });
 });

@@ -49,6 +49,13 @@ export const nlpValueFixtures: NlpValueCreateDto[] = [
     builtin: true,
     doc: '',
   },
+  {
+    entity: '0',
+    value: 'affirmation',
+    expressions: ['yes', 'oui', 'yeah'],
+    builtin: false,
+    doc: '',
+  },
 ];
 
 export const installNlpValueFixtures = async () => {
