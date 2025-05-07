@@ -46,6 +46,7 @@ import {
   installBlockFixtures,
 } from '@/utils/test/fixtures/block';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
+import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import {
   blockEmpty,
   blockGetStarted,
@@ -64,7 +65,6 @@ import {
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
 import {
-  mockNlpCacheMap,
   mockNlpEntitiesSetOne,
   nlpEntitiesGreeting,
 } from '@/utils/test/mocks/nlp';
@@ -102,6 +102,7 @@ describe('BlockService', () => {
         rootMongooseTestModule(async () => {
           await installContentFixtures();
           await installBlockFixtures();
+          await installNlpValueFixtures();
         }),
         MongooseModule.forFeature([
           BlockModel,
@@ -357,10 +358,7 @@ describe('BlockService', () => {
 
   describe('matchBestNLP', () => {
     it('should return the block with the highest NLP score', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
-      const blocks = [mockNlpBlock, blockGetStarted]; // You can add more blocks with different patterns and scores
+      const blocks = [mockNlpBlock, blockGetStarted];
       const nlp = mockNlpEntitiesSetOne;
       // Spy on calculateBlockScore to check if it's called
       const calculateBlockScoreSpy = jest.spyOn(
@@ -379,10 +377,7 @@ describe('BlockService', () => {
     });
 
     it('should return the block with the highest NLP score applying penalties', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
-      const blocks = [mockNlpBlock, mockModifiedNlpBlock]; // You can add more blocks with different patterns and scores
+      const blocks = [mockNlpBlock, mockModifiedNlpBlock];
       const nlp = mockNlpEntitiesSetOne;
       // Spy on calculateBlockScore to check if it's called
       const calculateBlockScoreSpy = jest.spyOn(
@@ -401,9 +396,6 @@ describe('BlockService', () => {
     });
 
     it('another case where it should return the block with the highest NLP score applying penalties', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
       const blocks = [mockModifiedNlpBlockOne, mockModifiedNlpBlockTwo]; // You can add more blocks with different patterns and scores
       const nlp = mockNlpEntitiesSetOne;
       // Spy on calculateBlockScore to check if it's called
@@ -423,10 +415,7 @@ describe('BlockService', () => {
     });
 
     it('should return undefined if no blocks match or the list is empty', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
-      const blocks: BlockFull[] = []; // Empty block array
+      const blocks: BlockFull[] = [];
       const nlp = mockNlpEntitiesSetOne;
 
       const bestBlock = await blockService.matchBestNLP(blocks, nlp);
@@ -438,9 +427,7 @@ describe('BlockService', () => {
 
   describe('calculateBlockScore', () => {
     it('should calculate the correct NLP score for a block', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
+      const getNlpCacheMapSpy = jest.spyOn(nlpEntityService, 'getNlpMap');
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
@@ -449,16 +436,15 @@ describe('BlockService', () => {
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
       );
-
+      expect(getNlpCacheMapSpy).toHaveBeenCalledTimes(2);
+      getNlpCacheMapSpy.mockRestore();
       expect(score).toBeGreaterThan(0);
       expect(score2).toBe(0);
       expect(score).toBeGreaterThan(score2);
     });
 
     it('should calculate the correct NLP score for a block and apply penalties ', async () => {
-      jest
-        .spyOn(nlpEntityService, 'getNlpMap')
-        .mockResolvedValue(mockNlpCacheMap);
+      const getNlpCacheMapSpy = jest.spyOn(nlpEntityService, 'getNlpMap');
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetOne,
         mockNlpEntitiesSetOne,
@@ -468,19 +454,25 @@ describe('BlockService', () => {
         mockNlpEntitiesSetOne,
       );
 
+      expect(getNlpCacheMapSpy).toHaveBeenCalledTimes(2);
+      getNlpCacheMapSpy.mockRestore();
+
       expect(score).toBeGreaterThan(0);
       expect(score2).toBeGreaterThan(0);
       expect(score).toBeGreaterThan(score2);
     });
 
     it('should return 0 if no matching entities are found', async () => {
-      jest.spyOn(nlpEntityService, 'getNlpMap').mockResolvedValue(new Map());
+      const getNlpCacheMapSpy = jest.spyOn(nlpEntityService, 'getNlpMap');
+
       const score = await blockService.calculateBlockScore(
         mockNlpPatternsSetTwo,
         mockNlpEntitiesSetOne,
       );
+      expect(getNlpCacheMapSpy).toHaveBeenCalledTimes(1);
+      getNlpCacheMapSpy.mockRestore();
 
-      expect(score).toBe(0); // No matching entity, so score should be 0
+      expect(score).toBe(0); // No matching entity
     });
   });
 

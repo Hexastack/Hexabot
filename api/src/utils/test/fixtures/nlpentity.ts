@@ -20,7 +20,7 @@ export const nlpEntityFixtures: NlpEntityCreateDto[] = [
     weight: 1,
   },
   {
-    name: 'first_name',
+    name: 'firstname',
     lookups: ['keywords'],
     doc: '',
     builtin: false,
@@ -31,6 +31,13 @@ export const nlpEntityFixtures: NlpEntityCreateDto[] = [
     lookups: ['trait'],
     doc: '',
     builtin: true,
+    weight: 1,
+  },
+  {
+    name: 'subject',
+    lookups: ['trait'],
+    doc: '',
+    builtin: false,
     weight: 1,
   },
 ];

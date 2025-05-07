@@ -51,7 +51,7 @@ describe('NlpEntityRepository', () => {
       NlpValueRepository,
     ]);
     firstNameNlpEntity = await nlpEntityRepository.findOne({
-      name: 'first_name',
+      name: 'firstname',
     });
   });
 

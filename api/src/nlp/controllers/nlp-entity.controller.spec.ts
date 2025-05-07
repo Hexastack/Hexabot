@@ -201,18 +201,18 @@ describe('NlpEntityController', () => {
   describe('findOne', () => {
     it('should find a nlp entity', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityController.findOne(firstNameEntity!.id, []);
 
       expect(result).toEqualPayload(
-        nlpEntityFixtures.find(({ name }) => name === 'first_name')!,
+        nlpEntityFixtures.find(({ name }) => name === 'firstname')!,
       );
     });
 
     it('should find a nlp entity, and populate its values', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const firstNameValues = await nlpValueService.findOne({ value: 'jhon' });
       const firstNameWithValues: NlpEntityFull = {
@@ -242,7 +242,7 @@ describe('NlpEntityController', () => {
   describe('updateOne', () => {
     it('should update a nlp entity', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const updatedNlpEntity: NlpEntityCreateDto = {
         name: 'updated',

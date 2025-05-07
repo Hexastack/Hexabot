@@ -7,7 +7,6 @@
  */
 
 import { NLU } from '@/helper/types';
-import { NlpCacheMap } from '@/nlp/schemas/types';
 
 export const nlpEntitiesGreeting: NLU.ParseEntities = {
   entities: [
@@ -58,79 +57,3 @@ export const mockNlpEntitiesSetTwo: NLU.ParseEntities = {
     },
   ],
 };
-
-export const mockNlpCacheMap: NlpCacheMap = new Map([
-  [
-    'intent',
-    {
-      id: '1',
-      weight: 1,
-      name: 'intent',
-      values: [
-        {
-          id: '11',
-          value: 'greeting',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          doc: '',
-          entity: '1',
-          builtin: false,
-          metadata: {},
-          expressions: [],
-        },
-        {
-          id: '12',
-          value: 'affirmation',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          doc: '',
-          entity: '1',
-          builtin: false,
-          metadata: {},
-          expressions: [],
-        },
-      ],
-      lookups: ['trait'],
-      builtin: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ],
-  [
-    'firstname',
-
-    {
-      id: '2',
-      weight: 1,
-      name: 'firstname',
-      values: [
-        {
-          id: '21',
-          value: 'jhon',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          doc: '',
-          entity: '2',
-          builtin: false,
-          metadata: {},
-          expressions: [],
-        },
-        {
-          id: '22',
-          value: 'doe',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          doc: '',
-          entity: '2',
-          builtin: false,
-          metadata: {},
-          expressions: [],
-        },
-      ],
-      lookups: ['trait'],
-      builtin: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ],
-]);
