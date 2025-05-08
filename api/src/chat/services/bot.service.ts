@@ -70,13 +70,11 @@ export class BotService {
       'hook:stats:entry',
       BotStatsType.outgoing,
       'Outgoing',
-      recipient,
     );
     this.eventEmitter.emit(
       'hook:stats:entry',
       BotStatsType.all_messages,
       'All Messages',
-      recipient,
     );
 
     // Trigger sent message event
@@ -315,7 +313,6 @@ export class BotService {
           'hook:stats:entry',
           BotStatsType.popular,
           next.name,
-          convo.sender,
         );
         // Go next!
         this.logger.debug('Respond to nested conversion! Go next ', next.id);
@@ -377,7 +374,6 @@ export class BotService {
         'hook:stats:entry',
         BotStatsType.existing_conversations,
         'Existing conversations',
-        subscriber,
       );
       this.logger.debug('Conversation has been captured! Responding ...');
       return await this.handleIncomingMessage(conversation, event);
@@ -397,15 +393,14 @@ export class BotService {
    * @param block - Starting block
    */
   async startConversation(event: EventWrapper<any, any>, block: BlockFull) {
-    // Launching a new conversation
-    const subscriber = event.getSender();
     // Increment popular stats
     this.eventEmitter.emit(
       'hook:stats:entry',
       BotStatsType.popular,
       block.name,
-      subscriber,
     );
+    // Launching a new conversation
+    const subscriber = event.getSender();
 
     try {
       const convo = await this.conversationService.create({
@@ -415,7 +410,6 @@ export class BotService {
         'hook:stats:entry',
         BotStatsType.new_conversations,
         'New conversations',
-        subscriber,
       );
 
       try {
