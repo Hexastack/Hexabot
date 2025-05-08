@@ -215,7 +215,7 @@ export class ChatService {
    */
   @OnEvent('hook:chatbot:echo')
   async handleEchoMessage(event: EventWrapper<any, any>) {
-    this.logger.verbose('Message echo received', event._adapter._raw);
+    this.logger.verbose('Message echo received', event._adapter.raw);
     const foreignId = event.getRecipientForeignId();
 
     if (foreignId) {
