@@ -309,7 +309,11 @@ export class BotService {
 
       if (next) {
         // Increment stats about popular blocks
-        this.eventEmitter.emit('hook:stats:entry', 'popular', next.name);
+        this.eventEmitter.emit(
+          'hook:stats:entry',
+          BotStatsType.popular,
+          next.name,
+        );
         // Go next!
         this.logger.debug('Respond to nested conversion! Go next ', next.id);
         try {
@@ -390,7 +394,11 @@ export class BotService {
    */
   async startConversation(event: EventWrapper<any, any>, block: BlockFull) {
     // Increment popular stats
-    this.eventEmitter.emit('hook:stats:entry', 'popular', block.name);
+    this.eventEmitter.emit(
+      'hook:stats:entry',
+      BotStatsType.popular,
+      block.name,
+    );
     // Launching a new conversation
     const subscriber = event.getSender();
 
