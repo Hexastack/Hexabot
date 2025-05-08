@@ -49,11 +49,13 @@ import { INlpValue } from "@/types/nlp-value.types";
 type NlpDatasetSampleProps = {
   sample?: INlpDatasetSample;
   submitForm: (params: INlpSampleFormAttributes) => void;
+  isMutationLoading: boolean;
 };
 
 const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   sample,
   submitForm,
+  isMutationLoading,
 }) => {
   const { t } = useTranslate();
   const { data: entities, refetch: refetchEntities } = useFind(
@@ -96,6 +98,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     });
   const currentText = watch("text");
   const currentType = watch("type");
+  const language = watch("language");
   const { apiClient } = useApiClient();
   const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
@@ -164,6 +167,17 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     reset(defaultValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(defaultValues)]);
+
+  const hasEmptyCurrentType = !currentType;
+  const hasEmptyCurrentText = !currentText;
+  const hasEmptyLanguage = !language;
+  const hasEmptyTraitEntitesValue = traitEntities.some((e) => !e.value);
+  const shouldDisableValidateButton =
+    hasEmptyCurrentType ||
+    hasEmptyCurrentText ||
+    hasEmptyTraitEntitesValue ||
+    hasEmptyLanguage ||
+    isMutationLoading;
 
   return (
     <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
@@ -441,14 +455,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
             variant="contained"
             startIcon={<Check />}
             onClick={handleSubmit(onSubmitForm)}
-            disabled={
-              !(
-                currentText !== "" &&
-                currentType !== NlpSampleType.inbox &&
-                traitEntities.every((e) => e.value !== "") &&
-                keywordEntities.every((e) => e.value !== "")
-              )
-            }
+            disabled={shouldDisableValidateButton}
             type="submit"
           >
             {t("button.validate")}
