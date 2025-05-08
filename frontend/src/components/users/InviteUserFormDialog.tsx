@@ -13,7 +13,7 @@ import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { InviteUserForm } from "./InviteUserForm";
 
-export const InviteUserFormFormDialog = (
+export const InviteUserFormDialog = (
   props: ComponentFormDialogProps<typeof InviteUserForm>,
 ) => (
   <GenericFormDialog

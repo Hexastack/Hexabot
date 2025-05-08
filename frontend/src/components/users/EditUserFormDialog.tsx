@@ -11,7 +11,7 @@ import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { EditUserForm } from "./EditUserForm";
 
-export const CategoryFormDialog = (
+export const EditUserFormDialog = (
   props: ComponentFormDialogProps<typeof EditUserForm>,
 ) => (
   <GenericFormDialog
