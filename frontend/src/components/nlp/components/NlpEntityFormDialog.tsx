@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { INlpEntity } from "@/types/nlp-entity.types";
 
 import { NlpEntityVarForm } from "./NlpEntityForm";
 
-export const NlpEntityFormDialog = <T extends INlpEntity = INlpEntity>(
-  props: ComponentFormDialogProps<T>,
+export const NlpEntityFormDialog = (
+  props: ComponentFormDialogProps<typeof NlpEntityVarForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={NlpEntityVarForm}
     addText="title.new_nlp_entity"
     editText="title.edit_nlp_entity"

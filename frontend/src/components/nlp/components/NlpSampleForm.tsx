@@ -22,7 +22,7 @@ import {
 import NlpDatasetSample from "./NlpTrainForm";
 
 export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
-  data,
+  data: { defaultValues: nlpDatasetSample },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -41,10 +41,10 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
     },
   });
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
-    if (data?.id) {
+    if (nlpDatasetSample?.id) {
       updateSample(
         {
-          id: data.id,
+          id: nlpDatasetSample.id,
           params: {
             text: form.text,
             type: form.type,
@@ -63,7 +63,10 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
 
   return (
     <Wrapper onSubmit={() => {}} {...WrapperProps}>
-      <NlpDatasetSample sample={data || undefined} submitForm={onSubmitForm} />
+      <NlpDatasetSample
+        sample={nlpDatasetSample || undefined}
+        submitForm={onSubmitForm}
+      />
     </Wrapper>
   );
 };

@@ -21,7 +21,7 @@ import { ICategory, ICategoryAttributes } from "@/types/category.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 
 export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
-  data,
+  data: { defaultValues: category },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -48,7 +48,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<ICategoryAttributes>({
-    defaultValues: { label: data?.label || "" },
+    defaultValues: { label: category?.label || "" },
   });
   const validationRules = {
     label: {
@@ -56,22 +56,22 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
     },
   };
   const onSubmitForm = (params: ICategoryAttributes) => {
-    if (data) {
-      updateCategory({ id: data.id, params });
+    if (category) {
+      updateCategory({ id: category.id, params });
     } else {
       createCategory(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (category) {
       reset({
-        label: data.label,
+        label: category.label,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [category, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

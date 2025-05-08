@@ -166,13 +166,22 @@ export interface FormButtonsProps {
   confirmButtonProps?: ButtonProps;
 }
 
-export type ComponentFormProps<T> = FormButtonsProps & {
-  data: T | null;
+export type TPayload<D, P = unknown> = {
+  presetValues?: P;
+  defaultValues?: D | null;
+};
+
+export type ComponentFormProps<D, P = unknown> = FormButtonsProps & {
+  data: TPayload<D, P>;
   onError?: () => void;
   onSuccess?: () => void;
   Wrapper?: React.FC<FormDialogProps>;
   WrapperProps?: Partial<FormDialogProps> & Partial<FormButtonsProps>;
 };
 
-export type ComponentFormDialogProps<T> = FormButtonsProps &
-  DialogProps<T | null, boolean>;
+export type ExtractFormProps<T extends (arg: { data: any }) => unknown> =
+  Parameters<T>[0]["data"];
+
+export type ComponentFormDialogProps<
+  T extends (arg: { data: any }) => unknown,
+> = FormButtonsProps & DialogProps<ExtractFormProps<T> | null, boolean>;

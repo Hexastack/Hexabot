@@ -49,7 +49,7 @@ const TranslationInput: React.FC<TranslationInputProps> = ({
 );
 
 export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
-  data,
+  data: { defaultValues: translation },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -74,11 +74,11 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
   });
   const { control, handleSubmit } = useForm<ITranslationAttributes>({
     defaultValues: {
-      translations: data?.translations,
+      translations: translation?.translations,
     },
   });
   const onSubmitForm = (params: ITranslationAttributes) => {
-    if (data?.id) updateTranslation({ id: data.id, params });
+    if (translation?.id) updateTranslation({ id: translation.id, params });
   };
 
   return (
@@ -86,7 +86,7 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentItem>
           <FormLabel>{t("label.original_text")}</FormLabel>
-          <Typography component="p">{data?.str}</Typography>
+          <Typography component="p">{translation?.str}</Typography>
         </ContentItem>
         <ContentContainer>
           {languages

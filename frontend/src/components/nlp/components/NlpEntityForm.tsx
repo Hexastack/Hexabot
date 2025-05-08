@@ -31,7 +31,7 @@ import {
 } from "@/types/nlp-entity.types";
 
 export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
-  data,
+  data: { defaultValues: nlpEntity },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -57,9 +57,9 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
     handleSubmit,
   } = useForm<INlpEntityAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      doc: data?.doc || "",
-      lookups: data?.lookups || ["keywords"],
+      name: nlpEntity?.name || "",
+      doc: nlpEntity?.doc || "",
+      lookups: nlpEntity?.lookups || ["keywords"],
     },
   });
   const validationRules = {
@@ -70,29 +70,29 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
     isChecked: {},
   };
   const onSubmitForm = (params: INlpEntityAttributes) => {
-    if (data) {
-      updateNlpEntity({ id: data.id, params });
+    if (nlpEntity) {
+      updateNlpEntity({ id: nlpEntity.id, params });
     } else {
       createNlpEntity(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (nlpEntity) {
       reset({
-        name: data.name,
-        doc: data.doc,
+        name: nlpEntity.name,
+        doc: nlpEntity.doc,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [nlpEntity, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          {!data ? (
+          {!nlpEntity ? (
             <ContentItem>
               <FormControl>
                 <FormLabel>{t("label.lookup_strategies")}</FormLabel>

@@ -67,7 +67,9 @@ export const ContentTypes = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(ContentTypeFormDialog, row),
+        action: (row) => {
+          dialogs.open(ContentTypeFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -104,7 +106,11 @@ export const ContentTypes = () => {
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                onClick={() => dialogs.open(ContentTypeFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(ContentTypeFormDialog, {
+                    defaultValues: null,
+                  })
+                }
                 sx={{ float: "right" }}
               >
                 {t("button.add")}

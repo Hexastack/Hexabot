@@ -72,8 +72,8 @@ export const Categories = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: async (row) => {
-          await dialogs.open(CategoryFormDialog, row);
+        action: (row) => {
+          dialogs.open(CategoryFormDialog, { defaultValues: row });
         },
         requires: [PermissionAction.UPDATE],
       },
@@ -150,7 +150,9 @@ export const Categories = () => {
                   startIcon={<AddIcon />}
                   variant="contained"
                   sx={{ float: "right" }}
-                  onClick={() => dialogs.open(CategoryFormDialog, null)}
+                  onClick={() =>
+                    dialogs.open(CategoryFormDialog, { defaultValues: null })
+                  }
                 >
                   {t("button.add")}
                 </Button>

@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { ILanguage } from "@/types/language.types";
 
 import { LanguageForm } from "./LanguageForm";
 
-export const LanguageFormDialog = <T extends ILanguage = ILanguage>(
-  props: ComponentFormDialogProps<T>,
+export const LanguageFormDialog = (
+  props: ComponentFormDialogProps<typeof LanguageForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={LanguageForm}
     addText="title.new_language"
     editText="title.edit_language"

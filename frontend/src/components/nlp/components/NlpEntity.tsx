@@ -121,7 +121,9 @@ const NlpEntity = () => {
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(NlpEntityFormDialog, row),
+        action: (row) => {
+          dialogs.open(NlpEntityFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -221,7 +223,9 @@ const NlpEntity = () => {
               startIcon={<AddIcon />}
               variant="contained"
               sx={{ float: "right" }}
-              onClick={() => dialogs.open(NlpEntityFormDialog, null)}
+              onClick={() =>
+                dialogs.open(NlpEntityFormDialog, { defaultValues: null })
+              }
             >
               {t("button.add")}
             </Button>

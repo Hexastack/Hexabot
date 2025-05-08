@@ -219,8 +219,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                   dialogs.open(
                     AttachmentFormDialog,
                     {
-                      accept,
-                      onChange,
+                      defaultValues: { accept, onChange },
                     },
                     { maxWidth: "xl" },
                   )

@@ -31,7 +31,7 @@ export type MenuFormData = {
 };
 
 export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
-  data,
+  data: { defaultValues: menu },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -79,23 +79,23 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     const { url, ...rest } = params;
     const payload = typeValue === "web_url" ? { ...rest, url } : rest;
 
-    if (data?.row?.id) {
+    if (menu?.row?.id) {
       updateMenu({
-        id: data.row.id,
+        id: menu.row.id,
         params: payload,
       });
     } else {
-      createMenu({ ...payload, parent: data?.parentId });
+      createMenu({ ...payload, parent: menu?.parentId });
     }
   };
 
   useEffect(() => {
-    if (data?.row) {
-      reset(data.row);
+    if (menu?.row) {
+      reset(menu.row);
     } else {
       reset(DEFAULT_VALUES);
     }
-  }, [reset, data?.row]);
+  }, [reset, menu?.row]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -164,7 +164,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
                       label={t("label.payload")}
                       error={!!errors.payload}
                       required
-                      defaultValue={data?.row?.payload || ""}
+                      defaultValue={menu?.row?.payload || ""}
                       readOnlyValue={titleValue}
                       helperText={
                         errors.payload ? errors.payload.message : null

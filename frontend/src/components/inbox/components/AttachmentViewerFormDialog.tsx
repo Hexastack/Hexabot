@@ -9,19 +9,13 @@
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
-import {
-  AttachmentViewerForm,
-  AttachmentViewerFormData,
-} from "./AttachmentViewerForm";
+import { AttachmentViewerForm } from "./AttachmentViewerForm";
 
-export const AttachmentViewerFormDialog = <
-  T extends AttachmentViewerFormData = AttachmentViewerFormData,
->(
-  props: ComponentFormDialogProps<T>,
+export const AttachmentViewerFormDialog = (
+  props: ComponentFormDialogProps<typeof AttachmentViewerForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={AttachmentViewerForm}
-    rowKey="row"
     addText="label.image"
     {...props}
   />

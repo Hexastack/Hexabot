@@ -73,11 +73,12 @@ export const Users = () => {
     [
       {
         label: ActionColumnLabel.Manage_Roles,
-        action: (row) =>
+        action: (row) => {
           dialogs.open(CategoryFormDialog, {
-            user: row,
-            roles: roles || [],
-          }),
+            defaultValues: row,
+            presetValues: roles,
+          });
+        },
         requires: [PermissionAction.CREATE],
       },
     ],
@@ -208,7 +209,11 @@ export const Users = () => {
                 sx={{
                   float: "right",
                 }}
-                onClick={() => dialogs.open(InviteUserFormFormDialog)}
+                onClick={() =>
+                  dialogs.open(InviteUserFormFormDialog, {
+                    defaultValues: null,
+                  })
+                }
               >
                 {t("button.invite")}
               </Button>

@@ -9,7 +9,15 @@
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Button, ButtonGroup, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
+import {
+  Button,
+  ButtonGroup,
+  Chip,
+  Grid,
+  Paper,
+  Switch,
+  Typography,
+} from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
@@ -79,8 +87,12 @@ export const Contents = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) =>
-          dialogs.open(ContentFormDialog, { content: row, contentType }),
+        action: (row) => {
+          dialogs.open(ContentFormDialog, {
+            defaultValues: row,
+            presetValues: contentType,
+          });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -111,9 +123,7 @@ export const Contents = () => {
           predicate: ({ queryKey }) => {
             const [_qType, qEntity] = queryKey;
 
-            return (
-              isSameEntity(qEntity, EntityType.CONTENT)
-            );
+            return isSameEntity(qEntity, EntityType.CONTENT);
           },
         });
         if (data.length) {
@@ -123,13 +133,13 @@ export const Contents = () => {
         }
       },
     },
-    { idTargetContentType: contentType?.id }
+    { idTargetContentType: contentType?.id },
   );
   const handleImportChange = (file: File) => {
     importDataset(file);
   };
-  
-return (
+
+  return (
     <Grid container flexDirection="column" gap={3}>
       <Grid item height="fit-content" container>
         <Link href="/content/types">
@@ -151,25 +161,27 @@ return (
             </Grid>
             {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
               <ButtonGroup sx={{ marginLeft: "auto" }}>
-              <Grid item>
-                <Button
-                  startIcon={<AddIcon />}
-                  variant="contained"
-                  onClick={() =>
-                    dialogs.open(ContentFormDialog, { contentType })
-                  }
-                  sx={{ float: "right" }}
+                <Grid item>
+                  <Button
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    onClick={() =>
+                      dialogs.open(ContentFormDialog, {
+                        presetValues: contentType,
+                      })
+                    }
+                    sx={{ float: "right" }}
                   >
                     {t("button.add")}
                   </Button>
                 </Grid>
                 <Grid item>
                   <FileUploadButton
-                  accept="text/csv"
-                  label={t("button.import")}
-                  onChange={handleImportChange}
-                  isLoading={isLoading}
-                />
+                    accept="text/csv"
+                    label={t("button.import")}
+                    onChange={handleImportChange}
+                    isLoading={isLoading}
+                  />
                 </Grid>
               </ButtonGroup>
             ) : null}

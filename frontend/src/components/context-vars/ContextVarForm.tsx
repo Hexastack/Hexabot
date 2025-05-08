@@ -22,7 +22,7 @@ import { IContextVar, IContextVarAttributes } from "@/types/context-var.types";
 import { slugify } from "@/utils/string";
 
 export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
-  data,
+  data: { defaultValues: contextVar },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -56,9 +56,9 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
     handleSubmit,
   } = useForm<IContextVarAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      label: data?.label || "",
-      permanent: data?.permanent || false,
+      name: contextVar?.name || "",
+      label: contextVar?.label || "",
+      permanent: contextVar?.permanent || false,
     },
   });
   const validationRules = {
@@ -73,24 +73,24 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
     },
   };
   const onSubmitForm = (params: IContextVarAttributes) => {
-    if (data) {
-      updateContextVar({ id: data.id, params });
+    if (contextVar) {
+      updateContextVar({ id: contextVar.id, params });
     } else {
       createContextVar(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (contextVar) {
       reset({
-        name: data.name,
-        label: data.label,
-        permanent: data.permanent,
+        name: contextVar.name,
+        label: contextVar.label,
+        permanent: contextVar.permanent,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [contextVar, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

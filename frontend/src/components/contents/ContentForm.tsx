@@ -128,20 +128,12 @@ const buildDynamicFields = (
   },
 });
 
-export type ContentFormData = {
-  content?: IContent;
-  contentType?: IContentType;
-};
-export const ContentForm: FC<ComponentFormProps<ContentFormData>> = ({
-  data,
+export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
+  data: { defaultValues: content, presetValues: contentType },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
-  const { content, contentType } = data || {
-    content: undefined,
-    contentType: undefined,
-  };
   const { t } = useTranslate();
   const { toast } = useToast();
   const {

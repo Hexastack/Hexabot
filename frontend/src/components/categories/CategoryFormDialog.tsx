@@ -7,15 +7,14 @@
  */
 
 import { GenericFormDialog } from "@/app-components/dialogs";
-import { ICategory } from "@/types/category.types";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { CategoryForm } from "./CategoryForm";
 
-export const CategoryFormDialog = <T extends ICategory = ICategory>(
-  props: ComponentFormDialogProps<T>,
+export const CategoryFormDialog = (
+  props: ComponentFormDialogProps<typeof CategoryForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={CategoryForm}
     addText="title.new_category"
     editText="title.edit_category"

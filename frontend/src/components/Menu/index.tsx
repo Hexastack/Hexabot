@@ -59,7 +59,11 @@ export const Menu = () => {
             {hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
               <Button
                 variant="contained"
-                onClick={() => dialogs.open(MenuFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(MenuFormDialog, {
+                    defaultValues: null,
+                  })
+                }
                 disabled={menus?.length === 10}
                 startIcon={<AddIcon />}
               >
@@ -119,8 +123,16 @@ export const Menu = () => {
           <MenuAccordion
             key={menu.id}
             menu={menu}
-            onAppend={(parentId) => dialogs.open(MenuFormDialog, { parentId })}
-            onUpdate={(row) => dialogs.open(MenuFormDialog, { row })}
+            onAppend={(parentId) =>
+              dialogs.open(MenuFormDialog, {
+                defaultValues: { parentId },
+              })
+            }
+            onUpdate={(row) =>
+              dialogs.open(MenuFormDialog, {
+                defaultValues: { row },
+              })
+            }
             onDelete={async (row) => {
               const isConfirmed = await dialogs.confirm(ConfirmDialogBody);
 

@@ -23,12 +23,8 @@ import { IUser, IUserAttributes } from "@/types/user.types";
 
 const getFullName = (user?: IUser) => `${user?.first_name} ${user?.last_name}`;
 
-export type EditUserFormData = {
-  user: IUser;
-  roles: IRole[];
-};
-export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
-  data,
+export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
+  data: { defaultValues: user, presetValues: roles },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -51,7 +47,7 @@ export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<IUserAttributes>({
-    defaultValues: { roles: data?.roles.map((role) => role.id) },
+    defaultValues: { roles: roles?.map((role) => role.id) },
   });
   const validationRules = {
     roles: {
@@ -59,19 +55,19 @@ export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
     },
   };
   const onSubmitForm = (params: IUserAttributes) => {
-    if (data?.user.id) {
+    if (user?.id) {
       updateUser({
-        id: data.user.id,
+        id: user.id,
         params,
       });
     }
   };
 
   useEffect(() => {
-    if (data?.user) {
-      reset({ roles: data?.user?.roles });
+    if (user) {
+      reset({ roles: user.roles });
     }
-  }, [reset, data?.user]);
+  }, [reset, user]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -81,7 +77,7 @@ export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
             <Input
               disabled
               label={t("label.auth_user")}
-              value={getFullName(data?.user)}
+              value={user ? getFullName(user) : undefined}
               InputProps={{
                 readOnly: true,
               }}
@@ -94,7 +90,7 @@ export const EditUserForm: FC<ComponentFormProps<EditUserFormData>> = ({
                   name="roles"
                   rules={validationRules.roles}
                   control={control}
-                  defaultValue={data?.roles?.map(({ id }) => id) || []}
+                  defaultValue={roles?.map(({ id }) => id) || []}
                   render={({ field }) => {
                     const { onChange, ...rest } = field;
 

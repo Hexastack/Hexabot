@@ -9,14 +9,12 @@
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
-import { EditUserForm, EditUserFormData } from "./EditUserForm";
+import { EditUserForm } from "./EditUserForm";
 
-export const CategoryFormDialog = <
-  T extends EditUserFormData = EditUserFormData,
->(
-  props: ComponentFormDialogProps<T>,
+export const CategoryFormDialog = (
+  props: ComponentFormDialogProps<typeof EditUserForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={EditUserForm}
     editText="title.manage_roles"
     {...props}

@@ -49,7 +49,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
           onClick={() =>
             dialogs.open(
               AttachmentViewerFormDialog,
-              { url },
+              { defaultValues: { url } },
               {
                 hasButtons: false,
               },

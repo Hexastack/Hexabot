@@ -66,7 +66,11 @@ export const Labels = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(LabelFormDialog, row),
+        action: (row) => {
+          dialogs.open(LabelFormDialog, {
+            defaultValues: row,
+          });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -177,7 +181,9 @@ export const Labels = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => dialogs.open(LabelFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(LabelFormDialog, { defaultValues: null })
+                }
               >
                 {t("button.add")}
               </Button>

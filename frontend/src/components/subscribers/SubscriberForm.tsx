@@ -25,7 +25,7 @@ const getFullName = (subscriber: ISubscriber | null) =>
   `${subscriber?.first_name} ${subscriber?.last_name}`;
 
 export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
-  data,
+  data: { defaultValues: subscriber },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -49,16 +49,16 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     handleSubmit,
   } = useForm<ISubscriberAttributes>();
   const onSubmitForm = (params: ISubscriberAttributes) => {
-    if (data?.id) {
-      updateSubscriber({ id: data.id, params });
+    if (subscriber?.id) {
+      updateSubscriber({ id: subscriber.id, params });
     }
   };
 
   useEffect(() => {
-    if (data) {
-      reset({ labels: data?.labels });
+    if (subscriber) {
+      reset({ labels: subscriber?.labels });
     }
-  }, [data, reset]);
+  }, [subscriber, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -67,7 +67,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
           <ContentItem>
             <Input
               label={t("label.user")}
-              value={getFullName(data)}
+              value={subscriber ? getFullName(subscriber) : undefined}
               disabled
               InputProps={{
                 readOnly: true,
