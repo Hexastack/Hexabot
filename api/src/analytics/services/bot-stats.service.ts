@@ -95,7 +95,6 @@ export class BotStatsService extends BaseService<BotStats> {
         'hook:stats:entry',
         BotStatsType.retention,
         'Retentioned users',
-        subscriber,
       );
     }
   }
