@@ -63,13 +63,19 @@ export const Roles = () => {
       {
         label: ActionColumnLabel.Permissions,
         action: (row) =>
-          dialogs.open(PermissionBodyDialog, row, {
-            hasButtons: false,
-          }),
+          dialogs.open(
+            PermissionBodyDialog,
+            { defaultValues: row },
+            {
+              hasButtons: false,
+            },
+          ),
       },
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(RoleFormDialog, row),
+        action: (row) => {
+          dialogs.open(RoleFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
 
@@ -144,7 +150,9 @@ export const Roles = () => {
                 sx={{
                   float: "right",
                 }}
-                onClick={() => dialogs.open(RoleFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(RoleFormDialog, { defaultValues: null })
+                }
               >
                 {t("button.add")}
               </Button>

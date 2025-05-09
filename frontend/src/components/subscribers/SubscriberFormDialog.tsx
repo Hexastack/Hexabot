@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { ISubscriber } from "@/types/subscriber.types";
 
 import { SubscriberForm } from "./SubscriberForm";
 
-export const SubscriberFormDialog = <T extends ISubscriber = ISubscriber>(
-  props: ComponentFormDialogProps<T>,
+export const SubscriberFormDialog = (
+  props: ComponentFormDialogProps<typeof SubscriberForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={SubscriberForm}
     editText="title.manage_subscribers"
     {...props}

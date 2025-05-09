@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { IContextVar } from "@/types/context-var.types";
 
 import { ContextVarForm } from "./ContextVarForm";
 
-export const ContextVarFormDialog = <T extends IContextVar = IContextVar>(
-  props: ComponentFormDialogProps<T>,
+export const ContextVarFormDialog = (
+  props: ComponentFormDialogProps<typeof ContextVarForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={ContextVarForm}
     addText="title.new_context_var"
     editText="title.edit_context_var"

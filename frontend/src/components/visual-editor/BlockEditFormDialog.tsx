@@ -7,17 +7,14 @@
  */
 
 import { GenericFormDialog } from "@/app-components/dialogs";
-import { IBlock } from "@/types/block.types";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { BlockEditForm } from "./BlockEditForm";
 
-export const BlockEditFormDialog = <
-  T extends IBlock | undefined = IBlock | undefined,
->(
-  props: ComponentFormDialogProps<T>,
+export const BlockEditFormDialog = (
+  props: ComponentFormDialogProps<typeof BlockEditForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={BlockEditForm}
     editText="title.edit_block"
     {...props}

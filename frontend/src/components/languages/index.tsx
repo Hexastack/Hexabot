@@ -91,7 +91,9 @@ export const Languages = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(LanguageFormDialog, row),
+        action: (row) => {
+          dialogs.open(LanguageFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {

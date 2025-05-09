@@ -494,10 +494,14 @@ const Diagrams = () => {
   const openEditDialog = (selectedBlockId: string) => {
     const block = getBlockFromCache(selectedBlockId);
 
-    dialogs.open(BlockEditFormDialog, block, {
-      maxWidth: "md",
-      isSingleton: true,
-    });
+    dialogs.open(
+      BlockEditFormDialog,
+      { defaultValues: block },
+      {
+        maxWidth: "md",
+        isSingleton: true,
+      },
+    );
   };
   const handleMoveButton = () => {
     const ids = getSelectedIds();
@@ -505,10 +509,12 @@ const Diagrams = () => {
 
     if (ids.length) {
       dialogs.open(BlockMoveFormDialog, {
-        ids: blockIds,
-        onMove,
-        category: selectedCategoryId,
-        categories,
+        defaultValues: {
+          ids: blockIds,
+          onMove,
+          category: selectedCategoryId,
+          categories,
+        },
       });
     }
   };

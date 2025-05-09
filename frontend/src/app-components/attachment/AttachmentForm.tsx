@@ -20,7 +20,7 @@ export type AttachmentFormData = {
 };
 
 export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
-  data,
+  data: { defaultValues: attachment },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -33,7 +33,7 @@ export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
   return (
     <Wrapper
       onSubmit={() => {
-        data?.onChange?.(selected);
+        attachment?.onChange?.(selected);
         rest.onSuccess?.();
       }}
       {...WrapperProps}
@@ -45,7 +45,7 @@ export const AttachmentForm: FC<ComponentFormProps<AttachmentFormData>> = ({
       <MediaLibrary
         showTitle={false}
         onSelect={handleSelection}
-        accept={data?.accept}
+        accept={attachment?.accept}
       />
     </Wrapper>
   );

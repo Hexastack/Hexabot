@@ -9,12 +9,12 @@
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
-import { MenuForm, MenuFormData } from "./MenuForm";
+import { MenuForm } from "./MenuForm";
 
-export const MenuFormDialog = <T extends MenuFormData = MenuFormData>(
-  props: ComponentFormDialogProps<T>,
+export const MenuFormDialog = (
+  props: ComponentFormDialogProps<typeof MenuForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={MenuForm}
     addText="title.add_menu_item"
     editText="title.edit_menu_item"

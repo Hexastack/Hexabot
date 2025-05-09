@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { ILabel } from "@/types/label.types";
 
 import { LabelForm } from "./LabelForm";
 
-export const LabelFormDialog = <T extends ILabel = ILabel>(
-  props: ComponentFormDialogProps<T>,
+export const LabelFormDialog = (
+  props: ComponentFormDialogProps<typeof LabelForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={LabelForm}
     addText="title.new_label"
     editText="title.edit_label"

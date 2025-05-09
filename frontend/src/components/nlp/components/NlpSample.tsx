@@ -167,10 +167,14 @@ export default function NlpSample() {
               : null,
           };
 
-          dialogs.open(NlpSampleFormDialog, data, {
-            maxWidth: "md",
-            hasButtons: false,
-          });
+          dialogs.open(
+            NlpSampleFormDialog,
+            { defaultValues: data },
+            {
+              maxWidth: "md",
+              hasButtons: false,
+            },
+          );
         },
         requires: [PermissionAction.UPDATE],
       },

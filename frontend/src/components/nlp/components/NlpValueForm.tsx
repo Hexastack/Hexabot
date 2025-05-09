@@ -23,20 +23,12 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { INlpEntity, NlpLookups } from "@/types/nlp-entity.types";
 import { INlpValue, INlpValueAttributes } from "@/types/nlp-value.types";
 
-export type NlpValueFormProps = {
-  defaultValues?: INlpValue;
-  presetValues: INlpEntity | undefined;
-};
-export const NlpValueForm: FC<ComponentFormProps<NlpValueFormProps>> = ({
-  data: props,
+export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
+  data: { defaultValues: nlpValue, presetValues: nlpEntity },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
-  const { defaultValues: nlpValue, presetValues: nlpEntity } = props || {
-    defaultValues: null,
-    presetValues: null,
-  };
   const { t } = useTranslate();
   const { toast } = useToast();
   const { query } = useRouter();

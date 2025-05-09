@@ -20,7 +20,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { IRole, IRoleAttributes } from "@/types/role.types";
 
 export const RoleForm: FC<ComponentFormProps<IRole>> = ({
-  data,
+  data: { defaultValues: role },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -52,22 +52,22 @@ export const RoleForm: FC<ComponentFormProps<IRole>> = ({
     },
   };
   const onSubmitForm = (params: IRoleAttributes) => {
-    if (data) {
-      updateRole({ id: data.id, params });
+    if (role) {
+      updateRole({ id: role.id, params });
     } else {
       createRole(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (role) {
       reset({
-        name: data.name,
+        name: role.name,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [role, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

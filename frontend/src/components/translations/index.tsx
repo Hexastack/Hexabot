@@ -76,7 +76,9 @@ export const Translations = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(TranslationFormDialog, row),
+        action: (row) => {
+          dialogs.open(TranslationFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {

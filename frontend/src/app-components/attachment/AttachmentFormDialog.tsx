@@ -9,16 +9,13 @@
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
-import { AttachmentForm, AttachmentFormData } from "./AttachmentForm";
+import { AttachmentForm } from "./AttachmentForm";
 
-export const AttachmentFormDialog = <
-  T extends AttachmentFormData = AttachmentFormData,
->(
-  props: ComponentFormDialogProps<T>,
+export const AttachmentFormDialog = (
+  props: ComponentFormDialogProps<typeof AttachmentForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={AttachmentForm}
-    rowKey="row"
     addText="title.media_library"
     confirmButtonProps={{ value: "button.select" }}
     {...props}

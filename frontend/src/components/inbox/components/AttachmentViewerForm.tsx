@@ -18,7 +18,11 @@ export type AttachmentViewerFormData = {
 
 export const AttachmentViewerForm: FC<
   ComponentFormProps<AttachmentViewerFormData>
-> = ({ data, Wrapper = Fragment, WrapperProps }) => {
+> = ({
+  data: { defaultValues: attachment },
+  Wrapper = Fragment,
+  WrapperProps,
+}) => {
   return (
     <Wrapper {...WrapperProps}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -29,8 +33,8 @@ export const AttachmentViewerForm: FC<
           objectFit: "contain",
           maxHeight: "70vh",
         }}
-        alt={data?.url}
-        src={data?.url}
+        alt={attachment?.url}
+        src={attachment?.url}
       />
     </Wrapper>
   );

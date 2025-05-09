@@ -21,7 +21,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { ILanguage, ILanguageAttributes } from "@/types/language.types";
 
 export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
-  data,
+  data: { defaultValues: language },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -48,9 +48,9 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
     control,
   } = useForm<ILanguageAttributes>({
     defaultValues: {
-      title: data?.title || "",
-      code: data?.code || "",
-      isRTL: data?.isRTL || false,
+      title: language?.title || "",
+      code: language?.code || "",
+      isRTL: language?.isRTL || false,
     },
   });
   const validationRules = {
@@ -62,24 +62,24 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
     },
   };
   const onSubmitForm = (params: ILanguageAttributes) => {
-    if (data) {
-      updateLanguage({ id: data.id, params });
+    if (language) {
+      updateLanguage({ id: language.id, params });
     } else {
       createLanguage(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (language) {
       reset({
-        title: data.title,
-        code: data.code,
-        isRTL: data.isRTL,
+        title: language.title,
+        code: language.code,
+        isRTL: language.isRTL,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [language, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

@@ -22,17 +22,17 @@ export type BlockMoveFormData = {
 };
 
 export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
-  data,
+  data: { defaultValues: props },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-    data?.category || "",
+    props?.category || "",
   );
   const handleMove = () => {
     if (selectedCategoryId) {
-      data?.onMove(data.ids, selectedCategoryId);
+      props?.onMove(props.ids, selectedCategoryId);
       rest.onSuccess?.();
     }
   };
@@ -43,7 +43,7 @@ export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
       {...WrapperProps}
       confirmButtonProps={{
         ...WrapperProps?.confirmButtonProps,
-        disabled: selectedCategoryId === data?.category,
+        disabled: selectedCategoryId === props?.category,
       }}
     >
       <ContentContainer>
@@ -53,7 +53,7 @@ export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
           fullWidth
           displayEmpty
         >
-          {data?.categories.map((category) => (
+          {props?.categories.map((category) => (
             <MenuItem key={category.id} value={category.id}>
               {category.label}
             </MenuItem>

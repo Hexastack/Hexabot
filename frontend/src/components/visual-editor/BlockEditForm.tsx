@@ -32,7 +32,7 @@ import { TriggersForm } from "./form/TriggersForm";
 type TSelectedTab = "triggers" | "options" | "messages";
 
 export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
-  data: block,
+  data: { defaultValues: block },
   Wrapper = Fragment,
   WrapperProps,
   ...rest

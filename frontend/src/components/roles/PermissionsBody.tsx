@@ -63,7 +63,7 @@ const AccordionModelHead = () => (
 );
 
 export const PermissionsBody: FC<ComponentFormProps<IRole>> = ({
-  data: role,
+  data: { defaultValues: role },
   Wrapper = Fragment,
   WrapperProps,
   ...rest

@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { IContentType } from "@/types/content-type.types";
 
 import { ContentTypeForm } from "./ContentTypeForm";
 
-export const ContentTypeFormDialog = <T extends IContentType = IContentType>(
-  props: ComponentFormDialogProps<T>,
+export const ContentTypeFormDialog = (
+  props: ComponentFormDialogProps<typeof ContentTypeForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={ContentTypeForm}
     addText="title.new_content_type"
     editText="title.edit_content_type"

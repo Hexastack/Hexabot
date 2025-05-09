@@ -11,17 +11,14 @@ import { MoveUp } from "@mui/icons-material";
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
-import { BlockMoveForm, BlockMoveFormData } from "./BlockMoveForm";
+import { BlockMoveForm } from "./BlockMoveForm";
 
-export const BlockMoveFormDialog = <
-  T extends BlockMoveFormData = BlockMoveFormData,
->(
-  props: ComponentFormDialogProps<T>,
+export const BlockMoveFormDialog = (
+  props: ComponentFormDialogProps<typeof BlockMoveForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={BlockMoveForm}
-    rowKey="row"
-    addText="message.select_category"
+    editText="message.select_category"
     confirmButtonProps={{ value: "button.move", startIcon: <MoveUp /> }}
     {...props}
   />

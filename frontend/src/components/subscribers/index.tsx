@@ -151,7 +151,9 @@ export const Subscribers = () => {
       [
         {
           label: ActionColumnLabel.Manage_Labels,
-          action: (row) => dialogs.open(SubscriberFormDialog, row),
+          action: (row) => {
+            dialogs.open(SubscriberFormDialog, { defaultValues: row });
+          },
         },
       ],
       t("label.operations"),

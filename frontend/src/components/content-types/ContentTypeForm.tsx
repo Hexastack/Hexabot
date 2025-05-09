@@ -25,7 +25,7 @@ import { FieldInput } from "./components/FieldInput";
 import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
-  data,
+  data: { defaultValues: contentType },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -41,8 +41,8 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     handleSubmit,
   } = useForm<Partial<IContentType>>({
     defaultValues: {
-      name: data?.name || "",
-      fields: data?.fields || FIELDS_FORM_DEFAULT_VALUES,
+      name: contentType?.name || "",
+      fields: contentType?.fields || FIELDS_FORM_DEFAULT_VALUES,
     },
   });
   const { append, fields, remove } = useFieldArray({
@@ -87,23 +87,23 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
       return;
     }
 
-    if (data) {
-      updateContentType({ id: data.id, params });
+    if (contentType) {
+      updateContentType({ id: contentType.id, params });
     } else {
       createContentType(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (contentType) {
       reset({
-        name: data.name,
-        fields: data.fields || FIELDS_FORM_DEFAULT_VALUES,
+        name: contentType.name,
+        fields: contentType.fields || FIELDS_FORM_DEFAULT_VALUES,
       });
     } else {
       reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
     }
-  }, [data, reset]);
+  }, [contentType, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

@@ -83,7 +83,9 @@ export const ContextVars = () => {
     [
       {
         label: ActionColumnLabel.Edit,
-        action: (row) => dialogs.open(ContextVarFormDialog, row),
+        action: (row) => {
+          dialogs.open(ContextVarFormDialog, { defaultValues: row });
+        },
         requires: [PermissionAction.UPDATE],
       },
       {
@@ -182,7 +184,9 @@ export const ContextVars = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => dialogs.open(ContextVarFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(ContextVarFormDialog, { defaultValues: null })
+                }
               >
                 {t("button.add")}
               </Button>

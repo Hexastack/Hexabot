@@ -8,14 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { IRole } from "@/types/role.types";
 
 import { PermissionsBody } from "./PermissionsBody";
 
-export const PermissionBodyDialog = <T extends IRole = IRole>(
-  props: ComponentFormDialogProps<T>,
+export const PermissionBodyDialog = (
+  props: ComponentFormDialogProps<typeof PermissionsBody>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={PermissionsBody}
     editText="title.manage_permissions"
     {...props}

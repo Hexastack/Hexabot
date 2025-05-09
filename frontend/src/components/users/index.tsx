@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -35,8 +35,8 @@ import { PermissionAction } from "@/types/permission.types";
 import { IUser } from "@/types/user.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
-import { CategoryFormDialog } from "./EditUserFormDialog";
-import { InviteUserFormFormDialog } from "./InviteUserFormDialog";
+import { EditUserFormDialog } from "./EditUserFormDialog";
+import { InviteUserFormDialog } from "./InviteUserFormDialog";
 
 export const Users = () => {
   const { ssoEnabled } = useConfig();
@@ -73,11 +73,12 @@ export const Users = () => {
     [
       {
         label: ActionColumnLabel.Manage_Roles,
-        action: (row) =>
-          dialogs.open(CategoryFormDialog, {
-            user: row,
-            roles: roles || [],
-          }),
+        action: (row) => {
+          dialogs.open(EditUserFormDialog, {
+            defaultValues: row,
+            presetValues: roles,
+          });
+        },
         requires: [PermissionAction.CREATE],
       },
     ],
@@ -208,7 +209,11 @@ export const Users = () => {
                 sx={{
                   float: "right",
                 }}
-                onClick={() => dialogs.open(InviteUserFormFormDialog)}
+                onClick={() =>
+                  dialogs.open(InviteUserFormDialog, {
+                    defaultValues: null,
+                  })
+                }
               >
                 {t("button.invite")}
               </Button>

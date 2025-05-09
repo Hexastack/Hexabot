@@ -21,7 +21,7 @@ import { ILabel, ILabelAttributes } from "@/types/label.types";
 import { slugify } from "@/utils/string";
 
 export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
-  data,
+  data: { defaultValues: label },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
@@ -48,9 +48,9 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
     handleSubmit,
   } = useForm<ILabelAttributes>({
     defaultValues: {
-      name: data?.name || "",
-      title: data?.title || "",
-      description: data?.description || "",
+      name: label?.name || "",
+      title: label?.title || "",
+      description: label?.description || "",
     },
   });
   const validationRules = {
@@ -61,24 +61,24 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
     description: {},
   };
   const onSubmitForm = (params: ILabelAttributes) => {
-    if (data) {
-      updateLabel({ id: data.id, params });
+    if (label) {
+      updateLabel({ id: label.id, params });
     } else {
       createLabel(params);
     }
   };
 
   useEffect(() => {
-    if (data) {
+    if (label) {
       reset({
-        name: data.name,
-        title: data.title,
-        description: data.description,
+        name: label.name,
+        title: label.title,
+        description: label.description,
       });
     } else {
       reset();
     }
-  }, [data, reset]);
+  }, [label, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>

@@ -8,16 +8,13 @@
 
 import { GenericFormDialog } from "@/app-components/dialogs";
 import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
-import { INlpDatasetSample } from "@/types/nlp-sample.types";
 
 import { NlpSampleForm } from "./NlpSampleForm";
 
-export const NlpSampleFormDialog = <
-  T extends INlpDatasetSample = INlpDatasetSample,
->(
-  props: ComponentFormDialogProps<T>,
+export const NlpSampleFormDialog = (
+  props: ComponentFormDialogProps<typeof NlpSampleForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={NlpSampleForm}
     editText="title.edit_nlp_sample"
     {...props}

@@ -13,10 +13,10 @@ import { ComponentFormDialogProps } from "@/types/common/dialogs.types";
 
 import { InviteUserForm } from "./InviteUserForm";
 
-export const InviteUserFormFormDialog = <T extends undefined = undefined>(
-  props: ComponentFormDialogProps<T>,
+export const InviteUserFormDialog = (
+  props: ComponentFormDialogProps<typeof InviteUserForm>,
 ) => (
-  <GenericFormDialog<T>
+  <GenericFormDialog
     Form={InviteUserForm}
     addText="title.invite_new_user"
     confirmButtonProps={{ startIcon: <SendIcon /> }}
