@@ -407,6 +407,12 @@ export class WebsocketGateway
     return response.getPromise();
   }
 
+  /**
+   * Retrieves notification sockets based on session id.
+   *
+   * @param sessionId - The session id
+   * @returns An RemoteSocket array
+   */
   async getNotificationSockets(
     sessionId: string,
   ): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
@@ -416,8 +422,14 @@ export class WebsocketGateway
     );
   }
 
-  async joinNotificationSockets(sessionID: string, room: Room): Promise<void> {
-    const notificationSockets = await this.getNotificationSockets(sessionID);
+  /**
+   * Join notification sockets based on session id.
+   *
+   * @param sessionId - The session id
+   * @param room - the joined room name
+   */
+  async joinNotificationSockets(sessionId: string, room: Room): Promise<void> {
+    const notificationSockets = await this.getNotificationSockets(sessionId);
 
     notificationSockets.forEach((notificationSocket) =>
       notificationSocket.join(room),
