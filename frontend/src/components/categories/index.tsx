@@ -43,7 +43,7 @@ export const Categories = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<ICategory>({
+  const { searchPayload, textFieldProps } = useSearch<ICategory>({
     $iLike: ["label"],
   });
   const { dataGridProps } = useFind(
@@ -142,7 +142,7 @@ export const Categories = () => {
             width="max-content"
           >
             <Grid item>
-              <FilterTextfield onChange={onSearch} />
+              <FilterTextfield {...textFieldProps} />
             </Grid>
             {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
               <Grid item>
