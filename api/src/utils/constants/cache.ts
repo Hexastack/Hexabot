@@ -18,3 +18,5 @@ export const LANGUAGES_CACHE_KEY = 'languages';
 export const DEFAULT_LANGUAGE_CACHE_KEY = 'default_language';
 
 export const ALLOWED_ORIGINS_CACHE_KEY = 'allowed_origins';
+
+export const NLP_MAP_CACHE_KEY = 'nlp_map';

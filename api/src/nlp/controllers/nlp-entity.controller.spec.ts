@@ -6,8 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  ConflictException,
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
@@ -67,6 +69,12 @@ describe('NlpEntityController', () => {
         NlpValueService,
         NlpSampleEntityRepository,
         NlpValueRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+          },
+        },
       ],
     });
     [nlpEntityController, nlpValueService, nlpEntityService] = await getMocks([
@@ -109,6 +117,7 @@ describe('NlpEntityController', () => {
             ) as NlpEntityFull['values'],
             lookups: curr.lookups!,
             builtin: curr.builtin!,
+            weight: curr.weight!,
           });
           return acc;
         },
@@ -163,6 +172,7 @@ describe('NlpEntityController', () => {
         name: 'sentiment',
         lookups: ['trait'],
         builtin: false,
+        weight: 1,
       };
       const result = await nlpEntityController.create(sentimentEntity);
       expect(result).toEqualPayload(sentimentEntity);
@@ -191,18 +201,18 @@ describe('NlpEntityController', () => {
   describe('findOne', () => {
     it('should find a nlp entity', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityController.findOne(firstNameEntity!.id, []);
 
       expect(result).toEqualPayload(
-        nlpEntityFixtures.find(({ name }) => name === 'first_name')!,
+        nlpEntityFixtures.find(({ name }) => name === 'firstname')!,
       );
     });
 
     it('should find a nlp entity, and populate its values', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const firstNameValues = await nlpValueService.findOne({ value: 'jhon' });
       const firstNameWithValues: NlpEntityFull = {
@@ -214,6 +224,7 @@ describe('NlpEntityController', () => {
         updatedAt: firstNameEntity!.updatedAt,
         lookups: firstNameEntity!.lookups,
         builtin: firstNameEntity!.builtin,
+        weight: firstNameEntity!.weight,
       };
       const result = await nlpEntityController.findOne(firstNameEntity!.id, [
         'values',
@@ -231,13 +242,14 @@ describe('NlpEntityController', () => {
   describe('updateOne', () => {
     it('should update a nlp entity', async () => {
       const firstNameEntity = await nlpEntityService.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const updatedNlpEntity: NlpEntityCreateDto = {
         name: 'updated',
         doc: '',
         lookups: ['trait'],
         builtin: false,
+        weight: 1,
       };
       const result = await nlpEntityController.updateOne(
         firstNameEntity!.id,
@@ -258,7 +270,7 @@ describe('NlpEntityController', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw exception when nlp entity is builtin', async () => {
+    it('should throw an exception if entity is builtin but weight not provided', async () => {
       const updateNlpEntity: NlpEntityCreateDto = {
         name: 'updated',
         doc: '',
@@ -267,7 +279,58 @@ describe('NlpEntityController', () => {
       };
       await expect(
         nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
-      ).rejects.toThrow(MethodNotAllowedException);
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should update weight if entity is builtin and weight is provided', async () => {
+      const updatedNlpEntity: NlpEntityCreateDto = {
+        name: 'updated',
+        doc: '',
+        lookups: ['trait'],
+        builtin: false,
+        weight: 4,
+      };
+      const findOneSpy = jest.spyOn(nlpEntityService, 'findOne');
+      const updateWeightSpy = jest.spyOn(nlpEntityService, 'updateWeight');
+
+      const result = await nlpEntityController.updateOne(
+        buitInEntityId!,
+        updatedNlpEntity,
+      );
+
+      expect(findOneSpy).toHaveBeenCalledWith(buitInEntityId!);
+      expect(updateWeightSpy).toHaveBeenCalledWith(
+        buitInEntityId!,
+        updatedNlpEntity.weight,
+      );
+      expect(result.weight).toBe(updatedNlpEntity.weight);
+    });
+
+    it('should update only the weight of the builtin entity', async () => {
+      const updatedNlpEntity: NlpEntityCreateDto = {
+        name: 'updated',
+        doc: '',
+        lookups: ['trait'],
+        builtin: false,
+        weight: 8,
+      };
+      const originalEntity: NlpEntity | null = await nlpEntityService.findOne(
+        buitInEntityId!,
+      );
+
+      const result: NlpEntity = await nlpEntityController.updateOne(
+        buitInEntityId!,
+        updatedNlpEntity,
+      );
+
+      // Check weight is updated
+      expect(result.weight).toBe(updatedNlpEntity.weight);
+
+      Object.entries(originalEntity!).forEach(([key, value]) => {
+        if (key !== 'weight' && key !== 'updatedAt') {
+          expect(result[key as keyof typeof result]).toEqual(value);
+        }
+      });
     });
   });
   describe('deleteMany', () => {

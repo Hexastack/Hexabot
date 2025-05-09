@@ -156,8 +156,7 @@ function StackComponent<T extends GridValidRowModel>({
             disabled={
               (isDisabled && isDisabled(params.row)) ||
               (params.row.builtin &&
-                (requires.includes(PermissionAction.UPDATE) ||
-                  requires.includes(PermissionAction.DELETE)))
+                  requires.includes(PermissionAction.DELETE))
             }
             onClick={() => {
               action && action(params.row);

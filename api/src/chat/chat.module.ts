@@ -16,6 +16,7 @@ import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
+import { NlpModule } from '@/nlp/nlp.module';
 import { UserModule } from '@/user/user.module';
 
 import { BlockController } from './controllers/block.controller';
@@ -68,6 +69,7 @@ import { SubscriberService } from './services/subscriber.service';
     AttachmentModule,
     EventEmitter2,
     UserModule,
+    NlpModule,
   ],
   controllers: [
     CategoryController,
