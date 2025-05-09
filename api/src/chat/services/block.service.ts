@@ -357,15 +357,27 @@ export class BlockService extends BaseService<
       this.filterBlocksByChannel(blocks, event.getHandler().getName()),
       event.getSender(),
     );
-    return filteredBlocks.find((b) => {
-      return b.patterns
-        .filter(
-          (p) => typeof p === 'object' && 'type' in p && p.type === 'outcome',
-        )
-        .some((p: PayloadPattern) =>
-          ['any', envelope.message.outcome].includes(p.value),
-        );
-    });
+
+    return (
+      filteredBlocks.find((b) =>
+        b.patterns.some(
+          (p) =>
+            typeof p === 'object' &&
+            'type' in p &&
+            p.type === 'outcome' &&
+            p.value === envelope.message.outcome,
+        ),
+      ) ||
+      filteredBlocks.find((b) =>
+        b.patterns.some(
+          (p) =>
+            typeof p === 'object' &&
+            'type' in p &&
+            p.type === 'outcome' &&
+            p.value === 'any',
+        ),
+      )
+    );
   }
 
   /**
