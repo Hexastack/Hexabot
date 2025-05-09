@@ -20,7 +20,9 @@ import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChan
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
+  IncomingMessageType,
   IPayload,
+  IQuickReply,
   ISubscriber,
   ISuggestion,
   QuickReplyType,
@@ -34,6 +36,16 @@ import { useConfig } from "./ConfigProvider";
 import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
+
+const formatQuickReplies = (quick_replies?: IQuickReply[]): ISuggestion[] =>
+  (quick_replies || []).map(
+    (qr) =>
+      ({
+        content_type: QuickReplyType.text,
+        text: qr.title,
+        payload: qr.payload,
+      } as ISuggestion),
+  );
 
 interface Participant {
   id: string;
@@ -262,16 +274,11 @@ const ChatProvider: React.FC<{
       "data" in newIOMessage &&
       "quick_replies" in newIOMessage.data
     ) {
-      setSuggestions(
-        (newIOMessage.data.quick_replies || []).map(
-          (qr) =>
-            ({
-              content_type: QuickReplyType.text,
-              text: qr.title,
-              payload: qr.payload,
-            } as ISuggestion),
-        ),
+      const formattedSuggestions = formatQuickReplies(
+        newIOMessage.data.quick_replies,
       );
+
+      setSuggestions(formattedSuggestions);
     } else {
       setSuggestions([]);
     }
@@ -327,6 +334,18 @@ const ChatProvider: React.FC<{
             queryParams,
           ).toString()}`,
         );
+        const mostRecentMessage = body.messages.at(-1);
+
+        if (
+          mostRecentMessage &&
+          mostRecentMessage.type === IncomingMessageType.quick_replies
+        ) {
+          const formattedSuggestions = formatQuickReplies(
+            mostRecentMessage.data["quick_replies"],
+          );
+
+          setSuggestions(formattedSuggestions);
+        }
 
         localStorage.setItem("profile", JSON.stringify(body.profile));
         setMessages(
