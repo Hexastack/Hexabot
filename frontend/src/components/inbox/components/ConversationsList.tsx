@@ -57,7 +57,6 @@ export const SubscribersList = (props: {
       </Grid>
       {subscribers?.length > 0 ? (
         <ConversationList
-          className="cs-conversation-list"
           scrollable={false}
           loading={isFetching}
           loadingMore={isFetching}
