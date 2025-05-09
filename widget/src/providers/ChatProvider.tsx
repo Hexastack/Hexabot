@@ -35,7 +35,7 @@ import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
-const getQuickReplies = (message?: TMessage): ISuggestion[] =>
+export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
   message && "data" in message && "quick_replies" in message.data
     ? (message.data.quick_replies || []).map(
         (qr) =>
