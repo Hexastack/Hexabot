@@ -20,9 +20,7 @@ import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChan
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
-  IncomingMessageType,
   IPayload,
-  IQuickReply,
   ISubscriber,
   ISuggestion,
   QuickReplyType,
@@ -37,15 +35,17 @@ import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
-const formatQuickReplies = (quick_replies?: IQuickReply[]): ISuggestion[] =>
-  (quick_replies || []).map(
-    (qr) =>
-      ({
-        content_type: QuickReplyType.text,
-        text: qr.title,
-        payload: qr.payload,
-      } as ISuggestion),
-  );
+const getQuickReplies = (message?: TMessage): ISuggestion[] =>
+  message && "data" in message && "quick_replies" in message.data
+    ? (message.data.quick_replies || []).map(
+        (qr) =>
+          ({
+            content_type: QuickReplyType.text,
+            text: qr.title,
+            payload: qr.payload,
+          } as ISuggestion),
+      )
+    : [];
 
 interface Participant {
   id: string;
@@ -269,19 +269,10 @@ const ChatProvider: React.FC<{
       setScroll(0);
     }
 
-    if (
-      newIOMessage &&
-      "data" in newIOMessage &&
-      "quick_replies" in newIOMessage.data
-    ) {
-      const formattedSuggestions = formatQuickReplies(
-        newIOMessage.data.quick_replies,
-      );
+    const quickReplies = getQuickReplies(newIOMessage as TMessage);
 
-      setSuggestions(formattedSuggestions);
-    } else {
-      setSuggestions([]);
-    }
+    setSuggestions(quickReplies);
+
     isOpen ||
       updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
     settings.alwaysScrollToBottom && setScroll(101); // @hack
@@ -334,17 +325,10 @@ const ChatProvider: React.FC<{
             queryParams,
           ).toString()}`,
         );
-        const mostRecentMessage = body.messages.at(-1);
+        const quickReplies = getQuickReplies(body.messages.at(-1));
 
-        if (
-          mostRecentMessage &&
-          mostRecentMessage.type === IncomingMessageType.quick_replies
-        ) {
-          const formattedSuggestions = formatQuickReplies(
-            mostRecentMessage.data["quick_replies"],
-          );
-
-          setSuggestions(formattedSuggestions);
+        if (getQuickReplies.length) {
+          setSuggestions(quickReplies);
         }
 
         localStorage.setItem("profile", JSON.stringify(body.profile));
