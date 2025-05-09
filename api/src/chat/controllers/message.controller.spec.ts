@@ -144,6 +144,10 @@ describe('MessageController', () => {
 
   afterAll(closeInMongodConnection);
 
+  function toArray(value?: string | string[]): string[] {
+    return value ? (Array.isArray(value) ? value : [value]) : [];
+  }
+
   describe('count', () => {
     it('should count messages', async () => {
       jest.spyOn(messageService, 'count');
@@ -165,8 +169,13 @@ describe('MessageController', () => {
       expect(messageService.findOneAndPopulate).toHaveBeenCalledWith(
         message.id,
       );
+      const expectedFixture = messageFixtures.find(
+        ({ mid }) =>
+          JSON.stringify(toArray(mid)) === JSON.stringify(message.mid),
+      );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...expectedFixture,
+        mid: toArray(expectedFixture?.mid),
         sender,
         recipient,
         sentBy: user.id,
@@ -177,8 +186,13 @@ describe('MessageController', () => {
       const result = await messageController.findOne(message.id, []);
 
       expect(messageService.findOne).toHaveBeenCalledWith(message.id);
+      const expectedFixture = messageFixtures.find(
+        ({ mid }) =>
+          JSON.stringify(toArray(mid)) === JSON.stringify(message.mid),
+      );
       expect(result).toEqualPayload({
-        ...messageFixtures.find(({ mid }) => mid === message.mid),
+        ...expectedFixture,
+        mid: toArray(expectedFixture?.mid),
         sender: sender.id,
         recipient: recipient.id,
         sentBy: user.id,

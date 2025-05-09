@@ -214,7 +214,7 @@ export default abstract class ChannelHandler<
     envelope: StdOutgoingEnvelope,
     options: any,
     context: any,
-  ): Promise<{ mid: string }>;
+  ): Promise<{ mid: string | string[] }>;
 
   /**
    * Calls the channel handler to fetch attachments and stores them
