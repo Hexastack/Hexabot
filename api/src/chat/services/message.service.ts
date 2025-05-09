@@ -11,14 +11,8 @@ import {
   InternalServerErrorException,
   Optional,
 } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { Document, Query } from 'mongoose';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
-import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   SocketGet,
   SocketPost,
@@ -45,7 +39,6 @@ export class MessageService extends BaseService<
 
   constructor(
     private readonly messageRepository: MessageRepository,
-    private attachmentService: AttachmentService,
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(messageRepository);
@@ -133,41 +126,5 @@ export class MessageService extends BaseService<
     );
 
     return lastMessages.reverse();
-  }
-
-  @OnEvent('hook:attachment:preDelete')
-  async handleDeleteImage(
-    _query: Query<
-      DeleteResult,
-      Document<Attachment, any, any>,
-      unknown,
-      Attachment,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<Attachment>,
-  ) {
-    try {
-      this.logger.log(
-        'deleting attachment messages containing deleted images',
-        criteria,
-      );
-      const foundAttachments = await this.attachmentService.find(criteria);
-
-      for (const attachment of foundAttachments) {
-        await this.updateMany(
-          {
-            'message.attachment.payload.id': attachment.id,
-          },
-          {
-            ['message.attachment.payload.id' as any]: null,
-          },
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        'Unable to cleanup old messages with attachment ids',
-        error,
-      );
-    }
   }
 }
