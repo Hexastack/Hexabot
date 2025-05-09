@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import {
+  EventEmitter2,
+  IHookOperationMap,
+  OnEvent,
+} from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
   MessageBody,
@@ -24,6 +28,7 @@ import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
 
+import { BlockRepository } from '@/chat/repositories/block.repository';
 import { MessageFull } from '@/chat/schemas/message.schema';
 import {
   Subscriber,
@@ -35,6 +40,7 @@ import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { getSessionStore } from '@/utils/constants/session-store';
 
+import { SettingService } from './../setting/services/setting.service';
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';
@@ -50,6 +56,8 @@ export class WebsocketGateway
     private readonly logger: LoggerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
+    private settingService: SettingService,
+    private blockRepository: BlockRepository,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -254,7 +262,6 @@ export class WebsocketGateway
     const { sockets } = this.io.sockets;
     this.logger.log(`Client id: ${client.id} connected`);
     this.logger.debug(`Number of connected clients: ${sockets?.size}`);
-
     this.eventEmitter.emit(`hook:websocket:connection`, client);
   }
 
@@ -404,5 +411,31 @@ export class WebsocketGateway
       response,
     );
     return response.getPromise();
+  }
+
+  @OnEvent('hook:highlight:block')
+  async handleHighlightBlock({
+    blockId,
+    highlightType,
+    userId,
+  }: IHookOperationMap['highlight']['operations']['block']) {
+    const isHighlightEnabled = await this.settingService.isHighlightEnabled();
+    if (!isHighlightEnabled) {
+      return;
+    }
+    const blockFull = await this.blockRepository.findOneAndPopulate(blockId);
+    if (!blockFull) {
+      this.logger.warn(
+        `Unable to find block to highligh with ${highlightType}`,
+        blockId,
+      );
+      return;
+    }
+    this.io.to(`blocks:${userId}`).emit('highlight:block', {
+      flowId: blockFull.category?.id,
+      blockId: blockFull.id,
+      highlightType,
+    });
+    this.logger.log(`highlighting block ${highlightType}`, { blockId });
   }
 }

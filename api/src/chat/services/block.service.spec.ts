@@ -46,7 +46,7 @@ import {
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
-  subscriberContextBlankInstance,
+  subscriber,
 } from '@/utils/test/mocks/conversation';
 import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
 import {
@@ -56,15 +56,18 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockRepository } from '../repositories/block.repository';
+import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { SubscriberModel } from '../schemas/subscriber.schema';
 import { FileType } from '../schemas/types/attachment';
 import { StdOutgoingListMessage } from '../schemas/types/message';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
+import { SubscriberService } from './subscriber.service';
 
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
@@ -91,6 +94,7 @@ describe('BlockService', () => {
           AttachmentModel,
           LabelModel,
           LanguageModel,
+          SubscriberModel,
         ]),
       ],
       providers: [
@@ -106,6 +110,8 @@ describe('BlockService', () => {
         ContentService,
         AttachmentService,
         LanguageService,
+        SubscriberService,
+        SubscriberRepository,
         {
           provide: PluginService,
           useValue: {},
@@ -429,7 +435,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 0 },
         },
-        subscriberContextBlankInstance,
+        subscriber,
         false,
         'conv_id',
       );
@@ -463,7 +469,7 @@ describe('BlockService', () => {
           ...contextBlankInstance,
           skip: { [blockProductListMock.id]: 2 },
         },
-        subscriberContextBlankInstance,
+        subscriber,
         false,
         'conv_id',
       );

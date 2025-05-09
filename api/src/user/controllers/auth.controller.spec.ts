@@ -24,6 +24,10 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { SettingRepository } from '@/setting/repositories/setting.repository';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
@@ -76,6 +80,7 @@ describe('AuthController', () => {
           InvitationModel,
           AttachmentModel,
           LanguageModel,
+          SettingModel,
         ]),
       ],
       providers: [
@@ -94,6 +99,9 @@ describe('AuthController', () => {
         LanguageRepository,
         LanguageService,
         JwtService,
+        SettingService,
+        SettingSeeder,
+        SettingRepository,
         {
           provide: MailerService,
           useValue: {
