@@ -12,8 +12,16 @@ import {
   Optional,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import mime from 'mime';
+import { v4 as uuidv4 } from 'uuid';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentFile,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { config } from '@/config';
 import { BaseService } from '@/utils/generics/base-service';
 import {
@@ -47,7 +55,7 @@ export class SubscriberService extends BaseService<
 
   constructor(
     readonly repository: SubscriberRepository,
-    protected attachmentService: AttachmentService,
+    protected readonly attachmentService: AttachmentService,
     @Optional() gateway?: WebsocketGateway,
   ) {
     super(repository);
@@ -133,6 +141,38 @@ export class SubscriberService extends BaseService<
    */
   async handOverByForeignId(foreignId: string, userId: string) {
     return await this.repository.handOverByForeignIdQuery(foreignId, userId);
+  }
+
+  /**
+   * Persist a new avatar image for a given **Subscriber** and attach it to their profile.
+   * The method is **idempotent** regarding subscriber updates: calling it again simply
+   * replaces the existing avatar reference with the new one.
+   *
+   * @param subscriberId – The unique identifier of the subscriber
+   * @param avatar       – The uploaded avatar payload containing:
+   *                       - `file` – Raw binary buffer
+   *                       - `type` – MIME type (e.g. `image/png`)
+   *                       - `size` – File size in bytes
+   *
+   * @returns Resolves once the subscriber avatar is stored
+   */
+  async storeAvatar(subscriberId: string, avatar: AttachmentFile) {
+    const { file, type, size } = avatar;
+    const extension = mime.extension(type);
+
+    const attachment = await this.attachmentService.store(file, {
+      name: `avatar-${uuidv4()}.${extension}`,
+      size,
+      type,
+      resourceRef: AttachmentResourceRef.SubscriberAvatar,
+      access: AttachmentAccess.Private,
+      createdByRef: AttachmentCreatedByRef.Subscriber,
+      createdBy: subscriberId,
+    });
+
+    await this.updateOne(subscriberId, {
+      avatar: attachment.id,
+    });
   }
 
   /**
