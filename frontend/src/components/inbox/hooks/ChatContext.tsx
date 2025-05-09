@@ -25,7 +25,7 @@ interface IChatContext {
   setSubscriberId: Dispatch<string | null>;
 }
 
-const chatContext = createContext<IChatContext>({
+const ChatContext = createContext<IChatContext>({
   subscriber: null,
   setSubscriberId: noop,
 });
@@ -49,7 +49,7 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <chatContext.Provider value={context}>{children}</chatContext.Provider>
+    <ChatContext.Provider value={context}>{children}</ChatContext.Provider>
   );
 };
 
@@ -58,7 +58,7 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
  * @description this hook is used to get the active chat
  */
 export const useChat = () => {
-  const context = useContext(chatContext);
+  const context = useContext(ChatContext);
 
   if (!context) {
     throw new Error("useChat must be used within a ChatProvider");
