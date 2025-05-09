@@ -12,7 +12,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 
 import { LocalAuthController } from './controllers/auth.controller';
 import { ModelController } from './controllers/model.controller';
@@ -53,7 +52,6 @@ import { ValidateAccountService } from './services/validate-account.service';
       InvitationModel,
       RoleModel,
       PermissionModel,
-      AttachmentModel,
     ]),
     PassportModule.register({
       session: true,
