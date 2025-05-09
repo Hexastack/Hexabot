@@ -21,7 +21,8 @@ import cookie from 'cookie';
 import * as cookieParser from 'cookie-parser';
 import signature from 'cookie-signature';
 import { Session as ExpressSession, SessionData } from 'express-session';
-import { Server, Socket } from 'socket.io';
+import { RemoteSocket, Server, Socket } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { sync as uid } from 'uid-safe';
 
 import { MessageFull } from '@/chat/schemas/message.schema';
@@ -404,5 +405,22 @@ export class WebsocketGateway
       response,
     );
     return response.getPromise();
+  }
+
+  async getNotificationSockets(
+    sessionId: string,
+  ): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
+    return (await this.io.fetchSockets()).filter(
+      ({ handshake, data }) =>
+        !handshake.query.channel && data.sessionID === sessionId,
+    );
+  }
+
+  async joinNotificationSockets(sessionID: string, room: Room): Promise<void> {
+    const notificationSockets = await this.getNotificationSockets(sessionID);
+
+    notificationSockets.forEach((notificationSocket) =>
+      notificationSocket.join(room),
+    );
   }
 }
