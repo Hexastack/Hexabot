@@ -269,7 +269,7 @@ export class WebsocketGateway
   }
 
   async handleDisconnect(client: Socket): Promise<void> {
-    this.logger.log(`Client id:${client.id} disconnected`);
+    this.logger.log(`Client id: ${client.id} disconnected`);
     // Configurable custom afterDisconnect logic here
     // (default: do nothing)
     if (!config.sockets.afterDisconnect) {
