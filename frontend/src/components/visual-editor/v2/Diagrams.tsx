@@ -52,6 +52,7 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import { BlockPorts } from "@/types/visual-editor.types";
+import { useSocketGetQuery } from "@/websocket/socket-hooks";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
 import { ZOOM_LEVEL } from "../constants";
@@ -161,6 +162,9 @@ const Diagrams = () => {
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
   const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
+
+  useSocketGetQuery("/block/subscribe/");
+
   const onCategoryChange = (targetCategory: number) => {
     if (categories) {
       const { id } = categories[targetCategory];

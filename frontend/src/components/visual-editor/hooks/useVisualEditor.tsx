@@ -8,11 +8,12 @@
 
 import { debounce } from "@mui/material";
 import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
+import { useRouter } from "next/router";
 import * as React from "react";
 import { createContext, useContext } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import {
   BlockPorts,
@@ -20,6 +21,7 @@ import {
   IVisualEditorContext,
   VisualEditorContextProps,
 } from "@/types/visual-editor.types";
+import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { ZOOM_LEVEL } from "../constants";
 import { AdvancedLinkFactory } from "../v2/AdvancedLink/AdvancedLinkFactory";
@@ -42,6 +44,9 @@ const addNode = (block: IBlock) => {
     patterns: (block?.patterns || [""]) as any,
     message: (block?.message || [""]) as any,
     starts_conversation: !!block?.starts_conversation,
+    _hasErrored: false,
+    _isHighlighted: false,
+    _hasFallbacked: false,
   });
 
   node.setPosition(block.position.x, block.position.y);
@@ -252,6 +257,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
+  const router = useRouter();
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
@@ -266,6 +272,126 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       },
     });
   };
+
+  async function clearHighlights() {
+    return new Promise((resolve) => {
+      if (!engine) {
+        return;
+      }
+
+      const nodes = engine.getModel().getNodes() as NodeModel[];
+
+      nodes.forEach((node) => {
+        if (node.isHighlighted()) {
+          node.setHighlighted(false);
+        }
+
+        if (node.hasErrored()) {
+          node.setHasErrored(false);
+        }
+        if (node.hasFallbacked()) {
+          node.setHasFallbacked(false);
+        }
+      });
+
+      resolve(true);
+    });
+  }
+  function isBlockVisibleOnCanvas(block: NodeModel): boolean {
+    const zoom = engine.getModel().getZoomLevel() / 100;
+    const canvas = engine.getCanvas();
+    const canvasRect = canvas?.getBoundingClientRect();
+
+    if (!canvasRect) {
+      return false;
+    }
+
+    const offsetX = engine.getModel().getOffsetX();
+    const offsetY = engine.getModel().getOffsetY();
+    const blockX = block.getX() * zoom + offsetX;
+    const blockY = block.getY() * zoom + offsetY;
+    const blockScreenX = blockX + (BLOCK_WIDTH * zoom) / 2;
+    const blockScreenY = blockY + (BLOCK_HEIGHT * zoom) / 2;
+
+    return (
+      blockScreenX > 0 &&
+      blockScreenX < canvasRect.width &&
+      blockScreenY > 0 &&
+      blockScreenY < canvasRect.height
+    );
+  }
+
+  function centerBlockInView(block: NodeModel) {
+    const zoom = engine.getModel().getZoomLevel() / 100;
+    const canvasRect = engine.getCanvas()?.getBoundingClientRect();
+
+    if (!canvasRect) {
+      return;
+    }
+
+    const centerX = canvasRect.width / 2;
+    const centerY = canvasRect.height / 2;
+    const offsetX = centerX - (block.getX() + BLOCK_WIDTH / 2) * zoom;
+    const offsetY = centerY - (block.getY() + BLOCK_HEIGHT / 2) * zoom;
+
+    engine.getModel().setOffset(offsetX, offsetY);
+  }
+
+  async function redirectToTriggeredFlow(
+    currentFlow: string,
+    triggeredFlow: string,
+  ) {
+    if (currentFlow !== triggeredFlow) {
+      setSelectedCategoryId(triggeredFlow);
+    }
+
+    const triggeredFlowUrl = `/${RouterType.VISUAL_EDITOR}/flows/${triggeredFlow}`;
+
+    if (window.location.href !== triggeredFlowUrl) {
+      await router.push(triggeredFlowUrl);
+      await wait(200);
+    }
+  }
+
+  function wait(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function handleHighlightFlow(payload: {
+    flowId: string;
+    blockId: string;
+    highlightType: "highlight" | "error" | "fallback";
+  }) {
+    await redirectToTriggeredFlow(selectedCategoryId, payload.flowId);
+
+    await clearHighlights();
+    const block = engine?.getModel().getNode(payload.blockId) as
+      | NodeModel
+      | undefined;
+
+    if (!block) {
+      return;
+    }
+
+    if (!isBlockVisibleOnCanvas(block)) {
+      centerBlockInView(block);
+    }
+
+    switch (payload.highlightType) {
+      case "highlight":
+        block.setHighlighted(true);
+        break;
+      case "error":
+        block.setHasErrored(true);
+        break;
+      case "fallback":
+        block.setHasFallbacked(true);
+        break;
+    }
+
+    block.setSelected(true);
+  }
+  useSubscribe("highlight:block", handleHighlightFlow);
 
   return (
     <VisualEditorContext.Provider

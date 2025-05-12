@@ -49,12 +49,15 @@ import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import { BlockRepository } from '../repositories/block.repository';
 import { CategoryRepository } from '../repositories/category.repository';
 import { LabelRepository } from '../repositories/label.repository';
+import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { Block, BlockModel } from '../schemas/block.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { SubscriberModel } from '../schemas/subscriber.schema';
 import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
+import { SubscriberService } from '../services/subscriber.service';
 
 import { Category, CategoryModel } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
@@ -93,6 +96,7 @@ describe('BlockController', () => {
           RoleModel,
           PermissionModel,
           LanguageModel,
+          SubscriberModel,
         ]),
       ],
       providers: [
@@ -116,6 +120,8 @@ describe('BlockController', () => {
         PermissionService,
         LanguageService,
         PluginService,
+        SubscriberService,
+        SubscriberRepository,
         {
           provide: I18nService,
           useValue: {

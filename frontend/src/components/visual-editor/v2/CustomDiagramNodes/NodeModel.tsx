@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,8 +8,8 @@
 
 import { BaseModelOptions } from "@projectstorm/react-canvas-core";
 import {
-  DefaultNodeModel as StormNodeModel,
   DefaultPortModel,
+  DefaultNodeModel as StormNodeModel,
 } from "@projectstorm/react-diagrams";
 
 import { BlockPorts } from "@/types/visual-editor.types";
@@ -24,6 +24,9 @@ export interface NodeModelOptions extends BaseModelOptions {
   patterns?: string[];
   message?: string[];
   starts_conversation?: boolean;
+  _isHighlighted: boolean;
+  _hasErrored: boolean;
+  _hasFallbacked: boolean;
 }
 
 export class NodeModel extends StormNodeModel {
@@ -36,8 +39,17 @@ export class NodeModel extends StormNodeModel {
   patterns: string[];
   message: string[];
   starts_conversation?: boolean;
+  _isHighlighted: boolean = false;
+  _hasErrored: boolean = false;
+  _hasFallbacked: boolean = false;
 
-  constructor(options: NodeModelOptions = {}) {
+  constructor(
+    options: NodeModelOptions = {
+      _isHighlighted: false,
+      _hasErrored: false,
+      _hasFallbacked: false,
+    },
+  ) {
     super({
       ...options,
       type: "ts-custom-node",
@@ -73,6 +85,32 @@ export class NodeModel extends StormNodeModel {
         maximumLinks: 1,
       }),
     );
+  }
+  setHighlighted(isHighlighted: boolean) {
+    this._isHighlighted = isHighlighted;
+    this.fireEvent({ isHighlighted }, "stateChanged");
+  }
+
+  setHasErrored(hasErrored: boolean) {
+    this._hasErrored = hasErrored;
+    this.fireEvent({ hasErrored }, "stateChanged");
+  }
+
+  setHasFallbacked(hasFallback: boolean) {
+    this._hasFallbacked = hasFallback;
+    this.fireEvent({ hasFallback }, "stateChanged");
+  }
+
+  isHighlighted(): boolean {
+    return this._isHighlighted;
+  }
+
+  hasErrored(): boolean {
+    return this._hasErrored;
+  }
+
+  hasFallbacked(): boolean {
+    return this._hasFallbacked;
   }
 
   serialize() {

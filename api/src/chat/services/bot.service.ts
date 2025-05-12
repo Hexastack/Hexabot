@@ -145,11 +145,15 @@ export class BotService {
       const envelope = await this.blockService.processMessage(
         block,
         context,
-        recipient?.context,
+        recipient,
         fallback,
         convo.id,
       );
-
+      this.eventEmitter.emit('hook:highlight:block', {
+        blockId: block.id,
+        userId: recipient.id,
+        highlightType: fallback ? 'fallback' : 'highlight',
+      });
       if (envelope.format !== OutgoingMessageFormat.system) {
         await this.sendMessageToSubscriber(
           envelope,
@@ -328,6 +332,11 @@ export class BotService {
             );
           await this.triggerBlock(event, updatedConversation, next, fallback);
         } catch (err) {
+          this.eventEmitter.emit('hook:highlight:block', {
+            userId: convo.sender.id,
+            blockId: next.id!,
+            highlightType: fallback ? 'fallback' : 'error',
+          });
           this.logger.error('Unable to store context data!', err);
           return this.eventEmitter.emit('hook:conversation:end', convo);
         }
@@ -524,11 +533,13 @@ export class BotService {
                 updatedAt: new Date(),
                 attachedBlock: null,
               } as any as BlockFull;
-
+              const recipient = structuredClone(event.getSender());
+              recipient.context.vars = {};
               const envelope = await this.blockService.processMessage(
                 globalFallbackBlock,
                 getDefaultConversationContext(),
-                { vars: {} }, // @TODO: use subscriber ctx
+                recipient,
+                // { vars: {} }, // @TODO: use subscriber ctx
               );
 
               await this.sendMessageToSubscriber(

@@ -164,4 +164,9 @@ export class SettingService extends BaseService<Setting> {
     const settings = await this.findAll();
     return this.buildTree(settings);
   }
+
+  public async isHighlightEnabled(): Promise<boolean> {
+    const settings = await this.getSettings();
+    return settings.chatbot_settings.enable_debug ?? false;
+  }
 }

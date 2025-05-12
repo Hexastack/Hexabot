@@ -120,6 +120,16 @@ declare module '@nestjs/event-emitter' {
         connection: Socket;
       }
     >;
+    highlight: TDefinition<
+      object,
+      {
+        block: {
+          userId: string;
+          blockId: string;
+          highlightType: HighlightType;
+        };
+      }
+    >;
   }
 
   /* hooks */
@@ -423,3 +433,5 @@ declare module '@nestjs/event-emitter' {
     H extends G,
   >(event: customEvent<G>, options?: OnEventOptions): OnEventMethodDecorator<H>;
 }
+
+export type HighlightType = 'highlight' | 'error' | 'fallback';
