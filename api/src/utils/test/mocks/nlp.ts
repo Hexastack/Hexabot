@@ -32,22 +32,6 @@ export const mockNlpGreetingFullNameEntities: NLU.ParseEntities = {
       entity: 'lastname',
       value: 'doe',
       confidence: 0.5,
-      score: 0.425,
-    },
-  ],
-};
-
-export const mockNlpGreetingWrongNameEntities: NLU.ParseEntities = {
-  entities: [
-    {
-      entity: 'intent',
-      value: 'greeting',
-      confidence: 0.94,
-    },
-    {
-      entity: 'firstname',
-      value: 'doe',
-      confidence: 0.33,
     },
   ],
 };
