@@ -416,6 +416,10 @@ export class WebsocketGateway
   async getNotificationSockets(
     sessionId: string,
   ): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
+    if (!sessionId) {
+      throw new Error('SessionId is required!');
+    }
+
     return (await this.io.fetchSockets()).filter(
       ({ handshake, data }) =>
         !handshake.query.channel && data.sessionID === sessionId,
@@ -429,7 +433,15 @@ export class WebsocketGateway
    * @param room - the joined room name
    */
   async joinNotificationSockets(sessionId: string, room: Room): Promise<void> {
+    if (!sessionId) {
+      throw new Error('SessionId is required!');
+    }
+
     const notificationSockets = await this.getNotificationSockets(sessionId);
+
+    if (!notificationSockets.length) {
+      throw new Error('No notification sockets found!');
+    }
 
     notificationSockets.forEach((notificationSocket) =>
       notificationSocket.join(room),
