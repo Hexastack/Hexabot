@@ -7,7 +7,6 @@
  */
 
 import { INestApplication } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Socket, io } from 'socket.io-client';
 
 import {
@@ -27,11 +26,7 @@ describe('WebsocketGateway', () => {
   beforeAll(async () => {
     // Instantiate the app
     const { module } = await buildTestingMocks({
-      providers: [
-        WebsocketGateway,
-        EventEmitter2,
-        SocketEventDispatcherService,
-      ],
+      providers: [WebsocketGateway, SocketEventDispatcherService],
       imports: [
         rootMongooseTestModule(({ uri, dbName }) => {
           process.env.MONGO_URI = uri;
@@ -51,7 +46,7 @@ describe('WebsocketGateway', () => {
       query: { EIO: '4', transport: 'websocket', channel: 'web-channel' },
     });
 
-    app.listen(3000);
+    await app.listen(3000);
   });
 
   afterAll(async () => {
@@ -64,22 +59,31 @@ describe('WebsocketGateway', () => {
   });
 
   it('should connect successfully', async () => {
-    ioClient.on('connect', () => {
-      expect(true).toBe(true);
+    const socketClient = ioClient.connect();
+
+    await new Promise<void>((resolve) => {
+      socketClient.on('connect', () => {
+        expect(true).toBe(true);
+        resolve();
+      });
     });
-    ioClient.connect();
-    ioClient.disconnect();
+
+    socketClient.disconnect();
   });
 
   it('should emit "OK" on "healthcheck"', async () => {
-    ioClient.on('connect', () => {
-      ioClient.emit('healthcheck', 'Hello world');
+    const socketClient = ioClient.connect();
 
-      ioClient.on('event', (data) => {
-        expect(data).toBe('OK');
+    await new Promise<void>((resolve) => {
+      socketClient.on('connect', () => {
+        socketClient.emit('healthcheck', 'Hello world!');
+        socketClient.on('event', (data) => {
+          expect(data).toBe('OK');
+          resolve();
+        });
       });
     });
-    ioClient.connect();
-    ioClient.disconnect();
+
+    socketClient.disconnect();
   });
 });
