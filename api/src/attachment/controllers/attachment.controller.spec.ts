@@ -9,7 +9,10 @@
 import fs from 'fs';
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { BadRequestException } from '@nestjs/common/exceptions';
+import {
+  BadRequestException,
+  MethodNotAllowedException,
+} from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Request } from 'express';
@@ -215,29 +218,10 @@ describe('AttachmentController', () => {
   });
 
   describe('deleteOne', () => {
-    it('should delete an attachment by id', async () => {
-      jest.spyOn(attachmentService, 'deleteOne');
-      const result = await attachmentController.deleteOne(
-        attachmentToDelete.id,
-      );
-
-      expect(attachmentService.deleteOne).toHaveBeenCalledWith(
-        attachmentToDelete.id,
-      );
-      expect(result).toEqual({
-        acknowledged: true,
-        deletedCount: 1,
-      });
-    });
-
-    it('should throw a NotFoundException when attempting to delete an attachment by id', async () => {
+    it('should throw a MethodNotAllowedException when attempting to delete an attachment by id', async () => {
       await expect(
         attachmentController.deleteOne(attachmentToDelete.id),
-      ).rejects.toThrow(
-        new NotFoundException(
-          `Attachment with ID ${attachmentToDelete.id} not found`,
-        ),
-      );
+      ).rejects.toThrow(MethodNotAllowedException);
     });
   });
 });

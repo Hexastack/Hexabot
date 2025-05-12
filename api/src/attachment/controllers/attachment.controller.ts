@@ -13,6 +13,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  MethodNotAllowedException,
   NotFoundException,
   Param,
   Post,
@@ -32,7 +33,6 @@ import { config } from '@/config';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
-import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -185,20 +185,21 @@ export class AttachmentController extends BaseController<Attachment> {
   }
 
   /**
-   * Deletes an attachment with the specified ID.
+   * Deletion of attachments is disallowed to prevent database inconsistencies.
+   * Attachments may be referenced by blocks, messages, or content elements,
+   * and deleting them directly could lead to orphaned references or broken UI.
    *
-   * @param id - The ID of the attachment to delete.
-   * @returns A promise that resolves to the result of the deletion operation.
+   * @param id - The ID of the attachment (not used since deletion is not allowed).
+   * @throws MethodNotAllowedException - Always thrown to indicate deletion is not permitted.
    */
   @CsrfCheck(true)
   @Delete(':id')
-  @HttpCode(204)
-  async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
-    const result = await this.attachmentService.deleteOne(id);
-    if (result.deletedCount === 0) {
-      this.logger.warn(`Unable to delete attachment by id ${id}`);
-      throw new NotFoundException(`Attachment with ID ${id} not found`);
-    }
-    return result;
+  @HttpCode(405)
+  async deleteOne(@Param('id') id: string): Promise<void> {
+    // Deletion is explicitly disallowed due to potential reference issues.
+    this.logger.warn(`Attempted deletion of attachment ${id} is not allowed.`);
+    throw new MethodNotAllowedException(
+      'Deletion of attachments is not permitted to avoid data inconsistency.',
+    );
   }
 }
