@@ -31,6 +31,9 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
+import { Room } from '@/websocket/types';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageRepository } from '../repositories/message.repository';
 import { Message, MessageModel } from '../schemas/message.schema';
@@ -53,6 +56,13 @@ describe('MessageService', () => {
   let recipient: Subscriber;
   let messagesWithSenderAndRecipient: Message[];
   let user: User;
+  let mockGateway: Partial<WebsocketGateway>;
+  let mockMessageService: MessageService;
+  const SESSION_ID = 'session-123';
+  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
+    success: true,
+    subscribe: Room.MESSAGE,
+  };
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -102,10 +112,37 @@ describe('MessageService', () => {
       recipient: allSubscribers.find(({ id }) => id === message.recipient)?.id,
       sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
     }));
+    mockGateway = {
+      joinNotificationSockets: jest.fn(),
+    };
+    mockMessageService = new MessageService(
+      {} as any,
+      {} as any,
+      mockGateway as any,
+    );
   });
 
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);
+
+  describe('subscribe', () => {
+    it('should join Notification sockets message room and return a success response', async () => {
+      const req = { sessionID: SESSION_ID };
+      const res = {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      };
+
+      await mockMessageService.subscribe(req as any, res as any);
+
+      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+        SESSION_ID,
+        Room.MESSAGE,
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
+    });
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find message by id, and populate its corresponding sender and recipient', async () => {

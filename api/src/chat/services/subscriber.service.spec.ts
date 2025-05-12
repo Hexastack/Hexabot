@@ -28,6 +28,9 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
+import { Room } from '@/websocket/types';
+import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
@@ -45,6 +48,13 @@ describe('SubscriberService', () => {
   let allSubscribers: Subscriber[];
   let allLabels: Label[];
   let allUsers: User[];
+  let mockGateway: Partial<WebsocketGateway>;
+  let mockSubscriberService: SubscriberService;
+  const SESSION_ID = 'session-123';
+  const SUCCESS_PAYLOAD: IOOutgoingSubscribeMessage = {
+    success: true,
+    subscribe: Room.SUBSCRIBER,
+  };
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -84,10 +94,37 @@ describe('SubscriberService', () => {
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
     allUsers = await userRepository.findAll();
+    mockGateway = {
+      joinNotificationSockets: jest.fn(),
+    };
+    mockSubscriberService = new SubscriberService(
+      {} as any,
+      {} as any,
+      mockGateway as any,
+    );
   });
 
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);
+
+  describe('subscribe', () => {
+    it('should join Notification sockets subscriber room and return a success response', async () => {
+      const req = { sessionID: SESSION_ID };
+      const res = {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      };
+
+      await mockSubscriberService.subscribe(req as any, res as any);
+
+      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+        SESSION_ID,
+        Room.SUBSCRIBER,
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
+    });
+  });
 
   describe('findOneAndPopulate', () => {
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
