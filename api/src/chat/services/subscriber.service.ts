@@ -74,7 +74,7 @@ export class SubscriberService extends BaseService<
         Room.SUBSCRIBER,
       );
 
-      return res.json({
+      return res.status(200).json({
         success: true,
         subscribe: Room.SUBSCRIBER,
       });
