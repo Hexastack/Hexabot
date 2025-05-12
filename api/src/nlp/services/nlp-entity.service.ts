@@ -7,7 +7,7 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
@@ -64,7 +64,9 @@ export class NlpEntityService extends BaseService<
    */
   async updateWeight(id: string, updatedWeight: number): Promise<NlpEntity> {
     if (updatedWeight <= 0) {
-      throw new Error('Weight must be a strictly positive number');
+      throw new BadRequestException(
+        'Weight must be a strictly positive number',
+      );
     }
 
     return await this.repository.updateOne(id, { weight: updatedWeight });

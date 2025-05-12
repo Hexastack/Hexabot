@@ -9,7 +9,6 @@
 import {
   BadRequestException,
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
@@ -34,7 +33,7 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
+import { NlpEntityCreateDto, NlpEntityUpdateDto } from '../dto/nlp-entity.dto';
 import {
   NlpEntity,
   NlpEntityFull,
@@ -143,7 +142,7 @@ export class NlpEntityController extends BaseController<
    * This endpoint allows updating an existing NLP entity. The entity must not be a built-in entity.
    *
    * @param id - The ID of the NLP entity to update.
-   * @param updateNlpEntityDto - The new data for the NLP entity.
+   * @param nlpEntityDto - The new data for the NLP entity.
    *
    * @returns The updated NLP entity.
    */
@@ -151,7 +150,7 @@ export class NlpEntityController extends BaseController<
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
-    @Body() updateNlpEntityDto: NlpEntityCreateDto,
+    @Body() nlpEntityDto: NlpEntityUpdateDto,
   ): Promise<NlpEntity> {
     const nlpEntity = await this.nlpEntityService.findOne(id);
     if (!nlpEntity) {
@@ -159,21 +158,12 @@ export class NlpEntityController extends BaseController<
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
 
-    if (nlpEntity.builtin) {
+    if (nlpEntity.builtin && nlpEntityDto.weight) {
       // Only allow weight update for builtin entities
-      if (updateNlpEntityDto.weight) {
-        return await this.nlpEntityService.updateWeight(
-          id,
-          updateNlpEntityDto.weight,
-        );
-      } else {
-        throw new ConflictException(
-          `Cannot update builtin NLP Entity ${nlpEntity.name} except for weight`,
-        );
-      }
+      return await this.nlpEntityService.updateWeight(id, nlpEntityDto.weight);
     }
 
-    return await this.nlpEntityService.updateOne(id, updateNlpEntityDto);
+    return await this.nlpEntityService.updateOne(id, nlpEntityDto);
   }
 
   /**

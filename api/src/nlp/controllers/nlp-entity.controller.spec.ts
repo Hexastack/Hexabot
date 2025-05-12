@@ -9,7 +9,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
-  ConflictException,
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
@@ -29,7 +28,7 @@ import {
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntityCreateDto } from '../dto/nlp-entity.dto';
+import { NlpEntityCreateDto, NlpEntityUpdateDto } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -270,24 +269,8 @@ describe('NlpEntityController', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw an exception if entity is builtin but weight not provided', async () => {
-      const updateNlpEntity: NlpEntityCreateDto = {
-        name: 'updated',
-        doc: '',
-        lookups: ['trait'],
-        builtin: false,
-      };
-      await expect(
-        nlpEntityController.updateOne(buitInEntityId!, updateNlpEntity),
-      ).rejects.toThrow(ConflictException);
-    });
-
     it('should update weight if entity is builtin and weight is provided', async () => {
-      const updatedNlpEntity: NlpEntityCreateDto = {
-        name: 'updated',
-        doc: '',
-        lookups: ['trait'],
-        builtin: false,
+      const updatedNlpEntity: NlpEntityUpdateDto = {
         weight: 4,
       };
       const findOneSpy = jest.spyOn(nlpEntityService, 'findOne');

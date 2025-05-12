@@ -55,7 +55,25 @@ export class NlpEntityCreateDto {
     type: Number,
   })
   @IsOptional()
-  @Validate((value) => value > 0, {
+  @Validate((value: number) => value > 0, {
+    message: 'Weight must be a strictly positive number',
+  })
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  weight?: number;
+}
+
+export class NlpEntityUpdateDto {
+  @ApiPropertyOptional({ type: String })
+  @IsString()
+  @IsOptional()
+  foreign_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Nlp entity associated weight for next block triggering',
+    type: Number,
+  })
+  @IsOptional()
+  @Validate((value: number) => value > 0, {
     message: 'Weight must be a strictly positive number',
   })
   @IsNumber({ allowNaN: false, allowInfinity: false })
@@ -64,4 +82,5 @@ export class NlpEntityCreateDto {
 
 export type NlpEntityDto = DtoConfig<{
   create: NlpEntityCreateDto;
+  update: NlpEntityUpdateDto;
 }>;

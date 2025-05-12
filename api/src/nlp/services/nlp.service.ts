@@ -10,7 +10,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { HelperService } from '@/helper/helper.service';
-import { NLU } from '@/helper/types';
+import { HelperType, NLU } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
 
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
@@ -70,7 +70,7 @@ export class NlpService {
   async handleEntityCreate(entity: NlpEntityDocument) {
     // Synchonize new entity with NLP
     try {
-      const helper = await this.helperService.getDefaultNluHelper();
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const foreignId = await helper.addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
       return await this.nlpEntityService.updateOne(
