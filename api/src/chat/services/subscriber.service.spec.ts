@@ -178,11 +178,11 @@ describe('SubscriberService', () => {
 
       const fakeAttachment = { id: '9'.repeat(24) } as Attachment;
       jest.spyOn(attachmentService, 'store').mockResolvedValue(fakeAttachment);
-      const updateOneSpy = jest
-        .spyOn(subscriberService, 'updateOne')
-        .mockResolvedValue(allSubscribers[0]);
 
-      await subscriberService.storeAvatar(subscriber.id, avatarPayload);
+      const result = await subscriberService.storeAvatar(
+        subscriber.id,
+        avatarPayload,
+      );
 
       expect(attachmentService.store).toHaveBeenCalledTimes(1);
       expect(attachmentService.store).toHaveBeenCalledWith(
@@ -198,9 +198,7 @@ describe('SubscriberService', () => {
         }),
       );
 
-      expect(updateOneSpy).toHaveBeenCalledWith(subscriber.id, {
-        avatar: fakeAttachment.id,
-      });
+      expect(result.avatar).toBe(fakeAttachment.id);
     });
 
     it('should propagate an error from AttachmentService and leave the subscriber unchanged', async () => {

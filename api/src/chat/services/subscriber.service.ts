@@ -156,7 +156,10 @@ export class SubscriberService extends BaseService<
    *
    * @returns Resolves once the subscriber avatar is stored
    */
-  async storeAvatar(subscriberId: string, avatar: AttachmentFile) {
+  async storeAvatar(
+    subscriberId: string,
+    avatar: AttachmentFile,
+  ): Promise<Subscriber> {
     const { file, type, size } = avatar;
     const extension = mime.extension(type);
 
@@ -170,7 +173,7 @@ export class SubscriberService extends BaseService<
       createdBy: subscriberId,
     });
 
-    await this.updateOne(subscriberId, {
+    return await this.updateOne(subscriberId, {
       avatar: attachment.id,
     });
   }
