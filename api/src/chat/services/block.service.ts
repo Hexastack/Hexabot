@@ -181,7 +181,9 @@ export class BlockService extends BaseService<
         const scoredEntities =
           await this.nlpService.computePredictionScore(nlp);
 
-        block = this.matchBestNLP(filteredBlocks, scoredEntities);
+        if (scoredEntities.entities.length > 0) {
+          block = this.matchBestNLP(filteredBlocks, scoredEntities);
+        }
       }
     }
 
@@ -395,10 +397,8 @@ export class BlockService extends BaseService<
     prediction: NLU.ScoredEntities,
     penaltyFactor = 0.95,
   ): number {
-    if (!patterns.length) {
-      throw new Error(
-        'Unable to compute the NLU match score : patterns are missing',
-      );
+    if (!patterns.length || !prediction.entities.length) {
+      return 0;
     }
 
     return patterns.reduce((score, pattern) => {
@@ -456,9 +456,7 @@ export class BlockService extends BaseService<
     penaltyFactor: number = 0.95,
   ): number {
     if (!entity || !pattern) {
-      throw new Error(
-        'Unable to compute pattern score : missing entity/pattern',
-      );
+      return 0;
     }
 
     // In case the pattern matches the entity regardless of the value (any)

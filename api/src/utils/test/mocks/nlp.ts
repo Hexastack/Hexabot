@@ -27,7 +27,16 @@ export const mockNlpGreetingNameEntities: NLU.ScoredEntities = {
 
 export const mockNlpGreetingFullNameEntities: NLU.ParseEntities = {
   entities: [
-    ...mockNlpGreetingNameEntities.entities,
+    {
+      entity: 'intent',
+      value: 'greeting',
+      confidence: 0.999,
+    },
+    {
+      entity: 'firstname',
+      value: 'jhon',
+      confidence: 0.5,
+    },
     {
       entity: 'lastname',
       value: 'doe',
