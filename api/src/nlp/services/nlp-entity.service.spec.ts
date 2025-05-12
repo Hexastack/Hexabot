@@ -29,7 +29,7 @@ import { NlpValueModel } from '../schemas/nlp-value.schema';
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueService } from './nlp-value.service';
 
-describe('nlpEntityService', () => {
+describe('NlpEntityService', () => {
   let nlpEntityService: NlpEntityService;
   let nlpEntityRepository: NlpEntityRepository;
   let nlpValueRepository: NlpValueRepository;
@@ -221,32 +221,47 @@ describe('nlpEntityService', () => {
       const result = await nlpEntityService.getNlpMap();
 
       expect(result).toBeInstanceOf(Map);
-      expect(result.get('firstname')).toEqual(
-        expect.objectContaining({
+      expect(result.get('firstname')).toEqualPayload(
+        {
           name: 'firstname',
           lookups: ['keywords'],
           doc: '',
           builtin: false,
-          weight: 1,
+          weight: 0.85,
           values: [
-            expect.objectContaining({
+            {
               value: 'jhon',
               expressions: ['john', 'joohn', 'jhonny'],
               builtin: true,
               doc: '',
-            }),
+            },
           ],
-        }),
+        },
+        ['id', 'createdAt', 'updatedAt', 'metadata', 'entity'],
       );
-      expect(result.get('subject')).toEqual(
-        expect.objectContaining({
+      expect(result.get('subject')).toEqualPayload(
+        {
           name: 'subject',
           lookups: ['trait'],
           doc: '',
           builtin: false,
-          weight: 1,
-          values: [],
-        }),
+          weight: 0.95,
+          values: [
+            {
+              value: 'product',
+              expressions: [],
+              builtin: false,
+              doc: '',
+            },
+            {
+              value: 'claim',
+              expressions: [],
+              builtin: false,
+              doc: '',
+            },
+          ],
+        },
+        ['id', 'createdAt', 'updatedAt', 'metadata', 'entity'],
       );
     });
   });

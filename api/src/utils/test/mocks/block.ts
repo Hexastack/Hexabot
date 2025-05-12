@@ -230,23 +230,20 @@ export const blockGetStarted = {
       value: 'Livre',
       type: PayloadType.attachments,
     },
-    [
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'greeting',
-      },
-      {
-        entity: 'firstname',
-        match: 'entity',
-      },
-    ],
   ],
   trigger_labels: customerLabelsMock,
   message: ['Welcome! How are you ? '],
 } as unknown as BlockFull;
 
-export const mockNlpPatternsSetOne: NlpPattern[] = [
+export const mockNlpGreetingPatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+];
+
+export const mockNlpGreetingNamePatterns: NlpPattern[] = [
   {
     entity: 'intent',
     match: 'value',
@@ -259,7 +256,20 @@ export const mockNlpPatternsSetOne: NlpPattern[] = [
   },
 ];
 
-export const mockNlpPatternsSetTwo: NlpPattern[] = [
+export const mockNlpGreetingWrongNamePatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'doe',
+  },
+];
+
+export const mockNlpAffirmationPatterns: NlpPattern[] = [
   {
     entity: 'intent',
     match: 'value',
@@ -272,7 +282,7 @@ export const mockNlpPatternsSetTwo: NlpPattern[] = [
   },
 ];
 
-export const mockNlpPatternsSetThree: NlpPattern[] = [
+export const mockNlpGreetingAnyNamePatterns: NlpPattern[] = [
   {
     entity: 'intent',
     match: 'value',
@@ -284,33 +294,6 @@ export const mockNlpPatternsSetThree: NlpPattern[] = [
   },
 ];
 
-export const mockNlpBlock: BlockFull = {
-  ...baseBlockInstance,
-  name: 'Mock Nlp',
-  patterns: [
-    'Hello',
-    '/we*lcome/',
-    { label: 'Mock Nlp', value: 'MOCK_NLP' },
-
-    mockNlpPatternsSetOne,
-    [
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'greeting',
-      },
-      {
-        entity: 'firstname',
-        match: 'value',
-        value: 'doe',
-      },
-    ],
-  ],
-
-  trigger_labels: customerLabelsMock,
-  message: ['Good to see you again '],
-} as unknown as BlockFull;
-
 export const mockModifiedNlpBlock: BlockFull = {
   ...baseBlockInstance,
   name: 'Modified Mock Nlp',
@@ -318,7 +301,7 @@ export const mockModifiedNlpBlock: BlockFull = {
     'Hello',
     '/we*lcome/',
     { label: 'Modified Mock Nlp', value: 'MODIFIED_MOCK_NLP' },
-    mockNlpPatternsSetThree,
+    mockNlpGreetingAnyNamePatterns,
   ],
   trigger_labels: customerLabelsMock,
   message: ['Hello there'],
@@ -331,7 +314,7 @@ export const mockModifiedNlpBlockOne: BlockFull = {
     'Hello',
     '/we*lcome/',
     { label: 'Modified Mock Nlp One', value: 'MODIFIED_MOCK_NLP_ONE' },
-    mockNlpPatternsSetTwo,
+    mockNlpAffirmationPatterns,
     [
       {
         entity: 'firstname',
@@ -356,7 +339,7 @@ export const mockModifiedNlpBlockTwo: BlockFull = {
         match: 'entity',
       },
     ],
-    mockNlpPatternsSetThree,
+    mockNlpGreetingAnyNamePatterns,
   ],
   trigger_labels: customerLabelsMock,
   message: ['Hello Madam'],
@@ -400,5 +383,3 @@ export const blockCarouselMock = {
 } as unknown as BlockFull;
 
 export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];
-
-export const nlpBlocks: BlockFull[] = [blockGetStarted, mockNlpBlock];

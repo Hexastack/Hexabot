@@ -26,6 +26,14 @@ export namespace NLU {
   export interface ParseEntities {
     entities: ParseEntity[];
   }
+
+  export interface ScoredEntity extends ParseEntity {
+    score: number; // Computed as confidence * weight
+  }
+
+  export interface ScoredEntities extends ParseEntities {
+    entities: ScoredEntity[];
+  }
 }
 
 export namespace LLM {

@@ -8,42 +8,36 @@
 
 import { NLU } from '@/helper/types';
 
-export const nlpEntitiesGreeting: NLU.ParseEntities = {
+export const mockNlpGreetingNameEntities: NLU.ScoredEntities = {
   entities: [
     {
       entity: 'intent',
       value: 'greeting',
       confidence: 0.999,
+      score: 0.999,
     },
     {
       entity: 'firstname',
       value: 'jhon',
       confidence: 0.5,
+      score: 0.425,
     },
+  ],
+};
+
+export const mockNlpGreetingFullNameEntities: NLU.ParseEntities = {
+  entities: [
+    ...mockNlpGreetingNameEntities.entities,
     {
       entity: 'lastname',
       value: 'doe',
       confidence: 0.5,
+      score: 0.425,
     },
   ],
 };
 
-export const mockNlpEntitiesSetOne: NLU.ParseEntities = {
-  entities: [
-    {
-      entity: 'intent',
-      value: 'greeting',
-      confidence: 0.999,
-    },
-    {
-      entity: 'firstname',
-      value: 'jhon',
-      confidence: 0.5,
-    },
-  ],
-};
-
-export const mockNlpEntitiesSetTwo: NLU.ParseEntities = {
+export const mockNlpGreetingWrongNameEntities: NLU.ParseEntities = {
   entities: [
     {
       entity: 'intent',

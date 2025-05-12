@@ -47,7 +47,7 @@ export class LanguageService extends BaseService<
    * and the corresponding value is the `Language` object.
    */
   @Cacheable(LANGUAGES_CACHE_KEY)
-  async getLanguages() {
+  async getLanguages(): Promise<Record<string, Language>> {
     const languages = await this.findAll();
     return languages.reduce((acc, curr) => {
       return {

@@ -71,18 +71,15 @@ describe('NlpValueRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
-    it('should return all nlp entities with populate', async () => {
+  describe('findAndPopulate', () => {
+    it('should return all nlp values with populate', async () => {
       const pageQuery = getPageQuery<NlpValue>({
-        sort: ['value', 'desc'],
+        sort: ['createdAt', 'asc'],
       });
-      const result = await nlpValueRepository.findPageAndPopulate(
-        {},
-        pageQuery,
-      );
+      const result = await nlpValueRepository.findAndPopulate({}, pageQuery);
       const nlpValueFixturesWithEntities = nlpValueFixtures.reduce(
         (acc, curr) => {
-          const ValueWithEntities = {
+          const fullValue: NlpValueFull = {
             ...curr,
             entity: nlpEntityFixtures[
               parseInt(curr.entity!)
@@ -90,13 +87,21 @@ describe('NlpValueRepository', () => {
             builtin: curr.builtin!,
             expressions: curr.expressions!,
             metadata: curr.metadata!,
+            id: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
-          acc.push(ValueWithEntities);
+          acc.push(fullValue);
           return acc;
         },
         [] as TFixtures<NlpValueFull>[],
       );
-      expect(result).toEqualPayload(nlpValueFixturesWithEntities);
+      expect(result).toEqualPayload(nlpValueFixturesWithEntities, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'metadata',
+      ]);
     });
   });
 
