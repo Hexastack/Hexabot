@@ -9,6 +9,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  ConflictException,
   MethodNotAllowedException,
   NotFoundException,
 } from '@nestjs/common';
@@ -287,6 +288,17 @@ describe('NlpEntityController', () => {
         updatedNlpEntity.weight,
       );
       expect(result.weight).toBe(updatedNlpEntity.weight);
+    });
+
+    it('should throw an exception if entity is builtin but weight not provided', async () => {
+      await expect(
+        nlpEntityController.updateOne(buitInEntityId!, {
+          name: 'updated',
+          doc: '',
+          lookups: ['trait'],
+          builtin: false,
+        } as any),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should update only the weight of the builtin entity', async () => {

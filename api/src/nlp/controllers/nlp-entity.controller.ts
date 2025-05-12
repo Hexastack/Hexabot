@@ -9,6 +9,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   Get,
@@ -158,9 +159,18 @@ export class NlpEntityController extends BaseController<
       throw new NotFoundException(`NLP Entity with ID ${id} not found`);
     }
 
-    if (nlpEntity.builtin && nlpEntityDto.weight) {
-      // Only allow weight update for builtin entities
-      return await this.nlpEntityService.updateWeight(id, nlpEntityDto.weight);
+    if (nlpEntity.builtin) {
+      if (nlpEntityDto.weight) {
+        // Only allow weight update for builtin entities
+        return await this.nlpEntityService.updateWeight(
+          id,
+          nlpEntityDto.weight,
+        );
+      } else {
+        throw new ConflictException(
+          `Cannot update builtin NLP Entity ${nlpEntity.name} except for weight`,
+        );
+      }
     }
 
     return await this.nlpEntityService.updateOne(id, nlpEntityDto);
