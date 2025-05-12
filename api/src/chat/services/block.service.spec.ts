@@ -416,7 +416,7 @@ describe('BlockService', () => {
         blockService,
         'calculateNluPatternMatchScore',
       );
-      const bestBlock = await blockService.matchBestNLP(
+      const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
       );
@@ -458,7 +458,7 @@ describe('BlockService', () => {
         blockService,
         'calculateNluPatternMatchScore',
       );
-      const bestBlock = await blockService.matchBestNLP(blocks, nlp);
+      const bestBlock = blockService.matchBestNLP(blocks, nlp);
 
       // Ensure calculateBlockScore was called at least once for each block
       expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(3); // Called for each block
@@ -476,7 +476,7 @@ describe('BlockService', () => {
         blockGetStarted,
       ];
 
-      const bestBlock = await blockService.matchBestNLP(
+      const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
       );

@@ -181,7 +181,7 @@ export class BlockService extends BaseService<
         const scoredEntities =
           await this.nlpService.computePredictionScore(nlp);
 
-        block = await this.matchBestNLP(filteredBlocks, scoredEntities);
+        block = this.matchBestNLP(filteredBlocks, scoredEntities);
       }
     }
 
@@ -344,10 +344,10 @@ export class BlockService extends BaseService<
    * @returns A promise that resolves to the block with the highest NLP match score,
    * or `undefined` if no suitable match is found.
    */
-  async matchBestNLP<B extends BlockStub>(
+  matchBestNLP<B extends BlockStub>(
     blocks: B[],
     scoredEntities: NLU.ScoredEntities,
-  ): Promise<B | undefined> {
+  ): B | undefined {
     const bestMatch = blocks.reduce(
       (bestMatch, block) => {
         const matchedPatterns = this.getMatchingNluPatterns(
@@ -405,17 +405,9 @@ export class BlockService extends BaseService<
       const matchedEntity: NLU.ScoredEntity | undefined =
         prediction.entities.find((e) => this.matchesNluEntity(e, pattern));
 
-      if (!matchedEntity) {
-        throw new Error(
-          'Unable to compute the NLU match score : pattern / entity mismatch',
-        );
-      }
-
-      const patternScore = this.computePatternScore(
-        matchedEntity,
-        pattern,
-        penaltyFactor,
-      );
+      const patternScore = matchedEntity
+        ? this.computePatternScore(matchedEntity, pattern, penaltyFactor)
+        : 0;
 
       return score + patternScore;
     }, 0);
