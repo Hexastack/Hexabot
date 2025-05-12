@@ -103,8 +103,8 @@ const AttachmentThumbnail: FC<AttachmentThumbnailProps> = ({
                 color="inherit"
                 variant="contained"
                 startIcon={<ClearIcon />}
-                onClick={async (e) => {
-                  onChange && onChange(null);
+                onClick={(e) => {
+                  onChange?.(null);
                   e.preventDefault();
                   e.stopPropagation();
                 }}
