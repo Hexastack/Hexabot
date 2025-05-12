@@ -290,11 +290,7 @@ describe('NlpEntityController', () => {
     });
 
     it('should update only the weight of the builtin entity', async () => {
-      const updatedNlpEntity: NlpEntityCreateDto = {
-        name: 'updated',
-        doc: '',
-        lookups: ['trait'],
-        builtin: false,
+      const updatedNlpEntity: NlpEntityUpdateDto = {
         weight: 8,
       };
       const originalEntity: NlpEntity | null = await nlpEntityService.findOne(
