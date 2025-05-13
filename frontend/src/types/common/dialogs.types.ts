@@ -184,4 +184,4 @@ export type ExtractFormProps<T extends (arg: { data: any }) => unknown> =
 
 export type ComponentFormDialogProps<
   T extends (arg: { data: any }) => unknown,
-> = FormButtonsProps & DialogProps<ExtractFormProps<T> | null, boolean>;
+> = FormButtonsProps & DialogProps<ExtractFormProps<T>, boolean>;
