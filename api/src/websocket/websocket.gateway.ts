@@ -435,8 +435,9 @@ export class WebsocketGateway
     if (!sessionId) {
       throw new Error('SessionId is required!');
     }
+    const allSockets = await this.io.fetchSockets();
 
-    return (await this.io.fetchSockets()).filter(
+    return allSockets.filter(
       ({ handshake, data }) =>
         !handshake.query.channel && data.sessionID === sessionId,
     );
