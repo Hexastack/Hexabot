@@ -223,17 +223,17 @@ export class NlpEntityController extends BaseController<
       throw new BadRequestException('No IDs provided for deletion.');
     }
 
-    const { count: builtinCount } = await this.filterCount({
+    const { count: builtinNlpEntitiesCount } = await this.filterCount({
       _id: { $in: ids },
       builtin: true,
     });
 
-    if (builtinCount) {
+    if (builtinNlpEntitiesCount > 0) {
       this.logger.warn(
         `Unable to delete NLP entities with provided IDs: ${ids}`,
       );
-      throw new NotFoundException(
-        'Cannot delete builtin NLP entities because at least one is built-in',
+      throw new MethodNotAllowedException(
+        'Deletion failed: Selection includes built-in NLP entities that are protected',
       );
     }
 
