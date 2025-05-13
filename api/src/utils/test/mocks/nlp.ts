@@ -44,3 +44,14 @@ export const mockNlpGreetingFullNameEntities: NLU.ParseEntities = {
     },
   ],
 };
+
+export const mockNlpFirstNameEntities: NLU.ParseEntities = {
+  entities: [
+    {
+      entity: 'firstname',
+      value: 'jhonny',
+      canonicalValue: 'jhon',
+      confidence: 0.75,
+    },
+  ],
+};

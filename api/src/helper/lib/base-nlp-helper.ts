@@ -288,9 +288,9 @@ export default abstract class BaseNlpHelper<
     }
 
     return (entity.values
-      .flatMap((patternValue) => {
+      .flatMap((nlpValue) => {
         const processedText = text;
-        const pattern = patternValue.metadata?.pattern;
+        const pattern = nlpValue.metadata?.pattern;
 
         if (!pattern) {
           this.logger.error('Missing NLP regex pattern');
@@ -299,7 +299,7 @@ export default abstract class BaseNlpHelper<
 
         let regex: RegExp;
         try {
-          const shouldWrap = patternValue.metadata?.wordBoundary;
+          const shouldWrap = nlpValue.metadata?.wordBoundary;
           regex = new RegExp(shouldWrap ? `\\b${pattern}\\b` : pattern, 'gi');
         } catch {
           this.logger.error('Invalid NLP regex pattern');
@@ -312,21 +312,22 @@ export default abstract class BaseNlpHelper<
           let value = match[0];
 
           // Apply preprocessing if needed
-          if (patternValue.metadata?.removeSpaces) {
+          if (nlpValue.metadata?.removeSpaces) {
             value = value.replace(/\s+/g, '');
           }
 
-          if (patternValue.metadata?.toLowerCase) {
+          if (nlpValue.metadata?.toLowerCase) {
             value = value.toLowerCase();
           }
 
-          if (patternValue.metadata?.stripDiacritics) {
+          if (nlpValue.metadata?.stripDiacritics) {
             value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           }
 
           return {
             entity: entity.name,
             value,
+            canonicalValue: nlpValue.value,
             start: match.index!,
             end: match.index! + match[0].length,
             confidence: 1,

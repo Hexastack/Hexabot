@@ -265,14 +265,14 @@ describe('BaseNlpHelper', () => {
   describe('extractPatternBasedSlots', () => {
     it('should match using a valid regex pattern', () => {
       const entity: NlpEntityFull = {
-        name: 'number',
+        name: 'infos',
         values: [
           {
             value: 'number',
             metadata: { pattern: '\\d+', wordBoundary: true },
           },
         ],
-      } as any;
+      } as NlpEntityFull;
 
       const result = helper.extractPatternBasedSlots(
         'Order 123 and 456 now!',
@@ -280,14 +280,16 @@ describe('BaseNlpHelper', () => {
       );
       expect(result).toEqual([
         {
-          entity: 'number',
+          entity: 'infos',
+          canonicalValue: 'number',
           value: '123',
           start: 6,
           end: 9,
           confidence: 1,
         },
         {
-          entity: 'number',
+          entity: 'infos',
+          canonicalValue: 'number',
           value: '456',
           start: 14,
           end: 17,
@@ -298,10 +300,10 @@ describe('BaseNlpHelper', () => {
 
     it('should respect metadata like toLowerCase and removeSpaces', () => {
       const entity: NlpEntityFull = {
-        name: 'code',
+        name: 'name',
         values: [
           {
-            value: 'Code',
+            value: 'brand',
             metadata: {
               pattern: 'HEX BOT',
               toLowerCase: true,
@@ -309,7 +311,7 @@ describe('BaseNlpHelper', () => {
             },
           },
         ],
-      } as any;
+      } as NlpEntityFull;
 
       const result = helper.extractPatternBasedSlots(
         'My CODE is HEX BOT!',
@@ -317,7 +319,8 @@ describe('BaseNlpHelper', () => {
       );
       expect(result).toEqual([
         {
-          entity: 'code',
+          entity: 'name',
+          canonicalValue: 'brand',
           value: 'hexbot',
           start: 11,
           end: 18,
@@ -349,6 +352,7 @@ describe('BaseNlpHelper', () => {
       expect(result).toEqual([
         {
           entity: 'keyword',
+          canonicalValue: 'word',
           value: '"ou"',
           start: 9,
           end: 13,

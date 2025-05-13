@@ -21,6 +21,9 @@ export namespace NLU {
     confidence: number;
     start?: number;
     end?: number;
+    // When lookup strategy is either 'keywords' or 'pattern', the canonical value
+    // is the actual NlpValue.value, given the match is either a synonym (expression) or a pattern match
+    canonicalValue?: string;
   }
 
   export interface ParseEntities {
