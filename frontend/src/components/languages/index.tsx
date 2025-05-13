@@ -205,7 +205,9 @@ export const Languages = () => {
                 startIcon={<AddIcon />}
                 variant="contained"
                 sx={{ float: "right" }}
-                onClick={() => dialogs.open(LanguageFormDialog, null)}
+                onClick={() =>
+                  dialogs.open(LanguageFormDialog, { defaultValues: null })
+                }
               >
                 {t("button.add")}
               </Button>
