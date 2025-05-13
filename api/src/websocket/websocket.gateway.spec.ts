@@ -109,16 +109,10 @@ describe('WebsocketGateway', () => {
 
   describe('joinNotificationSockets', () => {
     it('should make socket1 and socket3 join the room MESSAGE', async () => {
-      messageRoomSockets.forEach((socket) => {
-        socket?.connect();
-      });
+      messageRoomSockets.forEach((socket) => socket.connect());
 
       for (const socket of messageRoomSockets) {
-        await new Promise<void>((resolve) => {
-          socket.on('connect', async () => {
-            resolve();
-          });
-        });
+        await new Promise<void>((resolve) => socket.on('connect', resolve));
       }
 
       const serverSockets = await gateway.io.fetchSockets();
@@ -126,8 +120,8 @@ describe('WebsocketGateway', () => {
       expect(serverSockets.length).toBe(2);
 
       jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce(
-        serverSockets.filter(({ handshake }) => {
-          const uuid = handshake.headers.uuid?.toString() || '';
+        serverSockets.filter(({ handshake: { headers } }) => {
+          const uuid = headers.uuid?.toString() || '';
 
           return validUuids.includes(uuid);
         }),
@@ -146,7 +140,7 @@ describe('WebsocketGateway', () => {
         });
       }
 
-      sockets.forEach((socket) => socket.disconnect());
+      messageRoomSockets.forEach((socket) => socket.disconnect());
     });
 
     it('should throw an error when socket array is empty', async () => {
