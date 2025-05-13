@@ -289,7 +289,6 @@ export default abstract class BaseNlpHelper<
 
     return (entity.values
       .flatMap((nlpValue) => {
-        const processedText = text;
         const pattern = nlpValue.metadata?.pattern;
 
         if (!pattern) {
@@ -306,7 +305,7 @@ export default abstract class BaseNlpHelper<
           return [];
         }
 
-        const matches = [...processedText.matchAll(regex)];
+        const matches = [...text.matchAll(regex)];
 
         return matches.map((match) => {
           let value = match[0];
