@@ -57,10 +57,19 @@ export const SubscribersList = (props: {
       </Grid>
       {subscribers?.length > 0 ? (
         <ConversationList
-          scrollable
+          scrollable={false}
           loading={isFetching}
           loadingMore={isFetching}
-          onYReachEnd={handleLoadMore}
+          onScroll={({ target }) => {
+            const container = target as HTMLDivElement;
+
+            if (
+              container.scrollTop + container.clientHeight >=
+              container.scrollHeight
+            ) {
+              handleLoadMore();
+            }
+          }}
         >
           {subscribers.map((subscriber) => (
             <Conversation

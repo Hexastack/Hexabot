@@ -309,8 +309,9 @@ export default abstract class ChannelHandler<
    */
   public async getPublicUrl(attachment: AttachmentRef | Attachment) {
     const [name, _suffix] = this.getName().split('-');
-    if ('id' in attachment) {
+    if (attachment && 'id' in attachment) {
       if (!attachment || !attachment.id) {
+        this.logger.warn('Unable to build public URL: Empty attachment ID');
         return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
       }
 
@@ -330,6 +331,10 @@ export default abstract class ChannelHandler<
       // In case the url is external
       return attachment.url;
     } else {
+      this.logger.warn(
+        'Unable to resolve the attachment public URL.',
+        attachment,
+      );
       return buildURL(config.apiBaseUrl, `/webhook/${name}/not-found`);
     }
   }
