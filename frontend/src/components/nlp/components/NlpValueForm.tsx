@@ -35,7 +35,7 @@ const getDefaultNlpMetadata = (
 ): INlpMetadata => {
   if (nlpEntity?.lookups.includes(LookupStrategy.pattern)) {
     return {
-      pattern: "//",
+      pattern: "",
       wordBoundary: true,
       removeSpaces: false,
       toLowerCase: false,

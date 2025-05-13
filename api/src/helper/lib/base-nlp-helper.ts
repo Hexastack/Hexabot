@@ -321,7 +321,7 @@ export default abstract class BaseNlpHelper<
           }
 
           if (patternValue.metadata?.stripDiacritics) {
-            value = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           }
 
           return {

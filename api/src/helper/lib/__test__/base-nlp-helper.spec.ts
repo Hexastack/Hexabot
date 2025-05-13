@@ -326,6 +326,37 @@ describe('BaseNlpHelper', () => {
       ]);
     });
 
+    it('should respect metadata stripDiacritics', () => {
+      const entity: NlpEntityFull = {
+        name: 'keyword',
+        values: [
+          {
+            value: 'word',
+            metadata: {
+              pattern: '".+"',
+              toLowerCase: true,
+              removeSpaces: true,
+              stripDiacritics: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'The word "où" (where)',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'keyword',
+          value: '"ou"',
+          start: 9,
+          end: 13,
+          confidence: 1,
+        },
+      ]);
+    });
+
     it('should return empty array if no values', () => {
       const result = helper.extractPatternBasedSlots('test', {
         name: 'noop',
