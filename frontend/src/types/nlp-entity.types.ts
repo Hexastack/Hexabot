@@ -11,7 +11,22 @@ import { EntityType, Format } from "@/services/types";
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 import { INlpValue } from "./nlp-value.types";
 
-export type Lookup = "keywords" | "trait" | "free-text";
+export enum LookupStrategy {
+  keywords = "keywords",
+  trait = "trait",
+  // free_text = "free-text",
+  pattern = "pattern",
+}
+
+export type Lookup = `${LookupStrategy}`;
+
+export interface INlpMetadata {
+  // Required when lookups is "pattern"
+  pattern?: string;
+  removeSpaces?: boolean;
+  toLowerCase?: boolean;
+  stripDiacritics?: boolean;
+}
 
 export interface INlpEntityAttributes {
   foreign_id?: string;
@@ -20,11 +35,6 @@ export interface INlpEntityAttributes {
   doc?: string;
   builtin?: boolean;
   weight?: number;
-}
-
-export enum NlpLookups {
-  keywords = "keywords",
-  trait = "trait",
 }
 
 export interface INlpEntityStub

@@ -27,7 +27,7 @@ import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   INlpEntity,
   INlpEntityAttributes,
-  NlpLookups,
+  LookupStrategy,
 } from "@/types/nlp-entity.types";
 
 export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
@@ -94,27 +94,30 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
-          {!nlpEntity ? (
-            <ContentItem>
-              <FormControl>
-                <FormLabel>{t("label.lookup_strategies")}</FormLabel>
-                <RadioGroup
-                  row
-                  {...register("lookups")}
-                  defaultValue="keywords"
-                >
-                  {Object.values(NlpLookups).map((nlpLookup, index) => (
-                    <FormControlLabel
-                      key={index}
-                      value={nlpLookup}
-                      control={<Radio {...register("lookups.0")} />}
-                      label={nlpLookup}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            </ContentItem>
-          ) : null}
+          <ContentItem>
+            <FormControl>
+              <FormLabel>{t("label.lookup_strategies")}</FormLabel>
+              <RadioGroup
+                row
+                {...register("lookups")}
+                defaultValue={nlpEntity ? nlpEntity.lookups[0] : "keywords"}
+              >
+                {Object.values(LookupStrategy).map((nlpLookup, index) => (
+                  <FormControlLabel
+                    key={index}
+                    value={nlpLookup}
+                    control={
+                      <Radio
+                        disabled={!!nlpEntity}
+                        {...register("lookups.0")}
+                      />
+                    }
+                    label={nlpLookup}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          </ContentItem>
           <ContentItem>
             <Input
               label={t("label.name")}
@@ -131,10 +134,11 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               label={t("label.doc")}
               {...register("doc")}
               multiline={true}
+              rows={3}
               disabled={nlpEntity?.builtin}
             />
           </ContentItem>
-          <ContentItem>
+          <ContentItem maxWidth="25%">
             <Input
               label={t("label.weight")}
               {...register("weight", {
@@ -157,8 +161,8 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               }}
               error={!!errors.weight}
               helperText={errors.weight?.message}
-          />
-        </ContentItem>
+            />
+          </ContentItem>
         </ContentContainer>
       </form>
     </Wrapper>
