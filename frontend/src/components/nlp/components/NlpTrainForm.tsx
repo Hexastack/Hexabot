@@ -347,8 +347,10 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                         label={t("label.nlp_entity")}
                         multiple={false}
                         preprocess={(options) => {
-                          return options.filter(({ lookups }) =>
-                            lookups.includes("keywords"),
+                          return options.filter(
+                            ({ lookups }) =>
+                              lookups.includes("keywords") ||
+                              lookups.includes("pattern"),
                           );
                         }}
                         onChange={(_e, selected, ..._) => {

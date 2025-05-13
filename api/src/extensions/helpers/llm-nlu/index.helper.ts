@@ -12,7 +12,7 @@ import Handlebars from 'handlebars';
 
 import { HelperService } from '@/helper/helper.service';
 import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
-import { LLM, NLU } from '@/helper/types';
+import { HelperType, LLM, NLU } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { NlpEntityFull } from '@/nlp/schemas/nlp-entity.schema';
@@ -66,12 +66,9 @@ export default class LlmNluHelper
   async buildClassifiersPrompt() {
     const settings = await this.getSettings();
     if (settings) {
-      const entities = await this.nlpEntityService.findAndPopulate({
+      const traitEntities = await this.nlpEntityService.findAndPopulate({
         lookups: 'trait',
       });
-      const traitEntities = entities.filter(({ lookups }) =>
-        lookups.includes('trait'),
-      );
       this.traitClassifierPrompts = traitEntities.map((entity) => ({
         ...entity,
         prompt: Handlebars.compile(settings.trait_classifier_prompt_template)({
@@ -88,48 +85,9 @@ export default class LlmNluHelper
     await this.buildClassifiersPrompt();
   }
 
-  /**
-   * Finds entities in a given text based on their values and synonyms.
-   *
-   * This function takes a string of text and an array of entities, where each entity contains a value
-   * and a list of synonyms. It returns an array of objects, each representing an entity found in the text
-   * along with its start and end positions.
-   *
-   * @param text - The input text to search for entities.
-   * @param entities - An array of entities to search for, each containing a `value` and a list of `synonyms`.
-   *
-   * @returns An array of objects representing the found entities, with their `value`, `start`, and `end` positions.
-   */
-  private findKeywordEntities(text: string, entity: NlpEntityFull) {
-    return (
-      entity.values
-        .flatMap(({ value, expressions }) => {
-          const allValues = [value, ...expressions];
-
-          // Filter the terms that are found in the text
-          return allValues
-            .flatMap((term) => {
-              const regex = new RegExp(`\\b${term}\\b`, 'g');
-              const matches = [...text.matchAll(regex)];
-
-              // Map matches to FoundEntity format
-              return matches.map((match) => ({
-                entity: entity.name,
-                value: term,
-                start: match.index!,
-                end: match.index! + term.length,
-                confidence: 1,
-              }));
-            })
-            .shift();
-        })
-        .filter((v) => !!v) || []
-    );
-  }
-
   async predict(text: string): Promise<NLU.ParseEntities> {
     const settings = await this.getSettings();
-    const helper = await this.helperService.getDefaultLlmHelper();
+    const helper = await this.helperService.getDefaultHelper(HelperType.LLM);
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     // Detect language
     const language = await helper.generateStructuredResponse<string>?.(
@@ -174,13 +132,12 @@ export default class LlmNluHelper
 
     // Perform slot filling in a deterministic way since
     // it's currently a challenging task for the LLMs.
-    const keywordEntities = await this.nlpEntityService.findAndPopulate({
-      lookups: 'keywords',
+    const entities = await this.nlpEntityService.findAndPopulate({
+      lookups: { $in: ['keywords', 'pattern'] },
     });
-    const entities = keywordEntities.flatMap((keywordEntity) =>
-      this.findKeywordEntities(text, keywordEntity),
-    ) as NLU.ParseEntity[];
 
-    return { entities: traits.concat(entities) };
+    const slotEntities = this.runDeterministicSlotFilling(text, entities);
+
+    return { entities: traits.concat(slotEntities) };
   }
 }
