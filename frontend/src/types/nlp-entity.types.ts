@@ -23,6 +23,7 @@ export type Lookup = `${LookupStrategy}`;
 export interface INlpMetadata {
   // Required when lookups is "pattern"
   pattern?: string;
+  wordBoundary?: boolean;
   removeSpaces?: boolean;
   toLowerCase?: boolean;
   stripDiacritics?: boolean;

@@ -40,6 +40,7 @@ export type NlpCacheMap = Map<string, NlpEntityFull>;
 export type NlpMetadata = {
   // Required when lookups is "pattern"
   pattern?: string;
+  wordBoundary?: boolean;
   removeSpaces?: boolean;
   toLowerCase?: boolean;
   stripDiacritics?: boolean;

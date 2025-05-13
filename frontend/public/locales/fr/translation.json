@@ -350,6 +350,7 @@
     "synonyms": "Synonymes",
     "doc": "Documentation",
     "weight": "Poids",
+    "word_boundary": "Délimiter (Mot)",
     "remove_spaces": "Supprimer les espaces",
     "to_lower_case": "Mettre en minucules",
     "strip_diacritics": "Supprimer les accents",

@@ -36,6 +36,7 @@ const getDefaultNlpMetadata = (
   if (nlpEntity?.lookups.includes(LookupStrategy.pattern)) {
     return {
       pattern: "//",
+      wordBoundary: true,
       removeSpaces: false,
       toLowerCase: false,
       stripDiacritics: false,
@@ -158,6 +159,18 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
                   label={t("label.regex")}
                   placeholder={t("placeholder.pattern")}
                   flags={["i"]}
+                />
+              </ContentItem>
+              <ContentItem>
+                <Controller
+                  name="metadata.wordBoundary"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={<Switch {...field} checked={field.value} />}
+                      label={t("label.word_boundary")}
+                    />
+                  )}
                 />
               </ContentItem>
               <ContentItem>
