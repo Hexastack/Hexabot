@@ -115,11 +115,7 @@ describe('MessageService', () => {
     mockGateway = {
       joinNotificationSockets: jest.fn(),
     };
-    mockMessageService = new MessageService(
-      {} as any,
-      {} as any,
-      mockGateway as any,
-    );
+    mockMessageService = new MessageService({} as any, mockGateway as any);
   });
 
   afterEach(jest.clearAllMocks);

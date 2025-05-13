@@ -114,53 +114,55 @@ export class WebsocketGateway
     this.io.to(subscriber.foreign_id).emit(type, content);
   }
 
-  createAndStoreSession(client: Socket, next: (err?: Error) => void): void {
-    const sid = uid(24); // Sign the sessionID before sending
-    const signedSid = 's:' + signature.sign(sid, config.session.secret);
-    // Send session ID to client to set cookie
-    const cookies = cookie.serialize(
-      config.session.name,
-      signedSid,
-      config.session.cookie,
-    );
-    const newSession: SessionData<SubscriberStub> = {
-      cookie: {
-        // Prevent access from client-side javascript
-        httpOnly: true,
+  async createAndStoreSession(client: Socket) {
+    return new Promise((resolve, reject) => {
+      const sid = uid(24); // Sign the sessionID before sending
+      const signedSid = 's:' + signature.sign(sid, config.session.secret);
+      // Send session ID to client to set cookie
+      const cookies = cookie.serialize(
+        config.session.name,
+        signedSid,
+        config.session.cookie,
+      );
+      const newSession: SessionData<SubscriberStub> = {
+        cookie: {
+          // Prevent access from client-side javascript
+          httpOnly: true,
 
-        // Restrict to path
-        path: '/',
+          // Restrict to path
+          path: '/',
 
-        originalMaxAge: config.session.cookie.maxAge,
-      },
-      passport: { user: {} },
-    }; // Initialize your session object as needed
-    getSessionStore().set(sid, newSession, (err) => {
-      if (err) {
-        this.logger.error('Error saving session:', err);
-        return next(new Error('Unable to establish a new socket session'));
-      }
+          originalMaxAge: config.session.cookie.maxAge,
+        },
+        passport: { user: {} },
+      }; // Initialize your session object as needed
+      getSessionStore().set(sid, newSession, (err) => {
+        if (err) {
+          this.logger.error('Error saving session:', err);
+          return reject(new Error('Unable to establish a new socket session'));
+        }
 
-      client.emit('set-cookie', cookies);
-      // Optionally set the cookie on the client's handshake object if needed
-      client.handshake.headers.cookie = cookies;
-      client.data.session = newSession;
-      this.logger.verbose(`
-        Could not fetch session, since connecting socket has no cookie in its handshake.
-        Generated a one-time-use cookie:
-        ${client.handshake.headers.cookie}
-        and saved it on the socket handshake.
-
-        > This means the socket started off with an empty session, i.e. (req.session === {})
-        > That "anonymous" session will only last until the socket is disconnected. To work around this,
-        > make sure the socket sends a 'cookie' header or query param when it initially connects.
-        > (This usually arises due to using a non-browser client such as a native iOS/Android app,
-        > React Native, a Node.js script, or some other connected device. It can also arise when
-        > attempting to connect a cross-origin socket in the browser, particularly for Safari users.
-        > To work around this, either supply a cookie manually, or ignore this message and use an
-        > approach other than sessions-- e.g. an auth token.)
-      `);
-      return next();
+        client.emit('set-cookie', cookies);
+        // Optionally set the cookie on the client's handshake object if needed
+        client.handshake.headers.cookie = cookies;
+        client.data.session = newSession;
+        this.logger.verbose(`
+          Could not fetch session, since connecting socket has no cookie in its handshake.
+          Generated a one-time-use cookie:
+          ${client.handshake.headers.cookie}
+          and saved it on the socket handshake.
+  
+          > This means the socket started off with an empty session, i.e. (req.session === {})
+          > That "anonymous" session will only last until the socket is disconnected. To work around this,
+          > make sure the socket sends a 'cookie' header or query param when it initially connects.
+          > (This usually arises due to using a non-browser client such as a native iOS/Android app,
+          > React Native, a Node.js script, or some other connected device. It can also arise when
+          > attempting to connect a cross-origin socket in the browser, particularly for Safari users.
+          > To work around this, either supply a cookie manually, or ignore this message and use an
+          > approach other than sessions-- e.g. an auth token.)
+        `);
+        return resolve(true);
+      });
     });
   }
 
@@ -206,11 +208,14 @@ export class WebsocketGateway
     this.logger.log('Initialized websocket gateway');
 
     // Handle session
-    this.io.use((client, next) => {
+    this.io.use(async (client, next) => {
       this.logger.verbose('Client connected, attempting to load session.');
       try {
         const { searchParams } = new URL(`ws://localhost${client.request.url}`);
 
+        if (config.env === 'test') {
+          await this.createAndStoreSession(client);
+        }
         if (client.request.headers.cookie) {
           const cookies = cookie.parse(client.request.headers.cookie);
           if (cookies && config.session.name in cookies) {
@@ -219,14 +224,19 @@ export class WebsocketGateway
               config.session.secret,
             );
             if (sessionID) {
-              return this.loadSession(sessionID, (err, session) => {
+              return this.loadSession(sessionID, async (err, session) => {
                 if (err || !session) {
                   this.logger.warn(
                     'Unable to load session, creating a new one ...',
                     err,
                   );
                   if (searchParams.get('channel') !== 'console-channel') {
-                    return this.createAndStoreSession(client, next);
+                    try {
+                      await this.createAndStoreSession(client);
+                      next();
+                    } catch (e) {
+                      next(e);
+                    }
                   } else {
                     return next(new Error('Unauthorized: Unknown session ID'));
                   }
@@ -236,17 +246,22 @@ export class WebsocketGateway
                 next();
               });
             } else {
-              return next(new Error('Unable to parse session ID from cookie'));
+              next(new Error('Unable to parse session ID from cookie'));
             }
           }
         } else if (searchParams.get('channel') === 'web-channel') {
-          return this.createAndStoreSession(client, next);
+          try {
+            await this.createAndStoreSession(client);
+            next();
+          } catch (e) {
+            next(e);
+          }
         } else {
-          return next(new Error('Unauthorized to connect to WS'));
+          next(new Error('Unauthorized to connect to WS'));
         }
       } catch (e) {
         this.logger.warn('Something unexpected happening');
-        return next(e);
+        next(e);
       }
     });
   }

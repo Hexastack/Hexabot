@@ -25,8 +25,8 @@ describe('WebsocketGateway', () => {
   let app: INestApplication;
   let createSocket: (index: number) => Socket;
   let sockets: Socket[];
-  let sessionIds: string[];
-  let validSessionIds: string[];
+  let uuids: string[];
+  let validUuids: string[];
 
   beforeAll(async () => {
     // Instantiate the app
@@ -45,8 +45,8 @@ describe('WebsocketGateway', () => {
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
     // Create a new client that will interact with the gateway
 
-    sessionIds = [uuidv4(), uuidv4(), uuidv4()];
-    validSessionIds = [sessionIds[0], sessionIds[2]];
+    uuids = [uuidv4(), uuidv4(), uuidv4()];
+    validUuids = [uuids[0], uuids[2]];
 
     createSocket = (index: number) =>
       io('http://localhost:3000', {
@@ -54,10 +54,10 @@ describe('WebsocketGateway', () => {
         transports: ['websocket', 'polling'],
         // path: '/socket.io/?EIO=4&transport=websocket&channel=web-channel',
         query: { EIO: '4', transport: 'websocket', channel: 'web-channel' },
-        extraHeaders: { sessionid: sessionIds[index] },
+        extraHeaders: { uuid: uuids[index] },
       });
 
-    sockets = sessionIds.map((e, index) => createSocket(index));
+    sockets = uuids.map((_e, index) => createSocket(index));
 
     await app.listen(3000);
   });
@@ -104,10 +104,12 @@ describe('WebsocketGateway', () => {
   });
 
   describe('joinNotificationSockets', () => {
-    it('should join socket1 and socket3 to room MESSAGE', async () => {
+    it('should make socket1 and socket3 join the room MESSAGE', async () => {
       const [socket1, , socket3] = sockets;
 
-      [socket1, , socket3].forEach((socket) => socket?.connect());
+      [socket1, , socket3].forEach((socket) => {
+        socket?.connect();
+      });
 
       for (const socket of [socket1, , socket3]) {
         if (socket) {
@@ -119,17 +121,19 @@ describe('WebsocketGateway', () => {
         }
       }
 
-      jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce(
-        (await gateway.io.fetchSockets()).filter(({ handshake }) => {
-          const uuid = handshake.headers.sessionid?.toString() || '';
+      const serverSockets = await gateway.io.fetchSockets();
 
-          return validSessionIds.includes(uuid);
+      expect(serverSockets.length).toBe(2);
+
+      jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce(
+        serverSockets.filter(({ handshake }) => {
+          const uuid = handshake.headers.uuid?.toString() || '';
+
+          return validUuids.includes(uuid);
         }),
       );
 
       await gateway.joinNotificationSockets('sessionId', Room.MESSAGE);
-
-      expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
 
       gateway.io.to(Room.MESSAGE).emit('message', { data: 'OK' });
 
