@@ -153,11 +153,11 @@ describe('WebsocketGateway', () => {
     it('should throw an error when socket array is empty', async () => {
       jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce([]);
 
-      expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
-
       await expect(
         gateway.joinNotificationSockets('sessionId', Room.MESSAGE),
       ).rejects.toThrow('No notification sockets found!');
+
+      expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
     });
 
     it('should throw an error with empty sessionId', async () => {

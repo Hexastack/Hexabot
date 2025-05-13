@@ -327,7 +327,7 @@ const ChatProvider: React.FC<{
         );
         const quickReplies = getQuickReplies(body.messages.at(-1));
 
-        if (getQuickReplies.length) {
+        if (quickReplies.length) {
           setSuggestions(quickReplies);
         }
 
