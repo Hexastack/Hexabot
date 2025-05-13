@@ -114,8 +114,8 @@ export class WebsocketGateway
     this.io.to(subscriber.foreign_id).emit(type, content);
   }
 
-  async createAndStoreSession(client: Socket) {
-    return new Promise((resolve, reject) => {
+  async createAndStoreSession(client: Socket): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       const sid = uid(24); // Sign the sessionID before sending
       const signedSid = 's:' + signature.sign(sid, config.session.secret);
       // Send session ID to client to set cookie
@@ -146,6 +146,7 @@ export class WebsocketGateway
         // Optionally set the cookie on the client's handshake object if needed
         client.handshake.headers.cookie = cookies;
         client.data.session = newSession;
+        client.data.sessionID = sid;
         this.logger.verbose(`
           Could not fetch session, since connecting socket has no cookie in its handshake.
           Generated a one-time-use cookie:
@@ -161,7 +162,7 @@ export class WebsocketGateway
           > To work around this, either supply a cookie manually, or ignore this message and use an
           > approach other than sessions-- e.g. an auth token.)
         `);
-        return resolve(true);
+        return resolve();
       });
     });
   }
