@@ -20,6 +20,7 @@ import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { LLM_NLU_HELPER_NAME } from './settings';
+import { LlmNluHelperSettings } from './types';
 
 @Injectable()
 export default class LlmNluHelper
@@ -47,10 +48,46 @@ export default class LlmNluHelper
     return __dirname;
   }
 
+  async loadSettings(
+    maxRetries: number = 5,
+    delay: number = 1000,
+  ): Promise<LlmNluHelperSettings | undefined> {
+    let retryCount: number = 0;
+
+    while (retryCount < maxRetries) {
+      try {
+        const settings: LlmNluHelperSettings | undefined =
+          await this.getSettings();
+
+        if (settings) {
+          this.logger.log(`Llm Nlu Helper Settings successfully loaded`);
+          return settings;
+        }
+
+        this.logger.warn(
+          `Llm Nlu Helper Settings not available yet, retrying... (${retryCount + 1}/${maxRetries})`,
+        );
+      } catch (error) {
+        this.logger.error(
+          'Error while loading Llm Nlu Helper Settings:',
+          error,
+        );
+        return undefined;
+      }
+
+      retryCount++;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
+    this.logger.error('Failed to load settings after multiple attempts.');
+    return undefined;
+  }
+
   @OnEvent('hook:language:*')
   @OnEvent('hook:llm_nlu_helper:language_classifier_prompt_template')
   async buildLanguageClassifierPrompt() {
-    const settings = await this.getSettings();
+    const settings: LlmNluHelperSettings | undefined =
+      await this.loadSettings();
     if (settings) {
       const languages = await this.languageService.findAll();
       const delegate = Handlebars.compile(
@@ -64,7 +101,8 @@ export default class LlmNluHelper
   @OnEvent('hook:nlpValue:*')
   @OnEvent('hook:llm_nlu_helper:trait_classifier_prompt_template')
   async buildClassifiersPrompt() {
-    const settings = await this.getSettings();
+    const settings: LlmNluHelperSettings | undefined =
+      await this.loadSettings();
     if (settings) {
       const entities = await this.nlpEntityService.findAndPopulate({
         lookups: 'trait',
@@ -83,7 +121,6 @@ export default class LlmNluHelper
 
   async onModuleInit() {
     super.onModuleInit();
-
     await this.buildLanguageClassifierPrompt();
     await this.buildClassifiersPrompt();
   }
@@ -128,7 +165,12 @@ export default class LlmNluHelper
   }
 
   async predict(text: string): Promise<NLU.ParseEntities> {
-    const settings = await this.getSettings();
+    const settings: LlmNluHelperSettings | undefined =
+      await this.loadSettings();
+    if (!settings) {
+      this.logger.error('Failed to load settings for Llm Nlu inference');
+      return { entities: [] };
+    }
     const helper = await this.helperService.getDefaultLlmHelper();
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     // Detect language
