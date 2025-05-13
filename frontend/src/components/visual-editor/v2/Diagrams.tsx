@@ -678,7 +678,7 @@ const Diagrams = () => {
                 minWidth: "42px",
               }}
               onClick={(e) => {
-                dialogs.open(CategoryFormDialog, null);
+                dialogs.open(CategoryFormDialog, { defaultValues: null });
                 e.preventDefault();
               }}
             >
