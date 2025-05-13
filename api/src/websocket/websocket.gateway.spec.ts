@@ -25,6 +25,7 @@ describe('WebsocketGateway', () => {
   let app: INestApplication;
   let createSocket: (index: number) => Socket;
   let sockets: Socket[];
+  let messageRoomSockets: Socket[];
   let uuids: string[];
   let validUuids: string[];
 
@@ -58,6 +59,9 @@ describe('WebsocketGateway', () => {
       });
 
     sockets = uuids.map((_e, index) => createSocket(index));
+    messageRoomSockets = sockets.filter((socket) =>
+      validUuids.includes(socket?.io.opts.extraHeaders?.['uuid'] || ''),
+    );
 
     await app.listen(3000);
   });
@@ -105,20 +109,16 @@ describe('WebsocketGateway', () => {
 
   describe('joinNotificationSockets', () => {
     it('should make socket1 and socket3 join the room MESSAGE', async () => {
-      const [socket1, , socket3] = sockets;
-
-      [socket1, , socket3].forEach((socket) => {
+      messageRoomSockets.forEach((socket) => {
         socket?.connect();
       });
 
-      for (const socket of [socket1, , socket3]) {
-        if (socket) {
-          await new Promise<void>((resolve) => {
-            socket.on('connect', async () => {
-              resolve();
-            });
+      for (const socket of messageRoomSockets) {
+        await new Promise<void>((resolve) => {
+          socket.on('connect', async () => {
+            resolve();
           });
-        }
+        });
       }
 
       const serverSockets = await gateway.io.fetchSockets();
@@ -137,14 +137,13 @@ describe('WebsocketGateway', () => {
 
       gateway.io.to(Room.MESSAGE).emit('message', { data: 'OK' });
 
-      for (const socket of [socket1, , socket3]) {
-        if (socket)
-          await new Promise<void>((resolve) => {
-            socket.on('message', async ({ data }) => {
-              expect(data).toBe('OK');
-              resolve();
-            });
+      for (const socket of messageRoomSockets) {
+        await new Promise<void>((resolve) => {
+          socket.on('message', async ({ data }) => {
+            expect(data).toBe('OK');
+            resolve();
           });
+        });
       }
 
       sockets.forEach((socket) => socket.disconnect());
