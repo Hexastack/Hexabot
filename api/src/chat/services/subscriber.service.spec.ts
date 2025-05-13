@@ -7,10 +7,20 @@
  */
 
 import { MongooseModule } from '@nestjs/mongoose';
+import mime from 'mime';
 
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import {
+  Attachment,
+  AttachmentModel,
+} from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
+import {
+  AttachmentAccess,
+  AttachmentCreatedByRef,
+  AttachmentFile,
+  AttachmentResourceRef,
+} from '@/attachment/types';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
 import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
@@ -37,11 +47,14 @@ import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
 import { LabelService } from './label.service';
 import { SubscriberService } from './subscriber.service';
 
+jest.mock('uuid', () => ({ v4: jest.fn(() => 'test-uuid') }));
+
 describe('SubscriberService', () => {
   let subscriberRepository: SubscriberRepository;
   let labelRepository: LabelRepository;
   let userRepository: UserRepository;
   let subscriberService: SubscriberService;
+  let attachmentService: AttachmentService;
   let allSubscribers: Subscriber[];
   let allLabels: Label[];
   let allUsers: User[];
@@ -74,13 +87,19 @@ describe('SubscriberService', () => {
         AttachmentRepository,
       ],
     });
-    [labelRepository, userRepository, subscriberService, subscriberRepository] =
-      await getMocks([
-        LabelRepository,
-        UserRepository,
-        SubscriberService,
-        SubscriberRepository,
-      ]);
+    [
+      labelRepository,
+      userRepository,
+      subscriberService,
+      subscriberRepository,
+      attachmentService,
+    ] = await getMocks([
+      LabelRepository,
+      UserRepository,
+      SubscriberService,
+      SubscriberRepository,
+      AttachmentService,
+    ]);
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
     allUsers = await userRepository.findAll();
@@ -144,6 +163,86 @@ describe('SubscriberService', () => {
           .filter((label) => subscriber.labels.includes(label.id))
           .map((label) => label.id),
       });
+    });
+  });
+
+  describe('storeAvatar', () => {
+    it('should persist the avatar and patch the subscriber', async () => {
+      const subscriber = { ...allSubscribers[0], avatar: null };
+      const avatarPayload: AttachmentFile = {
+        file: Buffer.from('fake-png'),
+        type: 'image/png',
+        size: 8_192,
+      };
+      jest.spyOn(mime, 'extension').mockReturnValue('png');
+
+      const fakeAttachment = { id: '9'.repeat(24) } as Attachment;
+      jest.spyOn(attachmentService, 'store').mockResolvedValue(fakeAttachment);
+
+      const result = await subscriberService.storeAvatar(
+        subscriber.id,
+        avatarPayload,
+      );
+
+      expect(attachmentService.store).toHaveBeenCalledTimes(1);
+      expect(attachmentService.store).toHaveBeenCalledWith(
+        avatarPayload.file,
+        expect.objectContaining({
+          name: 'avatar-test-uuid.png',
+          type: 'image/png',
+          size: 8_192,
+          resourceRef: AttachmentResourceRef.SubscriberAvatar,
+          access: AttachmentAccess.Private,
+          createdByRef: AttachmentCreatedByRef.Subscriber,
+          createdBy: subscriber.id,
+        }),
+      );
+
+      expect(result.avatar).toBe(fakeAttachment.id);
+    });
+
+    it('should propagate an error from AttachmentService and leave the subscriber unchanged', async () => {
+      const subscriber = allSubscribers[0];
+      const avatarPayload: AttachmentFile = {
+        file: Buffer.from('fake-jpg'),
+        type: 'image/jpeg',
+        size: 5_048,
+      };
+      jest.spyOn(mime, 'extension').mockReturnValue('jpg');
+
+      const failure = new Error('disk full');
+      jest.spyOn(attachmentService, 'store').mockRejectedValue(failure);
+      const updateOneSpy = jest
+        .spyOn(subscriberService, 'updateOne')
+        .mockResolvedValue(allSubscribers[0]);
+
+      await expect(
+        subscriberService.storeAvatar(subscriber.id, avatarPayload),
+      ).rejects.toThrow(failure);
+
+      expect(updateOneSpy).not.toHaveBeenCalled();
+    });
+
+    it('should generate the filename with the proper extension', async () => {
+      const subscriber = { ...allSubscribers[0], avatar: null };
+      const avatarPayload: AttachmentFile = {
+        file: Buffer.from('fake-png'),
+        type: 'image/png',
+        size: 1_024,
+      };
+      jest.spyOn(mime, 'extension').mockReturnValue('png');
+
+      jest
+        .spyOn(attachmentService, 'store')
+        .mockResolvedValue({ id: '9'.repeat(24) } as any);
+      jest
+        .spyOn(subscriberService, 'updateOne')
+        .mockResolvedValue(allSubscribers[0]);
+
+      await subscriberService.storeAvatar(subscriber.id, avatarPayload);
+
+      const { name } = (attachmentService.store as jest.Mock).mock.calls[0][1]; // second arg in the first call
+      expect(name).toBe('avatar-test-uuid.png');
     });
   });
 });

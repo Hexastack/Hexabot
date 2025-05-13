@@ -8,16 +8,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import mime from 'mime';
-import { v4 as uuidv4 } from 'uuid';
 
 import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import {
-  AttachmentAccess,
-  AttachmentCreatedByRef,
-  AttachmentResourceRef,
-} from '@/attachment/types';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
@@ -47,7 +39,6 @@ export class ChatService {
     private readonly botService: BotService,
     private readonly websocketGateway: WebsocketGateway,
     private readonly helperService: HelperService,
-    private readonly attachmentService: AttachmentService,
     private readonly languageService: LanguageService,
   ) {}
 
@@ -263,6 +254,7 @@ export class ChatService {
       let subscriber = await this.subscriberService.findOne({
         foreign_id: foreignId,
       });
+
       if (!subscriber) {
         const subscriberData = await handler.getSubscriberData(event);
         subscriberData.channel = event.getChannelData();
@@ -271,51 +263,31 @@ export class ChatService {
         if (!subscriber) {
           throw new Error('Unable to create a new subscriber');
         }
+
+        // Retrieve and store the subscriber avatar
+        // @TODO: We need to handle the avatar update (based on the lastvisit?)
+        if (handler.getSubscriberAvatar) {
+          try {
+            const file = await handler.getSubscriberAvatar(event);
+            if (file) {
+              subscriber = await this.subscriberService.storeAvatar(
+                subscriber.id,
+                file,
+              );
+            }
+          } catch (err) {
+            this.logger.error(
+              `Unable to retrieve avatar for subscriber ${event.getSenderForeignId()}`,
+              err,
+            );
+          }
+        }
       }
       event.setSender(subscriber);
       // Exec lastvisit hook
       this.eventEmitter.emit('hook:user:lastvisit', subscriber);
 
       this.websocketGateway.broadcastSubscriberUpdate(subscriber);
-
-      // Retrieve and store the subscriber avatar
-      if (handler.getSubscriberAvatar) {
-        try {
-          const metadata = await handler.getSubscriberAvatar(event);
-          if (metadata) {
-            const { file, type, size } = metadata;
-            const extension = mime.extension(type);
-
-            const avatar = await this.attachmentService.store(file, {
-              name: `avatar-${uuidv4()}.${extension}`,
-              size,
-              type,
-              resourceRef: AttachmentResourceRef.SubscriberAvatar,
-              access: AttachmentAccess.Private,
-              createdByRef: AttachmentCreatedByRef.Subscriber,
-              createdBy: subscriber.id,
-            });
-
-            if (avatar) {
-              subscriber = await this.subscriberService.updateOne(
-                subscriber.id,
-                {
-                  avatar: avatar.id,
-                },
-              );
-
-              if (!subscriber) {
-                throw new Error('Unable to update the subscriber avatar');
-              }
-            }
-          }
-        } catch (err) {
-          this.logger.error(
-            `Unable to retrieve avatar for subscriber ${event.getSenderForeignId()}`,
-            err,
-          );
-        }
-      }
 
       // Set the subscriber object
       event.setSender(subscriber!);

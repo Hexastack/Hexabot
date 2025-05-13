@@ -85,7 +85,7 @@ import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 
-describe('BlockService', () => {
+describe('BotService', () => {
   let blockService: BlockService;
   let subscriberService: SubscriberService;
   let botService: BotService;
