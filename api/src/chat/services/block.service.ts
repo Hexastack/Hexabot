@@ -313,20 +313,20 @@ export class BlockService extends BaseService<
 
     // Filter NLP patterns match based on best guessed entities
     return nlpPatterns.filter((patterns: NlpPattern[]) => {
-      return patterns.every((ev: NlpPattern) => {
-        if (ev.match === 'value') {
+      return patterns.every((p: NlpPattern) => {
+        if (p.match === 'value') {
           return entities.find((e) => {
             return (
-              e.entity === ev.entity &&
-              (e.value === ev.value || e.canonicalValue === ev.value)
+              e.entity === p.entity &&
+              (e.value === p.value || e.canonicalValue === p.value)
             );
           });
-        } else if (ev.match === 'entity') {
+        } else if (p.match === 'entity') {
           return entities.find((e) => {
-            return e.entity === ev.entity;
+            return e.entity === p.entity;
           });
         } else {
-          this.logger.warn('Unknown NLP match type', ev);
+          this.logger.warn('Unknown NLP match type', p);
           return false;
         }
       });

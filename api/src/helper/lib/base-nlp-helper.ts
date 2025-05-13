@@ -321,7 +321,7 @@ export default abstract class BaseNlpHelper<
           }
 
           if (nlpValue.metadata?.stripDiacritics) {
-            value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            value = value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
           }
 
           return {
@@ -349,7 +349,6 @@ export default abstract class BaseNlpHelper<
    *
    * @param text - The input text from which to extract slot values.
    * @param entities - An array of NlpEntityFull objects, each containing slot values and metadata.
-   * @param lookup - The lookup strategy to use: either `keywords` or `pattern`.
    *
    * @returns An array of `ParseEntity` objects containing the entity name, matched value, position, and confidence.
    */
