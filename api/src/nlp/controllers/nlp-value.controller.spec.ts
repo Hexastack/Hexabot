@@ -95,7 +95,7 @@ describe('NlpValueController', () => {
         entity: nlpEntities[0].id,
         value: 'valuetest',
         expressions: ['synonym1', 'synonym2'],
-        metadata: { firstkey: 'firstvalue', secondKey: 1995 },
+        metadata: {},
         builtin: false,
         doc: '',
       };

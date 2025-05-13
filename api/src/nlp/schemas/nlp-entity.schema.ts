@@ -16,10 +16,8 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
-import { Lookup } from '../dto/nlp-entity.dto';
-
 import { NlpValue } from './nlp-value.schema';
-import { NlpEntityMap } from './types';
+import { Lookup, LookupStrategy, NlpEntityMap } from './types';
 
 @Schema({ timestamps: true })
 export class NlpEntityStub extends BaseSchema {
@@ -41,9 +39,18 @@ export class NlpEntityStub extends BaseSchema {
   name: string;
 
   /**
-   * Lookup strategy can contain : keywords, trait, free-text
+   * Lookup strategy
    */
-  @Prop({ type: [String], default: ['keywords'] })
+  @Prop({
+    type: [String],
+    default: ['keywords'],
+    validate: {
+      validator: (lookups: string[]) =>
+        lookups.every((lookup) =>
+          Object.values(LookupStrategy).includes(lookup as LookupStrategy),
+        ),
+    },
+  })
   lookups: Lookup[];
 
   /**

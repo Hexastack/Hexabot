@@ -160,7 +160,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
-          metadata: [],
+          metadata: {},
         },
         value2: {
           id: new ObjectId().toString(),
@@ -170,7 +170,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
-          metadata: [],
+          metadata: {},
         },
       });
 

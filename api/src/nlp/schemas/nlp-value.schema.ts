@@ -19,9 +19,9 @@ import {
 import { TStubOrFull } from '@/utils/types/format.types';
 
 import { NlpEntity, NlpEntityFull } from './nlp-entity.schema';
-import { NlpValueMap } from './types';
+import { NlpMetadata, NlpValueMap } from './types';
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, minimize: false })
 export class NlpValueStub extends BaseSchema {
   /**
    * This value content.
@@ -44,8 +44,8 @@ export class NlpValueStub extends BaseSchema {
   /**
    * Metadata are additional data that can be associated to this values, most of the time, the metadata contains system values or ids (e.g: value: "coffee", metadata: "item_11") .
    */
-  @Prop({ type: JSON, default: {} })
-  metadata: Record<string, any>;
+  @Prop({ type: JSON, default: () => {} })
+  metadata?: NlpMetadata;
 
   /**
    * Description of the entity's value purpose.

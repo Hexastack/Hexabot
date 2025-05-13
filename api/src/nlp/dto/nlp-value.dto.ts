@@ -19,6 +19,8 @@ import {
 import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
+import { NlpMetadata } from '../schemas/types';
+
 export class NlpValueCreateDto {
   @ApiProperty({ description: 'Nlp value', type: String })
   @IsString()
@@ -37,7 +39,7 @@ export class NlpValueCreateDto {
   @ApiPropertyOptional({ description: 'Nlp value metadata', type: Object })
   @IsOptional()
   @IsObject()
-  metadata?: Record<string, any>;
+  metadata?: NlpMetadata;
 
   @ApiPropertyOptional({ description: 'Nlp Value Description', type: String })
   @IsString()
@@ -81,6 +83,11 @@ export class NlpValueUpdateDto {
   @IsString()
   @IsObjectId({ message: 'Entity must be a valid ObjectId' })
   entity?: string | null;
+
+  @ApiPropertyOptional({ description: 'Nlp Metadata', type: Object })
+  @IsObject()
+  @IsOptional()
+  metadata?: NlpMetadata;
 
   @ApiPropertyOptional({ description: 'Nlp Value Description', type: String })
   @IsString()
