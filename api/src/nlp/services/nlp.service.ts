@@ -10,6 +10,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { HelperService } from '@/helper/helper.service';
+import { HelperType, NLU } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
 
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
@@ -30,6 +31,36 @@ export class NlpService {
   ) {}
 
   /**
+   * Computes a prediction score for each parsed NLU entity based on its confidence and a predefined weight.
+   *
+   * `score = confidence * weight`
+   *
+   * If a weight is not defined for a given entity, a default of 1 is used.
+   *
+   * @param input - The input object containing parsed entities.
+   * @param input.entities - The list of entities returned from NLU inference.
+   *
+   * @returns A promise that resolves to a list of scored entities.
+   */
+  async computePredictionScore({
+    entities,
+  }: NLU.ParseEntities): Promise<NLU.ScoredEntities> {
+    const nlpMap = await this.nlpEntityService.getNlpMap();
+
+    const scoredEntities = entities
+      .filter(({ entity }) => nlpMap.has(entity))
+      .map((e) => {
+        const entity = nlpMap.get(e.entity)!;
+        return {
+          ...e,
+          score: e.confidence * (entity.weight || 1),
+        };
+      });
+
+    return { entities: scoredEntities };
+  }
+
+  /**
    * Handles the event triggered when a new NLP entity is created. Synchronizes the entity with the external NLP provider.
    *
    * @param entity - The NLP entity to be created.
@@ -39,7 +70,7 @@ export class NlpService {
   async handleEntityCreate(entity: NlpEntityDocument) {
     // Synchonize new entity with NLP
     try {
-      const helper = await this.helperService.getDefaultNluHelper();
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const foreignId = await helper.addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
       return await this.nlpEntityService.updateOne(

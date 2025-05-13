@@ -51,7 +51,7 @@ describe('NlpEntityRepository', () => {
       NlpValueRepository,
     ]);
     firstNameNlpEntity = await nlpEntityRepository.findOne({
-      name: 'first_name',
+      name: 'firstname',
     });
   });
 
@@ -91,7 +91,7 @@ describe('NlpEntityRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should return all nlp entities with populate', async () => {
       const pageQuery = getPageQuery<NlpEntity>({
         sort: ['name', 'desc'],
@@ -99,7 +99,7 @@ describe('NlpEntityRepository', () => {
       const firstNameValues = await nlpValueRepository.find({
         entity: firstNameNlpEntity!.id,
       });
-      const result = await nlpEntityRepository.findPageAndPopulate(
+      const result = await nlpEntityRepository.findAndPopulate(
         { _id: firstNameNlpEntity!.id },
         pageQuery,
       );

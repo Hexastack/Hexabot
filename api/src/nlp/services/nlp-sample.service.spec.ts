@@ -217,7 +217,10 @@ describe('NlpSampleService', () => {
         .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
       jest
         .spyOn(languageService, 'getLanguages')
-        .mockResolvedValue({ en: { id: '1' } });
+        .mockResolvedValue({ en: { id: '1' } } as unknown as Record<
+          string,
+          Language
+        >);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
         .mockResolvedValue({ code: 'en' } as Language);
@@ -240,7 +243,10 @@ describe('NlpSampleService', () => {
         .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
       jest
         .spyOn(languageService, 'getLanguages')
-        .mockResolvedValue({ en: { id: '1' } });
+        .mockResolvedValue({ en: { id: '1' } } as unknown as Record<
+          string,
+          Language
+        >);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
         .mockResolvedValue({ code: 'en' } as Language);
@@ -258,7 +264,10 @@ describe('NlpSampleService', () => {
 
     it('should successfully process and save valid dataset rows', async () => {
       const mockData = 'text,intent,language\nHi,greet,en\nBye,bye,en';
-      const mockLanguages = { en: { id: '1' } };
+      const mockLanguages = { en: { id: '1' } } as unknown as Record<
+        string,
+        Language
+      >;
 
       jest
         .spyOn(languageService, 'getLanguages')

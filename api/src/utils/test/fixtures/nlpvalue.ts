@@ -11,7 +11,7 @@ import mongoose from 'mongoose';
 import { NlpValueCreateDto } from '@/nlp/dto/nlp-value.dto';
 import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
 
-import { installNlpEntityFixtures } from './nlpentity';
+import { installNlpEntityFixtures, nlpEntityFixtures } from './nlpentity';
 
 export const nlpValueFixtures: NlpValueCreateDto[] = [
   {
@@ -49,16 +49,43 @@ export const nlpValueFixtures: NlpValueCreateDto[] = [
     builtin: true,
     doc: '',
   },
+  {
+    entity: '0',
+    value: 'affirmation',
+    expressions: ['yes', 'oui', 'yeah'],
+    builtin: false,
+    doc: '',
+  },
+  {
+    entity: '3',
+    value: 'product',
+    expressions: [],
+    builtin: false,
+    doc: '',
+  },
+  {
+    entity: '3',
+    value: 'claim',
+    expressions: [],
+    builtin: false,
+    doc: '',
+  },
 ];
 
 export const installNlpValueFixtures = async () => {
   const nlpEntities = await installNlpEntityFixtures();
 
   const NlpValue = mongoose.model(NlpValueModel.name, NlpValueModel.schema);
+
   const nlpValues = await NlpValue.insertMany(
     nlpValueFixtures.map((v) => ({
       ...v,
-      entity: v?.entity ? nlpEntities[parseInt(v.entity)].id : null,
+      entity: v?.entity
+        ? nlpEntities.find(
+            (e) =>
+              e.name === nlpEntityFixtures[parseInt(v.entity as string)].name,
+          ).id
+        : null,
     })),
   );
   return { nlpEntities, nlpValues };

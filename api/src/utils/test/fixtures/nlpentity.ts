@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -17,18 +17,28 @@ export const nlpEntityFixtures: NlpEntityCreateDto[] = [
     lookups: ['trait'],
     doc: '',
     builtin: false,
+    weight: 1,
   },
   {
-    name: 'first_name',
+    name: 'firstname',
     lookups: ['keywords'],
     doc: '',
     builtin: false,
+    weight: 0.85,
   },
   {
     name: 'built_in',
     lookups: ['trait'],
     doc: '',
     builtin: true,
+    weight: 1,
+  },
+  {
+    name: 'subject',
+    lookups: ['trait'],
+    doc: '',
+    builtin: false,
+    weight: 0.95,
   },
 ];
 

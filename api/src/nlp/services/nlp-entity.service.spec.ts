@@ -6,8 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -27,7 +29,7 @@ import { NlpValueModel } from '../schemas/nlp-value.schema';
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpValueService } from './nlp-value.service';
 
-describe('nlpEntityService', () => {
+describe('NlpEntityService', () => {
   let nlpEntityService: NlpEntityService;
   let nlpEntityRepository: NlpEntityRepository;
   let nlpValueRepository: NlpValueRepository;
@@ -48,6 +50,14 @@ describe('nlpEntityService', () => {
         NlpValueService,
         NlpValueRepository,
         NlpSampleEntityRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            set: jest.fn(),
+            get: jest.fn(),
+          },
+        },
       ],
     });
     [nlpEntityService, nlpEntityRepository, nlpValueRepository] =
@@ -77,7 +87,7 @@ describe('nlpEntityService', () => {
   describe('findOneAndPopulate', () => {
     it('should return a nlp entity with populate', async () => {
       const firstNameNlpEntity = await nlpEntityRepository.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityService.findOneAndPopulate(
         firstNameNlpEntity!.id,
@@ -98,7 +108,7 @@ describe('nlpEntityService', () => {
     it('should return all nlp entities with populate', async () => {
       const pageQuery = getPageQuery<NlpEntity>({ sort: ['name', 'desc'] });
       const firstNameNlpEntity = await nlpEntityRepository.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const result = await nlpEntityService.findPageAndPopulate(
         { _id: firstNameNlpEntity!.id },
@@ -115,6 +125,61 @@ describe('nlpEntityService', () => {
         },
       ];
       expect(result).toEqualPayload(entitiesWithValues);
+    });
+  });
+  describe('NlpEntityService - updateWeight', () => {
+    let createdEntity: NlpEntity;
+    beforeEach(async () => {
+      createdEntity = await nlpEntityRepository.create({
+        name: 'testentity',
+        builtin: false,
+        weight: 3,
+      });
+    });
+
+    it('should update the weight of an NLP entity', async () => {
+      const newWeight = 8;
+
+      const updatedEntity = await nlpEntityService.updateWeight(
+        createdEntity.id,
+        newWeight,
+      );
+
+      expect(updatedEntity.weight).toBe(newWeight);
+    });
+
+    it('should handle updating weight of non-existent entity', async () => {
+      const nonExistentId = NOT_FOUND_ID;
+
+      try {
+        await nlpEntityService.updateWeight(nonExistentId, 5);
+        fail('Expected error was not thrown');
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
+    });
+
+    it('should use default weight of 1 when creating entity without weight', async () => {
+      const createdEntity = await nlpEntityRepository.create({
+        name: 'entityWithoutWeight',
+        builtin: true,
+        // weight not specified
+      });
+
+      expect(createdEntity.weight).toBe(1);
+    });
+
+    it('should throw an error if weight is negative', async () => {
+      const invalidWeight = -3;
+
+      await expect(
+        nlpEntityService.updateWeight(createdEntity.id, invalidWeight),
+      ).rejects.toThrow('Weight must be a strictly positive number');
+    });
+
+    afterEach(async () => {
+      // Clean the collection after each test
+      await nlpEntityRepository.deleteOne(createdEntity.id);
     });
   });
 
@@ -148,6 +213,56 @@ describe('nlpEntityService', () => {
       ];
 
       expect(result).toEqualPayload(storedEntites);
+    });
+  });
+  describe('getNlpMap', () => {
+    it('should return a NlpCacheMap with the correct structure', async () => {
+      // Act
+      const result = await nlpEntityService.getNlpMap();
+
+      expect(result).toBeInstanceOf(Map);
+      expect(result.get('firstname')).toEqualPayload(
+        {
+          name: 'firstname',
+          lookups: ['keywords'],
+          doc: '',
+          builtin: false,
+          weight: 0.85,
+          values: [
+            {
+              value: 'jhon',
+              expressions: ['john', 'joohn', 'jhonny'],
+              builtin: true,
+              doc: '',
+            },
+          ],
+        },
+        ['id', 'createdAt', 'updatedAt', 'metadata', 'entity'],
+      );
+      expect(result.get('subject')).toEqualPayload(
+        {
+          name: 'subject',
+          lookups: ['trait'],
+          doc: '',
+          builtin: false,
+          weight: 0.95,
+          values: [
+            {
+              value: 'product',
+              expressions: [],
+              builtin: false,
+              doc: '',
+            },
+            {
+              value: 'claim',
+              expressions: [],
+              builtin: false,
+              doc: '',
+            },
+          ],
+        },
+        ['id', 'createdAt', 'updatedAt', 'metadata', 'entity'],
+      );
     });
   });
 });

@@ -21,6 +21,8 @@ import {
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { config } from '@/config';
 import { HelperService } from '@/helper/helper.service';
+import { HelperType } from '@/helper/types';
+import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
@@ -46,6 +48,7 @@ export class ChatService {
     private readonly websocketGateway: WebsocketGateway,
     private readonly helperService: HelperService,
     private readonly attachmentService: AttachmentService,
+    private readonly languageService: LanguageService,
   ) {}
 
   /**
@@ -330,19 +333,45 @@ export class ChatService {
         return;
       }
 
-      if (event.getText() && !event.getNLP()) {
-        try {
-          const helper = await this.helperService.getDefaultNluHelper();
-          const nlp = await helper.predict(event.getText(), true);
-          event.setNLP(nlp);
-        } catch (err) {
-          this.logger.error('Unable to perform NLP parse', err);
-        }
-      }
+      await this.enrichEventWithNLU(event);
 
       this.botService.handleMessageEvent(event);
     } catch (err) {
       this.logger.error('Error handling new message', err);
+    }
+  }
+
+  /**
+   * Enriches an incoming event by performing NLP inference and updating the sender's language profile if detected.
+   *
+   * @param event - The incoming event object containing user input and metadata.
+   * @returns Resolves when preprocessing is complete. Any errors are logged without throwing.
+   */
+  async enrichEventWithNLU(event: EventWrapper<any, any>) {
+    if (!event.getText() || event.getNLP()) {
+      return;
+    }
+
+    try {
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+      const nlp = await helper.predict(event.getText(), true);
+
+      // Check & catch user language through NLP
+      if (nlp) {
+        const languages = await this.languageService.getLanguages();
+        const spokenLanguage = nlp.entities.find(
+          (e) => e.entity === 'language',
+        );
+        if (spokenLanguage && spokenLanguage.value in languages) {
+          const profile = event.getSender();
+          profile.language = spokenLanguage.value;
+          event.setSender(profile);
+        }
+      }
+
+      event.setNLP(nlp);
+    } catch (err) {
+      this.logger.error('Unable to perform NLP parse', err);
     }
   }
 

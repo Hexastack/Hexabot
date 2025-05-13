@@ -27,10 +27,24 @@ import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { Web } from '@/extensions/channels/web/types';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
+import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
+import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
+import { NlpSampleRepository } from '@/nlp/repositories/nlp-sample.repository';
+import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
+import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
+import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
+import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
+import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
+import { NlpSampleEntityService } from '@/nlp/services/nlp-sample-entity.service';
+import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
+import { NlpValueService } from '@/nlp/services/nlp-value.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import {
@@ -38,17 +52,26 @@ import {
   installBlockFixtures,
 } from '@/utils/test/fixtures/block';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
+import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import {
   blockEmpty,
   blockGetStarted,
   blockProductListMock,
   blocks,
+  mockNlpAffirmationPatterns,
+  mockNlpGreetingAnyNamePatterns,
+  mockNlpGreetingNamePatterns,
+  mockNlpGreetingPatterns,
+  mockNlpGreetingWrongNamePatterns,
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
-import { nlpEntitiesGreeting } from '@/utils/test/mocks/nlp';
+import {
+  mockNlpGreetingFullNameEntities,
+  mockNlpGreetingNameEntities,
+} from '@/utils/test/mocks/nlp';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -56,7 +79,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockRepository } from '../repositories/block.repository';
-import { Block, BlockModel } from '../schemas/block.schema';
+import { Block, BlockFull, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
 import { FileType } from '../schemas/types/attachment';
@@ -82,6 +105,7 @@ describe('BlockService', () => {
         rootMongooseTestModule(async () => {
           await installContentFixtures();
           await installBlockFixtures();
+          await installNlpValueFixtures();
         }),
         MongooseModule.forFeature([
           BlockModel,
@@ -91,6 +115,10 @@ describe('BlockService', () => {
           AttachmentModel,
           LabelModel,
           LanguageModel,
+          NlpEntityModel,
+          NlpSampleEntityModel,
+          NlpValueModel,
+          NlpSampleModel,
         ]),
       ],
       providers: [
@@ -106,6 +134,16 @@ describe('BlockService', () => {
         ContentService,
         AttachmentService,
         LanguageService,
+        NlpEntityRepository,
+        NlpValueRepository,
+        NlpSampleRepository,
+        NlpSampleEntityRepository,
+        NlpEntityService,
+        NlpValueService,
+        NlpSampleService,
+        NlpSampleEntityService,
+        NlpService,
+        HelperService,
         {
           provide: PluginService,
           useValue: {},
@@ -268,7 +306,7 @@ describe('BlockService', () => {
 
     it('should match block with nlp', async () => {
       webEventGreeting.setSender(subscriberWithLabels);
-      webEventGreeting.setNLP(nlpEntitiesGreeting);
+      webEventGreeting.setNLP(mockNlpGreetingFullNameEntities);
       const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(blockGetStarted);
     });
@@ -276,47 +314,200 @@ describe('BlockService', () => {
 
   describe('matchNLP', () => {
     it('should return undefined for match nlp against a block with no patterns', () => {
-      const result = blockService.matchNLP(nlpEntitiesGreeting, blockEmpty);
-      expect(result).toEqual(undefined);
+      const result = blockService.getMatchingNluPatterns(
+        mockNlpGreetingFullNameEntities,
+        blockEmpty,
+      );
+      expect(result).toEqual([]);
     });
 
     it('should return undefined for match nlp when no nlp entities are provided', () => {
-      const result = blockService.matchNLP({ entities: [] }, blockGetStarted);
-      expect(result).toEqual(undefined);
+      const result = blockService.getMatchingNluPatterns(
+        { entities: [] },
+        blockGetStarted,
+      );
+      expect(result).toEqual([]);
     });
 
     it('should return match nlp patterns', () => {
-      const result = blockService.matchNLP(
-        nlpEntitiesGreeting,
-        blockGetStarted,
+      const result = blockService.getMatchingNluPatterns(
+        mockNlpGreetingFullNameEntities,
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpGreetingNamePatterns],
+        },
       );
       expect(result).toEqual([
-        {
-          entity: 'intent',
-          match: 'value',
-          value: 'greeting',
-        },
-        {
-          entity: 'firstname',
-          match: 'entity',
-        },
+        [
+          {
+            entity: 'intent',
+            match: 'value',
+            value: 'greeting',
+          },
+          {
+            entity: 'firstname',
+            match: 'value',
+            value: 'jhon',
+          },
+        ],
       ]);
     });
 
-    it('should return undefined when it does not match nlp patterns', () => {
-      const result = blockService.matchNLP(nlpEntitiesGreeting, {
-        ...blockGetStarted,
-        patterns: [[{ entity: 'lastname', match: 'value', value: 'Belakhel' }]],
-      });
-      expect(result).toEqual(undefined);
+    it('should return empty array when it does not match nlp patterns', () => {
+      const result = blockService.getMatchingNluPatterns(
+        mockNlpGreetingFullNameEntities,
+        {
+          ...blockGetStarted,
+          patterns: [
+            [{ entity: 'lastname', match: 'value', value: 'Belakhel' }],
+          ],
+        },
+      );
+      expect(result).toEqual([]);
     });
 
-    it('should return undefined when unknown nlp patterns', () => {
-      const result = blockService.matchNLP(nlpEntitiesGreeting, {
+    it('should return empty array when unknown nlp patterns', () => {
+      const result = blockService.getMatchingNluPatterns(
+        mockNlpGreetingFullNameEntities,
+        {
+          ...blockGetStarted,
+          patterns: [[{ entity: 'product', match: 'value', value: 'pizza' }]],
+        },
+      );
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('matchBestNLP', () => {
+    it('should return the block with the highest NLP score', async () => {
+      const mockExpectedBlock: BlockFull = {
         ...blockGetStarted,
-        patterns: [[{ entity: 'product', match: 'value', value: 'pizza' }]],
-      });
-      expect(result).toEqual(undefined);
+        patterns: [...blockGetStarted.patterns, mockNlpGreetingNamePatterns],
+      };
+      const blocks: BlockFull[] = [
+        // no match
+        blockGetStarted,
+        // match
+        mockExpectedBlock,
+        // match
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpGreetingPatterns],
+        },
+        // no match
+        {
+          ...blockGetStarted,
+          patterns: [
+            ...blockGetStarted.patterns,
+            mockNlpGreetingWrongNamePatterns,
+          ],
+        },
+        // no match
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpAffirmationPatterns],
+        },
+        // no match
+        blockGetStarted,
+      ];
+
+      // Spy on calculateBlockScore to check if it's called
+      const calculateBlockScoreSpy = jest.spyOn(
+        blockService,
+        'calculateNluPatternMatchScore',
+      );
+      const bestBlock = blockService.matchBestNLP(
+        blocks,
+        mockNlpGreetingNameEntities,
+      );
+
+      // Ensure calculateBlockScore was called at least once for each block
+      expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(2); // Called for each block
+
+      // Assert that the block with the highest NLP score is selected
+      expect(bestBlock).toEqual(mockExpectedBlock);
+    });
+
+    it('should return the block with the highest NLP score applying penalties', async () => {
+      const mockExpectedBlock: BlockFull = {
+        ...blockGetStarted,
+        patterns: [...blockGetStarted.patterns, mockNlpGreetingNamePatterns],
+      };
+      const blocks: BlockFull[] = [
+        // no match
+        blockGetStarted,
+        // match
+        mockExpectedBlock,
+        // match
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpGreetingPatterns],
+        },
+        // match
+        {
+          ...blockGetStarted,
+          patterns: [
+            ...blockGetStarted.patterns,
+            mockNlpGreetingAnyNamePatterns,
+          ],
+        },
+      ];
+      const nlp = mockNlpGreetingNameEntities;
+      // Spy on calculateBlockScore to check if it's called
+      const calculateBlockScoreSpy = jest.spyOn(
+        blockService,
+        'calculateNluPatternMatchScore',
+      );
+      const bestBlock = blockService.matchBestNLP(blocks, nlp);
+
+      // Ensure calculateBlockScore was called at least once for each block
+      expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(3); // Called for each block
+
+      // Assert that the block with the highest NLP score is selected
+      expect(bestBlock).toEqual(mockExpectedBlock);
+    });
+
+    it('should return undefined if no blocks match or the list is empty', async () => {
+      const blocks: BlockFull[] = [
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpAffirmationPatterns],
+        },
+        blockGetStarted,
+      ];
+
+      const bestBlock = blockService.matchBestNLP(
+        blocks,
+        mockNlpGreetingNameEntities,
+      );
+
+      // Assert that undefined is returned when no blocks are available
+      expect(bestBlock).toBeUndefined();
+    });
+  });
+
+  describe('calculateNluPatternMatchScore', () => {
+    it('should calculate the correct NLP score for a block', async () => {
+      const matchingScore = blockService.calculateNluPatternMatchScore(
+        mockNlpGreetingNamePatterns,
+        mockNlpGreetingNameEntities,
+      );
+
+      expect(matchingScore).toBeGreaterThan(0);
+    });
+
+    it('should calculate the correct NLP score for a block and apply penalties ', async () => {
+      const scoreWithoutPenalty = blockService.calculateNluPatternMatchScore(
+        mockNlpGreetingNamePatterns,
+        mockNlpGreetingNameEntities,
+      );
+
+      const scoreWithPenalty = blockService.calculateNluPatternMatchScore(
+        mockNlpGreetingAnyNamePatterns,
+        mockNlpGreetingNameEntities,
+      );
+
+      expect(scoreWithoutPenalty).toBeGreaterThan(scoreWithPenalty);
     });
   });
 

@@ -60,6 +60,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
       name: nlpEntity?.name || "",
       doc: nlpEntity?.doc || "",
       lookups: nlpEntity?.lookups || ["keywords"],
+      weight: nlpEntity?.weight || 1,
     },
   });
   const validationRules = {
@@ -82,6 +83,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
       reset({
         name: nlpEntity.name,
         doc: nlpEntity.doc,
+        weight: nlpEntity.weight,
       });
     } else {
       reset();
@@ -121,6 +123,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               required
               autoFocus
               helperText={errors.name ? errors.name.message : null}
+              disabled={nlpEntity?.builtin}
             />
           </ContentItem>
           <ContentItem>
@@ -128,8 +131,34 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
               label={t("label.doc")}
               {...register("doc")}
               multiline={true}
+              disabled={nlpEntity?.builtin}
             />
           </ContentItem>
+          <ContentItem>
+            <Input
+              label={t("label.weight")}
+              {...register("weight", {
+                valueAsNumber: true,
+                required: t("message.weight_required_error"),
+                min: {
+                  value: 0.01,
+                  message: t("message.weight_positive_number_error"),
+                },
+                validate: (value) =>
+                  value && value > 0
+                    ? true
+                    : t("message.weight_positive_number_error"),
+              })}
+              type="number"
+              inputProps={{
+                min: 0,
+                step: 0.01,
+                inputMode: "numeric",
+              }}
+              error={!!errors.weight}
+              helperText={errors.weight?.message}
+          />
+        </ContentItem>
         </ContentContainer>
       </form>
     </Wrapper>

@@ -16,7 +16,7 @@ import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import { CaptureVar } from '@/chat/schemas/types/capture-var';
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
-import { Pattern } from '@/chat/schemas/types/pattern';
+import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
 
 import { modelInstance } from './misc';
@@ -230,12 +230,92 @@ export const blockGetStarted = {
       value: 'Livre',
       type: PayloadType.attachments,
     },
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Welcome! How are you ? '],
+} as unknown as BlockFull;
+
+export const mockNlpGreetingPatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+];
+
+export const mockNlpGreetingNamePatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'jhon',
+  },
+];
+
+export const mockNlpGreetingWrongNamePatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'doe',
+  },
+];
+
+export const mockNlpAffirmationPatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'affirmation',
+  },
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'mark',
+  },
+];
+
+export const mockNlpGreetingAnyNamePatterns: NlpPattern[] = [
+  {
+    entity: 'intent',
+    match: 'value',
+    value: 'greeting',
+  },
+  {
+    entity: 'firstname',
+    match: 'entity',
+  },
+];
+
+export const mockModifiedNlpBlock: BlockFull = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp', value: 'MODIFIED_MOCK_NLP' },
+    mockNlpGreetingAnyNamePatterns,
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Hello there'],
+} as unknown as BlockFull;
+
+export const mockModifiedNlpBlockOne: BlockFull = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp One',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp One', value: 'MODIFIED_MOCK_NLP_ONE' },
+    mockNlpAffirmationPatterns,
     [
-      {
-        entity: 'intent',
-        match: 'value',
-        value: 'greeting',
-      },
       {
         entity: 'firstname',
         match: 'entity',
@@ -243,9 +323,27 @@ export const blockGetStarted = {
     ],
   ],
   trigger_labels: customerLabelsMock,
-  message: ['Welcome! How are you ? '],
+  message: ['Hello Sir'],
 } as unknown as BlockFull;
 
+export const mockModifiedNlpBlockTwo: BlockFull = {
+  ...baseBlockInstance,
+  name: 'Modified Mock Nlp Two',
+  patterns: [
+    'Hello',
+    '/we*lcome/',
+    { label: 'Modified Mock Nlp Two', value: 'MODIFIED_MOCK_NLP_TWO' },
+    [
+      {
+        entity: 'firstname',
+        match: 'entity',
+      },
+    ],
+    mockNlpGreetingAnyNamePatterns,
+  ],
+  trigger_labels: customerLabelsMock,
+  message: ['Hello Madam'],
+} as unknown as BlockFull;
 const patternsProduct: Pattern[] = [
   'produit',
   [

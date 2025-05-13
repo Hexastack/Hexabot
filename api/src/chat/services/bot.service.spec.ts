@@ -33,6 +33,19 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
+import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
+import { NlpSampleRepository } from '@/nlp/repositories/nlp-sample.repository';
+import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
+import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
+import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
+import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
+import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
+import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
+import { NlpSampleEntityService } from '@/nlp/services/nlp-sample-entity.service';
+import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
+import { NlpValueService } from '@/nlp/services/nlp-value.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { installBlockFixtures } from '@/utils/test/fixtures/block';
@@ -100,6 +113,10 @@ describe('BlockService', () => {
           MenuModel,
           ContextVarModel,
           LanguageModel,
+          NlpEntityModel,
+          NlpSampleEntityModel,
+          NlpValueModel,
+          NlpSampleModel,
         ]),
         JwtModule,
       ],
@@ -116,6 +133,11 @@ describe('BlockService', () => {
         MessageRepository,
         MenuRepository,
         LanguageRepository,
+        ContextVarRepository,
+        NlpEntityRepository,
+        NlpSampleEntityRepository,
+        NlpValueRepository,
+        NlpSampleRepository,
         BlockService,
         CategoryService,
         ContentTypeService,
@@ -129,8 +151,12 @@ describe('BlockService', () => {
         MenuService,
         WebChannelHandler,
         ContextVarService,
-        ContextVarRepository,
         LanguageService,
+        NlpEntityService,
+        NlpValueService,
+        NlpSampleService,
+        NlpSampleEntityService,
+        NlpService,
         {
           provide: HelperService,
           useValue: {},

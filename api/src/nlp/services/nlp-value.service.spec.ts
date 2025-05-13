@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
@@ -58,6 +59,14 @@ describe('NlpValueService', () => {
         NlpEntityRepository,
         NlpValueService,
         NlpEntityService,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            del: jest.fn(),
+            set: jest.fn(),
+            get: jest.fn(),
+          },
+        },
       ],
     });
     [
@@ -89,25 +98,33 @@ describe('NlpValueService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
-    it('should return all nlp entities with populate', async () => {
-      const pageQuery = getPageQuery<NlpValue>({ sort: ['value', 'desc'] });
-      const result = await nlpValueService.findPageAndPopulate({}, pageQuery);
+  describe('findAndPopulate', () => {
+    it('should return all nlp values with populate', async () => {
+      const pageQuery = getPageQuery<NlpValue>({ sort: ['createdAt', 'asc'] });
+      const result = await nlpValueService.findAndPopulate({}, pageQuery);
       const nlpValueFixturesWithEntities = nlpValueFixtures.reduce(
         (acc, curr) => {
-          const ValueWithEntities = {
+          const fullValue: NlpValueFull = {
             ...curr,
             entity: nlpEntityFixtures[parseInt(curr.entity!)] as NlpEntity,
             expressions: curr.expressions!,
-            metadata: curr.metadata!,
             builtin: curr.builtin!,
+            metadata: {},
+            id: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
-          acc.push(ValueWithEntities);
+          acc.push(fullValue);
           return acc;
         },
         [] as Omit<NlpValueFull, keyof BaseSchema>[],
       );
-      expect(result).toEqualPayload(nlpValueFixturesWithEntities);
+      expect(result).toEqualPayload(nlpValueFixturesWithEntities, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'metadata',
+      ]);
     });
   });
 
@@ -125,7 +142,7 @@ describe('NlpValueService', () => {
         'Hello do you see me',
         [
           { entity: 'intent', value: 'greeting' },
-          { entity: 'first_name', value: 'jhon' },
+          { entity: 'firstname', value: 'jhon' },
         ],
         storedEntities,
       );
@@ -133,7 +150,7 @@ describe('NlpValueService', () => {
         name: 'intent',
       });
       const firstNameEntity = await nlpEntityRepository.findOne({
-        name: 'first_name',
+        name: 'firstname',
       });
       const greetingValue = await nlpValueRepository.findOne({
         value: 'greeting',

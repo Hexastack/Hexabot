@@ -20,6 +20,7 @@ import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 import { InvitationRepository } from '@/user/repositories/invitation.repository';
@@ -138,6 +139,10 @@ describe('BlockController', () => {
             get: jest.fn(),
             set: jest.fn(),
           },
+        },
+        {
+          provide: NlpService,
+          useValue: {},
         },
       ],
     });
