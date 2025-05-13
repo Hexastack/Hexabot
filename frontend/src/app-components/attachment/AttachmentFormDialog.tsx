@@ -16,7 +16,7 @@ export const AttachmentFormDialog = (
 ) => (
   <GenericFormDialog
     Form={AttachmentForm}
-    addText="title.media_library"
+    editText="title.media_library"
     confirmButtonProps={{ value: "button.select" }}
     {...props}
   />
