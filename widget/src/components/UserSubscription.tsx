@@ -15,7 +15,7 @@ import React, {
 } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { useChat } from "../providers/ChatProvider";
+import { getQuickReplies, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
@@ -42,6 +42,7 @@ const UserSubscription: React.FC = () => {
     setConnectionState,
     participants,
     setParticipants,
+    setSuggestions,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
@@ -58,6 +59,9 @@ const UserSubscription: React.FC = () => {
           `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
         );
         const { messages, profile } = body;
+        const quickReplies = getQuickReplies(body.messages.at(-1));
+
+        setSuggestions(quickReplies);
 
         localStorage.setItem("profile", JSON.stringify(profile));
         messages.forEach((message) => {

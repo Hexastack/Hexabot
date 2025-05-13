@@ -52,9 +52,11 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
       allowUpgrades: config.sockets.allowUpgrades,
     }),
     ...(config.sockets.cookie && { cookie: config.sockets.cookie }),
-    ...(config.sockets.onlyAllowOrigins && {
-      cors: {
-        origin: async (origin, cb) => {
+    cors: {
+      origin: async (origin, cb) => {
+        if (config.env === 'test') {
+          cb(null, true);
+        } else {
           // Retrieve the allowed origins from the settings
           const app = AppInstance.getApp();
           const settingService = app.get<SettingService>(SettingService);
@@ -74,9 +76,9 @@ export const buildWebSocketGatewayOptions = (): Partial<ServerOptions> => {
               }
             })
             .catch(cb);
-        },
+        }
       },
-    }),
+    },
   };
 
   return opts;

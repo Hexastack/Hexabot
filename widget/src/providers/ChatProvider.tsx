@@ -35,6 +35,18 @@ import { useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
+export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
+  message && "data" in message && "quick_replies" in message.data
+    ? (message.data.quick_replies || []).map(
+        (qr) =>
+          ({
+            content_type: QuickReplyType.text,
+            text: qr.title,
+            payload: qr.payload,
+          } as ISuggestion),
+      )
+    : [];
+
 interface Participant {
   id: string;
   name: string;
@@ -257,24 +269,10 @@ const ChatProvider: React.FC<{
       setScroll(0);
     }
 
-    if (
-      newIOMessage &&
-      "data" in newIOMessage &&
-      "quick_replies" in newIOMessage.data
-    ) {
-      setSuggestions(
-        (newIOMessage.data.quick_replies || []).map(
-          (qr) =>
-            ({
-              content_type: QuickReplyType.text,
-              text: qr.title,
-              payload: qr.payload,
-            } as ISuggestion),
-        ),
-      );
-    } else {
-      setSuggestions([]);
-    }
+    const quickReplies = getQuickReplies(newIOMessage as TMessage);
+
+    setSuggestions(quickReplies);
+
     isOpen ||
       updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
     settings.alwaysScrollToBottom && setScroll(101); // @hack
@@ -327,6 +325,9 @@ const ChatProvider: React.FC<{
             queryParams,
           ).toString()}`,
         );
+        const quickReplies = getQuickReplies(body.messages.at(-1));
+
+        setSuggestions(quickReplies);
 
         localStorage.setItem("profile", JSON.stringify(body.profile));
         setMessages(

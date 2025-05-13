@@ -30,6 +30,7 @@ import {
 } from '@/websocket/decorators/socket-method.decorator';
 import { SocketReq } from '@/websocket/decorators/socket-req.decorator';
 import { SocketRes } from '@/websocket/decorators/socket-res.decorator';
+import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
@@ -71,10 +72,17 @@ export class SubscriberService extends BaseService<
    */
   @SocketGet('/subscriber/subscribe/')
   @SocketPost('/subscriber/subscribe/')
-  subscribe(@SocketReq() req: SocketRequest, @SocketRes() res: SocketResponse) {
+  async subscribe(
+    @SocketReq() req: SocketRequest,
+    @SocketRes() res: SocketResponse,
+  ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      this.gateway.io.socketsJoin(Room.SUBSCRIBER);
-      return res.json({
+      await this.gateway.joinNotificationSockets(
+        req.sessionID,
+        Room.SUBSCRIBER,
+      );
+
+      return res.status(200).json({
         success: true,
         subscribe: Room.SUBSCRIBER,
       });

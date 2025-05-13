@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,17 +7,16 @@
  */
 
 import {
+  Dispatch,
   PropsWithChildren,
   createContext,
-  useState,
-  Dispatch,
   useContext,
+  useState,
 } from "react";
 
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType, Format } from "@/services/types";
 import { ISubscriber } from "@/types/subscriber.types";
-import { useSocketGetQuery } from "@/websocket/socket-hooks";
 
 import { noop } from "../helpers/noop";
 
@@ -26,7 +25,7 @@ interface IChatContext {
   setSubscriberId: Dispatch<string | null>;
 }
 
-const chatContext = createContext<IChatContext>({
+const ChatContext = createContext<IChatContext>({
   subscriber: null,
   setSubscriberId: noop,
 });
@@ -49,12 +48,8 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
     setSubscriberId,
   };
 
-  useSocketGetQuery("/message/subscribe/");
-
-  useSocketGetQuery("/subscriber/subscribe/");
-
   return (
-    <chatContext.Provider value={context}>{children}</chatContext.Provider>
+    <ChatContext.Provider value={context}>{children}</ChatContext.Provider>
   );
 };
 
@@ -63,7 +58,7 @@ export const ChatProvider = ({ children }: PropsWithChildren) => {
  * @description this hook is used to get the active chat
  */
 export const useChat = () => {
-  const context = useContext(chatContext);
+  const context = useContext(ChatContext);
 
   if (!context) {
     throw new Error("useChat must be used within a ChatProvider");
