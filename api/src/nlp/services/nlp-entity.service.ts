@@ -175,4 +175,23 @@ export class NlpEntityService extends BaseService<
       return acc;
     }, new Map());
   }
+
+  /**
+   * Retrieves all NLP entities that declare at least one of the specified
+   * lookup strategies.
+   *
+   * @async
+   * @param lookups - One or more lookup strategies to match
+   * against (e.g., {@link LookupStrategy.keywords}, {@link LookupStrategy.pattern}).
+   * An entity is included in the result if **any** of these strategies is found
+   * in its own `lookups` array.
+   * @returns A promise that resolves to the
+   * collection of matching entities.
+   */
+  async getNlpEntitiesByLookup(lookups: Lookup[]): Promise<NlpEntityFull[]> {
+    const entities = [...(await this.getNlpMap()).values()];
+    return entities.filter((e) => {
+      return lookups.filter((l) => e.lookups.includes(l)).length > 0;
+    });
+  }
 }
