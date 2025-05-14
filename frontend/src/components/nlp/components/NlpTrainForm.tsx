@@ -30,15 +30,16 @@ import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import Selectable from "@/app-components/inputs/Selectable";
-import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
+import { useNlp } from "@/hooks/useNlp";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import {
   INlpDatasetKeywordEntity,
+  INlpDatasetPatternEntity,
   INlpDatasetSample,
   INlpDatasetTraitEntity,
   INlpSampleFormAttributes,
@@ -56,39 +57,32 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   submitForm,
 }) => {
   const { t } = useTranslate();
-  const { data: entities, refetch: refetchEntities } = useFind(
-    {
-      entity: EntityType.NLP_ENTITY,
-      format: Format.FULL,
-    },
-    {
-      hasCount: false,
-    },
-  );
+  const {
+    allTraitEntities,
+    allKeywordEntities,
+    allPatternEntities,
+    refetchAllEntities,
+  } = useNlp();
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const defaultValues: INlpSampleFormAttributes = useMemo(
     () => ({
       type: sample?.type || NlpSampleType.train,
       text: sample?.text || "",
       language: sample?.language || null,
-      traitEntities: (entities || [])
-        .filter(({ lookups }) => {
-          return lookups.includes("trait");
-        })
-        .map((e) => {
-          return {
-            entity: e.name,
-            value: sample
-              ? sample.entities.find(({ entity }) => entity === e.name)?.value
-              : "",
-          } as INlpDatasetTraitEntity;
-        }),
-      keywordEntities: (sample?.entities || []).filter(
-        (e) => "start" in e && typeof e.start === "number",
+      traitEntities: [...allTraitEntities.values()].map((e) => {
+        return {
+          entity: e.name,
+          value:
+            (sample?.entities || []).find((se) => se.entity === e.name)
+              ?.value || "",
+        };
+      }) as INlpDatasetTraitEntity[],
+      keywordEntities: (sample?.entities || []).filter((e) =>
+        allKeywordEntities.has(e.entity),
       ) as INlpDatasetKeywordEntity[],
     }),
-    [sample, entities],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allKeywordEntities, allTraitEntities, JSON.stringify(sample)],
   );
   const { handleSubmit, control, register, reset, setValue, watch } =
     useForm<INlpSampleFormAttributes>({
@@ -97,6 +91,9 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   const currentText = watch("text");
   const currentType = watch("type");
   const { apiClient } = useApiClient();
+  const [patternEntities, setPatternEntities] = useState<
+    INlpDatasetPatternEntity[]
+  >([]);
   const { fields: traitEntities, update: updateTraitEntity } = useFieldArray({
     control,
     name: "traitEntities",
@@ -122,22 +119,29 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     queryFn: async () => {
       return await apiClient.predictNlp(currentText);
     },
-    onSuccess: (result) => {
-      const traitEntities: INlpDatasetTraitEntity[] = result.entities.filter(
-        (e) => !("start" in e && "end" in e) && e.entity !== "language",
-      );
-      const keywordEntities = result.entities.filter(
-        (e) => "start" in e && "end" in e,
+    onSuccess: (prediction) => {
+      const predictedTraitEntities: INlpDatasetTraitEntity[] =
+        prediction.entities.filter((e) => allTraitEntities.has(e.entity));
+      const predictedKeywordEntities = prediction.entities.filter((e) =>
+        allKeywordEntities.has(e.entity),
       ) as INlpDatasetKeywordEntity[];
-      const language = result.entities.find(
+      const predictedPatternEntities = prediction.entities.filter((e) =>
+        allPatternEntities.has(e.entity),
+      ) as INlpDatasetKeywordEntity[];
+      const language = prediction.entities.find(
         ({ entity }) => entity === "language",
       );
 
       setValue("language", language?.value || "");
-      setValue("traitEntities", traitEntities);
-      setValue("keywordEntities", keywordEntities);
+      setValue("traitEntities", predictedTraitEntities);
+      setValue("keywordEntities", predictedKeywordEntities);
+      setPatternEntities(predictedPatternEntities);
     },
-    enabled: !sample && !!currentText,
+    enabled:
+      // Inbox sample update
+      sample?.type === "inbox" ||
+      // New sample
+      (!sample && !!currentText),
   });
   const findInsertIndex = (newItem: INlpDatasetKeywordEntity): number => {
     const index = keywordEntities.findIndex(
@@ -153,7 +157,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   } | null>(null);
   const onSubmitForm = (form: INlpSampleFormAttributes) => {
     submitForm(form);
-    refetchEntities();
+    refetchAllEntities();
     reset({
       ...defaultValues,
       text: "",
@@ -203,7 +207,8 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
           <ContentItem>
             <Selectable
               defaultValue={currentText}
-              entities={keywordEntities}
+              keywordEntities={keywordEntities}
+              patternEntities={patternEntities}
               placeholder={t("placeholder.nlp_sample_text")}
               onSelect={(selection, start, end) => {
                 setSelection({
@@ -223,11 +228,13 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                     end,
                   })),
                 );
+                setPatternEntities([]);
               }}
               loading={isLoading}
             />
           </ContentItem>
           <Box display="flex" flexDirection="column">
+            {/* Language selection */}
             <ContentItem
               display="flex"
               flexDirection="row"
@@ -261,6 +268,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                 }}
               />
             </ContentItem>
+            {/* Trait entities */}
             {traitEntities.map((traitEntity, index) => (
               <ContentItem
                 key={traitEntity.id}
@@ -275,13 +283,9 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                   control={control}
                   render={({ field }) => {
                     const { onChange: _, value, ...rest } = field;
-                    const entity = entities?.find(
-                      ({ name }) => name === traitEntity.entity,
-                    );
-                    const options =
-                      entity?.values.map(
-                        (v) => getNlpValueFromCache(v) as INlpValue,
-                      ) || [];
+                    const options = (
+                      allTraitEntities.get(traitEntity.entity)?.values || []
+                    ).map((v) => getNlpValueFromCache(v)!);
 
                     return (
                       <>
@@ -318,7 +322,9 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-
+          {
+            /* Keyword entities */
+          }
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem
@@ -335,24 +341,16 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                   control={control}
                   render={({ field }) => {
                     const { onChange: _, ...rest } = field;
+                    const options = [...allKeywordEntities.values()];
 
                     return (
-                      <AutoCompleteEntitySelect<INlpEntity, "name", false>
+                      <AutoCompleteSelect<INlpEntity, "name", false>
                         fullWidth={true}
-                        searchFields={["name"]}
-                        entity={EntityType.NLP_ENTITY}
-                        format={Format.FULL}
+                        options={options}
                         idKey="name"
                         labelKey="name"
                         label={t("label.nlp_entity")}
                         multiple={false}
-                        preprocess={(options) => {
-                          return options.filter(
-                            ({ lookups }) =>
-                              lookups.includes("keywords") ||
-                              lookups.includes("pattern"),
-                          );
-                        }}
                         onChange={(_e, selected, ..._) => {
                           updateKeywordEntity(index, {
                             ...keywordEntities[index],
@@ -369,13 +367,9 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
                   control={control}
                   render={({ field }) => {
                     const { onChange: _, value, ...rest } = field;
-                    const entity = entities?.find(
-                      ({ name }) => name === keywordEntity.entity,
-                    );
-                    const options =
-                      entity?.values.map(
-                        (v) => getNlpValueFromCache(v) as INlpValue,
-                      ) || [];
+                    const options = (
+                      allKeywordEntities.get(keywordEntity.entity)?.values || []
+                    ).map((v) => getNlpValueFromCache(v)!);
 
                     return (
                       <AutoCompleteSelect<

@@ -6,11 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, CircularProgress, Input, styled } from "@mui/material";
+import { Box, CircularProgress, Input, styled, Tooltip } from "@mui/material";
 import randomSeed from "random-seed";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  CSSProperties,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { INlpDatasetKeywordEntity } from "../../types/nlp-sample.types";
+import {
+  INlpDatasetKeywordEntity,
+  INlpDatasetPatternEntity,
+} from "../../types/nlp-sample.types";
 
 const SelectableBox = styled(Box)({
   position: "relative",
@@ -40,22 +51,62 @@ const COLORS = [
   { name: "orange", bg: "#E6A23C" },
 ];
 const UNKNOWN_COLOR = { name: "grey", bg: "#aaaaaa" };
-const TODAY = new Date().toDateString();
-const getColor = (no: number) => {
-  const rand = randomSeed.create(TODAY);
+const NOW = (+new Date()).toString();
+const getColor = (no: number, seedPrefix: string = "") => {
+  const rand = randomSeed.create(seedPrefix + NOW);
   const startIndex = rand(COLORS.length);
   const color =
     no < 0 ? UNKNOWN_COLOR : COLORS[(startIndex + no) % COLORS.length];
 
   return {
     backgroundColor: color.bg,
-    opacity: 0.3,
+    opacity: 0.2,
   };
+};
+
+interface INlpSelectionEntity {
+  start: string;
+  entity: string;
+  value: string;
+  end: string;
+  style: CSSProperties;
+}
+const SelectionEntityBackground: React.FC<{
+  selectionEntity: INlpSelectionEntity;
+}> = ({ selectionEntity: e }) => {
+  return (
+    <div className="highlight">
+      <span>{e.start}</span>
+      <Tooltip
+        open={true}
+        placement="top"
+        title={e.entity}
+        arrow
+        componentsProps={{
+          tooltip: {
+            sx: {
+              color: "#FFF",
+              backgroundColor: e.style.backgroundColor,
+            },
+          },
+          arrow: {
+            sx: {
+              color: e.style.backgroundColor,
+            },
+          },
+        }}
+      >
+        <span style={e.style}>{e.value}</span>
+      </Tooltip>
+      <span>{e.end}</span>
+    </div>
+  );
 };
 
 type SelectableProps = {
   defaultValue?: string;
-  entities?: INlpDatasetKeywordEntity[];
+  keywordEntities?: INlpDatasetKeywordEntity[];
+  patternEntities?: INlpDatasetPatternEntity[];
   placeholder?: string;
   onSelect: (str: string, start: number, end: number) => void;
   onChange: (sample: {
@@ -65,9 +116,27 @@ type SelectableProps = {
   loading?: boolean;
 };
 
+const buildSelectionEntities = (
+  text: string,
+  entities: INlpDatasetKeywordEntity[] | INlpDatasetPatternEntity[],
+): INlpSelectionEntity[] => {
+  return entities?.map((e, index) => {
+    const start = e.start ? e.start : text.indexOf(e.value);
+    const end = e.end ? e.end : start + e.value.length;
+
+    return {
+      start: text.substring(0, start),
+      entity: e.entity,
+      value: text.substring(start, end),
+      end: text.substring(end),
+      style: getColor(e.entity ? index : -1, e.entity),
+    };
+  });
+};
 const Selectable: FC<SelectableProps> = ({
   defaultValue,
-  entities = [],
+  keywordEntities = [],
+  patternEntities = [],
   placeholder = "",
   onChange,
   onSelect,
@@ -76,20 +145,13 @@ const Selectable: FC<SelectableProps> = ({
   const [text, setText] = useState(defaultValue || "");
   const editableRef = useRef<HTMLDivElement>(null);
   const selectableRef = useRef(null);
-  const selectedEntities = useMemo(
-    () =>
-      entities?.map((e, index) => {
-        const start = e.start ? e.start : text.indexOf(e.value);
-        const end = e.end ? e.end : start + e.value.length;
-
-        return {
-          start: text.substring(0, start),
-          value: text.substring(start, end),
-          end: text.substring(end),
-          style: getColor(e.entity ? index : -1),
-        };
-      }),
-    [entities, text],
+  const selectedKeywordEntities = useMemo(
+    () => buildSelectionEntities(text, keywordEntities),
+    [keywordEntities, text],
+  );
+  const selectedPatternEntities = useMemo(
+    () => buildSelectionEntities(text, patternEntities),
+    [patternEntities, text],
   );
 
   useEffect(() => {
@@ -143,7 +205,7 @@ const Selectable: FC<SelectableProps> = ({
   const handleTextChange = useCallback(
     (newText: string) => {
       const oldText = text;
-      const oldEntities = [...entities];
+      const oldEntities = [...keywordEntities];
       const newEntities: INlpDatasetKeywordEntity[] = [];
       const findCharDiff = (oldStr: string, newStr: string): number => {
         const minLength = Math.min(oldStr.length, newStr.length);
@@ -187,17 +249,22 @@ const Selectable: FC<SelectableProps> = ({
 
       onChange({ text: newText, entities: newEntities });
     },
-    [text, onChange, entities],
+    [text, onChange, keywordEntities],
   );
 
   return (
     <SelectableBox ref={selectableRef}>
-      {selectedEntities?.map((e, idx) => (
-        <div key={idx} className="highlight">
-          <span>{e.start}</span>
-          <span style={e.style}>{e.value}</span>
-          <span>{e.end}</span>
-        </div>
+      {selectedPatternEntities?.map((e, idx) => (
+        <SelectionEntityBackground
+          key={`${e.entity}_${e.value}_${idx}`}
+          selectionEntity={e}
+        />
+      ))}
+      {selectedKeywordEntities?.map((e, idx) => (
+        <SelectionEntityBackground
+          key={`${e.entity}_${e.value}_${idx}`}
+          selectionEntity={e}
+        />
       ))}
       <Input
         ref={editableRef}
