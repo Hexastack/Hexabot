@@ -59,6 +59,7 @@ import {
   blockProductListMock,
   blocks,
   mockNlpAffirmationPatterns,
+  mockNlpFirstNamePatterns,
   mockNlpGreetingAnyNamePatterns,
   mockNlpGreetingNamePatterns,
   mockNlpGreetingPatterns,
@@ -69,6 +70,7 @@ import {
   subscriberContextBlankInstance,
 } from '@/utils/test/mocks/conversation';
 import {
+  mockNlpFirstNameEntities,
   mockNlpGreetingFullNameEntities,
   mockNlpGreetingNameEntities,
 } from '@/utils/test/mocks/nlp';
@@ -344,6 +346,25 @@ describe('BlockService', () => {
             match: 'value',
             value: 'greeting',
           },
+          {
+            entity: 'firstname',
+            match: 'value',
+            value: 'jhon',
+          },
+        ],
+      ]);
+    });
+
+    it('should return match nlp patterns with synonyms match (canonical value)', () => {
+      const result = blockService.getMatchingNluPatterns(
+        mockNlpFirstNameEntities,
+        {
+          ...blockGetStarted,
+          patterns: [...blockGetStarted.patterns, mockNlpFirstNamePatterns],
+        },
+      );
+      expect(result).toEqual([
+        [
           {
             entity: 'firstname',
             match: 'value',

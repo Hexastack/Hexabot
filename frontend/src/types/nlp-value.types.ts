@@ -9,7 +9,7 @@
 import { Format } from "@/services/types";
 
 import { IBaseSchema, IFormat } from "./base.types";
-import { INlpEntity } from "./nlp-entity.types";
+import { INlpEntity, INlpMetadata } from "./nlp-entity.types";
 
 export interface INlpValueAttributes {
   entity: string;
@@ -17,7 +17,7 @@ export interface INlpValueAttributes {
   value: string;
   doc?: string;
   expressions?: string[];
-  metadata?: Record<string, any>;
+  metadata?: INlpMetadata;
   builtin?: boolean;
   nlpSamplesCount?: number;
 }

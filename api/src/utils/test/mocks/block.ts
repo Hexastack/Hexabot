@@ -294,6 +294,14 @@ export const mockNlpGreetingAnyNamePatterns: NlpPattern[] = [
   },
 ];
 
+export const mockNlpFirstNamePatterns: NlpPattern[] = [
+  {
+    entity: 'firstname',
+    match: 'value',
+    value: 'jhon',
+  },
+];
+
 export const mockModifiedNlpBlock: BlockFull = {
   ...baseBlockInstance,
   name: 'Modified Mock Nlp',

@@ -51,6 +51,7 @@ export class NlpService {
       .filter(({ entity }) => nlpMap.has(entity))
       .map((e) => {
         const entity = nlpMap.get(e.entity)!;
+
         return {
           ...e,
           score: e.confidence * (entity.weight || 1),

@@ -15,14 +15,14 @@ import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
 
-import { Lookup, NlpEntityDto } from '../dto/nlp-entity.dto';
+import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import {
   NlpEntity,
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
-import { NlpCacheMap, NlpSampleEntityValue } from '../schemas/types';
+import { Lookup, NlpCacheMap, NlpSampleEntityValue } from '../schemas/types';
 
 import { NlpValueService } from './nlp-value.service';
 

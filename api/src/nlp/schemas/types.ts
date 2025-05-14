@@ -9,6 +9,15 @@
 import { NlpEntityFull, NlpEntityStub } from './nlp-entity.schema';
 import { NlpValueStub } from './nlp-value.schema';
 
+export enum LookupStrategy {
+  keywords = 'keywords',
+  trait = 'trait',
+  free_text = 'free-text',
+  pattern = 'pattern',
+}
+
+export type Lookup = `${LookupStrategy}`;
+
 export interface NlpSampleEntityValue {
   entity: string; // entity name
   value: string; // entity value
@@ -27,3 +36,12 @@ export enum NlpSampleState {
 }
 
 export type NlpCacheMap = Map<string, NlpEntityFull>;
+
+export type NlpMetadata = {
+  // Required when lookups is "pattern"
+  pattern?: string;
+  wordBoundary?: boolean;
+  removeSpaces?: boolean;
+  toLowerCase?: boolean;
+  stripDiacritics?: boolean;
+};

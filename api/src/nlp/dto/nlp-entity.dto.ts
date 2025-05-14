@@ -21,7 +21,7 @@ import {
 
 import { DtoConfig } from '@/utils/types/dto.types';
 
-export type Lookup = 'keywords' | 'trait' | 'free-text';
+import { Lookup, LookupStrategy } from '../schemas/types';
 
 export class NlpEntityCreateDto {
   @ApiProperty({ description: 'Name of the nlp entity', type: String })
@@ -33,10 +33,10 @@ export class NlpEntityCreateDto {
 
   @ApiPropertyOptional({
     isArray: true,
-    enum: ['keywords', 'trait', 'free-text'],
+    enum: Object.values(LookupStrategy),
   })
   @IsArray()
-  @IsIn(['keywords', 'trait', 'free-text'], { each: true })
+  @IsIn(Object.values(LookupStrategy), { each: true })
   @IsOptional()
   lookups?: Lookup[];
 

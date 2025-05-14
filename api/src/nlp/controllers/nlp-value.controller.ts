@@ -71,14 +71,17 @@ export class NlpValueController extends BaseController<
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
   ): Promise<NlpValue> {
+    const nlpEntity = createNlpValueDto.entity
+      ? await this.nlpEntityService.findOne(createNlpValueDto.entity!)
+      : null;
+
     this.validate({
       dto: createNlpValueDto,
       allowedIds: {
-        entity: createNlpValueDto.entity
-          ? (await this.nlpEntityService.findOne(createNlpValueDto.entity))?.id
-          : null,
+        entity: nlpEntity?.id,
       },
     });
+
     return await this.nlpValueService.create(createNlpValueDto);
   }
 
@@ -171,6 +174,17 @@ export class NlpValueController extends BaseController<
     @Param('id') id: string,
     @Body() updateNlpValueDto: NlpValueUpdateDto,
   ): Promise<NlpValue> {
+    const nlpEntity = updateNlpValueDto.entity
+      ? await this.nlpEntityService.findOne(updateNlpValueDto.entity!)
+      : null;
+
+    this.validate({
+      dto: updateNlpValueDto,
+      allowedIds: {
+        entity: nlpEntity?.id,
+      },
+    });
+
     return await this.nlpValueService.updateOne(id, updateNlpValueDto);
   }
 

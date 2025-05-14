@@ -22,15 +22,18 @@ import {
   PatternType,
   PayloadPattern,
 } from "@/types/block.types";
+import {
+  extractRegexBody,
+  formatWithSlashes,
+  isRegex,
+  isRegexString,
+} from "@/utils/string";
 
 import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
 
-const isRegex = (str: Pattern) => {
-  return typeof str === "string" && str.startsWith("/") && str.endsWith("/");
-};
-const getType = (pattern: Pattern): PatternType => {
-  if (isRegex(pattern)) {
+const getPatternType = (pattern: Pattern): PatternType => {
+  if (isRegexString(pattern)) {
     return "regex";
   } else if (Array.isArray(pattern)) {
     return "nlp";
@@ -69,7 +72,7 @@ const PatternInput: FC<PatternInputProps> = ({
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
   const [pattern, setPattern] = useState<Pattern>(value);
-  const patternType = getType(value);
+  const patternType = getPatternType(value);
   const registerInput = (
     errorMessage: string,
     idx: number,
@@ -122,23 +125,15 @@ const PatternInput: FC<PatternInputProps> = ({
         <RegexInput
           {...registerInput(t("message.regex_is_empty"), idx, {
             validate: (pattern) => {
-              try {
-                const parsedPattern = new RegExp(pattern.slice(1, -1));
-
-                if (String(parsedPattern) !== pattern) {
-                  throw t("message.regex_is_invalid");
-                }
-
-                return true;
-              } catch (_e) {
-                return t("message.regex_is_invalid");
-              }
+              return isRegex(extractRegexBody(pattern))
+                ? true
+                : t("message.regex_is_invalid");
             },
-            setValueAs: (v) => (isRegex(v) ? v : `/${v}/`),
+            setValueAs: (v) => (isRegexString(v) ? v : formatWithSlashes(v)),
           })}
+          value={extractRegexBody(value)}
           label={t("label.regex")}
-          value={value.slice(1, -1)}
-          onChange={(v) => onChange(v)}
+          onChange={(e) => onChange(formatWithSlashes(e.target.value))}
           required
         />
       ) : null}

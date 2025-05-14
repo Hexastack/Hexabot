@@ -294,11 +294,11 @@ export class BlockService extends BaseService<
    * @returns The NLU patterns that matches the predicted entities
    */
   getMatchingNluPatterns<E extends NLU.ParseEntities, B extends BlockStub>(
-    nlp: E,
+    { entities }: E,
     block: B,
   ): NlpPattern[][] {
     // No nlp entities to check against
-    if (nlp.entities.length === 0) {
+    if (entities.length === 0) {
       return [];
     }
 
@@ -312,18 +312,21 @@ export class BlockService extends BaseService<
     }
 
     // Filter NLP patterns match based on best guessed entities
-    return nlpPatterns.filter((entities: NlpPattern[]) => {
-      return entities.every((ev: NlpPattern) => {
-        if (ev.match === 'value') {
-          return nlp.entities.find((e) => {
-            return e.entity === ev.entity && e.value === ev.value;
+    return nlpPatterns.filter((patterns: NlpPattern[]) => {
+      return patterns.every((p: NlpPattern) => {
+        if (p.match === 'value') {
+          return entities.find((e) => {
+            return (
+              e.entity === p.entity &&
+              (e.value === p.value || e.canonicalValue === p.value)
+            );
           });
-        } else if (ev.match === 'entity') {
-          return nlp.entities.find((e) => {
-            return e.entity === ev.entity;
+        } else if (p.match === 'entity') {
+          return entities.find((e) => {
+            return e.entity === p.entity;
           });
         } else {
-          this.logger.warn('Unknown NLP match type', ev);
+          this.logger.warn('Unknown NLP match type', p);
           return false;
         }
       });
@@ -429,12 +432,14 @@ export class BlockService extends BaseService<
    * - Returns `true` if all conditions are met, otherwise `false`.
    */
   private matchesNluEntity<E extends NLU.ParseEntity>(
-    { entity, value }: E,
+    { entity, value, canonicalValue }: E,
     pattern: NlpPattern,
   ): boolean {
     return (
       entity === pattern.entity &&
-      (pattern.match !== 'value' || value === pattern.value)
+      (pattern.match !== 'value' ||
+        value === pattern.value ||
+        canonicalValue === pattern.value)
     );
   }
 

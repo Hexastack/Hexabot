@@ -30,6 +30,7 @@ import BaseNlpHelper from '../base-nlp-helper';
 const mockLoggerService = {
   log: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
 } as unknown as LoggerService;
 
 const mockSettingService = {
@@ -160,7 +161,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
-          metadata: [],
+          metadata: {},
         },
         value2: {
           id: new ObjectId().toString(),
@@ -170,7 +171,7 @@ describe('BaseNlpHelper', () => {
           updatedAt: new Date(),
           builtin: false,
           expressions: [],
-          metadata: [],
+          metadata: {},
         },
       });
 
@@ -216,6 +217,255 @@ describe('BaseNlpHelper', () => {
       await expect(helper.format(samples, entities)).rejects.toThrow(
         'Unable to find the `intent` nlp entity.',
       );
+    });
+  });
+
+  describe('extractKeywordBasedSlots', () => {
+    it('should return matches for exact keywords and synonyms', () => {
+      const entity: NlpEntityFull = {
+        name: 'color',
+        values: [
+          { value: 'blue', expressions: ['azure', 'navy'] },
+          { value: 'green', expressions: ['emerald', 'lime'] },
+        ],
+      } as any;
+
+      const result = helper.extractKeywordBasedSlots(
+        'The sky is azure and emerald',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'color',
+          value: 'blue',
+          start: 11,
+          end: 16,
+          confidence: 1,
+        },
+        {
+          entity: 'color',
+          value: 'green',
+          start: 21,
+          end: 28,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should return empty array if no values present', () => {
+      const result = helper.extractKeywordBasedSlots('anything', {
+        name: 'empty',
+        values: [],
+      } as any);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('extractPatternBasedSlots', () => {
+    it('should match using a valid regex pattern', () => {
+      const entity: NlpEntityFull = {
+        name: 'infos',
+        values: [
+          {
+            value: 'number',
+            metadata: { pattern: '\\d+', wordBoundary: true },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'Order 123 and 456 now!',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'infos',
+          canonicalValue: 'number',
+          value: '123',
+          start: 6,
+          end: 9,
+          confidence: 1,
+        },
+        {
+          entity: 'infos',
+          canonicalValue: 'number',
+          value: '456',
+          start: 14,
+          end: 17,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should respect metadata like toLowerCase and removeSpaces', () => {
+      const entity: NlpEntityFull = {
+        name: 'name',
+        values: [
+          {
+            value: 'brand',
+            metadata: {
+              pattern: 'HEX BOT',
+              toLowerCase: true,
+              removeSpaces: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'My CODE is HEX BOT!',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'name',
+          canonicalValue: 'brand',
+          value: 'hexbot',
+          start: 11,
+          end: 18,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should respect metadata stripDiacritics', () => {
+      const entity: NlpEntityFull = {
+        name: 'keyword',
+        values: [
+          {
+            value: 'word',
+            metadata: {
+              pattern: '".+"',
+              toLowerCase: true,
+              removeSpaces: true,
+              stripDiacritics: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'The word "où" (where)',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'keyword',
+          canonicalValue: 'word',
+          value: '"ou"',
+          start: 9,
+          end: 13,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should return empty array if no values', () => {
+      const result = helper.extractPatternBasedSlots('test', {
+        name: 'noop',
+        values: [],
+      } as any);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle invalid regex pattern gracefully', () => {
+      const entity: NlpEntityFull = {
+        name: 'fail',
+        values: [
+          {
+            value: 'Invalid',
+            metadata: { pattern: '[a-', wordBoundary: true },
+          },
+        ],
+      } as any;
+
+      const result = helper.extractPatternBasedSlots('test', entity);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('runDeterministicSlotFilling', () => {
+    it('should call keyword-based extractor for keyword lookup strategy', () => {
+      const mockEntities: NlpEntityFull[] = [
+        {
+          name: 'product',
+          lookups: ['keywords'],
+          values: [
+            {
+              value: 'tshirt',
+              expressions: [],
+            },
+            {
+              value: 'pizza',
+              expressions: [],
+            },
+          ],
+        } as unknown as NlpEntityFull,
+      ];
+      jest.spyOn(helper, 'extractKeywordBasedSlots');
+      jest.spyOn(helper, 'extractPatternBasedSlots');
+
+      const result = helper.runDeterministicSlotFilling(
+        'order pizza',
+        mockEntities,
+      );
+
+      expect(helper.extractKeywordBasedSlots).toHaveBeenCalledTimes(1);
+      expect(helper.extractPatternBasedSlots).not.toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+      expect(result[0].entity).toBe('product');
+    });
+
+    it('should call pattern-based extractor for pattern lookup strategy', () => {
+      const mockEntities: NlpEntityFull[] = [
+        {
+          name: 'number',
+          lookups: ['pattern'],
+          values: [
+            {
+              value: 'phone',
+              metadata: { pattern: '\\d+' },
+              expressions: [],
+            },
+          ],
+        } as unknown as NlpEntityFull,
+      ];
+
+      jest.spyOn(helper, 'extractKeywordBasedSlots');
+      jest.spyOn(helper, 'extractPatternBasedSlots');
+
+      const result = helper.runDeterministicSlotFilling(
+        'call me at 1234567890',
+        mockEntities,
+      );
+
+      expect(helper.extractPatternBasedSlots).toHaveBeenCalledTimes(1);
+      expect(helper.extractKeywordBasedSlots).not.toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+      expect(result[0].entity).toBe('number');
+    });
+
+    it('should skip entities that do not support the selected lookup strategy', () => {
+      const mockEntities: NlpEntityFull[] = [
+        {
+          name: 'irrelevant',
+          lookups: ['trait'],
+          values: [],
+        } as unknown as NlpEntityFull,
+      ];
+      jest.spyOn(helper, 'extractKeywordBasedSlots');
+      jest.spyOn(helper, 'extractPatternBasedSlots');
+
+      const result = helper.runDeterministicSlotFilling(
+        'any text',
+        mockEntities,
+      );
+
+      expect(helper.extractKeywordBasedSlots).not.toHaveBeenCalled();
+      expect(helper.extractPatternBasedSlots).not.toHaveBeenCalled();
+      expect(result).toHaveLength(0);
     });
   });
 });
