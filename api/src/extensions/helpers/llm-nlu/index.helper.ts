@@ -132,9 +132,10 @@ export default class LlmNluHelper
 
     // Perform slot filling in a deterministic way since
     // it's currently a challenging task for the LLMs.
-    const entities = await this.nlpEntityService.findAndPopulate({
-      lookups: { $in: ['keywords', 'pattern'] },
-    });
+    const entities = await this.nlpEntityService.getNlpEntitiesByLookup([
+      'keywords',
+      'pattern',
+    ]);
 
     const slotEntities = this.runDeterministicSlotFilling(text, entities);
 
