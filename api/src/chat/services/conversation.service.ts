@@ -114,16 +114,18 @@ export class ConversationService extends BaseService<
         contextValue =
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
-        if (
-          profile.context?.vars &&
-          contextVars[capture.context_var]?.permanent
-        ) {
-          Logger.debug(
-            `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
-          );
-          profile.context.vars[capture.context_var] = contextValue;
+        if (contextValue) {
+          if (
+            profile.context?.vars &&
+            contextVars[capture.context_var]?.permanent
+          ) {
+            Logger.debug(
+              `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
+            );
+            profile.context.vars[capture.context_var] = contextValue;
+          }
+          convo.context!.vars[capture.context_var] = contextValue;
         }
-        convo.context!.vars[capture.context_var] = contextValue;
       });
     }
 
