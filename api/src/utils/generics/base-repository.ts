@@ -561,7 +561,7 @@ export abstract class BaseRepository<
   }
 
   async deleteMany(criteria: TFilterQuery<T>): Promise<DeleteResult> {
-    return await this.model.deleteMany(criteria);
+    return await this.model.deleteMany({ ...criteria, builtin: { $ne: true } });
   }
 
   async preCreateValidate(
