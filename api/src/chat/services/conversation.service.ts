@@ -124,7 +124,7 @@ export class ConversationService extends BaseService<
             );
             profile.context.vars[capture.context_var] = contextValue;
           }
-          convo.context!.vars[capture.context_var] = contextValue;
+          convo.context.vars[capture.context_var] = contextValue;
         }
       });
     }
