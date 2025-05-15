@@ -7,14 +7,16 @@
  */
 
 import { debounce } from "@mui/material";
-import { useRouter } from "next/router";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import {
   TBuildInitialParamProps,
   TBuildParamProps,
   TParamItem,
 } from "@/types/search.types";
+
+import { useQueryParam } from "./useQueryParam";
+import { useUrlQuery } from "./useUrlQuery";
 
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
@@ -53,48 +55,29 @@ const buildNeqInitialParams = <T,>({
   );
 
 export const useSearch = <T,>(params: TParamItem<T>) => {
-  const router = useRouter();
+  const { getQueryParam } = useUrlQuery();
   const [searchText, setSearchText] = useState<string>(
-    (router.query.search as string) || "",
+    !!getQueryParam("search") ? String(getQueryParam("search")) : "",
   );
-
-  useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
-    }
-  }, [router.query.search]);
-
-  const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
-        },
-        undefined,
-        { shallow: true },
-      );
-    }, 300),
-    [router],
-  );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
-
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
+  const [isActive, setIsActive] = useState(false);
   const {
     $eq: eqInitialParams,
-    $iLike: iLikeParams,
     $neq: neqInitialParams,
     $or: orParams,
+    $iLike: iLikeParams,
   } = params;
+  const onSearch = debounce(
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      setSearchText(typeof e === "string" ? e : e.target.value);
+    },
+    300,
+  );
+
+  useQueryParam("search", searchText, "", setSearchText);
 
   return {
-    searchText,
     onSearch,
+    searchText,
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
@@ -103,6 +86,16 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
           ...buildOrParams({ params: orParams, searchText }),
           ...buildILikeParams({ params: iLikeParams, searchText }),
         }),
+      },
+    },
+    textFieldProps: {
+      value: isActive ? undefined : searchText,
+      onChange: onSearch,
+      onMouseOver: () => {
+        setIsActive(true);
+      },
+      onMouseLeave: () => {
+        setIsActive(false);
       },
     },
   };
