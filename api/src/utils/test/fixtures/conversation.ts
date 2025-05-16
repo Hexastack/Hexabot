@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 
 import { ConversationCreateDto } from '@/chat/dto/conversation.dto';
 import { ConversationModel } from '@/chat/schemas/conversation.schema';
+import { Subscriber } from '@/chat/schemas/subscriber.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { TFixturesDefaultValues } from '../types';
@@ -45,23 +46,10 @@ const conversations: ConversationCreateDto[] = [
       },
       user: {
         id: '1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
         first_name: 'Jhon',
         last_name: 'Doe',
         language: 'fr',
-        locale: 'en_EN',
-        timezone: 0,
-        gender: 'male',
-        country: 'FR',
-        foreign_id: '',
-        labels: [],
-        assignedTo: null,
-        channel: { name: 'messenger-channel' },
-        avatar: null,
-        context: {},
-        assignedAt: new Date(),
-      },
+      } as Subscriber,
       skip: {},
       attempt: 0,
     },
@@ -131,7 +119,7 @@ export const conversationFixtures =
   });
 
 export const installConversationTypeFixtures = async () => {
-  const subscribers = await installSubscriberFixtures();
+  const { subscribers } = await installSubscriberFixtures();
   const blocks = await installBlockFixtures();
 
   const Conversation = mongoose.model(

@@ -128,6 +128,7 @@ describe('SubscriberController', () => {
         ),
         labels: labelIDs,
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id)?.id,
+        context: undefined,
       });
     });
 
@@ -148,6 +149,7 @@ describe('SubscriberController', () => {
           subscriber.labels.includes(label.id),
         ),
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        context: undefined,
       });
     });
   });

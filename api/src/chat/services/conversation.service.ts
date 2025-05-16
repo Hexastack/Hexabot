@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { BaseService } from '@/utils/generics/base-service';
@@ -56,7 +56,7 @@ export class ConversationService extends BaseService<
    * @param convo - The Current Conversation
    * @param next - The next block to be triggered
    * @param event - The event received
-   * @param captureVars - If we should capture vars or not
+   * @param shouldCaptureVars - If we should capture vars or not
    *
    * @returns The updated conversation
    */
@@ -64,7 +64,7 @@ export class ConversationService extends BaseService<
     convo: Conversation | ConversationFull,
     next: Block | BlockFull,
     event: EventWrapper<any, any>,
-    captureVars: boolean = false,
+    shouldCaptureVars: boolean = false,
   ) {
     const msgType = event.getMessageType();
     const profile = event.getSender();
@@ -80,7 +80,11 @@ export class ConversationService extends BaseService<
       await this.contextVarService.getContextVarsByBlock(next);
 
     // Capture user entry in context vars
-    if (captureVars && next.capture_vars && next.capture_vars.length > 0) {
+    if (
+      shouldCaptureVars &&
+      next.capture_vars &&
+      next.capture_vars.length > 0
+    ) {
       next.capture_vars.forEach((capture) => {
         let contextValue: string | Payload | undefined;
 
@@ -95,9 +99,6 @@ export class ConversationService extends BaseService<
           if (capture.entity && nlpIndex !== -1) {
             // Get the most confident value
             contextValue = nlp.entities[nlpIndex].value;
-            // .reduce((prev, current) => {
-            //   return (prev.confidence > current.confidence) ? prev : current;
-            // }, {value: '', confidence: 0}).value;
           }
         }
 
@@ -115,15 +116,6 @@ export class ConversationService extends BaseService<
           typeof contextValue === 'string' ? contextValue.trim() : contextValue;
 
         if (contextValue) {
-          if (
-            profile.context?.vars &&
-            contextVars[capture.context_var]?.permanent
-          ) {
-            Logger.debug(
-              `Adding context var to subscriber: ${capture.context_var} = ${contextValue}`,
-            );
-            profile.context.vars[capture.context_var] = contextValue;
-          }
           convo.context.vars[capture.context_var] = contextValue;
         }
       });
@@ -164,9 +156,7 @@ export class ConversationService extends BaseService<
         convo.context.skip[next.id] = 0;
       }
     }
-    // Execute additional logic provided by plugins on the context
-    // @todo : uncomment once plugin module is tested
-    // sails.plugins.applyEffect('onStoreContextData', next.options.effects || [], [convo, next, event, captureVars]);
+
     // Store new context data
     try {
       const updatedConversation = await this.updateOne(convo.id, {
@@ -177,15 +167,29 @@ export class ConversationService extends BaseService<
       const criteria =
         typeof convo.sender === 'object' ? convo.sender.id : convo.sender;
 
-      await this.subscriberService.updateOne(
-        criteria,
-        {
-          context: profile.context,
-        },
-        {
-          shouldFlatten: true,
-        },
-      );
+      // Store permanent context vars at the subscriber level
+      const permanentContextVars = Object.entries(contextVars)
+        .filter(([, { permanent }]) => permanent)
+        .reduce((acc, [cur]) => {
+          if (cur in convo.context.vars) {
+            acc[cur] = convo.context.vars[cur];
+          }
+          return acc;
+        }, {});
+
+      if (Object.keys(permanentContextVars).length) {
+        const updatedSubscriber = await this.subscriberService.updateOne(
+          criteria,
+          {
+            context: { vars: permanentContextVars },
+          },
+          {
+            shouldFlatten: true,
+          },
+        );
+
+        event.setSender(updatedSubscriber);
+      }
 
       return updatedConversation;
     } catch (err) {
