@@ -119,6 +119,7 @@ describe('SubscriberRepository', () => {
           subscriber.labels.includes(label.id),
         ),
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
+        context: undefined,
       };
 
       expect(subscriberModel.findById).toHaveBeenCalledWith(

@@ -196,8 +196,10 @@ export const installBlockFixtures = async () => {
       category: defaultCategory.id,
     })),
   );
-  return await Block.updateOne(
+  await Block.updateOne(
     { name: 'hasNextBlocks' },
     { $set: { nextBlocks: blocks[1].id } },
   );
+
+  return blocks;
 };

@@ -22,6 +22,16 @@ export const contentVarDefaultValues: TContentVarFixtures['defaultValues'] = {
 
 const contextVars: TContentVarFixtures['values'][] = [
   {
+    label: 'Phone',
+    name: 'phone',
+    permanent: true,
+  },
+  {
+    label: 'Country',
+    name: 'country',
+    permanent: false,
+  },
+  {
     label: 'test context var 1',
     name: 'test1',
   },
