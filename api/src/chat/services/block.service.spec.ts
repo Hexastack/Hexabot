@@ -945,6 +945,199 @@ describe('BlockService', () => {
       });
     });
 
+    it('should return an attachment envelope when payload has an id', async () => {
+      const block: Block = {
+        id: 'b4',
+        message: {
+          attachment: {
+            type: FileType.image,
+            payload: { id: 'ABC123' },
+          },
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {},
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.attachment,
+        message: {
+          attachment: {
+            type: 'image',
+            payload: { id: 'ABC123' },
+          },
+        },
+      });
+    });
+
+    it('should return an attachment envelope when payload has an id (local fallback)', async () => {
+      const block: Block = {
+        id: 'b4',
+        message: {
+          attachment: {
+            type: FileType.image,
+            payload: { id: 'ABC123' },
+          },
+          quickReplies: [],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback ...'],
+          },
+        },
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback ...',
+        },
+      });
+    });
+
+    it('should keep quickReplies when present in an attachment block', async () => {
+      const block: Block = {
+        id: 'b5',
+        message: {
+          attachment: {
+            type: FileType.video,
+            payload: { id: 'VID42' },
+          },
+          quickReplies: [
+            {
+              content_type: QuickReplyType.text,
+              title: 'Replay',
+              payload: 'REPLAY',
+            },
+            {
+              content_type: QuickReplyType.text,
+              title: 'Next',
+              payload: 'NEXT',
+            },
+          ],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {},
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.attachment,
+        message: {
+          attachment: {
+            type: FileType.video,
+            payload: {
+              id: 'VID42',
+            },
+          },
+          quickReplies: [
+            {
+              content_type: QuickReplyType.text,
+              title: 'Replay',
+              payload: 'REPLAY',
+            },
+            {
+              content_type: QuickReplyType.text,
+              title: 'Next',
+              payload: 'NEXT',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should throw when attachment payload misses an id (remote URLs deprecated)', async () => {
+      const spyCheckDeprecated = jest
+        .spyOn(blockService as any, 'checkDeprecatedAttachmentUrl')
+        .mockImplementation(() => {});
+
+      const block: any = {
+        id: 'b6',
+        message: {
+          attachment: {
+            type: 'image',
+            payload: { url: 'https://example.com/old-way.png' }, // no "id"
+          },
+        },
+      };
+
+      await expect(
+        blockService.processMessage(block, ctx, subCtx, false, conversationId),
+      ).rejects.toThrow(
+        'Remote attachments in blocks are no longer supported!',
+      );
+
+      expect(spyCheckDeprecated).toHaveBeenCalledTimes(1);
+
+      spyCheckDeprecated.mockRestore();
+    });
+
     it('should process list message (with limit = 2 and skip = 0)', async () => {
       const contentType = (await contentTypeService.findOne({
         name: 'Product',
