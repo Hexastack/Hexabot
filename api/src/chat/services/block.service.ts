@@ -42,7 +42,7 @@ import {
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
 import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
-import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
+import { Payload } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 @Injectable()
@@ -599,7 +599,7 @@ export class BlockService extends BaseService<
    *
    * @param block - The block holding the message to process
    * @param context - Context object
-   * @param fallback - Whenever to process main message or local fallback message
+   * @param isLocalFallback - Whenever to process main message or local fallback message
    * @param conversationId - The conversation ID
    *
    * @returns - Envelope containing message format and content following {format, message} object structure
@@ -608,12 +608,23 @@ export class BlockService extends BaseService<
     block: Block | BlockFull,
     context: Context,
     subscriberContext: SubscriberContext,
-    fallback = false,
+    isLocalFallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
     const settings = await this.settingService.getSettings();
+    const envelopeFactory = new EnvelopeFactory(
+      {
+        ...context,
+        vars: {
+          ...context.vars,
+          ...subscriberContext.vars,
+        },
+      },
+      settings,
+      this.i18n,
+    );
     const blockMessage: BlockMessage =
-      fallback && block.options?.fallback
+      isLocalFallback && block.options?.fallback
         ? [...block.options.fallback.message]
         : Array.isArray(block.message)
           ? [...block.message]
@@ -621,79 +632,26 @@ export class BlockService extends BaseService<
 
     if (Array.isArray(blockMessage)) {
       // Text Message
-      // Get random message from array
-      const text = this.processText(
-        getRandomElement(blockMessage),
-        context,
-        subscriberContext,
-        settings,
-      );
-      const envelope: StdOutgoingEnvelope = {
-        format: OutgoingMessageFormat.text,
-        message: { text },
-      };
-      return envelope;
+      return envelopeFactory.buildTextEnvelope(blockMessage);
     } else if (blockMessage && 'text' in blockMessage) {
       if (
         'quickReplies' in blockMessage &&
         Array.isArray(blockMessage.quickReplies) &&
         blockMessage.quickReplies.length > 0
       ) {
-        const envelope: StdOutgoingEnvelope = {
-          format: OutgoingMessageFormat.quickReplies,
-          message: {
-            text: this.processText(
-              blockMessage.text,
-              context,
-              subscriberContext,
-              settings,
-            ),
-            quickReplies: blockMessage.quickReplies.map((qr: StdQuickReply) => {
-              return qr.title
-                ? {
-                    ...qr,
-                    title: this.processText(
-                      qr.title,
-                      context,
-                      subscriberContext,
-                      settings,
-                    ),
-                  }
-                : qr;
-            }),
-          },
-        };
-        return envelope;
+        return envelopeFactory.buildQuickRepliesEnvelope(
+          blockMessage.text,
+          blockMessage.quickReplies,
+        );
       } else if (
         'buttons' in blockMessage &&
         Array.isArray(blockMessage.buttons) &&
         blockMessage.buttons.length > 0
       ) {
-        const envelope: StdOutgoingEnvelope = {
-          format: OutgoingMessageFormat.buttons,
-          message: {
-            text: this.processText(
-              blockMessage.text,
-              context,
-              subscriberContext,
-              settings,
-            ),
-            buttons: blockMessage.buttons.map((btn) => {
-              return btn.title
-                ? {
-                    ...btn,
-                    title: this.processText(
-                      btn.title,
-                      context,
-                      subscriberContext,
-                      settings,
-                    ),
-                  }
-                : btn;
-            }),
-          },
-        };
-        return envelope;
+        return envelopeFactory.buildButtonsEnvelope(
+          blockMessage.text,
+          blockMessage.buttons,
+        );
       }
     } else if (blockMessage && 'attachment' in blockMessage) {
       const attachmentPayload = blockMessage.attachment.payload;
@@ -704,19 +662,13 @@ export class BlockService extends BaseService<
         );
       }
 
-      const envelope: StdOutgoingEnvelope = {
-        format: OutgoingMessageFormat.attachment,
-        message: {
-          attachment: {
-            type: blockMessage.attachment.type,
-            payload: blockMessage.attachment.payload,
-          },
-          quickReplies: blockMessage.quickReplies
-            ? [...blockMessage.quickReplies]
-            : undefined,
+      return envelopeFactory.buildAttachmentEnvelope(
+        {
+          type: blockMessage.attachment.type,
+          payload: blockMessage.attachment.payload,
         },
-      };
-      return envelope;
+        blockMessage.quickReplies ? [...blockMessage.quickReplies] : undefined,
+      );
     } else if (
       blockMessage &&
       'elements' in blockMessage &&
@@ -734,18 +686,19 @@ export class BlockService extends BaseService<
       }
       // Populate list with content
       try {
-        const results = await this.contentService.getContent(
+        const { elements, pagination } = await this.contentService.getContent(
           contentBlockOptions,
           skip,
         );
-        const envelope: StdOutgoingEnvelope = {
-          format: contentBlockOptions.display,
-          message: {
-            ...results,
-            options: contentBlockOptions,
-          },
-        };
-        return envelope;
+
+        return envelopeFactory.buildListEnvelope(
+          contentBlockOptions.display as
+            | OutgoingMessageFormat.list
+            | OutgoingMessageFormat.carousel,
+          contentBlockOptions,
+          elements,
+          pagination,
+        );
       } catch (err) {
         this.logger.error(
           'Unable to retrieve content for list template process',
