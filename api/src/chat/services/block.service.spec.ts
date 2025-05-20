@@ -97,6 +97,30 @@ import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
 
+function makeMockBlock(overrides: Partial<Block>): Block {
+  return {
+    id: 'default',
+    message: [],
+    trigger_labels: [],
+    assign_labels: [],
+    nextBlocks: [],
+    attachedBlock: null,
+    category: null,
+    name: '',
+    patterns: [],
+    outcomes: [],
+    trigger_channels: [],
+    options: {},
+    starts_conversation: false,
+    capture_vars: [],
+    position: { x: 0, y: 0 },
+    builtin: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
   let categoryRepository: CategoryRepository;
@@ -321,7 +345,7 @@ describe('BlockService', () => {
   });
 
   describe('matchNLP', () => {
-    it('should return undefined for match nlp against a block with no patterns', () => {
+    it('should return an empty array for a block with no NLP patterns', () => {
       const result = blockService.getMatchingNluPatterns(
         mockNlpGreetingFullNameEntities,
         blockEmpty,
@@ -329,7 +353,7 @@ describe('BlockService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should return undefined for match nlp when no nlp entities are provided', () => {
+    it('should return an empty array when no NLP entities are provided', () => {
       const result = blockService.getMatchingNluPatterns(
         { entities: [] },
         blockGetStarted,
@@ -658,28 +682,11 @@ describe('BlockService', () => {
     const conversationId = 'conv-id';
 
     it('should return a text envelope when the block is a text block', async () => {
-      const block: Block = {
-        id: 'b1',
+      const block = makeMockBlock({
         message: [
           'Hello {{context.user.first_name}}, your phone is {{context.vars.phone}} and your favorite color is {{context.vars.color}}',
         ],
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        options: {},
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -698,8 +705,7 @@ describe('BlockService', () => {
     });
 
     it('should return a text envelope when the block is a text block (local fallback)', async () => {
-      const block: Block = {
-        id: 'b1',
+      const block = makeMockBlock({
         message: ['Hello world!'],
         options: {
           fallback: {
@@ -708,22 +714,7 @@ describe('BlockService', () => {
             message: ['Local fallback message ...'],
           },
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -742,8 +733,7 @@ describe('BlockService', () => {
     });
 
     it('should return a quick replies envelope when the block message has quickReplies', async () => {
-      const block: Block = {
-        id: 'b2',
+      const block = makeMockBlock({
         message: {
           text: '{{context.user.first_name}}, is this your phone number? {{context.vars.phone}}',
           quickReplies: [
@@ -751,23 +741,7 @@ describe('BlockService', () => {
             { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
           ],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        options: {},
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -790,8 +764,7 @@ describe('BlockService', () => {
     });
 
     it('should return a quick replies envelope when the block message has quickReplies (local fallback)', async () => {
-      const block: Block = {
-        id: 'b2',
+      const block = makeMockBlock({
         message: {
           text: '{{context.user.first_name}}, are you there?',
           quickReplies: [
@@ -799,15 +772,6 @@ describe('BlockService', () => {
             { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
           ],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
         options: {
           fallback: {
             active: true,
@@ -815,13 +779,7 @@ describe('BlockService', () => {
             message: ['Local fallback message ...'],
           },
         },
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -844,8 +802,7 @@ describe('BlockService', () => {
     });
 
     it('should return a buttons envelope when the block message has buttons', async () => {
-      const block: Block = {
-        id: 'b3',
+      const block = makeMockBlock({
         message: {
           text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
           buttons: [
@@ -853,23 +810,7 @@ describe('BlockService', () => {
             { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
           ],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        options: {},
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -900,8 +841,7 @@ describe('BlockService', () => {
     });
 
     it('should return a buttons envelope when the block message has buttons (local fallback)', async () => {
-      const block: Block = {
-        id: 'b3',
+      const block = makeMockBlock({
         message: {
           text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
           buttons: [
@@ -909,15 +849,6 @@ describe('BlockService', () => {
             { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
           ],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
         options: {
           fallback: {
             active: true,
@@ -925,13 +856,7 @@ describe('BlockService', () => {
             message: ['Local fallback message ...'],
           },
         },
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -962,31 +887,14 @@ describe('BlockService', () => {
     });
 
     it('should return an attachment envelope when payload has an id', async () => {
-      const block: Block = {
-        id: 'b4',
+      const block = makeMockBlock({
         message: {
           attachment: {
             type: FileType.image,
             payload: { id: 'ABC123' },
           },
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        options: {},
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -1008,8 +916,7 @@ describe('BlockService', () => {
     });
 
     it('should return an attachment envelope when payload has an id (local fallback)', async () => {
-      const block: Block = {
-        id: 'b4',
+      const block = makeMockBlock({
         message: {
           attachment: {
             type: FileType.image,
@@ -1017,15 +924,6 @@ describe('BlockService', () => {
           },
           quickReplies: [],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
         options: {
           fallback: {
             active: true,
@@ -1033,13 +931,7 @@ describe('BlockService', () => {
             message: ['Local fallback ...'],
           },
         },
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -1058,8 +950,7 @@ describe('BlockService', () => {
     });
 
     it('should keep quickReplies when present in an attachment block', async () => {
-      const block: Block = {
-        id: 'b5',
+      const block = makeMockBlock({
         message: {
           attachment: {
             type: FileType.video,
@@ -1078,23 +969,7 @@ describe('BlockService', () => {
             },
           ],
         },
-        trigger_labels: [],
-        assign_labels: [],
-        nextBlocks: [],
-        attachedBlock: null,
-        category: null,
-        name: '',
-        patterns: [],
-        outcomes: [],
-        trigger_channels: [],
-        options: {},
-        starts_conversation: false,
-        capture_vars: [],
-        position: { x: 0, y: 0 },
-        builtin: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       const env = await blockService.processMessage(
         block,
@@ -1133,15 +1008,14 @@ describe('BlockService', () => {
         .spyOn(blockService as any, 'checkDeprecatedAttachmentUrl')
         .mockImplementation(() => {});
 
-      const block: any = {
-        id: 'b6',
+      const block = makeMockBlock({
         message: {
           attachment: {
-            type: 'image',
+            type: FileType.image,
             payload: { url: 'https://example.com/old-way.png' }, // no "id"
           },
         },
-      };
+      });
 
       await expect(
         blockService.processMessage(block, ctx, subCtx, false, conversationId),

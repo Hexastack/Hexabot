@@ -622,7 +622,7 @@ export class BlockService extends BaseService<
       settings,
       this.i18n,
     );
-    const fallback = isLocalFallback ? block.options.fallback : undefined;
+    const fallback = isLocalFallback ? block.options?.fallback : undefined;
 
     if (Array.isArray(block.message)) {
       // Text Message
@@ -668,15 +668,14 @@ export class BlockService extends BaseService<
               block.message.quickReplies ? [...block.message.quickReplies] : [],
             )
           : envelopeFactory.buildTextEnvelope(fallback.message);
-      } else {
-        return envelopeFactory.buildAttachmentEnvelope(
-          {
-            type: block.message.attachment.type,
-            payload: block.message.attachment.payload,
-          },
-          block.message.quickReplies ? [...block.message.quickReplies] : [],
-        );
       }
+      return envelopeFactory.buildAttachmentEnvelope(
+        {
+          type: block.message.attachment.type,
+          payload: block.message.attachment.payload,
+        },
+        block.message.quickReplies ? [...block.message.quickReplies] : [],
+      );
     } else if (
       block.message &&
       'elements' in block.message &&
