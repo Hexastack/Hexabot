@@ -716,6 +716,10 @@ export class BlockService extends BaseService<
         throw err;
       }
     } else if (block.message && 'plugin' in block.message) {
+      if (fallback) {
+        return envelopeFactory.buildTextEnvelope(fallback.message);
+      }
+
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
         block.message.plugin,
@@ -731,7 +735,7 @@ export class BlockService extends BaseService<
         return envelope;
       } catch (e) {
         this.logger.error('Plugin was unable to load/process ', e);
-        throw new Error(`Unknown plugin - ${JSON.stringify(block.message)}`);
+        throw new Error(`Plugin Error - ${JSON.stringify(block.message)}`);
       }
     }
     throw new Error('Invalid message format.');
