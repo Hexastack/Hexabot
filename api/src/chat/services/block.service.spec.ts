@@ -16,7 +16,7 @@ import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
-import { PayloadType } from '@/chat/schemas/types/button';
+import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import { ContentTypeRepository } from '@/cms/repositories/content-type.repository';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
@@ -84,8 +84,14 @@ import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import { FileType } from '../schemas/types/attachment';
-import { StdOutgoingListMessage } from '../schemas/types/message';
+import { Context } from '../schemas/types/context';
+import {
+  OutgoingMessageFormat,
+  StdOutgoingListMessage,
+} from '../schemas/types/message';
+import { QuickReplyType } from '../schemas/types/quick-reply';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
@@ -630,6 +636,315 @@ describe('BlockService', () => {
   });
 
   describe('processMessage', () => {
+    // generic inputs we re-use
+    const ctx: Context = {
+      vars: {
+        phone: '+1123456789',
+      },
+      user_location: {
+        address: undefined,
+        lat: 0,
+        lon: 0,
+      },
+      user: { id: 'user-id', first_name: 'Jhon', last_name: 'Doe' } as any,
+      skip: {},
+      attempt: 0,
+    }; // Context
+    const subCtx: Subscriber['context'] = {
+      vars: {
+        color: 'green',
+      },
+    }; // SubscriberContext
+    const conversationId = 'conv-id';
+
+    it('should return a text envelope when the block is a text block', async () => {
+      const block: Block = {
+        id: 'b1',
+        message: [
+          'Hello {{context.user.first_name}}, your phone is {{context.vars.phone}} and your favorite color is {{context.vars.color}}',
+        ],
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {},
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Hello Jhon, your phone is +1123456789 and your favorite color is green',
+        },
+      });
+    });
+
+    it('should return a text envelope when the block is a text block (local fallback)', async () => {
+      const block: Block = {
+        id: 'b1',
+        message: ['Hello world!'],
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback message ...',
+        },
+      });
+    });
+
+    it('should return a quick replies envelope when the block message has quickReplies', async () => {
+      const block: Block = {
+        id: 'b2',
+        message: {
+          text: '{{context.user.first_name}}, is this your phone number? {{context.vars.phone}}',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {},
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.quickReplies,
+        message: {
+          text: 'Jhon, is this your phone number? +1123456789',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+      });
+    });
+
+    it('should return a quick replies envelope when the block message has quickReplies (local fallback)', async () => {
+      const block: Block = {
+        id: 'b2',
+        message: {
+          text: '{{context.user.first_name}}, are you there?',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback message ...',
+        },
+      });
+    });
+
+    it('should return a buttons envelope when the block message has buttons', async () => {
+      const block: Block = {
+        id: 'b3',
+        message: {
+          text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
+          buttons: [
+            { type: ButtonType.postback, title: 'Red', payload: 'RED' },
+            { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
+          ],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {},
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.buttons,
+        message: {
+          text: 'Jhon Doe, what color do you like? green?',
+          buttons: [
+            {
+              type: ButtonType.postback,
+              title: 'Red',
+              payload: 'RED',
+            },
+            {
+              type: ButtonType.postback,
+              title: 'Green',
+              payload: 'GREEN',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should return a buttons envelope when the block message has buttons (local fallback)', async () => {
+      const block: Block = {
+        id: 'b3',
+        message: {
+          text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
+          buttons: [
+            { type: ButtonType.postback, title: 'Red', payload: 'RED' },
+            { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
+          ],
+        },
+        trigger_labels: [],
+        assign_labels: [],
+        nextBlocks: [],
+        attachedBlock: null,
+        category: null,
+        name: '',
+        patterns: [],
+        outcomes: [],
+        trigger_channels: [],
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+        starts_conversation: false,
+        capture_vars: [],
+        position: { x: 0, y: 0 },
+        builtin: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback message ...',
+        },
+      });
+    });
+
     it('should process list message (with limit = 2 and skip = 0)', async () => {
       const contentType = (await contentTypeService.findOne({
         name: 'Product',
