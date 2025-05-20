@@ -36,7 +36,6 @@ import { Label } from '../schemas/label.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { Context } from '../schemas/types/context';
 import {
-  BlockMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
@@ -623,55 +622,64 @@ export class BlockService extends BaseService<
       settings,
       this.i18n,
     );
-    const blockMessage: BlockMessage =
-      isLocalFallback && block.options?.fallback
-        ? [...block.options.fallback.message]
-        : Array.isArray(block.message)
-          ? [...block.message]
-          : { ...block.message };
+    const fallback = isLocalFallback ? block.options.fallback : undefined;
 
-    if (Array.isArray(blockMessage)) {
+    if (Array.isArray(block.message)) {
       // Text Message
-      return envelopeFactory.buildTextEnvelope(blockMessage);
-    } else if (blockMessage && 'text' in blockMessage) {
+      return envelopeFactory.buildTextEnvelope(
+        fallback ? fallback.message : block.message,
+      );
+    } else if ('text' in block.message) {
       if (
-        'quickReplies' in blockMessage &&
-        Array.isArray(blockMessage.quickReplies) &&
-        blockMessage.quickReplies.length > 0
+        'quickReplies' in block.message &&
+        Array.isArray(block.message.quickReplies) &&
+        block.message.quickReplies.length > 0
       ) {
         return envelopeFactory.buildQuickRepliesEnvelope(
-          blockMessage.text,
-          blockMessage.quickReplies,
+          fallback ? fallback.message : block.message.text,
+          block.message.quickReplies,
         );
       } else if (
-        'buttons' in blockMessage &&
-        Array.isArray(blockMessage.buttons) &&
-        blockMessage.buttons.length > 0
+        'buttons' in block.message &&
+        Array.isArray(block.message.buttons) &&
+        block.message.buttons.length > 0
       ) {
         return envelopeFactory.buildButtonsEnvelope(
-          blockMessage.text,
-          blockMessage.buttons,
+          fallback ? fallback.message : block.message.text,
+          block.message.buttons,
         );
       }
-    } else if (blockMessage && 'attachment' in blockMessage) {
-      const attachmentPayload = blockMessage.attachment.payload;
+    } else if ('attachment' in block.message) {
+      const attachmentPayload = block.message.attachment.payload;
       if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
         throw new Error(
           'Remote attachments in blocks are no longer supported!',
         );
       }
+      const quickReplies = block.message.quickReplies
+        ? [...block.message.quickReplies]
+        : [];
 
-      return envelopeFactory.buildAttachmentEnvelope(
-        {
-          type: blockMessage.attachment.type,
-          payload: blockMessage.attachment.payload,
-        },
-        blockMessage.quickReplies ? [...blockMessage.quickReplies] : undefined,
-      );
+      if (fallback) {
+        return quickReplies.length > 0
+          ? envelopeFactory.buildQuickRepliesEnvelope(
+              fallback.message,
+              block.message.quickReplies ? [...block.message.quickReplies] : [],
+            )
+          : envelopeFactory.buildTextEnvelope(fallback.message);
+      } else {
+        return envelopeFactory.buildAttachmentEnvelope(
+          {
+            type: block.message.attachment.type,
+            payload: block.message.attachment.payload,
+          },
+          block.message.quickReplies ? [...block.message.quickReplies] : [],
+        );
+      }
     } else if (
-      blockMessage &&
-      'elements' in blockMessage &&
+      block.message &&
+      'elements' in block.message &&
       block.options?.content
     ) {
       const contentBlockOptions = block.options.content;
@@ -691,14 +699,16 @@ export class BlockService extends BaseService<
           skip,
         );
 
-        return envelopeFactory.buildListEnvelope(
-          contentBlockOptions.display as
-            | OutgoingMessageFormat.list
-            | OutgoingMessageFormat.carousel,
-          contentBlockOptions,
-          elements,
-          pagination,
-        );
+        return fallback
+          ? envelopeFactory.buildTextEnvelope(fallback.message)
+          : envelopeFactory.buildListEnvelope(
+              contentBlockOptions.display as
+                | OutgoingMessageFormat.list
+                | OutgoingMessageFormat.carousel,
+              contentBlockOptions,
+              elements,
+              pagination,
+            );
       } catch (err) {
         this.logger.error(
           'Unable to retrieve content for list template process',
@@ -706,10 +716,10 @@ export class BlockService extends BaseService<
         );
         throw err;
       }
-    } else if (blockMessage && 'plugin' in blockMessage) {
+    } else if (block.message && 'plugin' in block.message) {
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
-        blockMessage.plugin,
+        block.message.plugin,
       );
       // Process custom plugin block
       try {
@@ -722,7 +732,7 @@ export class BlockService extends BaseService<
         return envelope;
       } catch (e) {
         this.logger.error('Plugin was unable to load/process ', e);
-        throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
+        throw new Error(`Unknown plugin - ${JSON.stringify(block.message)}`);
       }
     }
     throw new Error('Invalid message format.');

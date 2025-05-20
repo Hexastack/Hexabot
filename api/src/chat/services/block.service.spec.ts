@@ -832,9 +832,13 @@ describe('BlockService', () => {
       );
 
       expect(env).toEqual({
-        format: OutgoingMessageFormat.text,
+        format: OutgoingMessageFormat.quickReplies,
         message: {
           text: 'Local fallback message ...',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
         },
       });
     });
@@ -938,9 +942,21 @@ describe('BlockService', () => {
       );
 
       expect(env).toEqual({
-        format: OutgoingMessageFormat.text,
+        format: OutgoingMessageFormat.buttons,
         message: {
           text: 'Local fallback message ...',
+          buttons: [
+            {
+              type: ButtonType.postback,
+              title: 'Red',
+              payload: 'RED',
+            },
+            {
+              type: ButtonType.postback,
+              title: 'Green',
+              payload: 'GREEN',
+            },
+          ],
         },
       });
     });
