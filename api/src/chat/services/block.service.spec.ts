@@ -16,7 +16,7 @@ import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
-import { PayloadType } from '@/chat/schemas/types/button';
+import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import { ContentTypeRepository } from '@/cms/repositories/content-type.repository';
 import { ContentRepository } from '@/cms/repositories/content.repository';
 import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
@@ -84,12 +84,42 @@ import { BlockRepository } from '../repositories/block.repository';
 import { Block, BlockFull, BlockModel } from '../schemas/block.schema';
 import { Category, CategoryModel } from '../schemas/category.schema';
 import { LabelModel } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import { FileType } from '../schemas/types/attachment';
-import { StdOutgoingListMessage } from '../schemas/types/message';
+import { Context } from '../schemas/types/context';
+import {
+  OutgoingMessageFormat,
+  StdOutgoingListMessage,
+} from '../schemas/types/message';
+import { QuickReplyType } from '../schemas/types/quick-reply';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { CategoryService } from './category.service';
+
+function makeMockBlock(overrides: Partial<Block>): Block {
+  return {
+    id: 'default',
+    message: [],
+    trigger_labels: [],
+    assign_labels: [],
+    nextBlocks: [],
+    attachedBlock: null,
+    category: null,
+    name: '',
+    patterns: [],
+    outcomes: [],
+    trigger_channels: [],
+    options: {},
+    starts_conversation: false,
+    capture_vars: [],
+    position: { x: 0, y: 0 },
+    builtin: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
 
 describe('BlockService', () => {
   let blockRepository: BlockRepository;
@@ -315,7 +345,7 @@ describe('BlockService', () => {
   });
 
   describe('matchNLP', () => {
-    it('should return undefined for match nlp against a block with no patterns', () => {
+    it('should return an empty array for a block with no NLP patterns', () => {
       const result = blockService.getMatchingNluPatterns(
         mockNlpGreetingFullNameEntities,
         blockEmpty,
@@ -323,7 +353,7 @@ describe('BlockService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should return undefined for match nlp when no nlp entities are provided', () => {
+    it('should return an empty array when no NLP entities are provided', () => {
       const result = blockService.getMatchingNluPatterns(
         { entities: [] },
         blockGetStarted,
@@ -630,6 +660,374 @@ describe('BlockService', () => {
   });
 
   describe('processMessage', () => {
+    // generic inputs we re-use
+    const ctx: Context = {
+      vars: {
+        phone: '+1123456789',
+      },
+      user_location: {
+        address: undefined,
+        lat: 0,
+        lon: 0,
+      },
+      user: { id: 'user-id', first_name: 'Jhon', last_name: 'Doe' } as any,
+      skip: {},
+      attempt: 0,
+    }; // Context
+    const subCtx: Subscriber['context'] = {
+      vars: {
+        color: 'green',
+      },
+    }; // SubscriberContext
+    const conversationId = 'conv-id';
+
+    it('should return a text envelope when the block is a text block', async () => {
+      const block = makeMockBlock({
+        message: [
+          'Hello {{context.user.first_name}}, your phone is {{context.vars.phone}} and your favorite color is {{context.vars.color}}',
+        ],
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Hello Jhon, your phone is +1123456789 and your favorite color is green',
+        },
+      });
+    });
+
+    it('should return a text envelope when the block is a text block (local fallback)', async () => {
+      const block = makeMockBlock({
+        message: ['Hello world!'],
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback message ...',
+        },
+      });
+    });
+
+    it('should return a quick replies envelope when the block message has quickReplies', async () => {
+      const block = makeMockBlock({
+        message: {
+          text: '{{context.user.first_name}}, is this your phone number? {{context.vars.phone}}',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.quickReplies,
+        message: {
+          text: 'Jhon, is this your phone number? +1123456789',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+      });
+    });
+
+    it('should return a quick replies envelope when the block message has quickReplies (local fallback)', async () => {
+      const block = makeMockBlock({
+        message: {
+          text: '{{context.user.first_name}}, are you there?',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.quickReplies,
+        message: {
+          text: 'Local fallback message ...',
+          quickReplies: [
+            { content_type: QuickReplyType.text, title: 'Yes', payload: 'YES' },
+            { content_type: QuickReplyType.text, title: 'No', payload: 'NO' },
+          ],
+        },
+      });
+    });
+
+    it('should return a buttons envelope when the block message has buttons', async () => {
+      const block = makeMockBlock({
+        message: {
+          text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
+          buttons: [
+            { type: ButtonType.postback, title: 'Red', payload: 'RED' },
+            { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
+          ],
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.buttons,
+        message: {
+          text: 'Jhon Doe, what color do you like? green?',
+          buttons: [
+            {
+              type: ButtonType.postback,
+              title: 'Red',
+              payload: 'RED',
+            },
+            {
+              type: ButtonType.postback,
+              title: 'Green',
+              payload: 'GREEN',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should return a buttons envelope when the block message has buttons (local fallback)', async () => {
+      const block = makeMockBlock({
+        message: {
+          text: '{{context.user.first_name}} {{context.user.last_name}}, what color do you like? {{context.vars.color}}?',
+          buttons: [
+            { type: ButtonType.postback, title: 'Red', payload: 'RED' },
+            { type: ButtonType.postback, title: 'Green', payload: 'GREEN' },
+          ],
+        },
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback message ...'],
+          },
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.buttons,
+        message: {
+          text: 'Local fallback message ...',
+          buttons: [
+            {
+              type: ButtonType.postback,
+              title: 'Red',
+              payload: 'RED',
+            },
+            {
+              type: ButtonType.postback,
+              title: 'Green',
+              payload: 'GREEN',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should return an attachment envelope when payload has an id', async () => {
+      const block = makeMockBlock({
+        message: {
+          attachment: {
+            type: FileType.image,
+            payload: { id: 'ABC123' },
+          },
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.attachment,
+        message: {
+          attachment: {
+            type: 'image',
+            payload: { id: 'ABC123' },
+          },
+        },
+      });
+    });
+
+    it('should return an attachment envelope when payload has an id (local fallback)', async () => {
+      const block = makeMockBlock({
+        message: {
+          attachment: {
+            type: FileType.image,
+            payload: { id: 'ABC123' },
+          },
+          quickReplies: [],
+        },
+        options: {
+          fallback: {
+            active: true,
+            max_attempts: 1,
+            message: ['Local fallback ...'],
+          },
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        true,
+        conversationId,
+      );
+
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.text,
+        message: {
+          text: 'Local fallback ...',
+        },
+      });
+    });
+
+    it('should keep quickReplies when present in an attachment block', async () => {
+      const block = makeMockBlock({
+        message: {
+          attachment: {
+            type: FileType.video,
+            payload: { id: 'VID42' },
+          },
+          quickReplies: [
+            {
+              content_type: QuickReplyType.text,
+              title: 'Replay',
+              payload: 'REPLAY',
+            },
+            {
+              content_type: QuickReplyType.text,
+              title: 'Next',
+              payload: 'NEXT',
+            },
+          ],
+        },
+      });
+
+      const env = await blockService.processMessage(
+        block,
+        ctx,
+        subCtx,
+        false,
+        conversationId,
+      );
+      expect(env).toEqual({
+        format: OutgoingMessageFormat.attachment,
+        message: {
+          attachment: {
+            type: FileType.video,
+            payload: {
+              id: 'VID42',
+            },
+          },
+          quickReplies: [
+            {
+              content_type: QuickReplyType.text,
+              title: 'Replay',
+              payload: 'REPLAY',
+            },
+            {
+              content_type: QuickReplyType.text,
+              title: 'Next',
+              payload: 'NEXT',
+            },
+          ],
+        },
+      });
+    });
+
+    it('should throw when attachment payload misses an id (remote URLs deprecated)', async () => {
+      const spyCheckDeprecated = jest
+        .spyOn(blockService as any, 'checkDeprecatedAttachmentUrl')
+        .mockImplementation(() => {});
+
+      const block = makeMockBlock({
+        message: {
+          attachment: {
+            type: FileType.image,
+            payload: { url: 'https://example.com/old-way.png' }, // no "id"
+          },
+        },
+      });
+
+      await expect(
+        blockService.processMessage(block, ctx, subCtx, false, conversationId),
+      ).rejects.toThrow(
+        'Remote attachments in blocks are no longer supported!',
+      );
+
+      expect(spyCheckDeprecated).toHaveBeenCalledTimes(1);
+
+      spyCheckDeprecated.mockRestore();
+    });
+
     it('should process list message (with limit = 2 and skip = 0)', async () => {
       const contentType = (await contentTypeService.findOne({
         name: 'Product',

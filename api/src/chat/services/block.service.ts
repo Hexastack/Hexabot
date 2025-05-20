@@ -36,13 +36,12 @@ import { Label } from '../schemas/label.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { Context } from '../schemas/types/context';
 import {
-  BlockMessage,
   OutgoingMessageFormat,
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
 import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
-import { Payload, StdQuickReply } from '../schemas/types/quick-reply';
+import { Payload } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
 
 @Injectable()
@@ -599,7 +598,7 @@ export class BlockService extends BaseService<
    *
    * @param block - The block holding the message to process
    * @param context - Context object
-   * @param fallback - Whenever to process main message or local fallback message
+   * @param isLocalFallback - Whenever to process main message or local fallback message
    * @param conversationId - The conversation ID
    *
    * @returns - Envelope containing message format and content following {format, message} object structure
@@ -608,118 +607,78 @@ export class BlockService extends BaseService<
     block: Block | BlockFull,
     context: Context,
     subscriberContext: SubscriberContext,
-    fallback = false,
+    isLocalFallback = false,
     conversationId?: string,
   ): Promise<StdOutgoingEnvelope> {
     const settings = await this.settingService.getSettings();
-    const blockMessage: BlockMessage =
-      fallback && block.options?.fallback
-        ? [...block.options.fallback.message]
-        : Array.isArray(block.message)
-          ? [...block.message]
-          : { ...block.message };
+    const envelopeFactory = new EnvelopeFactory(
+      {
+        ...context,
+        vars: {
+          ...context.vars,
+          ...subscriberContext.vars,
+        },
+      },
+      settings,
+      this.i18n,
+    );
+    const fallback = isLocalFallback ? block.options?.fallback : undefined;
 
-    if (Array.isArray(blockMessage)) {
+    if (Array.isArray(block.message)) {
       // Text Message
-      // Get random message from array
-      const text = this.processText(
-        getRandomElement(blockMessage),
-        context,
-        subscriberContext,
-        settings,
+      return envelopeFactory.buildTextEnvelope(
+        fallback ? fallback.message : block.message,
       );
-      const envelope: StdOutgoingEnvelope = {
-        format: OutgoingMessageFormat.text,
-        message: { text },
-      };
-      return envelope;
-    } else if (blockMessage && 'text' in blockMessage) {
+    } else if ('text' in block.message) {
       if (
-        'quickReplies' in blockMessage &&
-        Array.isArray(blockMessage.quickReplies) &&
-        blockMessage.quickReplies.length > 0
+        'quickReplies' in block.message &&
+        Array.isArray(block.message.quickReplies) &&
+        block.message.quickReplies.length > 0
       ) {
-        const envelope: StdOutgoingEnvelope = {
-          format: OutgoingMessageFormat.quickReplies,
-          message: {
-            text: this.processText(
-              blockMessage.text,
-              context,
-              subscriberContext,
-              settings,
-            ),
-            quickReplies: blockMessage.quickReplies.map((qr: StdQuickReply) => {
-              return qr.title
-                ? {
-                    ...qr,
-                    title: this.processText(
-                      qr.title,
-                      context,
-                      subscriberContext,
-                      settings,
-                    ),
-                  }
-                : qr;
-            }),
-          },
-        };
-        return envelope;
+        return envelopeFactory.buildQuickRepliesEnvelope(
+          fallback ? fallback.message : block.message.text,
+          block.message.quickReplies,
+        );
       } else if (
-        'buttons' in blockMessage &&
-        Array.isArray(blockMessage.buttons) &&
-        blockMessage.buttons.length > 0
+        'buttons' in block.message &&
+        Array.isArray(block.message.buttons) &&
+        block.message.buttons.length > 0
       ) {
-        const envelope: StdOutgoingEnvelope = {
-          format: OutgoingMessageFormat.buttons,
-          message: {
-            text: this.processText(
-              blockMessage.text,
-              context,
-              subscriberContext,
-              settings,
-            ),
-            buttons: blockMessage.buttons.map((btn) => {
-              return btn.title
-                ? {
-                    ...btn,
-                    title: this.processText(
-                      btn.title,
-                      context,
-                      subscriberContext,
-                      settings,
-                    ),
-                  }
-                : btn;
-            }),
-          },
-        };
-        return envelope;
+        return envelopeFactory.buildButtonsEnvelope(
+          fallback ? fallback.message : block.message.text,
+          block.message.buttons,
+        );
       }
-    } else if (blockMessage && 'attachment' in blockMessage) {
-      const attachmentPayload = blockMessage.attachment.payload;
+    } else if ('attachment' in block.message) {
+      const attachmentPayload = block.message.attachment.payload;
       if (!('id' in attachmentPayload)) {
         this.checkDeprecatedAttachmentUrl(block);
         throw new Error(
           'Remote attachments in blocks are no longer supported!',
         );
       }
+      const quickReplies = block.message.quickReplies
+        ? [...block.message.quickReplies]
+        : [];
 
-      const envelope: StdOutgoingEnvelope = {
-        format: OutgoingMessageFormat.attachment,
-        message: {
-          attachment: {
-            type: blockMessage.attachment.type,
-            payload: blockMessage.attachment.payload,
-          },
-          quickReplies: blockMessage.quickReplies
-            ? [...blockMessage.quickReplies]
-            : undefined,
+      if (fallback) {
+        return quickReplies.length > 0
+          ? envelopeFactory.buildQuickRepliesEnvelope(
+              fallback.message,
+              quickReplies,
+            )
+          : envelopeFactory.buildTextEnvelope(fallback.message);
+      }
+      return envelopeFactory.buildAttachmentEnvelope(
+        {
+          type: block.message.attachment.type,
+          payload: block.message.attachment.payload,
         },
-      };
-      return envelope;
+        quickReplies,
+      );
     } else if (
-      blockMessage &&
-      'elements' in blockMessage &&
+      block.message &&
+      'elements' in block.message &&
       block.options?.content
     ) {
       const contentBlockOptions = block.options.content;
@@ -734,18 +693,21 @@ export class BlockService extends BaseService<
       }
       // Populate list with content
       try {
-        const results = await this.contentService.getContent(
+        const { elements, pagination } = await this.contentService.getContent(
           contentBlockOptions,
           skip,
         );
-        const envelope: StdOutgoingEnvelope = {
-          format: contentBlockOptions.display,
-          message: {
-            ...results,
-            options: contentBlockOptions,
-          },
-        };
-        return envelope;
+
+        return fallback
+          ? envelopeFactory.buildTextEnvelope(fallback.message)
+          : envelopeFactory.buildListEnvelope(
+              contentBlockOptions.display as
+                | OutgoingMessageFormat.list
+                | OutgoingMessageFormat.carousel,
+              contentBlockOptions,
+              elements,
+              pagination,
+            );
       } catch (err) {
         this.logger.error(
           'Unable to retrieve content for list template process',
@@ -753,10 +715,14 @@ export class BlockService extends BaseService<
         );
         throw err;
       }
-    } else if (blockMessage && 'plugin' in blockMessage) {
+    } else if (block.message && 'plugin' in block.message) {
+      if (fallback) {
+        return envelopeFactory.buildTextEnvelope(fallback.message);
+      }
+
       const plugin = this.pluginService.findPlugin(
         PluginType.block,
-        blockMessage.plugin,
+        block.message.plugin,
       );
       // Process custom plugin block
       try {
@@ -769,7 +735,7 @@ export class BlockService extends BaseService<
         return envelope;
       } catch (e) {
         this.logger.error('Plugin was unable to load/process ', e);
-        throw new Error(`Unknown plugin - ${JSON.stringify(blockMessage)}`);
+        throw new Error(`Plugin Error - ${JSON.stringify(block.message)}`);
       }
     }
     throw new Error('Invalid message format.');
