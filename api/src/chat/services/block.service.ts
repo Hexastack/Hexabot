@@ -665,7 +665,7 @@ export class BlockService extends BaseService<
         return quickReplies.length > 0
           ? envelopeFactory.buildQuickRepliesEnvelope(
               fallback.message,
-              block.message.quickReplies ? [...block.message.quickReplies] : [],
+              quickReplies,
             )
           : envelopeFactory.buildTextEnvelope(fallback.message);
       }
@@ -674,7 +674,7 @@ export class BlockService extends BaseService<
           type: block.message.attachment.type,
           payload: block.message.attachment.payload,
         },
-        block.message.quickReplies ? [...block.message.quickReplies] : [],
+        quickReplies,
       );
     } else if (
       block.message &&
