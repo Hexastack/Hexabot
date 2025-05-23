@@ -182,7 +182,7 @@ const ListMessageForm = () => {
             }}
             defaultValue={content?.fields?.title}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(
                 ({ type }) => ContentFieldType.TEXT === type,
               );
@@ -194,7 +194,6 @@ const ListMessageForm = () => {
                   labelKey="label"
                   label={t("label.title")}
                   multiple={false}
-                  {...(options.length && { value })}
                   {...rest}
                   onChange={(_e, selected) => onChange(selected?.name)}
                   error={!!errors?.options?.["content"]?.fields?.title}
@@ -212,7 +211,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.subtitle}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(
                 ({ type }) =>
                   ContentFieldType.TEXT === type ||
@@ -227,7 +226,6 @@ const ListMessageForm = () => {
                   label={t("label.subtitle")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );
@@ -240,7 +238,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.image_url}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(({ type }) =>
                 [ContentFieldType.FILE].includes(type),
               );
@@ -253,7 +251,6 @@ const ListMessageForm = () => {
                   label={t("label.image_url")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );
@@ -266,7 +263,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.url}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(({ type }) =>
                 [ContentFieldType.URL].includes(type),
               );
@@ -279,7 +276,6 @@ const ListMessageForm = () => {
                   label={t("label.url")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );
