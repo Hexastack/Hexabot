@@ -57,34 +57,32 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   const [searchText, setSearchText] = useState<string>(
     (router.query.search as string) || "",
   );
-
-  useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
-    }
-  }, [router.query.search]);
-
+  const [isActive, setIsActive] = useState(false);
   const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
+    async (newSearchText: string) => {
+      const { search, ...rest } = { ...router.query, search: newSearchText };
+
+      await router.push(
         {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
+          query: newSearchText ? { ...rest, search } : rest,
         },
         undefined,
         { shallow: true },
       );
-    }, 300),
+    },
     [router],
   );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
+  const onSearch = debounce(
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      setSearchText(typeof e === "string" ? e : e.target.value);
+    },
+    300,
+  );
 
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
+  useEffect(() => {
+    updateQueryParams(searchText);
+  }, [searchText]);
+
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
@@ -103,6 +101,16 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
           ...buildOrParams({ params: orParams, searchText }),
           ...buildILikeParams({ params: iLikeParams, searchText }),
         }),
+      },
+    },
+    textFieldProps: {
+      value: isActive ? undefined : searchText,
+      onChange: onSearch,
+      onMouseOver: () => {
+        setIsActive(true);
+      },
+      onMouseLeave: () => {
+        setIsActive(false);
       },
     },
   };
