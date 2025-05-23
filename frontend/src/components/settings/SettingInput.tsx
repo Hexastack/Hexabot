@@ -118,8 +118,8 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             entity={EntityType.BLOCK}
             format={Format.BASIC}
             labelKey="name"
-            label={t("label.fallback_block")}
-            helperText={t("help.fallback_block")}
+            label={t("help.fallback_message")}
+            helperText={t("help.fallback_message")}
             multiple={false}
             onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
             {...rest}
