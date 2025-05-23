@@ -232,7 +232,7 @@ describe('NlpEntityService', () => {
             {
               value: 'jhon',
               expressions: ['john', 'joohn', 'jhonny'],
-              builtin: true,
+              builtin: false,
               doc: '',
             },
           ],

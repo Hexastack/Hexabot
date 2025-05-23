@@ -163,7 +163,7 @@ describe('NlpValueController', () => {
         entity: intentNlpEntity!.id,
         value: 'updated',
         expressions: [],
-        builtin: true,
+        builtin: false,
         doc: '',
       };
       const result = await nlpValueController.updateOne(
@@ -191,7 +191,6 @@ describe('NlpValueController', () => {
   describe('deleteMany', () => {
     it('should delete multiple nlp values', async () => {
       const valuesToDelete = [positiveValue!.id, negativeValue!.id];
-
       const result = await nlpValueController.deleteMany(valuesToDelete);
 
       expect(result.deletedCount).toEqual(valuesToDelete.length);
