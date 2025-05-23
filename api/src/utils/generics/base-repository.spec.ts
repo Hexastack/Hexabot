@@ -306,6 +306,7 @@ describe('BaseRepository', () => {
 
       expect(dummyModel.deleteOne).toHaveBeenCalledWith({
         _id: createdId,
+        builtin: { $ne: true },
       });
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
     });
@@ -318,12 +319,13 @@ describe('BaseRepository', () => {
 
       expect(dummyModel.deleteOne).toHaveBeenCalledWith({
         dummy: 'dummy test 2',
+        builtin: { $ne: true },
       });
       expect(result).toEqualPayload({ acknowledged: true, deletedCount: 1 });
     });
 
     it('should call lifecycle hooks appropriately when deleting by id', async () => {
-      const criteria = createdId;
+      jest.spyOn(dummyModel, 'deleteOne');
 
       // Spies for lifecycle hooks
       const spyBeforeDelete = jest
@@ -333,7 +335,12 @@ describe('BaseRepository', () => {
         .spyOn(dummyRepository, 'postDelete')
         .mockResolvedValue();
 
-      await dummyRepository.deleteOne(criteria);
+      await dummyRepository.deleteOne(createdId);
+
+      expect(dummyModel.deleteOne).toHaveBeenCalledWith({
+        _id: createdId,
+        builtin: { $ne: true },
+      });
 
       // Verifying that lifecycle hooks are called with correct parameters
       expect(spyBeforeDelete).toHaveBeenCalledTimes(1);
@@ -341,6 +348,7 @@ describe('BaseRepository', () => {
         expect.objectContaining({ $useProjection: true }),
         {
           _id: new Types.ObjectId(createdId),
+          builtin: { $ne: true },
         },
       );
       expect(spyAfterDelete).toHaveBeenCalledWith(
