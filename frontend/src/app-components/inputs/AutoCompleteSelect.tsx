@@ -11,6 +11,7 @@ import Autocomplete, {
   AutocompleteProps,
   AutocompleteValue,
 } from "@mui/material/Autocomplete";
+import stringify from "fast-json-stable-stringify";
 import { forwardRef, useCallback, useMemo } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
@@ -112,7 +113,7 @@ const AutoCompleteSelect = <
       {...rest}
       ref={ref}
       size="small"
-      key={`${JSON.stringify(options)}_${JSON.stringify(value)}`}
+      key={`${stringify(options)}_${stringify(value)}`}
       disabled={isDisabled}
       defaultValue={selected}
       multiple={multiple}
