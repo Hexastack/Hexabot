@@ -177,19 +177,29 @@ export class BlockRepository extends BaseRepository<
       category: { $ne: category },
     });
 
-    for (const { id, nextBlocks, attachedBlock } of blocks) {
-      const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
-        ids.includes(nextBlock),
-      );
+    const concurrencyLimit = 10;
 
-      const updatedAttachedBlock = ids.includes(attachedBlock || '')
-        ? attachedBlock
-        : null;
+    const tasks = blocks.map(
+      ({ id, nextBlocks, attachedBlock }) =>
+        async () => {
+          const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
+            ids.includes(nextBlock),
+          );
 
-      await this.updateOne(id, {
-        nextBlocks: updatedNextBlocks,
-        attachedBlock: updatedAttachedBlock,
-      });
+          const updatedAttachedBlock = ids.includes(attachedBlock || '')
+            ? attachedBlock
+            : null;
+
+          await this.updateOne(id, {
+            nextBlocks: updatedNextBlocks,
+            attachedBlock: updatedAttachedBlock,
+          });
+        },
+    );
+
+    for (let i = 0; i < tasks.length; i += concurrencyLimit) {
+      const batch = tasks.slice(i, i + concurrencyLimit);
+      await Promise.all(batch.map((task) => task()));
     }
   }
 
@@ -205,18 +215,43 @@ export class BlockRepository extends BaseRepository<
     otherBlocks: Block[],
     ids: string[],
   ): Promise<void> {
-    for (const block of otherBlocks) {
+    // Fetch all moved blocks with their nextBlocks
+    const movedBlocks = await this.find({ _id: { $in: ids } });
+
+    // Build a set of all blocks the moved blocks are pointing to
+    const movedBlockLinkTargets = new Set<string>();
+    for (const block of movedBlocks) {
+      block.nextBlocks?.forEach((id) => movedBlockLinkTargets.add(id));
+    }
+
+    const concurrencyLimit = 10;
+    const allUpdateTasks = otherBlocks.map((block) => async () => {
+      const promises: Promise<any>[] = [];
+
       if (block.attachedBlock && ids.includes(block.attachedBlock)) {
-        await this.updateOne(block.id, { attachedBlock: null });
+        promises.push(this.updateOne(block.id, { attachedBlock: null }));
       }
 
-      const nextBlocks = block.nextBlocks?.filter(
-        (nextBlock) => !ids.includes(nextBlock),
-      );
+      if (block.nextBlocks?.length) {
+        const updatedNextBlocks = block.nextBlocks.filter((nextBlockId) => {
+          return (
+            !ids.includes(nextBlockId) || movedBlockLinkTargets.has(block.id)
+          );
+        });
 
-      if (nextBlocks?.length) {
-        await this.updateOne(block.id, { nextBlocks });
+        if (updatedNextBlocks.length !== block.nextBlocks.length) {
+          promises.push(
+            this.updateOne(block.id, { nextBlocks: updatedNextBlocks }),
+          );
+        }
       }
+
+      await Promise.all(promises);
+    });
+
+    for (let i = 0; i < allUpdateTasks.length; i += concurrencyLimit) {
+      const batch = allUpdateTasks.slice(i, i + concurrencyLimit);
+      await Promise.all(batch.map((task) => task()));
     }
   }
 
