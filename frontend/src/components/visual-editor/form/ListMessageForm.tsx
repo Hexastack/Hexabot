@@ -47,7 +47,7 @@ const ListMessageForm = () => {
     formState: { errors },
   } = useFormContext();
   const contentTypeId = watch("options.content.entity");
-  const displayMode = watch("options.content.display_mode");
+  const displayMode = watch("options.content.display");
   const { data: contentType } = useGet(contentTypeId, {
     entity: EntityType.CONTENT_TYPE,
   });
@@ -61,10 +61,9 @@ const ListMessageForm = () => {
           <FormControl>
             <FormLabel>{t("label.display_mode")}</FormLabel>
             <Controller
-              rules={{ required: true }}
               control={control}
-              defaultValue={content?.display || "list"}
-              name="options.content.display_mode"
+              defaultValue={content?.display || OutgoingMessageFormat.list}
+              name="options.content.display"
               render={({ field }) => (
                 <RadioGroup row {...field}>
                   {[
@@ -75,10 +74,7 @@ const ListMessageForm = () => {
                       key={display}
                       value={display}
                       control={
-                        <Radio
-                          defaultChecked={display === content?.display}
-                          {...register("options.content.display")}
-                        />
+                        <Radio defaultChecked={display === content?.display} />
                       }
                       label={t(`label.${display}`)}
                     />
