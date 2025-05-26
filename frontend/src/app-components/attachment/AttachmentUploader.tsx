@@ -17,7 +17,7 @@ import {
   styled,
   Typography,
 } from "@mui/material";
-import { ChangeEvent, DragEvent, FC, useState } from "react";
+import { ChangeEvent, DragEvent, FC, useId, useState } from "react";
 
 import { useUpload } from "@/hooks/crud/useUpload";
 import { useDialogs } from "@/hooks/useDialogs";
@@ -88,6 +88,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
   const [attachment, setAttachment] = useState<IAttachment | undefined>(
     undefined,
   );
+  const uid = useId();
   const { t } = useTranslate();
   const dialogs = useDialogs();
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
@@ -154,11 +155,11 @@ const AttachmentUploader: FC<FileUploadProps> = ({
           <HiddenInput
             onChange={handleChange}
             accept={accept}
-            id="file-upload"
+            id={`file-upload${uid}`}
             type="file"
           />
           <FileUploadLabel
-            htmlFor="file-upload"
+            htmlFor={`file-upload${uid}`}
             isDragOver={isDragOver}
             onMouseEnter={() => setIsDragOver(true)}
             onMouseLeave={() => setIsDragOver(false)}
