@@ -122,7 +122,6 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
         <ContentContainer>
           <ContentItem display="flex" gap={5}>
             <Input
-              required
               label={t("placeholder.name")}
               {...register("name")}
               error={!!errors.name}

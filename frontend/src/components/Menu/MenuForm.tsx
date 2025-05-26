@@ -63,12 +63,15 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     defaultValues: DEFAULT_VALUES,
     rules: {
       type: {
+        onChange: () => {
+          resetField("url");
+        },
         required: t("message.type_is_required"),
       },
       title: { required: t("message.title_is_required") },
       url: {
-        required: t("message.url_is_invalid"),
-        validate: (value: string = "") =>
+        required: t("message.url_is_required"),
+        validate: (value = "") =>
           isAbsoluteUrl(value) || t("message.url_is_invalid"),
       },
     },
@@ -108,11 +111,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
                 label={t("placeholder.type")}
                 error={!!errors.type}
                 required
-                {...register("type", {
-                  onChange: () => {
-                    resetField("url");
-                  },
-                })}
+                {...register("type")}
                 helperText={errors.type ? errors.type.message : null}
                 {...rest}
               >

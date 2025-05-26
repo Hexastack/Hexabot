@@ -14,13 +14,15 @@ import { TRegisterOption } from "./useForm";
 
 export const useValidationRules = () => {
   const { t } = useTranslate();
-  const rules = {
-    email: {
-      pattern: {
-        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        message: t("message.email_is_invalid"),
-      },
+  const email = {
+    pattern: {
+      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+      message: t("message.email_is_invalid"),
     },
+  };
+  const rules = {
+    email,
+    identifier: email,
     password: {
       minLength: {
         value: 8,

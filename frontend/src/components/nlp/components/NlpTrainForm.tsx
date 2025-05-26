@@ -323,7 +323,6 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-          {/* Keyword entities */}
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem
