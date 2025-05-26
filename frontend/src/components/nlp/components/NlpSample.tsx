@@ -86,12 +86,13 @@ export default function NlpSample() {
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload } = useSearch<INlpSample>({
+  const { ref, onSearch, searchPayload } = useSearch<INlpSample>({
     $eq: [
       ...(type !== "all" ? [{ type }] : []),
       ...(language ? [{ language }] : []),
     ],
     $iLike: ["text"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { mutate: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
@@ -316,6 +317,7 @@ export default function NlpSample() {
           direction="row"
         >
           <FilterTextfield
+            inputRef={ref}
             onChange={onSearch}
             fullWidth={false}
             sx={{ minWidth: "256px" }}
