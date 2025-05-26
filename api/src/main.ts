@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import bodyParser from 'body-parser';
 import session from 'express-session';
@@ -71,6 +71,16 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       // forbidNonWhitelisted: true,
+      exceptionFactory: (errors) => {
+        const messages = errors.map((error) => {
+          const constraints = error.constraints;
+          if (constraints) {
+            return Object.values(constraints)[0];
+          }
+          return `${error.property} has invalid value`;
+        });
+        return new BadRequestException(messages.join(', '));
+      },
     }),
     new ObjectIdPipe(),
   );
