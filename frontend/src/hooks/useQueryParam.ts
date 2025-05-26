@@ -51,8 +51,8 @@ export const useQueryParam = () => {
     [updateUrl],
   );
   const getQueryParam = useCallback(
-    <T extends keyof QueryParams>(key: T): T | undefined => {
-      return queryParams[key] as T;
+    <T extends keyof QueryParams>(key: T): QueryParams[T] | undefined => {
+      return queryParams[key] as QueryParams[T];
     },
     [queryParams],
   );

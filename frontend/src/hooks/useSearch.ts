@@ -12,6 +12,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   TBuildInitialParamProps,
   TBuildParamProps,
+  TFilterStringFields,
   TParamItem,
 } from "@/types/search.types";
 
@@ -23,13 +24,11 @@ const buildOrParams = <T>({ params, searchText }: TBuildParamProps<T>) => ({
   })),
 });
 const buildILikeParams = <T>({ params, searchText }: TBuildParamProps<T>) =>
-  params?.reduce(
-    (acc, field) => ({
-      ...acc,
-      [field]: { contains: searchText },
-    }),
-    {},
-  );
+  params?.reduce((acc, field) => {
+    acc[field] = { contains: searchText };
+
+    return acc;
+  }, {} as Record<TFilterStringFields<T>, unknown>);
 const buildEqInitialParams = <T>({
   initialParams,
 }: TBuildInitialParamProps<T>) =>
@@ -75,11 +74,15 @@ export const useSearch = <T>({
   }, [searchText]);
 
   useEffect(() => {
-    if (queryParamKey && queryParamValue !== searchText) {
-      setSearchText(queryParamValue || "");
+    if (
+      queryParamKey &&
+      queryParamValue !== searchText &&
+      queryParamValue !== undefined
+    ) {
+      setSearchText(queryParamValue.toString() || "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryParamValue]);
+  }, [queryParamValue, queryParamKey]);
 
   const onSearch = debounce(
     async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
