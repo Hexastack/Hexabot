@@ -28,7 +28,7 @@ export const useQueryParam = () => {
         }
       });
 
-      await router.replace(
+      await router.push(
         {
           query: updatedQuery,
         },

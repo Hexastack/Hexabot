@@ -68,21 +68,22 @@ export const useSearch = <T>({
   );
 
   useEffect(() => {
+    if (queryParamValue) {
+      setSearchText(queryParamValue.toString() || "");
+    } else {
+      if (searchText && ref.current) {
+        ref.current.value = "";
+      }
+      setSearchText("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParamValue]);
+
+  useEffect(() => {
     if (searchText && ref.current) {
       ref.current.value = searchText;
     }
   }, [searchText]);
-
-  useEffect(() => {
-    if (
-      queryParamKey &&
-      queryParamValue !== searchText &&
-      queryParamValue !== undefined
-    ) {
-      setSearchText(queryParamValue.toString() || "");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [queryParamValue, queryParamKey]);
 
   const onSearch = debounce(
     async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
