@@ -267,6 +267,7 @@ const NlpEntity = () => {
         <DataGrid
           columns={nlpEntityColumns}
           {...nlpEntityGrid}
+          isRowSelectable={({ row }) => !row.builtin}
           checkboxSelection
           onRowSelectionModelChange={handleSelectionChange}
         />

@@ -138,6 +138,7 @@ describe('PermissionRepository', () => {
 
       expect(permissionModel.deleteOne).toHaveBeenCalledWith({
         _id: permissionToDelete.id,
+        builtin: { $ne: true },
       });
 
       expect(result).toEqual({

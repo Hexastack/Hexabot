@@ -222,6 +222,7 @@ export class NlpEntityController extends BaseController<
     if (!ids?.length) {
       throw new BadRequestException('No IDs provided for deletion.');
     }
+
     const deleteResult = await this.nlpEntityService.deleteMany({
       _id: { $in: ids },
     });
