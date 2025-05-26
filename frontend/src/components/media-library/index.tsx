@@ -37,8 +37,9 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const formatFileSize = useFormattedFileSize();
-  const { onSearch, searchPayload } = useSearch<IAttachment>({
+  const { ref, onSearch, searchPayload } = useSearch<IAttachment>({
     $iLike: ["name"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.ATTACHMENT },
@@ -151,7 +152,7 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield inputRef={ref} onChange={onSearch} />
           </Grid>
         </Grid>
       </PageHeader>
