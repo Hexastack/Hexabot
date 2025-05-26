@@ -40,8 +40,9 @@ export const ContentTypes = () => {
   const router = useRouter();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload } = useSearch<IContentType>({
+  const { ref, onSearch, searchPayload } = useSearch<IContentType>({
     $iLike: ["name"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT_TYPE },
@@ -99,7 +100,7 @@ export const ContentTypes = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield inputRef={ref} onChange={onSearch} />
           </Grid>
           {hasPermission(EntityType.CONTENT_TYPE, PermissionAction.CREATE) ? (
             <Grid item>
