@@ -80,8 +80,9 @@ const NlpEntity = () => {
     },
   });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
-  const { onSearch, searchPayload } = useSearch<INlpEntity>({
+  const { ref, onSearch, searchPayload } = useSearch<INlpEntity>({
     $or: ["name", "doc"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { dataGridProps: nlpEntityGrid } = useFind(
     {
@@ -224,7 +225,7 @@ const NlpEntity = () => {
         flexShrink={0}
       >
         <Grid item>
-          <FilterTextfield onChange={onSearch} />
+          <FilterTextfield inputRef={ref} onChange={onSearch} />
         </Grid>
 
         {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
