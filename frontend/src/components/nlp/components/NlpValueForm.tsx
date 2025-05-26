@@ -157,7 +157,7 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
                   helperText={errors.metadata?.pattern?.message}
                   error={!!errors.metadata?.pattern}
                   label={t("label.regex")}
-                  placeholder={t("label.pattern")}
+                  placeholder={t("placeholder.pattern")}
                   flags={["i"]}
                 />
               </ContentItem>

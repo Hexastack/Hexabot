@@ -76,7 +76,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
           <ContentItem>
             <Input
               disabled
-              label={t("placeholder.full_name")}
+              label={t("label.full_name")}
               value={user ? getFullName(user) : undefined}
               InputProps={{
                 readOnly: true,

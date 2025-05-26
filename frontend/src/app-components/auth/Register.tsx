@@ -206,7 +206,7 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("placeholder.password")}
+                label={t("label.password")}
                 error={!!errors.password}
                 required
                 {...register("password", validationRules.password)}
