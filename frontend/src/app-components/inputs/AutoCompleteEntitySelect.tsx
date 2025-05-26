@@ -106,7 +106,7 @@ const AutoCompleteEntitySelect = <
 
   return (
     <AutoCompleteSelect<Value, Label, Multiple>
-      {...(options.length && { value })}
+      value={value}
       onChange={onChange}
       label={label}
       multiple={multiple}
