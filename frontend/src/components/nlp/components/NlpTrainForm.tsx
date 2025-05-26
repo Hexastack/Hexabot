@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray } from "react-hook-form";
 import { useQuery } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -32,6 +32,7 @@ import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import Selectable from "@/app-components/inputs/Selectable";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
+import { useForm } from "@/hooks/useForm";
 import { useNlp } from "@/hooks/useNlp";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -322,9 +323,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-          {
-            /* Keyword entities */
-          }
+          {/* Keyword entities */}
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem

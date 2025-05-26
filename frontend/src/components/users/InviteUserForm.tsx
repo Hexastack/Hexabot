@@ -7,15 +7,15 @@
  */
 
 import { FC, Fragment } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useSendInvitation } from "@/hooks/entities/invitation-hooks";
+import { useForm } from "@/hooks/useForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
 import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { IInvitationAttributes } from "@/types/invitation.types";
@@ -47,17 +47,12 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
     handleSubmit,
   } = useForm<IInvitationAttributes>({
     defaultValues: DEFAULT_VALUES,
+    rules: {
+      email: {
+        required: t("message.email_is_required"),
+      },
+    },
   });
-  const rules = useValidationRules();
-  const validationRules = {
-    email: {
-      ...rules.email,
-      required: t("message.email_is_required"),
-    },
-    roles: {
-      required: t("message.roles_is_required"),
-    },
-  };
   const onSubmitForm = (params: IInvitationAttributes) =>
     sendInvitation(params);
 
@@ -71,14 +66,16 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
               error={!!errors.email}
               required
               autoFocus
-              {...register("email", validationRules.email)}
+              {...register("email")}
               helperText={errors.email ? errors.email.message : null}
             />
           </ContentItem>
           <ContentItem>
             <Controller
               name="roles"
-              rules={validationRules.roles}
+              rules={{
+                required: t("message.roles_is_required"),
+              }}
               control={control}
               render={({ field }) => {
                 const { onChange, ...rest } = field;

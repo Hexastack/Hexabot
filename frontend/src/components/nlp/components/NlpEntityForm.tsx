@@ -14,12 +14,12 @@ import {
   RadioGroup,
 } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
-import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useForm } from "@/hooks/useForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -62,14 +62,12 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
       lookups: nlpEntity?.lookups || ["keywords"],
       weight: nlpEntity?.weight || 1,
     },
-  });
-  const validationRules = {
-    name: {
-      required: t("message.name_is_required"),
+    rules: {
+      name: {
+        required: t("message.name_is_required"),
+      },
     },
-    lookups: {},
-    isChecked: {},
-  };
+  });
   const onSubmitForm = (params: INlpEntityAttributes) => {
     if (nlpEntity) {
       updateNlpEntity({ id: nlpEntity.id, params });
@@ -122,7 +120,7 @@ export const NlpEntityVarForm: FC<ComponentFormProps<INlpEntity>> = ({
             <Input
               label={t("label.name")}
               error={!!errors.name}
-              {...register("name", validationRules.name)}
+              {...register("name")}
               required
               autoFocus
               helperText={errors.name ? errors.name.message : null}

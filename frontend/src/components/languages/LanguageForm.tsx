@@ -8,12 +8,13 @@
 
 import { FormControlLabel, Switch } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useForm } from "@/hooks/useForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -52,15 +53,15 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
       code: language?.code || "",
       isRTL: language?.isRTL || false,
     },
+    rules: {
+      title: {
+        required: t("message.title_is_required"),
+      },
+      code: {
+        required: t("message.code_is_required"),
+      },
+    },
   });
-  const validationRules = {
-    title: {
-      required: t("message.title_is_required"),
-    },
-    code: {
-      required: t("message.code_is_required"),
-    },
-  };
   const onSubmitForm = (params: ILanguageAttributes) => {
     if (language) {
       updateLanguage({ id: language.id, params });
@@ -87,9 +88,10 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
         <ContentContainer>
           <ContentItem>
             <Input
+              required
               label={t("label.title")}
               error={!!errors.title}
-              {...register("title", validationRules.title)}
+              {...register("title")}
               multiline={true}
               autoFocus
               helperText={errors.title ? errors.title.message : null}
@@ -97,9 +99,10 @@ export const LanguageForm: FC<ComponentFormProps<ILanguage>> = ({
           </ContentItem>
           <ContentItem>
             <Input
+              required
               label={t("label.code")}
               error={!!errors.code}
-              {...register("code", validationRules.code)}
+              {...register("code")}
               multiline={true}
               helperText={errors.code ? errors.code.message : null}
             />

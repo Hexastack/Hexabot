@@ -13,13 +13,12 @@ import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 
 import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
 import { useAuth } from "@/hooks/useAuth";
+import { useForm } from "@/hooks/useForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
 import { ILoginAttributes } from "@/types/auth/login.types";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
@@ -64,18 +63,15 @@ export const Login = () => {
     handleSubmit,
   } = useForm<ILoginAttributes>({
     defaultValues: DEFAULT_VALUES,
+    rules: {
+      identifier: {
+        required: t("message.email_is_required"),
+      },
+      password: {
+        required: t("message.password_is_required"),
+      },
+    },
   });
-  const rules = useValidationRules();
-  const validationRules = {
-    email: {
-      ...rules.email,
-      required: t("message.email_is_required"),
-    },
-    password: {
-      ...rules.password,
-      required: t("message.password_is_required"),
-    },
-  };
   const onSubmitForm = (data: ILoginAttributes) => {
     login(data);
   };
@@ -106,7 +102,7 @@ export const Login = () => {
                 startAdornment: <Adornment Icon={EmailIcon} />,
               }}
               helperText={errors.identifier ? errors.identifier.message : null}
-              {...register("identifier", validationRules.email)}
+              {...register("identifier")}
             />
 
             <PasswordInput
@@ -117,7 +113,7 @@ export const Login = () => {
                 startAdornment: <Adornment Icon={KeyIcon} />,
               }}
               helperText={errors.password ? errors.password.message : null}
-              {...register("password", validationRules.password)}
+              {...register("password")}
             />
             <Grid container gap={2} justifyContent="space-between">
               <Grid alignContent="center">
