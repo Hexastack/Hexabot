@@ -53,8 +53,9 @@ export const Users = () => {
     },
   });
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<IUser>({
+  const { ref, onSearch, searchPayload } = useSearch<IUser>({
     $or: ["first_name", "last_name", "email"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { data: roles } = useFind(
     {
@@ -198,7 +199,7 @@ export const Users = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield inputRef={ref} onChange={onSearch} />
           </Grid>
           {!ssoEnabled &&
           hasPermission(EntityType.USER, PermissionAction.CREATE) ? (
