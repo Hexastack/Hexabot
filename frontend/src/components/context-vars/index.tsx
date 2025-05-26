@@ -43,8 +43,9 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<IContextVar>({
+  const { ref, onSearch, searchPayload } = useSearch<IContextVar>({
     $iLike: ["label"],
+    queryParam: { key: "search", defaultValue: "" },
   });
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTEXT_VAR },
@@ -176,7 +177,7 @@ export const ContextVars = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield inputRef={ref} onChange={onSearch} />
           </Grid>
           {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.CREATE) ? (
             <Grid item>
