@@ -7,8 +7,7 @@
  */
 
 import { debounce } from "@mui/material";
-import { useRouter } from "next/router";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import {
   TBuildInitialParamProps,
@@ -16,12 +15,14 @@ import {
   TParamItem,
 } from "@/types/search.types";
 
-const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
+import { useQueryParam } from "./useQueryParam";
+
+const buildOrParams = <T>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
     [field]: { contains: searchText },
   })),
 });
-const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
+const buildILikeParams = <T>({ params, searchText }: TBuildParamProps<T>) =>
   params?.reduce(
     (acc, field) => ({
       ...acc,
@@ -29,7 +30,7 @@ const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
     }),
     {},
   );
-const buildEqInitialParams = <T,>({
+const buildEqInitialParams = <T>({
   initialParams,
 }: TBuildInitialParamProps<T>) =>
   initialParams?.reduce(
@@ -39,7 +40,7 @@ const buildEqInitialParams = <T,>({
     }),
     {},
   );
-const buildNeqInitialParams = <T,>({
+const buildNeqInitialParams = <T>({
   initialParams,
 }: TBuildInitialParamProps<T>) =>
   initialParams?.reduce(
@@ -52,49 +53,50 @@ const buildNeqInitialParams = <T,>({
     {},
   );
 
-export const useSearch = <T,>(params: TParamItem<T>) => {
-  const router = useRouter();
+export const useSearch = <T>({
+  $eq: eqInitialParams,
+  $neq: neqInitialParams,
+  $iLike: iLikeParams,
+  $or: orParams,
+  queryParam,
+}: TParamItem<T>) => {
+  const ref = useRef<HTMLInputElement | null>(null);
+  const queryParamKey = queryParam?.key || "";
+  const { setQueryParam, getQueryParam } = useQueryParam();
+  const queryParamValue = getQueryParam(queryParamKey);
   const [searchText, setSearchText] = useState<string>(
-    (router.query.search as string) || "",
+    queryParamValue?.toString() || "",
   );
 
   useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
+    if (searchText && ref.current) {
+      ref.current.value = searchText;
     }
-  }, [router.query.search]);
+  }, [searchText]);
 
-  const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
-        },
-        undefined,
-        { shallow: true },
-      );
-    }, 300),
-    [router],
+  useEffect(() => {
+    if (queryParamKey && queryParamValue !== searchText) {
+      setSearchText(queryParamValue || "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryParamValue]);
+
+  const onSearch = debounce(
+    async (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      const newSearchText = typeof e === "string" ? e : e.target.value;
+
+      setSearchText(newSearchText);
+      if (queryParamKey) {
+        setQueryParam(queryParamKey, newSearchText, queryParam?.defaultValue);
+      }
+    },
+    300,
   );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
-
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
-  const {
-    $eq: eqInitialParams,
-    $iLike: iLikeParams,
-    $neq: neqInitialParams,
-    $or: orParams,
-  } = params;
 
   return {
-    searchText,
+    ref,
     onSearch,
+    searchText,
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
