@@ -177,7 +177,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("placeholder.password")}
+                label={t("label.password")}
                 {...register("password", validationRules.password)}
                 required
                 error={!!errors.password}

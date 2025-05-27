@@ -123,7 +123,7 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a strictly positive number" 
+    "weight_positive_number_error": "Weight must be a strictly positive number"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -490,7 +490,9 @@
     "original_text": "Original Text",
     "inputs": "Inputs",
     "outputs": "Outputs",
-    "any": "- Any -"
+    "any": "- Any -",
+    "full_name": "First and last name",
+    "password": "Password"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -498,7 +500,6 @@
     "your_password": "Your password",
     "username": "Username",
     "email": "E-mail address",
-    "full_name": "First and last name",
     "password": "Password",
     "password2": "Confirm your password",
     "timezone": "Timezone",
@@ -527,7 +528,9 @@
     "end_date": "End Date",
     "nlp_value": "Value",
     "type_message_here": "Type message here ....",
-    "mark_as_default": "By Default"
+    "mark_as_default": "By Default",
+    "pattern": "Pattern",
+    "full_name": "First and last name"
   },
   "button": {
     "login": "Sign In",

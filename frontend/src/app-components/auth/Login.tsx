@@ -110,7 +110,7 @@ export const Login = () => {
             />
 
             <PasswordInput
-              label={t("placeholder.password")}
+              label={t("label.password")}
               error={!!errors.password}
               required
               InputProps={{

@@ -491,7 +491,9 @@
     "original_text": "Texte par défaut",
     "inputs": "Ports d'entrée",
     "outputs": "Ports de sortie",
-    "any": "- Toutes -"
+    "any": "- Toutes -",
+    "full_name": "Nom et Prénom",
+    "password": "Mot de passe"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
@@ -499,7 +501,6 @@
     "your_password": "Votre mot de passe",
     "username": "Nom d'utilisateur",
     "email": "Adresse e-mail",
-    "full_name": "Nom et Prénom",
     "password": "Mot de passe",
     "password2": "Confirmez votre mot de passe",
     "timezone": "Fuseau horaire",
@@ -528,7 +529,9 @@
     "end_date": "Date de fin",
     "nlp_value": "Valeur",
     "type_message_here": "Ecrivez quelque chose ici ....",
-    "mark_as_default": "Par Défaut"
+    "mark_as_default": "Par Défaut",
+    "pattern": "Motif",
+    "full_name": "Nom et Prénom"
   },
   "button": {
     "login": "Se connecter",
