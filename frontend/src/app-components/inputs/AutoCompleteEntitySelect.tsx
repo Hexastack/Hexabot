@@ -8,6 +8,7 @@
 
 import { ChipTypeMap } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
+import stringify from "fast-json-stable-stringify";
 import { forwardRef, useEffect, useRef } from "react";
 
 import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
@@ -102,7 +103,7 @@ const AutoCompleteEntitySelect = <
   useEffect(() => {
     fetchNextPage({ pageParam: params });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(searchPayload)]);
+  }, [stringify(searchPayload)]);
 
   return (
     <AutoCompleteSelect<Value, Label, Multiple>

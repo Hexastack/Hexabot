@@ -29,6 +29,7 @@ import {
   DiagramModel,
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
+import stringify from "fast-json-stable-stringify";
 import { useRouter } from "next/router";
 import { SyntheticEvent, useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "react-query";
@@ -340,7 +341,7 @@ const Diagrams = () => {
     });
   }, [
     selectedCategoryId,
-    JSON.stringify(
+    stringify(
       blocks.map((b) => {
         return { ...b, position: undefined, updatedAt: undefined };
       }),
