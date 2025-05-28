@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
 import { ChangeEvent, useState } from "react";
 
 import {
@@ -53,12 +52,6 @@ const buildNeqInitialParams = <T,>({
 
 export const useSearch = <T,>(params: TParamItem<T>) => {
   const [searchText, setSearchText] = useState<string>("");
-  const onSearch = debounce(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
-      setSearchText(typeof e === "string" ? e : e.target.value);
-    },
-    300,
-  );
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
@@ -67,7 +60,11 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   } = params;
 
   return {
-    onSearch,
+    onSearch: (
+      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
+    ) => {
+      setSearchText(typeof e === "string" ? e : e.target.value);
+    },
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
