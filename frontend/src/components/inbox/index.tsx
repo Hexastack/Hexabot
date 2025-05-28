@@ -27,9 +27,12 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const { onSearch, searchPayload } = useSearch<ISubscriber>({
-    $or: ["first_name", "last_name"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>(
+    {
+      $or: ["first_name", "last_name"],
+    },
+    { syncUrl: true },
+  );
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
 
@@ -48,13 +51,10 @@ export const Inbox = () => {
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={2} paddingBottom={1} mx={1}>
-                <FilterTextfield onChange={onSearch} defaultValue="" />
-                {/* <Search
-                  onClearClick={() => onSearch("")}
-                  className="changeColor"
-                  onChange={(v) => onSearch(v)}
-                  placeholder="Search..."
-                /> */}
+                <FilterTextfield
+                  onChange={onSearch}
+                  defaultValue={searchText}
+                />
               </Grid>
               <Grid
                 display="flex"

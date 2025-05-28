@@ -14,6 +14,8 @@ import {
   TParamItem,
 } from "@/types/search.types";
 
+import { useUrlQueryParam } from "./useUrlQueryParam";
+
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
     [field]: { contains: searchText },
@@ -50,20 +52,38 @@ const buildNeqInitialParams = <T,>({
     {},
   );
 
-export const useSearch = <T,>(params: TParamItem<T>) => {
-  const [searchText, setSearchText] = useState<string>("");
+interface SearchHookOptions {
+  syncUrl?: boolean;
+}
+
+export const useSearch = <T,>(
+  params: TParamItem<T>,
+  options: SearchHookOptions = { syncUrl: false },
+) => {
+  const { syncUrl } = options;
+  const [searchQuery, setSearchQuery] = useUrlQueryParam("search", "");
+  const [search, setSearch] = useState<string>("");
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
     $neq: neqInitialParams,
     $or: orParams,
   } = params;
+  const searchText = syncUrl ? searchQuery : search;
 
   return {
+    searchText,
     onSearch: (
       e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
     ) => {
-      setSearchText(typeof e === "string" ? e : e.target.value);
+      const newValue =
+        typeof e === "object" ? e.target.value.toString() : e.toString();
+
+      if (syncUrl) {
+        setSearchQuery(newValue);
+      } else {
+        setSearch(newValue);
+      }
     },
     searchPayload: {
       where: {

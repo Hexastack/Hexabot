@@ -43,9 +43,12 @@ export const Languages = () => {
   const dialogs = useDialogs();
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<ILanguage>({
-    $or: ["title", "code"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ILanguage>(
+    {
+      $or: ["title", "code"],
+    },
+    { syncUrl: true },
+  );
   const { dataGridProps, refetch } = useFind(
     { entity: EntityType.LANGUAGE },
     {
@@ -197,7 +200,7 @@ export const Languages = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.LANGUAGE, PermissionAction.CREATE) ? (
             <Grid item>

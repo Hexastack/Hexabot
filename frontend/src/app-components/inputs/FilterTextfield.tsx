@@ -14,7 +14,7 @@ import {
   InputAdornment,
   TextFieldProps,
 } from "@mui/material";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -37,30 +37,49 @@ export const FilterTextfield = ({
   ...props
 }) => {
   const { t } = useTranslate();
-  const [inputValue, setInputValue] = useState(defaultValue);
+  const ref = useRef<HTMLInputElement>(null);
+  const isTyping = useRef(false);
+  const toggleTyping = useMemo(
+    () =>
+      debounce((value: boolean) => {
+        isTyping.current = value;
+      }, delay * 2),
+    [delay],
+  );
   const debouncedSearch = useMemo(
     () =>
       debounce((value: string) => {
         onSearch?.(value);
+        toggleTyping(false);
       }, delay),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSearch, delay],
   );
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const value = event.target.value;
 
-      setInputValue(value);
+      toggleTyping(true);
       debouncedSearch(value);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [debouncedSearch],
   );
   const handleClear = useCallback(() => {
-    setInputValue("");
     debouncedSearch("");
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    // Avoid infinite loop cycle (input => URL update => default value)
+    if (defaultValue !== ref.current?.value && !isTyping.current) {
+      ref.current && (ref.current.value = defaultValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValue]);
+
   return (
     <Input
+      inputRef={ref}
       InputProps={{
         startAdornment: <Adornment Icon={SearchIcon} />,
         endAdornment: clearable && (
@@ -73,7 +92,8 @@ export const FilterTextfield = ({
       }}
       placeholder={t("placeholder.keywords")}
       {...props}
-      value={inputValue}
+      // value={inputValue}
+      defaultValue={defaultValue}
       onChange={handleChange}
     />
   );

@@ -222,7 +222,7 @@ const AttachmentUploader: FC<FileUploadProps> = ({
                     {
                       defaultValues: { accept, onChange },
                     },
-                    { maxWidth: "xl" },
+                    { maxWidth: "xl", isSingleton: true },
                   )
                 }
               >

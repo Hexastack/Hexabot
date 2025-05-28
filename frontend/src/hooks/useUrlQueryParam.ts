@@ -9,9 +9,48 @@
 import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 
+type QueryParamSerializer<T> = {
+  parse: (raw: string | string[] | undefined) => T;
+  stringify: (val: T) => string | string[] | undefined;
+};
+
+export function defaultSerializer<T = string>(): QueryParamSerializer<T> {
+  return {
+    parse: (raw) => {
+      if (Array.isArray(raw)) return raw[0] as unknown as T;
+      if (typeof raw === "undefined") return "" as unknown as T;
+
+      return raw as unknown as T;
+    },
+    stringify: (val) => val as unknown as string,
+  };
+}
+
+export function booleanSerializer(): QueryParamSerializer<boolean> {
+  return {
+    parse: (raw) => raw === "true",
+    stringify: (val) => (val ? "true" : "false"),
+  };
+}
+
+export function numberSerializer(): QueryParamSerializer<number> {
+  return {
+    parse: (raw) => Number(Array.isArray(raw) ? raw[0] : raw),
+    stringify: (val) => val.toString(),
+  };
+}
+
+export function arraySerializer(): QueryParamSerializer<string[]> {
+  return {
+    parse: (raw) => (Array.isArray(raw) ? raw : raw ? [raw] : []),
+    stringify: (val) => val,
+  };
+}
+
 export const useUrlQueryParam = <T>(
-  key: string, 
-  defaultValue: T
+  key: string,
+  defaultValue: T,
+  serializer: QueryParamSerializer<T> = defaultSerializer(),
 ): [T, (val: T) => void] => {
   const router = useRouter();
   const [value, setValue] = useState<T>(() => {
@@ -21,7 +60,7 @@ export const useUrlQueryParam = <T>(
     if (initial === undefined) return defaultValue;
     // parse value if needed (e.g., numbers)
     try {
-      return JSON.parse(initial as string) as T;
+      return serializer.parse(initial as string) as T;
     } catch {
       return initial as unknown as T;
     }
@@ -35,7 +74,7 @@ export const useUrlQueryParam = <T>(
 
     if (urlValue !== undefined) {
       try {
-        parsedVal = JSON.parse(urlValue as string);
+        parsedVal = serializer.parse(urlValue as string);
       } catch {
         parsedVal = urlValue as unknown as T;
       }
@@ -49,19 +88,24 @@ export const useUrlQueryParam = <T>(
   }, [router.isReady, router.query[key]]);
 
   // Update URL when state changes
-  const updateValue = useCallback((val: T) => {
-    debugger
-    setValue(val);
-    if (!router.isReady) return;
-    const newQuery = { ...router.query };
+  const updateValue = useCallback(
+    (val: T) => {
+      setValue(val);
+      if (!router.isReady) return;
+      const newQuery = { ...router.query };
 
-    if (val === defaultValue || val === undefined || val === '') {
-      delete newQuery[key];
-    } else {
-      newQuery[key] = typeof val === 'string' ? val : JSON.stringify(val);
-    }
-    router.push({ pathname: router.pathname, query: newQuery }, undefined, { shallow: true });
-  }, [router, key, defaultValue]);
+      if (val === defaultValue || val === undefined || val === "") {
+        delete newQuery[key];
+      } else {
+        newQuery[key] = serializer.stringify(val);
+      }
+      router.push({ pathname: router.pathname, query: newQuery }, undefined, {
+        shallow: true,
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [router, key, defaultValue],
+  );
 
   return [value, updateValue];
-}
+};
