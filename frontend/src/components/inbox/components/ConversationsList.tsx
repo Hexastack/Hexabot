@@ -21,7 +21,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { EntityType, RouterType } from "@/services/types";
 import { normalizeDate } from "@/utils/date";
-import { extractQueryParamsUrl } from "@/utils/URL";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
@@ -75,10 +74,7 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                push({
-                  pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
-                  query: extractQueryParamsUrl(window.location.href),
-                });
+                push(`/${RouterType.INBOX}/subscribers/${subscriber.id}`);
               }}
               className="changeColor"
               key={subscriber.id}

@@ -7,8 +7,7 @@
  */
 
 import { debounce } from "@mui/material";
-import { useRouter } from "next/router";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import {
   TBuildInitialParamProps,
@@ -53,38 +52,13 @@ const buildNeqInitialParams = <T,>({
   );
 
 export const useSearch = <T,>(params: TParamItem<T>) => {
-  const router = useRouter();
-  const [searchText, setSearchText] = useState<string>(
-    (router.query.search as string) || "",
+  const [searchText, setSearchText] = useState<string>("");
+  const onSearch = debounce(
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string) => {
+      setSearchText(typeof e === "string" ? e : e.target.value);
+    },
+    300,
   );
-
-  useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
-    }
-  }, [router.query.search]);
-
-  const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
-        },
-        undefined,
-        { shallow: true },
-      );
-    }, 300),
-    [router],
-  );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
-
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
@@ -93,7 +67,6 @@ export const useSearch = <T,>(params: TParamItem<T>) => {
   } = params;
 
   return {
-    searchText,
     onSearch,
     searchPayload: {
       where: {

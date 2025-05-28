@@ -26,7 +26,7 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>({
+  const { onSearch, searchPayload } = useSearch<ISubscriber>({
     $or: ["first_name", "last_name"],
   });
   const [channels, setChannels] = useState<string[]>([]);
@@ -48,7 +48,6 @@ export const Inbox = () => {
             <Sidebar position="left">
               <Grid paddingX={1} paddingTop={1}>
                 <Search
-                  value={searchText}
                   onClearClick={() => onSearch("")}
                   className="changeColor"
                   onChange={(v) => onSearch(v)}
