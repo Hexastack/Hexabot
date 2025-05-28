@@ -131,8 +131,9 @@ export class BlockRepository extends BaseRepository<
     criteria: TFilterQuery<Block>,
     updates: UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const categoryId: string = updates.$set.category;
-    if (categoryId) {
+    // Only proceed if category is being updated
+    if (updates.$set?.category) {
+      const categoryId: string = updates.$set.category;
       const movedBlocks = await this.find(criteria);
 
       if (movedBlocks.length) {
