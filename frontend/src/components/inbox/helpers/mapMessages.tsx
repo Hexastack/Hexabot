@@ -65,18 +65,25 @@ export function isSubsequent(
  * @description Detects URLs in text and converts them to clickable links using Autolinker
  */
 function formatMessageText(text: string): ReactNode {
-  return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: Autolinker.link(text, {
-          className: "chat-link",
-          newWindow: true,
-          truncate: { length: 50, location: "middle" },
-          stripPrefix: false,
-        }),
-      }}
-    />
-  );
+  try {
+    const linkedText = Autolinker.link(text, {
+      className: "chat-link",
+      newWindow: true,
+      truncate: { length: 50, location: "middle" },
+      stripPrefix: false,
+      sanitizeHtml: true,
+    });
+
+    return (
+      <span
+        dangerouslySetInnerHTML={{
+          __html: linkedText,
+        }}
+      />
+    );
+  } catch (error) {
+    return <span>{text}</span>;
+  }
 }
 
 /**
