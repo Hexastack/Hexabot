@@ -1,10 +1,9 @@
-a.chatLink {
+.sc-message--text-content a.chatLink {
   text-decoration: underline;
   transition: color 0.2s ease;
 
   &:hover {
-    color: #004499 !important;
-    text-decoration: underline;
+    color: var(--launcher-color);
   }
 }
 p.sc-message--text-content {
