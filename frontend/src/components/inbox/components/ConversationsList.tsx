@@ -32,8 +32,8 @@ export const SubscribersList = (props: {
   searchPayload: any;
   assignedTo: AssignedTo;
 }) => {
-  const { query, push } = useRouter();
-  const subscriber = query.subscriber?.toString() || null;
+  const router = useRouter();
+  const subscriber = router.query.subscriber?.toString() || null;
   const { apiUrl } = useConfig();
   const { t, i18n } = useTranslate();
   const chat = useChat();
@@ -74,7 +74,17 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                push(`/${RouterType.INBOX}/subscribers/${subscriber.id}`);
+                router.push(
+                  {
+                    pathname: `/${RouterType.INBOX}/subscribers/[subscriber]`,
+                    query: {
+                      ...router.query,
+                      subscriber: subscriber.id,
+                    },
+                  },
+                  undefined,
+                  { shallow: true },
+                );
               }}
               className="changeColor"
               key={subscriber.id}
