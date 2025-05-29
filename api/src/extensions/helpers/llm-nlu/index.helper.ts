@@ -6,11 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  OnApplicationBootstrap,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Handlebars from 'handlebars';
 
@@ -28,7 +24,7 @@ import { LLM_NLU_HELPER_NAME } from './settings';
 @Injectable()
 export default class LlmNluHelper
   extends BaseNlpHelper<typeof LLM_NLU_HELPER_NAME>
-  implements OnModuleInit, OnApplicationBootstrap
+  implements OnApplicationBootstrap
 {
   private languageClassifierPrompt: string;
 
