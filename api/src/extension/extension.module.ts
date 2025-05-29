@@ -8,6 +8,7 @@
 
 import { Global, Module, OnApplicationBootstrap } from '@nestjs/common';
 
+import { AppInstance } from '@/app.instance';
 import { LoggerService } from '@/logger/logger.service';
 
 import { CleanupService } from './cleanup.service';
@@ -24,6 +25,9 @@ export class ExtensionModule implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
+    if (!AppInstance.isReady()) {
+      return;
+    }
     try {
       await this.cleanupService.pruneExtensionSettings();
     } catch (error) {

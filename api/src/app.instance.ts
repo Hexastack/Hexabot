@@ -9,7 +9,7 @@
 import { INestApplication } from '@nestjs/common';
 
 export class AppInstance {
-  private static app: INestApplication;
+  private static app: INestApplication | null = null;
 
   static setApp(app: INestApplication) {
     this.app = app;
@@ -20,5 +20,9 @@ export class AppInstance {
       throw new Error('App instance has not been set yet.');
     }
     return this.app;
+  }
+
+  static isReady(): boolean {
+    return this.app !== null;
   }
 }
