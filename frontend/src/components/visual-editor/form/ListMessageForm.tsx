@@ -120,9 +120,19 @@ const ListMessageForm = () => {
             }}
             {...register("options.content.limit", {
               validate: {
-                min: (value) =>
-                  (value && value >= 2 && value <= 4) ||
-                  t("message.invalid_list_limit"),
+                min: (value) => {
+                  if (
+                    displayMode === OutgoingMessageFormat.list &&
+                    (value < 2 || value > 4)
+                  ) {
+                    return t("message.invalid_list_limit");
+                  } else if (
+                    displayMode === OutgoingMessageFormat.carousel &&
+                    (value < 1 || value > 10)
+                  ) {
+                    return t("message.invalid_carousel_limit");
+                  }
+                },
               },
               valueAsNumber: true,
             })}

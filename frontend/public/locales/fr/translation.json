@@ -103,6 +103,7 @@
     "message_is_required": "Le message est requis",
     "context_var_is_required": "Vous devez ajouter une variable contextuelle",
     "invalid_list_limit": "La limite doit être >=2 et <= 4",
+    "invalid_carousel_limit": "La limite doit être >=1 et <= 10",
     "no_content_type": "Il n'y a aucun type de contenu pour le moment, veuillez en ajouter un.",
     "invalid_max_fallback_attempt_limit": "La limite des tentatives de secours doit être un nombre positif.",
     "regex_is_invalid": "Le regex est invalide",
