@@ -53,9 +53,8 @@ const migrateBlockOptionsContentLimit = async (services: MigrationServices) => {
   } catch (error) {
     services.logger.error(`Failed to update limit : ${error.message}`);
 
-    return false;
+    throw error instanceof Error ? error : new Error(error);
   }
-  return true;
 };
 
 const migrateBlockOptionsContentButtonsUrl = async (
@@ -75,9 +74,8 @@ const migrateBlockOptionsContentButtonsUrl = async (
   } catch (error) {
     services.logger.error(`Failed to update button url : ${error.message}`);
 
-    return false;
+    throw error instanceof Error ? error : new Error(error);
   }
-  return true;
 };
 
 const migrateBlockOptionsFallback = async (services: MigrationServices) => {
@@ -98,7 +96,7 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
     );
   } catch (error) {
     services.logger.error(`Failed to update max_attempts : ${error.message}`);
-    return false;
+    throw error instanceof Error ? error : new Error(error);
   }
 
   try {
@@ -114,9 +112,8 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
     services.logger.error(
       `Failed to update max_attempts, active : ${error.message}`,
     );
-    return false;
+    throw error instanceof Error ? error : new Error(error);
   }
-  return true;
 };
 
 module.exports = {
@@ -127,8 +124,9 @@ module.exports = {
       await migrateBlockOptionsFallback(services);
 
       return true;
-    } catch (err) {
-      return false;
+    } catch (error) {
+      services.logger.error(`Migration failed : ${error.message}`);
+      throw error instanceof Error ? error : new Error(error);
     }
   },
   async down(_services: MigrationServices) {
