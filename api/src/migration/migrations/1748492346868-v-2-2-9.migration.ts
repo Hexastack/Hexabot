@@ -29,131 +29,89 @@ const getAdminUser = async () => {
   return user!;
 };
 
-const migrateBlockOptionsContentLimit = async ({
-  logger,
-}: MigrationServices) => {
+const migrateBlockOptionsContentLimit = async (services: MigrationServices) => {
   const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
-
-  // Find blocks where "options.content.limit" exists and has string type
-  const cursor = BlockModel.find({
-    'options.content.limit': { $exists: true, $type: 'string' },
-  }).cursor();
-
-  const updateBlockOptionsContentLimit = async (
-    blockId: mongoose.Types.ObjectId,
-    limit: string | number,
-  ) => {
-    await BlockModel.updateOne(
-      { _id: blockId },
-      { $set: { 'options.content.limit': limit } },
-    );
-  };
-
-  const getBlockOptionsContentLimitDefaultValue = (block: Block): number => {
-    return block.options.content?.display === 'list' ? 1 : 2;
-  };
 
   const adminUser = await getAdminUser();
 
   if (!adminUser) {
-    logger.warn('Unable to process block, no admin user found');
+    services.logger.warn('Unable to process block, no admin user found');
     return;
   }
 
-  for await (const block of cursor) {
-    try {
-      if (block.options.content && 'limit' in block.options.content) {
-        const limitDefaultValue =
-          getBlockOptionsContentLimitDefaultValue(block);
-        const newLimitValue =
-          block.options.content.limit > 0
-            ? parseInt(block.options.content.limit.toString())
-            : limitDefaultValue;
-
-        await updateBlockOptionsContentLimit(block._id, newLimitValue);
-      } else {
-        throw new Error('Unable to process the block update');
-      }
-    } catch (error) {
-      logger.error(
-        `Failed to update limit ${block._id}: ${error.message}, defaulting limit to 2`,
-      );
-
-      try {
-        await updateBlockOptionsContentLimit(block._id, 2);
-      } catch (err) {
-        logger.error(
-          `Failed to update limit ${block._id}: ${error.message}, unable to default to 2`,
-        );
-      }
-    }
-  }
-};
-
-const migrateBlockOptionsContentButtonsUrl = async ({
-  logger,
-}: MigrationServices) => {
-  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
-
-  const cursor = BlockModel.find({
-    $or: [
-      { 'options.content.buttons.url': { $exists: false } },
-      { 'options.content.buttons.url': false },
-    ],
-  }).cursor();
-
-  for await (const block of cursor) {
-    try {
-      await BlockModel.updateOne(
-        { _id: block.id },
+  try {
+    await BlockModel.updateMany(
+      { 'options.content.limit': { $exists: true } },
+      [
         {
           $set: {
-            'options.content.buttons.$[].url': '',
+            'options.content.limit': { $toInt: '$options.content.limit' },
           },
         },
-      );
-    } catch (error) {
-      logger.error(
-        `Failed to update button url ${block._id}: ${error.message}`,
-      );
-    }
+      ],
+    );
+  } catch (error) {
+    services.logger.error(`Failed to update limit : ${error.message}`);
   }
 };
 
-const migrateBlockOptionsFallback = async ({ logger }: MigrationServices) => {
+const migrateBlockOptionsContentButtonsUrl = async (
+  services: MigrationServices,
+) => {
   const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
 
-  const cursor = BlockModel.find({
-    'options.fallback.max_attempts': { $exists: true },
-  }).cursor();
+  try {
+    await BlockModel.updateMany(
+      {
+        $or: [
+          { 'options.content.buttons.url': { $exists: false } },
+          { 'options.content.buttons.url': false },
+        ],
+      },
+      {
+        $set: {
+          'options.content.buttons.$[].url': '',
+        },
+      },
+    );
+  } catch (error) {
+    services.logger.error(`Failed to update button url : ${error.message}`);
+  }
+};
 
-  for await (const block of cursor) {
-    try {
-      if (block.options.fallback?.message.length === 0) {
-        await BlockModel.updateOne(
-          { _id: block.id },
-          {
-            $set: {
-              'options.fallback.max_attempts': 0,
-              'options.fallback.active': false,
+const migrateBlockOptionsFallback = async (services: MigrationServices) => {
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+
+  try {
+    await BlockModel.updateMany(
+      { 'options.fallback.max_attempts': { $exists: true } },
+      [
+        {
+          $set: {
+            'options.fallback.max_attempts': {
+              $toInt: '$options.fallback.max_attempts',
             },
           },
-        );
-      } else {
-        await BlockModel.updateOne(
-          { _id: block.id },
-          {
-            $set: {
-              'options.fallback.max_attempts': parseInt(
-                (block.options.fallback?.max_attempts || 0).toString(),
-              ),
-            },
-          },
-        );
-      }
-    } catch (error) {
-      logger.error(`Failed to update fallback ${error.message}`);
-    }
+        },
+      ],
+    );
+  } catch (error) {
+    services.logger.error(`Failed to update max_attempts : ${error.message}`);
+  }
+
+  try {
+    await BlockModel.updateMany({ 'options.fallback.message': { $size: 0 } }, [
+      {
+        $set: {
+          'options.fallback.max_attempts': 0,
+          'options.fallback.active': false,
+        },
+      },
+    ]);
+  } catch (error) {
+    services.logger.error(
+      `Failed to update max_attempts, active : ${error.message}`,
+    );
   }
 };
 
