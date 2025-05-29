@@ -64,6 +64,7 @@ export default class LlmNluHelper
     } catch (error) {
       this.logger.warn(
         'Settings for LLM NLU helper not found or invalid, language classifier prompt will not be built.',
+        error,
       );
     }
   }
@@ -86,13 +87,9 @@ export default class LlmNluHelper
     } catch (error) {
       this.logger.warn(
         'Settings for LLM NLU helper not found or invalid, trait classifier prompts will not be built.',
+        error,
       );
     }
-  }
-
-  async onModuleInit() {
-    super.onModuleInit();
-    // Add any additional initialization logic here if needed
   }
 
   async onApplicationBootstrap() {
