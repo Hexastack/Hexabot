@@ -35,7 +35,11 @@ export function booleanSerializer(): QueryParamSerializer<boolean> {
 
 export function numberSerializer(): QueryParamSerializer<number> {
   return {
-    parse: (raw) => Number(Array.isArray(raw) ? raw[0] : raw),
+    parse: (raw) => {
+      const value = Number(Array.isArray(raw) ? raw[0] : raw);
+
+      return isNaN(value) ? 0 : value;
+    },
     stringify: (val) => val.toString(),
   };
 }
@@ -60,7 +64,7 @@ export const useUrlQueryParam = <T>(
     if (initial === undefined) return defaultValue;
     // parse value if needed (e.g., numbers)
     try {
-      return serializer.parse(initial as string) as T;
+      return serializer.parse(initial) as T;
     } catch {
       return initial as unknown as T;
     }
@@ -74,7 +78,7 @@ export const useUrlQueryParam = <T>(
 
     if (urlValue !== undefined) {
       try {
-        parsedVal = serializer.parse(urlValue as string);
+        parsedVal = serializer.parse(urlValue);
       } catch {
         parsedVal = urlValue as unknown as T;
       }
