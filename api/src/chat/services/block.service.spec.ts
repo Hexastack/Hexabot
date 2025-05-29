@@ -47,6 +47,7 @@ import { NlpValueService } from '@/nlp/services/nlp-value.service';
 import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import {
   blockFixtures,
   installBlockFixtures,
@@ -196,6 +197,7 @@ describe('BlockService', () => {
             })),
             getSettings: jest.fn(() => ({
               contact: { company_name: 'Your company name' },
+              chatbot_settings: { default_nlu_penalty_factor: 0.95 },
             })),
           },
         },
@@ -467,9 +469,11 @@ describe('BlockService', () => {
         blockService,
         'calculateNluPatternMatchScore',
       );
+
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
 
       // Ensure calculateBlockScore was called at least once for each block
@@ -509,7 +513,11 @@ describe('BlockService', () => {
         blockService,
         'calculateNluPatternMatchScore',
       );
-      const bestBlock = blockService.matchBestNLP(blocks, nlp);
+      const bestBlock = blockService.matchBestNLP(
+        blocks,
+        nlp,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
+      );
 
       // Ensure calculateBlockScore was called at least once for each block
       expect(calculateBlockScoreSpy).toHaveBeenCalledTimes(3); // Called for each block
@@ -530,6 +538,7 @@ describe('BlockService', () => {
       const bestBlock = blockService.matchBestNLP(
         blocks,
         mockNlpGreetingNameEntities,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
 
       // Assert that undefined is returned when no blocks are available
@@ -542,6 +551,7 @@ describe('BlockService', () => {
       const matchingScore = blockService.calculateNluPatternMatchScore(
         mockNlpGreetingNamePatterns,
         mockNlpGreetingNameEntities,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
 
       expect(matchingScore).toBeGreaterThan(0);
@@ -551,14 +561,28 @@ describe('BlockService', () => {
       const scoreWithoutPenalty = blockService.calculateNluPatternMatchScore(
         mockNlpGreetingNamePatterns,
         mockNlpGreetingNameEntities,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
 
       const scoreWithPenalty = blockService.calculateNluPatternMatchScore(
         mockNlpGreetingAnyNamePatterns,
         mockNlpGreetingNameEntities,
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
       );
 
       expect(scoreWithoutPenalty).toBeGreaterThan(scoreWithPenalty);
+    });
+
+    it('should handle invalid case for penalty factor values', async () => {
+      // Test with invalid penalty (should use fallback)
+      const scoreWithInvalidPenalty =
+        blockService.calculateNluPatternMatchScore(
+          mockNlpGreetingAnyNamePatterns,
+          mockNlpGreetingNameEntities,
+          -1,
+        );
+
+      expect(scoreWithInvalidPenalty).toBeGreaterThan(0); // Should use fallback value
     });
   });
 

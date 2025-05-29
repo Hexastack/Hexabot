@@ -20,6 +20,7 @@ import { NlpService } from '@/nlp/services/nlp.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 
@@ -180,8 +181,23 @@ export class BlockService extends BaseService<
         const scoredEntities =
           await this.nlpService.computePredictionScore(nlp);
 
+        const settings = await this.settingService.getSettings();
+        let penaltyFactor =
+          settings.chatbot_settings?.default_nlu_penalty_factor;
+        if (!penaltyFactor) {
+          this.logger.warn(
+            'Using fallback NLU penalty factor value: %s',
+            FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
+          );
+          penaltyFactor = FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
+        }
+
         if (scoredEntities.entities.length > 0) {
-          block = this.matchBestNLP(filteredBlocks, scoredEntities);
+          block = this.matchBestNLP(
+            filteredBlocks,
+            scoredEntities,
+            penaltyFactor,
+          );
         }
       }
     }
@@ -351,6 +367,7 @@ export class BlockService extends BaseService<
   matchBestNLP<B extends BlockStub>(
     blocks: B[],
     scoredEntities: NLU.ScoredEntities,
+    penaltyFactor: number,
   ): B | undefined {
     const bestMatch = blocks.reduce(
       (bestMatch, block) => {
@@ -365,10 +382,10 @@ export class BlockService extends BaseService<
           const score = this.calculateNluPatternMatchScore(
             patterns,
             scoredEntities,
+            penaltyFactor,
           );
           return Math.max(maxScore, score);
         }, 0);
-
         return score > bestMatch.score ? { block, score } : bestMatch;
       },
       { block: undefined, score: 0 },
@@ -390,14 +407,13 @@ export class BlockService extends BaseService<
    *
    * @param patterns - A list of patterns to evaluate against the NLU prediction.
    * @param prediction - The scored entities resulting from NLU inference.
-   * @param [penaltyFactor=0.95] - Optional penalty factor to apply for generic matches (default is 0.95).
    *
    * @returns The total aggregated match score based on matched patterns and their computed scores.
    */
   calculateNluPatternMatchScore(
     patterns: NlpPattern[],
     prediction: NLU.ScoredEntities,
-    penaltyFactor = 0.95,
+    penaltyFactor: number,
   ): number {
     if (!patterns.length || !prediction.entities.length) {
       return 0;
