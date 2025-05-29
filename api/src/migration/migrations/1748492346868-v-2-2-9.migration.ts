@@ -64,12 +64,7 @@ const migrateBlockOptionsContentButtonsUrl = async (
 
   try {
     await BlockModel.updateMany(
-      {
-        $or: [
-          { 'options.content.buttons.url': { $exists: false } },
-          { 'options.content.buttons.url': false },
-        ],
-      },
+      { 'options.content.buttons.url': false },
       {
         $set: {
           'options.content.buttons.$[].url': '',
@@ -89,7 +84,7 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
 
   try {
     await BlockModel.updateMany(
-      { 'options.fallback.max_attempts': { $exists: true, type: 'string' } },
+      { 'options.fallback.max_attempts': { $exists: true, $type: 'string' } },
       [
         {
           $set: {
