@@ -30,13 +30,12 @@ const getAdminUser = async () => {
 };
 
 const migrateBlockOptionsContentLimit = async (services: MigrationServices) => {
-  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema).collection;
 
   const adminUser = await getAdminUser();
 
   if (!adminUser) {
     services.logger.warn('Unable to process block, no admin user found');
-    return;
   }
 
   try {
@@ -52,13 +51,16 @@ const migrateBlockOptionsContentLimit = async (services: MigrationServices) => {
     );
   } catch (error) {
     services.logger.error(`Failed to update limit : ${error.message}`);
+
+    return false;
   }
+  return true;
 };
 
 const migrateBlockOptionsContentButtonsUrl = async (
   services: MigrationServices,
 ) => {
-  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema).collection;
 
   try {
     await BlockModel.updateMany(
@@ -76,15 +78,18 @@ const migrateBlockOptionsContentButtonsUrl = async (
     );
   } catch (error) {
     services.logger.error(`Failed to update button url : ${error.message}`);
+
+    return false;
   }
+  return true;
 };
 
 const migrateBlockOptionsFallback = async (services: MigrationServices) => {
-  const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
+  const BlockModel = mongoose.model<Block>(Block.name, blockSchema).collection;
 
   try {
     await BlockModel.updateMany(
-      { 'options.fallback.max_attempts': { $exists: true } },
+      { 'options.fallback.max_attempts': { $exists: true, type: 'string' } },
       [
         {
           $set: {
@@ -97,6 +102,7 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
     );
   } catch (error) {
     services.logger.error(`Failed to update max_attempts : ${error.message}`);
+    return false;
   }
 
   try {
@@ -112,15 +118,18 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
     services.logger.error(
       `Failed to update max_attempts, active : ${error.message}`,
     );
+    return false;
   }
+  return true;
 };
 
 module.exports = {
   async up(services: MigrationServices) {
-    await migrateBlockOptionsContentLimit(services);
-    await migrateBlockOptionsContentButtonsUrl(services);
-    await migrateBlockOptionsFallback(services);
-    return true;
+    const migration1 = await migrateBlockOptionsContentLimit(services);
+    const migration2 = await migrateBlockOptionsContentButtonsUrl(services);
+    const migration3 = await migrateBlockOptionsFallback(services);
+
+    return migration1 && migration2 && migration3;
   },
   async down(_services: MigrationServices) {
     return true;
