@@ -113,14 +113,14 @@ const ListMessageForm = () => {
             label={t("label.content_limit")}
             type="number"
             inputProps={{
-              maxLength: 25,
-              step: "1",
-              min: 2,
-              max: 4,
+              maxLength: 2,
+              step: 1,
+              min: displayMode === OutgoingMessageFormat.list ? 2 : 1,
+              max: displayMode === OutgoingMessageFormat.list ? 4 : 10,
             }}
             {...register("options.content.limit", {
               validate: {
-                min: (value) => {
+                limitRange: (value) => {
                   if (
                     displayMode === OutgoingMessageFormat.list &&
                     (value < 2 || value > 4)
