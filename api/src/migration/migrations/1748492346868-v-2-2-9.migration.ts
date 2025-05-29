@@ -125,11 +125,15 @@ const migrateBlockOptionsFallback = async (services: MigrationServices) => {
 
 module.exports = {
   async up(services: MigrationServices) {
-    const migration1 = await migrateBlockOptionsContentLimit(services);
-    const migration2 = await migrateBlockOptionsContentButtonsUrl(services);
-    const migration3 = await migrateBlockOptionsFallback(services);
+    try {
+      await migrateBlockOptionsContentLimit(services);
+      await migrateBlockOptionsContentButtonsUrl(services);
+      await migrateBlockOptionsFallback(services);
 
-    return migration1 && migration2 && migration3;
+      return true;
+    } catch (err) {
+      return false;
+    }
   },
   async down(_services: MigrationServices) {
     return true;
