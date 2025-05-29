@@ -98,7 +98,11 @@ export const useUrlQueryParam = <T>(
       if (!router.isReady) return;
       const newQuery = { ...router.query };
 
-      if (val === defaultValue || val === undefined || val === "") {
+      if (
+        val === defaultValue ||
+        val === undefined ||
+        serializer.stringify(val) === ""
+      ) {
         delete newQuery[key];
       } else {
         newQuery[key] = serializer.stringify(val);
