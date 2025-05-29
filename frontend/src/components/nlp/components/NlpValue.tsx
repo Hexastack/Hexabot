@@ -51,10 +51,13 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const { onSearch, searchPayload } = useSearch<INlpValue>({
-    $eq: [{ entity: entityId }],
-    $or: ["doc", "value"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<INlpValue>(
+    {
+      $eq: [{ entity: entityId }],
+      $or: ["doc", "value"],
+    },
+    { syncUrl: true },
+  );
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {
@@ -228,7 +231,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                 sx={{ width: "max-content", gap: 1 }}
               >
                 <Grid item>
-                  <FilterTextfield onChange={onSearch} />
+                  <FilterTextfield
+                    onChange={onSearch}
+                    defaultValue={searchText}
+                  />
                 </Grid>
                 <ButtonGroup sx={{ marginLeft: "auto" }}>
                   {hasPermission(

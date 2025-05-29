@@ -53,9 +53,12 @@ export const Users = () => {
     },
   });
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<IUser>({
-    $or: ["first_name", "last_name", "email"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<IUser>(
+    {
+      $or: ["first_name", "last_name", "email"],
+    },
+    { syncUrl: true },
+  );
   const { data: roles } = useFind(
     {
       entity: EntityType.ROLE,
@@ -102,7 +105,7 @@ export const Users = () => {
       headerName: t("label.name"),
       sortable: false,
       disableColumnMenu: true,
-      valueGetter: (params, val) => `${val.first_name} ${val.last_name}`,
+      valueGetter: (_params, val) => `${val.first_name} ${val.last_name}`,
       headerAlign: "left",
       renderHeader,
     },
@@ -198,7 +201,7 @@ export const Users = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {!ssoEnabled &&
           hasPermission(EntityType.USER, PermissionAction.CREATE) ? (

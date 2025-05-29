@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import qs from "qs";
-
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
     return new URL(relativePath).toString();
@@ -38,13 +36,4 @@ export const isAbsoluteUrl = (value: string = ""): boolean => {
   } catch (error) {
     return false;
   }
-};
-
-// todo: in the future we might need to extract this logic into a hook
-export const extractQueryParamsUrl = (fullUrl: string): string => {
-  const extractedQueryParams = qs.parse(new URL(fullUrl).search, {
-    ignoreQueryPrefix: true,
-  });
-
-  return qs.stringify(extractedQueryParams);
 };

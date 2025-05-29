@@ -86,13 +86,16 @@ export default function NlpSample() {
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload } = useSearch<INlpSample>({
-    $eq: [
-      ...(type !== "all" ? [{ type }] : []),
-      ...(language ? [{ language }] : []),
-    ],
-    $iLike: ["text"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<INlpSample>(
+    {
+      $eq: [
+        ...(type !== "all" ? [{ type }] : []),
+        ...(language ? [{ language }] : []),
+      ],
+      $iLike: ["text"],
+    },
+    { syncUrl: true },
+  );
   const { mutate: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -317,6 +320,7 @@ export default function NlpSample() {
         >
           <FilterTextfield
             onChange={onSearch}
+            defaultValue={searchText}
             fullWidth={false}
             sx={{ minWidth: "256px" }}
           />

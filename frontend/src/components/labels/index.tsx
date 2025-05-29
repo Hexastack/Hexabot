@@ -42,9 +42,12 @@ export const Labels = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<ILabel>({
-    $or: ["name", "title"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ILabel>(
+    {
+      $or: ["name", "title"],
+    },
+    { syncUrl: true },
+  );
   const { dataGridProps } = useFind(
     { entity: EntityType.LABEL, format: Format.FULL },
     {
@@ -173,7 +176,7 @@ export const Labels = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.LABEL, PermissionAction.CREATE) ? (
             <Grid item>

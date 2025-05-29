@@ -6,12 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MainContainer, Search, Sidebar } from "@chatscope/chat-ui-kit-react";
+import { MainContainer, Sidebar } from "@chatscope/chat-ui-kit-react";
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import { Grid, MenuItem } from "@mui/material";
 import { useState } from "react";
 
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
 import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -26,9 +27,12 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>({
-    $or: ["first_name", "last_name"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>(
+    {
+      $or: ["first_name", "last_name"],
+    },
+    { syncUrl: true },
+  );
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
 
@@ -46,13 +50,10 @@ export const Inbox = () => {
         <Grid item width="100%" height="100%" overflow="hidden">
           <MainContainer style={{ height: "100%" }}>
             <Sidebar position="left">
-              <Grid paddingX={1} paddingTop={1}>
-                <Search
-                  value={searchText}
-                  onClearClick={() => onSearch("")}
-                  className="changeColor"
-                  onChange={(v) => onSearch(v)}
-                  placeholder="Search..."
+              <Grid paddingX={1} paddingTop={2} paddingBottom={1} mx={1}>
+                <FilterTextfield
+                  onChange={onSearch}
+                  defaultValue={searchText}
                 />
               </Grid>
               <Grid
