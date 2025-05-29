@@ -36,6 +36,7 @@ const migrateBlockOptionsContentLimit = async (services: MigrationServices) => {
 
   if (!adminUser) {
     services.logger.warn('Unable to process block, no admin user found');
+    return;
   }
 
   try {
