@@ -75,14 +75,14 @@ function formatMessageText(text: string): ReactNode {
     });
 
     return (
-      <span
+      <div
         dangerouslySetInnerHTML={{
           __html: linkedText,
         }}
       />
     );
   } catch (error) {
-    return <span>{text}</span>;
+    return <div>{text}</div>;
   }
 }
 
@@ -105,9 +105,9 @@ export function getMessageContent(
 
   if ("text" in message) {
     content.push(
-      <Message.TextContent key={messageEntity.id}>
+      <Message.CustomContent key={messageEntity.id}>
         {formatMessageText(message.text)}
-      </Message.TextContent>,
+      </Message.CustomContent>,
     );
   }
   let chips: { title: string }[] = [];
