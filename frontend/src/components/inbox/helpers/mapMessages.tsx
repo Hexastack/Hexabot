@@ -10,6 +10,7 @@ import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid } from "@mui/material";
+import Autolinker from "autolinker";
 import { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
@@ -61,6 +62,31 @@ export function isSubsequent(
 }
 
 /**
+ * @description Detects URLs in text and converts them to clickable links using Autolinker
+ */
+function formatMessageText(text: string): ReactNode {
+  try {
+    const linkedText = Autolinker.link(text, {
+      className: "chat-link",
+      newWindow: true,
+      truncate: { length: 50, location: "middle" },
+      stripPrefix: false,
+      sanitizeHtml: true,
+    });
+
+    return (
+      <div
+        dangerouslySetInnerHTML={{
+          __html: linkedText,
+        }}
+      />
+    );
+  } catch (error) {
+    return <div>{text}</div>;
+  }
+}
+
+/**
  * @description this function constructs the message children basen on message type
  */
 export function getMessageContent(
@@ -79,7 +105,9 @@ export function getMessageContent(
 
   if ("text" in message) {
     content.push(
-      <Message.TextContent key={messageEntity.id} text={message.text} />,
+      <Message.CustomContent key={messageEntity.id}>
+        {formatMessageText(message.text)}
+      </Message.CustomContent>,
     );
   }
   let chips: { title: string }[] = [];

@@ -105,3 +105,14 @@ div .cs-message-input__content-editor-container,
   padding: 15px 5px !important;
   box-shadow: 0px 4px 10px 10px rgba(0, 0, 0, 0.066);
 }
+
+/* Styles for autolinked chat messages */
+.chat-link {
+  color: inherit !important;
+  text-decoration: underline !important;
+  word-break: break-all !important;
+}
+
+.chat-link:hover {
+  opacity: 0.8;
+}
