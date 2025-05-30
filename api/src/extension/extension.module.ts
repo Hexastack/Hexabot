@@ -26,6 +26,7 @@ export class ExtensionModule implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     if (!AppInstance.isReady()) {
+      // bypass in test or CLI env
       return;
     }
 
