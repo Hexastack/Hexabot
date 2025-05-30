@@ -12,6 +12,7 @@ import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
+import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { UserModule } from '@/user/user.module';
 
@@ -34,6 +35,10 @@ import { AttachmentService } from './services/attachment.service';
 })
 export class AttachmentModule implements OnApplicationBootstrap {
   onApplicationBootstrap() {
+    if (!AppInstance.isReady()) {
+      return;
+    }
+
     // Ensure the directories exists
     if (!existsSync(config.parameters.uploadDir)) {
       mkdirSync(config.parameters.uploadDir, { recursive: true });

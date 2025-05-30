@@ -44,9 +44,12 @@ export const Translations = () => {
       hasCount: false,
     },
   );
-  const { onSearch, searchPayload } = useSearch<ITranslation>({
-    $iLike: ["str"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ITranslation>(
+    {
+      $iLike: ["str"],
+    },
+    { syncUrl: true },
+  );
   const { dataGridProps, refetch: refreshTranslations } = useFind(
     { entity: EntityType.TRANSLATION },
     {
@@ -152,7 +155,7 @@ export const Translations = () => {
           width="max-content"
         >
           <Grid item>
-            <FilterTextfield onChange={onSearch} />
+            <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           <Grid item>
             <Button

@@ -57,10 +57,13 @@ export const Contents = () => {
   const queryClient = useQueryClient();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload } = useSearch<IContent>({
-    $eq: [{ entity: String(query.id) }],
-    $iLike: ["title"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<IContent>(
+    {
+      $eq: [{ entity: String(query.id) }],
+      $iLike: ["title"],
+    },
+    { syncUrl: true },
+  );
   const hasPermission = useHasPermission();
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT, format: Format.FULL },
@@ -157,7 +160,7 @@ export const Contents = () => {
         >
           <Grid justifyContent="flex-end" gap={1} container alignItems="center">
             <Grid item>
-              <FilterTextfield onChange={onSearch} />
+              <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
             {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
               <ButtonGroup sx={{ marginLeft: "auto" }}>

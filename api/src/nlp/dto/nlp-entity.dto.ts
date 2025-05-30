@@ -63,6 +63,14 @@ export class NlpEntityCreateDto {
 }
 
 export class NlpEntityUpdateDto {
+  @ApiPropertyOptional({ description: 'Name of the nlp entity', type: String })
+  @Matches(/^[a-zA-Z0-9_]+$/, {
+    message: 'Only alphanumeric characters and underscores are allowed.',
+  })
+  @IsString()
+  @IsOptional()
+  name?: string;
+
   @ApiPropertyOptional({ type: String })
   @IsString()
   @IsOptional()

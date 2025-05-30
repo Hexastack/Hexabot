@@ -43,9 +43,12 @@ export const Categories = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload } = useSearch<ICategory>({
-    $iLike: ["label"],
-  });
+  const { onSearch, searchPayload, searchText } = useSearch<ICategory>(
+    {
+      $iLike: ["label"],
+    },
+    { syncUrl: true },
+  );
   const { dataGridProps } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -142,7 +145,7 @@ export const Categories = () => {
             width="max-content"
           >
             <Grid item>
-              <FilterTextfield onChange={onSearch} />
+              <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
             {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
               <Grid item>

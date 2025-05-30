@@ -1,5 +1,10 @@
-a.chatLink {
-  color: inherit !important;
+.sc-message--text-content a.chatLink {
+  text-decoration: underline;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--launcher-color);
+  }
 }
 p.sc-message--text-content {
   margin: 0 !important;

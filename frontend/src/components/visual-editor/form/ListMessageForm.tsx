@@ -47,7 +47,7 @@ const ListMessageForm = () => {
     formState: { errors },
   } = useFormContext();
   const contentTypeId = watch("options.content.entity");
-  const displayMode = watch("options.content.display_mode");
+  const displayMode = watch("options.content.display");
   const { data: contentType } = useGet(contentTypeId, {
     entity: EntityType.CONTENT_TYPE,
   });
@@ -61,10 +61,9 @@ const ListMessageForm = () => {
           <FormControl>
             <FormLabel>{t("label.display_mode")}</FormLabel>
             <Controller
-              rules={{ required: true }}
               control={control}
-              defaultValue={content?.display || "list"}
-              name="options.content.display_mode"
+              defaultValue={content?.display || OutgoingMessageFormat.list}
+              name="options.content.display"
               render={({ field }) => (
                 <RadioGroup row {...field}>
                   {[
@@ -75,10 +74,7 @@ const ListMessageForm = () => {
                       key={display}
                       value={display}
                       control={
-                        <Radio
-                          defaultChecked={display === content?.display}
-                          {...register("options.content.display")}
-                        />
+                        <Radio defaultChecked={display === content?.display} />
                       }
                       label={t(`label.${display}`)}
                     />
@@ -117,16 +113,26 @@ const ListMessageForm = () => {
             label={t("label.content_limit")}
             type="number"
             inputProps={{
-              maxLength: 25,
-              step: "1",
-              min: 2,
-              max: 4,
+              maxLength: 2,
+              step: 1,
+              min: displayMode === OutgoingMessageFormat.list ? 2 : 1,
+              max: displayMode === OutgoingMessageFormat.list ? 4 : 10,
             }}
             {...register("options.content.limit", {
               validate: {
-                min: (value) =>
-                  (value && value >= 2 && value <= 4) ||
-                  t("message.invalid_list_limit"),
+                limitRange: (value) => {
+                  if (
+                    displayMode === OutgoingMessageFormat.list &&
+                    (value < 2 || value > 4)
+                  ) {
+                    return t("message.invalid_list_limit");
+                  } else if (
+                    displayMode === OutgoingMessageFormat.carousel &&
+                    (value < 1 || value > 10)
+                  ) {
+                    return t("message.invalid_carousel_limit");
+                  }
+                },
               },
               valueAsNumber: true,
             })}
@@ -182,7 +188,7 @@ const ListMessageForm = () => {
             }}
             defaultValue={content?.fields?.title}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(
                 ({ type }) => ContentFieldType.TEXT === type,
               );
@@ -194,7 +200,6 @@ const ListMessageForm = () => {
                   labelKey="label"
                   label={t("label.title")}
                   multiple={false}
-                  {...(options.length && { value })}
                   {...rest}
                   onChange={(_e, selected) => onChange(selected?.name)}
                   error={!!errors?.options?.["content"]?.fields?.title}
@@ -212,7 +217,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.subtitle}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(
                 ({ type }) =>
                   ContentFieldType.TEXT === type ||
@@ -227,7 +232,6 @@ const ListMessageForm = () => {
                   label={t("label.subtitle")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );
@@ -240,7 +244,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.image_url}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(({ type }) =>
                 [ContentFieldType.FILE].includes(type),
               );
@@ -253,7 +257,6 @@ const ListMessageForm = () => {
                   label={t("label.image_url")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );
@@ -266,7 +269,7 @@ const ListMessageForm = () => {
             control={control}
             defaultValue={content?.fields?.url}
             render={({ field }) => {
-              const { onChange, value, ...rest } = field;
+              const { onChange, ...rest } = field;
               const options = (contentType?.fields || []).filter(({ type }) =>
                 [ContentFieldType.URL].includes(type),
               );
@@ -279,7 +282,6 @@ const ListMessageForm = () => {
                   label={t("label.url")}
                   multiple={false}
                   onChange={(_e, selected) => onChange(selected?.name)}
-                  {...(options.length && { value })}
                   {...rest}
                 />
               );

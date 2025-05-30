@@ -103,6 +103,7 @@
     "message_is_required": "Message is required",
     "context_var_is_required": "You need to add a context variable",
     "invalid_list_limit": "List limit must be >=2 and <= 4",
+    "invalid_carousel_limit": "List limit must be >=1 and <= 10",
     "no_content_type": "No content type available, please create one first",
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
     "regex_is_invalid": "Regex is invalid",
@@ -123,7 +124,7 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a strictly positive number" 
+    "weight_positive_number_error": "Weight must be a strictly positive number"
   },
   "menu": {
     "terms": "Terms of Use",
@@ -490,7 +491,9 @@
     "original_text": "Original Text",
     "inputs": "Inputs",
     "outputs": "Outputs",
-    "any": "- Any -"
+    "any": "- Any -",
+    "full_name": "First and last name",
+    "password": "Password"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -498,7 +501,6 @@
     "your_password": "Your password",
     "username": "Username",
     "email": "E-mail address",
-    "full_name": "First and last name",
     "password": "Password",
     "password2": "Confirm your password",
     "timezone": "Timezone",
@@ -527,7 +529,9 @@
     "end_date": "End Date",
     "nlp_value": "Value",
     "type_message_here": "Type message here ....",
-    "mark_as_default": "By Default"
+    "mark_as_default": "By Default",
+    "pattern": "Pattern",
+    "full_name": "First and last name"
   },
   "button": {
     "login": "Sign In",

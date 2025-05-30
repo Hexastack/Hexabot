@@ -555,13 +555,15 @@ export abstract class BaseRepository<
   }
 
   async deleteOne(criteria: string | TFilterQuery<T>): Promise<DeleteResult> {
+    const filter = typeof criteria === 'string' ? { _id: criteria } : criteria;
+
     return await this.model
-      .deleteOne(typeof criteria === 'string' ? { _id: criteria } : criteria)
+      .deleteOne({ ...filter, builtin: { $ne: true } })
       .exec();
   }
 
   async deleteMany(criteria: TFilterQuery<T>): Promise<DeleteResult> {
-    return await this.model.deleteMany(criteria);
+    return await this.model.deleteMany({ ...criteria, builtin: { $ne: true } });
   }
 
   async preCreateValidate(

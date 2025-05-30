@@ -65,7 +65,7 @@ export const ResetPassword = () => {
             </Typography>
             <PasswordInput
               autoFocus
-              label={t("placeholder.password")}
+              label={t("label.password")}
               error={!!errors.password}
               required
               InputProps={{

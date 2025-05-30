@@ -6,15 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
-import { useRouter } from "next/router";
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import {
   TBuildInitialParamProps,
   TBuildParamProps,
   TParamItem,
 } from "@/types/search.types";
+
+import { useUrlQueryParam } from "./useUrlQueryParam";
 
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
@@ -52,49 +52,39 @@ const buildNeqInitialParams = <T,>({
     {},
   );
 
-export const useSearch = <T,>(params: TParamItem<T>) => {
-  const router = useRouter();
-  const [searchText, setSearchText] = useState<string>(
-    (router.query.search as string) || "",
-  );
+interface SearchHookOptions {
+  syncUrl?: boolean;
+}
 
-  useEffect(() => {
-    if (router.query.search !== searchText) {
-      setSearchText((router.query.search as string) || "");
-    }
-  }, [router.query.search]);
-
-  const updateQueryParams = useCallback(
-    debounce(async (newSearchText: string) => {
-      await router.replace(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, search: newSearchText || undefined },
-        },
-        undefined,
-        { shallow: true },
-      );
-    }, 300),
-    [router],
-  );
-  const onSearch = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
-  ) => {
-    const newSearchText = typeof e === "string" ? e : e.target.value;
-
-    setSearchText(newSearchText);
-    updateQueryParams(newSearchText);
-  };
+export const useSearch = <T,>(
+  params: TParamItem<T>,
+  options: SearchHookOptions = { syncUrl: false },
+) => {
+  const { syncUrl } = options;
+  const [searchQuery, setSearchQuery] = useUrlQueryParam("search", "");
+  const [search, setSearch] = useState<string>("");
   const {
     $eq: eqInitialParams,
     $iLike: iLikeParams,
     $neq: neqInitialParams,
     $or: orParams,
   } = params;
+  const searchText = syncUrl ? searchQuery : search;
 
   return {
     searchText,
-    onSearch,
+    onSearch: (
+      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
+    ) => {
+      const newValue =
+        typeof e === "object" ? e.target.value.toString() : e.toString();
+
+      if (syncUrl) {
+        setSearchQuery(newValue);
+      } else {
+        setSearch(newValue);
+      }
+    },
     searchPayload: {
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),

@@ -62,6 +62,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@socket.io/redis-adapter": "^8.3.0",
     "@tekuconcept/nestjs-csrf": "^1.1.0",
+    "async-mutex": "^0.5.0",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^5.3.2",
     "cache-manager-redis-yet": "^4.1.2",

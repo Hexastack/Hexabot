@@ -198,7 +198,7 @@ export const Register = () => {
             </ContentItem>
             <ContentItem>
               <PasswordInput
-                label={t("label.auth_pass")}
+                label={t("label.password")}
                 error={!!errors.password}
                 required
                 {...register("password")}
