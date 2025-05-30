@@ -32,8 +32,8 @@ import AutoCompleteSelect from "@/app-components/inputs/AutoCompleteSelect";
 import Selectable from "@/app-components/inputs/Selectable";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
-import { useForm } from "@/hooks/useForm";
 import { useNlp } from "@/hooks/useNlp";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
@@ -86,7 +86,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     [allKeywordEntities, allTraitEntities, JSON.stringify(sample)],
   );
   const { handleSubmit, control, register, reset, setValue, watch } =
-    useForm<INlpSampleFormAttributes>({
+    useStrictForm<INlpSampleFormAttributes>({
       defaultValues,
     });
   const currentText = watch("text");

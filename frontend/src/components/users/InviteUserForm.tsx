@@ -13,7 +13,7 @@ import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useSendInvitation } from "@/hooks/entities/invitation-hooks";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -45,7 +45,7 @@ export const InviteUserForm: FC<ComponentFormProps<undefined>> = ({
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<IInvitationAttributes>({
+  } = useStrictForm<IInvitationAttributes>({
     defaultValues: DEFAULT_VALUES,
     rules: {
       email: {

@@ -12,7 +12,7 @@ import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -43,7 +43,7 @@ export const RoleForm: FC<ComponentFormProps<IRole>> = ({
     reset,
     register,
     formState: { errors },
-  } = useForm<IRoleAttributes>({
+  } = useStrictForm<IRoleAttributes>({
     defaultValues: { name: "" },
     rules: {
       name: {

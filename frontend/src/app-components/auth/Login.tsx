@@ -16,7 +16,7 @@ import { useEffect } from "react";
 
 import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
 import { useAuth } from "@/hooks/useAuth";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ILoginAttributes } from "@/types/auth/login.types";
@@ -61,7 +61,7 @@ export const Login = () => {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm<ILoginAttributes>({
+  } = useStrictForm<ILoginAttributes>({
     defaultValues: DEFAULT_VALUES,
     rules: {
       identifier: {

@@ -23,7 +23,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IRegisterAttributes } from "@/types/auth/register.types";
@@ -68,7 +68,7 @@ export const Register = () => {
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<TRegisterExtendedPayload>({
+  } = useStrictForm<TRegisterExtendedPayload>({
     defaultValues: DEFAULT_VALUES,
     rules: {
       first_name: {

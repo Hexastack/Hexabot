@@ -17,7 +17,7 @@ import { Input } from "@/app-components/inputs/Input";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -81,7 +81,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     message: block?.message || [""],
     capture_vars: block?.capture_vars || [],
   } as IBlockAttributes;
-  const methods = useForm<IBlockAttributes>({
+  const methods = useStrictForm<IBlockAttributes>({
     defaultValues: DEFAULT_VALUES,
     rules: {
       name: {

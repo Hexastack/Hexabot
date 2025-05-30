@@ -10,7 +10,7 @@ import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -25,7 +25,7 @@ export const ResetPasswordRequest = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ email: string }>({
+  } = useStrictForm<{ email: string }>({
     defaultValues: { email: "" },
     rules: {
       email: {

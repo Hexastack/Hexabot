@@ -22,7 +22,7 @@ import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IProfileAttributes, IUser } from "@/types/user.types";
@@ -51,7 +51,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     formState: { errors },
     register,
     setValue,
-  } = useForm<IProfileAttributes>({
+  } = useStrictForm<IProfileAttributes>({
     defaultValues: {
       first_name: user.first_name,
       last_name: user.last_name,

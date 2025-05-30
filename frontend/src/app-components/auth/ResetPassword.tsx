@@ -12,7 +12,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { useResetPassword } from "@/hooks/entities/reset-hooks";
-import { useForm } from "@/hooks/useForm";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -28,7 +28,7 @@ export const ResetPassword = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ password: string; password2: string }>({
+  } = useStrictForm<{ password: string; password2: string }>({
     defaultValues: { password: "", password2: "" },
     rules: {
       password: {

@@ -9,8 +9,7 @@
 import { FieldValues } from "react-hook-form";
 
 import { useTranslate } from "@/hooks/useTranslate";
-
-import { TRegisterOption } from "./useForm";
+import { TRegisterOption } from "@/types/react-hook-form.types";
 
 export const useValidationRules = () => {
   const { t } = useTranslate();
