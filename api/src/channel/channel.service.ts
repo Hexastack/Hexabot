@@ -126,7 +126,7 @@ export class ChannelService {
   ) {
     this.logger.log('Channel notification (Web Socket) : ', req.method);
     const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
-    return await Promise.resolve(handler.handle(req, res));
+    return await handler.handle(req, res);
   }
 
   /**
@@ -195,6 +195,6 @@ export class ChannelService {
     }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
-    return await Promise.resolve(handler.handle(req, res));
+    return await handler.handle(req, res);
   }
 }
