@@ -8,12 +8,13 @@
 
 import { Button, Grid, Link } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -47,7 +48,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
     control,
     formState: { errors },
     handleSubmit,
-  } = useForm<ISubscriberAttributes>();
+  } = useStrictForm<ISubscriberAttributes>();
   const onSubmitForm = (params: ISubscriberAttributes) => {
     if (subscriber?.id) {
       updateSubscriber({ id: subscriber.id, params });
