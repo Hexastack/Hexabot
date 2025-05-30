@@ -10,6 +10,7 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Handlebars from 'handlebars';
 
+import { AppInstance } from '@/app.instance';
 import { HelperService } from '@/helper/helper.service';
 import BaseNlpHelper from '@/helper/lib/base-nlp-helper';
 import { HelperType, LLM, NLU } from '@/helper/types';
@@ -89,6 +90,11 @@ export default class LlmNluHelper
   }
 
   async onApplicationBootstrap() {
+    if (!AppInstance.isReady()) {
+      // bypass in Test / CLI env
+      return;
+    }
+
     try {
       this.logger.log('Initializing LLM NLU helper, building prompts...');
       // Build prompts for language and trait classifiers
