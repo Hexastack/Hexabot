@@ -28,6 +28,7 @@ export class ExtensionModule implements OnApplicationBootstrap {
     if (!AppInstance.isReady()) {
       return;
     }
+
     try {
       await this.cleanupService.pruneExtensionSettings();
     } catch (error) {

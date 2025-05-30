@@ -38,6 +38,7 @@ export class AttachmentModule implements OnApplicationBootstrap {
     if (!AppInstance.isReady()) {
       return;
     }
+
     // Ensure the directories exists
     if (!existsSync(config.parameters.uploadDir)) {
       mkdirSync(config.parameters.uploadDir, { recursive: true });
