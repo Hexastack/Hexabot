@@ -120,13 +120,13 @@ export class ChannelService {
    */
   @SocketGet(`/webhook/${WEB_CHANNEL_NAME}/`)
   @SocketPost(`/webhook/${WEB_CHANNEL_NAME}/`)
-  handleWebsocketForWebChannel(
+  async handleWebsocketForWebChannel(
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
     this.logger.log('Channel notification (Web Socket) : ', req.method);
     const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
-    return handler.handle(req, res);
+    return await Promise.resolve(handler.handle(req, res));
   }
 
   /**
@@ -195,6 +195,6 @@ export class ChannelService {
     }
 
     const handler = this.getChannelHandler(CONSOLE_CHANNEL_NAME);
-    return handler.handle(req, res);
+    return await Promise.resolve(handler.handle(req, res));
   }
 }
