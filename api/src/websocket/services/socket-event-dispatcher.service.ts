@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { ModulesContainer } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { Mutex } from 'async-mutex';
+import { Socket } from 'socket.io';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
 import { SocketRequest } from '../utils/socket-request';
@@ -39,12 +41,21 @@ export class SocketEventDispatcherService implements OnModuleInit {
     private readonly modulesContainer: ModulesContainer,
   ) {}
 
+  @OnEvent('hook:websocket:connection')
+  handleConnection(client: Socket) {
+    client.data.mutex = new Mutex();
+  }
+
   async handleEvent(
     socketMethod: SocketMethod,
     path: string,
     req: SocketRequest,
     res: SocketResponse,
   ) {
+    // Prevent racing conditions from the same socket
+    const socketData = req.socket.data;
+    const release = await socketData.mutex.acquire();
+
     try {
       const handlers = this.routeHandlers[socketMethod];
       const foundHandler = Array.from(handlers.entries()).find(([key, _]) => {
@@ -62,6 +73,8 @@ export class SocketEventDispatcherService implements OnModuleInit {
       return await handler(req, res);
     } catch (error) {
       return this.handleException(error, res);
+    } finally {
+      release();
     }
   }
 
