@@ -20,7 +20,7 @@
     "*.{ts,tsx}": "eslint --fix -c \".eslintrc-staged.json\""
   },
   "dependencies": {
-    "autolinker": "^4.0.0",
+    "autolinker": "^4.1.5",
     "dayjs": "^1.11.12",
     "emoji-js": "^3.8.0",
     "normalize.css": "^8.0.1",
@@ -47,7 +47,7 @@
     "vite-plugin-dts": "^4.0.2"
   },
   "optionalDependencies": {
-    "@rollup/rollup-darwin-arm64": "^4.24.0",
-    "@esbuild/darwin-arm64": "^0.24.0"
+    "@esbuild/darwin-arm64": "^0.24.0",
+    "@rollup/rollup-darwin-arm64": "^4.24.0"
   }
 }
