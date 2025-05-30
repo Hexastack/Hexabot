@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import stringify from "fast-json-stable-stringify";
 import { io, ManagerOptions, Socket, SocketOptions } from "socket.io-client";
 
 import { IOIncomingMessage, IOOutgoingMessage } from "./types/io-message";
@@ -133,7 +134,7 @@ export class SocketIoClient {
       return response;
     }
     throw new Error(
-      `Request failed with status code ${response.statusCode}: ${JSON.stringify(
+      `Request failed with status code ${response.statusCode}: ${stringify(
         response.body,
       )}`,
     );
