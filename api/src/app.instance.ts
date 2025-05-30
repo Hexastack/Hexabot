@@ -23,10 +23,10 @@ export class AppInstance {
   }
 
   /**
- * Checks whether the application context is initialized.
- * This may return `false` in environments where the app instance is not set,
- * such as when running in test env or CLI mode without a full application bootstrap.
- */
+   * Checks whether the application context is initialized.
+   * This may return `false` in environments where the app instance is not set,
+   * such as when running in test env or CLI mode without a full application bootstrap.
+   */
   static isReady(): boolean {
     return this.app !== null;
   }
