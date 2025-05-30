@@ -91,6 +91,7 @@ export default class LlmNluHelper
 
   async onApplicationBootstrap() {
     if (!AppInstance.isReady()) {
+      // bypass in Test / CLI env
       return;
     }
 
