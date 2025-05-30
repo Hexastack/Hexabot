@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import Handlebars from 'handlebars';
 
@@ -24,7 +24,7 @@ import { LLM_NLU_HELPER_NAME } from './settings';
 @Injectable()
 export default class LlmNluHelper
   extends BaseNlpHelper<typeof LLM_NLU_HELPER_NAME>
-  implements OnModuleInit
+  implements OnApplicationBootstrap
 {
   private languageClassifierPrompt: string;
 
@@ -50,13 +50,18 @@ export default class LlmNluHelper
   @OnEvent('hook:language:*')
   @OnEvent('hook:llm_nlu_helper:language_classifier_prompt_template')
   async buildLanguageClassifierPrompt() {
-    const settings = await this.getSettings();
-    if (settings) {
+    try {
+      const settings = await this.getSettings();
       const languages = await this.languageService.findAll();
       const delegate = Handlebars.compile(
         settings.language_classifier_prompt_template,
       );
       this.languageClassifierPrompt = delegate({ languages });
+    } catch (error) {
+      this.logger.warn(
+        'Settings for LLM NLU helper not found or invalid, language classifier prompt will not be built.',
+        error,
+      );
     }
   }
 
@@ -64,8 +69,8 @@ export default class LlmNluHelper
   @OnEvent('hook:nlpValue:*')
   @OnEvent('hook:llm_nlu_helper:trait_classifier_prompt_template')
   async buildClassifiersPrompt() {
-    const settings = await this.getSettings();
-    if (settings) {
+    try {
+      const settings = await this.getSettings();
       const traitEntities = await this.nlpEntityService.findAndPopulate({
         lookups: 'trait',
       });
@@ -75,14 +80,25 @@ export default class LlmNluHelper
           entity,
         }),
       }));
+    } catch (error) {
+      this.logger.warn(
+        'Settings for LLM NLU helper not found or invalid, trait classifier prompts will not be built.',
+        error,
+      );
     }
   }
 
-  async onModuleInit() {
-    super.onModuleInit();
-
-    await this.buildLanguageClassifierPrompt();
-    await this.buildClassifiersPrompt();
+  async onApplicationBootstrap() {
+    try {
+      this.logger.log('Initializing LLM NLU helper, building prompts...');
+      // Build prompts for language and trait classifiers
+      // This is done on application bootstrap to ensure that the settings are loaded
+      // and the prompts are built before any requests are made to the helper.
+      await this.buildLanguageClassifierPrompt();
+      await this.buildClassifiersPrompt();
+    } catch (error) {
+      this.logger.error('Unable to initialize LLM NLU helper', error);
+    }
   }
 
   async predict(text: string): Promise<NLU.ParseEntities> {
