@@ -31,7 +31,12 @@ async function bootstrap() {
     process.exit(1);
   } else if (command === 'migration') {
     const migrationCommand = appContext.get(MigrationCommand);
-    await migrationCommand.run(restArgs);
+    try {
+      await migrationCommand.run(restArgs);
+    } catch (error) {
+      logger.error(`Migration command failed: ${error.message}`);
+      process.exit(1);
+    }
   }
   await appContext.close();
 }
