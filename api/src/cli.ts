@@ -27,7 +27,11 @@ async function bootstrap() {
   const logger = await appContext.resolve(LoggerService);
 
   if (!ALLOWED_COMMANDS.includes(command)) {
-    logger.error(`unknown command '${command}'`);
+    if (!command) {
+      logger.error('No command provided.');
+    } else {
+      logger.error(`Unknown command '${command}'`);
+    }
     process.exit(1);
   } else if (command === 'migration') {
     const migrationCommand = appContext.get(MigrationCommand);
