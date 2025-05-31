@@ -44,7 +44,9 @@ export const SubscribersList = (props: {
   }, 400);
 
   useEffect(() => {
-    chat.setSubscriberId(subscriber);
+    if (chat) {
+      chat.setSubscriberId(subscriber);
+    }
   }, [subscriber]);
 
   return (
