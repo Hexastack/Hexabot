@@ -129,6 +129,8 @@ export type SettingByType<T extends SettingType> = T extends SettingType.text
 
 export type AnySetting =
   | TextSetting
+  | TextareaSetting
+  | SecretSetting
   | MultiTextSetting
   | CheckboxSetting
   | SelectSetting
