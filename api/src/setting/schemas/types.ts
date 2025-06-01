@@ -29,17 +29,6 @@ export enum FieldType {
   html = 'html',
 }
 
-/**
- * The following interfaces are declared, and currently not used
- * TextSetting
- * MultiTextSetting
- * CheckboxSetting
- * SelectSetting
- * NumberSetting
- * AttachmentSetting
- * MultipleAttachmentSetting
- * AnySetting
- **/
 export interface TextSetting extends Setting {
   type: SettingType.text;
   value: string;
