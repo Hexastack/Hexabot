@@ -20,7 +20,7 @@ div .cs-message--outgoing .cs-message__content {
   background-color: var(--cs-message-outgoing-color) !important;
 }
 
-div .cs-message--outgoing .cs-message__text-content {
+div .cs-message--outgoing .cs-message__custom-content {
   color: var(--cs-message-outgoing-text-color) !important;
 }
 
