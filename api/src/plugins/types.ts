@@ -10,7 +10,7 @@ import { ChannelEvent } from '@/channel/lib/EventWrapper';
 import { BlockCreateDto } from '@/chat/dto/block.dto';
 import { Block } from '@/chat/schemas/block.schema';
 import { Conversation } from '@/chat/schemas/conversation.schema';
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
+import { AnySetting, StrictSetting } from '@/setting/schemas/types';
 
 export type PluginName = `${string}-plugin`;
 
@@ -23,7 +23,7 @@ export interface CustomBlocks {}
 
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
-export type PluginSetting = Omit<SettingCreateDto, 'weight'>;
+export type PluginSetting = StrictSetting<AnySetting>;
 
 export type PluginBlockTemplate = Omit<
   BlockAttrs,
