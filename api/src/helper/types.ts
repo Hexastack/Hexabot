@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { SettingCreateDto } from '@/setting/dto/setting.dto';
+import { AnySetting, StrictSetting } from '@/setting/schemas/types';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 import BaseHelper from './lib/base-helper';
@@ -116,9 +116,9 @@ export type HelperRegistry<H extends BaseHelper = BaseHelper> = Map<
   Map<string, H>
 >;
 
-export type HelperSetting<N extends HelperName = HelperName> = Omit<
-  SettingCreateDto,
-  'group' | 'weight'
-> & {
-  group: HyphenToUnderscore<N>;
-};
+export type HelperSetting<N extends HelperName = HelperName> = StrictSetting<
+  AnySetting,
+  {
+    group: HyphenToUnderscore<N>;
+  }
+>;
