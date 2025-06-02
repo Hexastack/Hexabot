@@ -68,7 +68,7 @@ export class BlockService extends BaseService<
    *
    * This function ensures that only blocks that are either:
    * - Not restricted to specific trigger channels (`trigger_channels` is undefined or empty), or
-   * - Explicitly allow the given channel (or the console channel)
+   * - Explicitly allow the given channel
    *
    * are included in the returned array.
    *
