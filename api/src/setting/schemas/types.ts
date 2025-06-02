@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { BaseSchema } from '@/utils/generics/base-schema';
+
 import { Setting } from './setting.schema';
 
 export enum SettingType {
@@ -128,3 +130,17 @@ export type AnySetting =
   | MultipleAttachmentSetting;
 
 export type SettingDict = { [group: string]: Setting[] };
+
+export type StrictSetting<
+  U,
+  E extends object = object,
+  K extends keyof BaseSchema = keyof BaseSchema,
+> = U extends any
+  ? {
+      [P in keyof U as P extends K
+        ? never
+        : U[P] extends never
+          ? never
+          : P]: U[P];
+    } & E
+  : never;
