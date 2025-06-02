@@ -22,6 +22,7 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
+import stringify from "fast-json-stable-stringify";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useQuery } from "react-query";
@@ -82,7 +83,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
       ) as INlpDatasetKeywordEntity[],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allKeywordEntities, allTraitEntities, JSON.stringify(sample)],
+    [allKeywordEntities, allTraitEntities, stringify(sample)],
   );
   const { handleSubmit, control, register, reset, setValue, watch } =
     useForm<INlpSampleFormAttributes>({
@@ -167,7 +168,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
   useEffect(() => {
     reset(defaultValues);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(defaultValues)]);
+  }, [stringify(defaultValues)]);
 
   return (
     <Box className="nlp-train" sx={{ position: "relative", p: 2 }}>
@@ -322,9 +323,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-          {
-            /* Keyword entities */
-          }
+          {/* Keyword entities */}
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem
