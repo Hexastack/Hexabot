@@ -12,7 +12,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import { ContentService } from '@/cms/services/content.service';
-import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { NLU } from '@/helper/types';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
@@ -86,7 +85,7 @@ export class BlockService extends BaseService<
       return (
         !b.trigger_channels ||
         b.trigger_channels.length === 0 ||
-        [...b.trigger_channels, CONSOLE_CHANNEL_NAME].includes(channel)
+        b.trigger_channels.includes(channel)
       );
     });
   }
