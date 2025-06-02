@@ -47,7 +47,7 @@ export const SubscribersList = (props: {
     if (chat) {
       chat.setSubscriberId(subscriber);
     }
-  }, [chat, subscriber]);
+  }, [subscriber]);
 
   return (
     <>

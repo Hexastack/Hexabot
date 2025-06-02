@@ -49,7 +49,7 @@ export const Inbox = () => {
       >
         <Grid item width="100%" height="100%" overflow="hidden">
           <MainContainer style={{ height: "100%" }}>
-            <Sidebar position="left">
+            <Sidebar position="left" style={{ flexBasis: "100%" }}>
               <Grid paddingX={1} paddingTop={2} paddingBottom={1} mx={1}>
                 <FilterTextfield
                   onChange={onSearch}
