@@ -131,9 +131,9 @@ export type AnySetting =
 
 export type SettingDict = { [group: string]: Setting[] };
 
-export type StrictSetting<
-  U,
+export type ExtensionSetting<
   E extends object = object,
+  U extends AnySetting = AnySetting,
   K extends keyof BaseSchema = keyof BaseSchema,
 > = U extends any
   ? {
