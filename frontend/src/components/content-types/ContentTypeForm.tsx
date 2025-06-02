@@ -130,6 +130,8 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               gap={2}
             >
               <FieldInput
+                defaultLabel={contentType?.fields?.[index]?.label}
+                defaultName={contentType?.fields?.[index]?.name}
                 setValue={setValue}
                 control={control}
                 remove={remove}

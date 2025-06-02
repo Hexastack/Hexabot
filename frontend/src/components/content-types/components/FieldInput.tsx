@@ -26,6 +26,8 @@ import { slugify } from "@/utils/string";
 export const FieldInput = ({
   setValue,
   index,
+  defaultLabel,
+  defaultName,
   ...props
 }: {
   index: number;
@@ -33,6 +35,8 @@ export const FieldInput = ({
   remove: UseFieldArrayRemove;
   control: Control<Partial<IContentType>>;
   setValue: UseFormSetValue<Partial<IContentType>>;
+  defaultLabel?: string;
+  defaultName?: string;
 }) => {
   const { t } = useTranslate();
   const label = useWatch({
@@ -41,7 +45,11 @@ export const FieldInput = ({
   });
 
   useEffect(() => {
-    setValue(`fields.${index}.name`, label ? slugify(label) : "");
+    if (defaultLabel && defaultName !== slugify(defaultLabel)) {
+      defaultName && setValue(`fields.${index}.name`, defaultName);
+    } else {
+      setValue(`fields.${index}.name`, label ? slugify(label) : "");
+    }
   }, [label, setValue, index]);
 
   return (
