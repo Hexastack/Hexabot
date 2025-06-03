@@ -24,7 +24,6 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
 
   useEffect(() => {
     autoLink();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
 
   const autoLink = () => {
