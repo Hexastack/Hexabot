@@ -28,7 +28,7 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
   }, [message]);
 
   const autoLink = () => {
-    if (message.direction === Direction.received && messageTextRef.current) {
+    if (messageTextRef.current) {
       const text = messageTextRef.current.innerText;
 
       messageTextRef.current.innerHTML = Autolinker.link(text, {
