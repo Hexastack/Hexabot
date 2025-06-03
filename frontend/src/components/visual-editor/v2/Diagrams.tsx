@@ -291,30 +291,34 @@ const Diagrams = () => {
           entity.getSourcePort().getOptions()?.label ===
           BlockPorts.nextBlocksOutPort
         ) {
-          const nextBlocks = [
-            ...(previousData?.nextBlocks || []),
-            ...(targetId ? [targetId] : []),
-          ];
+          // Only add the link if targetId exists, skip if targetId is null
+          if (!targetId) {
+            return;
+          }
+          // Only add the link if targetId doesn't already exist in nextBlocks
+          if (!previousData?.nextBlocks?.includes(targetId)) {
+            const nextBlocks = [...(previousData?.nextBlocks || []), targetId];
 
-          updateBlock(
-            {
-              id: sourceId,
-              params: {
-                nextBlocks,
+            updateBlock(
+              {
+                id: sourceId,
+                params: {
+                  nextBlocks,
+                },
               },
-            },
-            {
-              onSuccess(data) {
-                if (data.id)
-                  updateCachedBlock({
-                    id: targetId,
-                    payload: {
-                      previousBlocks: [data.id as any],
-                    },
-                  });
+              {
+                onSuccess(data) {
+                  if (data.id)
+                    updateCachedBlock({
+                      id: targetId,
+                      payload: {
+                        previousBlocks: [data.id as any],
+                      },
+                    });
+                },
               },
-            },
-          );
+            );
+          }
         } else if (
           // @ts-expect-error undefined attr
           entity.getSourcePort().getOptions().label ===
