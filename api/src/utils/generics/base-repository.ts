@@ -94,14 +94,14 @@ export abstract class BaseRepository<
   constructor(
     readonly model: Model<T>,
     private readonly cls: new () => T,
-    protected readonly populate: P[] = [],
+    protected readonly populatePaths: P[] = [],
     protected readonly clsPopulate?: new () => TFull,
   ) {
     this.registerLifeCycleHooks();
   }
 
   canPopulate(populate: string[]): boolean {
-    return populate.some((p) => this.populate.includes(p as P));
+    return populate.some((p) => this.populatePaths.includes(p as P));
   }
 
   getEventName(suffix: EHook) {
@@ -303,7 +303,7 @@ export abstract class BaseRepository<
   ): Promise<TFull | null> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
-      this.populate,
+      this.populatePaths,
     );
     return await this.executeOne(query, this.clsPopulate!);
   }
@@ -375,7 +375,7 @@ export abstract class BaseRepository<
   }
 
   private ensureCanPopulate(): void {
-    if (!this.populate || !this.clsPopulate) {
+    if (!this.populatePaths || !this.clsPopulate) {
       throw new Error('Cannot populate query');
     }
   }
@@ -403,13 +403,13 @@ export abstract class BaseRepository<
     this.ensureCanPopulate();
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filters, pageQuery, projection).populate(
-        this.populate,
+        this.populatePaths,
       );
       return await this.execute(query, this.clsPopulate!);
     }
 
     const query = this.findQuery(filters, pageQuery, projection).populate(
-      this.populate,
+      this.populatePaths,
     );
     return await this.execute(query, this.clsPopulate!);
   }
@@ -426,7 +426,7 @@ export abstract class BaseRepository<
 
   async findAllAndPopulate(sort?: QuerySortDto<T>): Promise<TFull[]> {
     this.ensureCanPopulate();
-    const query = this.findAllQuery(sort).populate(this.populate);
+    const query = this.findAllQuery(sort).populate(this.populatePaths);
     return await this.execute(query, this.clsPopulate!);
   }
 
@@ -463,7 +463,7 @@ export abstract class BaseRepository<
   ): Promise<TFull[]> {
     this.ensureCanPopulate();
     const query = this.findPageQuery(filters, pageQuery).populate(
-      this.populate,
+      this.populatePaths,
     );
     return await this.execute(query, this.clsPopulate!);
   }

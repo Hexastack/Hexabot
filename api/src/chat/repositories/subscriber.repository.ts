@@ -139,7 +139,7 @@ export class SubscriberRepository extends BaseRepository<
    * @returns The found subscriber entity with populated fields.
    */
   async findOneByForeignIdAndPopulate(id: string): Promise<SubscriberFull> {
-    const query = this.findByForeignIdQuery(id).populate(this.populate);
+    const query = this.findByForeignIdQuery(id).populate(this.populatePaths);
     const [result] = await this.execute(query, SubscriberFull);
     return result;
   }
