@@ -30,8 +30,7 @@ export const isRegexString = (str: any) => {
  * Ensures value is wrapped in slashes: /value/
  */
 export const formatWithSlashes = (value: string): string => {
-  if (!value) return "/";
-  if (typeof value !== "string") return "/";
+  if (!value || typeof value !== "string") return "/";
   if (!value.startsWith("/")) value = "/" + value;
   if (!value.endsWith("/")) value = value + "/";
 
@@ -42,8 +41,12 @@ export const formatWithSlashes = (value: string): string => {
  * Extracts the inner regex from /.../
  */
 export const extractRegexBody = (value: string | undefined): string => {
-  if (typeof value !== "string") return "";
-  if (value && value.startsWith("/") && value.endsWith("/")) {
+  if (
+    value &&
+    typeof value === "string" &&
+    value.startsWith("/") &&
+    value.endsWith("/")
+  ) {
     return value.slice(1, -1);
   }
 
