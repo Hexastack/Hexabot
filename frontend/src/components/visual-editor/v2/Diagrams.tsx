@@ -264,6 +264,19 @@ const Diagrams = () => {
           return;
         }
 
+        const sourceId = entity.getSourcePort().getParent().getOptions()
+          .id as string;
+        const targetId = entity.getTargetPort().getParent().getOptions()
+          .id as string;
+        const previousData = getBlockFromCache(sourceId!);
+
+        // Only add the link if targetId doesn't already exist in nextBlocks
+        if (previousData?.nextBlocks?.includes(targetId)) {
+          model.removeLink(link);
+
+          return;
+        }
+
         link.setLocked(true);
         link.registerListener({
           selectionChanged(event: any) {
@@ -280,12 +293,6 @@ const Diagrams = () => {
           }
         });
 
-        const sourceId = entity.getSourcePort().getParent().getOptions()
-          .id as string;
-        const targetId = entity.getTargetPort().getParent().getOptions()
-          .id as string;
-        const previousData = getBlockFromCache(sourceId!);
-
         if (
           // @ts-expect-error undefined attr
           entity.getSourcePort().getOptions()?.label ===
@@ -295,30 +302,30 @@ const Diagrams = () => {
           if (!targetId) {
             return;
           }
-          // Only add the link if targetId doesn't already exist in nextBlocks
-          if (!previousData?.nextBlocks?.includes(targetId)) {
-            const nextBlocks = [...(previousData?.nextBlocks || []), targetId];
+          const nextBlocks = [
+            ...(previousData?.nextBlocks || []),
+            ...(targetId ? [targetId] : []),
+          ];
 
-            updateBlock(
-              {
-                id: sourceId,
-                params: {
-                  nextBlocks,
-                },
+          updateBlock(
+            {
+              id: sourceId,
+              params: {
+                nextBlocks,
               },
-              {
-                onSuccess(data) {
-                  if (data.id)
-                    updateCachedBlock({
-                      id: targetId,
-                      payload: {
-                        previousBlocks: [data.id as any],
-                      },
-                    });
-                },
+            },
+            {
+              onSuccess(data) {
+                if (data.id)
+                  updateCachedBlock({
+                    id: targetId,
+                    payload: {
+                      previousBlocks: [data.id as any],
+                    },
+                  });
               },
-            );
-          }
+            },
+          );
         } else if (
           // @ts-expect-error undefined attr
           entity.getSourcePort().getOptions().label ===
