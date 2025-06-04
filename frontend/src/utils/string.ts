@@ -30,7 +30,7 @@ export const isRegexString = (str: any) => {
  * Ensures value is wrapped in slashes: /value/
  */
 export const formatWithSlashes = (value: string): string => {
-  if (!value || typeof value !== "string") return "/";
+  if (!value || typeof value !== "string") return "//";
   if (!value.startsWith("/")) value = "/" + value;
   if (!value.endsWith("/")) value = value + "/";
 
