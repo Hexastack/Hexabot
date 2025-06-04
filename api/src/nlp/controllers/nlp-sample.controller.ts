@@ -36,7 +36,6 @@ import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -181,7 +180,6 @@ export class NlpSampleController extends BaseController<
    *
    * @returns The count of samples that match the filters.
    */
-  @Roles('public')
   @Get('count')
   async filterCount(
     @Query(
@@ -291,7 +289,6 @@ export class NlpSampleController extends BaseController<
    * @returns A paginated list of NLP samples.
    */
   @Get()
-  @Roles('public')
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpSample>,
     @Query(PopulatePipe) populate: string[],
