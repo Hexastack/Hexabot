@@ -19,6 +19,7 @@ import {
   FlattenMaps,
   HydratedDocument,
   Model,
+  PipelineStage,
   ProjectionType,
   Query,
   SortOrder,
@@ -31,6 +32,7 @@ import { LoggerService } from '@/logger/logger.service';
 import {
   TFilterQuery,
   TFlattenOption,
+  THydratedDocument,
   TQueryOptions,
 } from '@/utils/types/filter.types';
 
@@ -81,9 +83,13 @@ export abstract class BaseRepository<
   U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
-  private readonly transformOpts = { excludePrefixes: ['_', 'password'] };
+  protected readonly transformOpts = { excludePrefixes: ['_', 'password'] };
 
-  private readonly leanOpts = { virtuals: true, defaults: true, getters: true };
+  protected readonly leanOpts = {
+    virtuals: true,
+    defaults: true,
+    getters: true,
+  };
 
   @Inject(EventEmitter2)
   readonly eventEmitter: EventEmitter2;
@@ -642,5 +648,40 @@ export abstract class BaseRepository<
     _result: DeleteResult,
   ): Promise<void> {
     // Nothing ...
+  }
+
+  buildPaginationPipelineStages<T>(page?: PageQueryDto<T>): PipelineStage[] {
+    if (!page) return [];
+
+    const stages: PipelineStage[] = [];
+
+    if (page.sort) {
+      const [field, dir] = page.sort;
+      stages.push({
+        $sort: {
+          [field]:
+            typeof dir === 'number'
+              ? dir
+              : ['asc', 'ascending'].includes(dir as string)
+                ? 1
+                : -1,
+        } as Record<string, 1 | -1>,
+      });
+    }
+
+    if (page.skip) stages.push({ $skip: page.skip });
+    if (page.limit) stages.push({ $limit: page.limit });
+
+    return stages;
+  }
+
+  async populate(docs: THydratedDocument<T>[]) {
+    return await this.model.populate(
+      docs,
+      this.populatePaths.map((path) => ({
+        path,
+        options: { lean: true },
+      })),
+    );
   }
 }

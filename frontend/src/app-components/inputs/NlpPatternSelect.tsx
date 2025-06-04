@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -17,7 +17,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
+import Autocomplete, { AutocompleteProps } from "@mui/material/Autocomplete";
 import { forwardRef, SyntheticEvent, useRef } from "react";
 
 import { Input } from "@/app-components/inputs/Input";
@@ -30,13 +30,24 @@ import { NlpPattern } from "@/types/block.types";
 import { INlpEntity } from "@/types/nlp-entity.types";
 import { INlpValue } from "@/types/nlp-value.types";
 
-type NlpPatternSelectProps = {
+interface NlpPatternSelectProps
+  extends Omit<
+    AutocompleteProps<INlpEntity, true, true, false>,
+    | "onChange"
+    | "value"
+    | "options"
+    | "multiple"
+    | "disabled"
+    | "renderTags"
+    | "renderOptions"
+    | "renderInput"
+  > {
   patterns: NlpPattern[];
   onChange: (patterns: NlpPattern[]) => void;
-};
+}
 
 const NlpPatternSelect = (
-  { patterns, onChange }: NlpPatternSelectProps,
+  { patterns, onChange, ...props }: NlpPatternSelectProps,
   ref,
 ) => {
   const inputRef = useRef(null);
@@ -116,8 +127,8 @@ const NlpPatternSelect = (
   return (
     <Autocomplete
       ref={ref}
+      {...props}
       size="medium"
-      fullWidth={true}
       disabled={options.length === 0}
       value={defaultValue}
       multiple={true}

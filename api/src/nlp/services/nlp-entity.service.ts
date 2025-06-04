@@ -10,7 +10,9 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { Types } from 'mongoose';
 
+import { NlpPattern } from '@/chat/schemas/types/pattern';
 import { NLP_MAP_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseService } from '@/utils/generics/base-service';
@@ -70,6 +72,19 @@ export class NlpEntityService extends BaseService<
     }
 
     return await this.repository.updateOne(id, { weight: updatedWeight });
+  }
+
+  async findObjectIdsByPatterns(patterns: NlpPattern[]) {
+    // resolve pattern → ids (kept here because it uses other services)
+    return (
+      await this.find({
+        name: {
+          $in: patterns
+            .filter((p) => p.match === 'entity')
+            .map((p) => p.entity),
+        },
+      })
+    ).map((e) => new Types.ObjectId(e.id));
   }
 
   /**

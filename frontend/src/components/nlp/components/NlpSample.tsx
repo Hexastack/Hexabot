@@ -32,6 +32,7 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
+import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import {
   ActionColumnLabel,
   getActionsColumn,
@@ -51,6 +52,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import { NlpPattern } from "@/types/block.types";
 import { ILanguage } from "@/types/language.types";
 import {
   INlpDatasetSample,
@@ -79,6 +81,7 @@ export default function NlpSample() {
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
+  const [patterns, setPatterns] = useState<NlpPattern[]>([]);
   const hasPermission = useHasPermission();
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
@@ -86,11 +89,14 @@ export default function NlpSample() {
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload, searchText } = useSearch<INlpSample>(
+  const { onSearch, searchPayload, searchText } = useSearch<
+    INlpSample & { patterns: NlpPattern[] }
+  >(
     {
       $eq: [
         ...(type !== "all" ? [{ type }] : []),
         ...(language ? [{ language }] : []),
+        ...(patterns ? [{ patterns }] : []),
       ],
       $iLike: ["text"],
     },
@@ -424,6 +430,22 @@ export default function NlpSample() {
               {t("button.delete")}
             </Button>
           </ButtonGroup>
+        </Grid>
+        <Grid
+          container
+          display="flex"
+          flexDirection="row"
+          gap={2}
+          direction="row"
+          mt={2}
+        >
+          <NlpPatternSelect
+            patterns={patterns}
+            onChange={(patterns: NlpPattern[]) => {
+              setPatterns(patterns);
+            }}
+            fullWidth={true}
+          />
         </Grid>
       </Grid>
 

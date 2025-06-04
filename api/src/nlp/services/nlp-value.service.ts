@@ -7,7 +7,9 @@
  */
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Types } from 'mongoose';
 
+import { NlpPattern } from '@/chat/schemas/types/pattern';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -40,6 +42,19 @@ export class NlpValueService extends BaseService<
     private readonly nlpEntityService: NlpEntityService,
   ) {
     super(repository);
+  }
+
+  async findObjectIdsByPatterns(patterns: NlpPattern[]) {
+    // resolve pattern → ids (kept here because it uses other services)
+    return (
+      await this.find({
+        value: {
+          $in: patterns
+            .map((p) => (p.match === 'value' ? p.value : null))
+            .filter(Boolean),
+        },
+      })
+    ).map((v) => new Types.ObjectId(v.id));
   }
 
   /**

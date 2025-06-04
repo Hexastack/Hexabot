@@ -12,14 +12,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Document, Query } from 'mongoose';
+import { Document, ProjectionType, Query } from 'mongoose';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
+import { NlpPattern } from '@/chat/schemas/types/pattern';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
 
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
@@ -35,6 +37,7 @@ import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
+import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
 export class NlpSampleService extends BaseService<
@@ -47,6 +50,7 @@ export class NlpSampleService extends BaseService<
     readonly repository: NlpSampleRepository,
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
+    private readonly nlpValueService: NlpValueService,
     private readonly languageService: LanguageService,
   ) {
     super(repository);
@@ -277,6 +281,66 @@ export class NlpSampleService extends BaseService<
         );
       });
     }
+  }
+
+  async findByPatterns(
+    {
+      filters,
+      patterns,
+    }: {
+      filters: TFilterQuery<NlpSample>;
+      patterns: NlpPattern[];
+    },
+    page?: PageQueryDto<NlpSample>,
+    projection?: ProjectionType<NlpSample>,
+  ): Promise<NlpSample[]> {
+    return await this.repository.findByEntities(
+      {
+        filters,
+        entityIds:
+          await this.nlpEntityService.findObjectIdsByPatterns(patterns),
+        valueIds: await this.nlpValueService.findObjectIdsByPatterns(patterns),
+      },
+      page,
+      projection,
+    );
+  }
+
+  async findByPatternsAndPopulate(
+    {
+      filters,
+      patterns,
+    }: {
+      filters: TFilterQuery<NlpSample>;
+      patterns: NlpPattern[];
+    },
+    page?: PageQueryDto<NlpSample>,
+    projection?: ProjectionType<NlpSample>,
+  ): Promise<NlpSampleFull[]> {
+    return await this.repository.findByEntitiesAndPopulate(
+      {
+        filters,
+        entityIds:
+          await this.nlpEntityService.findObjectIdsByPatterns(patterns),
+        valueIds: await this.nlpValueService.findObjectIdsByPatterns(patterns),
+      },
+      page,
+      projection,
+    );
+  }
+
+  async countByPatterns({
+    filters,
+    patterns,
+  }: {
+    filters: TFilterQuery<NlpSample>;
+    patterns: NlpPattern[];
+  }): Promise<{ count: number }> {
+    return await this.repository.countByEntities({
+      filters,
+      entityIds: await this.nlpEntityService.findObjectIdsByPatterns(patterns),
+      valueIds: await this.nlpValueService.findObjectIdsByPatterns(patterns),
+    });
   }
 
   @OnEvent('hook:message:preCreate')

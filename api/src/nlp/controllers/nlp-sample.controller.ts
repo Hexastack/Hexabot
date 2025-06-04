@@ -29,17 +29,21 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
+import { z } from 'zod';
 
+import { NlpPattern, nlpPatternSchema } from '@/chat/schemas/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
+import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { ZodQueryParamPipe } from '@/utils/pipes/zod.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
@@ -177,6 +181,7 @@ export class NlpSampleController extends BaseController<
    *
    * @returns The count of samples that match the filters.
    */
+  @Roles('public')
   @Get('count')
   async filterCount(
     @Query(
@@ -184,8 +189,18 @@ export class NlpSampleController extends BaseController<
         allowedFields: ['text', 'type', 'language'],
       }),
     )
-    filters?: TFilterQuery<NlpSample>,
+    filters: TFilterQuery<NlpSample> = {},
+    @Query(
+      new ZodQueryParamPipe(
+        z.array(nlpPatternSchema),
+        (q) => q?.where?.patterns,
+      ),
+    )
+    patterns: NlpPattern[] = [],
   ) {
+    if (patterns.length) {
+      return await this.nlpSampleService.countByPatterns({ filters, patterns });
+    }
     return await this.count(filters);
   }
 
@@ -276,6 +291,7 @@ export class NlpSampleController extends BaseController<
    * @returns A paginated list of NLP samples.
    */
   @Get()
+  @Roles('public')
   async findPage(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<NlpSample>,
     @Query(PopulatePipe) populate: string[],
@@ -285,7 +301,25 @@ export class NlpSampleController extends BaseController<
       }),
     )
     filters: TFilterQuery<NlpSample>,
+    @Query(
+      new ZodQueryParamPipe(
+        z.array(nlpPatternSchema),
+        (q) => q?.where?.patterns,
+      ),
+    )
+    patterns: NlpPattern[] = [],
   ) {
+    if (patterns.length) {
+      return this.canPopulate(populate)
+        ? await this.nlpSampleService.findByPatternsAndPopulate(
+            { filters, patterns },
+            pageQuery,
+          )
+        : await this.nlpSampleService.findByPatterns(
+            { filters, patterns },
+            pageQuery,
+          );
+    }
     return this.canPopulate(populate)
       ? await this.nlpSampleService.findAndPopulate(filters, pageQuery)
       : await this.nlpSampleService.find(filters, pageQuery);
