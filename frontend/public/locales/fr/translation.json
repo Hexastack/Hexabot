@@ -118,6 +118,7 @@
     "logout_failed": "Une erreur s'est produite lors de la déconnexion",
     "duplicate_labels_not_allowed": "Les étiquettes en double ne sont pas autorisées",
     "duplicate_block_error": "Une erreur est survenue lors de la duplication du bloc",
+    "move_block_error": "Une erreur est survenue. Impossible de déplacer le bloc",
     "image_error": "Image introuvable",
     "file_error": "Fichier introuvable",
     "audio_error": "Audio introuvable",
