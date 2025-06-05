@@ -18,13 +18,17 @@ import {
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
-import { ContentFieldType, IContentType } from "@/types/content-type.types";
+import {
+  ContentField,
+  ContentFieldType,
+  IContentType,
+} from "@/types/content-type.types";
 import { slugify } from "@/utils/string";
 
 export const FieldInput = ({
   setValue,
   index,
-  uuid,
+  contentTypeField,
   ...props
 }: {
   index: number;
@@ -32,7 +36,7 @@ export const FieldInput = ({
   remove: UseFieldArrayRemove;
   control: Control<IContentType>;
   setValue: UseFormSetValue<IContentType>;
-  uuid?: string;
+  contentTypeField?: ContentField;
 }) => {
   const { t } = useTranslate();
 
@@ -61,14 +65,8 @@ export const FieldInput = ({
             helperText={fieldState.error?.message}
             onChange={(e) => {
               const currentValue = e.target.value;
-              const { label, name } =
-                props.control._defaultValues.fields?.find(
-                  (field) => field?.uuid === uuid,
-                ) || {};
 
-              if (label && name !== slugify(label)) {
-                name && setValue(`fields.${index}.name`, name);
-              } else {
+              if (!contentTypeField?.label || !contentTypeField?.name) {
                 setValue(
                   `fields.${index}.name`,
                   currentValue ? slugify(currentValue) : "",

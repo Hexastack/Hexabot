@@ -131,9 +131,14 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               gap={2}
             >
               <FieldInput
-                {...{ index, remove, control, setValue }}
-                uuid={f.uuid}
+                index={index}
+                remove={remove}
+                control={control}
+                setValue={setValue}
                 disabled={READ_ONLY_FIELDS.includes(f.label as any)}
+                contentTypeField={contentType?.fields?.find(
+                  ({ uuid }) => uuid === f.uuid,
+                )}
               />
             </ContentItem>
           ))}
