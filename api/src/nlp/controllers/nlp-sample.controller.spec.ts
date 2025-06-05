@@ -10,6 +10,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -437,6 +438,32 @@ describe('NlpSampleController', () => {
       await expect(
         nlpSampleController.deleteMany(nonExistentIds),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('filterCount', () => {
+    it('should count the nlp samples without patterns', async () => {
+      const filters = { text: 'Hello' };
+      const result = await nlpSampleController.filterCount(filters, []);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should count the nlp samples with patterns', async () => {
+      const filters = { text: 'Hello' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should return zero count when no samples match the filters and patterns', async () => {
+      const filters = { text: 'Nonexistent' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(result).toEqual({ count: 0 });
     });
   });
 });

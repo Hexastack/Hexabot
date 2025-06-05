@@ -44,10 +44,11 @@ interface NlpPatternSelectProps
   > {
   patterns: NlpPattern[];
   onChange: (patterns: NlpPattern[]) => void;
+  noneLabel?: string;
 }
 
 const NlpPatternSelect = (
-  { patterns, onChange, ...props }: NlpPatternSelectProps,
+  { patterns, onChange, noneLabel = "", ...props }: NlpPatternSelectProps,
   ref,
 ) => {
   const inputRef = useRef(null);
@@ -91,23 +92,29 @@ const NlpPatternSelect = (
     valueId: string,
   ): void => {
     const newSelection = patterns.slice(0);
-    const update = newSelection.find(({ entity: e }) => e === name);
+    const idx = newSelection.findIndex(({ entity: e }) => e === name);
 
-    if (!update) {
+    if (idx === -1) {
       throw new Error("Unable to find nlp entity");
     }
 
     if (valueId === id) {
-      update.match = "entity";
-      update.value = name;
+      newSelection[idx] = {
+        entity: newSelection[idx].entity,
+        match: "entity",
+      };
     } else {
       const value = getNlpValueFromCache(valueId);
 
       if (!value) {
         throw new Error("Unable to find nlp value in cache");
       }
-      update.match = "value";
-      update.value = value.value;
+
+      newSelection[idx] = {
+        entity: newSelection[idx].entity,
+        match: "value",
+        value: value.value,
+      };
     }
 
     onChange(newSelection);
@@ -119,10 +126,11 @@ const NlpPatternSelect = (
     );
   }
 
-  const defaultValue =
-    options.filter(({ name }) =>
-      patterns.find(({ entity: entityName }) => entityName === name),
-    ) || {};
+  const defaultValue = patterns
+    .map(({ entity: entityName }) =>
+      options.find(({ name }) => entityName === name),
+    )
+    .filter(Boolean) as INlpEntity[];
 
   return (
     <Autocomplete
@@ -183,9 +191,9 @@ const NlpPatternSelect = (
               const nlpValues = values.map((vId) =>
                 getNlpValueFromCache(vId),
               ) as INlpValue[];
-              const selectedValue = patterns.find(
-                (e) => e.entity === name,
-              )?.value;
+              const currentPattern = patterns.find((e) => e.entity === name);
+              const selectedValue =
+                currentPattern?.match === "value" ? currentPattern.value : null;
               const { id: selectedId = id } =
                 nlpValues.find(({ value }) => value === selectedValue) || {};
 
@@ -204,7 +212,7 @@ const NlpPatternSelect = (
                     }
 
                     if (option === id) {
-                      return t("label.any");
+                      return `- ${noneLabel || t("label.any")} -`;
                     }
 
                     return option;

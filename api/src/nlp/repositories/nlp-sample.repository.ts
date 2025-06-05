@@ -32,6 +32,7 @@ import {
   NlpSampleFull,
   NlpSamplePopulate,
 } from '../schemas/nlp-sample.schema';
+import { NlpValue } from '../schemas/nlp-value.schema';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 
@@ -51,69 +52,127 @@ export class NlpSampleRepository extends BaseRepository<
     super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
   }
 
+  /**
+   * Build the aggregation stages that restrict a *nlpSampleEntities* collection
+   * to links which:
+   * 1. Reference all of the supplied `values`, and
+   * 2. Whose document satisfies the optional `filters`.
+   *
+   * @param criterias               Object with:
+   * @param criterias.filters       Extra filters to be applied on *nlpsamples*.
+   * @param criterias.entities      Entity documents whose IDs should match `entity`.
+   * @param criterias.values        Value documents whose IDs should match `value`.
+   * @returns Array of aggregation `PipelineStage`s ready to be concatenated
+   *          into a larger pipeline.
+   */
   buildFindByEntitiesStages({
     filters,
-    entityIds,
-    valueIds,
+    values,
   }: {
     filters: TFilterQuery<NlpSample>;
-    entityIds: Types.ObjectId[];
-    valueIds: Types.ObjectId[];
+    values: NlpValue[];
   }): PipelineStage[] {
+    const requiredPairs = values.map(({ id, entity }) => ({
+      entity: new Types.ObjectId(entity),
+      value: new Types.ObjectId(id),
+    }));
+
     return [
-      // pick link docs whose entity / value matches a pattern
+      // Apply sample-side filters early
       {
         $match: {
-          ...(entityIds.length && { entity: { $in: entityIds } }),
-          ...(valueIds.length && { value: { $in: valueIds } }),
+          ...(filters?.$and
+            ? {
+                $and: filters.$and?.map((condition) => {
+                  if ('language' in condition && condition.language) {
+                    return {
+                      language: new Types.ObjectId(
+                        condition.language as string,
+                      ),
+                    };
+                  }
+                  return condition;
+                }),
+              }
+            : {}),
         },
       },
 
-      // join to the real sample *and* apply sample-side filters early
+      // Fetch the entities for each sample
       {
         $lookup: {
-          from: 'nlpsamples',
-          let: { sampleId: '$sample' },
+          from: 'nlpsampleentities',
+          localField: '_id', // nlpsamples._id
+          foreignField: 'sample', // nlpsampleentities.sample
+          as: 'sampleentities',
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ['$_id', '$$sampleId'] },
-                ...(filters?.$and
-                  ? {
-                      $and: filters.$and?.map((condition) => {
-                        if ('language' in condition && condition.language) {
-                          return {
-                            language: new Types.ObjectId(condition.language),
-                          };
-                        }
-                        return condition;
-                      }),
-                    }
-                  : {}),
+                $or: requiredPairs,
               },
             },
           ],
-          as: 'sample',
         },
       },
-      { $unwind: '$sample' },
+
+      // Filter out empty or less matching
+      {
+        $match: {
+          $expr: {
+            $gte: [{ $size: '$sampleentities' }, requiredPairs.length],
+          },
+        },
+      },
+
+      // Collapse each link into an { entity, value } object
+      {
+        $addFields: {
+          entities: {
+            $ifNull: [
+              {
+                $map: {
+                  input: '$sampleentities',
+                  as: 's',
+                  in: { entity: '$$s.entity', value: '$$s.value' },
+                },
+              },
+              [],
+            ],
+          },
+        },
+      },
+
+      // Keep only the samples whose `entities` array ⊇ `requiredPairs`
+      {
+        $match: {
+          $expr: {
+            $eq: [
+              requiredPairs.length, // target size
+              {
+                $size: {
+                  $setIntersection: ['$entities', requiredPairs],
+                },
+              },
+            ],
+          },
+        },
+      },
+
+      //drop helper array if you don’t need it downstream
+      { $project: { entities: 0, sampleentities: 0 } },
     ];
   }
 
   findByEntitiesAggregation(
     criterias: {
       filters: TFilterQuery<NlpSample>;
-      entityIds: Types.ObjectId[];
-      valueIds: Types.ObjectId[];
+      values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
     projection?: ProjectionType<NlpSample>,
   ): Aggregate<NlpSampleDocument[]> {
-    return this.sampleEntityModel.aggregate<NlpSampleDocument>([
+    return this.model.aggregate<NlpSampleDocument>([
       ...this.buildFindByEntitiesStages(criterias),
-
-      // promote the sample document
-      { $replaceRoot: { newRoot: '$sample' } },
 
       // sort / skip / limit
       ...this.buildPaginationPipelineStages(page),
@@ -135,8 +194,7 @@ export class NlpSampleRepository extends BaseRepository<
   async findByEntities(
     criterias: {
       filters: TFilterQuery<NlpSample>;
-      entityIds: Types.ObjectId[];
-      valueIds: Types.ObjectId[];
+      values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
     projection?: ProjectionType<NlpSample>,
@@ -153,11 +211,18 @@ export class NlpSampleRepository extends BaseRepository<
     );
   }
 
+  /**
+   * Find NLP samples by entities and populate them with their related data.
+   *
+   * @param criterias - Criteria containing filters and values to match.
+   * @param page - Optional pagination parameters.
+   * @param projection - Optional projection to limit fields returned.
+   * @returns Promise resolving to an array of populated NlpSampleFull objects.
+   */
   async findByEntitiesAndPopulate(
     criterias: {
       filters: TFilterQuery<NlpSample>;
-      entityIds: Types.ObjectId[];
-      valueIds: Types.ObjectId[];
+      values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
     projection?: ProjectionType<NlpSample>,
@@ -177,32 +242,41 @@ export class NlpSampleRepository extends BaseRepository<
     );
   }
 
+  /**
+   * Build an aggregation pipeline that counts NLP samples satisfying:
+   * – the extra `filters`  (passed to `$match` later on), and
+   * – All of the supplied `entities` / `values`.
+   *
+   * @param criterias `{ filters, entities, values }`
+   * @returns Un-executed aggregation cursor.
+   */
   countByEntitiesAggregation(criterias: {
     filters: TFilterQuery<NlpSample>;
-    entityIds: Types.ObjectId[];
-    valueIds: Types.ObjectId[];
+    values: NlpValue[];
   }): Aggregate<{ count: number }[]> {
-    return this.sampleEntityModel.aggregate<{ count: number }>([
+    return this.model.aggregate<{ count: number }>([
       ...this.buildFindByEntitiesStages(criterias),
-
-      // Collapse duplicates: one bucket per unique sample
-      { $group: { _id: '$sample._id' } },
 
       //  Final count
       { $count: 'count' },
     ]);
   }
 
+  /**
+   * Returns the count of samples by filters, entities and/or values
+   *
+   * @param criterias `{ filters, entities, values }`
+   * @returns Promise resolving to `{ count: number }`.
+   */
   async countByEntities(criterias: {
     filters: TFilterQuery<NlpSample>;
-    entityIds: Types.ObjectId[];
-    valueIds: Types.ObjectId[];
-  }): Promise<{ count: number }> {
+    values: NlpValue[];
+  }): Promise<number> {
     const aggregation = this.countByEntitiesAggregation(criterias);
 
     const [result] = await aggregation.exec();
 
-    return { count: result?.count || 0 };
+    return result?.count || 0;
   }
 
   /**

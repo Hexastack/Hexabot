@@ -96,7 +96,10 @@ export default function NlpSample() {
       $eq: [
         ...(type !== "all" ? [{ type }] : []),
         ...(language ? [{ language }] : []),
-        ...(patterns ? [{ patterns }] : []),
+        // We send only value match patterns
+        ...(patterns
+          ? [{ patterns: patterns.filter(({ match }) => match === "value") }]
+          : []),
       ],
       $iLike: ["text"],
     },
@@ -218,6 +221,7 @@ export default function NlpSample() {
           {row.entities
             .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
             .filter((e) => !!e)
+            .sort((a, b) => String(a.entity).localeCompare(String(b.entity)))
             .map((entity) => (
               <ChipEntity
                 key={entity.id}
@@ -441,10 +445,9 @@ export default function NlpSample() {
         >
           <NlpPatternSelect
             patterns={patterns}
-            onChange={(patterns: NlpPattern[]) => {
-              setPatterns(patterns);
-            }}
+            onChange={setPatterns}
             fullWidth={true}
+            noneLabel={t("label.select")}
           />
         </Grid>
       </Grid>
