@@ -73,8 +73,9 @@ export const useInfiniteLiveSubscribers = (props: {
       if (event.op === "newSubscriber") {
         const { result } = normalizeAndCache(event.profile);
 
+        // Only update the unfiltered (all-subscribers) cache
         queryClient.setQueryData(
-          [QueryType.infinite, EntityType.SUBSCRIBER, params],
+          [QueryType.infinite, EntityType.SUBSCRIBER, { where: {} }],
           (oldData) => {
             if (oldData) {
               const data = oldData as InfiniteData<string[]>;

@@ -24,11 +24,10 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
 
   useEffect(() => {
     autoLink();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
 
   const autoLink = () => {
-    if (message.direction === Direction.received && messageTextRef.current) {
+    if (messageTextRef.current) {
       const text = messageTextRef.current.innerText;
 
       messageTextRef.current.innerHTML = Autolinker.link(text, {
