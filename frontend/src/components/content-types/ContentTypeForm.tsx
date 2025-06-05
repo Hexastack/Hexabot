@@ -8,7 +8,7 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment, useMemo } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -19,30 +19,45 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ContentFieldType, IContentType } from "@/types/content-type.types";
+import {
+  ContentFieldType,
+  IContentType,
+  IContentTypeAttributes,
+} from "@/types/content-type.types";
+import { generateId } from "@/utils/generateId";
 
 import { FieldInput } from "./components/FieldInput";
 import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
-  data: { defaultValues: contentType },
+  data: { defaultValues: contentTypeWithoutId },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
+  const contentType = useMemo(
+    () =>
+      contentTypeWithoutId && {
+        ...contentTypeWithoutId,
+        fields: contentTypeWithoutId?.fields?.map((field) => ({
+          ...field,
+          uuid: generateId(),
+        })),
+      },
+    [contentTypeWithoutId],
+  );
   const { toast } = useToast();
   const { t } = useTranslate();
   const {
-    reset,
     control,
     register,
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<Partial<IContentType>>({
-    defaultValues: {
-      name: contentType?.name || "",
-      fields: contentType?.fields || FIELDS_FORM_DEFAULT_VALUES,
+  } = useForm<IContentType>({
+    defaultValues: contentType || {
+      name: "",
+      fields: FIELDS_FORM_DEFAULT_VALUES,
     },
   });
   const { append, fields, remove } = useFieldArray({
@@ -67,17 +82,14 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     EntityType.CONTENT_TYPE,
     options,
   );
-  const onSubmitForm = (params) => {
-    const labelCounts: Record<string, number> = params.fields.reduce(
-      (acc, field) => {
-        if (!field.label.trim()) return acc;
-        acc[field.label] = (acc[field.label] || 0) + 1;
+  const onSubmitForm = (params: IContentTypeAttributes) => {
+    const labelCounts = params.fields?.reduce((acc, field) => {
+      if (!field.label.trim()) return acc;
+      acc[field.label] = (acc[field.label] || 0) + 1;
 
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    const hasDuplicates = Object.values(labelCounts).some(
+      return acc;
+    }, {} as Record<string, number>);
+    const hasDuplicates = Object.values(labelCounts || {}).some(
       (count: number) => count > 1,
     );
 
@@ -87,23 +99,12 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
       return;
     }
 
-    if (contentType) {
+    if (contentType?.id) {
       updateContentType({ id: contentType.id, params });
     } else {
       createContentType(params);
     }
   };
-
-  useEffect(() => {
-    if (contentType) {
-      reset({
-        name: contentType.name,
-        fields: contentType.fields || FIELDS_FORM_DEFAULT_VALUES,
-      });
-    } else {
-      reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
-    }
-  }, [contentType, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -130,12 +131,8 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               gap={2}
             >
               <FieldInput
-                defaultLabel={contentType?.fields?.[index]?.label}
-                defaultName={contentType?.fields?.[index]?.name}
-                setValue={setValue}
-                control={control}
-                remove={remove}
-                index={index}
+                {...{ index, remove, control, setValue }}
+                uuid={f.uuid}
                 disabled={READ_ONLY_FIELDS.includes(f.label as any)}
               />
             </ContentItem>
@@ -145,7 +142,11 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               startIcon={<AddIcon />}
               variant="contained"
               onClick={() =>
-                append({ label: "", name: "", type: ContentFieldType.TEXT })
+                append({
+                  label: "",
+                  name: "",
+                  type: ContentFieldType.TEXT,
+                })
               }
             >
               {t("button.add")}

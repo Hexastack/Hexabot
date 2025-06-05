@@ -8,13 +8,11 @@
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { MenuItem } from "@mui/material";
-import { useEffect } from "react";
 import {
   Control,
   Controller,
   UseFieldArrayRemove,
   UseFormSetValue,
-  useWatch,
 } from "react-hook-form";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
@@ -26,31 +24,17 @@ import { slugify } from "@/utils/string";
 export const FieldInput = ({
   setValue,
   index,
-  defaultLabel,
-  defaultName,
+  uuid,
   ...props
 }: {
   index: number;
   disabled?: boolean;
   remove: UseFieldArrayRemove;
-  control: Control<Partial<IContentType>>;
-  setValue: UseFormSetValue<Partial<IContentType>>;
-  defaultLabel?: string;
-  defaultName?: string;
+  control: Control<IContentType>;
+  setValue: UseFormSetValue<IContentType>;
+  uuid?: string;
 }) => {
   const { t } = useTranslate();
-  const label = useWatch({
-    control: props.control,
-    name: `fields.${index}.label`,
-  });
-
-  useEffect(() => {
-    if (defaultLabel && defaultName !== slugify(defaultLabel)) {
-      defaultName && setValue(`fields.${index}.name`, defaultName);
-    } else {
-      setValue(`fields.${index}.name`, label ? slugify(label) : "");
-    }
-  }, [label, setValue, index]);
 
   return (
     <>
@@ -75,6 +59,24 @@ export const FieldInput = ({
             label={t("label.label")}
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
+            onChange={(e) => {
+              const currentValue = e.target.value;
+              const { label, name } =
+                props.control._defaultValues.fields?.find(
+                  (field) => field?.uuid === uuid,
+                ) || {};
+
+              if (label && name !== slugify(label)) {
+                name && setValue(`fields.${index}.name`, name);
+              } else {
+                setValue(
+                  `fields.${index}.name`,
+                  currentValue ? slugify(currentValue) : "",
+                );
+              }
+
+              field.onChange(e);
+            }}
           />
         )}
       />
