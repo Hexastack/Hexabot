@@ -10,13 +10,14 @@ import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutline
 import SettingsApplicationsIcon from "@mui/icons-material/SettingsApplications";
 import { FormControlLabel, Grid, Switch, Tab, Tabs } from "@mui/material";
 import { FC, Fragment, useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import TriggerIcon from "@/app-components/svg/TriggerIcon";
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -80,8 +81,13 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     message: block?.message || [""],
     capture_vars: block?.capture_vars || [],
   } as IBlockAttributes;
-  const methods = useForm<IBlockAttributes>({
+  const methods = useStrictForm<IBlockAttributes>({
     defaultValues: DEFAULT_VALUES,
+    rules: {
+      name: {
+        required: t("message.name_is_required"),
+      },
+    },
   });
   const {
     reset,
@@ -90,11 +96,6 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     handleSubmit,
     control,
   } = methods;
-  const validationRules = {
-    name: {
-      required: t("message.name_is_required"),
-    },
-  };
   const onSubmitForm = (params: IBlockAttributes) => {
     if (block) {
       updateBlock({ id: block.id, params });
@@ -122,7 +123,7 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
           <ContentItem display="flex" gap={5}>
             <Input
               label={t("placeholder.name")}
-              {...register("name", validationRules.name)}
+              {...register("name")}
               error={!!errors.name}
               autoFocus
               helperText={errors.name ? errors.name.message : null}
