@@ -140,12 +140,12 @@ export class BlockRepository extends BaseRepository<
 
         // Step 1: Map IDs and Category
         const objIds = ids.map((id) => new Types.ObjectId(id));
-        const objCategoryId = new Types.ObjectId(categoryId);
+        const sourceCategoryId = movedBlocks[0].category;
 
-        // Step 2: Find other blocks
+        // Step 2: Find blocks in source category that reference the moved blocks
         const otherBlocks = await this.find({
           _id: { $nin: objIds },
-          category: { $ne: objCategoryId },
+          category: sourceCategoryId,
           $or: [
             { attachedBlock: { $in: objIds } },
             { nextBlocks: { $in: objIds } },
@@ -154,7 +154,7 @@ export class BlockRepository extends BaseRepository<
         // Step 3: Update blocks in the provided scope
         await this.prepareBlocksInCategoryUpdateScope(categoryId, ids);
 
-        // Step 4: Update external blocks
+        // Step 4: Update blocks in source category
         await this.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, ids);
       }
     }
@@ -206,16 +206,21 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
+      // Handle attached block references
       if (block.attachedBlock && ids.includes(block.attachedBlock)) {
         await this.updateOne(block.id, { attachedBlock: null });
       }
 
-      const nextBlocks = block.nextBlocks?.filter(
+      // Handle nextBlocks references
+      const filteredNextBlocks = block.nextBlocks?.filter(
         (nextBlock) => !ids.includes(nextBlock),
       );
 
-      if (nextBlocks?.length) {
-        await this.updateOne(block.id, { nextBlocks });
+      // If the filtered nextBlocks length is different from the original, update the block
+      if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
+        await this.updateOne(block.id, {
+          nextBlocks: filteredNextBlocks || [],
+        });
       }
     }
   }
