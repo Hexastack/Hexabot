@@ -182,6 +182,40 @@ describe('NlpSampleController', () => {
         })),
       );
     });
+
+    it('should find nlp samples with patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      // Should only return samples matching the pattern
+      const nlpSamples = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        pageQuery,
+      );
+      expect(result).toEqualPayload(nlpSamples);
+    });
+
+    it('should return empty array if no samples match the patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
+    });
   });
 
   describe('count', () => {

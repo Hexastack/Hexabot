@@ -78,9 +78,12 @@ export class NlpSampleRepository extends BaseRepository<
     }));
 
     return [
-      // Apply sample-side filters early
       {
         $match: {
+          // @todo: think of a better way to handle language to objectId conversion
+          // This is a workaround for the fact that language is stored as an ObjectId
+          // in the database, but we want to filter by its string representation.
+          ...filters,
           ...(filters?.$and
             ? {
                 $and: filters.$and?.map((condition) => {
@@ -266,7 +269,7 @@ export class NlpSampleRepository extends BaseRepository<
    * Returns the count of samples by filters, entities and/or values
    *
    * @param criterias `{ filters, entities, values }`
-   * @returns Promise resolving to `{ count: number }`.
+   * @returns Promise resolving to the count.
    */
   async countByEntities(criterias: {
     filters: TFilterQuery<NlpSample>;

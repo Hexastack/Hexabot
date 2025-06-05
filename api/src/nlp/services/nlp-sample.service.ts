@@ -80,13 +80,14 @@ export class NlpSampleService extends BaseService<
     page?: PageQueryDto<NlpSample>,
     projection?: ProjectionType<NlpSample>,
   ): Promise<NlpSample[]> {
-    const values =
-      patterns.length > 0
-        ? await this.nlpValueService.findByPatterns(patterns)
-        : [];
-
-    if (values.length === 0) {
+    if (!patterns.length) {
       return await this.repository.find(filters, page, projection);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return [];
     }
 
     return await this.repository.findByEntities(
@@ -119,13 +120,14 @@ export class NlpSampleService extends BaseService<
     page?: PageQueryDto<NlpSample>,
     projection?: ProjectionType<NlpSample>,
   ): Promise<NlpSampleFull[]> {
-    const values =
-      patterns.length > 0
-        ? await this.nlpValueService.findByPatterns(patterns)
-        : [];
-
-    if (values.length === 0) {
+    if (!patterns.length) {
       return await this.repository.findAndPopulate(filters, page, projection);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return [];
     }
 
     return await this.repository.findByEntitiesAndPopulate(
@@ -143,7 +145,7 @@ export class NlpSampleService extends BaseService<
    * present in `patterns`.
    *
    * @param param0 `{ filters, patterns }`
-   * @returns Promise resolving to `{ count }`.
+   * @returns Promise resolving to the count.
    */
   async countByPatterns({
     filters,
@@ -152,13 +154,14 @@ export class NlpSampleService extends BaseService<
     filters: TFilterQuery<NlpSample>;
     patterns: NlpValueMatchPattern[];
   }): Promise<number> {
-    const values =
-      patterns.length > 0
-        ? await this.nlpValueService.findByPatterns(patterns)
-        : [];
-
-    if (values.length === 0) {
+    if (!patterns.length) {
       return await this.repository.count(filters);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return 0;
     }
 
     return await this.repository.countByEntities({
