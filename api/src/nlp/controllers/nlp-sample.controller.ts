@@ -29,7 +29,12 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
+import { z } from 'zod';
 
+import {
+  NlpValueMatchPattern,
+  nlpValueMatchPatternSchema,
+} from '@/chat/schemas/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
@@ -40,6 +45,7 @@ import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
+import { ZodQueryParamPipe } from '@/utils/pipes/zod.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
@@ -184,9 +190,22 @@ export class NlpSampleController extends BaseController<
         allowedFields: ['text', 'type', 'language'],
       }),
     )
-    filters?: TFilterQuery<NlpSample>,
+    filters: TFilterQuery<NlpSample> = {},
+    @Query(
+      new ZodQueryParamPipe(
+        z.array(nlpValueMatchPatternSchema),
+        (q) => q?.where?.patterns,
+      ),
+    )
+    patterns: NlpValueMatchPattern[] = [],
   ) {
-    return await this.count(filters);
+    const count = await this.nlpSampleService.countByPatterns({
+      filters,
+      patterns,
+    });
+    return {
+      count,
+    };
   }
 
   /**
@@ -285,10 +304,23 @@ export class NlpSampleController extends BaseController<
       }),
     )
     filters: TFilterQuery<NlpSample>,
+    @Query(
+      new ZodQueryParamPipe(
+        z.array(nlpValueMatchPatternSchema),
+        (q) => q?.where?.patterns,
+      ),
+    )
+    patterns: NlpValueMatchPattern[] = [],
   ) {
     return this.canPopulate(populate)
-      ? await this.nlpSampleService.findAndPopulate(filters, pageQuery)
-      : await this.nlpSampleService.find(filters, pageQuery);
+      ? await this.nlpSampleService.findByPatternsAndPopulate(
+          { filters, patterns },
+          pageQuery,
+        )
+      : await this.nlpSampleService.findByPatterns(
+          { filters, patterns },
+          pageQuery,
+        );
   }
 
   /**

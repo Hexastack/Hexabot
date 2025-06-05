@@ -103,6 +103,7 @@ const PatternInput: FC<PatternInputProps> = ({
         <NlpPatternSelect
           patterns={pattern as NlpPattern[]}
           onChange={setPattern}
+          fullWidth={true}
         />
       )}
       {["payload", "content", "menu"].includes(patternType) ? (

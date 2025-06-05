@@ -492,7 +492,7 @@
     "original_text": "Texte par défaut",
     "inputs": "Ports d'entrée",
     "outputs": "Ports de sortie",
-    "any": "- Toutes -",
+    "any": "Toutes",
     "full_name": "Nom et Prénom",
     "password": "Mot de passe"
   },

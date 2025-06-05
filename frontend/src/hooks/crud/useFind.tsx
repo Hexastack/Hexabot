@@ -56,24 +56,27 @@ export const useFind = <
     entity,
   );
   const getFromCache = useGetFromCache(entity);
-  const { data: total } = useCount(entity, params["where"], {
+  const countQuery = useCount(entity, params["where"], {
     enabled: hasCount,
   });
   const { dataGridPaginationProps, pageQueryPayload } = usePagination(
-    total?.count,
+    countQuery.data?.count,
     initialPaginationState,
     initialSortState,
     hasCount,
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
-  const enabled = !!total || !hasCount;
+  const enabled = !!countQuery.data || !hasCount;
   const { data: ids, ...normalizedQuery } = useQuery({
     enabled,
     queryFn: async () => {
-      const data = await api.find(
-        normalizedParams,
-        format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
-      );
+      const data =
+        !hasCount || (hasCount && !!countQuery.data?.count)
+          ? await api.find(
+              normalizedParams,
+              format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+            )
+          : [];
       const { result } = normalizeAndCache(data);
 
       return result;
@@ -100,7 +103,11 @@ export const useFind = <
     dataGridProps: {
       ...dataGridPaginationProps,
       rows: data || [],
-      loading: normalizedQuery.isLoading || normalizedQuery.isFetching,
+      loading:
+        normalizedQuery.isLoading ||
+        normalizedQuery.isFetching ||
+        countQuery.isLoading ||
+        countQuery.isFetching,
     },
   };
 };

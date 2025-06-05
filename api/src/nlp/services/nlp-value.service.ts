@@ -8,6 +8,7 @@
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -40,6 +41,20 @@ export class NlpValueService extends BaseService<
     private readonly nlpEntityService: NlpEntityService,
   ) {
     super(repository);
+  }
+
+  /**
+   * Fetch values whose `value` field matches the patterns provided.
+   *
+   * @param patterns  Pattern list
+   * @returns Promise resolving to the matching values.
+   */
+  async findByPatterns(patterns: NlpValueMatchPattern[]) {
+    return await this.find({
+      value: {
+        $in: patterns.map((p) => p.value),
+      },
+    });
   }
 
   /**

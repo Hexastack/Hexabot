@@ -10,6 +10,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
@@ -180,6 +181,40 @@ describe('NlpSampleController', () => {
           language: sample.language ? languages[sample.language].id : null,
         })),
       );
+    });
+
+    it('should find nlp samples with patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      // Should only return samples matching the pattern
+      const nlpSamples = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        pageQuery,
+      );
+      expect(result).toEqualPayload(nlpSamples);
+    });
+
+    it('should return empty array if no samples match the patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
     });
   });
 
@@ -437,6 +472,32 @@ describe('NlpSampleController', () => {
       await expect(
         nlpSampleController.deleteMany(nonExistentIds),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('filterCount', () => {
+    it('should count the nlp samples without patterns', async () => {
+      const filters = { text: 'Hello' };
+      const result = await nlpSampleController.filterCount(filters, []);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should count the nlp samples with patterns', async () => {
+      const filters = { text: 'Hello' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should return zero count when no samples match the filters and patterns', async () => {
+      const filters = { text: 'Nonexistent' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(result).toEqual({ count: 0 });
     });
   });
 });
