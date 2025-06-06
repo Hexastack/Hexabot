@@ -52,15 +52,9 @@ const AutoCompleteEntitySelect = <
   Multiple extends boolean | undefined = true,
 >(
   {
-    label,
-    value,
     entity,
     format,
     searchFields,
-    multiple,
-    onChange,
-    error,
-    helperText,
     preprocess,
     idKey = "id",
     labelKey,
@@ -106,17 +100,11 @@ const AutoCompleteEntitySelect = <
 
   return (
     <AutoCompleteSelect<Value, Label, Multiple>
-      value={value}
-      onChange={onChange}
-      label={label}
-      multiple={multiple}
       ref={ref}
       idKey={idKey}
       labelKey={labelKey}
       options={options || []}
       onSearch={onSearch}
-      error={error}
-      helperText={helperText}
       loading={isFetching}
       {...rest}
     />

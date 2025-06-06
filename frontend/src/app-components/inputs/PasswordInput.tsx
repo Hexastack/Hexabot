@@ -14,7 +14,7 @@ import { forwardRef, useState } from "react";
 import { Input } from "./Input";
 
 export const PasswordInput = forwardRef<any, TextFieldProps>(
-  ({ onChange, InputProps, ...rest }, ref) => {
+  ({ InputProps, ...rest }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const handleTogglePasswordVisibility = () => {
       setShowPassword(!showPassword);
@@ -25,7 +25,6 @@ export const PasswordInput = forwardRef<any, TextFieldProps>(
         ref={ref}
         type={showPassword ? "text" : "password"}
         {...rest}
-        onChange={onChange}
         InputProps={{
           ...InputProps,
           endAdornment: (
