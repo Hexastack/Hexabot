@@ -25,26 +25,27 @@ import {
   IContentTypeAttributes,
 } from "@/types/content-type.types";
 import { generateId } from "@/utils/generateId";
+import { slugify } from "@/utils/string";
 
 import { FieldInput } from "./components/FieldInput";
-import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
+import { FIELDS_FORM_DEFAULT_VALUES } from "./constants";
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
-  data: { defaultValues: contentTypeWithoutId },
+  data: { defaultValues: contentTypeWithoutUuid },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
   const contentType = useMemo(
     () =>
-      contentTypeWithoutId && {
-        ...contentTypeWithoutId,
-        fields: contentTypeWithoutId?.fields?.map((field) => ({
+      contentTypeWithoutUuid && {
+        ...contentTypeWithoutUuid,
+        fields: contentTypeWithoutUuid?.fields?.map((field) => ({
           ...field,
           uuid: generateId(),
         })),
       },
-    [contentTypeWithoutId],
+    [contentTypeWithoutUuid],
   );
   const { toast } = useToast();
   const { t } = useTranslate();
@@ -62,6 +63,27 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
   });
   const { append, fields, remove } = useFieldArray({
     name: "fields",
+    rules: {
+      validate: (value) => {
+        const labelCounts = value.reduce((acc, field) => {
+          if (!field.label.trim()) return acc;
+          acc[field.label] = (acc[field.label] || 0) + 1;
+
+          return acc;
+        }, {} as Record<string, number>);
+        const hasDuplicatedLabels = Object.values(labelCounts).some(
+          (count: number) => count > 1,
+        );
+
+        if (hasDuplicatedLabels) {
+          toast.error(t("message.duplicate_labels_not_allowed"));
+
+          return false;
+        }
+
+        return true;
+      },
+    },
     control,
   });
   const options = {
@@ -83,22 +105,6 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     options,
   );
   const onSubmitForm = (params: IContentTypeAttributes) => {
-    const labelCounts = params.fields?.reduce((acc, field) => {
-      if (!field.label.trim()) return acc;
-      acc[field.label] = (acc[field.label] || 0) + 1;
-
-      return acc;
-    }, {} as Record<string, number>);
-    const hasDuplicates = Object.values(labelCounts || {}).some(
-      (count: number) => count > 1,
-    );
-
-    if (hasDuplicates) {
-      toast.error(t("message.duplicate_labels_not_allowed"));
-
-      return;
-    }
-
     if (contentType?.id) {
       updateContentType({ id: contentType.id, params });
     } else {
@@ -122,23 +128,28 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               autoFocus
             />
           </ContentItem>
-
-          {fields.map((f, index) => (
+          {fields.map((field, idx) => (
             <ContentItem
-              key={f.id}
+              key={field.id}
               display="flex"
               justifyContent="space-between"
               gap={2}
             >
               <FieldInput
-                index={index}
-                remove={remove}
+                idx={idx}
                 control={control}
-                setValue={setValue}
-                disabled={READ_ONLY_FIELDS.includes(f.label as any)}
-                contentTypeField={contentType?.fields?.find(
-                  ({ uuid }) => uuid === f.uuid,
-                )}
+                onLabelChange={(value) => {
+                  const fieldName = contentType?.fields?.find(
+                    ({ uuid }) => uuid === field.uuid,
+                  )?.name;
+
+                  if (!fieldName) {
+                    setValue(`fields.${idx}.name`, value ? slugify(value) : "");
+                  }
+                }}
+                onRemove={() => {
+                  remove(idx);
+                }}
               />
             </ContentItem>
           ))}
