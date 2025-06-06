@@ -36,7 +36,7 @@ export const FieldInput = ({
         variant="text"
         color="error"
         size="medium"
-        onClick={props.onRemove}
+        onClick={() => props.onRemove?.()}
         disabled={isDisabled}
       >
         <DeleteOutlineIcon strokeWidth={1} fontSize="medium" />
