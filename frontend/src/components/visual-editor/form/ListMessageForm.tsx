@@ -295,21 +295,14 @@ const ListMessageForm = () => {
           name="options.content.buttons"
           control={control}
           defaultValue={content?.buttons || []}
-          render={({ field }) => {
-            const { value, onChange } = field;
-
-            return (
-              <ButtonsInput
-                fieldPath="options.content.buttons"
-                value={value}
-                onChange={(buttons) => {
-                  onChange(buttons);
-                }}
-                disablePayload={true}
-                maxInput={displayMode === "list" ? 1 : 2}
-              />
-            );
-          }}
+          render={({ field }) => (
+            <ButtonsInput
+              {...field}
+              fieldPath="options.content.buttons"
+              disablePayload={true}
+              maxInput={displayMode === "list" ? 1 : 2}
+            />
+          )}
         />
       </ContentItem>
     </Grid>
