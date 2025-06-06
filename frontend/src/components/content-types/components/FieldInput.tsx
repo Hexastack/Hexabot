@@ -8,41 +8,27 @@
 
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { MenuItem } from "@mui/material";
-import { useEffect } from "react";
-import {
-  Control,
-  Controller,
-  UseFieldArrayRemove,
-  UseFormSetValue,
-  useWatch,
-} from "react-hook-form";
+import { useMemo } from "react";
+import { Control, Controller } from "react-hook-form";
 
 import { IconButton } from "@/app-components/buttons/IconButton";
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
 import { ContentFieldType, IContentType } from "@/types/content-type.types";
-import { slugify } from "@/utils/string";
+
+import { READ_ONLY_FIELDS } from "../constants";
 
 export const FieldInput = ({
-  setValue,
-  index,
+  idx,
   ...props
 }: {
-  index: number;
-  disabled?: boolean;
-  remove: UseFieldArrayRemove;
-  control: Control<Partial<IContentType>>;
-  setValue: UseFormSetValue<Partial<IContentType>>;
+  idx: number;
+  control: Control<IContentType>;
+  onRemove?: () => void;
+  onLabelChange?: (value: string) => void;
 }) => {
   const { t } = useTranslate();
-  const label = useWatch({
-    control: props.control,
-    name: `fields.${index}.label`,
-  });
-
-  useEffect(() => {
-    setValue(`fields.${index}.name`, label ? slugify(label) : "");
-  }, [label, setValue, index]);
+  const isDisabled = useMemo(() => idx < READ_ONLY_FIELDS.length, [idx]);
 
   return (
     <>
@@ -50,40 +36,42 @@ export const FieldInput = ({
         variant="text"
         color="error"
         size="medium"
-        onClick={() => props.remove(index)}
-        disabled={props.disabled}
+        onClick={() => props.onRemove?.()}
+        disabled={isDisabled}
       >
         <DeleteOutlineIcon strokeWidth={1} fontSize="medium" />
       </IconButton>
-
       <Controller
         control={props.control}
-        name={`fields.${index}.label`}
+        name={`fields.${idx}.label`}
         rules={{ required: t("message.label_is_required") }}
         render={({ field, fieldState }) => (
           <Input
-            disabled={props.disabled}
+            disabled={isDisabled}
             {...field}
             label={t("label.label")}
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
+            onChange={(e) => {
+              props?.onLabelChange?.(e.target.value);
+              field.onChange(e);
+            }}
           />
         )}
       />
       <Controller
-        name={`fields.${index}.name`}
+        name={`fields.${idx}.name`}
         render={({ field }) => (
           <Input disabled {...field} label={t("label.name")} />
         )}
         control={props.control}
       />
-
       <Controller
-        name={`fields.${index}.type`}
+        name={`fields.${idx}.type`}
         control={props.control}
         render={({ field }) => (
           <Input
-            disabled={props.disabled}
+            disabled={isDisabled}
             label={t("label.type")}
             {...field}
             select

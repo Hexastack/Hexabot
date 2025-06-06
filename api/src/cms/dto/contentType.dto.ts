@@ -14,7 +14,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
   Validate,
   ValidateNested,
 } from 'class-validator';
@@ -27,7 +26,6 @@ import { ValidateRequiredFields } from '../validators/validate-required-fields.v
 export class ContentField {
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[a-z][a-z_0-9]*$/)
   name: string;
 
   @IsString()
