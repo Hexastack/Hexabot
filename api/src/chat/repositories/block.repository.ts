@@ -8,17 +8,17 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  Model,
-  Query,
-  Types,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { Model, Types } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import {
+  Args,
+  postDelete,
+  preCreate,
+  preDelete,
+  preUpdate,
+  preUpdateMany,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { BlockCreateDto, BlockDto, BlockUpdateDto } from '../dto/block.dto';
 import {
@@ -63,10 +63,8 @@ export class BlockRepository extends BaseRepository<
    *
    * @param doc - The document that is being created.
    */
-  async preCreate(
-    _doc: Document<unknown, object, Block> & Block & { _id: Types.ObjectId },
-  ): Promise<void> {
-    if (_doc) this.checkDeprecatedAttachmentUrl(_doc);
+  async preCreate(...[doc]: Args<preCreate<Block>>): Promise<void> {
+    if (doc) this.checkDeprecatedAttachmentUrl(doc);
   }
 
   /**
@@ -77,19 +75,9 @@ export class BlockRepository extends BaseRepository<
    * @param updates - The update data.
    */
   async preUpdate(
-    _query: Query<
-      Document<Block, any, any>,
-      Document<Block, any, any>,
-      unknown,
-      Block,
-      'findOneAndUpdate'
-    >,
-    criteria: TFilterQuery<Block>,
-    updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<Block, any, any>>,
+    ...[, criteria, updates]: Args<preUpdate<Block>>
   ): Promise<void> {
-    const update: BlockUpdateDto = updates?.['$set'];
+    const update = '$set' in updates ? updates.$set : {};
 
     if (update?.category) {
       const movedBlock = await this.findOne(criteria);
@@ -109,7 +97,10 @@ export class BlockRepository extends BaseRepository<
         { $set: { attachedBlock: null } },
       );
     }
-    this.checkDeprecatedAttachmentUrl(update);
+
+    if (update) {
+      this.checkDeprecatedAttachmentUrl(update);
+    }
   }
 
   /**
@@ -120,18 +111,10 @@ export class BlockRepository extends BaseRepository<
    * @param updates - The update data.
    */
   async preUpdateMany(
-    _query: Query<
-      Document<Block, any, any>,
-      Document<Block, any, any>,
-      unknown,
-      Block,
-      'updateMany',
-      Record<string, never>
-    >,
-    criteria: TFilterQuery<Block>,
-    updates: UpdateQuery<Document<Block, any, any>>,
+    ...[, criteria, updates]: Args<preUpdateMany<Block>>
   ): Promise<void> {
-    const categoryId: string = updates.$set.category;
+    const categoryId = '$set' in updates && updates.$set?.category;
+
     if (categoryId) {
       const movedBlocks = await this.find(criteria);
 
@@ -226,16 +209,7 @@ export class BlockRepository extends BaseRepository<
    * @param query - The delete query.
    * @param result - The result of the delete operation.
    */
-  async postDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Block, any, any>,
-      unknown,
-      Block,
-      'deleteOne' | 'deleteMany'
-    >,
-    result: DeleteResult,
-  ) {
+  async postDelete(...[, result]: Args<postDelete<Block>>) {
     if (result.deletedCount > 0) {
     }
   }
@@ -247,16 +221,7 @@ export class BlockRepository extends BaseRepository<
    * @param query - The delete query.
    * @param criteria - The filter criteria for finding blocks to delete.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Block, any, any>,
-      unknown,
-      Block,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<Block>,
-  ) {
+  async preDelete(...[, criteria]: Args<preDelete<Block>>) {
     const docsToDelete = await this.model.find(criteria);
     const idsToDelete = docsToDelete.map(({ id }) => id);
     if (idsToDelete.length > 0) {

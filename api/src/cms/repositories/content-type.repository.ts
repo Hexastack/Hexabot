@@ -8,11 +8,11 @@
 
 import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BlockService } from '@/chat/services/block.service';
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import { Args, preDelete } from '@/utils/types/lifecycle-hook-manager.types';
 
 import { ContentTypeDto } from '../dto/contentType.dto';
 import { ContentType } from '../schemas/content-type.schema';
@@ -42,25 +42,16 @@ export class ContentTypeRepository extends BaseRepository<
    * @param query - The query object used for deletion.
    * @param criteria - The filter query to identify the content type entity to delete.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<ContentType, any, any>,
-      unknown,
-      ContentType,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<ContentType>,
-  ) {
-    const entityId: string = criteria._id as string;
+  async preDelete(...[, criteria]: Args<preDelete<ContentType>>) {
+    const entityId = criteria._id;
     const associatedBlocks = await this.blockService?.findOne({
       'options.content.entity': entityId,
     });
     if (associatedBlocks) {
       throw new ForbiddenException(`Content type have blocks associated to it`);
     }
-    if (criteria._id) {
-      await this.contentModel.deleteMany({ entity: criteria._id });
+    if (entityId) {
+      await this.contentModel.deleteMany({ entity: entityId });
     } else {
       throw new Error(
         'Attempted to delete content type using unknown criteria',

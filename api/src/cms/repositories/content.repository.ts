@@ -8,17 +8,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  HydratedDocument,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  Args,
+  preCreate,
+  preUpdate,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { ContentDto } from '../dto/content.dto';
 import {
@@ -45,7 +42,7 @@ export class ContentRepository extends BaseRepository<
    *
    * @param doc - The document that is about to be created.
    */
-  async preCreate(_doc: HydratedDocument<Content>) {
+  async preCreate(...[_doc]: Args<preCreate<Content>>) {
     _doc.set('rag', this.stringify(_doc.dynamicFields));
   }
 
@@ -58,17 +55,7 @@ export class ContentRepository extends BaseRepository<
    * @param updates - The update operations to be applied to the document.
    */
   async preUpdate(
-    _query: Query<
-      Document<Content, any, any>,
-      Document<Content, any, any>,
-      unknown,
-      Content,
-      'findOneAndUpdate'
-    >,
-    _criteria: TFilterQuery<Content>,
-    _updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<Content, any, any>>,
+    ...[_query, , _updates]: Args<preUpdate<Content>>
   ): Promise<void> {
     if ('dynamicFields' in _updates['$set']) {
       _query.set('rag', this.stringify(_updates['$set']['dynamicFields']));

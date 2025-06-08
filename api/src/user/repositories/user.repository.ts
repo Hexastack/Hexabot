@@ -8,22 +8,19 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  Args,
+  preCreate,
+  preUpdate,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { UserDto, UserEditProfileDto } from '../dto/user.dto';
 import {
   User,
   USER_POPULATE,
-  UserDocument,
   UserFull,
   UserPopulate,
 } from '../schemas/user.schema';
@@ -46,7 +43,7 @@ export class UserRepository extends BaseRepository<
    *
    * @param _doc The user document being created.
    */
-  async preCreate(_doc: UserDocument) {
+  async preCreate(...[_doc]: Args<preCreate<User>>) {
     if (_doc?.password) {
       _doc.password = hash(_doc.password);
     } else {
@@ -62,19 +59,7 @@ export class UserRepository extends BaseRepository<
    * @param _criteria The criteria used to filter the user documents to update.
    * @param _updates The update object that may contain password or resetToken to be hashed.
    */
-  async preUpdate(
-    _query: Query<
-      Document<User, any, any>,
-      Document<User, any, any>,
-      unknown,
-      User,
-      'findOneAndUpdate'
-    >,
-    _criteria: TFilterQuery<User>,
-    _updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<User, any, any>>,
-  ) {
+  async preUpdate(...[_query, , _updates]: Args<preUpdate<User>>) {
     const updates: UserEditProfileDto & {
       resetToken?: string;
     } = _updates?.['$set'];

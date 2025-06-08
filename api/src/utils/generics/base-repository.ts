@@ -15,7 +15,6 @@ import {
 import { ClassTransformOptions, plainToClass } from 'class-transformer';
 import {
   Document,
-  FilterQuery,
   FlattenMaps,
   HydratedDocument,
   Model,
@@ -23,7 +22,6 @@ import {
   Query,
   SortOrder,
   UpdateQuery,
-  UpdateWithAggregationPipeline,
   UpdateWriteOpResult,
 } from 'mongoose';
 
@@ -37,6 +35,22 @@ import {
 import { flatten } from '../helpers/flatten';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
+import {
+  Args,
+  postCreate,
+  postCreateValidate,
+  postDelete,
+  postUpdate,
+  postUpdateMany,
+  postUpdateValidate,
+  preCreate,
+  preCreateValidate,
+  preDelete,
+  preUpdate,
+  preUpdateMany,
+  preUpdateValidate,
+  R,
+} from '../types/lifecycle-hook-manager.types';
 
 import { BaseSchema } from './base-schema';
 import { LifecycleHookManager } from './lifecycle-hook-manager';
@@ -79,7 +93,7 @@ export abstract class BaseRepository<
   TFull extends Omit<T, P> = never,
   Dto extends DtoConfig = object,
   U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
-  D = Document<T>,
+  D extends Document<T> = Document<T>,
 > {
   private readonly transformOpts = { excludePrefixes: ['_', 'password'] };
 
@@ -567,80 +581,58 @@ export abstract class BaseRepository<
   }
 
   async preCreateValidate(
-    _doc: HydratedDocument<T>,
-    _filterCriteria?: FilterQuery<T>,
-    _updates?: UpdateWithAggregationPipeline | UpdateQuery<T>,
-  ): Promise<void> {
+    ..._: Args<preCreateValidate<T>>
+  ): R<preCreateValidate<T>> {
     // Nothing ...
   }
 
-  async postCreateValidate(_validated: HydratedDocument<T>): Promise<void> {
+  async postCreateValidate(
+    ..._: Args<postCreateValidate<T>>
+  ): R<postCreateValidate<T>> {
     // Nothing ...
   }
 
   async preUpdateValidate(
-    _filterCriteria: FilterQuery<T>,
-    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
-  ): Promise<void> {
+    ..._: Args<preUpdateValidate<T>>
+  ): R<preUpdateValidate<T>> {
     // Nothing ...
   }
 
   async postUpdateValidate(
-    _filterCriteria: FilterQuery<T>,
-    _updates: UpdateWithAggregationPipeline | UpdateQuery<T>,
-  ): Promise<void> {
+    ..._: Args<postUpdateValidate<T>>
+  ): R<postUpdateValidate<T>> {
     // Nothing ...
   }
 
-  async preCreate(_doc: HydratedDocument<T>): Promise<void> {
+  async preCreate(..._: Args<preCreate<T>>): R<postCreate<T>> {
     // Nothing ...
   }
 
-  async postCreate(_created: HydratedDocument<T>): Promise<void> {
+  async postCreate(..._: Args<postCreate<T>>): R<postCreate<T>> {
     // Nothing ...
   }
 
-  async preUpdate(
-    _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
-    _criteria: TFilterQuery<T>,
-    _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
-  ): Promise<void> {
+  async preUpdate(..._: Args<preUpdate<T>>): R<preUpdate<T>> {
     // Nothing ...
   }
 
-  async preUpdateMany(
-    _query: Query<D, D, unknown, T, 'updateMany'>,
-    _criteria: TFilterQuery<T>,
-    _updates: UpdateWithAggregationPipeline | UpdateQuery<D>,
-  ): Promise<void> {
+  async preUpdateMany(..._: Args<preUpdateMany<T>>): R<preUpdateMany<T>> {
     // Nothing ...
   }
 
-  async postUpdateMany(
-    _query: Query<D, D, unknown, T, 'updateMany'>,
-    _updated: any,
-  ): Promise<void> {
+  async postUpdateMany(..._: Args<postUpdateMany<T>>): R<postUpdateMany<T>> {
     // Nothing ...
   }
 
-  async postUpdate(
-    _query: Query<D, D, unknown, T, 'findOneAndUpdate'>,
-    _updated: T,
-  ): Promise<void> {
+  async postUpdate(..._: Args<postUpdate<T>>): R<preDelete<T>> {
     // Nothing ...
   }
 
-  async preDelete(
-    _query: Query<DeleteResult, D, unknown, T, 'deleteOne' | 'deleteMany'>,
-    _criteria: TFilterQuery<T>,
-  ): Promise<void> {
+  async preDelete(..._: Args<preDelete<T>>): R<preDelete<T>> {
     // Nothing ...
   }
 
-  async postDelete(
-    _query: Query<DeleteResult, D, unknown, T, 'deleteOne' | 'deleteMany'>,
-    _result: DeleteResult,
-  ): Promise<void> {
+  async postDelete(..._: Args<postDelete<T>>): R<postDelete<T>> {
     // Nothing ...
   }
 }

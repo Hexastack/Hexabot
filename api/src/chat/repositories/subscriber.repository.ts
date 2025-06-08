@@ -8,23 +8,20 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import {
+  Args,
+  postCreate,
+  preUpdate,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { SubscriberDto, SubscriberUpdateDto } from '../dto/subscriber.dto';
 import {
   Subscriber,
   SUBSCRIBER_POPULATE,
-  SubscriberDocument,
   SubscriberFull,
   SubscriberPopulate,
 } from '../schemas/subscriber.schema';
@@ -45,7 +42,7 @@ export class SubscriberRepository extends BaseRepository<
    *
    * @param created - The newly created subscriber document.
    */
-  async postCreate(created: SubscriberDocument): Promise<void> {
+  async postCreate(...[created]: Args<postCreate<Subscriber>>): Promise<void> {
     this.eventEmitter.emit(
       'hook:stats:entry',
       BotStatsType.new_users,
@@ -63,17 +60,7 @@ export class SubscriberRepository extends BaseRepository<
    * @param updates - The update data, which may include fields like `assignedTo`.
    */
   async preUpdate(
-    _query: Query<
-      Document<Subscriber, any, any>,
-      Document<Subscriber, any, any>,
-      unknown,
-      Subscriber,
-      'findOneAndUpdate'
-    >,
-    criteria: TFilterQuery<Subscriber>,
-    updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<Subscriber, any, any>>,
+    ...[, criteria, updates]: Args<preUpdate<Subscriber>>
   ): Promise<void> {
     const subscriberUpdates: SubscriberUpdateDto = updates?.['$set'];
 
