@@ -126,10 +126,10 @@ export default abstract class BaseWebChannelHandler<
 
       try {
         const menu = await this.menuService.getTree();
-        return client.emit('settings', { menu, ...settings });
+        client.emit('settings', { menu, ...settings });
       } catch (err) {
         this.logger.warn('Unable to retrieve menu ', err);
-        return client.emit('settings', settings);
+        client.emit('settings', settings);
       }
     } catch (err) {
       this.logger.error('Unable to initiate websocket connection', err);
