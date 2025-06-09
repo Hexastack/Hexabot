@@ -14,46 +14,13 @@ import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import {
-  NlpPattern,
-  Pattern,
-  PatternType,
-  PayloadPattern,
-} from "@/types/block.types";
-import {
-  extractRegexBody,
-  formatWithSlashes,
-  isRegex,
-  isRegexString,
-} from "@/utils/string";
+import { NlpPattern, Pattern, PayloadPattern } from "@/types/block.types";
+import { PatternType } from "@/types/pattern.types";
+import { getPatternType } from "@/utils/pattern";
+import { extractRegexBody, formatWithSlashes, isRegex } from "@/utils/string";
 
 import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
-
-const getPatternType = (pattern: Pattern): PatternType => {
-  if (typeof pattern === "string") {
-    return isRegexString(pattern) ? "regex" : "text";
-  }
-
-  if (Array.isArray(pattern)) {
-    return "nlp";
-  }
-
-  if (pattern && typeof pattern === "object") {
-    switch (pattern.type) {
-      case "menu":
-        return "menu";
-      case "content":
-        return "content";
-      case "outcome":
-        return "outcome";
-      default:
-        return "payload";
-    }
-  }
-
-  return "text";
-};
 
 type PatternInputProps = {
   control: Control<any>;
@@ -71,7 +38,7 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
         validate: (currentPatternValue: Pattern) => {
           const type = getPatternType(currentPatternValue);
 
-          if (type === "regex") {
+          if (type === PatternType.REGEX) {
             const regexString = currentPatternValue as string;
 
             if (!regexString || extractRegexBody(regexString).trim() === "") {
@@ -80,7 +47,7 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
             if (!isRegex(extractRegexBody(regexString))) {
               return t("message.regex_is_invalid");
             }
-          } else if (type === "text") {
+          } else if (type === PatternType.TEXT) {
             const textString = currentPatternValue as string;
 
             if (!textString || textString.trim() === "") {
@@ -97,13 +64,17 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
 
         return (
           <Box display="flex" flexGrow={1}>
-            {currentPatternType === "nlp" && (
+            {currentPatternType === PatternType.NLP && (
               <NlpPatternSelect
                 patterns={patternForPath as NlpPattern[]}
                 onChange={field.onChange}
               />
             )}
-            {["payload", "content", "menu"].includes(currentPatternType) ? (
+            {[
+              PatternType.PAYLOAD,
+              PatternType.CONTENT,
+              PatternType.MENU,
+            ].includes(currentPatternType) ? (
               <PostbackInput
                 onChange={(payload) => {
                   payload && field.onChange(payload);
@@ -111,7 +82,7 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
                 defaultValue={patternForPath as PayloadPattern}
               />
             ) : null}
-            {currentPatternType === "outcome" ? (
+            {currentPatternType === PatternType.OUTCOME ? (
               <OutcomeInput
                 onChange={(payload) => {
                   payload && field.onChange(payload);
@@ -120,7 +91,7 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
               />
             ) : null}
             {typeof patternForPath === "string" &&
-            currentPatternType === "regex" ? (
+            currentPatternType === PatternType.REGEX ? (
               <RegexInput
                 value={extractRegexBody(patternForPath as string)}
                 label={t("label.regex")}
@@ -133,7 +104,7 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
               />
             ) : null}
             {typeof patternForPath === "string" &&
-            currentPatternType === "text" ? (
+            currentPatternType === PatternType.TEXT ? (
               <Input
                 label={t("label.text")}
                 value={patternForPath as string}
