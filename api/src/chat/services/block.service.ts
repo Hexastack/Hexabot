@@ -64,68 +64,66 @@ export class BlockService extends BaseService<
   }
 
   /**
-   * Filters an array of blocks based on the specified channel.
+   * Checks if block is supported on the specified channel.
    *
-   * This function ensures that only blocks that are either:
-   * - Not restricted to specific trigger channels (`trigger_channels` is undefined or empty), or
-   * - Explicitly allow the given channel
-   *
-   * are included in the returned array.
-   *
-   * @param blocks - The list of blocks to be filtered.
+   * @param block - The block
    * @param channel - The name of the channel to filter blocks by.
    *
-   * @returns The filtered array of blocks that are allowed for the given channel.
+   * @returns Whether the block is supported on the given channel.
    */
-  filterBlocksByChannel<B extends Block | BlockFull>(
-    blocks: B[],
+  isChannelSupported<B extends Block | BlockFull>(
+    block: B,
     channel: ChannelName,
   ) {
-    return blocks.filter((b) => {
-      return (
-        !b.trigger_channels ||
-        b.trigger_channels.length === 0 ||
-        b.trigger_channels.includes(channel)
-      );
-    });
+    return (
+      !block.trigger_channels ||
+      block.trigger_channels.length === 0 ||
+      block.trigger_channels.includes(channel)
+    );
   }
 
   /**
-   * Filters an array of blocks based on subscriber labels.
+   * Checks if the block matches the subscriber labels, allowing for two scenarios:
+   * - Has no trigger labels (making it applicable to all subscribers), or
+   * - Contains at least one trigger label that matches a label from the provided list.
    *
-   * This function selects blocks that either:
-   * - Have no trigger labels (making them applicable to all subscribers), or
-   * - Contain at least one trigger label that matches a label from the provided list.
-   *
-   * The filtered blocks are then **sorted** in descending order by the number of trigger labels,
-   * ensuring that blocks with more specific targeting (more trigger labels) are prioritized.
-   *
-   * @param blocks - The list of blocks to be filtered.
+   * @param block - The block to check.
    * @param labels - The list of subscriber labels to match against.
-   * @returns The filtered and sorted list of blocks.
+   * @returns True if the block matches the subscriber labels, false otherwise.
    */
-  filterBlocksBySubscriberLabels<B extends Block | BlockFull>(
-    blocks: B[],
-    profile?: Subscriber,
+  matchesSubscriberLabels<B extends Block | BlockFull>(
+    block: B,
+    subscriber?: Subscriber,
   ) {
-    if (!profile) {
-      return blocks;
+    if (!subscriber) {
+      return block;
     }
 
-    return (
-      blocks
-        .filter((b) => {
-          const triggerLabels = b.trigger_labels.map((l) =>
-            typeof l === 'string' ? l : l.id,
-          );
-          return (
-            triggerLabels.length === 0 ||
-            triggerLabels.some((l) => profile.labels.includes(l))
-          );
-        })
-        // Priority goes to block who target users with labels
-        .sort((a, b) => b.trigger_labels.length - a.trigger_labels.length)
+    const triggerLabels = block.trigger_labels.map((l: string | Label) =>
+      typeof l === 'string' ? l : l.id,
     );
+    return (
+      triggerLabels.length === 0 ||
+      triggerLabels.some((l) => subscriber.labels.includes(l))
+    );
+  }
+
+  /**
+   * Retrieves the configured NLU penalty factor from settings, or falls back to a default value.
+   *
+   * @returns The NLU penalty factor as a number.
+   */
+  private async getPenaltyFactor(): Promise<number> {
+    const settings = await this.settingService.getSettings();
+    const configured = settings.chatbot_settings?.default_nlu_penalty_factor;
+
+    if (configured == null) {
+      this.logger.warn(
+        'Using fallback NLU penalty factor value: %s',
+        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
+      );
+    }
+    return configured ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
   }
 
   /**
@@ -133,75 +131,88 @@ export class BlockService extends BaseService<
    *
    * @param filteredBlocks blocks Starting/Next blocks in the conversation flow
    * @param event Received channel's message
+   * @param canHaveMultipleMatches Whether to allow multiple matches for the same event
+   *  (eg. Yes/No question to which the answer is ambiguous "Sometimes yes, sometimes no")
    *
    * @returns The block that matches
    */
   async match(
     blocks: BlockFull[],
     event: EventWrapper<any, any>,
+    canHaveMultipleMatches = true,
   ): Promise<BlockFull | undefined> {
     if (!blocks.length) {
       return undefined;
     }
 
-    // Search for block matching a given event
-    let block: BlockFull | undefined = undefined;
-    const payload = event.getPayload();
+    // Narrow the search space
+    const channelName = event.getHandler().getName();
+    const sender = event.getSender();
+    const candidates = blocks.filter(
+      (b) =>
+        this.isChannelSupported(b, channelName) &&
+        this.matchesSubscriberLabels(b, sender),
+    );
 
-    // Perform a filter to get the candidates blocks
-    const filteredBlocks = this.filterBlocksBySubscriberLabels(
-      this.filterBlocksByChannel(blocks, event.getHandler().getName()),
-      event.getSender(),
+    if (!candidates.length) {
+      return undefined;
+    }
+
+    // Priority goes to block who target users with labels
+    const prioritizedCandidates = candidates.sort(
+      (a, b) => b.trigger_labels.length - a.trigger_labels.length,
     );
 
     // Perform a payload match & pick last createdAt
+    const payload = event.getPayload();
     if (payload) {
-      block = filteredBlocks
-        .filter((b) => {
-          return this.matchPayload(payload, b);
-        })
-        .shift();
-    }
-
-    if (!block) {
-      // Perform a text match (Text or Quick reply)
-      const text = event.getText().trim();
-
-      // Perform a text pattern match
-      block = filteredBlocks
-        .filter((b) => {
-          return this.matchText(text, b);
-        })
-        .shift();
-
-      // Perform an NLP Match
-      const nlp = event.getNLP();
-      if (!block && nlp) {
-        const scoredEntities =
-          await this.nlpService.computePredictionScore(nlp);
-
-        const settings = await this.settingService.getSettings();
-        let penaltyFactor =
-          settings.chatbot_settings?.default_nlu_penalty_factor;
-        if (!penaltyFactor) {
-          this.logger.warn(
-            'Using fallback NLU penalty factor value: %s',
-            FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
-          );
-          penaltyFactor = FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
-        }
-
-        if (scoredEntities.entities.length > 0) {
-          block = this.matchBestNLP(
-            filteredBlocks,
-            scoredEntities,
-            penaltyFactor,
-          );
-        }
+      const payloadMatches = prioritizedCandidates.filter((b) => {
+        return this.matchPayload(payload, b);
+      });
+      if (payloadMatches.length > 1 && !canHaveMultipleMatches) {
+        // If the payload matches multiple blocks ,
+        // we return undefined so that we trigger the local fallback
+        return undefined;
+      } else if (payloadMatches.length > 0) {
+        // If we have a payload match, we return the first one
+        // (which is the most recent one due to the sort)
+        // and we don't check for text or NLP matches
+        return payloadMatches[0];
       }
     }
 
-    return block;
+    // Perform a text match (Text or Quick reply)
+    const text = event.getText().trim();
+    if (text) {
+      const textMatches = prioritizedCandidates.filter((b) => {
+        return this.matchText(text, b);
+      });
+
+      if (textMatches.length > 1 && !canHaveMultipleMatches) {
+        // If the text matches multiple blocks (especially regex),
+        // we return undefined so that we trigger the local fallback
+        return undefined;
+      } else if (textMatches.length > 0) {
+        return textMatches[0];
+      }
+    }
+
+    // Perform an NLP Match
+    const nlp = event.getNLP();
+    if (nlp) {
+      const scoredEntities = await this.nlpService.computePredictionScore(nlp);
+
+      if (scoredEntities.entities.length) {
+        const penaltyFactor = await this.getPenaltyFactor();
+        return this.matchBestNLP(
+          prioritizedCandidates,
+          scoredEntities,
+          penaltyFactor,
+        );
+      }
+    }
+
+    return undefined;
   }
 
   /**
@@ -500,11 +511,19 @@ export class BlockService extends BaseService<
     envelope: StdOutgoingSystemEnvelope,
   ) {
     // Perform a filter to get the candidates blocks
-    const filteredBlocks = this.filterBlocksBySubscriberLabels(
-      this.filterBlocksByChannel(blocks, event.getHandler().getName()),
-      event.getSender(),
+    const handlerName = event.getHandler().getName();
+    const sender = event.getSender();
+    const candidates = blocks.filter(
+      (b) =>
+        this.isChannelSupported(b, handlerName) &&
+        this.matchesSubscriberLabels(b, sender),
     );
-    return filteredBlocks.find((b) => {
+
+    if (!candidates.length) {
+      return undefined;
+    }
+
+    return candidates.find((b) => {
       return b.patterns
         .filter(
           (p) => typeof p === 'object' && 'type' in p && p.type === 'outcome',
