@@ -52,12 +52,15 @@ const AutoCompleteSelect = <
   FreeSolo extends boolean | undefined = false,
 >(
   {
+    label,
     value,
     options = [],
     idKey = "id",
     labelKey,
     multiple,
     onSearch,
+    error,
+    helperText,
     isOptionEqualToValue = (option, value) =>
       option?.[idKey] === value?.[idKey],
     getOptionLabel = (option) => option?.[String(labelKey)] || option?.[idKey],
@@ -154,7 +157,10 @@ const AutoCompleteSelect = <
       renderInput={(props) => (
         <Input
           {...props}
+          label={label}
           onChange={(e) => handleSearch(e.target.value)}
+          error={error}
+          helperText={helperText}
           InputProps={{
             ...props.InputProps,
             endAdornment: (
