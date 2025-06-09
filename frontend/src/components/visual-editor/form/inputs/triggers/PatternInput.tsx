@@ -37,21 +37,27 @@ const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
       rules={{
         validate: (currentPatternValue: Pattern) => {
           const type = getPatternType(currentPatternValue);
+          const isEmpty = (val: string) => !val || val === "";
 
-          if (type === PatternType.REGEX) {
-            const regexString = currentPatternValue as string;
-
-            if (!regexString || extractRegexBody(regexString).trim() === "") {
-              return t("message.regex_is_empty");
-            }
-            if (!isRegex(extractRegexBody(regexString))) {
-              return t("message.regex_is_invalid");
-            }
-          } else if (type === PatternType.TEXT) {
-            const textString = currentPatternValue as string;
-
-            if (!textString || textString.trim() === "") {
+          if (type === PatternType.REGEX || type === PatternType.TEXT) {
+            if (typeof currentPatternValue !== "string") {
               return t("message.text_is_required");
+            }
+            const value = currentPatternValue.trim();
+
+            if (type === PatternType.REGEX) {
+              const regexBody = extractRegexBody(value);
+
+              if (isEmpty(regexBody)) {
+                return t("message.regex_is_empty");
+              }
+              if (!isRegex(regexBody)) {
+                return t("message.regex_is_invalid");
+              }
+            } else if (type === PatternType.TEXT) {
+              if (isEmpty(value)) {
+                return t("message.text_is_required");
+              }
             }
           }
 
