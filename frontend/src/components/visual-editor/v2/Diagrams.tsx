@@ -264,6 +264,19 @@ const Diagrams = () => {
           return;
         }
 
+        const sourceId = entity.getSourcePort().getParent().getOptions()
+          .id as string;
+        const targetId = entity.getTargetPort().getParent().getOptions()
+          .id as string;
+        const previousData = getBlockFromCache(sourceId!);
+
+        // Only add the link if targetId doesn't already exist in nextBlocks
+        if (previousData?.nextBlocks?.includes(targetId)) {
+          model.removeLink(link);
+
+          return;
+        }
+
         link.setLocked(true);
         link.registerListener({
           selectionChanged(event: any) {
@@ -280,17 +293,15 @@ const Diagrams = () => {
           }
         });
 
-        const sourceId = entity.getSourcePort().getParent().getOptions()
-          .id as string;
-        const targetId = entity.getTargetPort().getParent().getOptions()
-          .id as string;
-        const previousData = getBlockFromCache(sourceId!);
-
         if (
           // @ts-expect-error undefined attr
           entity.getSourcePort().getOptions()?.label ===
           BlockPorts.nextBlocksOutPort
         ) {
+          // Only add the link if targetId exists, skip if targetId is null
+          if (!targetId) {
+            return;
+          }
           const nextBlocks = [
             ...(previousData?.nextBlocks || []),
             ...(targetId ? [targetId] : []),
