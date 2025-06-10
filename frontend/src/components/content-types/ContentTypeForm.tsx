@@ -8,7 +8,7 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
-import { FC, Fragment, useMemo } from "react";
+import { FC, Fragment } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -24,29 +24,17 @@ import {
   IContentType,
   IContentTypeAttributes,
 } from "@/types/content-type.types";
-import { generateId } from "@/utils/generateId";
 import { slugify } from "@/utils/string";
 
 import { FieldInput } from "./components/FieldInput";
 import { FIELDS_FORM_DEFAULT_VALUES } from "./constants";
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
-  data: { defaultValues: contentTypeWithoutUuid },
+  data: { defaultValues: contentType },
   Wrapper = Fragment,
   WrapperProps,
   ...rest
 }) => {
-  const contentType = useMemo(
-    () =>
-      contentTypeWithoutUuid && {
-        ...contentTypeWithoutUuid,
-        fields: contentTypeWithoutUuid?.fields?.map((field) => ({
-          ...field,
-          uuid: generateId(),
-        })),
-      },
-    [contentTypeWithoutUuid],
-  );
   const { toast } = useToast();
   const { t } = useTranslate();
   const {
@@ -140,7 +128,7 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
                 control={control}
                 onLabelChange={(value) => {
                   const fieldName = contentType?.fields?.find(
-                    ({ uuid }) => uuid === field.uuid,
+                    ({ name }) => name === field.name,
                   )?.name;
 
                   if (!fieldName) {

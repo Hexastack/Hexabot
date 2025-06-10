@@ -23,7 +23,6 @@ export type ContentField = {
   name: string;
   label: string;
   type: ContentFieldType;
-  uuid?: string;
 };
 
 export interface IContentTypeAttributes {
