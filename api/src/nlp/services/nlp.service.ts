@@ -65,7 +65,6 @@ export class NlpService {
    * Handles the event triggered when a new NLP entity is created. Synchronizes the entity with the external NLP provider.
    *
    * @param entity - The NLP entity to be created.
-   * @returns The updated entity after synchronization.
    */
   @OnEvent('hook:nlpEntity:create')
   async handleEntityCreate(entity: NlpEntityDocument) {
@@ -128,8 +127,6 @@ export class NlpService {
    * Handles the event triggered when a new NLP value is created. Synchronizes the value with the external NLP provider.
    *
    * @param value - The NLP value to be created.
-   *
-   * @returns The updated value after synchronization.
    */
   @OnEvent('hook:nlpValue:create')
   async handleValueCreate(value: NlpValueDocument) {
