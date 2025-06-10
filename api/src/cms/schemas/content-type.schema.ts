@@ -44,7 +44,7 @@ export class ContentType extends BaseSchema {
     required: true,
     validate: {
       /**
-       * Ensures every `name` in the fields array is unique.
+       * Ensures every `label` in the fields array is unique.
        * Runs on `save`, `create`, `insertMany`, and `findOneAndUpdate`
        * when `runValidators: true` is set.
        */
