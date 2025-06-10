@@ -13,6 +13,7 @@ import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 import { ContentField } from '../dto/contentType.dto';
+import { validateUniqueFields } from '../utilities/field-validation.utils';
 
 @Schema({ timestamps: true })
 export class ContentType extends BaseSchema {
@@ -48,13 +49,7 @@ export class ContentType extends BaseSchema {
        * when `runValidators: true` is set.
        */
       validator(fields: ContentField[]): boolean {
-        if (!Array.isArray(fields)) return false;
-        const seen = new Set<string>();
-        return fields.every((f) => {
-          if (seen.has(f.name)) return false;
-          seen.add(f.name);
-          return true;
-        });
+        return validateUniqueFields(fields, 'name');
       },
       message:
         'Each element in "fields" must have a unique "name" (duplicate detected)',

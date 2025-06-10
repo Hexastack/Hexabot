@@ -13,19 +13,14 @@ import {
 } from 'class-validator';
 
 import { ContentField } from '../dto/contentType.dto';
+import { validateUniqueFields } from '../utilities/field-validation.utils';
 
 @ValidatorConstraint({ async: false })
 export class UniqueFieldNamesConstraint
   implements ValidatorConstraintInterface
 {
   validate(fields: ContentField[], _args: ValidationArguments) {
-    if (!Array.isArray(fields)) return false;
-    const seen = new Set<string>();
-    return fields.every((f) => {
-      if (seen.has(f.name)) return false;
-      seen.add(f.name);
-      return true;
-    });
+    return validateUniqueFields(fields, 'name');
   }
 
   defaultMessage(args: ValidationArguments) {
