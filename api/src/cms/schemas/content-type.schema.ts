@@ -7,7 +7,6 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 
 import { FieldType } from '@/setting/schemas/types';
 import { BaseSchema } from '@/utils/generics/base-schema';
@@ -28,7 +27,7 @@ export class ContentType extends BaseSchema {
    */
 
   @Prop({
-    type: mongoose.Schema.Types.Mixed,
+    type: [ContentField],
     default: [
       {
         name: 'title',
@@ -41,6 +40,25 @@ export class ContentType extends BaseSchema {
         type: FieldType.checkbox,
       },
     ],
+    required: true,
+    validate: {
+      /**
+       * Ensures every `name` in the fields array is unique.
+       * Runs on `save`, `create`, `insertMany`, and `findOneAndUpdate`
+       * when `runValidators: true` is set.
+       */
+      validator(fields: ContentField[]): boolean {
+        if (!Array.isArray(fields)) return false;
+        const seen = new Set<string>();
+        return fields.every((f) => {
+          if (seen.has(f.name)) return false;
+          seen.add(f.name);
+          return true;
+        });
+      },
+      message:
+        'Each element in "fields" must have a unique "name" (duplicate detected)',
+    },
   })
   fields: ContentField[];
 }

@@ -21,6 +21,7 @@ import {
 import { FieldType } from '@/setting/schemas/types';
 import { DtoConfig } from '@/utils/types/dto.types';
 
+import { UniqueFieldNames } from '../decorators/unique-field-names.decorator';
 import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
 
 export class ContentField {
@@ -56,6 +57,7 @@ export class ContentTypeCreateDto {
   @ValidateNested({ each: true })
   @Validate(ValidateRequiredFields)
   @Type(() => ContentField)
+  @UniqueFieldNames()
   fields?: ContentField[];
 }
 
