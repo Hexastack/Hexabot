@@ -53,11 +53,11 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     name: "fields",
     rules: {
       validate: (fields) => {
-        const hasDuplicatedLabels =
+        const hasUniqueLabels =
           new Set(fields.map((f) => f["label"] as string)).size ===
           fields.length;
 
-        if (hasDuplicatedLabels) {
+        if (!hasUniqueLabels) {
           toast.error(t("message.duplicate_labels_not_allowed"));
 
           return false;
