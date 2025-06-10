@@ -9,13 +9,5 @@
 export const validateUniqueFields = <T>(
   fields: T[],
   fieldName: keyof T,
-): boolean => {
-  if (!Array.isArray(fields)) return false;
-  const seen = new Set<string>();
-  return fields.every((f) => {
-    const fieldValue = f[fieldName] as string;
-    if (seen.has(fieldValue)) return false;
-    seen.add(fieldValue);
-    return true;
-  });
-};
+): boolean =>
+  new Set(fields.map((f) => f[fieldName] as string)).size === fields.length;
