@@ -52,16 +52,10 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
   const { append, fields, remove } = useFieldArray({
     name: "fields",
     rules: {
-      validate: (value) => {
-        const labelCounts = value.reduce((acc, field) => {
-          if (!field.label.trim()) return acc;
-          acc[field.label] = (acc[field.label] || 0) + 1;
-
-          return acc;
-        }, {} as Record<string, number>);
-        const hasDuplicatedLabels = Object.values(labelCounts).some(
-          (count: number) => count > 1,
-        );
+      validate: (fields) => {
+        const hasDuplicatedLabels =
+          new Set(fields.map((f) => f["label"] as string)).size ===
+          fields.length;
 
         if (hasDuplicatedLabels) {
           toast.error(t("message.duplicate_labels_not_allowed"));

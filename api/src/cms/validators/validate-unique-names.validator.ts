@@ -20,10 +20,10 @@ export class UniqueFieldNamesConstraint
   implements ValidatorConstraintInterface
 {
   validate(fields: ContentField[], _args: ValidationArguments) {
-    return validateUniqueFields(fields, 'name');
+    return validateUniqueFields(fields, 'label');
   }
 
   defaultMessage(args: ValidationArguments) {
-    return `${args.property} contains duplicate "name" values; each field.name must be unique`;
+    return `${args.property} contains duplicate "label" values; each field.name must be unique`;
   }
 }

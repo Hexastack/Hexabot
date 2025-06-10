@@ -49,10 +49,10 @@ export class ContentType extends BaseSchema {
        * when `runValidators: true` is set.
        */
       validator(fields: ContentField[]): boolean {
-        return validateUniqueFields(fields, 'name');
+        return validateUniqueFields(fields, 'label');
       },
       message:
-        'Each element in "fields" must have a unique "name" (duplicate detected)',
+        'Each element in "fields" must have a unique "label" (duplicate detected)',
     },
   })
   fields: ContentField[];
