@@ -207,11 +207,15 @@ describe('NlpSampleController', () => {
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'nonexistent' },
       ];
+      jest.spyOn(nlpSampleService, 'findByPatternsAndPopulate');
       const result = await nlpSampleController.findPage(
         pageQuery,
         ['language', 'entities'],
         {},
         patterns,
+      );
+      expect(nlpSampleService.findByPatternsAndPopulate).toHaveBeenCalledTimes(
+        1,
       );
       expect(Array.isArray(result)).toBe(true);
       expect(result).toHaveLength(0);
@@ -220,7 +224,9 @@ describe('NlpSampleController', () => {
 
   describe('count', () => {
     it('should count the nlp samples', async () => {
+      jest.spyOn(nlpSampleService, 'count');
       const result = await nlpSampleController.count({});
+      expect(nlpSampleService.count).toHaveBeenCalledTimes(1);
       const count = nlpSampleFixtures.length;
       expect(result).toEqual({ count });
     });
@@ -478,7 +484,9 @@ describe('NlpSampleController', () => {
   describe('filterCount', () => {
     it('should count the nlp samples without patterns', async () => {
       const filters = { text: 'Hello' };
+      jest.spyOn(nlpSampleService, 'countByPatterns');
       const result = await nlpSampleController.filterCount(filters, []);
+      expect(nlpSampleService.countByPatterns).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ count: 1 });
     });
 
@@ -487,7 +495,9 @@ describe('NlpSampleController', () => {
       const patterns: NlpValueMatchPattern[] = [
         { entity: 'intent', match: 'value', value: 'greeting' },
       ];
+      jest.spyOn(nlpSampleService, 'countByPatterns');
       const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(nlpSampleService.countByPatterns).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ count: 1 });
     });
 

@@ -378,7 +378,7 @@ export abstract class BaseRepository<
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
     projection?: ProjectionType<T>,
-  ) {
+  ): Promise<T | null> {
     if (!criteria) {
       // @TODO : Issue a warning ?
       return null;
@@ -768,7 +768,7 @@ export abstract class BaseRepository<
    * @param filter  Mongo filter selecting the documents to update.
    * @param dto     Update payload.
    * @param options `{ shouldFlatten?: boolean }`.
-   * @returns MongoDB `UpdateWriteOpResult` describing the operation outcome.
+   * @returns Promise that resolves a MongoDB `UpdateWriteOpResult` describing the operation outcome.
    */
   async updateMany<D extends Partial<U>>(
     filter: TFilterQuery<T>,

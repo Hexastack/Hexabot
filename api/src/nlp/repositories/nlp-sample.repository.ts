@@ -53,6 +53,35 @@ export class NlpSampleRepository extends BaseRepository<
   }
 
   /**
+   * Normalize the filter query.
+   *
+   * @param filters - The filters to normalize.
+   * @returns The normalized filters.
+   */
+  private normalizeFilters(
+    filters: TFilterQuery<NlpSample>,
+  ): TFilterQuery<NlpSample> {
+    if (filters?.$and) {
+      return {
+        ...filters,
+        $and: filters.$and.map((condition) => {
+          // @todo: think of a better way to handle language to objectId conversion
+          // This is a workaround for the fact that language is stored as an ObjectId
+          // in the database, but we want to filter by its string representation.
+          if ('language' in condition && condition.language) {
+            return {
+              ...condition,
+              language: new Types.ObjectId(condition.language as string),
+            };
+          }
+          return condition;
+        }),
+      };
+    }
+    return filters;
+  }
+
+  /**
    * Build the aggregation stages that restrict a *nlpSampleEntities* collection
    * to links which:
    * 1. Reference all of the supplied `values`, and
@@ -77,27 +106,12 @@ export class NlpSampleRepository extends BaseRepository<
       value: new Types.ObjectId(id),
     }));
 
+    const normalizedFilters = this.normalizeFilters(filters);
+
     return [
       {
         $match: {
-          // @todo: think of a better way to handle language to objectId conversion
-          // This is a workaround for the fact that language is stored as an ObjectId
-          // in the database, but we want to filter by its string representation.
-          ...filters,
-          ...(filters?.$and
-            ? {
-                $and: filters.$and?.map((condition) => {
-                  if ('language' in condition && condition.language) {
-                    return {
-                      language: new Types.ObjectId(
-                        condition.language as string,
-                      ),
-                    };
-                  }
-                  return condition;
-                }),
-              }
-            : {}),
+          ...normalizedFilters,
         },
       },
 

@@ -95,8 +95,8 @@ export class BlockService extends BaseService<
     block: B,
     subscriber?: Subscriber,
   ) {
-    if (!subscriber) {
-      return block;
+    if (!subscriber || !subscriber.labels) {
+      return true; // No subscriber or labels to match against
     }
 
     const triggerLabels = block.trigger_labels.map((l: string | Label) =>

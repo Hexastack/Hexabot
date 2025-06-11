@@ -104,7 +104,7 @@ export class NlpSampleService extends BaseService<
    * Same as `findByPatterns`, but also populates all relations declared
    * in the repository (`populatePaths`).
    *
-   * @param criteras      `{ filters, patterns }`
+   * @param criteria      `{ filters, patterns }`
    * @param page        Optional paging / sorting descriptor.
    * @param projection  Optional Mongo projection.
    * @returns Promise resolving to the populated samples.
