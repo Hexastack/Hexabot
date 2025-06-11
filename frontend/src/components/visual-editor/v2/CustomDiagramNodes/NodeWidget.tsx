@@ -307,6 +307,11 @@ class NodeWidget extends React.Component<
                           return `${p.entity}=${"value" in p ? p.value : "*"}`;
                         })
                         .join(" & ");
+                    } else {
+                      return pattern
+                        ? // @ts-ignore
+                          (pattern as { value: string }).value
+                        : "";
                     }
                   }
                 })

@@ -8,122 +8,99 @@
 
 import { Box } from "@mui/material";
 import { FC } from "react";
-import { Control, Controller } from "react-hook-form";
+import { ControllerRenderProps } from "react-hook-form";
 
 import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useTranslate } from "@/hooks/useTranslate";
-import { NlpPattern, Pattern, PayloadPattern } from "@/types/block.types";
+import {
+  IBlockAttributes,
+  NlpPattern,
+  PayloadPattern,
+} from "@/types/block.types";
 import { PatternType } from "@/types/pattern.types";
-import { getPatternType } from "@/utils/pattern";
-import { extractRegexBody, formatWithSlashes, isRegex } from "@/utils/string";
+import { extractRegexBody, formatWithSlashes } from "@/utils/string";
 
 import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
 
-type PatternInputProps = {
-  control: Control<any>;
-  basePath: string;
-};
+interface PatternInputProps
+  extends ControllerRenderProps<IBlockAttributes, `patterns.${number}`> {
+  currentPatternType: PatternType;
+  error: boolean;
+  helperText: string | undefined;
+}
 
-const PatternInput: FC<PatternInputProps> = ({ control, basePath }) => {
+const PatternInput: FC<PatternInputProps> = ({
+  value,
+  onChange,
+  currentPatternType,
+  error,
+  helperText,
+}) => {
   const { t } = useTranslate();
 
   return (
-    <Controller
-      name={basePath}
-      control={control}
-      rules={{
-        validate: (currentPatternValue: Pattern) => {
-          const type = getPatternType(currentPatternValue);
-          const isEmpty = (val: string) => !val || val === "";
-
-          if (type === PatternType.REGEX || type === PatternType.TEXT) {
-            if (typeof currentPatternValue !== "string") {
-              return t("message.text_is_required");
-            }
-            const value = currentPatternValue.trim();
-
-            if (type === PatternType.REGEX) {
-              const regexBody = extractRegexBody(value);
-
-              if (isEmpty(regexBody)) {
-                return t("message.regex_is_empty");
-              }
-              if (!isRegex(regexBody)) {
-                return t("message.regex_is_invalid");
-              }
-            } else if (type === PatternType.TEXT) {
-              if (isEmpty(value)) {
-                return t("message.text_is_required");
-              }
-            }
+    <Box display="flex" flexGrow={1}>
+      {currentPatternType === PatternType.NLP && (
+        <NlpPatternSelect
+          patterns={value as NlpPattern[]}
+          onChange={onChange}
+        />
+      )}
+      {[PatternType.PAYLOAD, PatternType.CONTENT, PatternType.MENU].includes(
+        currentPatternType,
+      ) ? (
+        <PostbackInput
+          onChange={(payload) => {
+            payload && onChange(payload);
+          }}
+          defaultValue={value as PayloadPattern}
+        />
+      ) : null}
+      {currentPatternType === PatternType.OUTCOME ? (
+        <OutcomeInput
+          onChange={(payload) => {
+            payload && onChange(payload);
+          }}
+          defaultValue={value as PayloadPattern}
+        />
+      ) : null}
+      {currentPatternType === PatternType.REGEX ? (
+        <RegexInput
+          value={
+            typeof value === "object" && value !== null && "value" in value
+              ? extractRegexBody(value.value)
+              : ""
           }
-
-          return true;
-        },
-      }}
-      render={({ field, fieldState }) => {
-        const patternForPath = field.value as Pattern;
-        const currentPatternType = getPatternType(patternForPath);
-
-        return (
-          <Box display="flex" flexGrow={1}>
-            {currentPatternType === PatternType.NLP && (
-              <NlpPatternSelect
-                patterns={patternForPath as NlpPattern[]}
-                onChange={field.onChange}
-              />
-            )}
-            {[
-              PatternType.PAYLOAD,
-              PatternType.CONTENT,
-              PatternType.MENU,
-            ].includes(currentPatternType) ? (
-              <PostbackInput
-                onChange={(payload) => {
-                  payload && field.onChange(payload);
-                }}
-                defaultValue={patternForPath as PayloadPattern}
-              />
-            ) : null}
-            {currentPatternType === PatternType.OUTCOME ? (
-              <OutcomeInput
-                onChange={(payload) => {
-                  payload && field.onChange(payload);
-                }}
-                defaultValue={patternForPath as PayloadPattern}
-              />
-            ) : null}
-            {typeof patternForPath === "string" &&
-            currentPatternType === PatternType.REGEX ? (
-              <RegexInput
-                value={extractRegexBody(patternForPath as string)}
-                label={t("label.regex")}
-                onChange={(e) =>
-                  field.onChange(formatWithSlashes(e.target.value))
-                }
-                required
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-              />
-            ) : null}
-            {typeof patternForPath === "string" &&
-            currentPatternType === PatternType.TEXT ? (
-              <Input
-                label={t("label.text")}
-                value={patternForPath as string}
-                onChange={(e) => field.onChange(e.target.value)}
-                error={fieldState.invalid}
-                helperText={fieldState.error?.message}
-                required
-              />
-            ) : null}
-          </Box>
-        );
-      }}
-    />
+          label={t("label.regex")}
+          onChange={(e) =>
+            onChange({
+              value: formatWithSlashes(e.target.value),
+              type: "regex",
+            })
+          }
+          required
+          error={error}
+          helperText={helperText}
+        />
+      ) : null}
+      {currentPatternType === PatternType.TEXT ? (
+        <Input
+          label={t("label.text")}
+          value={
+            typeof value === "object" && value !== null && "value" in value
+              ? value.value
+              : value
+          }
+          onChange={(e) => onChange({ value: e.target.value, type: "text" })}
+          error={error}
+          helperText={helperText}
+          required
+        />
+      ) : null}
+    </Box>
   );
 };
 

@@ -9,7 +9,9 @@
 import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
+import { IBlockStub } from "@/types/block.types";
 import { ISubscriberStub } from "@/types/subscriber.types";
+import { isRegexString } from "@/utils/string";
 
 import { EntityType } from "./types";
 
@@ -253,7 +255,22 @@ export const BlockEntity = new schema.Entity(
   },
   {
     idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
+    processStrategy: <T extends IBlockStub>(entity: T) => ({
+      ...entity,
+      patterns: entity.patterns?.map((pattern) => {
+        if (typeof pattern === "string") {
+          if (isRegexString(pattern)) {
+            return { value: pattern, type: "regex" };
+          } else {
+            return { value: pattern, type: "text" };
+          }
+        } else {
+          return pattern;
+        }
+      }),
+      ...(entity.createdAt && { createdAt: new Date(entity.createdAt) }),
+      ...(entity.updatedAt && { updatedAt: new Date(entity.updatedAt) }),
+    }),
   },
 );
 

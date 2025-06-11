@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,10 +8,11 @@
 
 import { BaseModelOptions } from "@projectstorm/react-canvas-core";
 import {
-  DefaultNodeModel as StormNodeModel,
   DefaultPortModel,
+  DefaultNodeModel as StormNodeModel,
 } from "@projectstorm/react-diagrams";
 
+import { Pattern } from "@/types/block.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 export interface NodeModelOptions extends BaseModelOptions {
@@ -21,7 +22,7 @@ export interface NodeModelOptions extends BaseModelOptions {
   source?: boolean;
   inputs?: string[];
   outputs?: string[];
-  patterns?: string[];
+  patterns?: Pattern[];
   message?: string[];
   starts_conversation?: boolean;
 }
@@ -33,7 +34,7 @@ export class NodeModel extends StormNodeModel {
   source: boolean;
   inputs: string[];
   outputs: string[];
-  patterns: string[];
+  patterns: Pattern[];
   message: string[];
   starts_conversation?: boolean;
 

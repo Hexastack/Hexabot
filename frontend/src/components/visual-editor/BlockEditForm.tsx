@@ -20,9 +20,10 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { IBlock, IBlockAttributes, PatternType } from "@/types/block.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { OutgoingMessageFormat } from "@/types/message.types";
+import { getPatternType } from "@/utils/pattern";
 
 import BlockFormProvider from "./form/BlockFormProvider";
 import { MessageForm } from "./form/MessageForm";
@@ -96,8 +97,29 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
     },
   };
   const onSubmitForm = (params: IBlockAttributes) => {
+    // Transform patterns: if regex or text, convert to string containing just the value
+    const transformedPatterns = (params.patterns || []).map((pattern) => {
+      const type = getPatternType(pattern);
+
+      if (type === PatternType.REGEX || type === PatternType.TEXT) {
+        // pattern is an object with a value property or a string
+        if (typeof pattern === "string") {
+          return pattern;
+        }
+        // If it's an object with a value property, return the value as string
+        if (pattern && typeof pattern === "object" && "value" in pattern) {
+          return String(pattern.value);
+        }
+      }
+
+      return pattern;
+    });
+
     if (block) {
-      updateBlock({ id: block.id, params });
+      updateBlock({
+        id: block.id,
+        params: { ...params, patterns: transformedPatterns },
+      });
     }
   };
   const onSubmitError = () => {

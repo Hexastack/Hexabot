@@ -9,8 +9,6 @@
 import { Pattern } from "@/types/block.types";
 import { PatternType } from "@/types/pattern.types";
 
-import { isRegexString } from "./string";
-
 /**
  * Determines the type of a given pattern and returns the corresponding `PatternType`.
  * Defaults to returning `PatternType.TEXT` if none of the conditions are met.
@@ -19,16 +17,18 @@ import { isRegexString } from "./string";
  * @returns The determined `PatternType` for the given pattern.
  */
 export const getPatternType = (pattern: Pattern): PatternType => {
-  if (typeof pattern === "string") {
-    return isRegexString(pattern) ? PatternType.REGEX : PatternType.TEXT;
-  }
-
   if (Array.isArray(pattern)) {
     return PatternType.NLP;
   }
 
   if (pattern && typeof pattern === "object") {
-    switch (pattern.type) {
+    const p = pattern as { type?: string };
+
+    switch (p.type) {
+      case "regex":
+        return PatternType.REGEX;
+      case "text":
+        return PatternType.TEXT;
       case "menu":
         return PatternType.MENU;
       case "content":

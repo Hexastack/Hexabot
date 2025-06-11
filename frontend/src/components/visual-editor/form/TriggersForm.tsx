@@ -7,7 +7,7 @@
  */
 
 import { Divider } from "@mui/material";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -24,22 +24,11 @@ export const TriggersForm = () => {
   const block = useBlock();
   const { t } = useTranslate();
   const { control } = useFormContext<IBlockAttributes>();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "patterns",
-    keyName: "fieldId",
-  });
 
   return (
     <ContentContainer>
       <ContentItem>
-        <PatternsInput
-          control={control}
-          name="patterns"
-          fields={fields}
-          append={append}
-          remove={remove}
-        />
+        <PatternsInput />
       </ContentItem>
       <Divider orientation="horizontal" flexItem />
       <ContentItem>

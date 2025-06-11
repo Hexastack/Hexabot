@@ -20,7 +20,6 @@ import {
   StdOutgoingTextMessage,
   StdPluginMessage,
 } from "./message.types";
-import { PatternType } from "./pattern.types";
 import { IUser } from "./user.types";
 
 export type Position = {
@@ -66,7 +65,7 @@ export interface PayloadPattern {
   // @todo : rename 'attachment' to 'attachments'
   // @todo: If undefined, that means the payload could be either quick_reply or button
   // We should update soon so that it will be a required attribute
-  type?: PayloadType;
+  type: PayloadType;
 }
 
 export type NlpPattern = {
@@ -75,10 +74,17 @@ export type NlpPattern = {
   value: string;
 };
 
-export type Pattern = null | string | PayloadPattern | NlpPattern[];
+export type Pattern = null | String | PayloadPattern | NlpPattern[];
 
-export type { PatternType };
-
+export enum PatternType {
+  TEXT = "text",
+  REGEX = "regex",
+  NLP = "nlp",
+  PAYLOAD = "payload",
+  MENU = "menu",
+  CONTENT = "content",
+  OUTCOME = "outcome",
+}
 export interface IBlockAttributes {
   name: string;
   patterns?: Pattern[];
