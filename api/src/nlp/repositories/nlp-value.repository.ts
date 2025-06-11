@@ -9,25 +9,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
-import {
-  Document,
-  Model,
-  PipelineStage,
-  Query,
-  SortOrder,
-  Types,
-} from 'mongoose';
+import { Model, PipelineStage, SortOrder, Types } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
+import {
+  Args,
+  postCreate,
+  postUpdate,
+  preDelete,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { NlpValueDto } from '../dto/nlp-value.dto';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
-  NlpValueDocument,
   NlpValueFull,
   NlpValueFullWithCount,
   NlpValuePopulate,
@@ -56,7 +54,7 @@ export class NlpValueRepository extends BaseRepository<
    *
    * @param created - The newly created NLP value document.
    */
-  async postCreate(created: NlpValueDocument): Promise<void> {
+  async postCreate(...[created]: Args<postCreate<NlpValue>>): Promise<void> {
     if (!created.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpValue:create', created);
@@ -69,16 +67,7 @@ export class NlpValueRepository extends BaseRepository<
    * @param query - The query that was used to update the NLP value.
    * @param updated - The updated NLP value document.
    */
-  async postUpdate(
-    _query: Query<
-      Document<NlpValue, any, any>,
-      Document<NlpValue, any, any>,
-      unknown,
-      NlpValue,
-      'findOneAndUpdate'
-    >,
-    updated: NlpValue,
-  ): Promise<void> {
+  async postUpdate(...[, updated]: Args<postUpdate<NlpValue>>): Promise<void> {
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpValue:update', updated);
@@ -92,16 +81,7 @@ export class NlpValueRepository extends BaseRepository<
    * @param _query - The query used to delete the NLP value(s).
    * @param criteria - The filter criteria used to identify the NLP value(s) to delete.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpValue, any, any>,
-      unknown,
-      NlpValue,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpValue>,
-  ): Promise<void> {
+  async preDelete(...[, criteria]: Args<preDelete<NlpValue>>): Promise<void> {
     if (criteria._id) {
       await this.nlpSampleEntityRepository.deleteMany({ value: criteria._id });
 

@@ -13,10 +13,10 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import { Args, preDelete } from '@/utils/types/lifecycle-hook-manager.types';
 
 import { ContextVarDto } from '../dto/context-var.dto';
 import { ContextVar } from '../schemas/context-var.schema';
@@ -47,16 +47,7 @@ export class ContextVarRepository extends BaseRepository<
    * @param query - The delete query.
    * @param criteria - The filter criteria for finding context vars to delete.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<ContextVar, any, any>,
-      unknown,
-      ContextVar,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<ContextVar>,
-  ) {
+  async preDelete(...[, criteria]: Args<preDelete<ContextVar>>) {
     const ids = Array.isArray(criteria._id) ? criteria._id : [criteria._id];
 
     for (const id of ids) {

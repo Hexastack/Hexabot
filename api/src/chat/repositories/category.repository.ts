@@ -8,10 +8,10 @@
 
 import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import { Args, preDelete } from '@/utils/types/lifecycle-hook-manager.types';
 
 import { CategoryDto } from '../dto/category.dto';
 import { Category } from '../schemas/category.schema';
@@ -41,16 +41,7 @@ export class CategoryRepository extends BaseRepository<
    * @param query - The delete query.
    * @param criteria - The filter criteria for finding blocks to delete.
    */
-  async preDelete(
-    query: Query<
-      DeleteResult,
-      Document<Category, any, any>,
-      unknown,
-      Category,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<Category>,
-  ) {
+  async preDelete(...[query, criteria]: Args<preDelete<Category>>) {
     criteria = query.getQuery();
     const ids = Array.isArray(criteria._id?.$in)
       ? criteria._id.$in

@@ -8,10 +8,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import { Args, preDelete } from '@/utils/types/lifecycle-hook-manager.types';
 
 import { TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
@@ -43,16 +43,7 @@ export class NlpSampleRepository extends BaseRepository<
    * @param query - The query object used for deletion.
    * @param criteria - Criteria to identify the sample(s) to delete.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpSample, any, any>,
-      unknown,
-      NlpSample,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpSample>,
-  ) {
+  async preDelete(...[, criteria]: Args<preDelete<NlpSample>>) {
     if (criteria._id) {
       await this.nlpSampleEntityRepository.deleteMany({
         sample: criteria._id,

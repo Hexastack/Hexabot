@@ -8,16 +8,20 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
+import {
+  Args,
+  postCreate,
+  postUpdate,
+  preDelete,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import {
   NLP_ENTITY_POPULATE,
   NlpEntity,
-  NlpEntityDocument,
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
@@ -47,7 +51,7 @@ export class NlpEntityRepository extends BaseRepository<
    *
    * @param created - The newly created NLP entity document.
    */
-  async postCreate(_created: NlpEntityDocument): Promise<void> {
+  async postCreate(...[_created]: Args<postCreate<NlpEntity>>): Promise<void> {
     if (!_created.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpEntity:create', _created);
@@ -62,16 +66,7 @@ export class NlpEntityRepository extends BaseRepository<
    * @param query - The query used to find and update the entity.
    * @param updated - The updated NLP entity document.
    */
-  async postUpdate(
-    _query: Query<
-      Document<NlpEntity, any, any>,
-      Document<NlpEntity, any, any>,
-      unknown,
-      NlpEntity,
-      'findOneAndUpdate'
-    >,
-    updated: NlpEntity,
-  ): Promise<void> {
+  async postUpdate(...[, updated]: Args<postUpdate<NlpEntity>>): Promise<void> {
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpEntity:update', updated);
@@ -87,16 +82,7 @@ export class NlpEntityRepository extends BaseRepository<
    * @param query The query used to delete the entity.
    * @param criteria The filter criteria used to find the entity for deletion.
    */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpEntity, any, any>,
-      unknown,
-      NlpEntity,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpEntity>,
-  ): Promise<void> {
+  async preDelete(...[, criteria]: Args<preDelete<NlpEntity>>): Promise<void> {
     if (criteria._id) {
       await this.nlpValueRepository.deleteMany({ entity: criteria._id });
       await this.nlpSampleEntityRepository.deleteMany({ entity: criteria._id });

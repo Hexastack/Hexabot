@@ -9,17 +9,15 @@
 import { Injectable } from '@nestjs/common';
 import { IHookSettingsGroupLabelOperationMap } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  FilterQuery,
-  Model,
-  Query,
-  Types,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
+import {
+  Args,
+  postUpdate,
+  preCreateValidate,
+  preUpdateValidate,
+} from '@/utils/types/lifecycle-hook-manager.types';
 
 import { Setting } from '../schemas/setting.schema';
 import { SettingType } from '../schemas/types';
@@ -30,16 +28,12 @@ export class SettingRepository extends BaseRepository<Setting> {
     super(model, Setting);
   }
 
-  async preCreateValidate(
-    doc: Document<unknown, unknown, Setting> &
-      Setting & { _id: Types.ObjectId },
-  ) {
+  async preCreateValidate(...[doc]: Args<preCreateValidate<Setting>>) {
     this.validateSettingValue(doc.type, doc.value);
   }
 
   async preUpdateValidate(
-    criteria: FilterQuery<Setting>,
-    updates: UpdateWithAggregationPipeline | UpdateQuery<Setting>,
+    ...[criteria, updates]: Args<preUpdateValidate<Setting>>
   ): Promise<void> {
     if (!Array.isArray(updates)) {
       const payload = updates.$set;
@@ -70,21 +64,12 @@ export class SettingRepository extends BaseRepository<Setting> {
    * @param _query The Mongoose query object used to find and update the document.
    * @param setting The updated `Setting` object.
    */
-  async postUpdate(
-    _query: Query<
-      Document<Setting, any, any>,
-      Document<Setting, any, any>,
-      unknown,
-      Setting,
-      'findOneAndUpdate'
-    >,
-    setting: Setting,
-  ) {
-    const group = setting.group as keyof IHookSettingsGroupLabelOperationMap;
-    const label = setting.label as '*';
+  async postUpdate(...[, updated]: Args<postUpdate<Setting>>) {
+    const group = updated.group as keyof IHookSettingsGroupLabelOperationMap;
+    const label = updated.label as '*';
 
     // Sync global settings var
-    this.eventEmitter.emit(`hook:${group}:${label}`, setting);
+    this.eventEmitter.emit(`hook:${group}:${label}`, updated);
   }
 
   /**
