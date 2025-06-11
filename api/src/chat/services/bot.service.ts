@@ -11,7 +11,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
-import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
@@ -43,7 +42,6 @@ export class BotService {
     private readonly conversationService: ConversationService,
     private readonly subscriberService: SubscriberService,
     private readonly settingService: SettingService,
-    private readonly helperService: HelperService,
   ) {}
 
   /**
