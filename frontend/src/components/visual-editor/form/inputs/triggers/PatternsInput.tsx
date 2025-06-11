@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,8 +14,13 @@ import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import SpellcheckIcon from "@mui/icons-material/Spellcheck";
 import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
-import { FC, useEffect, useMemo, useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { FC, useMemo } from "react";
+import {
+  Control,
+  FieldArrayWithId,
+  UseFieldArrayAppend,
+  UseFieldArrayRemove,
+} from "react-hook-form";
 
 import DropdownButton, {
   DropdownButtonAction,
@@ -24,9 +29,6 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { Pattern } from "@/types/block.types";
 import { PayloadType } from "@/types/message.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
-import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
-
-import { getInputControls } from "../../utils/inputControls";
 
 import PatternInput from "./PatternInput";
 
@@ -41,41 +43,28 @@ const StyledNoPatternsDiv = styled("div")(
 );
 
 type PatternsInputProps = {
-  value: Pattern[];
-  onChange: (patterns: Pattern[]) => void;
-  minInput: number;
+  control: Control<any>;
+  name: string;
+  fields: FieldArrayWithId<any, string, "fieldId">[];
+  append: UseFieldArrayAppend<any, string>;
+  remove: UseFieldArrayRemove;
 };
 
-const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
+const PatternsInput: FC<PatternsInputProps> = ({
+  control,
+  name,
+  fields,
+  append,
+  remove,
+}) => {
   const { t } = useTranslate();
   const theme = useTheme();
-  const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
-    value.map((pattern) => createValueWithId(pattern)),
-  );
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext<any>();
   const addInput = (defaultValue: Pattern) => {
-    setPatterns([...patterns, createValueWithId<Pattern>(defaultValue)]);
+    append(defaultValue);
   };
   const removeInput = (index: number) => {
-    const updatedPatterns = [...patterns];
-
-    updatedPatterns.splice(index, 1);
-
-    setPatterns(updatedPatterns);
+    remove(index);
   };
-  const updateInput = (index: number) => (p: Pattern) => {
-    patterns[index].value = p;
-    setPatterns([...patterns]);
-  };
-
-  useEffect(() => {
-    onChange(patterns.map(({ value }) => value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patterns]);
-
   const actions: DropdownButtonAction[] = useMemo(
     () => [
       {
@@ -87,7 +76,7 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
       {
         icon: <PsychologyAltIcon />,
         name: t("label.intent_match"),
-        defaultValue: [],
+        defaultValue: [[]],
       },
       {
         icon: <MouseIcon />,
@@ -117,11 +106,11 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   return (
     <Box display="flex" flexDirection="column">
       <Box display="flex" flexDirection="column">
-        {patterns.length == 0 ? (
+        {fields.length === 0 ? (
           <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
         ) : (
-          patterns.map(({ value, id }, idx) => (
-            <Box display="flex" alignItems="center" mt={2} key={id}>
+          fields.map((field, idx) => (
+            <Box display="flex" alignItems="center" mt={2} key={field.fieldId}>
               {idx > 0 && (
                 <Chip
                   sx={{ m: 1, color: theme.palette.grey[600] }}
@@ -131,15 +120,9 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
                 />
               )}
               <PatternInput
-                idx={idx}
-                value={value}
-                onChange={updateInput(idx)}
-                getInputProps={getInputControls(
-                  "label",
-                  errors,
-                  register,
-                  t("message.text_is_required"),
-                )}
+                control={control}
+                basePath={`${name}.${idx}`}
+                //idx={idx}
               />
               <IconButton
                 size="small"

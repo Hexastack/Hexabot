@@ -20,6 +20,7 @@ import {
   StdOutgoingTextMessage,
   StdPluginMessage,
 } from "./message.types";
+import { PatternType } from "./pattern.types";
 import { IUser } from "./user.types";
 
 export type Position = {
@@ -76,14 +77,7 @@ export type NlpPattern = {
 
 export type Pattern = null | string | PayloadPattern | NlpPattern[];
 
-export type PatternType =
-  | "regex"
-  | "nlp"
-  | "menu"
-  | "content"
-  | "outcome"
-  | "payload"
-  | "text";
+export type { PatternType };
 
 export interface IBlockAttributes {
   name: string;

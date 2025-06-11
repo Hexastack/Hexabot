@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,7 +8,6 @@
 
 import {
   Autocomplete,
-  Box,
   Chip,
   CircularProgress,
   InputAdornment,
@@ -230,7 +229,9 @@ export const PostbackInput = ({
           <Typography component="h4" p={2} fontWeight={700} color="primary">
             {t(`label.${group}`)}
           </Typography>
-          <Box>{children}</Box>
+          <ul style={{ margin: 0, padding: 0, listStyleType: "none" }}>
+            {children}
+          </ul>
         </li>
       )}
       renderInput={(props) => (
