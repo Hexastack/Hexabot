@@ -293,7 +293,7 @@ describe('BotService', () => {
     event.setSender(webSubscriber);
 
     const clearMock = jest
-      .spyOn(botService, 'handleIncomingMessage')
+      .spyOn(botService, 'handleOngoingConversationMessage')
       .mockImplementation(
         async (
           actualConversation: ConversationFull,

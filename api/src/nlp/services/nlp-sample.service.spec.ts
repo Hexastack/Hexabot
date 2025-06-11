@@ -10,9 +10,11 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -52,6 +54,7 @@ describe('NlpSampleService', () => {
   let nlpEntityService: NlpEntityService;
   let nlpSampleService: NlpSampleService;
   let nlpSampleEntityService: NlpSampleEntityService;
+  let nlpValueService: NlpValueService;
   let languageService: LanguageService;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpSampleRepository: NlpSampleRepository;
@@ -98,6 +101,7 @@ describe('NlpSampleService', () => {
       nlpEntityService,
       nlpSampleService,
       nlpSampleEntityService,
+      nlpValueService,
       nlpSampleRepository,
       nlpSampleEntityRepository,
       nlpSampleEntityRepository,
@@ -107,6 +111,7 @@ describe('NlpSampleService', () => {
       NlpEntityService,
       NlpSampleService,
       NlpSampleEntityService,
+      NlpValueService,
       NlpSampleRepository,
       NlpSampleEntityRepository,
       NlpSampleEntityRepository,
@@ -358,6 +363,202 @@ describe('NlpSampleService', () => {
       await nlpSampleService.annotateWithKeywordEntity(entity);
 
       expect(extractSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findByPatterns', () => {
+    it('should return samples without providing patterns', async () => {
+      const result = await nlpSampleService.findByPatterns(
+        { filters: {}, patterns: [] },
+        undefined,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('should return samples matching the given patterns', async () => {
+      // Assume pattern: entity 'intent', value 'greeting'
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      jest.spyOn(nlpSampleRepository, 'findByEntities');
+      jest.spyOn(nlpValueService, 'findByPatterns');
+      const result = await nlpSampleService.findByPatterns(
+        { filters: {}, patterns },
+        undefined,
+      );
+      expect(nlpSampleRepository.findByEntities).toHaveBeenCalled();
+      expect(nlpValueService.findByPatterns).toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result[0].text).toBe('Hello');
+    });
+
+    it('should return an empty array if no samples match the patterns', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+
+      jest.spyOn(nlpSampleRepository, 'findByEntities');
+      jest.spyOn(nlpValueService, 'findByPatterns');
+      const result = await nlpSampleService.findByPatterns(
+        { filters: {}, patterns },
+        undefined,
+      );
+
+      expect(nlpSampleRepository.findByEntities).not.toHaveBeenCalled();
+      expect(nlpValueService.findByPatterns).toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should support pagination', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const page: PageQueryDto<NlpSample> = {
+        limit: 1,
+        skip: 0,
+        sort: ['text', 'asc'],
+      };
+
+      const result = await nlpSampleService.findByPatterns(
+        { filters: {}, patterns },
+        page,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+    });
+  });
+
+  describe('findByPatternsAndPopulate', () => {
+    it('should return populated NlpSampleFull instances for matching patterns', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+
+      const result = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        undefined,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((sample) => {
+        expect(sample).toBeInstanceOf(NlpSampleFull);
+        expect(sample.entities).toBeDefined();
+        expect(Array.isArray(sample.entities)).toBe(true);
+        expect(sample.language).toBeDefined();
+      });
+    });
+
+    it('should return populated NlpSampleFull without providing patterns', async () => {
+      const result = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: { text: /Hello/gi }, patterns: [] },
+        undefined,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+      expect(result[0]).toBeInstanceOf(NlpSampleFull);
+      expect(result[0].entities).toBeDefined();
+      expect(Array.isArray(result[0].entities)).toBe(true);
+    });
+
+    it('should return an empty array if no samples match the patterns', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+
+      const result = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        undefined,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should support pagination and projection', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const page: PageQueryDto<NlpSample> = {
+        limit: 1,
+        skip: 0,
+        sort: ['text', 'asc'],
+      };
+
+      const result = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        page,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(1);
+    });
+  });
+
+  describe('countByPatterns', () => {
+    it('should return the correct count for matching patterns', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+
+      jest.spyOn(nlpSampleRepository, 'countByEntities');
+      jest.spyOn(nlpValueService, 'findByPatterns');
+      const count = await nlpSampleService.countByPatterns({
+        filters: {},
+        patterns,
+      });
+
+      expect(nlpSampleRepository.countByEntities).toHaveBeenCalled();
+      expect(nlpValueService.findByPatterns).toHaveBeenCalled();
+      expect(typeof count).toBe('number');
+      expect(count).toBe(2);
+    });
+
+    it('should return the correct count without providing patterns', async () => {
+      jest.spyOn(nlpSampleRepository, 'findByEntities');
+      jest.spyOn(nlpValueService, 'findByPatterns');
+      const count = await nlpSampleService.countByPatterns({
+        filters: {},
+        patterns: [],
+      });
+
+      expect(nlpSampleRepository.findByEntities).not.toHaveBeenCalled();
+      expect(nlpValueService.findByPatterns).not.toHaveBeenCalled();
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThan(2);
+    });
+
+    it('should return 0 if no samples match the patterns', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+
+      const count = await nlpSampleService.countByPatterns({
+        filters: {},
+        patterns,
+      });
+
+      expect(count).toBe(0);
+    });
+
+    it('should respect filters (e.g. language)', async () => {
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const filters = { text: 'Hello' };
+
+      const count = await nlpSampleService.countByPatterns({
+        filters,
+        patterns,
+      });
+
+      expect(typeof count).toBe('number');
+      expect(count).toBe(1);
     });
   });
 });

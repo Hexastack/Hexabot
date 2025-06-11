@@ -12,14 +12,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Document, Query } from 'mongoose';
+import { Document, ProjectionType, Query } from 'mongoose';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
 import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
 
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
@@ -35,6 +37,7 @@ import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
 
 import { NlpEntityService } from './nlp-entity.service';
 import { NlpSampleEntityService } from './nlp-sample-entity.service';
+import { NlpValueService } from './nlp-value.service';
 
 @Injectable()
 export class NlpSampleService extends BaseService<
@@ -47,9 +50,124 @@ export class NlpSampleService extends BaseService<
     readonly repository: NlpSampleRepository,
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
+    private readonly nlpValueService: NlpValueService,
     private readonly languageService: LanguageService,
   ) {
     super(repository);
+  }
+
+  /**
+   * Retrieve samples that satisfy `filters` **and** reference any entity / value
+   * contained in `patterns`.
+   *
+   * The pattern list is first resolved via `NlpEntityService.findByPatterns`
+   * and `NlpValueService.findByPatterns`, then delegated to
+   * `repository.findByEntities`.
+   *
+   * @param criterias      `{ filters, patterns }`
+   * @param page        Optional paging / sorting descriptor.
+   * @param projection  Optional Mongo projection.
+   * @returns Promise resolving to the matching samples.
+   */
+  async findByPatterns(
+    {
+      filters,
+      patterns,
+    }: {
+      filters: TFilterQuery<NlpSample>;
+      patterns: NlpValueMatchPattern[];
+    },
+    page?: PageQueryDto<NlpSample>,
+    projection?: ProjectionType<NlpSample>,
+  ): Promise<NlpSample[]> {
+    if (!patterns.length) {
+      return await this.repository.find(filters, page, projection);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return [];
+    }
+
+    return await this.repository.findByEntities(
+      {
+        filters,
+        values,
+      },
+      page,
+      projection,
+    );
+  }
+
+  /**
+   * Same as `findByPatterns`, but also populates all relations declared
+   * in the repository (`populatePaths`).
+   *
+   * @param criteria      `{ filters, patterns }`
+   * @param page        Optional paging / sorting descriptor.
+   * @param projection  Optional Mongo projection.
+   * @returns Promise resolving to the populated samples.
+   */
+  async findByPatternsAndPopulate(
+    {
+      filters,
+      patterns,
+    }: {
+      filters: TFilterQuery<NlpSample>;
+      patterns: NlpValueMatchPattern[];
+    },
+    page?: PageQueryDto<NlpSample>,
+    projection?: ProjectionType<NlpSample>,
+  ): Promise<NlpSampleFull[]> {
+    if (!patterns.length) {
+      return await this.repository.findAndPopulate(filters, page, projection);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return [];
+    }
+
+    return await this.repository.findByEntitiesAndPopulate(
+      {
+        filters,
+        values,
+      },
+      page,
+      projection,
+    );
+  }
+
+  /**
+   * Count how many samples satisfy `filters` and reference any entity / value
+   * present in `patterns`.
+   *
+   * @param param0 `{ filters, patterns }`
+   * @returns Promise resolving to the count.
+   */
+  async countByPatterns({
+    filters,
+    patterns,
+  }: {
+    filters: TFilterQuery<NlpSample>;
+    patterns: NlpValueMatchPattern[];
+  }): Promise<number> {
+    if (!patterns.length) {
+      return await this.repository.count(filters);
+    }
+
+    const values = await this.nlpValueService.findByPatterns(patterns);
+
+    if (!values.length) {
+      return 0;
+    }
+
+    return await this.repository.countByEntities({
+      filters,
+      values,
+    });
   }
 
   /**
