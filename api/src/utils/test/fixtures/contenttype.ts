@@ -64,7 +64,7 @@ const contentTypes: TContentTypeFixtures['values'][] = [
       },
       {
         name: 'subtitle',
-        label: 'Image',
+        label: 'Subtitle',
         type: FieldType.file,
       },
     ],

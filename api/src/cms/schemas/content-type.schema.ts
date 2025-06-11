@@ -7,13 +7,13 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 
 import { FieldType } from '@/setting/schemas/types';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 
 import { ContentField } from '../dto/contentType.dto';
+import { validateUniqueFields } from '../utilities/field-validation.utils';
 
 @Schema({ timestamps: true })
 export class ContentType extends BaseSchema {
@@ -28,7 +28,7 @@ export class ContentType extends BaseSchema {
    */
 
   @Prop({
-    type: mongoose.Schema.Types.Mixed,
+    type: [ContentField],
     default: [
       {
         name: 'title',
@@ -41,6 +41,19 @@ export class ContentType extends BaseSchema {
         type: FieldType.checkbox,
       },
     ],
+    required: true,
+    validate: {
+      /**
+       * Ensures every `label` in the fields array is unique.
+       * Runs on `save`, `create`, `insertMany`, and `findOneAndUpdate`
+       * when `runValidators: true` is set.
+       */
+      validator(fields: ContentField[]): boolean {
+        return validateUniqueFields(fields, 'label');
+      },
+      message:
+        'Each element in "fields" must have a unique "label" (duplicate detected)',
+    },
   })
   fields: ContentField[];
 }
