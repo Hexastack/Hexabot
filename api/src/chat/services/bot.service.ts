@@ -253,7 +253,7 @@ export class BotService {
    *
    * @returns A promise that resolves with a boolean indicating whether the conversation is active and a matching block was found.
    */
-  async handleIncomingMessage(
+  async handleOngoingConversationMessage(
     convo: ConversationFull,
     event: EventWrapper<any, any>,
   ) {
@@ -272,8 +272,15 @@ export class BotService {
             max_attempts: 0,
           };
 
+      // We will avoid having multiple matches when we are not at the start of a conversation
+      // and only if local fallback is enabled
+      const canHaveMultipleMatches = !fallbackOptions.active;
       // Find the next block that matches
-      const matchedBlock = await this.blockService.match(nextBlocks, event);
+      const matchedBlock = await this.blockService.match(
+        nextBlocks,
+        event,
+        canHaveMultipleMatches,
+      );
       // If there is no match in next block then loopback (current fallback)
       // This applies only to text messages + there's a max attempt to be specified
       let fallbackBlock: BlockFull | undefined;
@@ -376,7 +383,7 @@ export class BotService {
         'Existing conversations',
       );
       this.logger.debug('Conversation has been captured! Responding ...');
-      return await this.handleIncomingMessage(conversation, event);
+      return await this.handleOngoingConversationMessage(conversation, event);
     } catch (err) {
       this.logger.error(
         'An error occurred when searching for a conversation ',
