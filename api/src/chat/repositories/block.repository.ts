@@ -178,18 +178,25 @@ export class BlockRepository extends BaseRepository<
     });
 
     for (const { id, nextBlocks, attachedBlock } of blocks) {
-      const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
-        ids.includes(nextBlock),
-      );
+      try {
+        const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
+          ids.includes(nextBlock),
+        );
 
-      const updatedAttachedBlock = ids.includes(attachedBlock || '')
-        ? attachedBlock
-        : null;
+        const updatedAttachedBlock = ids.includes(attachedBlock || '')
+          ? attachedBlock
+          : null;
 
-      await this.updateOne(id, {
-        nextBlocks: updatedNextBlocks,
-        attachedBlock: updatedAttachedBlock,
-      });
+        await this.updateOne(id, {
+          nextBlocks: updatedNextBlocks,
+          attachedBlock: updatedAttachedBlock,
+        });
+      } catch (error) {
+        this.logger?.error(
+          `Failed to update block ${id} during in-category scope update.`,
+          error,
+        );
+      }
     }
   }
 
@@ -206,21 +213,30 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      // Handle attached block references
-      if (block.attachedBlock && ids.includes(block.attachedBlock)) {
-        await this.updateOne(block.id, { attachedBlock: null });
-      }
+      try {
+        // If block has an attachedBlock, we only need to check that
+        if (block.attachedBlock) {
+          if (ids.includes(block.attachedBlock)) {
+            await this.updateOne(block.id, { attachedBlock: null });
+          }
+          continue; // Skip nextBlocks check since it can't have both
+        }
 
-      // Handle nextBlocks references
-      const filteredNextBlocks = block.nextBlocks?.filter(
-        (nextBlock) => !ids.includes(nextBlock),
-      );
+        // Only check nextBlocks if there is no attachedBlock
+        const filteredNextBlocks = block.nextBlocks?.filter(
+          (nextBlock) => !ids.includes(nextBlock),
+        );
 
-      // If the filtered nextBlocks length is different from the original, update the block
-      if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
-        await this.updateOne(block.id, {
-          nextBlocks: filteredNextBlocks || [],
-        });
+        if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
+          await this.updateOne(block.id, {
+            nextBlocks: filteredNextBlocks || [],
+          });
+        }
+      } catch (error) {
+        this.logger?.error(
+          `Failed to update block ${block.id} during out-of-category scope update.`,
+          error,
+        );
       }
     }
   }
