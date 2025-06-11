@@ -28,6 +28,7 @@ import {
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '../schemas/types/message';
+import { BlockOptions } from '../schemas/types/options';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -289,6 +290,27 @@ export class BotService {
   }
 
   /**
+   * Determines if a fallback should be attempted based on the event type, fallback options, and conversation context.
+   *
+   * @param event - The incoming event that triggered the conversation flow.
+   * @param fallbackOptions - The options for fallback behavior defined in the block.
+   * @param convo - The current conversation object containing context and state.
+   *
+   * @returns A boolean indicating whether a fallback should be attempted.
+   */
+  private shouldAttemptLocalFallback(
+    event: EventWrapper<any, any>,
+    fallbackOptions: BlockOptions['fallback'],
+    convo: ConversationFull,
+  ): boolean {
+    return (
+      event.getMessageType() === IncomingMessageType.message &&
+      !!fallbackOptions?.active &&
+      convo.context.attempt < (fallbackOptions?.max_attempts ?? 0)
+    );
+  }
+
+  /**
    * Processes and responds to an incoming message within an ongoing conversation flow.
    * Determines the next block in the conversation, attempts to match the message with available blocks,
    * and handles fallback scenarios if no match is found.
@@ -302,25 +324,25 @@ export class BotService {
     convo: ConversationFull,
     event: EventWrapper<any, any>,
   ) {
-    const nextIds = convo.next.map(({ id }) => id);
-    // Reload blocks in order to populate his nextBlocks
-    // nextBlocks & trigger/assign _labels
     try {
-      const nextBlocks = await this.blockService.findAndPopulate({
-        _id: { $in: nextIds },
-      });
       let fallback = false;
-      const fallbackOptions = convo.current?.options?.fallback
+      const currentBlock = convo.current;
+      const fallbackOptions: BlockOptions['fallback'] = convo.current?.options
+        ?.fallback
         ? convo.current.options.fallback
         : {
             active: false,
             max_attempts: 0,
+            message: [],
           };
 
       // We will avoid having multiple matches when we are not at the start of a conversation
       // and only if local fallback is enabled
       const canHaveMultipleMatches = !fallbackOptions.active;
       // Find the next block that matches
+      const nextBlocks = await this.blockService.findAndPopulate({
+        _id: { $in: convo.next.map(({ id }) => id) },
+      });
       const matchedBlock = await this.blockService.match(
         nextBlocks,
         event,
@@ -331,13 +353,10 @@ export class BotService {
       let fallbackBlock: BlockFull | undefined = undefined;
       if (
         !matchedBlock &&
-        event.getMessageType() === IncomingMessageType.message &&
-        fallbackOptions.active &&
-        convo.context.attempt < fallbackOptions.max_attempts
+        this.shouldAttemptLocalFallback(event, fallbackOptions, convo)
       ) {
         // Trigger block fallback
         // NOTE : current is not populated, this may cause some anomaly
-        const currentBlock = convo.current;
         fallbackBlock = {
           ...currentBlock,
           nextBlocks: convo.next,
