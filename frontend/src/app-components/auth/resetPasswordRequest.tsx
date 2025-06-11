@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,9 +8,9 @@
 
 import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
 
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -25,8 +25,13 @@ export const ResetPasswordRequest = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ email: string }>({
+  } = useStrictForm<{ email: string }>({
     defaultValues: { email: "" },
+    rules: {
+      email: {
+        required: t("message.email_is_required"),
+      },
+    },
   });
   const { mutate: requestReset } = useRequestResetPassword({
     onSuccess: () => {
@@ -55,9 +60,7 @@ export const ResetPasswordRequest = () => {
               error={!!errors.email}
               required
               autoFocus
-              {...register("email", {
-                required: t("message.email_is_required"),
-              })}
+              {...register("email")}
               helperText={errors.email ? errors.email.message : null}
             />
             <Grid container gap={1} justifyContent="flex-end">

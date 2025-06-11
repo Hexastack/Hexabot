@@ -21,12 +21,11 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 
 import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
 import { IRegisterAttributes } from "@/types/auth/register.types";
 import { JWT } from "@/utils/Jwt";
 
@@ -69,44 +68,39 @@ export const Register = () => {
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<TRegisterExtendedPayload>({
+  } = useStrictForm<TRegisterExtendedPayload>({
     defaultValues: DEFAULT_VALUES,
+    rules: {
+      first_name: {
+        required: t("message.first_name_is_required"),
+      },
+      last_name: {
+        required: t("message.last_name_is_required"),
+      },
+      username: {
+        required: t("message.username_is_required"),
+      },
+      email: {
+        required: t("message.email_is_required"),
+      },
+      password: {
+        required: t("message.password_is_required"),
+      },
+      password2: {
+        validate: (val) => {
+          if (val !== watch("password")) {
+            trigger("password");
+
+            return t("message.password_match");
+          }
+        },
+      },
+    },
   });
   const [isTermsAccepted, setIsTermsAccepted] = useState<boolean>(false);
   const [readonlyEmail, setReadonlyEmail] = useState<boolean>(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsTermsAccepted(event.target.checked);
-  };
-  const rules = useValidationRules();
-  const validationRules = {
-    first_name: {
-      required: t("message.first_name_is_required"),
-    },
-    last_name: {
-      required: t("message.last_name_is_required"),
-    },
-    username: {
-      required: t("message.username_is_required"),
-    },
-    email: {
-      ...rules.email,
-      required: t("message.email_is_required"),
-    },
-    roles: {},
-    token: {},
-    password: {
-      ...rules.password,
-      required: t("message.password_is_required"),
-    },
-    password2: {
-      validate: (val?: string) => {
-        if (val !== watch("password")) {
-          trigger("password");
-
-          return t("message.password_match");
-        }
-      },
-    },
   };
   const onSubmitForm = ({
     password2: _password2,
@@ -126,8 +120,6 @@ export const Register = () => {
         toast.error("Invalid Token");
       } else {
         setValue("token", String(queryToken));
-
-        // (decodedToken);
         setValue("email", decodedToken.email);
         if (decodedToken.roles.length) setValue("roles", decodedToken.roles);
 
@@ -157,7 +149,7 @@ export const Register = () => {
                 error={!!errors.first_name}
                 required
                 autoFocus
-                {...register("first_name", validationRules.first_name)}
+                {...register("first_name")}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
@@ -171,7 +163,7 @@ export const Register = () => {
                 label={t("placeholder.last_name")}
                 error={!!errors.last_name}
                 required
-                {...register("last_name", validationRules.last_name)}
+                {...register("last_name")}
                 InputProps={{
                   startAdornment: <Adornment Icon={AbcIcon} />,
                 }}
@@ -183,7 +175,7 @@ export const Register = () => {
                 label={t("placeholder.username")}
                 error={!!errors.username}
                 required
-                {...register("username", validationRules.username)}
+                {...register("username")}
                 InputProps={{
                   startAdornment: <Adornment Icon={PersonIcon} />,
                 }}
@@ -195,7 +187,7 @@ export const Register = () => {
                 label={t("placeholder.email")}
                 error={!!errors.email}
                 required
-                {...register("email", validationRules.email)}
+                {...register("email")}
                 helperText={errors.email ? errors.email.message : null}
                 InputProps={{
                   disabled: readonlyEmail,
@@ -209,7 +201,7 @@ export const Register = () => {
                 label={t("label.password")}
                 error={!!errors.password}
                 required
-                {...register("password", validationRules.password)}
+                {...register("password")}
                 helperText={errors.password ? errors.password.message : null}
                 InputProps={{
                   startAdornment: <Adornment Icon={KeyIcon} />,
@@ -221,7 +213,7 @@ export const Register = () => {
                 label={t("placeholder.password2")}
                 error={!!errors.password2}
                 required
-                {...register("password2", validationRules.password2)}
+                {...register("password2")}
                 helperText={errors.password2 ? errors.password2.message : null}
                 InputProps={{
                   startAdornment: <Adornment Icon={KeyIcon} />,

@@ -8,12 +8,13 @@
 
 import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -54,24 +55,24 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<IContextVarAttributes>({
+  } = useStrictForm<IContextVarAttributes>({
     defaultValues: {
       name: contextVar?.name || "",
       label: contextVar?.label || "",
       permanent: contextVar?.permanent || false,
     },
-  });
-  const validationRules = {
-    name: {
-      pattern: {
-        value: /^[a-z_0-9]+$/,
-        message: t("message.context_vars_name_is_invalid"),
+    rules: {
+      name: {
+        pattern: {
+          value: /^[a-z_0-9]+$/,
+          message: t("message.context_vars_name_is_invalid"),
+        },
+      },
+      label: {
+        required: t("message.label_is_required"),
       },
     },
-    label: {
-      required: t("message.label_is_required"),
-    },
-  };
+  });
   const onSubmitForm = (params: IContextVarAttributes) => {
     if (contextVar) {
       updateContextVar({ id: contextVar.id, params });
@@ -102,7 +103,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
               error={!!errors.label}
               required
               autoFocus
-              {...register("label", validationRules.label)}
+              {...register("label")}
               InputProps={{
                 onChange: ({ target: { value } }) => {
                   setValue("label", value);
@@ -117,7 +118,7 @@ export const ContextVarForm: FC<ComponentFormProps<IContextVar>> = ({
               label={t("label.name")}
               error={!!errors.name}
               disabled
-              {...register("name", validationRules.name)}
+              {...register("name")}
               helperText={errors.name ? errors.name.message : null}
               InputLabelProps={{ shrink: true }}
             />

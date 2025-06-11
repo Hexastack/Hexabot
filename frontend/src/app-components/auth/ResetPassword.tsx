@@ -10,12 +10,11 @@ import KeyIcon from "@mui/icons-material/Key";
 import { Button, Grid, Paper, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useForm } from "react-hook-form";
 
 import { useResetPassword } from "@/hooks/entities/reset-hooks";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
 
 import { PublicContentWrapper } from "../../components/anonymous/PublicContentWrapper";
 import { ContentContainer } from "../dialogs";
@@ -25,23 +24,20 @@ import { PasswordInput } from "../inputs/PasswordInput";
 export const ResetPassword = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const rules = useValidationRules();
-  const validationRules = {
-    password: {
-      ...rules.password,
-      required: t("message.password_is_required"),
-    },
-    password2: {
-      ...rules.password2,
-      required: t("message.password_is_required"),
-    },
-  };
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ password: string; password2: string }>({
+  } = useStrictForm<{ password: string; password2: string }>({
     defaultValues: { password: "", password2: "" },
+    rules: {
+      password: {
+        required: t("message.password_is_required"),
+      },
+      password2: {
+        required: t("message.password_is_required"),
+      },
+    },
   });
   const { query, replace } = useRouter();
   // the following typecasting is due to the fact that the query object is not typed
@@ -76,7 +72,7 @@ export const ResetPassword = () => {
                 startAdornment: <Adornment Icon={KeyIcon} />,
               }}
               helperText={errors.password ? errors.password.message : null}
-              {...register("password", validationRules.password)}
+              {...register("password")}
             />
 
             <PasswordInput
@@ -87,7 +83,7 @@ export const ResetPassword = () => {
                 startAdornment: <Adornment Icon={KeyIcon} />,
               }}
               helperText={errors.password2 ? errors.password2.message : null}
-              {...register("password2", validationRules.password2)}
+              {...register("password2")}
             />
             <Grid container gap={1} justifyContent="flex-end">
               <Button type="submit">{t("button.submit")}</Button>

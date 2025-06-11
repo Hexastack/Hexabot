@@ -8,12 +8,13 @@
 
 import { FormLabel, Grid, Typography } from "@mui/material";
 import { FC, Fragment } from "react";
-import { Controller, ControllerRenderProps, useForm } from "react-hook-form";
+import { Controller, ControllerRenderProps } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -72,7 +73,7 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
       toast.success(t("message.success_save"));
     },
   });
-  const { control, handleSubmit } = useForm<ITranslationAttributes>({
+  const { control, handleSubmit } = useStrictForm<ITranslationAttributes>({
     defaultValues: {
       translations: translation?.translations,
     },

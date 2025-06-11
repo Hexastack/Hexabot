@@ -12,7 +12,7 @@ import KeyIcon from "@mui/icons-material/Key";
 import LanguageIcon from "@mui/icons-material/Language";
 import { Box, Button, Grid, MenuItem, Typography } from "@mui/material";
 import { FC } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { useQueryClient } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -22,9 +22,9 @@ import { Input } from "@/app-components/inputs/Input";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useUpdateProfile } from "@/hooks/entities/auth-hooks";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { useValidationRules } from "@/hooks/useValidationRules";
 import { IProfileAttributes, IUser } from "@/types/user.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
@@ -51,34 +51,25 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
     formState: { errors },
     register,
     setValue,
-  } = useForm<IProfileAttributes>({
+  } = useStrictForm<IProfileAttributes>({
     defaultValues: {
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
       language: user.language,
     },
-  });
-  const rules = useValidationRules();
-  const validationRules = {
-    ...rules,
-    email: {
-      ...rules.email,
-      required: t("message.email_is_required"),
-    },
-    password: {
-      ...rules.password,
-    },
-    password2: {
-      validate: (val?: string) => {
-        if (val !== watch("password")) {
-          trigger("password");
+    rules: {
+      password2: {
+        validate: (val) => {
+          if (val !== watch("password")) {
+            trigger("password");
 
-          return t("message.password_match");
-        }
+            return t("message.password_match");
+          }
+        },
       },
     },
-  };
+  });
   const onSubmitForm = ({
     password,
     password2: _password2,
@@ -124,7 +115,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <Input
                 label={t("label.user_first_name")}
-                {...register("first_name", validationRules.first_name)}
+                {...register("first_name")}
                 autoFocus
                 error={!!errors.first_name}
                 helperText={
@@ -135,7 +126,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <Input
                 label={t("label.last_name")}
-                {...register("last_name", validationRules.last_name)}
+                {...register("last_name")}
                 error={!!errors.last_name}
                 helperText={errors.last_name ? errors.last_name.message : null}
               />
@@ -166,7 +157,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <Input
                 label={t("label.email")}
-                {...register("email", validationRules.email)}
+                {...register("email")}
                 required
                 error={!!errors.email}
                 helperText={errors.email ? errors.email.message : null}
@@ -178,7 +169,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <PasswordInput
                 label={t("label.password")}
-                {...register("password", validationRules.password)}
+                {...register("password")}
                 required
                 error={!!errors.password}
                 helperText={errors.password ? errors.password.message : null}
@@ -190,7 +181,7 @@ export const ProfileForm: FC<ProfileFormProps> = ({ user }) => {
             <ContentItem>
               <PasswordInput
                 label={t("placeholder.password2")}
-                {...register("password2", validationRules.password2)}
+                {...register("password2")}
                 required
                 error={!!errors.password2}
                 helperText={errors.password2 ? errors.password2.message : null}

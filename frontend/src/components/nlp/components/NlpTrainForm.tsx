@@ -23,7 +23,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray } from "react-hook-form";
 import { useQuery } from "react-query";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -33,6 +33,7 @@ import Selectable from "@/app-components/inputs/Selectable";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useNlp } from "@/hooks/useNlp";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { ILanguage } from "@/types/language.types";
@@ -85,7 +86,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
     [allKeywordEntities, allTraitEntities, JSON.stringify(sample)],
   );
   const { handleSubmit, control, register, reset, setValue, watch } =
-    useForm<INlpSampleFormAttributes>({
+    useStrictForm<INlpSampleFormAttributes>({
       defaultValues,
     });
   const currentText = watch("text");
@@ -322,9 +323,6 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-          {
-            /* Keyword entities */
-          }
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem

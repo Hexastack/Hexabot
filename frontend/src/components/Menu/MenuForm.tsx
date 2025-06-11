@@ -8,13 +8,14 @@
 
 import { MenuItem } from "@mui/material";
 import { FC, Fragment, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { ToggleableInput } from "@/app-components/inputs/ToggleableInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -58,21 +59,23 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
     formState: { errors },
     resetField,
     handleSubmit,
-  } = useForm<IMenuItemAttributes>({
+  } = useStrictForm<IMenuItemAttributes>({
     defaultValues: DEFAULT_VALUES,
+    rules: {
+      type: {
+        onChange: () => {
+          resetField("url");
+        },
+        required: t("message.type_is_required"),
+      },
+      title: { required: t("message.title_is_required") },
+      url: {
+        required: t("message.url_is_required"),
+        validate: (value = "") =>
+          isAbsoluteUrl(value) || t("message.url_is_invalid"),
+      },
+    },
   });
-  const validationRules = {
-    type: {
-      required: t("message.type_is_required"),
-    },
-    title: { required: t("message.title_is_required") },
-    url: {
-      required: t("message.url_is_invalid"),
-      validate: (value: string = "") =>
-        isAbsoluteUrl(value) || t("message.url_is_invalid"),
-    },
-    payload: {},
-  };
   const typeValue = watch("type");
   const titleValue = watch("title");
   const onSubmitForm = (params: IMenuItemAttributes) => {
@@ -102,46 +105,31 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
       <form onSubmit={handleSubmit(onSubmitForm)}>
         <ContentContainer>
           <ContentContainer flexDirection="row">
-            <ContentItem>
-              <Controller
-                name="type"
-                rules={validationRules.type}
-                control={control}
-                render={({ field }) => {
-                  const { onChange, ...rest } = field;
-
-                  return (
-                    <Input
-                      select
-                      label={t("placeholder.type")}
-                      error={!!errors.type}
-                      inputRef={field.ref}
-                      required
-                      onChange={({ target: { value } }) => {
-                        onChange(value);
-                        resetField("url");
-                      }}
-                      helperText={errors.type ? errors.type.message : null}
-                      {...rest}
-                    >
-                      {Object.keys(MenuType).map((value, key) => (
-                        <MenuItem value={value} key={key}>
-                          {t(`label.${value}`)}
-                        </MenuItem>
-                      ))}
-                    </Input>
-                  );
-                }}
-              />
-            </ContentItem>
             <ContentItem flex={1}>
+              <Input
+                select
+                label={t("placeholder.type")}
+                error={!!errors.type}
+                required
+                {...register("type")}
+                helperText={errors.type ? errors.type.message : null}
+                {...rest}
+              >
+                {Object.keys(MenuType).map((value, key) => (
+                  <MenuItem value={value} key={key}>
+                    {t(`label.${value}`)}
+                  </MenuItem>
+                ))}
+              </Input>
+            </ContentItem>
+            <ContentItem flex={2}>
               <Input
                 label={t("placeholder.title")}
                 error={!!errors.title}
                 required
                 autoFocus
                 helperText={errors.title ? errors.title.message : null}
-                {...register("title", validationRules.title)}
+                {...register("title")}
               />
             </ContentItem>
           </ContentContainer>
@@ -152,7 +140,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
                 error={!!errors.url}
                 required
                 helperText={errors.url ? errors.url.message : null}
-                {...register("url", validationRules.url)}
+                {...register("url")}
               />
             ) : typeValue === MenuType.postback ? (
               <Controller

@@ -9,7 +9,7 @@
 import { FormControlLabel, Switch } from "@mui/material";
 import { useRouter } from "next/router";
 import { FC, Fragment, useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
@@ -18,6 +18,7 @@ import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useGet } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
@@ -88,7 +89,7 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
     handleSubmit,
     control,
     formState: { errors },
-  } = useForm<
+  } = useStrictForm<
     INlpValueAttributes & {
       expressions: string[];
     }
@@ -98,6 +99,11 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
       doc: nlpValue?.doc || "",
       expressions: nlpValue?.expressions || [],
       metadata: nlpValue?.metadata || getDefaultNlpMetadata(nlpEntity),
+    },
+    rules: {
+      value: {
+        required: t("message.value_is_required"),
+      },
     },
   });
   const onSubmitForm = async (params: INlpValueAttributes) => {
@@ -137,9 +143,7 @@ export const NlpValueForm: FC<ComponentFormProps<INlpValue, INlpEntity>> = ({
               required
               autoFocus
               helperText={errors.value?.message}
-              {...register("value", {
-                required: t("message.value_is_required"),
-              })}
+              {...register("value")}
             />
           </ContentItem>
           {isPattern && (

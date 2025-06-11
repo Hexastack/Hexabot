@@ -7,12 +7,12 @@
  */
 
 import { FC, Fragment, useEffect } from "react";
-import { useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useStrictForm } from "@/hooks/useStrictForm";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -46,20 +46,18 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<ILabelAttributes>({
+  } = useStrictForm<ILabelAttributes>({
     defaultValues: {
       name: label?.name || "",
       title: label?.title || "",
       description: label?.description || "",
     },
-  });
-  const validationRules = {
-    title: {
-      required: t("message.title_is_required"),
+    rules: {
+      title: {
+        required: t("message.title_is_required"),
+      },
     },
-    name: {},
-    description: {},
-  };
+  });
   const onSubmitForm = (params: ILabelAttributes) => {
     if (label) {
       updateLabel({ id: label.id, params });
@@ -90,7 +88,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
               error={!!errors.title}
               required
               autoFocus
-              {...register("title", validationRules.title)}
+              {...register("title")}
               InputProps={{
                 onChange: ({ target: { value } }) => {
                   setValue("title", value);
@@ -104,7 +102,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             <Input
               placeholder={t("placeholder.name")}
               error={!!errors.name}
-              {...register("name", validationRules.name)}
+              {...register("name")}
               disabled
               helperText={errors.name ? errors.name.message : null}
             />
@@ -113,7 +111,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             <Input
               label={t("label.description")}
               error={!!errors.description}
-              {...register("description", validationRules.description)}
+              {...register("description")}
               helperText={
                 errors.description ? errors.description.message : null
               }
