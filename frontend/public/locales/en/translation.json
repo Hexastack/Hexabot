@@ -106,6 +106,7 @@
     "invalid_carousel_limit": "List limit must be >=1 and <= 10",
     "no_content_type": "No content type available, please create one first",
     "invalid_max_fallback_attempt_limit": "Max fallback attempt limit must have positive value",
+    "fallback_message_required": "Fallback message is required",
     "regex_is_invalid": "Regex is invalid",
     "regex_is_empty": "Regex cannot be empty",
     "attachment_not_found": "Attachment is not found",

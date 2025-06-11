@@ -104,6 +104,21 @@ export const OptionsForm = () => {
           name="options.fallback"
           control={control}
           defaultValue={block?.options?.fallback}
+          rules={{
+            validate: (value) => {
+              if (!value) return true;
+              if (value.max_attempts > 0) {
+                if (
+                  !value.message ||
+                  value.message.every((msg) => !msg.trim())
+                ) {
+                  return t("message.fallback_message_required");
+                }
+              }
+
+              return true;
+            },
+          }}
           render={({ field }) => (
             <LocalFallbackInput
               value={field?.value}
