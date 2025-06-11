@@ -88,6 +88,7 @@ import { SubscriberService } from './subscriber.service';
 describe('BotService', () => {
   let blockService: BlockService;
   let subscriberService: SubscriberService;
+  let conversationService: ConversationService;
   let botService: BotService;
   let handler: WebChannelHandler;
   let eventEmitter: EventEmitter2;
@@ -192,14 +193,21 @@ describe('BotService', () => {
         },
       ],
     });
-    [subscriberService, botService, blockService, eventEmitter, handler] =
-      await getMocks([
-        SubscriberService,
-        BotService,
-        BlockService,
-        EventEmitter2,
-        WebChannelHandler,
-      ]);
+    [
+      subscriberService,
+      conversationService,
+      botService,
+      blockService,
+      eventEmitter,
+      handler,
+    ] = await getMocks([
+      SubscriberService,
+      ConversationService,
+      BotService,
+      BlockService,
+      EventEmitter2,
+      WebChannelHandler,
+    ]);
   });
 
   afterEach(jest.clearAllMocks);
@@ -350,5 +358,103 @@ describe('BotService', () => {
 
     expect(captured).toBe(false);
     expect(triggeredEvents).toEqual([]);
+  });
+
+  describe('proceedToNextBlock', () => {
+    it('should emit stats and call triggerBlock, returning true on success and reset attempt if not fallback', async () => {
+      const convo = {
+        id: 'convo1',
+        context: { attempt: 2 },
+        next: [],
+        sender: 'user1',
+        active: true,
+      } as unknown as ConversationFull;
+      const next = { id: 'block1', name: 'Block 1' } as BlockFull;
+      const event = {} as any;
+      const fallback = false;
+
+      jest
+        .spyOn(conversationService, 'storeContextData')
+        .mockImplementation((convo, _next, _event, _captureVars) => {
+          return Promise.resolve({
+            ...convo,
+          } as Conversation);
+        });
+
+      jest.spyOn(botService, 'triggerBlock').mockResolvedValue(undefined);
+      const emitSpy = jest.spyOn(eventEmitter, 'emit');
+      const result = await botService.proceedToNextBlock(
+        convo,
+        next,
+        event,
+        fallback,
+      );
+
+      expect(emitSpy).toHaveBeenCalledWith(
+        'hook:stats:entry',
+        'popular',
+        next.name,
+      );
+
+      expect(botService.triggerBlock).toHaveBeenCalledWith(
+        event,
+        expect.objectContaining({ id: 'convo1' }),
+        next,
+        fallback,
+      );
+      expect(result).toBe(true);
+      expect(convo.context.attempt).toBe(0);
+    });
+
+    it('should increment attempt if fallback is true', async () => {
+      const convo = {
+        id: 'convo2',
+        context: { attempt: 1 },
+        next: [],
+        sender: 'user2',
+        active: true,
+      } as any;
+      const next = { id: 'block2', name: 'Block 2' } as any;
+      const event = {} as any;
+      const fallback = true;
+
+      const result = await botService.proceedToNextBlock(
+        convo,
+        next,
+        event,
+        fallback,
+      );
+
+      expect(convo.context.attempt).toBe(2);
+      expect(result).toBe(true);
+    });
+
+    it('should handle errors and emit conversation:end, returning false', async () => {
+      const convo = {
+        id: 'convo3',
+        context: { attempt: 1 },
+        next: [],
+        sender: 'user3',
+        active: true,
+      } as any;
+      const next = { id: 'block3', name: 'Block 3' } as any;
+      const event = {} as any;
+      const fallback = false;
+
+      jest
+        .spyOn(conversationService, 'storeContextData')
+        .mockRejectedValue(new Error('fail'));
+
+      const emitSpy = jest.spyOn(eventEmitter, 'emit');
+      const result = await botService.proceedToNextBlock(
+        convo,
+        next,
+        event,
+        fallback,
+      );
+
+      expect(emitSpy).toHaveBeenCalledWith('hook:conversation:end', convo);
+      expect(result).toBe(false);
+    });
   });
 });

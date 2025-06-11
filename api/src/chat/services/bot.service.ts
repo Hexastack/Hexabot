@@ -11,6 +11,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
@@ -41,6 +42,7 @@ export class BotService {
     private readonly conversationService: ConversationService,
     private readonly subscriberService: SubscriberService,
     private readonly settingService: SettingService,
+    private readonly helperService: HelperService,
   ) {}
 
   /**
@@ -244,6 +246,49 @@ export class BotService {
   }
 
   /**
+   * Handles advancing the conversation to the specified *next* block.
+   *
+   * 1. Updates “popular blocks” stats.
+   * 2. Persists the updated conversation context.
+   * 3. Triggers the next block.
+   * 4. Ends the conversation if an unrecoverable error occurs.
+   */
+  async proceedToNextBlock(
+    convo: ConversationFull,
+    next: BlockFull,
+    event: EventWrapper<any, any>,
+    fallback: boolean,
+  ): Promise<boolean> {
+    // Increment stats about popular blocks
+    this.eventEmitter.emit('hook:stats:entry', BotStatsType.popular, next.name);
+    this.logger.debug(
+      'Proceeding to next block ',
+      next.id,
+      ' for conversation ',
+      convo.id,
+    );
+
+    try {
+      convo.context.attempt = fallback ? convo.context.attempt + 1 : 0;
+      const updatedConversation =
+        await this.conversationService.storeContextData(
+          convo,
+          next,
+          event,
+          // If this is a local fallback then we don’t capture vars.
+          !fallback,
+        );
+
+      await this.triggerBlock(event, updatedConversation, next, fallback);
+      return true;
+    } catch (err) {
+      this.logger.error('Unable to proceed to the next block!', err);
+      this.eventEmitter.emit('hook:conversation:end', convo);
+      return false;
+    }
+  }
+
+  /**
    * Processes and responds to an incoming message within an ongoing conversation flow.
    * Determines the next block in the conversation, attempts to match the message with available blocks,
    * and handles fallback scenarios if no match is found.
@@ -283,7 +328,7 @@ export class BotService {
       );
       // If there is no match in next block then loopback (current fallback)
       // This applies only to text messages + there's a max attempt to be specified
-      let fallbackBlock: BlockFull | undefined;
+      let fallbackBlock: BlockFull | undefined = undefined;
       if (
         !matchedBlock &&
         event.getMessageType() === IncomingMessageType.message &&
@@ -303,11 +348,7 @@ export class BotService {
           category: null,
           previousBlocks: [],
         };
-        convo.context.attempt++;
         fallback = true;
-      } else {
-        convo.context.attempt = 0;
-        fallbackBlock = undefined;
       }
 
       const next = matchedBlock || fallbackBlock;
@@ -315,30 +356,8 @@ export class BotService {
       this.logger.debug('Responding ...', convo.id);
 
       if (next) {
-        // Increment stats about popular blocks
-        this.eventEmitter.emit(
-          'hook:stats:entry',
-          BotStatsType.popular,
-          next.name,
-        );
-        // Go next!
-        this.logger.debug('Respond to nested conversion! Go next ', next.id);
-        try {
-          const updatedConversation =
-            await this.conversationService.storeContextData(
-              convo,
-              next,
-              event,
-              // If this is a local fallback then we don't capture vars
-              // Otherwise, old captured const value may be replaced by another const value
-              !fallback,
-            );
-          await this.triggerBlock(event, updatedConversation, next, fallback);
-        } catch (err) {
-          this.logger.error('Unable to store context data!', err);
-          return this.eventEmitter.emit('hook:conversation:end', convo);
-        }
-        return true;
+        // Proceed to the execution of the next block
+        return await this.proceedToNextBlock(convo, next, event, fallback);
       } else {
         // Conversation is still active, but there's no matching block to call next
         // We'll end the conversation but this message is probably lost in time and space.
