@@ -24,7 +24,6 @@ import {
   IContentType,
   IContentTypeAttributes,
 } from "@/types/content-type.types";
-import { slugify } from "@/utils/string";
 
 import { FieldInput } from "./components/FieldInput";
 import { FIELDS_FORM_DEFAULT_VALUES } from "./constants";
@@ -44,10 +43,12 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     formState: { errors },
     handleSubmit,
   } = useForm<IContentType>({
-    defaultValues: contentType || {
-      name: "",
-      fields: FIELDS_FORM_DEFAULT_VALUES,
-    },
+    defaultValues: contentType
+      ? { name: contentType.name, fields: contentType.fields }
+      : {
+          name: "",
+          fields: FIELDS_FORM_DEFAULT_VALUES,
+        },
   });
   const { append, fields, remove } = useFieldArray({
     name: "fields",
@@ -119,19 +120,10 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
             >
               <FieldInput
                 idx={idx}
+                name={field.name}
+                remove={remove}
                 control={control}
-                onLabelChange={(value) => {
-                  const fieldName = contentType?.fields?.find(
-                    ({ name }) => name === field.name,
-                  )?.name;
-
-                  if (!fieldName) {
-                    setValue(`fields.${idx}.name`, value ? slugify(value) : "");
-                  }
-                }}
-                onRemove={() => {
-                  remove(idx);
-                }}
+                setValue={setValue}
               />
             </ContentItem>
           ))}
