@@ -37,6 +37,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { flatten } from '../helpers/flatten';
+import { camelCase } from '../helpers/misc';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
 
@@ -128,7 +129,7 @@ export abstract class BaseRepository<
    * @returns A type-safe event name string.
    */
   getEventName(suffix: EHook) {
-    const entity = this.cls.name.toLocaleLowerCase();
+    const entity = camelCase(this.cls.name);
     return `hook:${entity}:${suffix}` as `hook:${IHookEntities}:${TNormalizedEvents}`;
   }
 
