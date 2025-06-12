@@ -12,11 +12,13 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType, NLU } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpEntity, NlpEntityDocument } from '../schemas/nlp-entity.schema';
 import { NlpValue, NlpValueDocument } from '../schemas/nlp-value.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
+import { NlpSampleEntityService } from './nlp-sample-entity.service';
 import { NlpSampleService } from './nlp-sample.service';
 import { NlpValueService } from './nlp-value.service';
 
@@ -28,6 +30,7 @@ export class NlpService {
     protected readonly nlpEntityService: NlpEntityService,
     protected readonly nlpValueService: NlpValueService,
     protected readonly helperService: HelperService,
+    protected readonly nlpSampleEntityService: NlpSampleEntityService,
   ) {}
 
   /**
@@ -106,20 +109,34 @@ export class NlpService {
    *
    * @param entity - The NLP entity to be deleted.
    */
-  @OnEvent('hook:nlpEntity:delete')
-  async handleEntityDelete(entity: NlpEntity) {
-    // Synchonize new entity with NLP provider
-    try {
-      if (entity.foreign_id) {
-        const helper = await this.helperService.getDefaultNluHelper();
-        await helper.deleteEntity(entity.foreign_id);
-        this.logger.debug('Deleted entity successfully synced!', entity);
-      } else {
-        this.logger.error(`Entity ${entity} is missing foreign_id`);
-        throw new NotFoundException(`Entity ${entity} is missing foreign_id`);
+  @OnEvent('hook:nlpEntity:preDelete')
+  async handleEntityDelete(_query: unknown, criteria: TFilterQuery<NlpValue>) {
+    if (criteria._id) {
+      await this.nlpValueService.deleteMany({ entity: criteria._id });
+      await this.nlpSampleEntityService.deleteMany({ entity: criteria._id });
+
+      const entities = await this.nlpEntityService.find({
+        ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
+        builtin: false,
+      });
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
+      for (const entity of entities) {
+        // Synchonize new entity with NLP provider
+        try {
+          if (entity.foreign_id) {
+            await helper.deleteEntity(entity.foreign_id);
+            this.logger.debug('Deleted entity successfully synced!', entity);
+          } else {
+            this.logger.error(`Entity ${entity} is missing foreign_id`);
+            throw new NotFoundException(
+              `Entity ${entity} is missing foreign_id`,
+            );
+          }
+        } catch (err) {
+          this.logger.error('Unable to sync deleted entity', err);
+        }
       }
-    } catch (err) {
-      this.logger.error('Unable to sync deleted entity', err);
     }
   }
 
@@ -168,20 +185,37 @@ export class NlpService {
    *
    * @param value - The NLP value to be deleted.
    */
-  @OnEvent('hook:nlpValue:delete')
-  async handleValueDelete(value: NlpValue) {
-    // Synchonize new value with NLP provider
-    try {
-      const helper = await this.helperService.getDefaultNluHelper();
-      const populatedValue = await this.nlpValueService.findOneAndPopulate(
-        value.id,
-      );
-      if (populatedValue) {
-        await helper.deleteValue(populatedValue);
-        this.logger.debug('Deleted value successfully synced!', value);
+  @OnEvent('hook:nlpValue:preDelete')
+  async handleValueDelete(_query: unknown, criteria: TFilterQuery<NlpValue>) {
+    if (criteria._id) {
+      await this.nlpSampleEntityService.deleteMany({
+        value: criteria._id,
+      });
+
+      const values = await this.nlpValueService.find({
+        ...(typeof criteria === 'string' ? { _id: criteria } : criteria),
+        builtin: false,
+      });
+      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
+
+      for (const value of values) {
+        // Synchonize new value with NLP provider
+        try {
+          const populatedValue = await this.nlpValueService.findOneAndPopulate(
+            value.id,
+          );
+          if (populatedValue) {
+            await helper.deleteValue(populatedValue);
+            this.logger.debug('Deleted value successfully synced!', value);
+          }
+        } catch (err) {
+          this.logger.error('Unable to sync deleted value', err);
+        }
       }
-    } catch (err) {
-      this.logger.error('Unable to sync deleted value', err);
+    } else if (criteria.entity) {
+      // Do nothing : cascading deletes coming from Nlp Sample Entity
+    } else {
+      throw new Error('Attempted to delete a NLP value using unknown criteria');
     }
   }
 }

@@ -21,7 +21,9 @@ import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseService } from '@/utils/generics/base-service';
+import { getCriteriaIds } from '@/utils/helpers/criteria';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { BlockDto } from '../dto/block.dto';
 import { EnvelopeFactory } from '../helpers/envelope-factory';
@@ -778,28 +780,26 @@ export class BlockService extends BaseService<
   /**
    * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
    *
-   *
    * This method removes the deleted label from the `trigger_labels` and `assign_labels` fields of all blocks that have the label.
    *
    * @param label The label that is being deleted.
    */
-  @OnEvent('hook:label:delete')
-  async handleLabelDelete(labels: Label[]) {
-    const blocks = await this.find({
-      $or: [
-        { trigger_labels: { $in: labels.map((l) => l.id) } },
-        { assign_labels: { $in: labels.map((l) => l.id) } },
-      ],
-    });
-
-    for (const block of blocks) {
-      const trigger_labels = block.trigger_labels.filter(
-        (labelId) => !labels.find((l) => l.id === labelId),
-      );
-      const assign_labels = block.assign_labels.filter(
-        (labelId) => !labels.find((l) => l.id === labelId),
-      );
-      await this.updateOne(block.id, { trigger_labels, assign_labels });
-    }
+  @OnEvent('hook:label:preDelete')
+  async handleLabelDelete(_query: unknown, criteria: TFilterQuery<Label>) {
+    const ids = getCriteriaIds(criteria);
+    await this.getRepository().model.updateMany(
+      {
+        $or: [
+          { trigger_labels: { $in: ids } },
+          { assign_labels: { $in: ids } },
+        ],
+      },
+      {
+        $pull: {
+          trigger_labels: { $in: ids },
+          assign_labels: { $in: ids },
+        },
+      },
+    );
   }
 }

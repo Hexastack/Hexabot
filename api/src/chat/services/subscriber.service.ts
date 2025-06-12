@@ -24,6 +24,8 @@ import {
 } from '@/attachment/types';
 import { config } from '@/config';
 import { BaseService } from '@/utils/generics/base-service';
+import { getCriteriaIds } from '@/utils/helpers/criteria';
+import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   SocketGet,
   SocketPost,
@@ -260,22 +262,22 @@ export class SubscriberService extends BaseService<
   }
 
   /**
-   * Updates the `labels` field of a subscriber when a label is deleted.
+   * Before deleting a `Label`, this method updates the `labels` field of a subscriber.
    *
-   * This method removes the deleted label from the `labels` field of all subscribers that have the label.
+   * @param _query - The Mongoose query object used for deletion.
+   * @param criteria - The filter criteria for finding the labels to be deleted.
    *
-   * @param label The label that is being deleted.
+   * @returns {Promise<void>} A promise that resolves once the event is emitted.
    */
-  @OnEvent('hook:label:delete')
-  async handleLabelDelete(labels: Label[]) {
-    const subscribers = await this.find({
-      labels: { $in: labels.map((l) => l.id) },
-    });
-    for (const subscriber of subscribers) {
-      const updatedLabels = subscriber.labels.filter(
-        (label) => !labels.find((l) => l.id === label),
-      );
-      await this.updateOne(subscriber.id, { labels: updatedLabels });
-    }
+  @OnEvent('hook:label:preDelete')
+  async handleLabelDelete(
+    _query: unknown,
+    criteria: TFilterQuery<Label>,
+  ): Promise<void> {
+    const ids = getCriteriaIds(criteria);
+    await this.getRepository().model.updateMany(
+      { labels: { $in: ids } },
+      { $pull: { labels: { $in: ids } } },
+    );
   }
 }
