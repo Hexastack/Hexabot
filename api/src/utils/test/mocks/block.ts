@@ -18,6 +18,7 @@ import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
 import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 
 import { modelInstance } from './misc';
 
@@ -391,3 +392,10 @@ export const blockCarouselMock = {
 } as unknown as BlockFull;
 
 export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];
+
+export const mockWebChannelData: SubscriberChannelDict[typeof WEB_CHANNEL_NAME] =
+  {
+    isSocket: true,
+    ipAddress: '1.1.1.1',
+    agent: 'Chromium',
+  };

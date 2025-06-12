@@ -6,11 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ExtensionSetting } from '@/setting/schemas/types';
-import { HyphenToUnderscore } from '@/utils/types/extension';
+import { registerDecorator, ValidationOptions } from 'class-validator';
 
-export type ChannelName = `${string}-channel`;
+import { UniqueFieldNamesConstraint } from '../validators/validate-unique-names.validator';
 
-export type ChannelSetting<N extends string = string> = ExtensionSetting<{
-  group: HyphenToUnderscore<N>;
-}>;
+export function UniqueFieldNames(validationOptions?: ValidationOptions) {
+  return function (object: Record<string, any>, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: UniqueFieldNamesConstraint,
+    });
+  };
+}

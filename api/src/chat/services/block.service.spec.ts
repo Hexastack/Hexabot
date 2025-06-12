@@ -65,6 +65,7 @@ import {
   mockNlpGreetingNamePatterns,
   mockNlpGreetingPatterns,
   mockNlpGreetingWrongNamePatterns,
+  mockWebChannelData,
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
@@ -288,11 +289,7 @@ describe('BlockService', () => {
           text: 'Hello',
         },
       },
-      {
-        isSocket: true,
-        ipAddress: '1.1.1.1',
-        agent: 'Chromium',
-      },
+      mockWebChannelData,
     );
     const webEventGetStarted = new WebEventWrapper(
       handlerMock,
@@ -303,11 +300,18 @@ describe('BlockService', () => {
           payload: 'GET_STARTED',
         },
       },
+      mockWebChannelData,
+    );
+
+    const webEventAmbiguous = new WebEventWrapper(
+      handlerMock,
       {
-        isSocket: true,
-        ipAddress: '1.1.1.1',
-        agent: 'Chromium',
+        type: Web.IncomingMessageType.text,
+        data: {
+          text: "It's not a yes or no answer!",
+        },
       },
+      mockWebChannelData,
     );
 
     it('should return undefined when no blocks are provided', async () => {
@@ -330,6 +334,24 @@ describe('BlockService', () => {
       webEventGreeting.setSender(subscriberWithLabels);
       const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(blockGetStarted);
+    });
+
+    it('should return undefined when multiple matches are not allowed', async () => {
+      const result = await blockService.match(
+        [
+          {
+            ...blockEmpty,
+            patterns: ['/yes/'],
+          },
+          {
+            ...blockEmpty,
+            patterns: ['/no/'],
+          },
+        ],
+        webEventAmbiguous,
+        false,
+      );
+      expect(result).toEqual(undefined);
     });
 
     it('should match block with payload', async () => {

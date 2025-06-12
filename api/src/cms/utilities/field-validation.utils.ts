@@ -6,11 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ExtensionSetting } from '@/setting/schemas/types';
-import { HyphenToUnderscore } from '@/utils/types/extension';
-
-export type ChannelName = `${string}-channel`;
-
-export type ChannelSetting<N extends string = string> = ExtensionSetting<{
-  group: HyphenToUnderscore<N>;
-}>;
+export const validateUniqueFields = <T>(
+  fields: T[],
+  fieldName: keyof T,
+): boolean =>
+  new Set(fields.map((f) => f[fieldName] as string)).size === fields.length;

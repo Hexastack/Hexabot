@@ -9,7 +9,8 @@
     "default_nlu_helper": "Default NLU Helper",
     "default_llm_helper": "Default LLM Helper",
     "default_storage_helper": "Default Storage Helper",
-    "default_nlu_penalty_factor": "NLU Penalty Factor"
+    "default_nlu_penalty_factor": "NLU Penalty Factor",
+    "default_flow_escape_helper": "Default Flow Escape Helper"
   },
   "help": {
     "global_fallback": "Global fallback allows you to send custom messages when user entry does not match any of the block messages.",
@@ -17,6 +18,7 @@
     "default_nlu_helper": "The NLU helper is responsible for processing and understanding user inputs, including tasks like intent prediction, language detection, and entity recognition.",
     "default_llm_helper": "The LLM helper leverages advanced generative AI to perform tasks such as text generation, chat completion, and complex query responses.",
     "default_storage_helper": "The storage helper defines where to store attachment files. By default, the default local storage helper stores them locally, but you can choose to use Minio or any other storage solution.",
-    "default_nlu_penalty_factor": "The NLU penalty factor is a coefficient (between 0 and 1) applied exclusively to NLU-based entity matching. It reduces the score contribution of patterns that match broadly (e.g. using wildcard values like Any) rather than specific entity values. This helps the engine prioritize blocks triggered by more precise NLU matches, without affecting other matching strategies such as text, regex, or interaction triggers."
+    "default_nlu_penalty_factor": "The NLU penalty factor is a coefficient (between 0 and 1) applied exclusively to NLU-based entity matching. It reduces the score contribution of patterns that match broadly (e.g. using wildcard values like Any) rather than specific entity values. This helps the engine prioritize blocks triggered by more precise NLU matches, without affecting other matching strategies such as text, regex, or interaction triggers.",
+    "default_flow_escape_helper": "The Flow Escape helper is used when the user’s message does not match any option in a flow. It assists the chatbot in deciding whether to re-prompt, provide an explanation, or end the conversation."
   }
 }

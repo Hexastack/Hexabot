@@ -65,7 +65,6 @@ export class NlpService {
    * Handles the event triggered when a new NLP entity is created. Synchronizes the entity with the external NLP provider.
    *
    * @param entity - The NLP entity to be created.
-   * @returns The updated entity after synchronization.
    */
   @OnEvent('hook:nlpEntity:create')
   async handleEntityCreate(entity: NlpEntityDocument) {
@@ -74,7 +73,7 @@ export class NlpService {
       const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
       const foreignId = await helper.addEntity(entity);
       this.logger.debug('New entity successfully synced!', foreignId);
-      return await this.nlpEntityService.updateOne(
+      await this.nlpEntityService.updateOne(
         { _id: entity._id },
         {
           foreign_id: foreignId,
@@ -82,7 +81,6 @@ export class NlpService {
       );
     } catch (err) {
       this.logger.error('Unable to sync a new entity', err);
-      return entity;
     }
   }
 
@@ -129,8 +127,6 @@ export class NlpService {
    * Handles the event triggered when a new NLP value is created. Synchronizes the value with the external NLP provider.
    *
    * @param value - The NLP value to be created.
-   *
-   * @returns The updated value after synchronization.
    */
   @OnEvent('hook:nlpValue:create')
   async handleValueCreate(value: NlpValueDocument) {
@@ -139,7 +135,7 @@ export class NlpService {
       const helper = await this.helperService.getDefaultNluHelper();
       const foreignId = await helper.addValue(value);
       this.logger.debug('New value successfully synced!', foreignId);
-      return await this.nlpValueService.updateOne(
+      await this.nlpValueService.updateOne(
         { _id: value._id },
         {
           foreign_id: foreignId,
@@ -147,7 +143,6 @@ export class NlpService {
       );
     } catch (err) {
       this.logger.error('Unable to sync a new value', err);
-      return value;
     }
   }
 

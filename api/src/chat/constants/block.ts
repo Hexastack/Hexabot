@@ -6,11 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ExtensionSetting } from '@/setting/schemas/types';
-import { HyphenToUnderscore } from '@/utils/types/extension';
+import { FallbackOptions } from '../schemas/types/options';
 
-export type ChannelName = `${string}-channel`;
-
-export type ChannelSetting<N extends string = string> = ExtensionSetting<{
-  group: HyphenToUnderscore<N>;
-}>;
+export function getDefaultFallbackOptions(): FallbackOptions {
+  return {
+    active: false,
+    max_attempts: 0,
+    message: [],
+  };
+}

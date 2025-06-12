@@ -75,7 +75,7 @@ export const DataGrid = <T extends GridValidRowModel = any>({
       slots={slots}
       slotProps={{
         loadingOverlay: {
-          variant: "linear-progress",
+          variant: "skeleton",
           noRowsVariant: "skeleton",
         },
       }}

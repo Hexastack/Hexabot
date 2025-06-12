@@ -14,7 +14,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  Matches,
   Validate,
   ValidateNested,
 } from 'class-validator';
@@ -22,12 +21,12 @@ import {
 import { FieldType } from '@/setting/schemas/types';
 import { DtoConfig } from '@/utils/types/dto.types';
 
+import { UniqueFieldNames } from '../decorators/unique-field-names.decorator';
 import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
 
 export class ContentField {
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[a-z][a-z_0-9]*$/)
   name: string;
 
   @IsString()
@@ -58,6 +57,7 @@ export class ContentTypeCreateDto {
   @ValidateNested({ each: true })
   @Validate(ValidateRequiredFields)
   @Type(() => ContentField)
+  @UniqueFieldNames()
   fields?: ContentField[];
 }
 
