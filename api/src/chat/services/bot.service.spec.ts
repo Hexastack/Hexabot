@@ -51,7 +51,12 @@ import { SettingService } from '@/setting/services/setting.service';
 import { installBlockFixtures } from '@/utils/test/fixtures/block';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
-import { mockWebChannelData, textBlock } from '@/utils/test/mocks/block';
+import {
+  buttonsBlock,
+  mockWebChannelData,
+  quickRepliesBlock,
+  textBlock,
+} from '@/utils/test/mocks/block';
 import { conversationGetStarted } from '@/utils/test/mocks/conversation';
 import {
   closeInMongodConnection,
@@ -568,6 +573,170 @@ describe('BotService', () => {
         botService.handleOngoingConversationMessage(mockConvo, mockEvent),
       ).rejects.toThrow('fail');
       expect(emitSpy).toHaveBeenCalledWith('hook:conversation:end', mockConvo);
+    });
+  });
+
+  describe('shouldAttemptLocalFallback', () => {
+    const mockEvent = new WebEventWrapper(
+      handler,
+      webEventText,
+      mockWebChannelData,
+    );
+
+    beforeAll(() => {
+      jest.resetAllMocks();
+    });
+
+    afterAll(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should return true when fallback is active and max attempts not reached', () => {
+      const result = botService.shouldAttemptLocalFallback(
+        {
+          ...conversationGetStarted,
+          context: { ...conversationGetStarted.context, attempt: 1 },
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: true,
+                max_attempts: 3,
+                message: ['Please pick an option.'],
+              },
+            },
+          },
+        },
+        mockEvent,
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should return false when fallback is not active', () => {
+      const result = botService.shouldAttemptLocalFallback(
+        {
+          ...conversationGetStarted,
+          context: { ...conversationGetStarted.context, attempt: 1 },
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: false,
+                max_attempts: 0,
+                message: [],
+              },
+            },
+          },
+        },
+        mockEvent,
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return false when max attempts reached', () => {
+      const result = botService.shouldAttemptLocalFallback(
+        {
+          ...conversationGetStarted,
+          context: { ...conversationGetStarted.context, attempt: 3 },
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: true,
+                max_attempts: 3,
+                message: ['Please pick an option.'],
+              },
+            },
+          },
+        },
+        mockEvent,
+      );
+      expect(result).toBe(false);
+    });
+
+    it('should return false when fallback options are missing', () => {
+      const result = botService.shouldAttemptLocalFallback(
+        {
+          ...conversationGetStarted,
+          current: {
+            ...conversationGetStarted.current,
+            options: {},
+          },
+        },
+        mockEvent,
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('findNextMatchingBlock', () => {
+    const mockEvent = new WebEventWrapper(
+      handler,
+      webEventText,
+      mockWebChannelData,
+    );
+
+    beforeAll(() => {
+      jest.resetAllMocks();
+    });
+
+    afterAll(() => {
+      jest.resetAllMocks();
+    });
+
+    it('should return a matching block if one is found and fallback is not active', async () => {
+      jest.spyOn(blockService, 'match').mockResolvedValue(buttonsBlock);
+
+      const result = await botService.findNextMatchingBlock(
+        {
+          ...conversationGetStarted,
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: false,
+                message: [],
+                max_attempts: 0,
+              },
+            },
+          },
+          next: [quickRepliesBlock, buttonsBlock].map((b) => ({
+            ...b,
+            trigger_labels: b.trigger_labels.map(({ id }) => id),
+            assign_labels: b.assign_labels.map(({ id }) => id),
+            nextBlocks: [],
+            attachedBlock: null,
+            category: null,
+            previousBlocks: undefined,
+            attachedToBlock: undefined,
+          })),
+        },
+        mockEvent,
+      );
+      expect(result).toBe(buttonsBlock);
+    });
+
+    it('should return undefined if no matching block is found', async () => {
+      jest.spyOn(blockService, 'match').mockResolvedValue(undefined);
+
+      const result = await botService.findNextMatchingBlock(
+        {
+          ...conversationGetStarted,
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: true,
+                message: ['Please pick an option.'],
+                max_attempts: 1,
+              },
+            },
+          },
+        },
+        mockEvent,
+      );
+      expect(result).toBeUndefined();
     });
   });
 });
