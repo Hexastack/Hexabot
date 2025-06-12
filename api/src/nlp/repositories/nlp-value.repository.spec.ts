@@ -55,12 +55,10 @@ describe('NlpValueRepository', () => {
   let nlpValues: NlpValue[];
   let nlpService: NlpService;
   let helperService: HelperService;
-  let languageService: LanguageService;
-  let settingService: SettingService;
-  let nlpEntityService: NlpEntityService;
+  let llmNluHelper: LlmNluHelper;
 
   beforeAll(async () => {
-    const { getMocks, resolveMocks } = await buildTestingMocks({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpSampleEntityFixtures),
         MongooseModule.forFeature([
@@ -109,39 +107,25 @@ describe('NlpValueRepository', () => {
         },
         SettingRepository,
         SettingSeeder,
+        LlmNluHelper,
       ],
     });
+
     [
       nlpValueRepository,
       nlpSampleEntityRepository,
       nlpService,
       helperService,
-      settingService,
-      languageService,
-      nlpEntityService,
+      llmNluHelper,
     ] = await getMocks([
       NlpValueRepository,
       NlpSampleEntityRepository,
       NlpService,
       HelperService,
-      SettingService,
-      LanguageService,
-      NlpEntityService,
+      LlmNluHelper,
     ]);
-
     nlpValues = await nlpValueRepository.findAll();
-
-    const [loggerService] = await resolveMocks([LoggerService]);
-
-    helperService.register(
-      new LlmNluHelper(
-        settingService,
-        helperService,
-        loggerService,
-        languageService,
-        nlpEntityService,
-      ),
-    );
+    helperService.register(llmNluHelper);
   });
 
   afterAll(closeInMongodConnection);

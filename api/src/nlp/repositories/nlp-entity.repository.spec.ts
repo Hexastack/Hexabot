@@ -14,7 +14,6 @@ import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
@@ -49,12 +48,10 @@ describe('NlpEntityRepository', () => {
   let firstNameNlpEntity: NlpEntity | null;
   let nlpService: NlpService;
   let helperService: HelperService;
-  let languageService: LanguageService;
-  let settingService: SettingService;
-  let nlpEntityService: NlpEntityService;
+  let llmNluHelper: LlmNluHelper;
 
   beforeAll(async () => {
-    const { getMocks, resolveMocks } = await buildTestingMocks({
+    const { getMocks } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpValueFixtures),
         MongooseModule.forFeature([
@@ -102,6 +99,7 @@ describe('NlpEntityRepository', () => {
         LanguageRepository,
         SettingRepository,
         SettingSeeder,
+        LlmNluHelper,
       ],
     });
 
@@ -110,33 +108,18 @@ describe('NlpEntityRepository', () => {
       nlpValueRepository,
       nlpService,
       helperService,
-      settingService,
-      languageService,
-      nlpEntityService,
+      llmNluHelper,
     ] = await getMocks([
       NlpEntityRepository,
       NlpValueRepository,
       NlpService,
       HelperService,
-      SettingService,
-      LanguageService,
-      NlpEntityService,
+      LlmNluHelper,
     ]);
     firstNameNlpEntity = await nlpEntityRepository.findOne({
       name: 'firstname',
     });
-
-    const [loggerService] = await resolveMocks([LoggerService]);
-
-    helperService.register(
-      new LlmNluHelper(
-        settingService,
-        helperService,
-        loggerService,
-        languageService,
-        nlpEntityService,
-      ),
-    );
+    helperService.register(llmNluHelper);
   });
 
   afterAll(closeInMongodConnection);
