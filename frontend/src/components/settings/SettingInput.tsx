@@ -20,8 +20,8 @@ import { PasswordInput } from "@/app-components/inputs/PasswordInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
+import { IEntityMapTypes } from "@/types/base.types";
 import { IBlock } from "@/types/block.types";
-import { IHelper } from "@/types/helper.types";
 import { ISetting, SettingType } from "@/types/setting.types";
 import { MIME_TYPES } from "@/utils/attachment";
 
@@ -32,6 +32,12 @@ interface RenderSettingInputProps {
   isDisabled?: (setting: ISetting) => boolean;
 }
 
+const DEFAULT_HELPER_ENTITIES: Record<string, keyof IEntityMapTypes> = {
+  ["default_nlu_helper"]: EntityType.NLU_HELPER,
+  ["default_llm_helper"]: EntityType.LLM_HELPER,
+  ["default_flow_escape_helper"]: EntityType.FLOW_ESCAPE_HELPER,
+  ["default_storage_helper"]: EntityType.STORAGE_HELPER,
+};
 const SettingInput: React.FC<RenderSettingInputProps> = ({
   setting,
   field,
@@ -125,54 +131,25 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             {...rest}
           />
         );
-      } else if (setting.label === "default_nlu_helper") {
+      } else if (
+        setting.label.startsWith("default_") &&
+        setting.label.endsWith("_helper")
+      ) {
         const { onChange, ...rest } = field;
 
         return (
-          <AutoCompleteEntitySelect<IHelper, "name", false>
+          <AutoCompleteEntitySelect<any, string, boolean>
             searchFields={["name"]}
-            entity={EntityType.NLU_HELPER}
+            entity={DEFAULT_HELPER_ENTITIES[setting.label]}
             format={Format.BASIC}
-            labelKey="name"
-            idKey="name"
-            label={t("label.default_nlu_helper")}
-            helperText={t("help.default_nlu_helper")}
-            multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.name)}
-            {...rest}
-          />
-        );
-      } else if (setting.label === "default_llm_helper") {
-        const { onChange, ...rest } = field;
-
-        return (
-          <AutoCompleteEntitySelect<IHelper, "name", false>
-            searchFields={["name"]}
-            entity={EntityType.LLM_HELPER}
-            format={Format.BASIC}
-            labelKey="name"
-            idKey="name"
-            label={t("label.default_llm_helper")}
-            helperText={t("help.default_llm_helper")}
-            multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.name)}
-            {...rest}
-          />
-        );
-      } else if (setting.label === "default_storage_helper") {
-        const { onChange, ...rest } = field;
-
-        return (
-          <AutoCompleteEntitySelect<IHelper, "name", false>
-            searchFields={["name"]}
-            entity={EntityType.STORAGE_HELPER}
-            format={Format.BASIC}
-            labelKey="name"
-            idKey="name"
-            label={t("label.default_storage_helper")}
-            helperText={t("help.default_storage_helper")}
-            multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.name)}
+            labelKey={setting.config?.labelKey || "name"}
+            idKey={setting.config?.idKey || "name"}
+            label={label}
+            helperText={helperText}
+            multiple={!!setting.config?.multiple}
+            onChange={(_e, selected, ..._) =>
+              onChange(selected?.[setting.config?.idKey || "name"])
+            }
             {...rest}
           />
         );
