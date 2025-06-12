@@ -14,13 +14,10 @@ import EventWrapper from '@/channel/lib/EventWrapper';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
+import { getDefaultConversationContext } from '../constants/conversation';
 import { MessageCreateDto } from '../dto/message.dto';
 import { BlockFull } from '../schemas/block.schema';
-import {
-  Conversation,
-  ConversationFull,
-  getDefaultConversationContext,
-} from '../schemas/conversation.schema';
+import { Conversation, ConversationFull } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
 import {
   IncomingMessageType,

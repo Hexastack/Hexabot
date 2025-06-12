@@ -17,26 +17,11 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { getDefaultConversationContext } from '../constants/conversation';
+
 import { Block } from './block.schema';
 import { Subscriber } from './subscriber.schema';
 import { Context } from './types/context';
-
-export function getDefaultConversationContext(): Context {
-  return {
-    vars: {}, // Used for capturing vars from user entries
-    user: {
-      first_name: '',
-      last_name: '',
-    } as Subscriber,
-    user_location: {
-      // Used for capturing geolocation from QR
-      lat: 0.0,
-      lon: 0.0,
-    },
-    skip: {}, // Used for list pagination
-    attempt: 0, // Used to track fallback max attempts
-  };
-}
 
 @Schema({ timestamps: true, minimize: false })
 class ConversationStub extends BaseSchema {

@@ -29,16 +29,18 @@ export const contentOptionsSchema = z.object({
 
 export type ContentOptions = z.infer<typeof contentOptionsSchema>;
 
+export const fallbackOptionsSchema = z.object({
+  active: z.boolean(),
+  message: z.array(z.string()),
+  max_attempts: z.number().finite(),
+});
+
+export type FallbackOptions = z.infer<typeof fallbackOptionsSchema>;
+
 export const BlockOptionsSchema = z.object({
   typing: z.number().optional(),
   content: contentOptionsSchema.optional(),
-  fallback: z
-    .object({
-      active: z.boolean(),
-      message: z.array(z.string()),
-      max_attempts: z.number().finite(),
-    })
-    .optional(),
+  fallback: fallbackOptionsSchema.optional(),
   assignTo: z.string().optional(),
   effects: z.array(z.string()).optional(),
 });
