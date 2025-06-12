@@ -110,7 +110,7 @@ export class NlpService {
    * @param entity - The NLP entity to be deleted.
    */
   @OnEvent('hook:nlpEntity:preDelete')
-  async handleEntityDelete(_query: unknown, criteria: TFilterQuery<NlpValue>) {
+  async handleEntityDelete(_query: unknown, criteria: TFilterQuery<NlpEntity>) {
     if (criteria._id) {
       await this.nlpValueService.deleteMany({ entity: criteria._id });
       await this.nlpSampleEntityService.deleteMany({ entity: criteria._id });
