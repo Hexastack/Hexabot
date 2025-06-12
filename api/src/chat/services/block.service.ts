@@ -24,6 +24,7 @@ import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { getDefaultFallbackOptions } from '../constants/block';
 import { BlockDto } from '../dto/block.dto';
 import { EnvelopeFactory } from '../helpers/envelope-factory';
 import { BlockRepository } from '../repositories/block.repository';
@@ -41,6 +42,7 @@ import {
   StdOutgoingEnvelope,
   StdOutgoingSystemEnvelope,
 } from '../schemas/types/message';
+import { FallbackOptions } from '../schemas/types/options';
 import { NlpPattern, PayloadPattern } from '../schemas/types/pattern';
 import { Payload } from '../schemas/types/quick-reply';
 import { SubscriberContext } from '../schemas/types/subscriberContext';
@@ -774,6 +776,16 @@ export class BlockService extends BaseService<
       }
     }
     throw new Error('Invalid message format.');
+  }
+
+  /**
+   * Retrieves the fallback options for a block.
+   *
+   * @param block - The block to retrieve fallback options from.
+   * @returns The fallback options for the block, or default options if not specified.
+   */
+  getFallbackOptions<T extends BlockStub>(block: T): FallbackOptions {
+    return block.options?.fallback ?? getDefaultFallbackOptions();
   }
 
   /**
