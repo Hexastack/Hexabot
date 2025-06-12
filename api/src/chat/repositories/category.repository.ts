@@ -11,6 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { getCriteriaIds } from '@/utils/helpers/criteria';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { CategoryDto } from '../dto/category.dto';
@@ -52,11 +53,7 @@ export class CategoryRepository extends BaseRepository<
     criteria: TFilterQuery<Category>,
   ) {
     criteria = query.getQuery();
-    const ids = Array.isArray(criteria._id?.$in)
-      ? criteria._id.$in
-      : Array.isArray(criteria._id)
-        ? criteria._id
-        : [criteria._id];
+    const ids = getCriteriaIds(criteria);
 
     for (const id of ids) {
       const associatedBlocks = await this.blockService.findOne({

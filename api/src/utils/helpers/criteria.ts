@@ -8,12 +8,14 @@
 
 import { FilterQuery } from 'mongoose';
 
-export const getCriteriaIds = <T extends { _id: string }>(
-  criteria: FilterQuery<T>,
-) => {
-  return Array.isArray(criteria._id.$in)
-    ? criteria._id.$in
-    : Array.isArray(criteria._id)
-      ? criteria._id
-      : [criteria._id];
+export const getCriteriaIds = <T extends { _id: string }>({
+  _id,
+}: FilterQuery<T>) => {
+  return Array.isArray(_id?.$in)
+    ? _id.$in
+    : Array.isArray(_id)
+      ? _id
+      : _id
+        ? [_id]
+        : [];
 };
