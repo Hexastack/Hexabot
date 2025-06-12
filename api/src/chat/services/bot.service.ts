@@ -263,10 +263,7 @@ export class BotService {
     // Increment stats about popular blocks
     this.eventEmitter.emit('hook:stats:entry', BotStatsType.popular, next.name);
     this.logger.debug(
-      'Proceeding to next block ',
-      next.id,
-      ' for conversation ',
-      convo.id,
+      `Proceeding to next block ${next.id} for conversation ${convo.id}`,
     );
 
     try {
@@ -437,7 +434,7 @@ export class BotService {
           const proxiedEvent = new Proxy(event, {
             get(target, prop, receiver) {
               if (prop === 'getText') {
-                return () => result.coercedOption;
+                return () => result.coercedOption + '';
               }
               return Reflect.get(target, prop, receiver);
             },
@@ -446,7 +443,7 @@ export class BotService {
             convo,
             proxiedEvent,
           );
-          return { nextBlock: matchedBlock, fallback: true };
+          return { nextBlock: matchedBlock, fallback: false };
         }
 
         case FlowEscape.Action.NEW_CTX:
