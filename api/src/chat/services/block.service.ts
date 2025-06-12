@@ -121,8 +121,7 @@ export class BlockService extends BaseService<
 
     if (configured == null) {
       this.logger.warn(
-        'Using fallback NLU penalty factor value: %s',
-        FALLBACK_DEFAULT_NLU_PENALTY_FACTOR,
+        `The NLU penalty factor has reverted to its default fallback value of: ${FALLBACK_DEFAULT_NLU_PENALTY_FACTOR}%s`,
       );
     }
     return configured ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
