@@ -52,6 +52,20 @@ export const DEFAULT_SETTINGS = [
   },
   {
     group: 'chatbot_settings',
+    label: 'default_flow_escape_helper',
+    value: '',
+    type: SettingType.select,
+    config: {
+      multiple: false,
+      allowCreate: false,
+      entity: 'Helper',
+      idKey: 'name',
+      labelKey: 'name',
+    },
+    weight: 3,
+  },
+  {
+    group: 'chatbot_settings',
     label: 'default_storage_helper',
     value: 'local-storage-helper',
     type: SettingType.select,
