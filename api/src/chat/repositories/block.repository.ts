@@ -187,10 +187,12 @@ export class BlockRepository extends BaseRepository<
           ? attachedBlock
           : null;
 
-        await this.updateOne(id, {
+        const updates: Partial<Block> = {
           nextBlocks: updatedNextBlocks,
           attachedBlock: updatedAttachedBlock,
-        });
+        };
+
+        await this.updateOne(id, updates);
       } catch (error) {
         this.logger?.error(
           `Failed to update block ${id} during in-category scope update.`,
@@ -214,23 +216,26 @@ export class BlockRepository extends BaseRepository<
   ): Promise<void> {
     for (const block of otherBlocks) {
       try {
-        // If block has an attachedBlock, we only need to check that
+        const updates: Partial<Block> = {};
+
+        // Check if the block has an attachedBlock
         if (block.attachedBlock) {
           if (ids.includes(block.attachedBlock)) {
-            await this.updateOne(block.id, { attachedBlock: null });
+            updates.attachedBlock = null;
           }
-          continue; // Skip nextBlocks check since it can't have both
+        } else {
+          // Only check nextBlocks if there is no attachedBlock
+          const filteredNextBlocks = block.nextBlocks?.filter(
+            (nextBlock) => !ids.includes(nextBlock),
+          );
+
+          if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
+            updates.nextBlocks = filteredNextBlocks || [];
+          }
         }
 
-        // Only check nextBlocks if there is no attachedBlock
-        const filteredNextBlocks = block.nextBlocks?.filter(
-          (nextBlock) => !ids.includes(nextBlock),
-        );
-
-        if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
-          await this.updateOne(block.id, {
-            nextBlocks: filteredNextBlocks || [],
-          });
+        if (Object.keys(updates).length > 0) {
+          await this.updateOne(block.id, updates);
         }
       } catch (error) {
         this.logger?.error(
