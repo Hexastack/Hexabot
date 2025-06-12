@@ -21,7 +21,6 @@ import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import { BaseService } from '@/utils/generics/base-service';
-import { getCriteriaIds } from '@/utils/helpers/criteria';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -786,20 +785,23 @@ export class BlockService extends BaseService<
    */
   @OnEvent('hook:label:preDelete')
   async handleLabelDelete(_query: unknown, criteria: TFilterQuery<Label>) {
-    const ids = getCriteriaIds(criteria);
-    await this.getRepository().model.updateMany(
-      {
-        $or: [
-          { trigger_labels: { $in: ids } },
-          { assign_labels: { $in: ids } },
-        ],
-      },
-      {
-        $pull: {
-          trigger_labels: { $in: ids },
-          assign_labels: { $in: ids },
+    if (criteria._id) {
+      await this.getRepository().model.updateMany(
+        {
+          $or: [
+            { trigger_labels: criteria._id },
+            { assign_labels: criteria._id },
+          ],
         },
-      },
-    );
+        {
+          $pull: {
+            trigger_labels: criteria._id,
+            assign_labels: criteria._id,
+          },
+        },
+      );
+    } else {
+      throw new Error('Attempted to delete label using unknown criteria');
+    }
   }
 }

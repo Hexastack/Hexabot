@@ -24,7 +24,6 @@ import {
 } from '@/attachment/types';
 import { config } from '@/config';
 import { BaseService } from '@/utils/generics/base-service';
-import { getCriteriaIds } from '@/utils/helpers/criteria';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   SocketGet,
@@ -274,10 +273,13 @@ export class SubscriberService extends BaseService<
     _query: unknown,
     criteria: TFilterQuery<Label>,
   ): Promise<void> {
-    const ids = getCriteriaIds(criteria);
-    await this.getRepository().model.updateMany(
-      { labels: { $in: ids } },
-      { $pull: { labels: { $in: ids } } },
-    );
+    if (criteria._id) {
+      await this.getRepository().model.updateMany(
+        { labels: criteria._id },
+        { $pull: { labels: criteria._id } },
+      );
+    } else {
+      throw new Error('Attempted to delete label using unknown criteria');
+    }
   }
 }

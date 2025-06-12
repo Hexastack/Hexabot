@@ -11,7 +11,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { getCriteriaIds } from '@/utils/helpers/criteria';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { CategoryDto } from '../dto/category.dto';
@@ -25,14 +24,11 @@ export class CategoryRepository extends BaseRepository<
   never,
   CategoryDto
 > {
-  private readonly blockService: BlockService;
-
   constructor(
     @InjectModel(Category.name) readonly model: Model<Category>,
-    @Optional() blockService?: BlockService,
+    @Optional() private readonly blockService?: BlockService,
   ) {
     super(model, Category);
-    this.blockService = blockService!;
   }
 
   /**
@@ -43,7 +39,7 @@ export class CategoryRepository extends BaseRepository<
    * @param criteria - The filter criteria for finding blocks to delete.
    */
   async preDelete(
-    query: Query<
+    _query: Query<
       DeleteResult,
       Document<Category, any, any>,
       unknown,
@@ -52,19 +48,18 @@ export class CategoryRepository extends BaseRepository<
     >,
     criteria: TFilterQuery<Category>,
   ) {
-    criteria = query.getQuery();
-    const ids = getCriteriaIds(criteria);
-
-    for (const id of ids) {
-      const associatedBlocks = await this.blockService.findOne({
-        category: id,
+    if (criteria._id) {
+      const block = await this.blockService?.findOneAndPopulate({
+        category: criteria._id,
       });
-      if (associatedBlocks) {
-        const category = await this.findOne({ _id: id });
+
+      if (block) {
         throw new ForbiddenException(
-          `Category ${category?.label || id} has blocks associated with it`,
+          `Category ${block.category?.label} has at least one associated block`,
         );
       }
+    } else {
+      throw new Error('Attempted to delete category using unknown criteria');
     }
   }
 }

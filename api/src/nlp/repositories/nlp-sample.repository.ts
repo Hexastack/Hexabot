@@ -24,6 +24,7 @@ import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { TNlpSampleDto } from '../dto/nlp-sample.dto';
+import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
 import {
   NLP_SAMPLE_POPULATE,
   NlpSample,
@@ -44,6 +45,8 @@ export class NlpSampleRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(NlpSample.name) readonly model: Model<NlpSample>,
+    @InjectModel(NlpSampleEntity.name)
+    private readonly nlpSampleEntityModel: Model<NlpSampleEntity>,
     private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
     super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
@@ -310,7 +313,7 @@ export class NlpSampleRepository extends BaseRepository<
     criteria: TFilterQuery<NlpSample>,
   ) {
     if (criteria._id) {
-      await this.nlpSampleEntityRepository.deleteMany({
+      await this.nlpSampleEntityModel.deleteMany({
         sample: criteria._id,
       });
     } else {
