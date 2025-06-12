@@ -47,11 +47,9 @@ describe('NlpEntityRepository', () => {
   let nlpValueRepository: NlpValueRepository;
   let firstNameNlpEntity: NlpEntity | null;
   let nlpService: NlpService;
-  let helperService: HelperService;
-  let llmNluHelper: LlmNluHelper;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const { getMocks, module } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpValueFixtures),
         MongooseModule.forFeature([
@@ -86,9 +84,6 @@ describe('NlpEntityRepository', () => {
         {
           provide: SettingService,
           useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
             getSettings: jest.fn(() => ({
               chatbot_settings: {
                 default_nlu_helper: 'llm-nlu-helper',
@@ -103,23 +98,16 @@ describe('NlpEntityRepository', () => {
       ],
     });
 
-    [
-      nlpEntityRepository,
-      nlpValueRepository,
-      nlpService,
-      helperService,
-      llmNluHelper,
-    ] = await getMocks([
+    [nlpEntityRepository, nlpValueRepository, nlpService] = await getMocks([
       NlpEntityRepository,
       NlpValueRepository,
       NlpService,
-      HelperService,
-      LlmNluHelper,
     ]);
     firstNameNlpEntity = await nlpEntityRepository.findOne({
       name: 'firstname',
     });
-    helperService.register(llmNluHelper);
+    const llmNluHelper = module.get(LlmNluHelper);
+    module.get(HelperService).register(llmNluHelper);
   });
 
   afterAll(closeInMongodConnection);
