@@ -130,23 +130,19 @@ declare module '@nestjs/event-emitter' {
     category: TDefinition<Category>;
     contextVar: TDefinition<ContextVar>;
     conversation: TDefinition<Conversation, { end: unknown; close: unknown }>;
-    label: TDefinition<
-      Label,
-      { create: LabelDocument; delete: Label | Label[] }
-    >;
+    label: TDefinition<Label, { create: LabelDocument }>;
     message: TDefinition<Message>;
     subscriber: TDefinition<Subscriber, { assign: SubscriberUpdateDto }>;
     contentType: TDefinition<ContentType>;
     content: TDefinition<Content>;
     menu: TDefinition<Menu>;
-    language: TDefinition<Language, { delete: Language | Language[] }>;
+    language: TDefinition<Language>;
     translation: TDefinition<Translation>;
     nlpEntity: TDefinition<
       NlpEntity,
       {
         create: NlpEntityDocument;
         update: NlpEntity;
-        delete: NlpEntity | NlpEntity[];
       }
     >;
     nlpSampleEntity: TDefinition<NlpSampleEntity>;
@@ -156,7 +152,6 @@ declare module '@nestjs/event-emitter' {
       {
         create: NlpValueDocument;
         update: NlpValue;
-        delete: NlpValue | NlpValue[];
       }
     >;
     setting: TDefinition<Setting>;
