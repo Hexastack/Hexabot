@@ -117,14 +117,15 @@ export class BlockService extends BaseService<
    */
   private async getPenaltyFactor(): Promise<number> {
     const settings = await this.settingService.getSettings();
-    const configured = settings.chatbot_settings?.default_nlu_penalty_factor;
+    const NluPenaltyFactor =
+      settings.chatbot_settings?.default_nlu_penalty_factor;
 
-    if (configured == null) {
+    if (NluPenaltyFactor == null) {
       this.logger.warn(
-        `The NLU penalty factor has reverted to its default fallback value of: ${FALLBACK_DEFAULT_NLU_PENALTY_FACTOR}%s`,
+        `The NLU penalty factor has reverted to its default fallback value of: ${FALLBACK_DEFAULT_NLU_PENALTY_FACTOR}`,
       );
     }
-    return configured ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
+    return NluPenaltyFactor ?? FALLBACK_DEFAULT_NLU_PENALTY_FACTOR;
   }
 
   /**
