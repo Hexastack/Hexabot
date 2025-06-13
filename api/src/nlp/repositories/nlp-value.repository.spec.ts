@@ -75,8 +75,6 @@ describe('NlpValueRepository', () => {
         {
           provide: CACHE_MANAGER,
           useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
             set: jest.fn(),
           },
         },
@@ -169,12 +167,13 @@ describe('NlpValueRepository', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp Value', async () => {
-      const result = await nlpValueRepository.deleteOne(nlpValues[1].id);
-
-      await nlpService.handleValueDelete(
-        {},
-        { _id: nlpValues[1].id, builtin: { $ne: true } },
+      nlpValueRepository.eventEmitter.on(
+        'hook:nlpValue:preDelete',
+        async (...args) => {
+          await nlpService.handleValueDelete(args[0], args[1]);
+        },
       );
+      const result = await nlpValueRepository.deleteOne(nlpValues[1].id);
 
       expect(result.deletedCount).toEqual(1);
       const sampleEntities = await nlpSampleEntityRepository.find({
