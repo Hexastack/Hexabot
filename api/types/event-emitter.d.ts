@@ -132,10 +132,10 @@ declare module '@nestjs/event-emitter' {
     menu: TDefinition<Menu>;
     language: TDefinition<Language>;
     translation: TDefinition<Translation>;
-    nlpEntity: TDefinition<NlpEntity, { update: NlpEntity }>;
+    nlpEntity: TDefinition<NlpEntity>;
     nlpSampleEntity: TDefinition<NlpSampleEntity>;
     nlpSample: TDefinition<NlpSample>;
-    nlpValue: TDefinition<NlpValue, { update: NlpValue }>;
+    nlpValue: TDefinition<NlpValue>;
     setting: TDefinition<Setting>;
     invitation: TDefinition<Invitation>;
     model: TDefinition<Model>;
@@ -189,7 +189,8 @@ declare module '@nestjs/event-emitter' {
 
   type TPostUpdateValidate<T> = FilterQuery<T>;
 
-  type TPostUpdate<T> = THydratedDocument<T>;
+  // TODO this type will be optimized soon in a separated PR
+  type TPostUpdate<T> = T & any;
 
   type TPostDelete = DeleteResult;
 
