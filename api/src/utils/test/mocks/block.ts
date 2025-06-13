@@ -81,7 +81,7 @@ const position = {
   y: 0,
 };
 
-export const baseBlockInstance = {
+export const baseBlockInstance: Partial<BlockFull> = {
   trigger_labels: [labelMock],
   assign_labels: [labelMock],
   options: blockOptions,
@@ -90,7 +90,7 @@ export const baseBlockInstance = {
   position,
   builtin: true,
   attachedBlock: null,
-  category: undefined,
+  category: null,
   previousBlocks: [],
   trigger_channels: [],
   nextBlocks: [],

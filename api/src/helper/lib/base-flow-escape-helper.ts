@@ -36,7 +36,7 @@ export default abstract class BaseFlowEscapeHelper<
    * @param _blockMessage - The block message to check.
    * @returns - Whether the helper can handle the flow escape for the given block message.
    */
-  abstract canHandleFlowEscape<T extends BlockStub>(_blockMessage: T): boolean;
+  abstract canHandleFlowEscape<T extends BlockStub>(block: T): boolean;
 
   /**
    * Adjudicates the flow escape event.
@@ -46,7 +46,7 @@ export default abstract class BaseFlowEscapeHelper<
    * @returns - A promise that resolves to a FlowEscape.AdjudicationResult.
    */
   abstract adjudicate<T extends BlockStub>(
-    _event: EventWrapper<any, any>,
-    _block: T,
+    event: EventWrapper<any, any>,
+    block: T,
   ): Promise<FlowEscape.AdjudicationResult>;
 }

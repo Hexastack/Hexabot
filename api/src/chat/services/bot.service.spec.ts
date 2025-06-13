@@ -217,7 +217,7 @@ describe('BotService', () => {
     ]);
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(jest.resetAllMocks);
   afterAll(closeInMongodConnection);
   describe('startConversation', () => {
     afterAll(() => {
