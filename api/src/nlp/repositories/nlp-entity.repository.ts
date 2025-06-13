@@ -16,7 +16,6 @@ import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import {
   NLP_ENTITY_POPULATE,
   NlpEntity,
-  NlpEntityDocument,
   NlpEntityFull,
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
@@ -30,20 +29,6 @@ export class NlpEntityRepository extends BaseRepository<
 > {
   constructor(@InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>) {
     super(model, NlpEntity, NLP_ENTITY_POPULATE, NlpEntityFull);
-  }
-
-  /**
-   * Post-create hook that triggers after an NLP entity is created.
-   * Emits an event to notify other parts of the system about the creation.
-   * Bypasses built-in entities.
-   *
-   * @param created - The newly created NLP entity document.
-   */
-  async postCreate(_created: NlpEntityDocument): Promise<void> {
-    if (!_created.builtin) {
-      // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlpEntity:create', _created);
-    }
   }
 
   /**
