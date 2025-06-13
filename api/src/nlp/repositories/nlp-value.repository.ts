@@ -18,7 +18,7 @@ import {
   Types,
 } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
+import { BaseRepository } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
@@ -35,8 +35,6 @@ import {
   TNlpValueCount,
 } from '../schemas/nlp-value.schema';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-
 @Injectable()
 export class NlpValueRepository extends BaseRepository<
   NlpValue,
@@ -44,10 +42,7 @@ export class NlpValueRepository extends BaseRepository<
   NlpValueFull,
   NlpValueDto
 > {
-  constructor(
-    @InjectModel(NlpValue.name) readonly model: Model<NlpValue>,
-    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
-  ) {
+  constructor(@InjectModel(NlpValue.name) readonly model: Model<NlpValue>) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
   }
 
@@ -82,41 +77,6 @@ export class NlpValueRepository extends BaseRepository<
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpValue:update', updated);
-    }
-  }
-
-  /**
-   * Handles deletion of NLP values and associated entities. If the criteria includes an ID,
-   * emits an event for each deleted entity.
-   *
-   * @param _query - The query used to delete the NLP value(s).
-   * @param criteria - The filter criteria used to identify the NLP value(s) to delete.
-   */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpValue, any, any>,
-      unknown,
-      NlpValue,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpValue>,
-  ): Promise<void> {
-    if (criteria._id) {
-      await this.nlpSampleEntityRepository.deleteMany({ value: criteria._id });
-
-      const entities = await this.find(
-        typeof criteria === 'string' ? { _id: criteria } : criteria,
-      );
-      entities
-        .filter((e) => !e.builtin)
-        .map((e) => {
-          this.eventEmitter.emit('hook:nlpValue:delete', e);
-        });
-    } else if (criteria.entity) {
-      // Do nothing : cascading deletes coming from Nlp Sample Entity
-    } else {
-      throw new Error('Attempted to delete a NLP value using unknown criteria');
     }
   }
 
