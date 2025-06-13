@@ -19,7 +19,7 @@ import type { Block, BlockFull } from '@/chat/schemas/block.schema';
 import { type Category } from '@/chat/schemas/category.schema';
 import { type ContextVar } from '@/chat/schemas/context-var.schema';
 import { type Conversation } from '@/chat/schemas/conversation.schema';
-import type { Label, LabelDocument } from '@/chat/schemas/label.schema';
+import type { Label } from '@/chat/schemas/label.schema';
 import { type Message } from '@/chat/schemas/message.schema';
 import { type Subscriber } from '@/chat/schemas/subscriber.schema';
 import { type ContentType } from '@/cms/schemas/content-type.schema';
@@ -27,16 +27,10 @@ import { type Content } from '@/cms/schemas/content.schema';
 import { type Menu } from '@/cms/schemas/menu.schema';
 import { type Language } from '@/i18n/schemas/language.schema';
 import { type Translation } from '@/i18n/schemas/translation.schema';
-import type {
-  NlpEntity,
-  NlpEntityDocument,
-} from '@/nlp/schemas/nlp-entity.schema';
+import type { NlpEntity } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
-import type {
-  NlpValue,
-  NlpValueDocument,
-} from '@/nlp/schemas/nlp-value.schema';
+import type { NlpValue } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
 import { type Invitation } from '@/user/schemas/invitation.schema';
 import { type Model } from '@/user/schemas/model.schema';
@@ -130,7 +124,7 @@ declare module '@nestjs/event-emitter' {
     category: TDefinition<Category>;
     contextVar: TDefinition<ContextVar>;
     conversation: TDefinition<Conversation, { end: unknown; close: unknown }>;
-    label: TDefinition<Label, { create: LabelDocument }>;
+    label: TDefinition<Label>;
     message: TDefinition<Message>;
     subscriber: TDefinition<Subscriber, { assign: SubscriberUpdateDto }>;
     contentType: TDefinition<ContentType>;
@@ -138,22 +132,10 @@ declare module '@nestjs/event-emitter' {
     menu: TDefinition<Menu>;
     language: TDefinition<Language>;
     translation: TDefinition<Translation>;
-    nlpEntity: TDefinition<
-      NlpEntity,
-      {
-        create: NlpEntityDocument;
-        update: NlpEntity;
-      }
-    >;
+    nlpEntity: TDefinition<NlpEntity, { update: NlpEntity }>;
     nlpSampleEntity: TDefinition<NlpSampleEntity>;
     nlpSample: TDefinition<NlpSample>;
-    nlpValue: TDefinition<
-      NlpValue,
-      {
-        create: NlpValueDocument;
-        update: NlpValue;
-      }
-    >;
+    nlpValue: TDefinition<NlpValue, { update: NlpValue }>;
     setting: TDefinition<Setting>;
     invitation: TDefinition<Invitation>;
     model: TDefinition<Model>;
