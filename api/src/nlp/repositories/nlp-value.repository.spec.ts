@@ -14,7 +14,6 @@ import { HelperService } from '@/helper/helper.service';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { LoggerService } from '@/logger/logger.service';
 import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
@@ -71,7 +70,6 @@ describe('NlpValueRepository', () => {
       providers: [
         LanguageService,
         LanguageRepository,
-        LoggerService,
         {
           provide: CACHE_MANAGER,
           useValue: {
@@ -167,7 +165,7 @@ describe('NlpValueRepository', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp Value', async () => {
-      nlpValueRepository.eventEmitter.on(
+      nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:preDelete',
         async (...args) => {
           await nlpService.handleValueDelete(args[0], args[1]);

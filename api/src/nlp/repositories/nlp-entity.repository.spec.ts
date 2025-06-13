@@ -116,7 +116,7 @@ describe('NlpEntityRepository', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp entity', async () => {
-      nlpValueRepository.eventEmitter.on(
+      nlpValueRepository.eventEmitter.once(
         'hook:nlpEntity:preDelete',
         async (...args) => {
           await nlpService.handleEntityDelete(args[0], args[1]);
