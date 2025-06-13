@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 
@@ -29,29 +29,5 @@ export class NlpEntityRepository extends BaseRepository<
 > {
   constructor(@InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>) {
     super(model, NlpEntity, NLP_ENTITY_POPULATE, NlpEntityFull);
-  }
-
-  /**
-   * Post-update hook that triggers after an NLP entity is updated.
-   * Emits an event to notify other parts of the system about the update.
-   * Bypasses built-in entities.
-   *
-   * @param query - The query used to find and update the entity.
-   * @param updated - The updated NLP entity document.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<NlpEntity, any, any>,
-      Document<NlpEntity, any, any>,
-      unknown,
-      NlpEntity,
-      'findOneAndUpdate'
-    >,
-    updated: NlpEntity,
-  ): Promise<void> {
-    if (!updated?.builtin) {
-      // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlpEntity:update', updated);
-    }
   }
 }
