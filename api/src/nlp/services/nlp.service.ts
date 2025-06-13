@@ -189,7 +189,7 @@ export class NlpService {
    * @param value - The NLP value to be updated.
    */
   @OnEvent('hook:nlpValue:postUpdate')
-  async handleValueUpdate(
+  async handleValuePostUpdate(
     _query: Query<
       Document<NlpValue, any, any>,
       Document<NlpValue, any, any>,
