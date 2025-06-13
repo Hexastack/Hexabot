@@ -116,15 +116,16 @@ describe('NlpEntityRepository', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp entity', async () => {
+      nlpValueRepository.eventEmitter.on(
+        'hook:nlpEntity:preDelete',
+        async (...args) => {
+          await nlpService.handleEntityDelete(args[0], args[1]);
+        },
+      );
       const intentNlpEntity = await nlpEntityRepository.findOne({
         name: 'intent',
       });
       const result = await nlpEntityRepository.deleteOne(intentNlpEntity!.id);
-
-      await nlpService.handleEntityDelete(
-        {},
-        { _id: intentNlpEntity!.id, builtin: { $ne: true } },
-      );
 
       expect(result.deletedCount).toEqual(1);
 
