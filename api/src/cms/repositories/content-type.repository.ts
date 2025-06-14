@@ -52,14 +52,15 @@ export class ContentTypeRepository extends BaseRepository<
     >,
     criteria: TFilterQuery<ContentType>,
   ) {
-    const entityId: string = criteria._id as string;
-    const associatedBlocks = await this.blockService?.findOne({
-      'options.content.entity': entityId,
-    });
-    if (associatedBlocks) {
-      throw new ForbiddenException(`Content type have blocks associated to it`);
-    }
     if (criteria._id) {
+      const associatedBlock = await this.blockService?.findOne({
+        'options.content.entity': criteria._id,
+      });
+      if (associatedBlock) {
+        throw new ForbiddenException(
+          'Content type have blocks associated to it',
+        );
+      }
       await this.contentModel.deleteMany({ entity: criteria._id });
     } else {
       throw new Error(

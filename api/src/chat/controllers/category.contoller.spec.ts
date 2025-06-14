@@ -91,7 +91,7 @@ describe('CategoryController', () => {
         {
           provide: BlockService,
           useValue: {
-            findOne: jest.fn(),
+            findOneAndPopulate: jest.fn(),
           },
         },
       ],
