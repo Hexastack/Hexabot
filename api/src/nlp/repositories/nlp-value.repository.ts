@@ -27,7 +27,6 @@ import { NlpValueDto } from '../dto/nlp-value.dto';
 import {
   NLP_VALUE_POPULATE,
   NlpValue,
-  NlpValueDocument,
   NlpValueFull,
   NlpValueFullWithCount,
   NlpValuePopulate,
@@ -44,18 +43,6 @@ export class NlpValueRepository extends BaseRepository<
 > {
   constructor(@InjectModel(NlpValue.name) readonly model: Model<NlpValue>) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
-  }
-
-  /**
-   * Emits an event after a new NLP value is created, bypassing built-in values.
-   *
-   * @param created - The newly created NLP value document.
-   */
-  async postCreate(created: NlpValueDocument): Promise<void> {
-    if (!created.builtin) {
-      // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlpValue:create', created);
-    }
   }
 
   /**

@@ -16,7 +16,6 @@ import { LabelDto } from '../dto/label.dto';
 import {
   Label,
   LABEL_POPULATE,
-  LabelDocument,
   LabelFull,
   LabelPopulate,
 } from '../schemas/label.schema';
@@ -30,32 +29,5 @@ export class LabelRepository extends BaseRepository<
 > {
   constructor(@InjectModel(Label.name) readonly model: Model<Label>) {
     super(model, Label, LABEL_POPULATE, LabelFull);
-  }
-
-  /**
-   * After creating a `Label`, this method emits an event and updates the `label_id` field.
-   *
-   * @param created - The created label document instance.
-   *
-   * @returns A promise that resolves when the update operation is complete.
-   */
-  async postCreate(created: LabelDocument): Promise<void> {
-    this.eventEmitter.emit(
-      'hook:label:create',
-      created,
-      async (result: Record<string, any>) => {
-        await this.model.updateOne(
-          { _id: created._id },
-          {
-            $set: {
-              label_id: {
-                ...(created.label_id || {}),
-                ...result,
-              },
-            },
-          },
-        );
-      },
-    );
   }
 }
