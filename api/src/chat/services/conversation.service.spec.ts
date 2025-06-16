@@ -6,12 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { installContextVarFixtures } from '@/utils/test/fixtures/contextvar';
 import { installConversationTypeFixtures } from '@/utils/test/fixtures/conversation';
 import {
@@ -21,16 +17,9 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { VIEW_MORE_PAYLOAD } from '../helpers/constants';
-import { ContextVarRepository } from '../repositories/context-var.repository';
-import { ConversationRepository } from '../repositories/conversation.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
 import { Block } from '../schemas/block.schema';
-import { ContextVarModel } from '../schemas/context-var.schema';
-import { ConversationModel } from '../schemas/conversation.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
 import { OutgoingMessageFormat } from '../schemas/types/message';
 
-import { ContextVarService } from './context-var.service';
 import { ConversationService } from './conversation.service';
 import { SubscriberService } from './subscriber.service';
 
@@ -45,30 +34,21 @@ describe('ConversationService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installContextVarFixtures();
           await installConversationTypeFixtures();
         }),
-        MongooseModule.forFeature([
-          // LabelModel,
-          SubscriberModel,
-          ConversationModel,
-          AttachmentModel,
-          ContextVarModel,
-        ]),
       ],
       providers: [
-        // LabelService,
-        // LabelRepository,
-        AttachmentService,
-        SubscriberService,
         ConversationService,
-        ContextVarService,
-        AttachmentRepository,
-        SubscriberRepository,
-        ConversationRepository,
-        ContextVarRepository,
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
     });
     [conversationService, subscriberService] = await getMocks([

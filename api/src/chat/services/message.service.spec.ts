@@ -6,20 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { User, UserModel } from '@/user/schemas/user.schema';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
+import { User } from '@/user/schemas/user.schema';
 import {
   installMessageFixtures,
   messageFixtures,
@@ -36,12 +24,11 @@ import { Room } from '@/websocket/types';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageRepository } from '../repositories/message.repository';
-import { Message, MessageModel } from '../schemas/message.schema';
-import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+import { Message } from '../schemas/message.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 
 import { SubscriberRepository } from './../repositories/subscriber.repository';
 import { MessageService } from './message.service';
-import { SubscriberService } from './subscriber.service';
 
 describe('MessageService', () => {
   let messageRepository: MessageRepository;
@@ -66,31 +53,9 @@ describe('MessageService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installMessageFixtures),
-        MongooseModule.forFeature([
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          InvitationModel,
-          SubscriberModel,
-          MessageModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        AttachmentService,
-        AttachmentRepository,
-        UserService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        SubscriberService,
-        SubscriberRepository,
-        MessageService,
-        MessageRepository,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installMessageFixtures)],
+      providers: [MessageService, SubscriberRepository, UserRepository],
     });
     [messageService, messageRepository, subscriberRepository, userRepository] =
       await getMocks([

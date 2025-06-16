@@ -6,48 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { ContentTypeRepository } from '@/cms/repositories/content-type.repository';
-import { ContentRepository } from '@/cms/repositories/content.repository';
-import { MenuRepository } from '@/cms/repositories/menu.repository';
-import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
-import { ContentModel } from '@/cms/schemas/content.schema';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { ContentTypeService } from '@/cms/services/content-type.service';
-import { ContentService } from '@/cms/services/content.service';
-import { MenuService } from '@/cms/services/menu.service';
 import { webEventText } from '@/extensions/channels/web/__test__/events.mock';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
-import { HelperService } from '@/helper/helper.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
-import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
-import { NlpSampleRepository } from '@/nlp/repositories/nlp-sample.repository';
-import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
-import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
-import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
-import { NlpSampleEntityService } from '@/nlp/services/nlp-sample-entity.service';
-import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
-import { NlpValueService } from '@/nlp/services/nlp-value.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { installBlockFixtures } from '@/utils/test/fixtures/block';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
@@ -63,33 +29,13 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { BlockRepository } from '../repositories/block.repository';
-import { ContextVarRepository } from '../repositories/context-var.repository';
-import { ConversationRepository } from '../repositories/conversation.repository';
-import { MessageRepository } from '../repositories/message.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { BlockFull, BlockModel } from '../schemas/block.schema';
-import { CategoryModel } from '../schemas/category.schema';
-import { ContextVarModel } from '../schemas/context-var.schema';
-import {
-  Conversation,
-  ConversationFull,
-  ConversationModel,
-} from '../schemas/conversation.schema';
-import { LabelModel } from '../schemas/label.schema';
-import { MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { BlockFull } from '../schemas/block.schema';
+import { Conversation, ConversationFull } from '../schemas/conversation.schema';
 
-import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
 import { BotService } from './bot.service';
-import { CategoryService } from './category.service';
-import { ContextVarService } from './context-var.service';
 import { ConversationService } from './conversation.service';
-import { MessageService } from './message.service';
 import { SubscriberService } from './subscriber.service';
 
 describe('BotService', () => {
@@ -102,100 +48,23 @@ describe('BotService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['LabelModel', 'CategoryModel'],
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installSubscriberFixtures();
           await installContentFixtures();
           await installBlockFixtures();
         }),
-        MongooseModule.forFeature([
-          BlockModel,
-          CategoryModel,
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-          LabelModel,
-          ConversationModel,
-          SubscriberModel,
-          MessageModel,
-          MenuModel,
-          ContextVarModel,
-          LanguageModel,
-          NlpEntityModel,
-          NlpSampleEntityModel,
-          NlpValueModel,
-          NlpSampleModel,
-        ]),
-        JwtModule,
       ],
       providers: [
-        BlockRepository,
-        CategoryRepository,
-        WebsocketGateway,
-        SocketEventDispatcherService,
-        ConversationRepository,
-        ContentTypeRepository,
-        ContentRepository,
-        AttachmentRepository,
-        SubscriberRepository,
-        MessageRepository,
-        MenuRepository,
-        LanguageRepository,
-        ContextVarRepository,
-        NlpEntityRepository,
-        NlpSampleEntityRepository,
-        NlpValueRepository,
-        NlpSampleRepository,
-        BlockService,
-        CategoryService,
-        ContentTypeService,
-        ContentService,
-        AttachmentService,
-        SubscriberService,
-        ConversationService,
+        JwtService,
         BotService,
-        ChannelService,
-        MessageService,
-        MenuService,
         WebChannelHandler,
-        ContextVarService,
-        LanguageService,
-        NlpEntityService,
-        NlpValueService,
-        NlpSampleService,
-        NlpSampleEntityService,
-        NlpService,
-        {
-          provide: HelperService,
-          useValue: {},
-        },
-        {
-          provide: PluginService,
-          useValue: {},
-        },
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({
-              contact: { company_name: 'Your company name' },
-            })),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],
