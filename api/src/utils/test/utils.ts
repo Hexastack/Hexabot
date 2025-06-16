@@ -36,11 +36,10 @@ type buildTestingMocksProps<
     | {
         providers: NonNullable<P>;
         controllers: NonNullable<C>;
-        autoInjectFrom?: 'all'[];
+        autoInjectFrom: 'all'[];
       }
     | {
         providers: NonNullable<P>;
-        controllers?: undefined;
         autoInjectFrom?: 'providers'[];
       }
     | {
@@ -188,7 +187,7 @@ export const buildTestingMocks = async ({
         ? [
             MongooseModule.forFeature([
               ...getModels(models),
-              ...(!!autoInjectFrom
+              ...(autoInjectFrom
                 ? getNestedModels(nestedProviders, 'Repository')
                 : []),
             ]),
