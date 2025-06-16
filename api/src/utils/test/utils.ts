@@ -23,12 +23,36 @@ type TTypeOrToken = [
   ...(new (...args: any[]) => any[]),
 ];
 
-type model = ModelDefinition | `${string}Model`;
+type TModel = ModelDefinition | `${string}Model`;
 
-interface buildTestingMocksProps extends ModuleMetadata {
-  models?: model[];
-  autoInjectFrom?: ('all' | 'controllers' | 'providers')[];
-}
+type ToUnionArray<T> = (NonNullable<T> extends (infer U)[] ? U : never)[];
+
+type buildTestingMocksProps<
+  P extends ModuleMetadata['providers'] = ModuleMetadata['providers'],
+  C extends ModuleMetadata['controllers'] = ModuleMetadata['controllers'],
+> = ModuleMetadata & {
+  models?: TModel[];
+} & (
+    | {
+        providers: NonNullable<P>;
+        controllers: NonNullable<C>;
+        autoInjectFrom?: 'all'[];
+      }
+    | {
+        providers: NonNullable<P>;
+        controllers?: undefined;
+        autoInjectFrom?: 'providers'[];
+      }
+    | {
+        controllers: NonNullable<C>;
+        autoInjectFrom?: 'controllers'[];
+      }
+    | {
+        providers?: never;
+        controllers?: never;
+        autoInjectFrom?: never;
+      }
+  );
 
 const findInstances = async <T extends TTypeOrToken>(
   type: keyof TestingModule,
@@ -133,7 +157,7 @@ const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
       dynamicModule.module.name === 'MongooseModule',
   ) > -1;
 
-const getModels = (models: model[]): ModelDefinition[] =>
+const getModels = (models: TModel[]): ModelDefinition[] =>
   models.map((model) =>
     typeof model === 'string' ? getModel(model, 'Model') : model,
   );
@@ -147,13 +171,14 @@ export const buildTestingMocks = async ({
   ...rest
 }: buildTestingMocksProps) => {
   const nestedProviders: Provider[] = [];
-  const canAutoInjectFromAll = autoInjectFrom?.includes('all');
+  const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
+  const canAutoInjectFromAll = injectionFrom?.includes('all');
 
-  if (canAutoInjectFromAll || autoInjectFrom?.includes('providers')) {
+  if (canAutoInjectFromAll || injectionFrom?.includes('providers')) {
     nestedProviders.push(...providers, ...getNestedDependencies(providers));
   }
 
-  if (canAutoInjectFromAll || autoInjectFrom?.includes('controllers')) {
+  if (canAutoInjectFromAll || injectionFrom?.includes('controllers')) {
     nestedProviders.push(...controllers, ...getNestedDependencies(controllers));
   }
 
