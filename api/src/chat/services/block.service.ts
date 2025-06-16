@@ -791,12 +791,16 @@ export class BlockService extends BaseService<
   /**
    * Updates the `trigger_labels` and `assign_labels` fields of a block when a label is deleted.
    *
-   * This method removes the deleted label from the `trigger_labels` and `assign_labels` fields of all blocks that have the label.
+   * @param _query - The Mongoose query object used for deletion.
+   * @param criteria - The filter criteria for finding the labels to be deleted.
    *
-   * @param label The label that is being deleted.
+   * @returns {Promise<void>} A promise that resolves once the event is emitted.
    */
   @OnEvent('hook:label:preDelete')
-  async handleLabelDelete(_query: unknown, criteria: TFilterQuery<Label>) {
+  async handleLabelPreDelete(
+    _query: unknown,
+    criteria: TFilterQuery<Label>,
+  ): Promise<void> {
     if (criteria._id) {
       await this.getRepository().model.updateMany(
         {
