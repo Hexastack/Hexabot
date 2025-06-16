@@ -6,10 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
+import { Language } from '@/i18n/schemas/language.schema';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import {
   installNlpSampleEntityFixtures,
@@ -24,18 +22,15 @@ import {
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
+import { NlpEntity } from '../schemas/nlp-entity.schema';
 import {
   NlpSampleEntity,
   NlpSampleEntityFull,
-  NlpSampleEntityModel,
 } from '../schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from '../schemas/nlp-sample.schema';
-import { NlpValueModel, NlpValueStub } from '../schemas/nlp-value.schema';
+import { NlpValueStub } from '../schemas/nlp-value.schema';
 
 import { NlpEntityRepository } from './nlp-entity.repository';
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-import { NlpValueRepository } from './nlp-value.repository';
 
 describe('NlpSampleEntityRepository', () => {
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
@@ -47,20 +42,12 @@ describe('NlpSampleEntityRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installNlpSampleEntityFixtures),
-        MongooseModule.forFeature([
-          NlpSampleEntityModel,
-          NlpEntityModel,
-          NlpValueModel,
-          NlpSampleModel,
-          LanguageModel,
-        ]),
-      ],
+      models: ['NlpSampleModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [
         NlpSampleEntityRepository,
         NlpEntityRepository,
-        NlpValueRepository,
         LanguageRepository,
       ],
     });

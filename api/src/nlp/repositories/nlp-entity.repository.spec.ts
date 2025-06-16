@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -17,12 +15,9 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpValueModel } from '../schemas/nlp-value.schema';
+import { NlpEntity } from '../schemas/nlp-entity.schema';
 
 import { NlpEntityRepository } from './nlp-entity.repository';
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpValueRepository } from './nlp-value.repository';
 
 describe('NlpEntityRepository', () => {
@@ -32,19 +27,9 @@ describe('NlpEntityRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installNlpValueFixtures),
-        MongooseModule.forFeature([
-          NlpEntityModel,
-          NlpValueModel,
-          NlpSampleEntityModel,
-        ]),
-      ],
-      providers: [
-        NlpEntityRepository,
-        NlpValueRepository,
-        NlpSampleEntityRepository,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installNlpValueFixtures)],
+      providers: [NlpEntityRepository],
     });
     [nlpEntityRepository, nlpValueRepository] = await getMocks([
       NlpEntityRepository,
