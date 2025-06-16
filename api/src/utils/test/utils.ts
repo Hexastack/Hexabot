@@ -104,7 +104,7 @@ const getModel = (name: string, suffix = ''): ModelDefinition => {
   const model = LifecycleHookManager.getModel(modelName);
 
   if (!model) {
-    throw new Error(`Unable to find model for name '${modelName}!`);
+    throw new Error(`Unable to find model for name '${modelName}!'`);
   }
 
   return model;
