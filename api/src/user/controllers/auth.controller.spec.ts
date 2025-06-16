@@ -6,24 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtService } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
@@ -32,23 +24,12 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { UserCreateDto } from '../dto/user.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
-import { UserModel } from '../schemas/user.schema';
+import { Role } from '../schemas/role.schema';
 import { InvitationService } from '../services/invitation.service';
-import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
-import { ValidateAccountService } from '../services/validate-account.service';
 
 import { LocalAuthController } from './auth.controller';
 
@@ -63,37 +44,17 @@ describe('AuthController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['PermissionModel'],
+      autoInjectFrom: ['all'],
       controllers: [LocalAuthController],
       imports: [
         rootMongooseTestModule(async () => {
           await installLanguageFixtures();
           await installUserFixtures();
         }),
-        MongooseModule.forFeature([
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          InvitationModel,
-          AttachmentModel,
-          LanguageModel,
-        ]),
       ],
       providers: [
-        UserService,
-        WebsocketGateway,
-        SocketEventDispatcherService,
-        AttachmentService,
-        AttachmentRepository,
-        UserRepository,
-        PermissionService,
         RoleService,
-        RoleRepository,
-        PermissionRepository,
-        InvitationRepository,
-        InvitationService,
-        LanguageRepository,
-        LanguageService,
-        JwtService,
         {
           provide: MailerService,
           useValue: {
@@ -102,15 +63,6 @@ describe('AuthController', () => {
             },
           },
         },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-        ValidateAccountService,
         {
           provide: I18nService,
           useValue: {

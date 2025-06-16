@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import {
@@ -22,17 +22,10 @@ import { buildTestingMocks } from '@/utils/test/utils';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { ModelModel, Model as ModelSchema } from '../schemas/model.schema';
-import {
-  Permission,
-  PermissionFull,
-  PermissionModel,
-} from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
+import { Model as ModelSchema } from '../schemas/model.schema';
+import { Permission, PermissionFull } from '../schemas/permission.schema';
+import { Role } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
-
-import { InvitationRepository } from './invitation.repository';
 
 describe('PermissionRepository', () => {
   let modelRepository: ModelRepository;
@@ -44,21 +37,10 @@ describe('PermissionRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          ModelModel,
-          PermissionModel,
-          RoleModel,
-          InvitationModel,
-        ]),
-      ],
-      providers: [
-        ModelRepository,
-        RoleRepository,
-        PermissionRepository,
-        InvitationRepository,
-      ],
+      models: ['InvitationModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [ModelRepository, RoleRepository, PermissionRepository],
     });
     [roleRepository, modelRepository, permissionRepository, permissionModel] =
       await getMocks([

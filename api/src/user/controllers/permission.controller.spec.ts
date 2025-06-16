@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import {
@@ -18,18 +16,9 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { PermissionCreateDto } from '../dto/permission.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { ModelRepository } from '../repositories/model.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { Model, ModelModel } from '../schemas/model.schema';
-import {
-  Permission,
-  PermissionFull,
-  PermissionModel,
-} from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
+import { Model } from '../schemas/model.schema';
+import { Permission, PermissionFull } from '../schemas/permission.schema';
+import { Role } from '../schemas/role.schema';
 import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
@@ -50,33 +39,10 @@ describe('PermissionController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['InvitationModel'],
+      autoInjectFrom: ['controllers'],
       controllers: [PermissionController],
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          PermissionModel,
-          ModelModel,
-          RoleModel,
-          InvitationModel,
-        ]),
-      ],
-      providers: [
-        RoleService,
-        ModelService,
-        PermissionService,
-        PermissionRepository,
-        RoleRepository,
-        InvitationRepository,
-        ModelRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
     });
     [permissionController, roleService, modelService, permissionService] =
       await getMocks([

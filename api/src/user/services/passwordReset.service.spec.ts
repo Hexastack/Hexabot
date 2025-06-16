@@ -6,22 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { NotFoundException } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { getModelToken } from '@nestjs/mongoose';
 import { compareSync } from 'bcryptjs';
 import { Model } from 'mongoose';
 import { SentMessageInfo } from 'nodemailer';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
@@ -30,17 +23,9 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel } from '../schemas/role.schema';
-import { User, UserModel } from '../schemas/user.schema';
+import { User } from '../schemas/user.schema';
 
 import { PasswordResetService } from './passwordReset.service';
-import { RoleService } from './role.service';
-import { UserService } from './user.service';
 
 describe('PasswordResetService', () => {
   let passwordResetService: PasswordResetService;
@@ -49,31 +34,14 @@ describe('PasswordResetService', () => {
   let userModel: Model<User>;
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installLanguageFixtures();
           await installUserFixtures();
         }),
-        MongooseModule.forFeature([
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          AttachmentModel,
-          LanguageModel,
-          InvitationModel,
-        ]),
-        JwtModule,
       ],
       providers: [
-        UserService,
-        UserRepository,
-        RoleService,
-        AttachmentService,
-        AttachmentRepository,
-        RoleRepository,
-        InvitationRepository,
-        LanguageService,
-        LanguageRepository,
         PasswordResetService,
         {
           provide: MailerService,
@@ -88,14 +56,6 @@ describe('PasswordResetService', () => {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],

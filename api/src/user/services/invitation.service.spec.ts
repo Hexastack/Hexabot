@@ -6,16 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { SentMessageInfo } from 'nodemailer';
 
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   installInvitationFixtures,
@@ -30,15 +25,9 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
 import { InvitationRepository } from '../repositories/invitation.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel } from '../schemas/role.schema';
 
 import { InvitationService } from './invitation.service';
-import { PermissionService } from './permission.service';
-import { RoleService } from './role.service';
 
 describe('InvitationService', () => {
   let invitationService: InvitationService;
@@ -50,35 +39,24 @@ describe('InvitationService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['PermissionModel'],
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installLanguageFixtures();
           await installInvitationFixtures();
         }),
-        MongooseModule.forFeature([
-          RoleModel,
-          PermissionModel,
-          InvitationModel,
-          LanguageModel,
-        ]),
         JwtModule,
       ],
       providers: [
-        PermissionService,
-        RoleService,
-        RoleRepository,
-        PermissionRepository,
-        InvitationRepository,
         InvitationService,
-        LanguageRepository,
-        LanguageService,
+        RoleRepository,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
-        InvitationRepository,
         {
           provide: MailerService,
           useValue: {
@@ -86,14 +64,6 @@ describe('InvitationService', () => {
               (_options: ISendMailOptions): Promise<SentMessageInfo> =>
                 Promise.resolve('Mail sent successfully'),
             ),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],

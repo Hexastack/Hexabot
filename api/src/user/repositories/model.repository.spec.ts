@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { modelFixtures } from '@/utils/test/fixtures/model';
@@ -19,8 +19,8 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
-import { ModelFull, ModelModel } from '../schemas/model.schema';
-import { Permission, PermissionModel } from '../schemas/permission.schema';
+import { ModelFull } from '../schemas/model.schema';
+import { Permission } from '../schemas/permission.schema';
 
 import { Model as ModelType } from './../schemas/model.schema';
 
@@ -33,10 +33,9 @@ describe('ModelRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([ModelModel, PermissionModel]),
-      ],
+      autoInjectFrom: ['providers'],
+      models: ['PermissionModel'],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
       providers: [ModelRepository, PermissionRepository],
     });
     [permissionRepository, modelRepository, modelModel] = await getMocks([
