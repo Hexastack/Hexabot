@@ -47,7 +47,7 @@ export class LifecycleHookManager {
 
   private static addModel(model: ModelDefinition) {
     if (this.models.has(model.name)) {
-      throw new Error(`model with Name ${model} already exist`);
+      throw new Error(`Model with name ${model} already exists`);
     }
 
     this.models.set(model.name, model);
