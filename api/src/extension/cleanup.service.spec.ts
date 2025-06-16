@@ -6,22 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
-import { SubscriberService } from '@/chat/services/subscriber.service';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { SettingRepository } from '@/setting/repositories/setting.repository';
-import { Setting, SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { Setting } from '@/setting/schemas/setting.schema';
 import { SettingService } from '@/setting/services/setting.service';
 import { installSettingFixtures } from '@/utils/test/fixtures/setting';
 import {
@@ -41,34 +29,9 @@ describe('CleanupService', () => {
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installSettingFixtures),
-        MongooseModule.forFeature([
-          SettingModel,
-          SubscriberModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        CleanupService,
-        HelperService,
-        SettingService,
-        SettingRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-        SettingSeeder,
-        SubscriberService,
-        SubscriberRepository,
-        AttachmentService,
-        AttachmentRepository,
-        ChannelService,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installSettingFixtures)],
+      providers: [CleanupService],
     });
     [cleanupService, settingService, helperService] = await getMocks([
       CleanupService,
