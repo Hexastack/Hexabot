@@ -71,7 +71,7 @@ export class LifecycleHookManager {
   }
 
   public static attach(model: ModelDefinition): ModelDefinition {
-    this.addModel(model);
+    LifecycleHookManager.addModel(model);
     const { name, schema } = model;
     const operations: {
       [key in LifecycleOperation]: ('pre' | 'post')[];
