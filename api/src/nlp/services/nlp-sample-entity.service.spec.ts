@@ -60,7 +60,6 @@ describe('NlpSampleEntityService', () => {
       nlpSampleEntityRepository,
       nlpEntityRepository,
       languageRepository,
-      nlpSampleEntityService,
       nlpEntityService,
       nlpValueService,
     ] = await getMocks([
@@ -68,7 +67,6 @@ describe('NlpSampleEntityService', () => {
       NlpSampleEntityRepository,
       NlpEntityRepository,
       LanguageRepository,
-      NlpSampleEntityService,
       NlpEntityService,
       NlpValueService,
     ]);
