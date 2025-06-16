@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
+import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
