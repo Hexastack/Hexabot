@@ -42,7 +42,7 @@ export class LifecycleHookManager {
   private static models = new Map<string, ModelDefinition>();
 
   public static getModel(name: string) {
-    return this.models.get(name);
+    return LifecycleHookManager.models.get(name);
   }
 
   private static addModel(model: ModelDefinition) {
