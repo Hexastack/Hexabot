@@ -104,7 +104,7 @@ const getModel = (name: string, suffix = ''): ModelDefinition => {
   const model = LifecycleHookManager.getModel(modelName);
 
   if (!model) {
-    throw new Error(`Unable to find '${modelName}' model!`);
+    throw new Error(`Unable to find model for name '${modelName}!`);
   }
 
   return model;
@@ -127,7 +127,7 @@ const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
 
 const getNestedDependencies = (dynamicProviders: Provider[]): Provider[] => {
-  const nestedDependencies: Provider[] = [];
+  const nestedDependencies = new Set<Provider>();
 
   dynamicProviders.filter(filterNestedDependencies).forEach((provider) => {
     getClassDependencies(provider)
@@ -141,20 +141,20 @@ const getNestedDependencies = (dynamicProviders: Provider[]): Provider[] => {
               dynamicProvider.provide === dependency,
           )
         ) {
-          nestedDependencies.push(dependency);
+          nestedDependencies.add(dependency);
         }
       });
   });
 
-  return nestedDependencies;
+  return [...nestedDependencies];
 };
 
 const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
-  (imports || []).findIndex(
+  (imports || []).some(
     (dynamicModule) =>
       'module' in dynamicModule &&
       dynamicModule.module.name === 'MongooseModule',
-  ) > -1;
+  );
 
 const getModels = (models: TModel[]): ModelDefinition[] =>
   models.map((model) =>
@@ -169,16 +169,22 @@ export const buildTestingMocks = async ({
   autoInjectFrom,
   ...rest
 }: buildTestingMocksProps) => {
-  const nestedProviders: Provider[] = [];
+  const nestedProviders = new Set<Provider>();
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
   const canAutoInjectFromAll = injectionFrom?.includes('all');
+  const canAutoInjectFromProviders = injectionFrom?.includes('providers');
+  const canAutoInjectFromControllers = injectionFrom?.includes('controllers');
 
-  if (canAutoInjectFromAll || injectionFrom?.includes('providers')) {
-    nestedProviders.push(...providers, ...getNestedDependencies(providers));
+  if (canAutoInjectFromAll || canAutoInjectFromProviders) {
+    [...providers, ...getNestedDependencies(providers)].forEach((provider) =>
+      nestedProviders.add(provider),
+    );
   }
 
-  if (canAutoInjectFromAll || injectionFrom?.includes('controllers')) {
-    nestedProviders.push(...controllers, ...getNestedDependencies(controllers));
+  if (canAutoInjectFromAll || canAutoInjectFromControllers) {
+    [...getNestedDependencies(controllers)].forEach((controller) =>
+      nestedProviders.add(controller),
+    );
   }
 
   const module = await Test.createTestingModule({
@@ -188,7 +194,7 @@ export const buildTestingMocks = async ({
             MongooseModule.forFeature([
               ...getModels(models),
               ...(autoInjectFrom
-                ? getNestedModels(nestedProviders, 'Repository')
+                ? getNestedModels([...nestedProviders], 'Repository')
                 : []),
             ]),
           ]
@@ -206,7 +212,7 @@ export const buildTestingMocks = async ({
           get: jest.fn(),
         },
       },
-      ...(autoInjectFrom ? nestedProviders : []),
+      ...(autoInjectFrom ? [...nestedProviders] : []),
       ...providers,
     ],
     controllers,
