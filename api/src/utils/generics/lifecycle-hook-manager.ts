@@ -39,10 +39,18 @@ interface Registry {
 export class LifecycleHookManager {
   private static registry: Registry = {};
 
-  private static models: ModelDefinition[] = [];
+  private static models = new Map<string, ModelDefinition>();
 
   public static getModel(name: string) {
-    return this.models.find((attachedModel) => attachedModel.name === name);
+    return this.models.get(name);
+  }
+
+  private static addModel(model: ModelDefinition) {
+    if (this.models.has(model.name)) {
+      throw new Error(`model with Name ${model} already exist`);
+    }
+
+    this.models.set(model.name, model);
   }
 
   private static createLifecycleCallback<H = PreHook | PostHook>(): H {
@@ -63,7 +71,7 @@ export class LifecycleHookManager {
   }
 
   public static attach(model: ModelDefinition): ModelDefinition {
-    this.models.push(model);
+    this.addModel(model);
     const { name, schema } = model;
     const operations: {
       [key in LifecycleOperation]: ('pre' | 'post')[];
