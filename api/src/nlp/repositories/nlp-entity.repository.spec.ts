@@ -222,10 +222,10 @@ describe('NlpEntityRepository', () => {
         name: 'test2',
         builtin: true,
       });
-      const intentNlpEntity = await nlpEntityRepository.findOne(result.id);
+      const nlpEntity = await nlpEntityRepository.findOne(result.id);
 
-      expect(intentNlpEntity?.foreign_id).toBeUndefined();
-      expect(intentNlpEntity).toEqualPayload(result);
+      expect(nlpEntity?.foreign_id).toBeUndefined();
+      expect(nlpEntity).toEqualPayload(result);
     });
   });
 
