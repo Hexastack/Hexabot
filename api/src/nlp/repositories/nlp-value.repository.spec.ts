@@ -244,10 +244,10 @@ describe('NlpValueRepository', () => {
         value: 'nlpValueTest2',
         builtin: true,
       });
-      const intentNlpEntity = await nlpValueRepository.findOne(result.id);
+      const nlpValue = await nlpValueRepository.findOne(result.id);
 
-      expect(intentNlpEntity?.foreign_id).toBeUndefined();
-      expect(intentNlpEntity).toEqualPayload(result);
+      expect(nlpValue?.foreign_id).toBeUndefined();
+      expect(nlpValue).toEqualPayload(result);
     });
   });
 });
