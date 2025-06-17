@@ -109,8 +109,6 @@ export class NlpService {
    *
    * @param _query - The Mongoose query object used for deletion.
    * @param criteria - The filter criteria for finding the nlpEntities to be deleted.
-   *
-   * @returns {Promise<void>} A promise that resolves once the event is emitted.
    */
   @OnEvent('hook:nlpEntity:preDelete')
   async handleEntityDelete(
@@ -191,8 +189,6 @@ export class NlpService {
    *
    * @param _query - The Mongoose query object used for deletion.
    * @param criteria - The filter criteria for finding the nlpValues to be deleted.
-   *
-   * @returns {Promise<void>} A promise that resolves once the event is emitted.
    */
   @OnEvent('hook:nlpValue:preDelete')
   async handleValueDelete(
