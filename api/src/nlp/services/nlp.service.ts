@@ -168,7 +168,9 @@ export class NlpService {
     if (!created.builtin) {
       // Synchonize new value with NLP provider
       try {
-        const helper = await this.helperService.getDefaultNluHelper();
+        const helper = await this.helperService.getDefaultHelper(
+          HelperType.NLU,
+        );
         const foreignId = await helper.addValue(created);
         this.logger.debug('New value successfully synced!', foreignId);
         await this.nlpValueService.updateOne(
