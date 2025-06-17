@@ -55,6 +55,8 @@ describe('NlpValueRepository', () => {
   let nlpValues: NlpValue[];
   let nlpService: NlpService;
   let nlpEntityRepository: NlpEntityRepository;
+  let llmNluHelper: LlmNluHelper;
+  let nlpValueService: NlpValueService;
 
   beforeAll(async () => {
     const { getMocks, module } = await buildTestingMocks({
@@ -109,14 +111,16 @@ describe('NlpValueRepository', () => {
       nlpSampleEntityRepository,
       nlpService,
       nlpEntityRepository,
+      nlpValueService,
     ] = await getMocks([
       NlpValueRepository,
       NlpSampleEntityRepository,
       NlpService,
       NlpEntityRepository,
+      NlpValueService,
     ]);
     nlpValues = await nlpValueRepository.findAll();
-    const llmNluHelper = module.get(LlmNluHelper);
+    llmNluHelper = module.get(LlmNluHelper);
     module.get(HelperService).register(llmNluHelper);
   });
 
@@ -192,8 +196,18 @@ describe('NlpValueRepository', () => {
     it('should create and attached a foreign_id to the create nlp value', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:postCreate',
-        async (...args) => {
-          await nlpService.handleValuePostCreate(args[0]);
+        async (...[created]) => {
+          const spy1 = jest.spyOn(llmNluHelper, 'addValue');
+          const spy2 = jest.spyOn(nlpValueService, 'updateOne');
+          await nlpService.handleValuePostCreate(created);
+
+          expect(spy1).toHaveBeenCalledWith(created);
+          expect(spy2).toHaveBeenCalledWith(
+            {
+              _id: created._id,
+            },
+            { foreign_id: await spy1.mock.results[0].value },
+          );
         },
       );
 
