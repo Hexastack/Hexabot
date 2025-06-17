@@ -193,20 +193,20 @@ describe('NlpValueRepository', () => {
   });
 
   describe('postCreate', () => {
-    it('should create and attached a foreign_id to the create nlp value', async () => {
+    it('should create and attach a foreign_id to the newly created nlp value', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:postCreate',
         async (...[created]) => {
-          const spy1 = jest.spyOn(llmNluHelper, 'addValue');
-          const spy2 = jest.spyOn(nlpValueService, 'updateOne');
+          const helperSpy = jest.spyOn(llmNluHelper, 'addValue');
+          jest.spyOn(nlpValueService, 'updateOne');
           await nlpService.handleValuePostCreate(created);
 
-          expect(spy1).toHaveBeenCalledWith(created);
-          expect(spy2).toHaveBeenCalledWith(
+          expect(helperSpy).toHaveBeenCalledWith(created);
+          expect(nlpValueService.updateOne).toHaveBeenCalledWith(
             {
               _id: created._id,
             },
-            { foreign_id: await spy1.mock.results[0].value },
+            { foreign_id: await helperSpy.mock.results[0].value },
           );
         },
       );
@@ -228,7 +228,7 @@ describe('NlpValueRepository', () => {
       ]);
     });
 
-    it('should create and attached a foreign_id to the create nlp value with builtin true', async () => {
+    it('should not create and attach a foreign_id to the newly created nlp value with builtin set to true', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:postCreate',
         async (...[created]) => {
