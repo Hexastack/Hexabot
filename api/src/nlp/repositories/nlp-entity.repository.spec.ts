@@ -123,8 +123,8 @@ describe('NlpEntityRepository', () => {
     it('should delete a nlp entity', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpEntity:preDelete',
-        async (...args) => {
-          await nlpService.handleEntityDelete(args[0], args[1]);
+        async (...[query, criteria]) => {
+          await nlpService.handleEntityDelete(query, criteria);
         },
       );
       const intentNlpEntity = await nlpEntityRepository.findOne({
