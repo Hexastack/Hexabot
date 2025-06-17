@@ -18,6 +18,7 @@ import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
 import { SettingService } from '@/setting/services/setting.service';
+import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -171,6 +172,46 @@ describe('NlpEntityRepository', () => {
           values: firstNameValues,
         },
       ]);
+    });
+  });
+
+  describe('postCreate', () => {
+    it('should not create and attached a foreign_id to the create nlp entity', async () => {
+      nlpEntityRepository.eventEmitter.once(
+        'hook:nlpEntity:postCreate',
+        async (...args) => {
+          await nlpService.handleEntityPostCreate(args[0]);
+        },
+      );
+
+      const result = await nlpEntityRepository.create({
+        name: 'test1',
+      });
+      const intentNlpEntity = await nlpEntityRepository.findOne(result.id);
+
+      expect(intentNlpEntity?.foreign_id).toBeDefined();
+      expect(intentNlpEntity).toEqualPayload(result, [
+        ...IGNORED_TEST_FIELDS,
+        'foreign_id',
+      ]);
+    });
+
+    it('should not create and attached a foreign_id to the create nlp entity with builtin true', async () => {
+      nlpEntityRepository.eventEmitter.once(
+        'hook:nlpEntity:postCreate',
+        async (...args) => {
+          await nlpService.handleEntityPostCreate(args[0]);
+        },
+      );
+
+      const result = await nlpEntityRepository.create({
+        name: 'test2',
+        builtin: true,
+      });
+      const intentNlpEntity = await nlpEntityRepository.findOne(result.id);
+
+      expect(intentNlpEntity?.foreign_id).toBeUndefined();
+      expect(intentNlpEntity).toEqualPayload(result);
     });
   });
 });

@@ -18,6 +18,7 @@ import { SettingRepository } from '@/setting/repositories/setting.repository';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingSeeder } from '@/setting/seeds/setting.seed';
 import { SettingService } from '@/setting/services/setting.service';
+import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { nlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
@@ -53,6 +54,7 @@ describe('NlpValueRepository', () => {
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpValues: NlpValue[];
   let nlpService: NlpService;
+  let nlpEntityRepository: NlpEntityRepository;
 
   beforeAll(async () => {
     const { getMocks, module } = await buildTestingMocks({
@@ -102,12 +104,17 @@ describe('NlpValueRepository', () => {
       ],
     });
 
-    [nlpValueRepository, nlpSampleEntityRepository, nlpService] =
-      await getMocks([
-        NlpValueRepository,
-        NlpSampleEntityRepository,
-        NlpService,
-      ]);
+    [
+      nlpValueRepository,
+      nlpSampleEntityRepository,
+      nlpService,
+      nlpEntityRepository,
+    ] = await getMocks([
+      NlpValueRepository,
+      NlpSampleEntityRepository,
+      NlpService,
+      NlpEntityRepository,
+    ]);
     nlpValues = await nlpValueRepository.findAll();
     const llmNluHelper = module.get(LlmNluHelper);
     module.get(HelperService).register(llmNluHelper);
@@ -178,6 +185,55 @@ describe('NlpValueRepository', () => {
         value: nlpValues[1].id,
       });
       expect(sampleEntities.length).toEqual(0);
+    });
+  });
+
+  describe('postCreate', () => {
+    it('should create and attached a foreign_id to the create nlp value', async () => {
+      nlpValueRepository.eventEmitter.once(
+        'hook:nlpValue:postCreate',
+        async (...args) => {
+          await nlpService.handleValuePostCreate(args[0]);
+        },
+      );
+
+      const createdNlpEntity = await nlpEntityRepository.create({
+        name: 'test1',
+      });
+
+      const result = await nlpValueRepository.create({
+        entity: createdNlpEntity.id,
+        value: 'test',
+      });
+      const intentNlpEntity = await nlpValueRepository.findOne(result.id);
+
+      expect(intentNlpEntity?.foreign_id).toBeDefined();
+      expect(intentNlpEntity).toEqualPayload(result, [
+        ...IGNORED_TEST_FIELDS,
+        'foreign_id',
+      ]);
+    });
+
+    it('should create and attached a foreign_id to the create nlp value with builtin true', async () => {
+      nlpValueRepository.eventEmitter.once(
+        'hook:nlpValue:postCreate',
+        async (...args) => {
+          await nlpService.handleValuePostCreate(args[0]);
+        },
+      );
+
+      const createdNlpEntity = await nlpEntityRepository.create({
+        name: 'nlpEntityTest2',
+      });
+      const result = await nlpValueRepository.create({
+        entity: createdNlpEntity.id,
+        value: 'nlpValueTest2',
+        builtin: true,
+      });
+      const intentNlpEntity = await nlpValueRepository.findOne(result.id);
+
+      expect(intentNlpEntity?.foreign_id).toBeUndefined();
+      expect(intentNlpEntity).toEqualPayload(result);
     });
   });
 });
