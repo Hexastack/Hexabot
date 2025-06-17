@@ -167,8 +167,8 @@ describe('NlpValueRepository', () => {
     it('should delete a nlp Value', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:preDelete',
-        async (...args) => {
-          await nlpService.handleValueDelete(args[0], args[1]);
+        async (...[query, criteria]) => {
+          await nlpService.handleValueDelete(query, criteria);
         },
       );
       const result = await nlpValueRepository.deleteOne(nlpValues[1].id);
