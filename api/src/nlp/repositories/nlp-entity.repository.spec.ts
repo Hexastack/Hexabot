@@ -230,7 +230,7 @@ describe('NlpEntityRepository', () => {
   });
 
   describe('postUpdate', () => {
-    it('should update an NlpValue and trigger a postUpdate event', async () => {
+    it('should update an NlpEntity and trigger a postUpdate event', async () => {
       nlpEntityRepository.eventEmitter.once(
         'hook:nlpEntity:postUpdate',
         async (...[query, updated]) => {

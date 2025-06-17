@@ -263,15 +263,15 @@ describe('NlpValueRepository', () => {
         },
       );
 
-      const updatedNlpEntity = await nlpValueRepository.updateOne(
+      const updatedNlpValue = await nlpValueRepository.updateOne(
         {
           value: 'test',
         },
         { value: 'test2' },
       );
-      const result = await nlpValueRepository.findOne(updatedNlpEntity.id);
+      const result = await nlpValueRepository.findOne(updatedNlpValue.id);
 
-      expect(result).toEqualPayload(updatedNlpEntity);
+      expect(result).toEqualPayload(updatedNlpValue);
     });
   });
 });
