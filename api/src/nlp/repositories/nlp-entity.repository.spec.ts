@@ -234,10 +234,10 @@ describe('NlpEntityRepository', () => {
       nlpEntityRepository.eventEmitter.once(
         'hook:nlpEntity:postUpdate',
         async (...[query, updated]) => {
-          const spy1 = jest.spyOn(llmNluHelper, 'updateEntity');
+          jest.spyOn(llmNluHelper, 'updateEntity');
           await nlpService.handleEntityPostUpdate(query, updated);
 
-          expect(spy1).toHaveBeenCalledWith(updated);
+          expect(llmNluHelper.updateEntity).toHaveBeenCalledWith(updated);
         },
       );
 

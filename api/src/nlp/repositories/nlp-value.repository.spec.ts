@@ -256,10 +256,10 @@ describe('NlpValueRepository', () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:postUpdate',
         async (...[query, updated]) => {
-          const spy1 = jest.spyOn(llmNluHelper, 'updateValue');
+          jest.spyOn(llmNluHelper, 'updateValue');
           await nlpService.handleValuePostUpdate(query, updated);
 
-          expect(spy1).toHaveBeenCalledWith(updated);
+          expect(llmNluHelper.updateValue).toHaveBeenCalledWith(updated);
         },
       );
 
