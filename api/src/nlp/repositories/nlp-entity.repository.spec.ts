@@ -48,6 +48,8 @@ describe('NlpEntityRepository', () => {
   let nlpValueRepository: NlpValueRepository;
   let firstNameNlpEntity: NlpEntity | null;
   let nlpService: NlpService;
+  let llmNluHelper: LlmNluHelper;
+  let nlpEntityService: NlpEntityService;
 
   beforeAll(async () => {
     const { getMocks, module } = await buildTestingMocks({
@@ -99,15 +101,17 @@ describe('NlpEntityRepository', () => {
       ],
     });
 
-    [nlpEntityRepository, nlpValueRepository, nlpService] = await getMocks([
-      NlpEntityRepository,
-      NlpValueRepository,
-      NlpService,
-    ]);
+    [nlpEntityRepository, nlpValueRepository, nlpService, nlpEntityService] =
+      await getMocks([
+        NlpEntityRepository,
+        NlpValueRepository,
+        NlpService,
+        NlpEntityService,
+      ]);
     firstNameNlpEntity = await nlpEntityRepository.findOne({
       name: 'firstname',
     });
-    const llmNluHelper = module.get(LlmNluHelper);
+    llmNluHelper = module.get(LlmNluHelper);
     module.get(HelperService).register(llmNluHelper);
   });
 
@@ -179,8 +183,18 @@ describe('NlpEntityRepository', () => {
     it('should not create and attached a foreign_id to the create nlp entity', async () => {
       nlpEntityRepository.eventEmitter.once(
         'hook:nlpEntity:postCreate',
-        async (...args) => {
-          await nlpService.handleEntityPostCreate(args[0]);
+        async (...[created]) => {
+          const spy1 = jest.spyOn(llmNluHelper, 'addEntity');
+          const spy2 = jest.spyOn(nlpEntityService, 'updateOne');
+          await nlpService.handleEntityPostCreate(created);
+
+          expect(spy1).toHaveBeenCalledWith(created);
+          expect(spy2).toHaveBeenCalledWith(
+            {
+              _id: created._id,
+            },
+            { foreign_id: await spy1.mock.results[0].value },
+          );
         },
       );
 
@@ -199,8 +213,8 @@ describe('NlpEntityRepository', () => {
     it('should not create and attached a foreign_id to the create nlp entity with builtin true', async () => {
       nlpEntityRepository.eventEmitter.once(
         'hook:nlpEntity:postCreate',
-        async (...args) => {
-          await nlpService.handleEntityPostCreate(args[0]);
+        async (...[created]) => {
+          await nlpService.handleEntityPostCreate(created);
         },
       );
 
