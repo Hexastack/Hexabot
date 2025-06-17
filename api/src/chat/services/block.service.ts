@@ -793,8 +793,6 @@ export class BlockService extends BaseService<
    *
    * @param _query - The Mongoose query object used for deletion.
    * @param criteria - The filter criteria for finding the labels to be deleted.
-   *
-   * @returns {Promise<void>} A promise that resolves once the event is emitted.
    */
   @OnEvent('hook:label:preDelete')
   async handleLabelPreDelete(

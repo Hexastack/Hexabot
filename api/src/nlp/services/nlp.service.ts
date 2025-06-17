@@ -109,12 +109,16 @@ export class NlpService {
   }
 
   /**
-   * Handles the event triggered when an NLP entity is deleted. Synchronizes the deletion with the external NLP provider.
+   * Before deleting a `nlpEntity`, this method deletes the related `nlpValue` and `nlpSampleEntity`. Synchronizes the deletion with the external NLP provider
    *
-   * @param entity - The NLP entity to be deleted.
+   * @param _query - The Mongoose query object used for deletion.
+   * @param criteria - The filter criteria for finding the nlpEntities to be deleted.
    */
   @OnEvent('hook:nlpEntity:preDelete')
-  async handleEntityDelete(_query: unknown, criteria: TFilterQuery<NlpEntity>) {
+  async handleEntityDelete(
+    _query: unknown,
+    criteria: TFilterQuery<NlpEntity>,
+  ): Promise<void> {
     if (criteria._id) {
       await this.nlpValueService.deleteMany({ entity: criteria._id });
       await this.nlpSampleEntityService.deleteMany({ entity: criteria._id });
@@ -189,12 +193,16 @@ export class NlpService {
   }
 
   /**
-   * Handles the event triggered when an NLP value is deleted. Synchronizes the deletion with the external NLP provider.
+   * Before deleting a `nlpValue`, this method deletes the related `nlpSampleEntity`. Synchronizes the deletion with the external NLP provider
    *
-   * @param value - The NLP value to be deleted.
+   * @param _query - The Mongoose query object used for deletion.
+   * @param criteria - The filter criteria for finding the nlpValues to be deleted.
    */
   @OnEvent('hook:nlpValue:preDelete')
-  async handleValueDelete(_query: unknown, criteria: TFilterQuery<NlpValue>) {
+  async handleValueDelete(
+    _query: unknown,
+    criteria: TFilterQuery<NlpValue>,
+  ): Promise<void> {
     if (criteria._id) {
       await this.nlpSampleEntityService.deleteMany({
         value: criteria._id,
