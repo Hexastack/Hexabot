@@ -231,8 +231,8 @@ describe('NlpValueRepository', () => {
     it('should create and attached a foreign_id to the create nlp value with builtin true', async () => {
       nlpValueRepository.eventEmitter.once(
         'hook:nlpValue:postCreate',
-        async (...args) => {
-          await nlpService.handleValuePostCreate(args[0]);
+        async (...[created]) => {
+          await nlpService.handleValuePostCreate(created);
         },
       );
 
