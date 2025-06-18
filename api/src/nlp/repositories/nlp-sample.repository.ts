@@ -34,8 +34,6 @@ import {
 } from '../schemas/nlp-sample.schema';
 import { NlpValue } from '../schemas/nlp-value.schema';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-
 @Injectable()
 export class NlpSampleRepository extends BaseRepository<
   NlpSample,
@@ -47,7 +45,6 @@ export class NlpSampleRepository extends BaseRepository<
     @InjectModel(NlpSample.name) readonly model: Model<NlpSample>,
     @InjectModel(NlpSampleEntity.name)
     private readonly nlpSampleEntityModel: Model<NlpSampleEntity>,
-    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
   ) {
     super(model, NlpSample, NLP_SAMPLE_POPULATE, NlpSampleFull);
   }
