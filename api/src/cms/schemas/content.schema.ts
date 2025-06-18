@@ -34,7 +34,7 @@ export class ContentStub extends BaseSchema {
   /**
    * The title of the content.
    */
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, index: true })
   title: string;
 
   /**
