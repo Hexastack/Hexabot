@@ -116,12 +116,18 @@ export const Nlp = ({
           {/* NLP SAMPLES */}
           <Grid sx={{ padding: "20px" }}>
             <TabPanel value={selectedTab} index="sample">
-              <NlpSample />
+              {selectedTab === "sample" ? <NlpSample /> : null}
             </TabPanel>
 
             {/* NLP ENTITIES */}
             <TabPanel value={selectedTab} index="entity">
-              {entityId ? <NlpValues entityId={entityId} /> : <NlpEntity />}
+              {selectedTab === "entity" ? (
+                entityId ? (
+                  <NlpValues entityId={entityId} />
+                ) : (
+                  <NlpEntity />
+                )
+              ) : null}
             </TabPanel>
           </Grid>
         </Paper>
