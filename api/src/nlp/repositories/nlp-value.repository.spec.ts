@@ -6,8 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
+import { HelperService } from '@/helper/helper.service';
+import { LanguageRepository } from '@/i18n/repositories/language.repository';
+import { LanguageModel } from '@/i18n/schemas/language.schema';
+import { LanguageService } from '@/i18n/services/language.service';
+import { SettingRepository } from '@/setting/repositories/setting.repository';
+import { SettingModel } from '@/setting/schemas/setting.schema';
+import { SettingSeeder } from '@/setting/seeds/setting.seed';
+import { SettingService } from '@/setting/services/setting.service';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { nlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
@@ -21,38 +31,86 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpEntityModel } from '../schemas/nlp-entity.schema';
 import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
+import { NlpSampleModel } from '../schemas/nlp-sample.schema';
 import {
   NlpValue,
   NlpValueFull,
   NlpValueModel,
 } from '../schemas/nlp-value.schema';
+import { NlpEntityService } from '../services/nlp-entity.service';
+import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
+import { NlpSampleService } from '../services/nlp-sample.service';
+import { NlpValueService } from '../services/nlp-value.service';
+import { NlpService } from '../services/nlp.service';
 
+import { NlpEntityRepository } from './nlp-entity.repository';
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
+import { NlpSampleRepository } from './nlp-sample.repository';
 import { NlpValueRepository } from './nlp-value.repository';
 
 describe('NlpValueRepository', () => {
   let nlpValueRepository: NlpValueRepository;
   let nlpSampleEntityRepository: NlpSampleEntityRepository;
   let nlpValues: NlpValue[];
+  let nlpService: NlpService;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const { getMocks, module } = await buildTestingMocks({
       imports: [
         rootMongooseTestModule(installNlpSampleEntityFixtures),
         MongooseModule.forFeature([
           NlpValueModel,
           NlpSampleEntityModel,
           NlpEntityModel,
+          LanguageModel,
+          SettingModel,
+          NlpSampleModel,
         ]),
       ],
-      providers: [NlpValueRepository, NlpSampleEntityRepository],
+      providers: [
+        LanguageService,
+        LanguageRepository,
+        {
+          provide: CACHE_MANAGER,
+          useValue: {
+            set: jest.fn(),
+          },
+        },
+        NlpService,
+        NlpSampleService,
+        NlpEntityService,
+        NlpValueService,
+        NlpValueRepository,
+        NlpEntityRepository,
+        NlpSampleEntityService,
+        NlpSampleRepository,
+        NlpSampleEntityRepository,
+        HelperService,
+        {
+          provide: SettingService,
+          useValue: {
+            getSettings: jest.fn(() => ({
+              chatbot_settings: {
+                default_nlu_helper: 'llm-nlu-helper',
+              },
+            })),
+          },
+        },
+        SettingRepository,
+        SettingSeeder,
+        LlmNluHelper,
+      ],
     });
-    [nlpValueRepository, nlpSampleEntityRepository] = await getMocks([
-      NlpValueRepository,
-      NlpSampleEntityRepository,
-    ]);
 
+    [nlpValueRepository, nlpSampleEntityRepository, nlpService] =
+      await getMocks([
+        NlpValueRepository,
+        NlpSampleEntityRepository,
+        NlpService,
+      ]);
     nlpValues = await nlpValueRepository.findAll();
+    const llmNluHelper = module.get(LlmNluHelper);
+    module.get(HelperService).register(llmNluHelper);
   });
 
   afterAll(closeInMongodConnection);
@@ -107,7 +165,14 @@ describe('NlpValueRepository', () => {
 
   describe('The deleteCascadeOne function', () => {
     it('should delete a nlp Value', async () => {
+      nlpValueRepository.eventEmitter.once(
+        'hook:nlpValue:preDelete',
+        async (...[query, criteria]) => {
+          await nlpService.handleValueDelete(query, criteria);
+        },
+      );
       const result = await nlpValueRepository.deleteOne(nlpValues[1].id);
+
       expect(result.deletedCount).toEqual(1);
       const sampleEntities = await nlpSampleEntityRepository.find({
         value: nlpValues[1].id,

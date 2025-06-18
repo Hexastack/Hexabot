@@ -10,8 +10,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
 
-import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseRepository } from '@/utils/generics/base-repository';
 
 import { NlpEntityDto } from '../dto/nlp-entity.dto';
 import {
@@ -22,9 +21,6 @@ import {
   NlpEntityPopulate,
 } from '../schemas/nlp-entity.schema';
 
-import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
-import { NlpValueRepository } from './nlp-value.repository';
-
 @Injectable()
 export class NlpEntityRepository extends BaseRepository<
   NlpEntity,
@@ -32,11 +28,7 @@ export class NlpEntityRepository extends BaseRepository<
   NlpEntityFull,
   NlpEntityDto
 > {
-  constructor(
-    @InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>,
-    private readonly nlpValueRepository: NlpValueRepository,
-    private readonly nlpSampleEntityRepository: NlpSampleEntityRepository,
-  ) {
+  constructor(@InjectModel(NlpEntity.name) readonly model: Model<NlpEntity>) {
     super(model, NlpEntity, NLP_ENTITY_POPULATE, NlpEntityFull);
   }
 
@@ -75,42 +67,6 @@ export class NlpEntityRepository extends BaseRepository<
     if (!updated?.builtin) {
       // Bypass builtin entities (probably fixtures)
       this.eventEmitter.emit('hook:nlpEntity:update', updated);
-    }
-  }
-
-  /**
-   * Pre-delete hook that triggers before an NLP entity is deleted.
-   * Deletes related NLP values and sample entities before the entity deletion.
-   * Emits an event to notify other parts of the system about the deletion.
-   * Bypasses built-in entities.
-   *
-   * @param query The query used to delete the entity.
-   * @param criteria The filter criteria used to find the entity for deletion.
-   */
-  async preDelete(
-    _query: Query<
-      DeleteResult,
-      Document<NlpEntity, any, any>,
-      unknown,
-      NlpEntity,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<NlpEntity>,
-  ): Promise<void> {
-    if (criteria._id) {
-      await this.nlpValueRepository.deleteMany({ entity: criteria._id });
-      await this.nlpSampleEntityRepository.deleteMany({ entity: criteria._id });
-
-      const entities = await this.find(
-        typeof criteria === 'string' ? { _id: criteria } : criteria,
-      );
-      entities
-        .filter((e) => !e.builtin)
-        .map((e) => {
-          this.eventEmitter.emit('hook:nlpEntity:delete', e);
-        });
-    } else {
-      throw new Error('Attempted to delete NLP entity using unknown criteria');
     }
   }
 }
