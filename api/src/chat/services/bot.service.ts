@@ -447,7 +447,6 @@ export class BotService {
         }
 
         case FlowEscape.Action.NEW_CTX:
-          this.eventEmitter.emit('hook:conversation:end', convo);
           return { nextBlock: undefined, fallback: false };
 
         case FlowEscape.Action.REPROMPT:
