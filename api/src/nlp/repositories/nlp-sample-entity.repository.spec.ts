@@ -42,7 +42,7 @@ describe('NlpSampleEntityRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      models: ['NlpSampleModel'],
+      models: ['NlpSampleModel', 'NlpValueModel'],
       autoInjectFrom: ['providers'],
       imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [
