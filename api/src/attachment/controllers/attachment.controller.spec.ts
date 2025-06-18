@@ -54,7 +54,7 @@ describe('AttachmentController', () => {
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(async () => {

@@ -41,7 +41,7 @@ describe('MessageController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [MessageController],
       imports: [rootMongooseTestModule(installMessageFixtures)],
       providers: [UserService],

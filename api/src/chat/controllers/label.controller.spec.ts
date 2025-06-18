@@ -38,7 +38,7 @@ describe('LabelController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [LabelController],
       imports: [rootMongooseTestModule(installSubscriberFixtures)],
       providers: [SubscriberService],

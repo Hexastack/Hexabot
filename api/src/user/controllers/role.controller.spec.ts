@@ -37,7 +37,7 @@ describe('RoleController', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       models: ['InvitationModel'],
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [RoleController],
       imports: [rootMongooseTestModule(installPermissionFixtures)],
       providers: [PermissionService],

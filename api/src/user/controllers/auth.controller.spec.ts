@@ -45,7 +45,7 @@ describe('AuthController', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       models: ['PermissionModel'],
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [LocalAuthController],
       imports: [
         rootMongooseTestModule(async () => {

@@ -36,7 +36,7 @@ type buildTestingMocksProps<
     | {
         providers: NonNullable<P>;
         controllers: NonNullable<C>;
-        autoInjectFrom: 'all'[];
+        autoInjectFrom: ('providers' | 'controllers')[];
       }
     | {
         providers: NonNullable<P>;
@@ -171,17 +171,16 @@ export const buildTestingMocks = async ({
 }: buildTestingMocksProps) => {
   const nestedProviders = new Set<Provider>();
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
-  const canAutoInjectFromAll = injectionFrom?.includes('all');
   const canAutoInjectFromProviders = injectionFrom?.includes('providers');
   const canAutoInjectFromControllers = injectionFrom?.includes('controllers');
 
-  if (canAutoInjectFromAll || canAutoInjectFromProviders) {
+  if (canAutoInjectFromProviders) {
     [...providers, ...getNestedDependencies(providers)].forEach((provider) =>
       nestedProviders.add(provider),
     );
   }
 
-  if (canAutoInjectFromAll || canAutoInjectFromControllers) {
+  if (canAutoInjectFromControllers) {
     [...getNestedDependencies(controllers)].forEach((controller) =>
       nestedProviders.add(controller),
     );

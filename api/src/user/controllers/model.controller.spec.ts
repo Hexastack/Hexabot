@@ -30,7 +30,7 @@ describe('ModelController', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       models: ['PermissionModel'],
-      autoInjectFrom: ['all'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [ModelController],
       imports: [rootMongooseTestModule(installModelFixtures)],
       providers: [PermissionService],
