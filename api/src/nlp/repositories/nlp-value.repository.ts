@@ -9,14 +9,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { plainToInstance } from 'class-transformer';
-import {
-  Document,
-  Model,
-  PipelineStage,
-  Query,
-  SortOrder,
-  Types,
-} from 'mongoose';
+import { Model, PipelineStage, SortOrder, Types } from 'mongoose';
 
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -43,28 +36,6 @@ export class NlpValueRepository extends BaseRepository<
 > {
   constructor(@InjectModel(NlpValue.name) readonly model: Model<NlpValue>) {
     super(model, NlpValue, NLP_VALUE_POPULATE, NlpValueFull);
-  }
-
-  /**
-   * Emits an event after an NLP value is updated, bypassing built-in values.
-   *
-   * @param query - The query that was used to update the NLP value.
-   * @param updated - The updated NLP value document.
-   */
-  async postUpdate(
-    _query: Query<
-      Document<NlpValue, any, any>,
-      Document<NlpValue, any, any>,
-      unknown,
-      NlpValue,
-      'findOneAndUpdate'
-    >,
-    updated: NlpValue,
-  ): Promise<void> {
-    if (!updated?.builtin) {
-      // Bypass builtin entities (probably fixtures)
-      this.eventEmitter.emit('hook:nlpValue:update', updated);
-    }
   }
 
   private getSortDirection(sortOrder: SortOrder) {

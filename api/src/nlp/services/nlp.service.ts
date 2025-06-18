@@ -8,6 +8,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Document, Query } from 'mongoose';
 
 import { HelperService } from '@/helper/helper.service';
 import { HelperType, NLU } from '@/helper/types';
@@ -96,15 +97,28 @@ export class NlpService {
    *
    * @param entity - The NLP entity to be updated.
    */
-  @OnEvent('hook:nlpEntity:update')
-  async handleEntityUpdate(entity: NlpEntity) {
-    // Synchonize new entity with NLP provider
-    try {
-      const helper = await this.helperService.getDefaultNluHelper();
-      await helper.updateEntity(entity);
-      this.logger.debug('Updated entity successfully synced!', entity);
-    } catch (err) {
-      this.logger.error('Unable to sync updated entity', err);
+  @OnEvent('hook:nlpEntity:postUpdate')
+  async handleEntityPostUpdate(
+    _query: Query<
+      Document<NlpEntity>,
+      Document<NlpEntity>,
+      unknown,
+      NlpEntity,
+      'findOneAndUpdate'
+    >,
+    updated: NlpEntity,
+  ) {
+    if (!updated?.builtin) {
+      // Synchonize new entity with NLP provider
+      try {
+        const helper = await this.helperService.getDefaultHelper(
+          HelperType.NLU,
+        );
+        await helper.updateEntity(updated);
+        this.logger.debug('Updated entity successfully synced!', updated);
+      } catch (err) {
+        this.logger.error('Unable to sync updated entity', err);
+      }
     }
   }
 
@@ -180,15 +194,28 @@ export class NlpService {
    *
    * @param value - The NLP value to be updated.
    */
-  @OnEvent('hook:nlpValue:update')
-  async handleValueUpdate(value: NlpValue) {
-    // Synchonize new value with NLP provider
-    try {
-      const helper = await this.helperService.getDefaultNluHelper();
-      await helper.updateValue(value);
-      this.logger.debug('Updated value successfully synced!', value);
-    } catch (err) {
-      this.logger.error('Unable to sync updated value', err);
+  @OnEvent('hook:nlpValue:postUpdate')
+  async handleValuePostUpdate(
+    _query: Query<
+      Document<NlpValue, any, any>,
+      Document<NlpValue, any, any>,
+      unknown,
+      NlpValue,
+      'findOneAndUpdate'
+    >,
+    updated: NlpValue,
+  ) {
+    if (!updated?.builtin) {
+      // Synchonize new value with NLP provider
+      try {
+        const helper = await this.helperService.getDefaultHelper(
+          HelperType.NLU,
+        );
+        await helper.updateValue(updated);
+        this.logger.debug('Updated value successfully synced!', updated);
+      } catch (err) {
+        this.logger.error('Unable to sync updated value', err);
+      }
     }
   }
 

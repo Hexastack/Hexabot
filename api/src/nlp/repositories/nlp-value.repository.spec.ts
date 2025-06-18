@@ -250,4 +250,34 @@ describe('NlpValueRepository', () => {
       expect(nlpValue).toEqualPayload(result);
     });
   });
+
+  describe('postUpdate', () => {
+    it('should update an NlpValue and trigger a postUpdate event', async () => {
+      jest.spyOn(nlpService, 'handleValuePostUpdate');
+      jest.spyOn(llmNluHelper, 'updateValue');
+
+      nlpValueRepository.eventEmitter.once(
+        'hook:nlpValue:postUpdate',
+        async (...[query, updated]) => {
+          await nlpService.handleValuePostUpdate(query, updated);
+
+          expect(llmNluHelper.updateValue).toHaveBeenCalledWith(updated);
+        },
+      );
+
+      const updatedNlpValue = await nlpValueRepository.updateOne(
+        {
+          value: 'test',
+        },
+        { value: 'test2' },
+      );
+
+      expect(nlpService.handleValuePostUpdate).toHaveBeenCalledTimes(1);
+      expect(llmNluHelper.updateValue).toHaveBeenCalledTimes(1);
+
+      const result = await nlpValueRepository.findOne(updatedNlpValue.id);
+
+      expect(result).toEqualPayload(updatedNlpValue);
+    });
+  });
 });
