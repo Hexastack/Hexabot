@@ -69,21 +69,25 @@ export class NlpService {
    *
    * @param entity - The NLP entity to be created.
    */
-  @OnEvent('hook:nlpEntity:create')
-  async handleEntityCreate(entity: NlpEntityDocument) {
-    // Synchonize new entity with NLP
-    try {
-      const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
-      const foreignId = await helper.addEntity(entity);
-      this.logger.debug('New entity successfully synced!', foreignId);
-      await this.nlpEntityService.updateOne(
-        { _id: entity._id },
-        {
-          foreign_id: foreignId,
-        },
-      );
-    } catch (err) {
-      this.logger.error('Unable to sync a new entity', err);
+  @OnEvent('hook:nlpEntity:postCreate')
+  async handleEntityPostCreate(created: NlpEntityDocument) {
+    if (!created.builtin) {
+      // Synchonize new entity with NLP
+      try {
+        const helper = await this.helperService.getDefaultHelper(
+          HelperType.NLU,
+        );
+        const foreignId = await helper.addEntity(created);
+        this.logger.debug('New entity successfully synced!', foreignId);
+        await this.nlpEntityService.updateOne(
+          { _id: created._id },
+          {
+            foreign_id: foreignId,
+          },
+        );
+      } catch (err) {
+        this.logger.error('Unable to sync a new entity', err);
+      }
     }
   }
 
@@ -149,21 +153,25 @@ export class NlpService {
    *
    * @param value - The NLP value to be created.
    */
-  @OnEvent('hook:nlpValue:create')
-  async handleValueCreate(value: NlpValueDocument) {
-    // Synchonize new value with NLP provider
-    try {
-      const helper = await this.helperService.getDefaultNluHelper();
-      const foreignId = await helper.addValue(value);
-      this.logger.debug('New value successfully synced!', foreignId);
-      await this.nlpValueService.updateOne(
-        { _id: value._id },
-        {
-          foreign_id: foreignId,
-        },
-      );
-    } catch (err) {
-      this.logger.error('Unable to sync a new value', err);
+  @OnEvent('hook:nlpValue:postCreate')
+  async handleValuePostCreate(created: NlpValueDocument) {
+    if (!created.builtin) {
+      // Synchonize new value with NLP provider
+      try {
+        const helper = await this.helperService.getDefaultHelper(
+          HelperType.NLU,
+        );
+        const foreignId = await helper.addValue(created);
+        this.logger.debug('New value successfully synced!', foreignId);
+        await this.nlpValueService.updateOne(
+          { _id: created._id },
+          {
+            foreign_id: foreignId,
+          },
+        );
+      } catch (err) {
+        this.logger.error('Unable to sync a new value', err);
+      }
     }
   }
 
