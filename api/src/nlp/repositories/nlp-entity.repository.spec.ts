@@ -231,12 +231,13 @@ describe('NlpEntityRepository', () => {
 
   describe('postUpdate', () => {
     it('should update an NlpEntity and trigger a postUpdate event', async () => {
+      jest.spyOn(nlpService, 'handleEntityPostUpdate');
+      jest.spyOn(llmNluHelper, 'updateEntity');
+
       nlpEntityRepository.eventEmitter.once(
         'hook:nlpEntity:postUpdate',
         async (...[query, updated]) => {
-          jest.spyOn(llmNluHelper, 'updateEntity');
           await nlpService.handleEntityPostUpdate(query, updated);
-
           expect(llmNluHelper.updateEntity).toHaveBeenCalledWith(updated);
         },
       );
@@ -247,6 +248,10 @@ describe('NlpEntityRepository', () => {
         },
         { value: 'test3' },
       );
+
+      expect(nlpService.handleEntityPostUpdate).toHaveBeenCalledTimes(1);
+      expect(llmNluHelper.updateEntity).toHaveBeenCalledTimes(1);
+
       const result = await nlpEntityRepository.findOne(updatedNlpEntity.id);
 
       expect(result).toEqualPayload(updatedNlpEntity);
