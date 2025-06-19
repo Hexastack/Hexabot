@@ -52,7 +52,7 @@ export class SubscriberService extends BaseService<
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
-    protected readonly gateway: WebsocketGateway,
+    private readonly gateway: WebsocketGateway,
   ) {
     super(repository);
   }
