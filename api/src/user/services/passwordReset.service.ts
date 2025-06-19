@@ -14,7 +14,6 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -37,7 +36,7 @@ export class PasswordResetService {
     private readonly userService: UserService,
     public readonly i18n: I18nService,
     public readonly languageService: LanguageService,
-    @Optional() private readonly mailerService?: MailerService,
+    private readonly mailerService: MailerService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {
@@ -60,31 +59,28 @@ export class PasswordResetService {
     }
     const jwt = await this.sign({ ...dto });
 
-    if (this.mailerService) {
-      try {
-        const defaultLanguage = await this.languageService.getDefaultLanguage();
-        await this.mailerService.sendMail({
-          to: dto.email,
-          template: 'password_reset.mjml',
-          context: {
-            appName: config.parameters.appName,
-            appUrl: config.uiBaseUrl,
-            token: jwt,
-            first_name: user.first_name,
-            t: (key: string) =>
-              this.i18n.t(key, { lang: defaultLanguage.code }),
-          },
-          subject: this.i18n.t('password_reset_subject'),
-        });
-      } catch (e) {
-        this.logger.error(
-          'Could not send email',
-          e.message,
-          e.stack,
-          'InvitationService',
-        );
-        throw new InternalServerErrorException('Could not send email');
-      }
+    try {
+      const defaultLanguage = await this.languageService.getDefaultLanguage();
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'password_reset.mjml',
+        context: {
+          appName: config.parameters.appName,
+          appUrl: config.uiBaseUrl,
+          token: jwt,
+          first_name: user.first_name,
+          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
+        },
+        subject: this.i18n.t('password_reset_subject'),
+      });
+    } catch (e) {
+      this.logger.error(
+        'Could not send email',
+        e.message,
+        e.stack,
+        'InvitationService',
+      );
+      throw new InternalServerErrorException('Could not send email');
     }
 
     // TODO: hash the token before saving it
