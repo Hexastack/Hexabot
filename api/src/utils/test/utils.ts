@@ -195,6 +195,19 @@ const getModels = (models: TModel[]): ModelDefinition[] =>
     typeof model === 'string' ? getModel(model, 'Model') : model,
   );
 
+const defaultProviders = [
+  LoggerService,
+  EventEmitter2,
+  {
+    provide: CACHE_MANAGER,
+    useValue: {
+      del: jest.fn(),
+      set: jest.fn(),
+      get: jest.fn(),
+    },
+  },
+];
+
 export const buildTestingMocks = async ({
   models = [],
   imports = [],
@@ -204,6 +217,7 @@ export const buildTestingMocks = async ({
   ...rest
 }: buildTestingMocksProps) => {
   const extendedProviders = new Set<Provider>();
+  const dynamicProviders = new Set<Provider>();
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
 
   if (injectionFrom?.includes('providers')) {
@@ -219,6 +233,9 @@ export const buildTestingMocks = async ({
   }
 
   providers.forEach((provider) => extendedProviders.add(provider));
+  [...defaultProviders, ...extendedProviders].forEach((provider) => {
+    dynamicProviders.add(provider);
+  });
 
   const module = await Test.createTestingModule({
     imports: [
@@ -227,26 +244,14 @@ export const buildTestingMocks = async ({
             MongooseModule.forFeature([
               ...getModels(models),
               ...(autoInjectFrom
-                ? getNestedModels([...extendedProviders], 'Repository')
+                ? getNestedModels([...dynamicProviders], 'Repository')
                 : []),
             ]),
           ]
         : []),
       ...imports,
     ],
-    providers: [
-      LoggerService,
-      EventEmitter2,
-      {
-        provide: CACHE_MANAGER,
-        useValue: {
-          del: jest.fn(),
-          set: jest.fn(),
-          get: jest.fn(),
-        },
-      },
-      ...extendedProviders,
-    ],
+    providers: [...dynamicProviders],
     controllers,
     ...rest,
   }).compile();
