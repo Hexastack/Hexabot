@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ForbiddenException, Injectable, Optional } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
 
@@ -26,7 +26,7 @@ export class CategoryRepository extends BaseRepository<
 > {
   constructor(
     @InjectModel(Category.name) readonly model: Model<Category>,
-    @Optional() private readonly blockService?: BlockService,
+    private readonly blockService: BlockService,
   ) {
     super(model, Category);
   }
@@ -49,7 +49,7 @@ export class CategoryRepository extends BaseRepository<
     criteria: TFilterQuery<Category>,
   ) {
     if (criteria._id) {
-      const block = await this.blockService?.findOneAndPopulate({
+      const block = await this.blockService.findOneAndPopulate({
         category: criteria._id,
       });
 
