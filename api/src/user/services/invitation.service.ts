@@ -12,6 +12,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 
@@ -40,7 +41,7 @@ export class InvitationService extends BaseService<
     @Inject(JwtService) private readonly jwtService: JwtService,
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
-    private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {
     super(repository);
   }
@@ -60,28 +61,31 @@ export class InvitationService extends BaseService<
    */
   async create(dto: InvitationCreateDto): Promise<Invitation> {
     const jwt = await this.sign({ ...dto });
-    try {
-      const defaultLanguage = await this.languageService.getDefaultLanguage();
-      await this.mailerService.sendMail({
-        to: dto.email,
-        template: 'invitation.mjml',
-        context: {
-          appName: config.parameters.appName,
-          appUrl: config.uiBaseUrl,
-          token: jwt,
-          // TODO: Which language should we use?
-          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
-        },
-        subject: this.i18n.t('invitation_subject'),
-      });
-    } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
-        'InvitationService',
-      );
-      throw new InternalServerErrorException('Could not send email');
+    if (this.mailerService) {
+      try {
+        const defaultLanguage = await this.languageService.getDefaultLanguage();
+        await this.mailerService.sendMail({
+          to: dto.email,
+          template: 'invitation.mjml',
+          context: {
+            appName: config.parameters.appName,
+            appUrl: config.uiBaseUrl,
+            token: jwt,
+            // TODO: Which language should we use?
+            t: (key: string) =>
+              this.i18n.t(key, { lang: defaultLanguage.code }),
+          },
+          subject: this.i18n.t('invitation_subject'),
+        });
+      } catch (e) {
+        this.logger.error(
+          'Could not send email',
+          e.message,
+          e.stack,
+          'InvitationService',
+        );
+        throw new InternalServerErrorException('Could not send email');
+      }
     }
     const newInvitation = await super.create({ ...dto, token: jwt });
     return { ...newInvitation, token: jwt };
