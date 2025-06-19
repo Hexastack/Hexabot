@@ -6,19 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-// eslint-disable-next-line import/order
-import { MailerService } from '@nestjs-modules/mailer';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  Optional,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { InvitationCreateDto } from '../dto/invitation.dto';
@@ -41,7 +39,7 @@ export class InvitationService extends BaseService<
     @Inject(JwtService) private readonly jwtService: JwtService,
     protected readonly i18n: I18nService,
     public readonly languageService: LanguageService,
-    @Optional() private readonly mailerService?: MailerService,
+    private readonly mailerService: MailerService,
   ) {
     super(repository);
   }
@@ -61,31 +59,28 @@ export class InvitationService extends BaseService<
    */
   async create(dto: InvitationCreateDto): Promise<Invitation> {
     const jwt = await this.sign({ ...dto });
-    if (this.mailerService) {
-      try {
-        const defaultLanguage = await this.languageService.getDefaultLanguage();
-        await this.mailerService.sendMail({
-          to: dto.email,
-          template: 'invitation.mjml',
-          context: {
-            appName: config.parameters.appName,
-            appUrl: config.uiBaseUrl,
-            token: jwt,
-            // TODO: Which language should we use?
-            t: (key: string) =>
-              this.i18n.t(key, { lang: defaultLanguage.code }),
-          },
-          subject: this.i18n.t('invitation_subject'),
-        });
-      } catch (e) {
-        this.logger.error(
-          'Could not send email',
-          e.message,
-          e.stack,
-          'InvitationService',
-        );
-        throw new InternalServerErrorException('Could not send email');
-      }
+    try {
+      const defaultLanguage = await this.languageService.getDefaultLanguage();
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'invitation.mjml',
+        context: {
+          appName: config.parameters.appName,
+          appUrl: config.uiBaseUrl,
+          token: jwt,
+          // TODO: Which language should we use?
+          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
+        },
+        subject: this.i18n.t('invitation_subject'),
+      });
+    } catch (e) {
+      this.logger.error(
+        'Could not send email',
+        e.message,
+        e.stack,
+        'InvitationService',
+      );
+      throw new InternalServerErrorException('Could not send email');
     }
     const newInvitation = await super.create({ ...dto, token: jwt });
     return { ...newInvitation, token: jwt };
