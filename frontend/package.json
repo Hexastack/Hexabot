@@ -6,7 +6,7 @@
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "next dev -p 8081",
+    "dev": "next dev -p 8081 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -29,12 +29,12 @@
     "@projectstorm/react-canvas-core": "^7.0.3",
     "@projectstorm/react-diagrams": "^7.0.4",
     "autolinker": "^4.1.5",
-    "axios": "^1.7.7",
+    "axios": "^1.8.1",
     "eazychart-css": "^0.2.1-alpha.0",
     "eazychart-react": "^0.8.0-alpha.0",
     "hexabot-chat-widget": "*",
     "i18next-http-backend": "^2.6.2",
-    "next": "^14.2.13",
+    "next": "^15.3.3",
     "next-transpile-modules": "^10.0.1",
     "normalizr": "^3.6.2",
     "notistack": "^3.0.1",
@@ -53,13 +53,13 @@
     "@types/random-seed": "^0.3.5",
     "@types/react": "18.3.2",
     "@types/react-dom": "^18",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
     "eslint": "^8.42.0",
-    "eslint-config-next": "14.2.3",
-    "eslint-import-resolver-typescript": "~3.6.1",
+    "eslint-config-next": "^15.3.3",
+    "eslint-import-resolver-typescript": "^3.10.0",
     "eslint-plugin-header": "^3.1.1",
     "lint-staged": "^15.3.0",
-    "typescript": "^5.5.3"
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": "^18.17.0"
