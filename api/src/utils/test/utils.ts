@@ -69,9 +69,19 @@ const extractInstances =
   async <T extends TTypeOrToken>(types: T) =>
     await findInstances(type, module, types);
 
+/**
+ * Retrieves a provider metadata
+ * @param provider - provider
+ * @returns a provider metadata
+ */
 const getParamTypes = (provider: Provider) =>
   Reflect.getMetadata('design:paramtypes', provider) || [];
 
+/**
+ * Retrieves an array of providers
+ * @param parentClass - parent provider class
+ * @returns an array of providers
+ */
 const getClassDependencies = (parentClass: Provider): Provider[] => {
   const dependencies: Provider[] = [];
   const seenClasses = new Set<Provider>();
@@ -99,6 +109,12 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
   return dependencies;
 };
 
+/**
+ * Retrieves a model
+ * @param name - model name
+ * @param suffix - model name suffix
+ * @returns a model
+ */
 const getModel = (name: string, suffix = ''): ModelDefinition => {
   const modelName = name.replace(suffix, '');
   const model = LifecycleHookManager.getModel(modelName);
@@ -110,6 +126,12 @@ const getModel = (name: string, suffix = ''): ModelDefinition => {
   return model;
 };
 
+/**
+ * Retrieves an array of nested models
+ * @param extendedProviders - array of providers (Repositories)
+ * @param suffix - suffix
+ * @returns an array of nested models
+ */
 const getNestedModels = (
   extendedProviders: Provider[],
   suffix = '',
@@ -126,6 +148,11 @@ const getNestedModels = (
 const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
 
+/**
+ * Checks if a the imports includes a MongooseModule
+ * @param providers - array of providers
+ * @returns an array of nested dependencies
+ */
 const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
 
@@ -148,11 +175,21 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
   return [...nestedDependencies];
 };
 
+/**
+ * Checks if a the imports includes a MongooseModule
+ * @param imports - array of modules
+ * @returns true if the imports includes a MongooseModule
+ */
 const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
   (imports || []).some(
     (module) => 'module' in module && module.module.name === 'MongooseModule',
   );
 
+/**
+ * Retrieves models
+ * @param models - array of models
+ * @returns an array of models
+ */
 const getModels = (models: TModel[]): ModelDefinition[] =>
   models.map((model) =>
     typeof model === 'string' ? getModel(model, 'Model') : model,
