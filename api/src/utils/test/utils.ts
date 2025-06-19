@@ -111,12 +111,12 @@ const getModel = (name: string, suffix = ''): ModelDefinition => {
 };
 
 const getNestedModels = (
-  dynamicProviders: Provider[],
+  extendedProviders: Provider[],
   suffix = '',
 ): ModelDefinition[] =>
-  dynamicProviders.reduce((acc, dynamicProvider) => {
-    if ('name' in dynamicProvider && dynamicProvider.name.endsWith(suffix)) {
-      const model = getModel(dynamicProvider.name, suffix);
+  extendedProviders.reduce((acc, extendedProvider) => {
+    if ('name' in extendedProvider && extendedProvider.name.endsWith(suffix)) {
+      const model = getModel(extendedProvider.name, suffix);
       acc.push(model);
     }
 
@@ -126,19 +126,18 @@ const getNestedModels = (
 const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
 
-const getNestedDependencies = (dynamicProviders: Provider[]): Provider[] => {
+const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
 
-  dynamicProviders.filter(filterNestedDependencies).forEach((provider) => {
+  providers.filter(filterNestedDependencies).forEach((provider) => {
     getClassDependencies(provider)
       .filter(filterNestedDependencies)
       .forEach((dependency) => {
         if (
-          !dynamicProviders.includes(dependency) &&
-          !dynamicProviders.find(
-            (dynamicProvider) =>
-              'provide' in dynamicProvider &&
-              dynamicProvider.provide === dependency,
+          !providers.includes(dependency) &&
+          !providers.find(
+            (provider) =>
+              'provide' in provider && provider.provide === dependency,
           )
         ) {
           nestedDependencies.add(dependency);
@@ -151,9 +150,7 @@ const getNestedDependencies = (dynamicProviders: Provider[]): Provider[] => {
 
 const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
   (imports || []).some(
-    (dynamicModule) =>
-      'module' in dynamicModule &&
-      dynamicModule.module.name === 'MongooseModule',
+    (module) => 'module' in module && module.module.name === 'MongooseModule',
   );
 
 const getModels = (models: TModel[]): ModelDefinition[] =>
@@ -169,22 +166,22 @@ export const buildTestingMocks = async ({
   autoInjectFrom,
   ...rest
 }: buildTestingMocksProps) => {
-  const nestedProviders = new Set<Provider>();
+  const extendedProviders = new Set<Provider>();
   const injectionFrom = autoInjectFrom as ToUnionArray<typeof autoInjectFrom>;
-  const canAutoInjectFromProviders = injectionFrom?.includes('providers');
-  const canAutoInjectFromControllers = injectionFrom?.includes('controllers');
 
-  if (canAutoInjectFromProviders) {
-    [...providers, ...getNestedDependencies(providers)].forEach((provider) =>
-      nestedProviders.add(provider),
+  if (injectionFrom?.includes('providers')) {
+    [...getNestedDependencies(providers)].forEach((provider) =>
+      extendedProviders.add(provider),
     );
   }
 
-  if (canAutoInjectFromControllers) {
+  if (injectionFrom?.includes('controllers')) {
     [...getNestedDependencies(controllers)].forEach((controller) =>
-      nestedProviders.add(controller),
+      extendedProviders.add(controller),
     );
   }
+
+  providers.forEach((provider) => extendedProviders.add(provider));
 
   const module = await Test.createTestingModule({
     imports: [
@@ -193,7 +190,7 @@ export const buildTestingMocks = async ({
             MongooseModule.forFeature([
               ...getModels(models),
               ...(autoInjectFrom
-                ? getNestedModels([...nestedProviders], 'Repository')
+                ? getNestedModels([...extendedProviders], 'Repository')
                 : []),
             ]),
           ]
@@ -211,8 +208,7 @@ export const buildTestingMocks = async ({
           get: jest.fn(),
         },
       },
-      ...(autoInjectFrom ? [...nestedProviders] : []),
-      ...providers,
+      ...extendedProviders,
     ],
     controllers,
     ...rest,
