@@ -70,17 +70,21 @@ const extractInstances =
     await findInstances(type, module, types);
 
 /**
- * Retrieves a provider metadata
- * @param provider - provider
- * @returns a provider metadata
+ * Retrieves constructor parameter types (dependencies) of a NestJS provider class.
+ * Useful for inspecting dependencies to dynamically build NestJS testing modules.
+ *
+ * @param provider - The NestJS provider class to introspect.
+ * @returns An array of parameter types representing the constructor dependencies.
  */
 const getParamTypes = (provider: Provider) =>
   Reflect.getMetadata('design:paramtypes', provider) || [];
 
 /**
- * Retrieves an array of providers
- * @param parentClass - parent provider class
- * @returns an array of providers
+ * Recursively resolves all unique dependencies required by a NestJS provider.
+ * Essential for automating provider inclusion in NestJS unit tests.
+ *
+ * @param parentClass - The root provider class whose dependency graph is resolved.
+ * @returns A complete array of unique provider dependencies.
  */
 const getClassDependencies = (parentClass: Provider): Provider[] => {
   const dependencies: Provider[] = [];
@@ -110,10 +114,12 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
 };
 
 /**
- * Retrieves a model
- * @param name - model name
- * @param suffix - model name suffix
- * @returns a model
+ * Retrieves a Mongoose model definition from the LifecycleHookManager.
+ *
+ * @param name - The name of the model.
+ * @param suffix - Optional suffix to trim from the name.
+ * @returns The model definition.
+ * @throws If the model cannot be found.
  */
 const getModel = (name: string, suffix = ''): ModelDefinition => {
   const modelName = name.replace(suffix, '');
@@ -127,10 +133,12 @@ const getModel = (name: string, suffix = ''): ModelDefinition => {
 };
 
 /**
- * Retrieves an array of nested models
- * @param extendedProviders - array of providers (Repositories)
- * @param suffix - suffix
- * @returns an array of nested models
+ * Extracts nested Mongoose models from a collection of providers.
+ * Typically used for automating inclusion of models in test modules.
+ *
+ * @param extendedProviders - Array of providers to inspect.
+ * @param suffix - Suffix identifying relevant providers (e.g., 'Repository').
+ * @returns An array of model definitions.
  */
 const getNestedModels = (
   extendedProviders: Provider[],
@@ -149,9 +157,10 @@ const filterNestedDependencies = (dependency: Provider) =>
   dependency.valueOf().toString().slice(0, 6) === 'class ';
 
 /**
- * Checks if a the imports includes a MongooseModule
- * @param providers - array of providers
- * @returns an array of nested dependencies
+ * Identifies nested class-based dependencies to be automatically injected into test modules.
+ *
+ * @param providers - Array of initial providers.
+ * @returns Array of additional nested dependencies.
  */
 const getNestedDependencies = (providers: Provider[]): Provider[] => {
   const nestedDependencies = new Set<Provider>();
@@ -176,9 +185,11 @@ const getNestedDependencies = (providers: Provider[]): Provider[] => {
 };
 
 /**
- * Checks if a the imports includes a MongooseModule
- * @param imports - array of modules
- * @returns true if the imports includes a MongooseModule
+ * Determines if models can be automatically injected based on imports.
+ * Specifically checks for presence of MongooseModule.
+ *
+ * @param imports - Modules imported in the test context.
+ * @returns True if MongooseModule is included, enabling automatic model injection.
  */
 const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
   (imports || []).some(
@@ -186,9 +197,11 @@ const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
   );
 
 /**
- * Retrieves models
- * @param models - array of models
- * @returns an array of models
+ * Retrieves model definitions for the provided models array.
+ * Supports both string references and explicit ModelDefinition objects.
+ *
+ * @param models - Array of models specified by name or definition.
+ * @returns Array of resolved model definitions.
  */
 const getModels = (models: TModel[]): ModelDefinition[] =>
   models.map((model) =>
@@ -208,6 +221,34 @@ const defaultProviders = [
   },
 ];
 
+/**
+ * Dynamically builds a NestJS TestingModule for unit tests with automated dependency resolution.
+ * Includes functionality to inject models and nested providers/controllers based on provided configuration.
+ *
+ * @param props - Configuration for testing module setup.
+ * @returns An object containing the compiled NestJS TestingModule and helpers to retrieve or resolve mock instances.
+ *
+ * @example
+ * ```typescript
+ * describe('UserService', () => {
+ *   let userService: UserService;
+ *
+ *   beforeAll(async () => {
+ *     const { getMocks } = await buildTestingMocks({
+ *       autoInjectFrom: ['providers'],
+ *       imports: [MongooseModule.forRoot('mongodb://localhost/test')],
+ *       providers: [UserService],
+ *     });
+ *
+ *     [userService] = await getMocks([UserService]);
+ *   });
+ *
+ *   it('should be defined', () => {
+ *     expect(userService).toBeDefined();
+ *   });
+ * });
+ * ```
+ */
 export const buildTestingMocks = async ({
   models = [],
   imports = [],
