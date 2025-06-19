@@ -12,6 +12,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -39,7 +40,7 @@ export class ValidateAccountService {
     private logger: LoggerService,
     private readonly i18n: I18nService,
     private readonly languageService: LanguageService,
-    private readonly mailerService: MailerService,
+    @Optional() private readonly mailerService?: MailerService,
   ) {}
 
   /**
@@ -76,28 +77,31 @@ export class ValidateAccountService {
   ) {
     const confirmationToken = await this.sign({ email: dto.email });
 
-    try {
-      const defaultLanguage = await this.languageService.getDefaultLanguage();
-      await this.mailerService.sendMail({
-        to: dto.email,
-        template: 'account_confirmation.mjml',
-        context: {
-          appName: config.parameters.appName,
-          appUrl: config.uiBaseUrl,
-          token: confirmationToken,
-          first_name: dto.first_name,
-          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
-        },
-        subject: this.i18n.t('account_confirmation_subject'),
-      });
-    } catch (e) {
-      this.logger.error(
-        'Could not send email',
-        e.message,
-        e.stack,
-        'ValidateAccount',
-      );
-      throw new InternalServerErrorException('Could not send email');
+    if (this.mailerService) {
+      try {
+        const defaultLanguage = await this.languageService.getDefaultLanguage();
+        await this.mailerService.sendMail({
+          to: dto.email,
+          template: 'account_confirmation.mjml',
+          context: {
+            appName: config.parameters.appName,
+            appUrl: config.uiBaseUrl,
+            token: confirmationToken,
+            first_name: dto.first_name,
+            t: (key: string) =>
+              this.i18n.t(key, { lang: defaultLanguage.code }),
+          },
+          subject: this.i18n.t('account_confirmation_subject'),
+        });
+      } catch (e) {
+        this.logger.error(
+          'Could not send email',
+          e.message,
+          e.stack,
+          'ValidateAccount',
+        );
+        throw new InternalServerErrorException('Could not send email');
+      }
     }
   }
 
