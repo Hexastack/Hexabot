@@ -9,14 +9,11 @@
 import path from 'path';
 
 import { CacheModule } from '@nestjs/cache-manager';
-// eslint-disable-next-line import/order
-import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 // eslint-disable-next-line import/order
-import { MjmlAdapter } from '@nestjs-modules/mailer/dist/adapters/mjml.adapter';
 import { CsrfGuard, CsrfModule } from '@tekuconcept/nestjs-csrf';
 import { redisStore } from 'cache-manager-redis-yet';
 import {
@@ -24,7 +21,6 @@ import {
   I18nOptions,
   QueryResolver,
 } from 'nestjs-i18n';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { RedisClientOptions } from 'redis';
 
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -40,6 +36,7 @@ import extraModules from './extra';
 import { HelperModule } from './helper/helper.module';
 import { I18nModule } from './i18n/i18n.module';
 import { LoggerModule } from './logger/logger.module';
+import { MailerModule } from './mailer/mailer.module';
 import { MigrationModule } from './migration/migration.module';
 import { NlpModule } from './nlp/nlp.module';
 import { PluginsModule } from './plugins/plugins.module';
@@ -63,36 +60,7 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
-    ...(config.emails.isEnabled
-      ? [
-          MailerModule.forRoot({
-            transport: new SMTPTransport({
-              ...config.emails.smtp,
-              logger: true,
-              debug: false,
-            }),
-            template: {
-              adapter: new MjmlAdapter(
-                'handlebars',
-                {
-                  inlineCssEnabled: false,
-                },
-                {
-                  handlebar: {},
-                },
-              ),
-              dir: path.join(process.cwd(), 'dist', 'templates'),
-              options: {
-                context: {
-                  appName: config.parameters.appName,
-                  appUrl: config.uiBaseUrl,
-                },
-              },
-            },
-            defaults: { from: config.emails.from },
-          }),
-        ]
-      : []),
+    MailerModule,
     MongooseModule.forRoot(config.mongo.uri, {
       dbName: config.mongo.dbName,
       connectionFactory: (connection) => {

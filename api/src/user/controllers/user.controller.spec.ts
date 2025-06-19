@@ -8,11 +8,11 @@
 
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Session as ExpressSession } from 'express-session';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
@@ -64,7 +64,7 @@ describe('UserController', () => {
         {
           provide: MailerService,
           useValue: {
-            sendMail(_options: ISendMailOptions): Promise<SentMessageInfo> {
+            sendMail(_options: unknown): Promise<SentMessageInfo> {
               return Promise.resolve('Mail sent successfully');
             },
           },

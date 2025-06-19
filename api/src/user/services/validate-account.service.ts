@@ -6,13 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-// eslint-disable-next-line import/order
-import { MailerService } from '@nestjs-modules/mailer';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -21,6 +18,7 @@ import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
 
 import { UserCreateDto } from '../dto/user.dto';
 
@@ -40,7 +38,7 @@ export class ValidateAccountService {
     private logger: LoggerService,
     private readonly i18n: I18nService,
     private readonly languageService: LanguageService,
-    @Optional() private readonly mailerService?: MailerService,
+    private readonly mailerService: MailerService,
   ) {}
 
   /**
@@ -77,31 +75,28 @@ export class ValidateAccountService {
   ) {
     const confirmationToken = await this.sign({ email: dto.email });
 
-    if (this.mailerService) {
-      try {
-        const defaultLanguage = await this.languageService.getDefaultLanguage();
-        await this.mailerService.sendMail({
-          to: dto.email,
-          template: 'account_confirmation.mjml',
-          context: {
-            appName: config.parameters.appName,
-            appUrl: config.uiBaseUrl,
-            token: confirmationToken,
-            first_name: dto.first_name,
-            t: (key: string) =>
-              this.i18n.t(key, { lang: defaultLanguage.code }),
-          },
-          subject: this.i18n.t('account_confirmation_subject'),
-        });
-      } catch (e) {
-        this.logger.error(
-          'Could not send email',
-          e.message,
-          e.stack,
-          'ValidateAccount',
-        );
-        throw new InternalServerErrorException('Could not send email');
-      }
+    try {
+      const defaultLanguage = await this.languageService.getDefaultLanguage();
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'account_confirmation.mjml',
+        context: {
+          appName: config.parameters.appName,
+          appUrl: config.uiBaseUrl,
+          token: confirmationToken,
+          first_name: dto.first_name,
+          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
+        },
+        subject: this.i18n.t('account_confirmation_subject'),
+      });
+    } catch (e) {
+      this.logger.error(
+        'Could not send email',
+        e.message,
+        e.stack,
+        'ValidateAccount',
+      );
+      throw new InternalServerErrorException('Could not send email');
     }
   }
 

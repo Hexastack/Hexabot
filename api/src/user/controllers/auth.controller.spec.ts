@@ -12,10 +12,11 @@ import {
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 import { JwtService } from '@nestjs/jwt';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';

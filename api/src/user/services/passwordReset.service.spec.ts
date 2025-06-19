@@ -9,12 +9,13 @@
 import { NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { compareSync } from 'bcryptjs';
 import { Model } from 'mongoose';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
