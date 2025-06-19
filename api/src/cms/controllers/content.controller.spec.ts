@@ -7,8 +7,8 @@
  */
 
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { MongooseModule } from '@nestjs/mongoose';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -25,10 +25,8 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentCreateDto } from '../dto/content.dto';
-import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentRepository } from '../repositories/content.repository';
-import { ContentType, ContentTypeModel } from '../schemas/content-type.schema';
-import { Content, ContentModel } from '../schemas/content.schema';
+import { ContentType } from '../schemas/content-type.schema';
+import { Content } from '../schemas/content.schema';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
 
@@ -45,16 +43,16 @@ describe('ContentController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [ContentController],
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([ContentTypeModel, ContentModel]),
-      ],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [
-        ContentTypeService,
-        ContentService,
-        ContentRepository,
-        ContentTypeRepository,
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
     });
     [contentController, contentService, contentTypeService] = await getMocks([

@@ -6,9 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
 import {
   installPermissionFixtures,
   permissionFixtures,
@@ -19,18 +16,12 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { InvitationRepository } from '../repositories/invitation.repository';
 import { ModelRepository } from '../repositories/model.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { ModelModel, Model as ModelSchema } from '../schemas/model.schema';
-import {
-  Permission,
-  PermissionFull,
-  PermissionModel,
-} from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
+import { Model as ModelSchema } from '../schemas/model.schema';
+import { Permission, PermissionFull } from '../schemas/permission.schema';
+import { Role } from '../schemas/role.schema';
 import { Action } from '../types/action.type';
 
 import { PermissionService } from './permission.service';
@@ -44,30 +35,10 @@ describe('PermissionService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          ModelModel,
-          PermissionModel,
-          RoleModel,
-          InvitationModel,
-        ]),
-      ],
-      providers: [
-        ModelRepository,
-        PermissionService,
-        RoleRepository,
-        InvitationRepository,
-        PermissionRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      models: ['InvitationModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [PermissionService, RoleRepository, ModelRepository],
     });
     [permissionService, roleRepository, modelRepository, permissionRepository] =
       await getMocks([

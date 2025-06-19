@@ -7,17 +7,8 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ContentRepository } from '@/cms/repositories/content.repository';
-import { ContentModel } from '@/cms/schemas/content.schema';
-import { ContentService } from '@/cms/services/content.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import {
   categoryFixtures,
   installCategoryFixtures,
@@ -31,14 +22,9 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
-import { BlockRepository } from '../repositories/block.repository';
-import { CategoryRepository } from '../repositories/category.repository';
-import { BlockModel } from '../schemas/block.schema';
-import { LabelModel } from '../schemas/label.schema';
-import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 
-import { Category, CategoryModel } from './../schemas/category.schema';
+import { Category } from './../schemas/category.schema';
 import { CategoryController } from './category.controller';
 
 describe('CategoryController', () => {
@@ -49,49 +35,14 @@ describe('CategoryController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [CategoryController],
-      imports: [
-        rootMongooseTestModule(installCategoryFixtures),
-        MongooseModule.forFeature([
-          BlockModel,
-          LabelModel,
-          CategoryModel,
-          ContentModel,
-          AttachmentModel,
-        ]),
-      ],
+      imports: [rootMongooseTestModule(installCategoryFixtures)],
       providers: [
-        BlockRepository,
-        CategoryRepository,
-        ContentRepository,
-        AttachmentRepository,
-        BlockService,
-        CategoryService,
-        ContentService,
-        AttachmentService,
-        {
-          provide: PluginService,
-          useValue: {},
-        },
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({})),
-          },
-        },
-        {
-          provide: BlockService,
-          useValue: {
-            findOneAndPopulate: jest.fn(),
           },
         },
       ],

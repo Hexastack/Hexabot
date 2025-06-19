@@ -6,27 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { BlockRepository } from '@/chat/repositories/block.repository';
-import { BlockModel } from '@/chat/schemas/block.schema';
 import { BlockService } from '@/chat/services/block.service';
-import {
-  ContentType,
-  ContentTypeModel,
-} from '@/cms/schemas/content-type.schema';
+import { ContentType } from '@/cms/schemas/content-type.schema';
+import { I18nService } from '@/i18n/services/i18n.service';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Content, ContentModel } from '../schemas/content.schema';
+import { Content } from '../schemas/content.schema';
 
 import { installContentFixtures } from './../../utils/test/fixtures/content';
 import { ContentTypeRepository } from './content-type.repository';
-import { ContentRepository } from './content.repository';
 
 describe('ContentTypeRepository', () => {
   let contentTypeRepository: ContentTypeRepository;
@@ -36,19 +31,14 @@ describe('ContentTypeRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([ContentTypeModel, ContentModel, BlockModel]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [
-        ContentRepository,
         ContentTypeRepository,
-        BlockService,
-        BlockRepository,
         {
-          provide: BlockService,
+          provide: I18nService,
           useValue: {
-            findOne: jest.fn(),
+            t: jest.fn().mockImplementation((t) => t),
           },
         },
       ],

@@ -8,26 +8,17 @@
 
 import fs from 'fs';
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
   MethodNotAllowedException,
 } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Request } from 'express';
 
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
-import { SettingRepository } from '@/setting/repositories/setting.repository';
-import { SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingSeeder } from '@/setting/seeds/setting.seed';
 import { SettingService } from '@/setting/services/setting.service';
-import { ModelRepository } from '@/user/repositories/model.repository';
-import { PermissionRepository } from '@/user/repositories/permission.repository';
-import { ModelModel } from '@/user/schemas/model.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
@@ -44,8 +35,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
-import { AttachmentRepository } from '../repositories/attachment.repository';
-import { Attachment, AttachmentModel } from '../schemas/attachment.schema';
+import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import {
   AttachmentAccess,
@@ -64,39 +54,15 @@ describe('AttachmentController', () => {
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [AttachmentController],
       imports: [
         rootMongooseTestModule(async () => {
           await installSettingFixtures();
           await installAttachmentFixtures();
         }),
-        MongooseModule.forFeature([
-          AttachmentModel,
-          PermissionModel,
-          ModelModel,
-          SettingModel,
-        ]),
       ],
-      providers: [
-        AttachmentService,
-        AttachmentRepository,
-        PermissionService,
-        PermissionRepository,
-        SettingRepository,
-        ModelService,
-        ModelRepository,
-        SettingSeeder,
-        SettingService,
-        HelperService,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      providers: [PermissionService, ModelService],
     });
     [attachmentController, attachmentService, helperService, settingService] =
       await getMocks([

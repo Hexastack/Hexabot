@@ -6,9 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
@@ -20,14 +17,10 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntity, NlpEntityModel } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpValueModel } from '../schemas/nlp-value.schema';
+import { NlpEntity } from '../schemas/nlp-entity.schema';
 
 import { NlpEntityService } from './nlp-entity.service';
-import { NlpValueService } from './nlp-value.service';
 
 describe('NlpEntityService', () => {
   let nlpEntityService: NlpEntityService;
@@ -36,29 +29,9 @@ describe('NlpEntityService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installNlpValueFixtures),
-        MongooseModule.forFeature([
-          NlpEntityModel,
-          NlpValueModel,
-          NlpSampleEntityModel,
-        ]),
-      ],
-      providers: [
-        NlpEntityService,
-        NlpEntityRepository,
-        NlpValueService,
-        NlpValueRepository,
-        NlpSampleEntityRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            set: jest.fn(),
-            get: jest.fn(),
-          },
-        },
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installNlpValueFixtures)],
+      providers: [NlpEntityService],
     });
     [nlpEntityService, nlpEntityRepository, nlpValueRepository] =
       await getMocks([

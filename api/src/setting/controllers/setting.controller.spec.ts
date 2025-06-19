@@ -6,9 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { I18nService } from '@/i18n/services/i18n.service';
 import {
   installSettingFixtures,
@@ -20,9 +17,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { SettingRepository } from '../repositories/setting.repository';
-import { Setting, SettingModel } from '../schemas/setting.schema';
-import { SettingSeeder } from '../seeds/setting.seed';
+import { Setting } from '../schemas/setting.schema';
 import { SettingService } from '../services/setting.service';
 
 import { SettingController } from './setting.controller';
@@ -33,27 +28,14 @@ describe('SettingController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [SettingController],
-      imports: [
-        rootMongooseTestModule(installSettingFixtures),
-        MongooseModule.forFeature([SettingModel]),
-      ],
+      imports: [rootMongooseTestModule(installSettingFixtures)],
       providers: [
-        SettingService,
-        SettingRepository,
-        SettingSeeder,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],

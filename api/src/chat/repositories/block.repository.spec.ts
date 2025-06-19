@@ -6,9 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import {
   blockFixtures,
   installBlockFixtures,
@@ -19,9 +20,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Block, BlockModel } from '../schemas/block.schema';
-import { Category, CategoryModel } from '../schemas/category.schema';
-import { LabelModel } from '../schemas/label.schema';
+import { Block } from '../schemas/block.schema';
+import { Category } from '../schemas/category.schema';
 
 import { BlockRepository } from './block.repository';
 import { CategoryRepository } from './category.repository';
@@ -39,11 +39,19 @@ describe('BlockRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installBlockFixtures),
-        MongooseModule.forFeature([BlockModel, CategoryModel, LabelModel]),
+      models: ['LabelModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installBlockFixtures)],
+      providers: [
+        BlockRepository,
+        CategoryRepository,
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
-      providers: [BlockRepository, CategoryRepository],
     });
     [blockRepository, categoryRepository, blockModel] = await getMocks([
       BlockRepository,

@@ -6,14 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { Request } from 'express';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { roleFixtures } from '@/utils/test/fixtures/role';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -24,14 +19,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { RoleCreateDto, RoleUpdateDto } from '../dto/role.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleFull, RoleModel } from '../schemas/role.schema';
-import { UserModel } from '../schemas/user.schema';
+import { Role, RoleFull } from '../schemas/role.schema';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
@@ -48,36 +36,11 @@ describe('RoleController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['InvitationModel'],
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [RoleController],
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          RoleModel,
-          PermissionModel,
-          UserModel,
-          InvitationModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        PermissionService,
-        UserService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        PermissionRepository,
-        AttachmentService,
-        AttachmentRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [PermissionService],
     });
     [roleController, roleService, permissionService, userService] =
       await getMocks([

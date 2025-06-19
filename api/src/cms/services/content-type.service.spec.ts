@@ -6,12 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockService } from '@/chat/services/block.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { installContentFixtures } from '@/utils/test/fixtures/content';
 import {
   closeInMongodConnection,
@@ -20,9 +16,6 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentRepository } from '../repositories/content.repository';
-import { ContentTypeModel } from '../schemas/content-type.schema';
-import { ContentModel } from '../schemas/content.schema';
 
 import { ContentTypeService } from './content-type.service';
 import { ContentService } from './content.service';
@@ -35,25 +28,14 @@ describe('ContentTypeService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-        ]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [
-        ContentTypeRepository,
-        ContentRepository,
-        AttachmentRepository,
         ContentTypeService,
-        ContentService,
-        AttachmentService,
         {
-          provide: BlockService,
+          provide: I18nService,
           useValue: {
-            findOne: jest.fn(),
+            t: jest.fn().mockImplementation((t) => t),
           },
         },
       ],

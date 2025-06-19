@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -39,6 +39,20 @@ interface Registry {
 export class LifecycleHookManager {
   private static registry: Registry = {};
 
+  private static models = new Map<string, ModelDefinition>();
+
+  public static getModel(name: string) {
+    return LifecycleHookManager.models.get(name);
+  }
+
+  private static addModel(model: ModelDefinition) {
+    if (LifecycleHookManager.models.has(model.name)) {
+      throw new Error(`Model with name ${model.name} already exists`);
+    }
+
+    LifecycleHookManager.models.set(model.name, model);
+  }
+
   private static createLifecycleCallback<H = PreHook | PostHook>(): H {
     let currentCallback = (..._args: any[]) => {};
 
@@ -57,6 +71,7 @@ export class LifecycleHookManager {
   }
 
   public static attach(model: ModelDefinition): ModelDefinition {
+    LifecycleHookManager.addModel(model);
     const { name, schema } = model;
     const operations: {
       [key in LifecycleOperation]: ('pre' | 'post')[];
