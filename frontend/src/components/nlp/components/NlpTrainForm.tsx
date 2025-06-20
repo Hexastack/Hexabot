@@ -210,12 +210,13 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               keywordEntities={keywordEntities}
               patternEntities={patternEntities}
               placeholder={t("placeholder.nlp_sample_text")}
-              onSelect={(selection, start, end) => {
-                setSelection({
-                  value: selection,
-                  start,
-                  end,
-                });
+              onSelect={(newSelection, start, end) => {
+                newSelection !== selection?.value &&
+                  setSelection({
+                    value: newSelection,
+                    start,
+                    end,
+                  });
               }}
               onChange={({ text, entities }) => {
                 debounceSetText(text);
@@ -322,9 +323,7 @@ const NlpDatasetSample: FC<NlpDatasetSampleProps> = ({
               </ContentItem>
             ))}
           </Box>
-          {
-            /* Keyword entities */
-          }
+          {/* Keyword entities */}
           <Box display="flex" flexDirection="column">
             {keywordEntities.map((keywordEntity, index) => (
               <ContentItem
