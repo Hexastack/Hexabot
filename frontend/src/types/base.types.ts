@@ -8,7 +8,7 @@
 
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
 
-import { EntityType, Format } from "@/services/types";
+import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
 import { IAttachment, IAttachmentAttributes } from "./attachment.types";
 import {
@@ -39,8 +39,8 @@ import {
   INlpEntityFull,
 } from "./nlp-entity.types";
 import {
+  INlpDatasetSampleAttributes,
   INlpSample,
-  INlpSampleAttributes,
   INlpSampleFull,
 } from "./nlp-sample.types";
 import {
@@ -170,7 +170,7 @@ export interface IEntityMapTypes {
     INlpEntityFull
   >;
   [EntityType.NLP_SAMPLE]: IEntityTypes<
-    INlpSampleAttributes,
+    INlpDatasetSampleAttributes,
     INlpSample,
     INlpSampleFull
   >;
@@ -225,8 +225,27 @@ export type TAllowedFormat<T extends keyof IEntityMapTypes> = {
 export interface IDynamicProps {
   entity: keyof IEntityMapTypes;
   format?: Format;
-  route?: keyof IEntityMapTypes;
 }
+
+type AllNever<T> = {
+  [K in keyof T]: never;
+};
+
+export type THook<
+  G extends IDynamicProps = IDynamicProps,
+  TE extends keyof IEntityMapTypes = G["entity"],
+  TP extends IDynamicProps = IDynamicProps &
+    G &
+    AllNever<Omit<G, keyof IDynamicProps>> &
+    TAllowedFormat<TE>,
+> = {
+  full: TType<TE>["full"];
+  basic: TType<TE>["basic"];
+  params: TP;
+  entity: TE;
+  populate: TPopulateTypeFromFormat<G>;
+  attributes: TType<TE>["attributes"];
+};
 
 export interface IFindConfigProps {
   params?: any;

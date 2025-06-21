@@ -15,7 +15,6 @@ import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import {
   INlpDatasetSample,
-  INlpDatasetSampleAttributes,
   INlpSampleFormAttributes,
 } from "@/types/nlp-sample.types";
 
@@ -29,10 +28,7 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { mutate: updateSample } = useUpdate<
-    EntityType.NLP_SAMPLE,
-    INlpDatasetSampleAttributes
-  >(EntityType.NLP_SAMPLE, {
+  const { mutate: updateSample } = useUpdate(EntityType.NLP_SAMPLE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
     },

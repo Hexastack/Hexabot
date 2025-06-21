@@ -9,12 +9,7 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions, TSetCacheProps } from "@/services/types";
-import {
-  IBaseSchema,
-  IDynamicProps,
-  IEntityMapTypes,
-  TType,
-} from "@/types/base.types";
+import { IBaseSchema, IEntityMapTypes, THook, TType } from "@/types/base.types";
 import { merge } from "@/utils/object";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -23,12 +18,12 @@ import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
 
 export const useUpdate = <
-  TEntity extends IDynamicProps["entity"],
-  TAttr = TType<TEntity>["attributes"],
-  TBasic extends IBaseSchema = TType<TEntity>["basic"],
-  TFull extends IBaseSchema = TType<TEntity>["full"],
+  TE extends THook["entity"],
+  TAttr = THook<{ entity: TE }>["attributes"],
+  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
+  TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
-  entity: TEntity,
+  entity: TE,
   options?: Omit<
     TMutationOptions<
       TBasic,
