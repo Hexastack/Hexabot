@@ -225,7 +225,6 @@ export type TAllowedFormat<T extends keyof IEntityMapTypes> = {
 export interface IDynamicProps {
   entity: keyof IEntityMapTypes;
   format?: Format;
-  route?: keyof IEntityMapTypes;
 }
 
 export interface IFindConfigProps {
