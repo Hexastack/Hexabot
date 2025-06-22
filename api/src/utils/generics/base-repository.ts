@@ -20,7 +20,6 @@ import {
   HydratedDocument,
   Model,
   PipelineStage,
-  ProjectionType,
   Query,
   SortOrder,
   UpdateQuery,
@@ -33,6 +32,7 @@ import {
   TFilterQuery,
   TFlattenOption,
   THydratedDocument,
+  TProjectionType,
   TQueryOptions,
 } from '@/utils/types/filter.types';
 
@@ -351,7 +351,7 @@ export abstract class BaseRepository<
    */
   protected findOneQuery(
     criteria: string | TFilterQuery<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Query<T | null, T, object, T, 'findOne', object> {
     if (!criteria) {
       // An empty criteria would return the first document that it finds
@@ -378,7 +378,7 @@ export abstract class BaseRepository<
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T | null> {
     if (!criteria) {
       // @TODO : Issue a warning ?
@@ -401,7 +401,7 @@ export abstract class BaseRepository<
    */
   async findOneAndPopulate(
     criteria: string | TFilterQuery<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull | null> {
     this.ensureCanPopulate();
     const query = this.findOneQuery(criteria, projection).populate(
@@ -413,7 +413,7 @@ export abstract class BaseRepository<
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Query<T[], T, object, T, 'find', object>;
 
   /**
@@ -422,7 +422,7 @@ export abstract class BaseRepository<
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Query<T[], T, object, T, 'find', object>;
 
   /**
@@ -439,7 +439,7 @@ export abstract class BaseRepository<
   protected findQuery(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Query<T[], T, object, T, 'find', object> {
     if (Array.isArray(pageQuery)) {
       const query = this.model.find<T>(filter, projection);
@@ -461,7 +461,7 @@ export abstract class BaseRepository<
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]>;
 
   /**
@@ -470,7 +470,7 @@ export abstract class BaseRepository<
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]>;
 
   /**
@@ -490,7 +490,7 @@ export abstract class BaseRepository<
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]> {
     if (Array.isArray(pageQuery)) {
       const query = this.findQuery(filter, pageQuery, projection);
@@ -518,7 +518,7 @@ export abstract class BaseRepository<
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]>;
 
   /**
@@ -527,7 +527,7 @@ export abstract class BaseRepository<
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]>;
 
   /**
@@ -547,7 +547,7 @@ export abstract class BaseRepository<
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]> {
     this.ensureCanPopulate();
     if (Array.isArray(pageQuery)) {

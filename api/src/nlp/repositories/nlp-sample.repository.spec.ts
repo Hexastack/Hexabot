@@ -219,12 +219,10 @@ describe('NlpSampleRepository', () => {
         skip: 0,
         sort: ['text', 'asc'],
       } as PageQueryDto<NlpSample>;
-      const projection = { text: 1 };
-
       const result = await nlpSampleRepository.findByEntitiesAndPopulate(
         { filters, values },
         page,
-        projection,
+        { text: 1 },
       );
 
       expect(Array.isArray(result)).toBe(true);
