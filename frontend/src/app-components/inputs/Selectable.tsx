@@ -33,6 +33,7 @@ const SelectableBox = styled(Box)({
     width: "100%",
     padding: "0 4px",
     lineHeight: 1.5,
+    whiteSpaceCollapse: "preserve",
   },
   "& .editable": {
     position: "relative",
