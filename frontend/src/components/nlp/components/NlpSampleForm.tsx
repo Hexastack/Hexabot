@@ -241,16 +241,14 @@ export const NlpSampleForm: FC<ComponentFormProps<INlpDatasetSample>> = ({
     color: "secondary",
     variant: "contained",
     onClick: () => {
-      {
-        const newKeywordEntity = {
-          ...selection,
-          entity: "",
-        } as INlpDatasetKeywordEntity;
-        const newIndex = findInsertIndex(newKeywordEntity);
+      const newKeywordEntity = {
+        ...selection,
+        entity: "",
+      } as INlpDatasetKeywordEntity;
+      const newIndex = findInsertIndex(newKeywordEntity);
 
-        selection && insertKeywordEntity(newIndex, newKeywordEntity);
-        setSelection(null);
-      }
+      selection && insertKeywordEntity(newIndex, newKeywordEntity);
+      setSelection(null);
     },
     disabled: !selection?.value,
     startIcon: <AddIcon />,
