@@ -29,6 +29,7 @@ export const DialogFormButtons = ({
   return (
     <Grid
       p="0.3rem 1rem"
+      gap={1}
       width="100%"
       display="flex"
       justifyContent="space-between"
@@ -40,7 +41,7 @@ export const DialogFormButtons = ({
         startIcon={<CloseIcon />}
         {...cancelButtonProps}
       >
-        {t(cancelButtonTitle)}
+        {cancelButtonProps?.text || t(cancelButtonTitle)}
       </Button>
       <Button
         variant="contained"
@@ -48,7 +49,7 @@ export const DialogFormButtons = ({
         startIcon={<CheckIcon />}
         {...confirmButtonProps}
       >
-        {t(confirmButtonTitle)}
+        {confirmButtonProps?.text || t(confirmButtonTitle)}
       </Button>
     </Grid>
   );

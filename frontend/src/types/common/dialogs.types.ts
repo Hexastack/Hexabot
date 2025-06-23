@@ -162,8 +162,8 @@ export interface FormDialogProps
 export interface FormButtonsProps {
   onSubmit?: (e: BaseSyntheticEvent) => void;
   onCancel?: () => void;
-  cancelButtonProps?: ButtonProps;
-  confirmButtonProps?: ButtonProps;
+  cancelButtonProps?: ButtonProps & { text?: string };
+  confirmButtonProps?: ButtonProps & { text?: string };
 }
 
 export type TPayload<D, P = unknown> = {
