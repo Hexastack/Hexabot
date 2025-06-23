@@ -10,6 +10,7 @@ import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
+import { ChatModule } from '@/chat/chat.module';
 import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
 
@@ -26,7 +27,7 @@ import { HelperService } from './helper.service';
   'dist/.hexabot/custom/extensions/helpers/**/*.helper.js',
 )
 @Module({
-  imports: [HttpModule, NlpModule, CmsModule],
+  imports: [HttpModule, NlpModule, CmsModule, ChatModule],
   controllers: [HelperController],
   providers: [HelperService],
   exports: [HelperService],
