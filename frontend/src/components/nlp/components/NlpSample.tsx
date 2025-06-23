@@ -184,7 +184,6 @@ export default function NlpSample() {
             { defaultValues: data },
             {
               maxWidth: "md",
-              hasButtons: false,
             },
           );
         },
