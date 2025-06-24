@@ -12,6 +12,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
+import { MailerModule } from '@/mailer/mailer.module';
 
 import { LocalAuthController } from './controllers/auth.controller';
 import { ModelController } from './controllers/model.controller';
@@ -46,6 +47,7 @@ import { ValidateAccountService } from './services/validate-account.service';
 
 @Module({
   imports: [
+    MailerModule,
     MongooseModule.forFeature([
       UserModel,
       ModelModel,
