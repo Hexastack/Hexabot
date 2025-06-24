@@ -6,11 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   installLabelFixtures,
   labelFixtures,
@@ -24,12 +19,11 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LabelRepository } from '../repositories/label.repository';
-import { Label, LabelFull, LabelModel } from '../schemas/label.schema';
-import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+import { Label, LabelFull } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 
 import { SubscriberRepository } from './../repositories/subscriber.repository';
 import { LabelService } from './label.service';
-import { SubscriberService } from './subscriber.service';
 
 describe('LabelService', () => {
   let labelRepository: LabelRepository;
@@ -41,22 +35,9 @@ describe('LabelService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installLabelFixtures),
-        MongooseModule.forFeature([
-          LabelModel,
-          SubscriberModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        LabelService,
-        LabelRepository,
-        SubscriberService,
-        AttachmentService,
-        AttachmentRepository,
-        SubscriberRepository,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installLabelFixtures)],
+      providers: [LabelService, SubscriberRepository],
     });
     [labelService, labelRepository, subscriberRepository] = await getMocks([
       LabelService,

@@ -7,12 +7,9 @@
  */
 
 import { NotFoundException } from '@nestjs/common/exceptions';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { BlockService } from '@/chat/services/block.service';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { FieldType } from '@/setting/schemas/types';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
@@ -26,10 +23,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { ContentTypeCreateDto } from '../dto/contentType.dto';
-import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentRepository } from '../repositories/content.repository';
-import { ContentType, ContentTypeModel } from '../schemas/content-type.schema';
-import { ContentModel } from '../schemas/content.schema';
+import { ContentType } from '../schemas/content-type.schema';
 import { ContentTypeService } from '../services/content-type.service';
 import { ContentService } from '../services/content.service';
 
@@ -44,26 +38,14 @@ describe('ContentTypeController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [ContentTypeController],
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-        ]),
-      ],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [
-        ContentTypeRepository,
-        ContentRepository,
-        AttachmentRepository,
-        ContentTypeService,
-        ContentService,
-        AttachmentService,
         {
-          provide: BlockService,
+          provide: I18nService,
           useValue: {
-            findOne: jest.fn(),
+            t: jest.fn().mockImplementation((t) => t),
           },
         },
       ],

@@ -6,15 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
 import {
   attachmentMessage,
   buttonsMessage,
@@ -22,30 +16,17 @@ import {
   quickRepliesMessage,
   textMessage,
 } from '@/channel/lib/__test__/common.mock';
-import { MessageRepository } from '@/chat/repositories/message.repository';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { LabelModel } from '@/chat/schemas/label.schema';
-import { MessageModel } from '@/chat/schemas/message.schema';
-import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
-import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { MenuRepository } from '@/cms/repositories/menu.repository';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { SettingService } from '@/setting/services/setting.service';
-import { UserModel } from '@/user/schemas/user.schema';
 import { installMessageFixtures } from '@/utils/test/fixtures/message';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
 import { SocketRequest } from '@/websocket/utils/socket-request';
 import { SocketResponse } from '@/websocket/utils/socket-response';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 
@@ -61,60 +42,23 @@ import {
 describe('WebChannelHandler', () => {
   let subscriberService: SubscriberService;
   let handler: WebChannelHandler;
-  const webSettings = {};
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['LabelModel', 'UserModel'],
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installMessageFixtures();
         }),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          AttachmentModel,
-          MessageModel,
-          MenuModel,
-          LabelModel,
-          UserModel,
-        ]),
-        JwtModule,
       ],
       providers: [
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({
-              web: webSettings,
-            })),
-          },
-        },
-        ChannelService,
-        WebsocketGateway,
-        SocketEventDispatcherService,
-        SubscriberService,
-        SubscriberRepository,
-        AttachmentService,
-        AttachmentRepository,
-        MessageService,
-        MessageRepository,
-        MenuService,
-        MenuRepository,
+        JwtService,
         WebChannelHandler,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],

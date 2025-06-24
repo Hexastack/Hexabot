@@ -6,10 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
+import { I18nService } from '@/i18n/services/i18n.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   contentFixtures,
@@ -22,10 +21,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentTypeRepository } from '../repositories/content-type.repository';
 import { ContentRepository } from '../repositories/content.repository';
-import { ContentTypeModel } from '../schemas/content-type.schema';
-import { Content, ContentModel } from '../schemas/content.schema';
+import { Content } from '../schemas/content.schema';
 
 import { ContentTypeService } from './content-type.service';
 import { ContentService } from './content.service';
@@ -37,15 +34,16 @@ describe('ContentService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([ContentTypeModel, ContentModel]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [
-        ContentTypeRepository,
-        ContentRepository,
         ContentTypeService,
-        ContentService,
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
     });
     [contentService, contentTypeService, contentRepository] = await getMocks([

@@ -6,11 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +20,7 @@ import {
 } from '@/attachment/types';
 import { config } from '@/config';
 import { BaseService } from '@/utils/generics/base-service';
+import { TFilterQuery } from '@/utils/types/filter.types';
 import {
   SocketGet,
   SocketPost,
@@ -52,15 +49,12 @@ export class SubscriberService extends BaseService<
   SubscriberFull,
   SubscriberDto
 > {
-  private readonly gateway: WebsocketGateway;
-
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
-    @Optional() gateway?: WebsocketGateway,
+    private readonly gateway: WebsocketGateway,
   ) {
     super(repository);
-    if (gateway) this.gateway = gateway;
   }
 
   /**
@@ -260,22 +254,23 @@ export class SubscriberService extends BaseService<
   }
 
   /**
-   * Updates the `labels` field of a subscriber when a label is deleted.
+   * Before deleting a `Label`, this method updates the `labels` field of a subscriber.
    *
-   * This method removes the deleted label from the `labels` field of all subscribers that have the label.
-   *
-   * @param label The label that is being deleted.
+   * @param _query - The Mongoose query object used for deletion.
+   * @param criteria - The filter criteria for finding the labels to be deleted.
    */
-  @OnEvent('hook:label:delete')
-  async handleLabelDelete(labels: Label[]) {
-    const subscribers = await this.find({
-      labels: { $in: labels.map((l) => l.id) },
-    });
-    for (const subscriber of subscribers) {
-      const updatedLabels = subscriber.labels.filter(
-        (label) => !labels.find((l) => l.id === label),
+  @OnEvent('hook:label:preDelete')
+  async handleLabelDelete(
+    _query: unknown,
+    criteria: TFilterQuery<Label>,
+  ): Promise<void> {
+    if (criteria._id) {
+      await this.getRepository().model.updateMany(
+        { labels: criteria._id },
+        { $pull: { labels: criteria._id } },
       );
-      await this.updateOne(subscriber.id, { labels: updatedLabels });
+    } else {
+      throw new Error('Attempted to delete label using unknown criteria');
     }
   }
 }

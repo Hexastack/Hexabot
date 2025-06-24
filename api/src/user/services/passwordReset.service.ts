@@ -81,7 +81,7 @@ export class PasswordResetService {
           'Could not send email',
           e.message,
           e.stack,
-          'InvitationService',
+          'PasswordResetService',
         );
         throw new InternalServerErrorException('Could not send email');
       }

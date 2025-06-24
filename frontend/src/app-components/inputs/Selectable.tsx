@@ -25,18 +25,19 @@ import {
 
 const SelectableBox = styled(Box)({
   position: "relative",
-  height: "30px",
   marginBottom: "1rem",
   "& .highlight, & .editable": {
     position: "absolute",
     top: 0,
     display: "block",
     width: "100%",
-    padding: "4px",
+    padding: "0 4px",
+    lineHeight: 1.5,
+    whiteSpaceCollapse: "preserve",
   },
   "& .editable": {
+    position: "relative",
     backgroundColor: "transparent",
-    padding: "0px 4px",
     color: "#000",
   },
 });
@@ -169,10 +170,10 @@ const Selectable: FC<SelectableProps> = ({
       ) {
         const inputContainer = editableRef.current;
         let substring: string = "";
-        let input: HTMLInputElement | null = null;
+        let input: HTMLTextAreaElement | null = null;
 
         if (inputContainer) {
-          input = inputContainer.querySelector("input");
+          input = inputContainer.querySelector("textarea");
 
           if (
             input &&
@@ -267,6 +268,7 @@ const Selectable: FC<SelectableProps> = ({
         />
       ))}
       <Input
+        multiline
         ref={editableRef}
         className="editable"
         fullWidth

@@ -6,11 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { BaseService } from '@/utils/generics/base-service';
 import {
@@ -36,14 +32,11 @@ export class MessageService extends BaseService<
   MessagePopulate,
   MessageFull
 > {
-  private readonly gateway: WebsocketGateway;
-
   constructor(
     private readonly messageRepository: MessageRepository,
-    @Optional() gateway?: WebsocketGateway,
+    private readonly gateway: WebsocketGateway,
   ) {
     super(messageRepository);
-    if (gateway) this.gateway = gateway;
   }
 
   /**

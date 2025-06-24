@@ -6,11 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
+import { Language } from '@/i18n/schemas/language.schema';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
@@ -22,16 +21,9 @@ import {
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import {
-  NlpSampleEntity,
-  NlpSampleEntityModel,
-} from '../schemas/nlp-sample-entity.schema';
-import {
-  NlpSample,
-  NlpSampleFull,
-  NlpSampleModel,
-} from '../schemas/nlp-sample.schema';
-import { NlpValue, NlpValueModel } from '../schemas/nlp-value.schema';
+import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
+import { NlpSample, NlpSampleFull } from '../schemas/nlp-sample.schema';
+import { NlpValue } from '../schemas/nlp-value.schema';
 
 import { NlpSampleEntityRepository } from './nlp-sample-entity.repository';
 import { NlpSampleRepository } from './nlp-sample.repository';
@@ -48,20 +40,13 @@ describe('NlpSampleRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installNlpSampleEntityFixtures),
-        MongooseModule.forFeature([
-          NlpSampleModel,
-          NlpSampleEntityModel,
-          NlpValueModel,
-          LanguageModel,
-        ]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [
         NlpSampleRepository,
-        NlpSampleEntityRepository,
         NlpValueRepository,
         LanguageRepository,
+        NlpSampleEntityRepository,
       ],
     });
     [

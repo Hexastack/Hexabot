@@ -6,9 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
 import {
   installMenuFixtures,
@@ -21,7 +19,6 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { MenuRepository } from '../repositories/menu.repository';
-import { MenuModel } from '../schemas/menu.schema';
 import { MenuType } from '../schemas/types/menu';
 import { verifyTree } from '../utilities/verifyTree';
 
@@ -32,22 +29,9 @@ describe('MenuService', () => {
   let menuRepository: MenuRepository;
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installMenuFixtures),
-        MongooseModule.forFeature([MenuModel]),
-      ],
-      providers: [
-        MenuRepository,
-        MenuService,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installMenuFixtures)],
+      providers: [MenuService],
     });
     [menuService, menuRepository] = await getMocks([
       MenuService,

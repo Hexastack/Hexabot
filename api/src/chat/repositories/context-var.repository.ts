@@ -10,7 +10,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Query } from 'mongoose';
@@ -29,14 +28,11 @@ export class ContextVarRepository extends BaseRepository<
   never,
   ContextVarDto
 > {
-  private readonly blockService: BlockService;
-
   constructor(
     @InjectModel(ContextVar.name) readonly model: Model<ContextVar>,
-    @Optional() blockService?: BlockService,
+    private readonly blockService: BlockService,
   ) {
     super(model, ContextVar);
-    if (blockService) this.blockService = blockService;
   }
 
   /**
@@ -65,7 +61,7 @@ export class ContextVarRepository extends BaseRepository<
         throw new NotFoundException(`Context var with ID ${id} not found.`);
       }
 
-      const associatedBlocks = await this.blockService?.find({
+      const associatedBlocks = await this.blockService.find({
         capture_vars: { $elemMatch: { context_var: contextVar.name } },
       });
 

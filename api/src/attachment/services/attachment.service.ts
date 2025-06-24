@@ -8,7 +8,7 @@
 
 import { Readable, Stream } from 'stream';
 
-import { Injectable, Optional, StreamableFile } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
@@ -22,7 +22,7 @@ import { Attachment } from '../schemas/attachment.schema';
 export class AttachmentService extends BaseService<Attachment> {
   constructor(
     readonly repository: AttachmentRepository,
-    @Optional() private readonly helperService: HelperService,
+    private readonly helperService: HelperService,
   ) {
     super(repository);
   }

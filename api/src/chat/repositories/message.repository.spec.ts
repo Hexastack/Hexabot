@@ -6,11 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { UserRepository } from '@/user/repositories/user.repository';
-import { UserModel } from '@/user/schemas/user.schema';
 import {
   installMessageFixtures,
   messageFixtures,
@@ -22,8 +21,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Message, MessageModel } from '../schemas/message.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { Message } from '../schemas/message.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 import { MessageRepository } from './message.repository';
@@ -37,10 +35,8 @@ describe('MessageRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installMessageFixtures),
-        MongooseModule.forFeature([MessageModel, SubscriberModel, UserModel]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installMessageFixtures)],
       providers: [MessageRepository, SubscriberRepository, UserRepository],
     });
     [messageRepository, userRepository, subscriberRepository, messageModel] =

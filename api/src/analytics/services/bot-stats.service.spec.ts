@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
 import {
   botstatsFixtures,
   installBotStatsFixtures,
@@ -18,8 +16,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsRepository } from '../repositories/bot-stats.repository';
-import { BotStatsModel, BotStatsType } from '../schemas/bot-stats.schema';
+import { BotStatsType } from '../schemas/bot-stats.schema';
 
 import { BotStatsService } from './bot-stats.service';
 
@@ -28,11 +25,9 @@ describe('BotStatsService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installBotStatsFixtures),
-        MongooseModule.forFeature([BotStatsModel]),
-      ],
-      providers: [BotStatsService, BotStatsRepository],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installBotStatsFixtures)],
+      providers: [BotStatsService],
     });
     [botStatsService] = await getMocks([BotStatsService]);
   });

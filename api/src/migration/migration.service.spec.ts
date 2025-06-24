@@ -10,12 +10,10 @@ import fs from 'fs';
 
 import { HttpService } from '@nestjs/axios';
 import { ModuleRef } from '@nestjs/core';
-import { getModelToken, MongooseModule } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import { LoggerService } from '@/logger/logger.service';
-import { MetadataRepository } from '@/setting/repositories/metadata.repository';
-import { Metadata, MetadataModel } from '@/setting/schemas/metadata.schema';
+import { Metadata } from '@/setting/schemas/metadata.schema';
 import { MetadataService } from '@/setting/services/metadata.service';
 import {
   closeInMongodConnection,
@@ -23,7 +21,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Migration, MigrationModel } from './migration.schema';
+import { Migration } from './migration.schema';
 import { MigrationService } from './migration.service';
 import { MigrationAction } from './types';
 
@@ -34,13 +32,9 @@ describe('MigrationService', () => {
 
   beforeAll(async () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(async () => await Promise.resolve()),
-        MongooseModule.forFeature([MetadataModel, MigrationModel]),
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(async () => await Promise.resolve())],
       providers: [
-        MetadataRepository,
-        MetadataService,
         MigrationService,
         {
           provide: LoggerService,
@@ -51,10 +45,6 @@ describe('MigrationService', () => {
         },
         {
           provide: HttpService,
-          useValue: {},
-        },
-        {
-          provide: AttachmentService,
           useValue: {},
         },
         {

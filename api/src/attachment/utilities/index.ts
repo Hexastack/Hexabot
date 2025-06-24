@@ -92,7 +92,6 @@ export const isAttachmentResourceRef = (
 ): resourceRef is AttachmentResourceRef => {
   return Object.values(AttachmentResourceRef).includes(resourceRef);
 };
-AttachmentResourceRef;
 
 /**
  * Checks if the given list is an array of TAttachmentResourceRef.
