@@ -126,7 +126,12 @@ export default abstract class BaseWebChannelHandler<
 
       try {
         const menu = await this.menuService.getTree();
-        client.emit('settings', { menu, ...settings });
+        const hasProfile = !!client.data.session?.web?.profile;
+        client.emit('settings', {
+          menu,
+          hasProfile,
+          ...settings,
+        });
       } catch (err) {
         this.logger.warn('Unable to retrieve menu ', err);
         client.emit('settings', settings);

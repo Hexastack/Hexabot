@@ -15,6 +15,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { Packet, PacketType } from "socket.io-parser";
 
 import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
@@ -415,13 +416,24 @@ const ChatProvider: React.FC<{
     const endConnection = () => {
       setConnectionState(0);
     };
+    const resetProfile = ({ type, data }: Packet) => {
+      if (
+        type === PacketType.EVENT &&
+        data[0] === "settings" &&
+        !data[1]?.hasProfile
+      ) {
+        localStorage.removeItem("profile");
+      }
+    };
 
+    socketCtx.socket.io.on("packet", resetProfile);
     socketCtx.socket.io.on("reconnect", reSubscribe);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
+      socketCtx.socket.io.off("packet", resetProfile);
       socketCtx.socket.io.off("reconnect", reSubscribe);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
