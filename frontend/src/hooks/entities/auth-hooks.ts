@@ -71,6 +71,8 @@ export const useLogout = (
     async mutationFn() {
       socket?.disconnect();
 
+      queryClient.clear();
+
       return await apiClient.logout();
     },
     onSuccess: async () => {
