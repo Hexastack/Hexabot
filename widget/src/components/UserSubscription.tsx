@@ -43,20 +43,46 @@ const UserSubscription: React.FC = () => {
     participants,
     setParticipants,
     setSuggestions,
+    hasSession,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const isInitialized = useRef(false);
+  const getLocalStorageProfile = (): ISubscriber | null => {
+    const profile = localStorage.getItem("profile");
+
+    if (profile) {
+      return JSON.parse(profile);
+    }
+
+    return null;
+  };
+  const getBody = async (first_name: string = "", last_name: string = "") => {
+    const { body } = await socket.get<{
+      messages: TMessage[];
+      profile: ISubscriber;
+    }>(
+      `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
+    );
+
+    return body;
+  };
   const handleSubmit = useCallback(
-    async (event?: React.FormEvent<HTMLFormElement>) => {
+    async ({
+      event,
+      first_name = "",
+      last_name = "",
+    }: {
+      event?: React.FormEvent<HTMLFormElement>;
+      first_name?: string;
+      last_name?: string;
+    }) => {
       event?.preventDefault();
       try {
         setConnectionState(2);
-        const { body } = await socket.get<{
-          messages: TMessage[];
-          profile: ISubscriber;
-        }>(
-          `/webhook/${config.channel}/?first_name=${firstName}&last_name=${lastName}`,
+        const body = await getBody(
+          first_name || firstName,
+          last_name || lastName,
         );
         const { messages, profile } = body;
         const quickReplies = getQuickReplies(body.messages.at(-1));
@@ -127,21 +153,22 @@ const UserSubscription: React.FC = () => {
     // User already subscribed ? (example : refreshed the page)
     if (!isInitialized.current) {
       isInitialized.current = true;
-      const profile = localStorage.getItem("profile");
+      const localStorageProfile = getLocalStorageProfile();
 
-      if (profile) {
-        const parsedProfile = JSON.parse(profile);
-
-        setFirstName(parsedProfile.first_name);
-        setLastName(parsedProfile.last_name);
-        handleSubmit();
-      }
+      if (localStorageProfile || hasSession)
+        handleSubmit({
+          first_name: localStorageProfile?.first_name,
+          last_name: localStorageProfile?.last_name,
+        });
     }
   }, [handleSubmit, setScreen]);
 
   return (
     <div className="user-subscription-wrapper">
-      <form className="user-subscription" onSubmit={handleSubmit}>
+      <form
+        className="user-subscription"
+        onSubmit={(event) => handleSubmit({ event })}
+      >
         <div className="user-subscription-title">
           {settings.greetingMessage}
         </div>

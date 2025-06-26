@@ -158,6 +158,7 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
+  hasSession: boolean;
 }
 
 const defaultCtx: ChatContextType = {
@@ -194,6 +195,7 @@ const defaultCtx: ChatContextType = {
   setFile: () => {},
   send: () => {},
   handleSubscription: () => {},
+  hasSession: false,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -231,6 +233,7 @@ const ChatProvider: React.FC<{
   const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
+  const [hasSession, setHasSession] = useState(false);
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -417,12 +420,8 @@ const ChatProvider: React.FC<{
       setConnectionState(0);
     };
     const resetProfile = ({ type, data }: Packet) => {
-      if (
-        type === PacketType.EVENT &&
-        data[0] === "settings" &&
-        !data[1]?.hasProfile
-      ) {
-        localStorage.removeItem("profile");
+      if (type === PacketType.EVENT && data[0] === "settings") {
+        setHasSession(!!data[1]?.hasSession);
       }
     };
 
@@ -483,6 +482,7 @@ const ChatProvider: React.FC<{
     message,
     setMessage,
     handleSubscription,
+    hasSession,
   };
 
   return (
