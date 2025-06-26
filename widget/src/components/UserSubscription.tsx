@@ -161,7 +161,7 @@ const UserSubscription: React.FC = () => {
           last_name: localStorageProfile?.last_name,
         });
     }
-  }, [handleSubmit, setScreen]);
+  }, [handleSubmit, hasSession, setScreen]);
 
   return (
     <div className="user-subscription-wrapper">
