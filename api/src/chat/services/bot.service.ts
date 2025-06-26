@@ -631,7 +631,7 @@ export class BotService {
                 'No global fallback block defined, sending a message ...',
                 err,
               );
-              const globalFallbackBlock = {
+              const globalFallbackBlock: BlockFull = {
                 id: 'global-fallback',
                 name: 'Global Fallback',
                 message: settings.chatbot_settings.fallback_message,
@@ -645,7 +645,12 @@ export class BotService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 attachedBlock: null,
-              } as any as BlockFull;
+                trigger_labels: [],
+                nextBlocks: [],
+                category: null,
+                outcomes: [],
+                trigger_channels: [],
+              };
 
               const envelope = await this.blockService.processMessage(
                 globalFallbackBlock,
