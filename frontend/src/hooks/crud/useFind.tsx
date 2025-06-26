@@ -8,19 +8,12 @@
 
 import { useQuery, UseQueryOptions } from "react-query";
 
-import {
-  EntityType,
-  Format,
-  QueryType,
-  TPopulateTypeFromFormat,
-} from "@/services/types";
+import { EntityType, Format, QueryType } from "@/services/types";
 import {
   IBaseSchema,
-  IDynamicProps,
   IFindConfigProps,
   POPULATE_BY_TYPE,
-  TAllowedFormat,
-  TType,
+  THook,
 } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
@@ -31,13 +24,13 @@ import { useCount } from "./useCount";
 import { useGetFromCache } from "./useGet";
 
 export const useFind = <
-  TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
-  P = TPopulateTypeFromFormat<TDynamicProps>,
+  TP extends THook["params"],
+  TAttr = THook<TP>["attributes"],
+  TBasic extends IBaseSchema = THook<TP>["basic"],
+  TFull extends IBaseSchema = THook<TP>["full"],
+  P = THook<TP>["populate"],
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
+  { entity, format }: THook<TP>["params"],
   config?: IFindConfigProps,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,

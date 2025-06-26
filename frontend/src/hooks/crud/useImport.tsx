@@ -9,18 +9,18 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
+import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
 
 export const useImport = <
-  TEntity extends IDynamicProps["entity"],
+  TE extends THook["entity"],
   TAttr extends File = File,
-  TBasic extends IBaseSchema = TType<TEntity>["basic"],
+  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
 >(
-  entity: TEntity,
+  entity: TE,
   options: Omit<
     TMutationOptions<TBasic[], Error, TAttr, TBasic[]>,
     "mutationFn" | "mutationKey"

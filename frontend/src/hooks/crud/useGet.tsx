@@ -11,10 +11,9 @@ import { useQuery, useQueryClient, UseQueryOptions } from "react-query";
 import { EntityType, Format, QueryType } from "@/services/types";
 import {
   IBaseSchema,
-  IDynamicProps,
   IEntityMapTypes,
   POPULATE_BY_TYPE,
-  TAllowedFormat,
+  THook,
   TType,
 } from "@/types/base.types";
 
@@ -23,13 +22,13 @@ import { useEntityApiClient } from "../useApiClient";
 import { useNormalizeAndCache } from "./helpers";
 
 export const useGet = <
-  TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
+  T extends THook["params"],
+  TAttr = THook<T>["attributes"],
+  TBasic extends IBaseSchema = THook<T>["basic"],
+  TFull extends IBaseSchema = THook<T>["full"],
 >(
   id: string,
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
+  { entity, format }: THook<T>["params"],
   options?: Omit<
     UseQueryOptions<
       unknown,
