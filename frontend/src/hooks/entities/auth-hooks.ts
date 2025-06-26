@@ -22,7 +22,7 @@ import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
-import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
+import { useAuth, useLogoutRedirection } from "../useAuth";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
 
@@ -71,12 +71,10 @@ export const useLogout = (
     async mutationFn() {
       socket?.disconnect();
 
-      queryClient.clear();
-
       return await apiClient.logout();
     },
     onSuccess: async () => {
-      queryClient.removeQueries([CURRENT_USER_KEY]);
+      queryClient.clear();
       postMessage({ event: "logout" });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
