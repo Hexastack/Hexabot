@@ -12,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Document, ProjectionType, Query } from 'mongoose';
+import { Document, Query } from 'mongoose';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
@@ -22,7 +22,11 @@ import { LanguageService } from '@/i18n/services/language.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery, THydratedDocument } from '@/utils/types/filter.types';
+import {
+  TFilterQuery,
+  THydratedDocument,
+  TProjectionType,
+} from '@/utils/types/filter.types';
 
 import { NlpSampleEntityCreateDto } from '../dto/nlp-sample-entity.dto';
 import { NlpSampleCreateDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
@@ -78,7 +82,7 @@ export class NlpSampleService extends BaseService<
       patterns: NlpValueMatchPattern[];
     },
     page?: PageQueryDto<NlpSample>,
-    projection?: ProjectionType<NlpSample>,
+    projection?: TProjectionType<NlpSample>,
   ): Promise<NlpSample[]> {
     if (!patterns.length) {
       return await this.repository.find(filters, page, projection);
@@ -118,7 +122,7 @@ export class NlpSampleService extends BaseService<
       patterns: NlpValueMatchPattern[];
     },
     page?: PageQueryDto<NlpSample>,
-    projection?: ProjectionType<NlpSample>,
+    projection?: TProjectionType<NlpSample>,
   ): Promise<NlpSampleFull[]> {
     if (!patterns.length) {
       return await this.repository.findAndPopulate(filters, page, projection);
