@@ -26,6 +26,9 @@ const nextConfig = withTM(["hexabot-chat-widget"])({
     },
   },
   output: "standalone",
+  devIndicators: {
+    position: "bottom-right",
+  },
 });
 
 export default nextConfig;
