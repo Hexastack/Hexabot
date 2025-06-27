@@ -23,8 +23,8 @@ export const subscriberDefaultValues: TSubscriberFixtures['defaultValues'] = {
   timezone: 0,
   assignedTo: null,
   assignedAt: null,
-  lastvisit: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  retainedFrom: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  lastvisit: new Date(),
+  retainedFrom: new Date(),
   avatar: null,
   context: {
     vars: {},
