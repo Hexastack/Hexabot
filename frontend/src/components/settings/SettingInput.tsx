@@ -153,6 +153,21 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             {...rest}
           />
         );
+      } else if (setting.label === "target_block_id") {
+        const { onChange, ...rest } = field;
+
+        return (
+          <AutoCompleteEntitySelect<IBlock, "name", false>
+            searchFields={["name"]}
+            entity={EntityType.BLOCK}
+            format={Format.BASIC}
+            labelKey="name"
+            label={label}
+            multiple={false}
+            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
+            {...rest}
+          />
+        );
       }
 
       return (
