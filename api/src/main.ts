@@ -50,17 +50,21 @@ async function bootstrap() {
 
   const settingService = app.get<SettingService>(SettingService);
   app.enableCors({
-    origin: async (origin, callback) => {
-      await settingService
-        .getAllowedOrigins()
-        .then((allowedOrigins) => {
-          if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error('Not allowed by CORS'));
-          }
-        })
-        .catch(callback);
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+      } else {
+        settingService
+          .getAllowedOrigins()
+          .then((allowedOrigins) => {
+            if (allowedOrigins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error(`Not allowed by CORS : ${origin}`));
+            }
+          })
+          .catch(callback);
+      }
     },
     methods: config.security.cors.methods,
     credentials: config.security.cors.allowCredentials,
