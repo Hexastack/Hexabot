@@ -1005,7 +1005,7 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.findPage(
+      const elements = await contentService.find(
         { status: true, entity: contentType.id },
         { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
       );
@@ -1039,7 +1039,7 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.findPage(
+      const elements = await contentService.find(
         { status: true, entity: contentType.id },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );

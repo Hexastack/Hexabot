@@ -80,11 +80,11 @@ describe('LabelRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find labels, and foreach label populate its corresponding users', async () => {
       const pageQuery = getPageQuery<Label>();
       jest.spyOn(labelModel, 'find');
-      const result = await labelRepository.findPageAndPopulate({}, pageQuery);
+      const result = await labelRepository.findAndPopulate({}, pageQuery);
       const labelsWithUsers = labelFixtures.map((label) => ({
         ...label,
         users,

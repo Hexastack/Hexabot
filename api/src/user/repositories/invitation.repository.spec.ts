@@ -73,14 +73,13 @@ describe('InvitationRepository', () => {
       });
     });
   });
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
       jest.spyOn(invitationModel, 'find');
       const pageQuery: PageQueryDto<Invitation> = getPageQuery<Invitation>();
-      jest.spyOn(invitationRepository, 'findPageAndPopulate');
       const allInvitations = await invitationRepository.findAll();
       const allRoles = await roleRepository.findAll();
-      const result = await invitationRepository.findPageAndPopulate(
+      const result = await invitationRepository.findAndPopulate(
         {},
         {
           ...pageQuery,

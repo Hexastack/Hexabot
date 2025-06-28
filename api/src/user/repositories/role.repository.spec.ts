@@ -75,15 +75,14 @@ describe('RoleRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find roles, and for each role populate the corresponding permissions and users', async () => {
       const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
       jest.spyOn(roleModel, 'find');
-      jest.spyOn(roleRepository, 'findPageAndPopulate');
       const allRoles = await roleRepository.findAll();
       const allPermissions = await permissionRepository.findAll();
       const allUsers = await userRepository.findAll();
-      const result = await roleRepository.findPageAndPopulate({}, pageQuery);
+      const result = await roleRepository.findAndPopulate({}, pageQuery);
       const rolesWithPermissionsAndUsers = allRoles.reduce((acc, currRole) => {
         const roleWithPermissionsAndUsers = {
           ...currRole,

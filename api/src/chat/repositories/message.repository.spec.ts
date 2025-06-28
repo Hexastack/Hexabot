@@ -72,11 +72,11 @@ describe('MessageRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find one messages, and foreach message populate its sender and recipient', async () => {
       jest.spyOn(messageModel, 'find');
       const pageQuery = getPageQuery<AnyMessage>();
-      const result = await messageRepository.findPageAndPopulate({}, pageQuery);
+      const result = await messageRepository.findAndPopulate({}, pageQuery);
       const allSubscribers = await subscriberRepository.findAll();
       const allUsers = await userRepository.findAll();
       const allMessages = await messageRepository.findAll();

@@ -114,14 +114,11 @@ describe('SubscriberRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     const pageQuery = getPageQuery<Subscriber>();
     it('should find subscribers, and foreach subscriber populate the corresponding labels', async () => {
       jest.spyOn(subscriberModel, 'find');
-      const result = await subscriberRepository.findPageAndPopulate(
-        {},
-        pageQuery,
-      );
+      const result = await subscriberRepository.findAndPopulate({}, pageQuery);
 
       expect(subscriberModel.find).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(

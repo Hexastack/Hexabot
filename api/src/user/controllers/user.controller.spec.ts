@@ -129,8 +129,8 @@ describe('UserController', () => {
     const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
 
     it('should find users, and for each user populate the corresponding roles', async () => {
-      jest.spyOn(userService, 'findPageAndPopulate');
-      const result = await userService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(userService, 'findAndPopulate');
+      const result = await userService.findAndPopulate({}, pageQuery);
 
       const usersWithRoles = userFixtures.reduce(
         (acc, currUser) => {
@@ -144,10 +144,7 @@ describe('UserController', () => {
         [] as Omit<UserFull, 'id' | 'createdAt' | 'updatedAt'>[],
       );
 
-      expect(userService.findPageAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(userService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(usersWithRoles, [
         ...IGNORED_FIELDS,
         'password',

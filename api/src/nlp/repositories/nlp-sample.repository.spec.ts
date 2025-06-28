@@ -84,15 +84,12 @@ describe('NlpSampleRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should return all nlp samples with populate', async () => {
       const pageQuery = getPageQuery<NlpSample>({
         sort: ['text', 'desc'],
       });
-      const result = await nlpSampleRepository.findPageAndPopulate(
-        {},
-        pageQuery,
-      );
+      const result = await nlpSampleRepository.findAndPopulate({}, pageQuery);
       const nlpSamples = await nlpSampleRepository.findAll();
       const nlpSampleEntities = await nlpSampleEntityRepository.findAll();
 
