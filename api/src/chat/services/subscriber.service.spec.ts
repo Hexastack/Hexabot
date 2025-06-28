@@ -131,7 +131,7 @@ describe('SubscriberService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     const pageQuery = getPageQuery<Subscriber>();
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
       jest.spyOn(subscriberRepository, 'findAndPopulate');

@@ -72,7 +72,7 @@ describe('ContentService', () => {
     });
   });
 
-  describe('findPage', () => {
+  describe('find', () => {
     const pageQuery = getPageQuery<Content>({ limit: 1, sort: ['_id', 'asc'] });
     it('should return contents and populate their corresponding content types', async () => {
       const findSpy = jest.spyOn(contentRepository, 'findAndPopulate');

@@ -97,7 +97,7 @@ describe('NlpSampleEntityService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should return all nlp sample entities with populate', async () => {
       const pageQuery = getPageQuery<NlpSampleEntity>({
         sort: ['value', 'asc'],

@@ -123,7 +123,7 @@ describe('MessageService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     const pageQuery = getPageQuery<Message>();
     it('should find messages, and foreach message populate the corresponding sender and recipient', async () => {
       jest.spyOn(messageRepository, 'findAndPopulate');

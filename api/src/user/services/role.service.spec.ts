@@ -75,7 +75,7 @@ describe('RoleService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find roles, and for each role populate the corresponding permissions and users', async () => {
       const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
       jest.spyOn(roleRepository, 'findAndPopulate');

@@ -79,7 +79,7 @@ describe('UserService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
       const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
       jest.spyOn(userRepository, 'findAndPopulate');
