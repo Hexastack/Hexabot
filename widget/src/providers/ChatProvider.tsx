@@ -15,6 +15,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { Packet, PacketType } from "socket.io-parser";
 
 import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
 import { StdEventType } from "../types/chat-io-messages.types";
@@ -157,6 +158,7 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
+  hasSession: boolean;
 }
 
 const defaultCtx: ChatContextType = {
@@ -193,6 +195,7 @@ const defaultCtx: ChatContextType = {
   setFile: () => {},
   send: () => {},
   handleSubscription: () => {},
+  hasSession: false,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -230,6 +233,7 @@ const ChatProvider: React.FC<{
   const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
+  const [hasSession, setHasSession] = useState(false);
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -415,13 +419,20 @@ const ChatProvider: React.FC<{
     const endConnection = () => {
       setConnectionState(0);
     };
+    const resetProfile = ({ type, data }: Packet) => {
+      if (type === PacketType.EVENT && data[0] === "settings") {
+        setHasSession(!!data[1]?.hasSession);
+      }
+    };
 
+    socketCtx.socket.io.on("packet", resetProfile);
     socketCtx.socket.io.on("reconnect", reSubscribe);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
+      socketCtx.socket.io.off("packet", resetProfile);
       socketCtx.socket.io.off("reconnect", reSubscribe);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
@@ -471,6 +482,7 @@ const ChatProvider: React.FC<{
     message,
     setMessage,
     handleSubscription,
+    hasSession,
   };
 
   return (
