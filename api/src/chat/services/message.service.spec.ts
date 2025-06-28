@@ -126,8 +126,8 @@ describe('MessageService', () => {
   describe('findPageAndPopulate', () => {
     const pageQuery = getPageQuery<Message>();
     it('should find messages, and foreach message populate the corresponding sender and recipient', async () => {
-      jest.spyOn(messageRepository, 'findPageAndPopulate');
-      const result = await messageService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(messageRepository, 'findAndPopulate');
+      const result = await messageService.findAndPopulate({}, pageQuery);
       const messagesWithSenderAndRecipient = allMessages.map((message) => ({
         ...message,
         sender: allSubscribers.find(({ id }) => id === message.sender),
@@ -135,9 +135,10 @@ describe('MessageService', () => {
         sentBy: allUsers.find(({ id }) => id === message.sentBy)?.id,
       }));
 
-      expect(messageRepository.findPageAndPopulate).toHaveBeenCalledWith(
+      expect(messageRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
+        undefined,
       );
       expect(result).toEqualPayload(messagesWithSenderAndRecipient);
     });

@@ -134,8 +134,8 @@ describe('SubscriberService', () => {
   describe('findPageAndPopulate', () => {
     const pageQuery = getPageQuery<Subscriber>();
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
-      jest.spyOn(subscriberRepository, 'findPageAndPopulate');
-      const result = await subscriberService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(subscriberRepository, 'findAndPopulate');
+      const result = await subscriberService.findAndPopulate({}, pageQuery);
       const subscribersWithLabels = allSubscribers.map((subscriber) => ({
         ...subscriber,
         labels: allLabels.filter((label) =>
@@ -144,7 +144,7 @@ describe('SubscriberService', () => {
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       }));
 
-      expect(subscriberRepository.findPageAndPopulate).toHaveBeenCalled();
+      expect(subscriberRepository.findAndPopulate).toHaveBeenCalled();
       expect(result).toEqualPayload(subscribersWithLabels.sort(sortRowsBy));
     });
   });

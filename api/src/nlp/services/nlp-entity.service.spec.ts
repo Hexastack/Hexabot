@@ -83,7 +83,7 @@ describe('NlpEntityService', () => {
       const firstNameNlpEntity = await nlpEntityRepository.findOne({
         name: 'firstname',
       });
-      const result = await nlpEntityService.findPageAndPopulate(
+      const result = await nlpEntityService.findAndPopulate(
         { _id: firstNameNlpEntity!.id },
         pageQuery,
       );

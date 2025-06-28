@@ -82,9 +82,9 @@ describe('UserService', () => {
   describe('findPageAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
       const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
-      jest.spyOn(userRepository, 'findPageAndPopulate');
+      jest.spyOn(userRepository, 'findAndPopulate');
       const allUsers = await userRepository.findAll();
-      const result = await userService.findPageAndPopulate({}, pageQuery);
+      const result = await userService.findAndPopulate({}, pageQuery);
       const usersWithRoles = allUsers.reduce(
         (acc, { avatar: _avatar, roles: _roles, ...rest }) => {
           acc.push({
@@ -97,9 +97,10 @@ describe('UserService', () => {
         [] as UserFull[],
       );
 
-      expect(userRepository.findPageAndPopulate).toHaveBeenCalledWith(
+      expect(userRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
+        undefined,
       );
       expect(result).toEqualPayload(usersWithRoles);
     });

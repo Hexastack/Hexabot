@@ -102,7 +102,7 @@ describe('NlpSampleEntityService', () => {
       const pageQuery = getPageQuery<NlpSampleEntity>({
         sort: ['value', 'asc'],
       });
-      const result = await nlpSampleEntityService.findPageAndPopulate(
+      const result = await nlpSampleEntityService.findAndPopulate(
         {},
         pageQuery,
       );

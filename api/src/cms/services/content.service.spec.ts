@@ -75,12 +75,12 @@ describe('ContentService', () => {
   describe('findPage', () => {
     const pageQuery = getPageQuery<Content>({ limit: 1, sort: ['_id', 'asc'] });
     it('should return contents and populate their corresponding content types', async () => {
-      const findSpy = jest.spyOn(contentRepository, 'findPageAndPopulate');
-      const results = await contentService.findPageAndPopulate({}, pageQuery);
+      const findSpy = jest.spyOn(contentRepository, 'findAndPopulate');
+      const results = await contentService.findAndPopulate({}, pageQuery);
       const contentType = await contentTypeService.findOne(
         results[0].entity.id,
       );
-      expect(findSpy).toHaveBeenCalledWith({}, pageQuery);
+      expect(findSpy).toHaveBeenCalledWith({}, pageQuery, undefined);
       expect(results).toEqualPayload([
         {
           ...contentFixtures.find(({ title }) => title === 'Jean'),
@@ -103,7 +103,7 @@ describe('ContentService', () => {
     };
 
     it('should get content that is published', async () => {
-      const actualData = await contentService.findPage(
+      const actualData = await contentService.find(
         { status: true },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
@@ -117,7 +117,7 @@ describe('ContentService', () => {
 
     it('should get content for a specific entity', async () => {
       const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.findPage(
+      const actualData = await contentService.find(
         { status: true, entity: contentType!.id },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
@@ -135,7 +135,7 @@ describe('ContentService', () => {
     it('should get content using query', async () => {
       contentOptions.entity = 1;
       const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.findPage(
+      const actualData = await contentService.find(
         { status: true, entity: contentType!.id, title: /^Jean/ },
         { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
       );
@@ -152,7 +152,7 @@ describe('ContentService', () => {
     });
 
     it('should get content skiping 2 elements', async () => {
-      const actualData = await contentService.findPage(
+      const actualData = await contentService.find(
         { status: true },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );
