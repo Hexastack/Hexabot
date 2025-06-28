@@ -82,7 +82,7 @@ describe('TranslationController', () => {
     });
   });
 
-  describe('findPage', () => {
+  describe('find', () => {
     const pageQuery = getPageQuery<Translation>();
     it('should find translations', async () => {
       jest.spyOn(translationService, 'find');
