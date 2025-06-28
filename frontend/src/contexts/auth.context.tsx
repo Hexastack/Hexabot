@@ -20,11 +20,12 @@ import {
 import { Progress } from "@/app-components/displays/Progress";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
-import { CURRENT_USER_KEY, PUBLIC_PATHS } from "@/hooks/useAuth";
+import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
 import { RouterType } from "@/services/types";
 import { IUser } from "@/types/user.types";
+import { hasPublicPath, isLoginPath } from "@/utils/URL";
 
 export interface AuthContextValue {
   user: IUser | undefined;
@@ -50,7 +51,6 @@ const { publicRuntimeConfig } = getConfig();
 
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   const router = useRouter();
-  const hasPublicPath = PUBLIC_PATHS.includes(router.pathname);
   const { i18n } = useTranslate();
   const queryClient = useQueryClient();
   const updateLanguage = (lang: string) => {
@@ -63,12 +63,15 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const authRedirection = async (isAuthenticated: boolean) => {
     if (isAuthenticated) {
+      const redirectUrl = router.query.redirect?.toString();
+
       if (
-        router.query.redirect &&
-        router.query.redirect.toString().startsWith("/")
+        isLoginPath(router.pathname) &&
+        redirectUrl?.startsWith("/") &&
+        !hasPublicPath(redirectUrl)
       ) {
-        await router.push(router.query.redirect.toString());
-      } else if (hasPublicPath) {
+        await router.push(redirectUrl);
+      } else {
         await router.push(RouterType.HOME);
       }
     }
