@@ -8,12 +8,13 @@
   position: relative;
   height: 100%;
   width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 14px 0;
 }
 .sc-chat--disconnected-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateY(-50%) translateX(-50%);
+  position: relative;
   text-align: center;
 }
 .sc-chat--disconnected-text {
