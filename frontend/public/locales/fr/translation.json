@@ -106,6 +106,7 @@
     "invalid_carousel_limit": "La limite doit être >=1 et <= 10",
     "no_content_type": "Il n'y a aucun type de contenu pour le moment, veuillez en ajouter un.",
     "invalid_max_fallback_attempt_limit": "La limite des tentatives de secours doit être un nombre positif.",
+    "fallback_message_required": "Le message de secours est requis",
     "regex_is_invalid": "Le regex est invalide",
     "regex_is_empty": "Le regex ne peut pas être vide",
     "attachment_not_found": "La pièce jointe est introuvable",
