@@ -414,24 +414,26 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedNlpSamples.length,
-                });
+            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.DELETE) ? (
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedNlpSamples.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteNlpSamples(selectedNlpSamples);
-                }
-              }}
-              disabled={!selectedNlpSamples.length}
-            >
-              {t("button.delete")}
-            </Button>
+                  if (isConfirmed) {
+                    deleteNlpSamples(selectedNlpSamples);
+                  }
+                }}
+                disabled={!selectedNlpSamples.length}
+              >
+                {t("button.delete")}
+              </Button>
+            ) : null}
           </ButtonGroup>
         </Grid>
         <Grid

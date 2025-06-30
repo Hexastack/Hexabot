@@ -161,24 +161,26 @@ export const Categories = () => {
                 </Button>
               </Grid>
             ) : null}
-            <Button
-              color="error"
-              variant="contained"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedCategories.length,
-                });
+            {hasPermission(EntityType.CATEGORY, PermissionAction.DELETE) ? (
+              <Button
+                color="error"
+                variant="contained"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedCategories.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteCategories(selectedCategories);
-                }
-              }}
-              disabled={!selectedCategories.length}
-              startIcon={<DeleteIcon />}
-            >
-              {t("button.delete")}
-            </Button>
+                  if (isConfirmed) {
+                    deleteCategories(selectedCategories);
+                  }
+                }}
+                disabled={!selectedCategories.length}
+                startIcon={<DeleteIcon />}
+              >
+                {t("button.delete")}
+              </Button>
+            ) : null}
           </Grid>
         </PageHeader>
       </Grid>

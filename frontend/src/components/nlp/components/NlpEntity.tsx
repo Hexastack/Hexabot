@@ -244,26 +244,28 @@ const NlpEntity = () => {
             </Button>
           </Grid>
         ) : null}
-        <Grid item>
-          <Button
-            startIcon={<DeleteIcon />}
-            variant="contained"
-            color="error"
-            onClick={async () => {
-              const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                mode: "selection",
-                count: selectedNlpEntities.length,
-              });
+        {hasPermission(EntityType.NLP_ENTITY, PermissionAction.DELETE) ? (
+          <Grid item>
+            <Button
+              startIcon={<DeleteIcon />}
+              variant="contained"
+              color="error"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedNlpEntities.length,
+                });
 
-              if (isConfirmed) {
-                deleteNlpEntities(selectedNlpEntities);
-              }
-            }}
-            disabled={!selectedNlpEntities.length}
-          >
-            {t("button.delete")}
-          </Button>
-        </Grid>
+                if (isConfirmed) {
+                  deleteNlpEntities(selectedNlpEntities);
+                }
+              }}
+              disabled={!selectedNlpEntities.length}
+            >
+              {t("button.delete")}
+            </Button>
+          </Grid>
+        ) : null}
       </Grid>
 
       <Grid mt={3}>

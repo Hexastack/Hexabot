@@ -46,11 +46,13 @@ import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
+import { PermissionAction } from "@/types/permission.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
@@ -70,6 +72,7 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const dialogs = useDialogs();
+  const hasPermission = useHasPermission();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
@@ -740,17 +743,19 @@ const Diagrams = () => {
               >
                 {t("button.duplicate")}
               </Button>
-              <Button
-                sx={{}}
-                size="small"
-                variant="contained"
-                color="secondary"
-                startIcon={<DeleteIcon />}
-                onClick={() => openDeleteDialog()}
-                disabled={!getSelectedIds().length}
-              >
-                {t("button.remove")}
-              </Button>
+              {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
+                <Button
+                  sx={{}}
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => openDeleteDialog()}
+                  disabled={!getSelectedIds().length}
+                >
+                  {t("button.remove")}
+                </Button>
+              ) : null}
             </Grid>
             <Grid container item justifyContent="right" xs alignSelf="center">
               <ButtonGroup
