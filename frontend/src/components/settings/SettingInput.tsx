@@ -123,22 +123,19 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
         />
       );
     case "select": {
-      if (setting.label === "fallback_block") {
+      if (setting.config?.["entity"] === "Block") {
         const { onChange, ...rest } = field;
+        const config = setting.config as any;
 
         return (
           <AutoCompleteEntitySelect<IBlock, "name", false>
-            sortKey="category"
             searchFields={["name"]}
-            entity={EntityType.BLOCK}
             format={Format.FULL}
-            labelKey="name"
-            label={t("label.fallback_message")}
-            helperText={t("help.fallback_message")}
-            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
+            label={label}
             groupBy={({ category }) =>
               getCategoryFromCache(category)?.label ?? t("label.other")
             }
+            onChange={(_e, selected) => onChange(selected?.id)}
             renderGroup={({ key, group, children }) => (
               <li key={key}>
                 <Typography
@@ -152,6 +149,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
                 <Box>{children}</Box>
               </li>
             )}
+            {...config}
             {...rest}
           />
         );
@@ -173,42 +171,6 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             multiple={!!setting.config?.multiple}
             onChange={(_e, selected, ..._) =>
               onChange(selected?.[setting.config?.idKey || "name"])
-            }
-            {...rest}
-          />
-        );
-      } else if (setting.label === "target_block_id") {
-        const { onChange, ...rest } = field;
-
-        return (
-          <AutoCompleteEntitySelect<IBlock, "name", false>
-            sortKey="category"
-            searchFields={["name"]}
-            entity={EntityType.BLOCK}
-            format={Format.FULL}
-            label={label}
-            groupBy={({ category }) =>
-              getCategoryFromCache(category)?.label ?? t("label.other")
-            }
-            labelKey="name"
-            onChange={(_e, selected) => onChange(selected?.id)}
-            renderGroup={({ key, group, children }) => (
-              <li key={key}>
-                <Typography
-                  component="h4"
-                  p={2}
-                  fontWeight={700}
-                  color="primary"
-                >
-                  {group}
-                </Typography>
-                <Box>{children}</Box>
-              </li>
-            )}
-            filterOptions={(blocks) =>
-              blocks.filter(
-                (block) => block.message?.["plugin"] !== "redirect-plugin",
-              )
             }
             {...rest}
           />

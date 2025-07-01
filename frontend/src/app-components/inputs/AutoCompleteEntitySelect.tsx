@@ -90,7 +90,7 @@ const AutoCompleteEntitySelect = <
     .filter(
       (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
     )
-    .sort((a, b) => -b[sortKey]?.localeCompare(a[sortKey]));
+    .sort((a, b) => -a[sortKey]?.localeCompare(b[sortKey]));
   const options =
     preprocess && flattenedData
       ? preprocess((flattenedData || []) as unknown as Value[])
