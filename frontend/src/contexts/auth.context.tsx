@@ -62,14 +62,12 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     logoutSession();
   };
   const authRedirection = async (isAuthenticated: boolean) => {
-    if (isAuthenticated) {
-      const redirectUrl = router.query.redirect?.toString();
+    if (isAuthenticated && isLoginPath(router.pathname)) {
+      const redirectUrl = Array.isArray(router.query.redirect)
+        ? router.query.redirect.at(-1)
+        : router.query.redirect;
 
-      if (
-        isLoginPath(router.pathname) &&
-        redirectUrl?.startsWith("/") &&
-        !hasPublicPath(redirectUrl)
-      ) {
+      if (redirectUrl?.startsWith("/") && !hasPublicPath(redirectUrl)) {
         await router.push(redirectUrl);
       } else {
         await router.push(RouterType.HOME);
