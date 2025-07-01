@@ -37,7 +37,6 @@ type AutoCompleteEntitySelectProps<
   label: string;
   idKey?: string;
   labelKey: Label;
-  sortKey?: string;
   entity: keyof IEntityMapTypes;
   format: Format;
   searchFields: string[];
@@ -59,7 +58,6 @@ const AutoCompleteEntitySelect = <
     preprocess,
     idKey = "id",
     labelKey,
-    sortKey = "id",
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
@@ -90,7 +88,7 @@ const AutoCompleteEntitySelect = <
     .filter(
       (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
     )
-    .sort((a, b) => -a[sortKey]?.localeCompare(b[sortKey]));
+    .sort((a, b) => -a[idKey]?.localeCompare(b[idKey]));
   const options =
     preprocess && flattenedData
       ? preprocess((flattenedData || []) as unknown as Value[])
