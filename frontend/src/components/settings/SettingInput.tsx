@@ -7,7 +7,13 @@
  */
 
 import KeyIcon from "@mui/icons-material/Key";
-import { FormControlLabel, MenuItem, Switch } from "@mui/material";
+import {
+  Box,
+  FormControlLabel,
+  MenuItem,
+  Switch,
+  Typography,
+} from "@mui/material";
 import { ControllerRenderProps } from "react-hook-form";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
@@ -17,6 +23,7 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
@@ -45,6 +52,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
   isDisabled = () => false,
 }) => {
   const { t } = useTranslate(ns);
+  const getCategoryFromCache = useGetFromCache(EntityType.CATEGORY);
   const label = t(`label.${setting.label}`, {
     defaultValue: setting.label,
   });
@@ -120,14 +128,30 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
 
         return (
           <AutoCompleteEntitySelect<IBlock, "name", false>
+            sortKey="category"
             searchFields={["name"]}
             entity={EntityType.BLOCK}
-            format={Format.BASIC}
+            format={Format.FULL}
             labelKey="name"
             label={t("label.fallback_message")}
             helperText={t("help.fallback_message")}
-            multiple={false}
             onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
+            groupBy={({ category }) =>
+              getCategoryFromCache(category)?.label ?? t("label.other")
+            }
+            renderGroup={({ key, group, children }) => (
+              <li key={key}>
+                <Typography
+                  component="h4"
+                  p={2}
+                  fontWeight={700}
+                  color="primary"
+                >
+                  {group}
+                </Typography>
+                <Box>{children}</Box>
+              </li>
+            )}
             {...rest}
           />
         );
@@ -158,13 +182,34 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
 
         return (
           <AutoCompleteEntitySelect<IBlock, "name", false>
+            sortKey="category"
             searchFields={["name"]}
             entity={EntityType.BLOCK}
-            format={Format.BASIC}
-            labelKey="name"
+            format={Format.FULL}
             label={label}
-            multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
+            groupBy={({ category }) =>
+              getCategoryFromCache(category)?.label ?? t("label.other")
+            }
+            labelKey="name"
+            onChange={(_e, selected) => onChange(selected?.id)}
+            renderGroup={({ key, group, children }) => (
+              <li key={key}>
+                <Typography
+                  component="h4"
+                  p={2}
+                  fontWeight={700}
+                  color="primary"
+                >
+                  {group}
+                </Typography>
+                <Box>{children}</Box>
+              </li>
+            )}
+            filterOptions={(blocks) =>
+              blocks.filter(
+                (block) => block.message?.["plugin"] !== "redirect-plugin",
+              )
+            }
             {...rest}
           />
         );

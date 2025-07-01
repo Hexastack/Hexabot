@@ -37,6 +37,7 @@ type AutoCompleteEntitySelectProps<
   label: string;
   idKey?: string;
   labelKey: Label;
+  sortKey?: string;
   entity: keyof IEntityMapTypes;
   format: Format;
   searchFields: string[];
@@ -58,6 +59,7 @@ const AutoCompleteEntitySelect = <
     preprocess,
     idKey = "id",
     labelKey,
+    sortKey = "id",
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
@@ -82,12 +84,13 @@ const AutoCompleteEntitySelect = <
       queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
     },
   );
-  // flatten & filter unique
+  // flatten & filter unique & sort
   const flattenedData = data?.pages
     ?.flat()
     .filter(
       (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
-    );
+    )
+    .sort((a, b) => -b[sortKey]?.localeCompare(a[sortKey]));
   const options =
     preprocess && flattenedData
       ? preprocess((flattenedData || []) as unknown as Value[])
