@@ -236,7 +236,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                     defaultValue={searchText}
                   />
                 </Grid>
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
+                <ButtonGroup sx={{ ml: "auto" }}>
                   {hasPermission(
                     EntityType.NLP_VALUE,
                     PermissionAction.CREATE,
@@ -244,7 +244,6 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                     <Button
                       startIcon={<AddIcon />}
                       variant="contained"
-                      sx={{ float: "right" }}
                       onClick={() =>
                         dialogs.open(NlpValueFormDialog, {
                           presetValues: nlpEntity,
@@ -257,17 +256,16 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                   {hasPermission(
                     EntityType.NLP_VALUE,
                     PermissionAction.DELETE,
-                  ) && selectedNlpValues.length > 0 ? (
-                    <Grid item>
-                      <Button
-                        color="error"
-                        variant="contained"
-                        onClick={handleDeleteNlpValues}
-                        startIcon={<DeleteIcon />}
-                      >
-                        {t("button.delete")}
-                      </Button>
-                    </Grid>
+                  ) ? (
+                    <Button
+                      color="error"
+                      variant="contained"
+                      onClick={handleDeleteNlpValues}
+                      startIcon={<DeleteIcon />}
+                      disabled={!selectedNlpValues.length}
+                    >
+                      {t("button.delete")}
+                    </Button>
                   ) : null}
                 </ButtonGroup>
               </Grid>

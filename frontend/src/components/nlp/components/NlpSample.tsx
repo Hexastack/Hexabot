@@ -384,7 +384,7 @@ export default function NlpSample() {
               ),
             )}
           </Input>
-          <ButtonGroup sx={{ marginLeft: "auto" }}>
+          <ButtonGroup sx={{ ml: "auto" }}>
             {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.CREATE) &&
             hasPermission(
               EntityType.NLP_SAMPLE_ENTITY,

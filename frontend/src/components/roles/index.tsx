@@ -146,20 +146,18 @@ export const Roles = () => {
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.ROLE, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                sx={{
-                  float: "right",
-                }}
-                onClick={() =>
-                  dialogs.open(RoleFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<AddIcon />}
+              variant="contained"
+              sx={{
+                float: "right",
+              }}
+              onClick={() =>
+                dialogs.open(RoleFormDialog, { defaultValues: null })
+              }
+            >
+              {t("button.add")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

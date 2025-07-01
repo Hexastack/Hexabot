@@ -8,7 +8,7 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Chip, Grid } from "@mui/material";
+import { Button, ButtonGroup, Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -229,23 +229,19 @@ const NlpEntity = () => {
         <Grid item>
           <FilterTextfield onChange={onSearch} defaultValue={searchText} />
         </Grid>
-
-        {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
-          <Grid item>
+        <ButtonGroup sx={{ ml: "auto" }}>
+          {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
             <Button
               startIcon={<AddIcon />}
               variant="contained"
-              sx={{ float: "right" }}
               onClick={() =>
                 dialogs.open(NlpEntityFormDialog, { defaultValues: null })
               }
             >
               {t("button.add")}
             </Button>
-          </Grid>
-        ) : null}
-        {hasPermission(EntityType.NLP_ENTITY, PermissionAction.DELETE) ? (
-          <Grid item>
+          ) : null}
+          {hasPermission(EntityType.NLP_ENTITY, PermissionAction.DELETE) ? (
             <Button
               startIcon={<DeleteIcon />}
               variant="contained"
@@ -264,8 +260,8 @@ const NlpEntity = () => {
             >
               {t("button.delete")}
             </Button>
-          </Grid>
-        ) : null}
+          ) : null}
+        </ButtonGroup>
       </Grid>
 
       <Grid mt={3}>

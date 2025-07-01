@@ -205,22 +205,20 @@ export const Users = () => {
           </Grid>
           {!ssoEnabled &&
           hasPermission(EntityType.USER, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<PersonAddAlt1Icon />}
-                variant="contained"
-                sx={{
-                  float: "right",
-                }}
-                onClick={() =>
-                  dialogs.open(InviteUserFormDialog, {
-                    defaultValues: null,
-                  })
-                }
-              >
-                {t("button.invite")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<PersonAddAlt1Icon />}
+              variant="contained"
+              sx={{
+                float: "right",
+              }}
+              onClick={() =>
+                dialogs.open(InviteUserFormDialog, {
+                  defaultValues: null,
+                })
+              }
+            >
+              {t("button.invite")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

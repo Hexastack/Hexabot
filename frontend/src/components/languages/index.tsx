@@ -203,18 +203,15 @@ export const Languages = () => {
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.LANGUAGE, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                sx={{ float: "right" }}
-                onClick={() =>
-                  dialogs.open(LanguageFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() =>
+                dialogs.open(LanguageFormDialog, { defaultValues: null })
+              }
+            >
+              {t("button.add")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

@@ -55,22 +55,20 @@ export const Menu = () => {
           flexShrink={0}
           width="max-content"
         >
-          <Grid item>
-            {hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
-              <Button
-                variant="contained"
-                onClick={() =>
-                  dialogs.open(MenuFormDialog, {
-                    defaultValues: null,
-                  })
-                }
-                disabled={menus?.length === 10}
-                startIcon={<AddIcon />}
-              >
-                {t("button.add")}
-              </Button>
-            ) : null}
-          </Grid>
+          {hasPermission(EntityType.MENU, PermissionAction.CREATE) ? (
+            <Button
+              variant="contained"
+              onClick={() =>
+                dialogs.open(MenuFormDialog, {
+                  defaultValues: null,
+                })
+              }
+              disabled={menus?.length === 10}
+              startIcon={<AddIcon />}
+            >
+              {t("button.add")}
+            </Button>
+          ) : null}
         </Grid>
       </PageHeader>
       <Paper

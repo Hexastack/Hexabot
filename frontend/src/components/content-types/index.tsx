@@ -105,20 +105,17 @@ export const ContentTypes = () => {
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.CONTENT_TYPE, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() =>
-                  dialogs.open(ContentTypeFormDialog, {
-                    defaultValues: null,
-                  })
-                }
-                sx={{ float: "right" }}
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() =>
+                dialogs.open(ContentTypeFormDialog, {
+                  defaultValues: null,
+                })
+              }
+            >
+              {t("button.add")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

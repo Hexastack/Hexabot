@@ -157,17 +157,14 @@ export const Translations = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          <Grid item>
-            <Button
-              startIcon={<AutorenewIcon />}
-              variant="contained"
-              onClick={checkRefreshTranslations}
-              sx={{ float: "right" }}
-              disabled={isLoading}
-            >
-              {t("button.refresh")}
-            </Button>
-          </Grid>
+          <Button
+            startIcon={<AutorenewIcon />}
+            variant="contained"
+            onClick={checkRefreshTranslations}
+            disabled={isLoading}
+          >
+            {t("button.refresh")}
+          </Button>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
