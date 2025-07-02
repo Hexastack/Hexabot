@@ -9,7 +9,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, ButtonGroup, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -147,40 +147,42 @@ export const Categories = () => {
             <Grid item>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
-              <Grid item>
+            <ButtonGroup sx={{ ml: "auto" }}>
+              {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
                 <Button
                   startIcon={<AddIcon />}
                   variant="contained"
-                  sx={{ float: "right" }}
                   onClick={() =>
                     dialogs.open(CategoryFormDialog, { defaultValues: null })
                   }
                 >
                   {t("button.add")}
                 </Button>
-              </Grid>
-            ) : null}
-            {hasPermission(EntityType.CATEGORY, PermissionAction.DELETE) ? (
-              <Button
-                color="error"
-                variant="contained"
-                onClick={async () => {
-                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                    mode: "selection",
-                    count: selectedCategories.length,
-                  });
+              ) : null}
+              {hasPermission(EntityType.CATEGORY, PermissionAction.DELETE) ? (
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={async () => {
+                    const isConfirmed = await dialogs.confirm(
+                      ConfirmDialogBody,
+                      {
+                        mode: "selection",
+                        count: selectedCategories.length,
+                      },
+                    );
 
-                  if (isConfirmed) {
-                    deleteCategories(selectedCategories);
-                  }
-                }}
-                disabled={!selectedCategories.length}
-                startIcon={<DeleteIcon />}
-              >
-                {t("button.delete")}
-              </Button>
-            ) : null}
+                    if (isConfirmed) {
+                      deleteCategories(selectedCategories);
+                    }
+                  }}
+                  disabled={!selectedCategories.length}
+                  startIcon={<DeleteIcon />}
+                >
+                  {t("button.delete")}
+                </Button>
+              ) : null}
+            </ButtonGroup>
           </Grid>
         </PageHeader>
       </Grid>

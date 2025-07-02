@@ -9,7 +9,7 @@
 import { faTags } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, ButtonGroup, Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -178,40 +178,39 @@ export const Labels = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          {hasPermission(EntityType.LABEL, PermissionAction.CREATE) ? (
-            <Grid item>
+          <ButtonGroup sx={{ ml: "auto" }}>
+            {hasPermission(EntityType.LABEL, PermissionAction.CREATE) ? (
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                sx={{ float: "right" }}
                 onClick={() =>
                   dialogs.open(LabelFormDialog, { defaultValues: null })
                 }
               >
                 {t("button.add")}
               </Button>
-            </Grid>
-          ) : null}
-          {hasPermission(EntityType.LABEL, PermissionAction.DELETE) ? (
-            <Button
-              color="error"
-              variant="contained"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedLabels.length,
-                });
+            ) : null}
+            {hasPermission(EntityType.LABEL, PermissionAction.DELETE) ? (
+              <Button
+                color="error"
+                variant="contained"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedLabels.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteLabels(selectedLabels);
-                }
-              }}
-              disabled={!selectedLabels.length}
-              startIcon={<DeleteIcon />}
-            >
-              {t("button.delete")}
-            </Button>
-          ) : null}
+                  if (isConfirmed) {
+                    deleteLabels(selectedLabels);
+                  }
+                }}
+                disabled={!selectedLabels.length}
+                startIcon={<DeleteIcon />}
+              >
+                {t("button.delete")}
+              </Button>
+            ) : null}
+          </ButtonGroup>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>

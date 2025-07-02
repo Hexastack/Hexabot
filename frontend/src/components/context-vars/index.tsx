@@ -9,7 +9,7 @@
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Grid, Paper, Switch } from "@mui/material";
+import { Button, ButtonGroup, Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -181,22 +181,19 @@ export const ContextVars = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.CREATE) ? (
-            <Grid item>
+          <ButtonGroup sx={{ ml: "auto" }}>
+            {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.CREATE) ? (
               <Button
                 startIcon={<AddIcon />}
                 variant="contained"
-                sx={{ float: "right" }}
                 onClick={() =>
                   dialogs.open(ContextVarFormDialog, { defaultValues: null })
                 }
               >
                 {t("button.add")}
               </Button>
-            </Grid>
-          ) : null}
-          {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.DELETE) ? (
-            <Grid item>
+            ) : null}
+            {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.DELETE) ? (
               <Button
                 startIcon={<DeleteIcon />}
                 variant="contained"
@@ -215,8 +212,8 @@ export const ContextVars = () => {
               >
                 {t("button.delete")}
               </Button>
-            </Grid>
-          ) : null}
+            ) : null}
+          </ButtonGroup>
         </Grid>
       </PageHeader>
       <Grid item xs={12}>

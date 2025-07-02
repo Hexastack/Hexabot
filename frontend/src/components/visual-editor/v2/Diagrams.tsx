@@ -702,7 +702,8 @@ const Diagrams = () => {
             ) : null}
           </Grid>
           <Grid container>
-            <Grid
+            <ButtonGroup
+              size="small"
               sx={{
                 left: 240,
                 top: 140,
@@ -710,13 +711,10 @@ const Diagrams = () => {
                 position: "absolute",
                 display: "flex",
                 flexDirection: "row",
-                gap: "8px",
               }}
             >
               {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
                 <Button
-                  sx={{}}
-                  size="small"
                   variant="contained"
                   startIcon={<EditIcon />}
                   onClick={() => {
@@ -731,7 +729,6 @@ const Diagrams = () => {
               ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
                 <Button
-                  size="small"
                   variant="contained"
                   startIcon={<MoveUp />}
                   onClick={handleMoveButton}
@@ -742,7 +739,6 @@ const Diagrams = () => {
               ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
                 <Button
-                  size="small"
                   variant="contained"
                   startIcon={<ContentCopyRounded />}
                   onClick={handleDuplicateBlock}
@@ -753,8 +749,6 @@ const Diagrams = () => {
               ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
                 <Button
-                  sx={{}}
-                  size="small"
                   variant="contained"
                   color="secondary"
                   startIcon={<DeleteIcon />}
@@ -764,7 +758,7 @@ const Diagrams = () => {
                   {t("button.remove")}
                 </Button>
               ) : null}
-            </Grid>
+            </ButtonGroup>
             <Grid container item justifyContent="right" xs alignSelf="center">
               <ButtonGroup
                 orientation="vertical"

@@ -164,7 +164,6 @@ export const Translations = () => {
               startIcon={<AutorenewIcon />}
               variant="contained"
               onClick={checkRefreshTranslations}
-              sx={{ float: "right" }}
               disabled={isLoading}
             >
               {t("button.refresh")}

@@ -164,28 +164,23 @@ export const Contents = () => {
             </Grid>
             {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
               <ButtonGroup sx={{ marginLeft: "auto" }}>
-                <Grid item>
-                  <Button
-                    startIcon={<AddIcon />}
-                    variant="contained"
-                    onClick={() =>
-                      dialogs.open(ContentFormDialog, {
-                        presetValues: contentType,
-                      })
-                    }
-                    sx={{ float: "right" }}
-                  >
-                    {t("button.add")}
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <FileUploadButton
-                    accept="text/csv"
-                    label={t("button.import")}
-                    onChange={handleImportChange}
-                    isLoading={isLoading}
-                  />
-                </Grid>
+                <Button
+                  startIcon={<AddIcon />}
+                  variant="contained"
+                  onClick={() =>
+                    dialogs.open(ContentFormDialog, {
+                      presetValues: contentType,
+                    })
+                  }
+                >
+                  {t("button.add")}
+                </Button>
+                <FileUploadButton
+                  accept="text/csv"
+                  label={t("button.import")}
+                  onChange={handleImportChange}
+                  isLoading={isLoading}
+                />
               </ButtonGroup>
             ) : null}
           </Grid>
