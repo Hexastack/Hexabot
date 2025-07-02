@@ -31,7 +31,7 @@ import {
 import { ConnectionState, OutgoingMessageState } from "../types/state.types";
 
 import { useConfig } from "./ConfigProvider";
-import { useSettings } from "./SettingsProvider";
+import { ChannelSettings, useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
@@ -157,6 +157,7 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
+  hasSession: boolean;
 }
 
 const defaultCtx: ChatContextType = {
@@ -193,6 +194,7 @@ const defaultCtx: ChatContextType = {
   setFile: () => {},
   send: () => {},
   handleSubscription: () => {},
+  hasSession: false,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -230,6 +232,7 @@ const ChatProvider: React.FC<{
   const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
+  const [hasSession, setHasSession] = useState(false);
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -396,6 +399,10 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
+  useSubscribe("settings", ({ hasSession }: ChannelSettings) => {
+    setHasSession(hasSession);
+  });
+
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
       handleSubscription();
@@ -471,6 +478,7 @@ const ChatProvider: React.FC<{
     message,
     setMessage,
     handleSubscription,
+    hasSession,
   };
 
   return (
