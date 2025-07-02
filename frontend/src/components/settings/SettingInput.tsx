@@ -10,9 +10,11 @@ import KeyIcon from "@mui/icons-material/Key";
 import {
   Box,
   FormControlLabel,
+  ListItem,
+  ListItemText,
+  ListSubheader,
   MenuItem,
   Switch,
-  Typography,
 } from "@mui/material";
 import { ControllerRenderProps } from "react-hook-form";
 
@@ -140,18 +142,20 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
               getCategoryFromCache(category)?.label ?? t("label.other")
             }
             onChange={(_e, selected) => onChange(selected?.id)}
+            renderOption={(props, { id, name }) => (
+              <ListItem {...props} key={id}>
+                <ListItemText primary={name} />
+              </ListItem>
+            )}
             renderGroup={({ key, group, children }) => (
-              <li key={key}>
-                <Typography
-                  component="h4"
-                  p={2}
-                  fontWeight={700}
-                  color="primary"
+              <Box key={key}>
+                <ListSubheader
+                  sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
                   {group}
-                </Typography>
-                <Box>{children}</Box>
-              </li>
+                </ListSubheader>
+                {children}
+              </Box>
             )}
             {...rest}
           />
