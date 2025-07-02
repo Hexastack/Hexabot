@@ -125,10 +125,14 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
     case "select": {
       if (setting.config?.["entity"] === "Block") {
         const { onChange, ...rest } = field;
-        const config = setting.config as any;
 
         return (
           <AutoCompleteEntitySelect<IBlock, "name", false>
+            idKey={setting.config?.["idKey"]}
+            entity={setting.config?.["entity"]}
+            multiple={setting.config?.["multiple"]}
+            labelKey={setting.config?.["labelKey"]}
+            sortKey="category"
             searchFields={["name"]}
             format={Format.FULL}
             label={label}
@@ -149,7 +153,6 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
                 <Box>{children}</Box>
               </li>
             )}
-            {...config}
             {...rest}
           />
         );
