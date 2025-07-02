@@ -679,25 +679,27 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <Button
-              sx={{
-                mt: "7px",
-                ml: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
-              }}
-              onClick={(e) => {
-                dialogs.open(CategoryFormDialog, { defaultValues: null });
-                e.preventDefault();
-              }}
-            >
-              <Add />
-            </Button>
+            {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
+              <Button
+                sx={{
+                  mt: "7px",
+                  ml: "5px",
+                  borderRadius: "0",
+                  minHeight: "30px",
+                  border: "1px solid #DDDDDD",
+                  backgroundColor: "#F8F8F8",
+                  borderBottom: "none",
+                  width: "42px",
+                  minWidth: "42px",
+                }}
+                onClick={(e) => {
+                  dialogs.open(CategoryFormDialog, { defaultValues: null });
+                  e.preventDefault();
+                }}
+              >
+                <Add />
+              </Button>
+            ) : null}
           </Grid>
           <Grid container>
             <ButtonGroup
@@ -711,34 +713,40 @@ const Diagrams = () => {
                 flexDirection: "row",
               }}
             >
-              <Button
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => {
-                  if (selectedBlockId) {
-                    openEditDialog(selectedBlockId);
-                  }
-                }}
-                disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
-              >
-                {t("button.edit")}
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<MoveUp />}
-                onClick={handleMoveButton}
-                disabled={!hasSelectedBlock()}
-              >
-                {t("button.move")}
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<ContentCopyRounded />}
-                onClick={handleDuplicateBlock}
-                disabled={shouldDisableDuplicateButton}
-              >
-                {t("button.duplicate")}
-              </Button>
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={() => {
+                    if (selectedBlockId) {
+                      openEditDialog(selectedBlockId);
+                    }
+                  }}
+                  disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
+                >
+                  {t("button.edit")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  variant="contained"
+                  startIcon={<MoveUp />}
+                  onClick={handleMoveButton}
+                  disabled={!hasSelectedBlock()}
+                >
+                  {t("button.move")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
+                <Button
+                  variant="contained"
+                  startIcon={<ContentCopyRounded />}
+                  onClick={handleDuplicateBlock}
+                  disabled={shouldDisableDuplicateButton}
+                >
+                  {t("button.duplicate")}
+                </Button>
+              ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
                 <Button
                   variant="contained"

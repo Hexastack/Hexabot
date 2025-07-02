@@ -70,7 +70,7 @@ describe('LanguageController', () => {
     });
   });
 
-  describe('findPage', () => {
+  describe('find', () => {
     const pageQuery = getPageQuery<Language>({ sort: ['code', 'asc'] });
     it('should find languages', async () => {
       jest.spyOn(languageService, 'find');

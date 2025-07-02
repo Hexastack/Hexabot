@@ -65,13 +65,13 @@ describe('LabelService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     const pageQuery = getPageQuery<Label>();
     it('should find labels, and foreach label populate its corresponding users', async () => {
-      jest.spyOn(labelRepository, 'findPageAndPopulate');
-      const result = await labelService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(labelRepository, 'findAndPopulate');
+      const result = await labelService.findAndPopulate({}, pageQuery);
 
-      expect(labelRepository.findPageAndPopulate).toHaveBeenCalled();
+      expect(labelRepository.findAndPopulate).toHaveBeenCalled();
       expect(result).toEqualPayload(labelsWithUsers.sort(sortRowsBy));
     });
   });

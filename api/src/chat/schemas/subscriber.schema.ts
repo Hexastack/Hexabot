@@ -90,13 +90,13 @@ export class SubscriberStub extends BaseSchema {
 
   @Prop({
     type: Date,
-    default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
+    default: () => Date.now(),
   })
   lastvisit?: Date;
 
   @Prop({
     type: Date,
-    default: () => Date.now() + 7 * 24 * 60 * 60 * 1000,
+    default: () => Date.now(),
   })
   retainedFrom?: Date;
 

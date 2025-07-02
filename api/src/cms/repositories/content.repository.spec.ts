@@ -67,13 +67,13 @@ describe('ContentRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find contents and populate their content types', async () => {
       const pageQuery = getPageQuery<Content>({
         limit: 1,
         sort: ['_id', 'asc'],
       });
-      const result = await contentRepository.findPageAndPopulate({}, pageQuery);
+      const result = await contentRepository.findAndPopulate({}, pageQuery);
       expect(result).toEqualPayload([
         {
           ...contentFixtures.find(({ title }) => title === 'Jean'),
