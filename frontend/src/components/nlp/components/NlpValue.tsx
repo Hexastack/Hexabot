@@ -93,6 +93,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             defaultValues: row,
             presetValues: nlpEntity,
           }),
+        requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
@@ -103,6 +104,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             deleteNlpValue(id);
           }
         },
+        requires: [PermissionAction.DELETE],
       },
     ],
     t("label.operations"),
