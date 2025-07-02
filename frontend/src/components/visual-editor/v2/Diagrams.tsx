@@ -679,25 +679,27 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <Button
-              sx={{
-                mt: "7px",
-                ml: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
-              }}
-              onClick={(e) => {
-                dialogs.open(CategoryFormDialog, { defaultValues: null });
-                e.preventDefault();
-              }}
-            >
-              <Add />
-            </Button>
+            {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
+              <Button
+                sx={{
+                  mt: "7px",
+                  ml: "5px",
+                  borderRadius: "0",
+                  minHeight: "30px",
+                  border: "1px solid #DDDDDD",
+                  backgroundColor: "#F8F8F8",
+                  borderBottom: "none",
+                  width: "42px",
+                  minWidth: "42px",
+                }}
+                onClick={(e) => {
+                  dialogs.open(CategoryFormDialog, { defaultValues: null });
+                  e.preventDefault();
+                }}
+              >
+                <Add />
+              </Button>
+            ) : null}
           </Grid>
           <Grid container>
             <Grid
