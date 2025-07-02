@@ -7,7 +7,15 @@
  */
 
 import KeyIcon from "@mui/icons-material/Key";
-import { FormControlLabel, MenuItem, Switch } from "@mui/material";
+import {
+  Box,
+  FormControlLabel,
+  ListItem,
+  ListItemText,
+  ListSubheader,
+  MenuItem,
+  Switch,
+} from "@mui/material";
 import { ControllerRenderProps } from "react-hook-form";
 
 import AttachmentInput from "@/app-components/attachment/AttachmentInput";
@@ -17,6 +25,7 @@ import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntity
 import { Input } from "@/app-components/inputs/Input";
 import MultipleInput from "@/app-components/inputs/MultipleInput";
 import { PasswordInput } from "@/app-components/inputs/PasswordInput";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { AttachmentResourceRef } from "@/types/attachment.types";
@@ -45,6 +54,7 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
   isDisabled = () => false,
 }) => {
   const { t } = useTranslate(ns);
+  const getCategoryFromCache = useGetFromCache(EntityType.CATEGORY);
   const label = t(`label.${setting.label}`, {
     defaultValue: setting.label,
   });
@@ -115,19 +125,45 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
         />
       );
     case "select": {
-      if (setting.label === "fallback_block") {
+      if (setting.config?.["entity"] === "Block") {
         const { onChange, ...rest } = field;
 
         return (
           <AutoCompleteEntitySelect<IBlock, "name", false>
+            idKey={setting.config?.["idKey"]}
+            entity={setting.config?.["entity"]}
+            multiple={setting.config?.["multiple"]}
+            labelKey={setting.config?.["labelKey"]}
+            sortKey="category"
             searchFields={["name"]}
-            entity={EntityType.BLOCK}
-            format={Format.BASIC}
-            labelKey="name"
-            label={t("label.fallback_message")}
-            helperText={t("help.fallback_message")}
-            multiple={false}
-            onChange={(_e, selected, ..._) => onChange(selected?.id || "")}
+            format={Format.FULL}
+            label={label}
+            groupBy={({ category }) =>
+              getCategoryFromCache(category)?.label ?? t("label.other")
+            }
+            onChange={(_e, selected) => onChange(selected?.id)}
+            renderOption={(props, { id, name }) => (
+              <ListItem {...props} key={id}>
+                <ListItemText primary={name} />
+              </ListItem>
+            )}
+            renderGroup={({ key, group, children }) => (
+              <Box key={key}>
+                <ListSubheader
+                  sx={{
+                    top: "-8px",
+                    border: "0.5px solid #eee",
+                    bgcolor: "#fafafaee",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                  }}
+                  color="primary"
+                >
+                  {group}
+                </ListSubheader>
+                {children}
+              </Box>
+            )}
             {...rest}
           />
         );
