@@ -163,8 +163,8 @@ const UserSubscription: React.FC = () => {
 
       if (localStorageProfile || hasSession)
         handleSubmit({
-          first_name: localStorageProfile?.first_name,
-          last_name: localStorageProfile?.last_name,
+          first_name: localStorageProfile?.first_name || "",
+          last_name: localStorageProfile?.last_name || "",
         });
     }
   }, [handleSubmit, hasSession, setScreen]);
