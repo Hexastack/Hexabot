@@ -52,7 +52,13 @@ const UserSubscription: React.FC = () => {
     const profile = localStorage.getItem("profile");
 
     if (profile) {
-      return JSON.parse(profile);
+      try {
+        return JSON.parse(profile);
+      } catch (error) {
+        localStorage.removeItem("profile");
+
+        return null;
+      }
     }
 
     return null;
