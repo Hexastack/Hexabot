@@ -35,7 +35,7 @@ import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import {
   ActionColumnLabel,
-  getActionsColumn,
+  useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
@@ -155,7 +155,8 @@ export default function NlpSample() {
       params: searchPayload,
     },
   );
-  const actionColumns = getActionsColumn<INlpSample>(
+  const actionColumns = useActionColumns<INlpSample>(
+    EntityType.NLP_SAMPLE,
     [
       {
         label: ActionColumnLabel.Edit,
