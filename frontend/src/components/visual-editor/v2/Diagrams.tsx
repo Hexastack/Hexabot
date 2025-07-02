@@ -711,38 +711,44 @@ const Diagrams = () => {
                 gap: "8px",
               }}
             >
-              <Button
-                sx={{}}
-                size="small"
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => {
-                  if (selectedBlockId) {
-                    openEditDialog(selectedBlockId);
-                  }
-                }}
-                disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
-              >
-                {t("button.edit")}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<MoveUp />}
-                onClick={handleMoveButton}
-                disabled={!hasSelectedBlock()}
-              >
-                {t("button.move")}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<ContentCopyRounded />}
-                onClick={handleDuplicateBlock}
-                disabled={shouldDisableDuplicateButton}
-              >
-                {t("button.duplicate")}
-              </Button>
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  sx={{}}
+                  size="small"
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={() => {
+                    if (selectedBlockId) {
+                      openEditDialog(selectedBlockId);
+                    }
+                  }}
+                  disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
+                >
+                  {t("button.edit")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<MoveUp />}
+                  onClick={handleMoveButton}
+                  disabled={!hasSelectedBlock()}
+                >
+                  {t("button.move")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<ContentCopyRounded />}
+                  onClick={handleDuplicateBlock}
+                  disabled={shouldDisableDuplicateButton}
+                >
+                  {t("button.duplicate")}
+                </Button>
+              ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
                 <Button
                   sx={{}}
