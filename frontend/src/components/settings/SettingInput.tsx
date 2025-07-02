@@ -150,7 +150,14 @@ const SettingInput: React.FC<RenderSettingInputProps> = ({
             renderGroup={({ key, group, children }) => (
               <Box key={key}>
                 <ListSubheader
-                  sx={{ color: "primary.main", fontWeight: "bold" }}
+                  sx={{
+                    top: "-8px",
+                    border: "0.5px solid #eee",
+                    bgcolor: "#fafafaee",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                  }}
+                  color="primary"
                 >
                   {group}
                 </ListSubheader>
