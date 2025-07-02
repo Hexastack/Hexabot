@@ -46,11 +46,13 @@ import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import useDebouncedUpdate from "@/hooks/useDebouncedUpdate";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
+import { PermissionAction } from "@/types/permission.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
@@ -70,6 +72,7 @@ const Diagrams = () => {
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const dialogs = useDialogs();
+  const hasPermission = useHasPermission();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const {
     buildDiagram,
@@ -676,25 +679,27 @@ const Diagrams = () => {
                 />
               ))}
             </Tabs>
-            <Button
-              sx={{
-                mt: "7px",
-                ml: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
-              }}
-              onClick={(e) => {
-                dialogs.open(CategoryFormDialog, { defaultValues: null });
-                e.preventDefault();
-              }}
-            >
-              <Add />
-            </Button>
+            {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
+              <Button
+                sx={{
+                  mt: "7px",
+                  ml: "5px",
+                  borderRadius: "0",
+                  minHeight: "30px",
+                  border: "1px solid #DDDDDD",
+                  backgroundColor: "#F8F8F8",
+                  borderBottom: "none",
+                  width: "42px",
+                  minWidth: "42px",
+                }}
+                onClick={(e) => {
+                  dialogs.open(CategoryFormDialog, { defaultValues: null });
+                  e.preventDefault();
+                }}
+              >
+                <Add />
+              </Button>
+            ) : null}
           </Grid>
           <Grid container>
             <Grid
@@ -708,49 +713,57 @@ const Diagrams = () => {
                 gap: "8px",
               }}
             >
-              <Button
-                sx={{}}
-                size="small"
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={() => {
-                  if (selectedBlockId) {
-                    openEditDialog(selectedBlockId);
-                  }
-                }}
-                disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
-              >
-                {t("button.edit")}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<MoveUp />}
-                onClick={handleMoveButton}
-                disabled={!hasSelectedBlock()}
-              >
-                {t("button.move")}
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<ContentCopyRounded />}
-                onClick={handleDuplicateBlock}
-                disabled={shouldDisableDuplicateButton}
-              >
-                {t("button.duplicate")}
-              </Button>
-              <Button
-                sx={{}}
-                size="small"
-                variant="contained"
-                color="secondary"
-                startIcon={<DeleteIcon />}
-                onClick={() => openDeleteDialog()}
-                disabled={!getSelectedIds().length}
-              >
-                {t("button.remove")}
-              </Button>
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  sx={{}}
+                  size="small"
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={() => {
+                    if (selectedBlockId) {
+                      openEditDialog(selectedBlockId);
+                    }
+                  }}
+                  disabled={getSelectedIds().length > 1 || !hasSelectedBlock()}
+                >
+                  {t("button.edit")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<MoveUp />}
+                  onClick={handleMoveButton}
+                  disabled={!hasSelectedBlock()}
+                >
+                  {t("button.move")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<ContentCopyRounded />}
+                  onClick={handleDuplicateBlock}
+                  disabled={shouldDisableDuplicateButton}
+                >
+                  {t("button.duplicate")}
+                </Button>
+              ) : null}
+              {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
+                <Button
+                  sx={{}}
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => openDeleteDialog()}
+                  disabled={!getSelectedIds().length}
+                >
+                  {t("button.remove")}
+                </Button>
+              ) : null}
             </Grid>
             <Grid container item justifyContent="right" xs alignSelf="center">
               <ButtonGroup

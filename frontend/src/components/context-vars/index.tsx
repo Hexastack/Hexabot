@@ -195,26 +195,28 @@ export const ContextVars = () => {
               </Button>
             </Grid>
           ) : null}
-          <Grid item>
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedContextVars.length,
-                });
+          {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.DELETE) ? (
+            <Grid item>
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedContextVars.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteContextVars(selectedContextVars);
-                }
-              }}
-              disabled={!selectedContextVars.length}
-            >
-              {t("button.delete")}
-            </Button>
-          </Grid>
+                  if (isConfirmed) {
+                    deleteContextVars(selectedContextVars);
+                  }
+                }}
+                disabled={!selectedContextVars.length}
+              >
+                {t("button.delete")}
+              </Button>
+            </Grid>
+          ) : null}
         </Grid>
       </PageHeader>
       <Grid item xs={12}>

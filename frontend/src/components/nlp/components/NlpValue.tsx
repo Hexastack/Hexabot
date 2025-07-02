@@ -93,6 +93,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             defaultValues: row,
             presetValues: nlpEntity,
           }),
+        requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
@@ -103,6 +104,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             deleteNlpValue(id);
           }
         },
+        requires: [PermissionAction.DELETE],
       },
     ],
     t("label.operations"),
@@ -254,7 +256,10 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                       {t("button.add")}
                     </Button>
                   ) : null}
-                  {selectedNlpValues.length > 0 && (
+                  {hasPermission(
+                    EntityType.NLP_VALUE,
+                    PermissionAction.DELETE,
+                  ) && selectedNlpValues.length > 0 ? (
                     <Grid item>
                       <Button
                         color="error"
@@ -265,7 +270,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                         {t("button.delete")}
                       </Button>
                     </Grid>
-                  )}
+                  ) : null}
                 </ButtonGroup>
               </Grid>
             </PageHeader>

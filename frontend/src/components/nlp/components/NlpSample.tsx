@@ -35,7 +35,7 @@ import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import {
   ActionColumnLabel,
-  getActionsColumn,
+  useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
@@ -155,7 +155,8 @@ export default function NlpSample() {
       params: searchPayload,
     },
   );
-  const actionColumns = getActionsColumn<INlpSample>(
+  const actionColumns = useActionColumns<INlpSample>(
+    EntityType.NLP_SAMPLE,
     [
       {
         label: ActionColumnLabel.Edit,
@@ -414,24 +415,26 @@ export default function NlpSample() {
                 {t("button.export")}
               </Button>
             ) : null}
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedNlpSamples.length,
-                });
+            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.DELETE) ? (
+              <Button
+                startIcon={<DeleteIcon />}
+                variant="contained"
+                color="error"
+                onClick={async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedNlpSamples.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteNlpSamples(selectedNlpSamples);
-                }
-              }}
-              disabled={!selectedNlpSamples.length}
-            >
-              {t("button.delete")}
-            </Button>
+                  if (isConfirmed) {
+                    deleteNlpSamples(selectedNlpSamples);
+                  }
+                }}
+                disabled={!selectedNlpSamples.length}
+              >
+                {t("button.delete")}
+              </Button>
+            ) : null}
           </ButtonGroup>
         </Grid>
         <Grid

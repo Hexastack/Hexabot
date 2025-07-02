@@ -192,24 +192,26 @@ export const Labels = () => {
               </Button>
             </Grid>
           ) : null}
-          <Button
-            color="error"
-            variant="contained"
-            onClick={async () => {
-              const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                mode: "selection",
-                count: selectedLabels.length,
-              });
+          {hasPermission(EntityType.LABEL, PermissionAction.DELETE) ? (
+            <Button
+              color="error"
+              variant="contained"
+              onClick={async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedLabels.length,
+                });
 
-              if (isConfirmed) {
-                deleteLabels(selectedLabels);
-              }
-            }}
-            disabled={!selectedLabels.length}
-            startIcon={<DeleteIcon />}
-          >
-            {t("button.delete")}
-          </Button>
+                if (isConfirmed) {
+                  deleteLabels(selectedLabels);
+                }
+              }}
+              disabled={!selectedLabels.length}
+              startIcon={<DeleteIcon />}
+            >
+              {t("button.delete")}
+            </Button>
+          ) : null}
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
