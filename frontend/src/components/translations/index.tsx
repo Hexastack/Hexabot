@@ -22,6 +22,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useRefreshTranslations } from "@/hooks/entities/translation-hooks";
 import { useDialogs } from "@/hooks/useDialogs";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -38,6 +39,7 @@ export const Translations = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
+  const hasPermission = useHasPermission();
   const { data: languages } = useFind(
     { entity: EntityType.LANGUAGE },
     {
@@ -157,7 +159,7 @@ export const Translations = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          <Grid item>
+          {hasPermission(EntityType.TRANSLATION, PermissionAction.CREATE) ? (
             <Button
               startIcon={<AutorenewIcon />}
               variant="contained"
@@ -167,7 +169,7 @@ export const Translations = () => {
             >
               {t("button.refresh")}
             </Button>
-          </Grid>
+          ) : null}
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
