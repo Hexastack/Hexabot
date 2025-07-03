@@ -8,12 +8,9 @@
 
 import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
-  Button,
-  ButtonGroup,
   Chip,
   Grid,
   IconButton,
@@ -26,6 +23,7 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
@@ -47,7 +45,6 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useConfig } from "@/hooks/useConfig";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -82,7 +79,6 @@ export default function NlpSample() {
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
   const [patterns, setPatterns] = useState<NlpPattern[]>([]);
-  const hasPermission = useHasPermission();
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
   const getSampleEntityFromCache = useGetFromCache(
@@ -385,42 +381,38 @@ export default function NlpSample() {
               ),
             )}
           </Input>
-          <ButtonGroup sx={{ ml: "auto" }}>
-            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.CREATE) &&
-            hasPermission(
-              EntityType.NLP_SAMPLE_ENTITY,
-              PermissionAction.CREATE,
-            ) ? (
-              <FileUploadButton
-                accept="text/csv"
-                label={t("button.import")}
-                onChange={handleImportChange}
-                isLoading={isLoading}
-              />
-            ) : null}
-            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.READ) &&
-            hasPermission(
-              EntityType.NLP_SAMPLE_ENTITY,
-              PermissionAction.READ,
-            ) ? (
-              <Button
-                variant="contained"
-                href={buildURL(
+          <ButtonActionsGroup
+            entity={EntityType.NLP_SAMPLE}
+            buttons={[
+              {
+                permissions: {
+                  [EntityType.NLP_SAMPLE]: PermissionAction.CREATE,
+                  [EntityType.NLP_SAMPLE_ENTITY]: PermissionAction.CREATE,
+                },
+                children: (
+                  <FileUploadButton
+                    accept="text/csv"
+                    label={t("button.import")}
+                    onChange={handleImportChange}
+                    isLoading={isLoading}
+                  />
+                ),
+              },
+              {
+                permissions: {
+                  [EntityType.NLP_SAMPLE]: PermissionAction.READ,
+                  [EntityType.NLP_SAMPLE_ENTITY]: PermissionAction.READ,
+                },
+                startIcon: <DownloadIcon />,
+                children: t("button.export"),
+                href: buildURL(
                   apiUrl,
                   `nlpsample/export${type ? `?type=${type}` : ""}`,
-                )}
-                startIcon={<DownloadIcon />}
-                disabled={dataGridProps?.rows?.length === 0}
-              >
-                {t("button.export")}
-              </Button>
-            ) : null}
-            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.DELETE) ? (
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={async () => {
+                ),
+              },
+              {
+                permissionAction: PermissionAction.DELETE,
+                onClick: async () => {
                   const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
                     mode: "selection",
                     count: selectedNlpSamples.length,
@@ -429,13 +421,11 @@ export default function NlpSample() {
                   if (isConfirmed) {
                     deleteNlpSamples(selectedNlpSamples);
                   }
-                }}
-                disabled={!selectedNlpSamples.length}
-              >
-                {t("button.delete")}
-              </Button>
-            ) : null}
-          </ButtonGroup>
+                },
+                disabled: !selectedNlpSamples.length,
+              },
+            ]}
+          />
         </Grid>
         <Grid
           container

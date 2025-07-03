@@ -7,12 +7,11 @@
  */
 
 import { faTags } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, ButtonGroup, Grid, Paper } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -25,7 +24,6 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -41,7 +39,6 @@ export const Labels = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const hasPermission = useHasPermission();
   const { onSearch, searchPayload, searchText } = useSearch<ILabel>(
     {
       $or: ["name", "title"],
@@ -178,23 +175,17 @@ export const Labels = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          <ButtonGroup sx={{ ml: "auto" }}>
-            {hasPermission(EntityType.LABEL, PermissionAction.CREATE) ? (
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() =>
-                  dialogs.open(LabelFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            ) : null}
-            {hasPermission(EntityType.LABEL, PermissionAction.DELETE) ? (
-              <Button
-                color="error"
-                variant="contained"
-                onClick={async () => {
+          <ButtonActionsGroup
+            entity={EntityType.LABEL}
+            buttons={[
+              {
+                permissionAction: PermissionAction.CREATE,
+                onClick: () =>
+                  dialogs.open(LabelFormDialog, { defaultValues: null }),
+              },
+              {
+                permissionAction: PermissionAction.DELETE,
+                onClick: async () => {
                   const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
                     mode: "selection",
                     count: selectedLabels.length,
@@ -203,14 +194,11 @@ export const Labels = () => {
                   if (isConfirmed) {
                     deleteLabels(selectedLabels);
                   }
-                }}
-                disabled={!selectedLabels.length}
-                startIcon={<DeleteIcon />}
-              >
-                {t("button.delete")}
-              </Button>
-            ) : null}
-          </ButtonGroup>
+                },
+                disabled: !selectedLabels.length,
+              },
+            ]}
+          />
         </Grid>
       </PageHeader>
       <Grid item xs={12}>

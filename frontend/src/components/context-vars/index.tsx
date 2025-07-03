@@ -7,12 +7,11 @@
  */
 
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, ButtonGroup, Grid, Paper, Switch } from "@mui/material";
+import { Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -181,24 +180,17 @@ export const ContextVars = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          <ButtonGroup sx={{ ml: "auto" }}>
-            {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.CREATE) ? (
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() =>
-                  dialogs.open(ContextVarFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            ) : null}
-            {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.DELETE) ? (
-              <Button
-                startIcon={<DeleteIcon />}
-                variant="contained"
-                color="error"
-                onClick={async () => {
+          <ButtonActionsGroup
+            entity={EntityType.CONTEXT_VAR}
+            buttons={[
+              {
+                permissionAction: PermissionAction.CREATE,
+                onClick: () =>
+                  dialogs.open(ContextVarFormDialog, { defaultValues: null }),
+              },
+              {
+                permissionAction: PermissionAction.DELETE,
+                onClick: async () => {
                   const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
                     mode: "selection",
                     count: selectedContextVars.length,
@@ -207,13 +199,11 @@ export const ContextVars = () => {
                   if (isConfirmed) {
                     deleteContextVars(selectedContextVars);
                   }
-                }}
-                disabled={!selectedContextVars.length}
-              >
-                {t("button.delete")}
-              </Button>
-            ) : null}
-          </ButtonGroup>
+                },
+                disabled: !selectedContextVars.length,
+              },
+            ]}
+          />
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
