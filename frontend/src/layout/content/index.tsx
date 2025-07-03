@@ -7,9 +7,12 @@
  */
 
 import { Box, BoxProps, Grid, styled, Theme } from "@mui/material";
+import { useRouter } from "next/router";
 import { FC } from "react";
 
+import { useAuth } from "@/hooks/useAuth";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
+import { hasPublicPath } from "@/utils/URL";
 
 import { IContentPaddingProps } from "..";
 
@@ -39,11 +42,20 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 export type ContentProps = BoxProps & {
   children: JSX.Element;
 } & IContentPaddingProps;
-export const Content: FC<ContentProps> = ({ children, ...rest }) => (
-  <StyledBox component="main" {...rest}>
-    <Grid item xs>
-      <DrawerHeader />
-    </Grid>
-    {children}
-  </StyledBox>
-);
+export const Content: FC<ContentProps> = ({ children, ...rest }) => {
+  const { pathname } = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <StyledBox component="main" {...rest}>
+      <Grid item xs>
+        <DrawerHeader />
+      </Grid>
+      <Grid
+        display={hasPublicPath(pathname) || isAuthenticated ? "block" : "none"}
+      >
+        {children}
+      </Grid>
+    </StyledBox>
+  );
+};
