@@ -219,10 +219,8 @@ export class BlockRepository extends BaseRepository<
         const updates: Partial<Block> = {};
 
         // Check if the block has an attachedBlock
-        if (block.attachedBlock) {
-          if (ids.includes(block.attachedBlock)) {
-            updates.attachedBlock = null;
-          }
+        if (block.attachedBlock && ids.includes(block.attachedBlock)) {
+          updates.attachedBlock = null;
         } else {
           // Only check nextBlocks if there is no attachedBlock
           const filteredNextBlocks = block.nextBlocks?.filter(
