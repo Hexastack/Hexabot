@@ -106,15 +106,14 @@ export const OptionsForm = () => {
           defaultValue={block?.options?.fallback}
           rules={{
             validate: (value) => {
-              const hasNoValue = !value;
-              const localFallbackDisabled = value?.max_attempts === 0;
+              const localFallbackDisabled =
+                typeof value?.max_attempts === "number" &&
+                value?.max_attempts <= 0;
               const hasValidFallbackMessage =
                 Array.isArray(value?.message) &&
                 value.message.some((m) => m?.trim());
 
-              return hasNoValue ||
-                localFallbackDisabled ||
-                hasValidFallbackMessage
+              return localFallbackDisabled || hasValidFallbackMessage
                 ? true
                 : t("message.fallback_message_required");
             },
