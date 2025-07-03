@@ -35,7 +35,24 @@ export class EnvelopeFactory {
     protected readonly context: Context,
     protected readonly settings: Settings,
     protected readonly i18n: I18nService,
-  ) {}
+  ) {
+    // Register dateFormat Handlebars helper
+    Handlebars.registerHelper(
+      'dateFormat',
+      function (dateInput: number | string | Date, localeInput?: string) {
+        try {
+          const locale =
+            this.context.user.language || typeof localeInput === 'string'
+              ? localeInput
+              : 'fr-FR';
+
+          return new Intl.DateTimeFormat(locale).format(new Date(dateInput));
+        } catch (e) {
+          return dateInput;
+        }
+      },
+    );
+  }
 
   /**
    * Converts an old text template with single-curly placeholders, e.g. `{context.user.name}`,
