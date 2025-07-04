@@ -6,6 +6,15 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+const isPlainObject = (val: unknown): val is Record<string, unknown> => {
+  return (
+    typeof val === 'object' &&
+    val !== null &&
+    !Array.isArray(val) && // not an Array
+    Object.getPrototypeOf(val) === Object.prototype // direct Object.prototype
+  );
+};
+
 /**
  * Flattens a nested object into a single-level object with dot-separated keys.
  * @param data - The data object to flatten
@@ -26,12 +35,7 @@ export const flatten = (
   for (const [key, value] of Object.entries(data)) {
     const path = prefix ? `${prefix}.${key}` : key;
 
-    if (
-      typeof value === 'object' &&
-      !(value instanceof Date) &&
-      value !== null &&
-      !Array.isArray(value)
-    ) {
+    if (isPlainObject(value)) {
       flatten(value, path, result);
     } else {
       result[path] = value;
