@@ -123,6 +123,22 @@ describe('flatten', () => {
     });
   });
 
+  it('should support data including a date', () => {
+    const object = {
+      name: 'name',
+      date1: new Date('1900-01-01'),
+      context: { nestedField: 'value', date2: new Date('1900-01-02') },
+    };
+    const result = flatten(object);
+
+    expect(result).toStrictEqual({
+      name: 'name',
+      date1: new Date('1900-01-01'),
+      'context.nestedField': 'value',
+      'context.date2': new Date('1900-01-02'),
+    });
+  });
+
   it('should support an empty object', () => {
     const result = flatten({});
 
