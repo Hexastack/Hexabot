@@ -26,7 +26,12 @@ export const flatten = (
   for (const [key, value] of Object.entries(data)) {
     const path = prefix ? `${prefix}.${key}` : key;
 
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    if (
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
       flatten(value, path, result);
     } else {
       result[path] = value;
