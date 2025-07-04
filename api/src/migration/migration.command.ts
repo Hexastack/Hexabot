@@ -6,24 +6,17 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Command, CommandRunner } from 'nest-commander';
+import { Inject } from '@nestjs/common';
 
 import { LoggerService } from '@/logger/logger.service';
 
 import { MigrationService } from './migration.service';
 import { MigrationAction } from './types';
 
-@Command({
-  name: 'migration',
-  description: 'Manage Mongodb Migrations',
-})
-export class MigrationCommand extends CommandRunner {
-  constructor(
-    private readonly logger: LoggerService,
-    private readonly migrationService: MigrationService,
-  ) {
-    super();
-  }
+export class MigrationCommand {
+  @Inject(LoggerService) logger: LoggerService;
+
+  @Inject(MigrationService) migrationService: MigrationService;
 
   async run(passedParam: string[]): Promise<void> {
     const [subcommand] = passedParam;
