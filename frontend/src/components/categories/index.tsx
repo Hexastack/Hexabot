@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
-import { Button, ButtonGroup, Grid, Paper } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -25,7 +24,6 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -42,7 +40,6 @@ export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const hasPermission = useHasPermission();
   const { onSearch, searchPayload, searchText } = useSearch<ICategory>(
     {
       $iLike: ["label"],
@@ -147,23 +144,17 @@ export const Categories = () => {
             <Grid item>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            <ButtonGroup sx={{ ml: "auto" }}>
-              {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
-                <Button
-                  startIcon={<AddIcon />}
-                  variant="contained"
-                  onClick={() =>
-                    dialogs.open(CategoryFormDialog, { defaultValues: null })
-                  }
-                >
-                  {t("button.add")}
-                </Button>
-              ) : null}
-              {hasPermission(EntityType.CATEGORY, PermissionAction.DELETE) ? (
-                <Button
-                  color="error"
-                  variant="contained"
-                  onClick={async () => {
+            <ButtonActionsGroup
+              entity={EntityType.CATEGORY}
+              buttons={[
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  onClick: () =>
+                    dialogs.open(CategoryFormDialog, { defaultValues: null }),
+                },
+                {
+                  permissionAction: PermissionAction.DELETE,
+                  onClick: async () => {
                     const isConfirmed = await dialogs.confirm(
                       ConfirmDialogBody,
                       {
@@ -175,14 +166,11 @@ export const Categories = () => {
                     if (isConfirmed) {
                       deleteCategories(selectedCategories);
                     }
-                  }}
-                  disabled={!selectedCategories.length}
-                  startIcon={<DeleteIcon />}
-                >
-                  {t("button.delete")}
-                </Button>
-              ) : null}
-            </ButtonGroup>
+                  },
+                  disabled: !selectedCategories.length,
+                },
+              ]}
+            />
           </Grid>
         </PageHeader>
       </Grid>
