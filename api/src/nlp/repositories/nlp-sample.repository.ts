@@ -14,14 +14,13 @@ import {
   Document,
   Model,
   PipelineStage,
-  ProjectionType,
   Query,
   Types,
 } from 'mongoose';
 
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { TFilterQuery, TProjectionType } from '@/utils/types/filter.types';
 
 import { TNlpSampleDto } from '../dto/nlp-sample.dto';
 import { NlpSampleEntity } from '../schemas/nlp-sample-entity.schema';
@@ -183,7 +182,7 @@ export class NlpSampleRepository extends BaseRepository<
       values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
-    projection?: ProjectionType<NlpSample>,
+    projection?: TProjectionType<NlpSample>,
   ): Aggregate<NlpSampleDocument[]> {
     return this.model.aggregate<NlpSampleDocument>([
       ...this.buildFindByEntitiesStages(criterias),
@@ -211,7 +210,7 @@ export class NlpSampleRepository extends BaseRepository<
       values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
-    projection?: ProjectionType<NlpSample>,
+    projection?: TProjectionType<NlpSample>,
   ): Promise<NlpSample[]> {
     const aggregation = this.findByEntitiesAggregation(
       criterias,
@@ -239,7 +238,7 @@ export class NlpSampleRepository extends BaseRepository<
       values: NlpValue[];
     },
     page?: PageQueryDto<NlpSample>,
-    projection?: ProjectionType<NlpSample>,
+    projection?: TProjectionType<NlpSample>,
   ): Promise<NlpSampleFull[]> {
     const aggregation = this.findByEntitiesAggregation(
       criterias,
