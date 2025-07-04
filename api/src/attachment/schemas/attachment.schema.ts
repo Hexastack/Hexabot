@@ -38,6 +38,7 @@ export class AttachmentStub extends BaseSchema {
   @Prop({
     type: String,
     required: true,
+    index: true,
   })
   name: string;
 
