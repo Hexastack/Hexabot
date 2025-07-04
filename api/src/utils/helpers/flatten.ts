@@ -7,11 +7,7 @@
  */
 
 const isPlainObject = (val: unknown): val is Record<string, unknown> => {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    Object.getPrototypeOf(val) === Object.prototype // direct Object.prototype
-  );
+  return val?.constructor === Object;
 };
 
 /**
