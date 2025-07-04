@@ -10,7 +10,6 @@ const isPlainObject = (val: unknown): val is Record<string, unknown> => {
   return (
     typeof val === 'object' &&
     val !== null &&
-    !Array.isArray(val) && // not an Array
     Object.getPrototypeOf(val) === Object.prototype // direct Object.prototype
   );
 };
