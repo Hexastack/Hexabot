@@ -9,6 +9,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, ButtonGroup, ButtonProps } from "@mui/material";
+import React from "react";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -63,7 +64,7 @@ export const ButtonActionsGroup = ({
         };
 
         if (hasAbility || hasAbilities) {
-          if (typeof rest.children === "object") {
+          if (React.isValidElement(rest.children)) {
             return rest.children;
           } else {
             return <Button key={`button_${index}`} {...extendedProps} />;
