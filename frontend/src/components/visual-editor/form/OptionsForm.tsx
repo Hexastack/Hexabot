@@ -109,11 +109,12 @@ export const OptionsForm = () => {
               const localFallbackDisabled =
                 typeof value?.max_attempts === "number" &&
                 value?.max_attempts <= 0;
-              const hasValidFallbackMessage =
+              const allMessagesNonEmpty =
                 Array.isArray(value?.message) &&
-                value.message.some((m) => m?.trim());
+                value.message.length > 0 &&
+                value.message.every((m) => typeof m === "string" && m.trim());
 
-              return localFallbackDisabled || hasValidFallbackMessage
+              return localFallbackDisabled || allMessagesNonEmpty
                 ? true
                 : t("message.fallback_message_required");
             },
