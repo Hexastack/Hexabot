@@ -26,7 +26,7 @@ export class NlpSampleStub extends BaseSchema {
   /**
    * The content of the sample.
    */
-  @Prop({ type: String, required: true, index: true })
+  @Prop({ type: String, required: true })
   text: string;
 
   /**
@@ -76,12 +76,18 @@ export class NlpSampleFull extends NlpSampleStub {
 
 export type NlpSampleDocument = THydratedDocument<NlpSample>;
 
+const NlpSampleSchema = SchemaFactory.createForClass(NlpSampleStub);
+NlpSampleSchema.index(
+  { text: 'text' },
+  { background: false, language_override: 'none' },
+);
+
 export const NlpSampleModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpSample.name,
-  schema: SchemaFactory.createForClass(NlpSampleStub),
+  schema: NlpSampleSchema,
 });
 
-NlpSampleModel.schema.virtual('entities', {
+NlpSampleSchema.virtual('entities', {
   ref: 'NlpSampleEntity',
   localField: '_id',
   foreignField: 'sample',

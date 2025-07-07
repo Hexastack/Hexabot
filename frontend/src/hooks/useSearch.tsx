@@ -51,6 +51,9 @@ const buildNeqInitialParams = <T,>({
     }),
     {},
   );
+const buildFullTextSearch = (searchText: string) => ({
+  $text: { $search: searchText },
+});
 
 interface SearchHookOptions {
   syncUrl?: boolean;
@@ -89,9 +92,10 @@ export const useSearch = <T,>(
       where: {
         ...buildEqInitialParams({ initialParams: eqInitialParams }),
         ...buildNeqInitialParams({ initialParams: neqInitialParams }),
-        ...(searchText?.length > 0 && {
-          ...buildOrParams({ params: orParams, searchText }),
-          ...buildILikeParams({ params: iLikeParams, searchText }),
+      ...(searchText?.length > 0 && {
+      ...(params.$text ? buildFullTextSearch(searchText) : {}),
+      ...buildOrParams({ params: orParams, searchText }),
+      ...buildILikeParams({ params: iLikeParams, searchText }),
         }),
       },
     },

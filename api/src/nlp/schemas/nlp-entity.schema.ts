@@ -106,9 +106,24 @@ export class NlpEntityFull extends NlpEntityStub {
 
 export type NlpEntityDocument = THydratedDocument<NlpEntity>;
 
+const NlpEntitySchema = SchemaFactory.createForClass(NlpEntityStub);
+NlpEntitySchema.index(
+  {
+    name: 'text',
+    doc: 'text',
+  },
+  {
+    weights: {
+      name: 2,
+      doc: 1,
+    },
+    background: false,
+  },
+);
+
 export const NlpEntityModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpEntity.name,
-  schema: SchemaFactory.createForClass(NlpEntityStub),
+  schema: NlpEntitySchema,
 });
 
 NlpEntityModel.schema.virtual('values', {

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -122,43 +122,70 @@ export class SearchFilterPipe<T>
     delete whereParams['or'];
 
     if (whereParams) {
-      Object.entries(whereParams)
-        .filter(([field]) => this.isAllowedField(field))
-        .forEach(([field, val]) => {
-          const filter = this.transformField(field, val);
+      Object.entries(whereParams).forEach(([field, val]) => {
+        if (
+          field === '$text' &&
+          typeof val === 'object' &&
+          val !== null &&
+          '$search' in val
+        ) {
+          filters.push({
+            _operator: 'text',
+            _context: 'and',
+            data: {
+              $text: { $search: String(val.$search) },
+            },
+          });
+          return;
+        }
 
-          if (filter._operator) {
-            filters.push({
-              ...filter,
-              _context: 'and',
-            });
-          }
-        });
+        if (!this.isAllowedField(field)) return;
+
+        const filter = this.transformField(field, val);
+        if (filter._operator) {
+          filters.push({
+            ...filter,
+            _context: 'and',
+          });
+        }
+      });
     }
+    let textSearch: TFilterQuery<T>['$text'] | undefined;
 
-    return filters.reduce((acc, { _context, _operator, data, ...filter }) => {
-      switch (_operator) {
-        case 'neq':
-          return {
-            ...acc,
-            $nor: [...(acc?.$nor || []), { ...filter, ...data }],
-          };
-        default:
-          switch (_context) {
-            case 'or':
-              return {
-                ...acc,
-                $or: [...(acc?.$or || []), { ...filter, ...data }],
-              };
-            case 'and':
-              return {
-                ...acc,
-                $and: [...(acc?.$and || []), { ...filter, ...data }],
-              };
-            default:
-              return acc; // Handle any other cases if necessary
-          }
-      }
-    }, {} as TFilterQuery<T>);
+    const queryFilter = filters.reduce(
+      (acc, { _context, _operator, data, ...filter }) => {
+        switch (_operator) {
+          case 'neq':
+            return {
+              ...acc,
+              $nor: [...(acc?.$nor || []), { ...filter, ...data }],
+            };
+          case 'text':
+            textSearch = data?.$text;
+            return acc;
+          default:
+            switch (_context) {
+              case 'or':
+                return {
+                  ...acc,
+                  $or: [...(acc?.$or || []), { ...filter, ...data }],
+                };
+              case 'and':
+                return {
+                  ...acc,
+                  $and: [...(acc?.$and || []), { ...filter, ...data }],
+                };
+              default:
+                return acc;
+            }
+        }
+      },
+      {} as TFilterQuery<T>,
+    );
+
+    if (textSearch) {
+      queryFilter.$text = textSearch;
+    }
+    return queryFilter;
   }
 }

@@ -119,10 +119,7 @@ export type NlpValueDocument = THydratedDocument<NlpValue>;
 
 export const NlpValueModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpValue.name,
-  schema: SchemaFactory.createForClass(NlpValueStub).index(
-    { value: 1, entity: 1 },
-    { unique: true },
-  ),
+  schema: SchemaFactory.createForClass(NlpValueStub),
 });
 
 export default NlpValueModel.schema;

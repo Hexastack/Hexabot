@@ -114,16 +114,17 @@ type TNorField<T> = {
 
 export type TSearchFilterValue<T> = TOrField<T> | TAndField<T> | TNorField<T>;
 
-type TOperator = 'eq' | 'iLike' | 'neq';
+type TOperator = 'eq' | 'iLike' | 'neq' | 'text';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {
   _id?: string;
   _context?: TContext;
   _operator?: TOperator;
-  data?: {
-    [x: string]: undefined | string | RegExp | (string | undefined)[];
-  };
+  // data?: {
+  //   [x: string]: undefined | string | RegExp | (string | undefined)[];
+  // };
+  data?: Record<string, any>; // <-- allow MongoDB operators like $text
 };
 
 /* mongoose */

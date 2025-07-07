@@ -60,7 +60,7 @@ export const Contents = () => {
   const { onSearch, searchPayload, searchText } = useSearch<IContent>(
     {
       $eq: [{ entity: String(query.id) }],
-      $iLike: ["title"],
+      $text: true,
     },
     { syncUrl: true },
   );

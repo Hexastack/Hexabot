@@ -102,6 +102,7 @@ export default function NlpSample() {
           : []),
       ],
       $iLike: ["text"],
+      // $text: true
     },
     { syncUrl: true },
   );
