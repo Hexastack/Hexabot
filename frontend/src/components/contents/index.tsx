@@ -7,21 +7,13 @@
  */
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {
-  Button,
-  ButtonGroup,
-  Chip,
-  Grid,
-  Paper,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -162,27 +154,29 @@ export const Contents = () => {
             <Grid item>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
-              <ButtonGroup sx={{ marginLeft: "auto" }}>
-                <Button
-                  startIcon={<AddIcon />}
-                  variant="contained"
-                  onClick={() =>
+            <ButtonActionsGroup
+              entity={EntityType.CONTENT}
+              buttons={[
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  onClick: () =>
                     dialogs.open(ContentFormDialog, {
                       presetValues: contentType,
-                    })
-                  }
-                >
-                  {t("button.add")}
-                </Button>
-                <FileUploadButton
-                  accept="text/csv"
-                  label={t("button.import")}
-                  onChange={handleImportChange}
-                  isLoading={isLoading}
-                />
-              </ButtonGroup>
-            ) : null}
+                    }),
+                },
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  children: (
+                    <FileUploadButton
+                      accept="text/csv"
+                      label={t("button.import")}
+                      onChange={handleImportChange}
+                      isLoading={isLoading}
+                    />
+                  ),
+                },
+              ]}
+            />
           </Grid>
         </PageHeader>
       </Grid>
