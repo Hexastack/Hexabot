@@ -9,12 +9,12 @@
 import { ConflictException, Inject } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
-import { ProjectionType } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
 import {
   TFilterQuery,
   TFlattenOption,
+  TProjectionType,
   TQueryOptions,
 } from '@/utils/types/filter.types';
 
@@ -51,14 +51,14 @@ export abstract class BaseService<
   async findOne(
     criteria: string | TFilterQuery<T>,
     options?: ClassTransformOptions,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T | null> {
     return await this.repository.findOne(criteria, options, projection);
   }
 
   async findOneAndPopulate(
     criteria: string | TFilterQuery<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ) {
     return await this.repository.findOneAndPopulate(criteria, projection);
   }
@@ -66,7 +66,7 @@ export abstract class BaseService<
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]>;
 
   /**
@@ -75,13 +75,13 @@ export abstract class BaseService<
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]>;
 
   async find(
     filter: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<T[]> {
     if (Array.isArray(pageQuery))
       return await this.repository.find(filter, pageQuery, projection);
@@ -92,7 +92,7 @@ export abstract class BaseService<
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]>;
 
   /**
@@ -101,13 +101,13 @@ export abstract class BaseService<
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]>;
 
   async findAndPopulate(
     filters: TFilterQuery<T>,
     pageQuery?: QuerySortDto<T> | PageQueryDto<T>,
-    projection?: ProjectionType<T>,
+    projection?: TProjectionType<T>,
   ): Promise<TFull[]> {
     if (Array.isArray(pageQuery))
       return await this.repository.findAndPopulate(

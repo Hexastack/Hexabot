@@ -146,3 +146,9 @@ export type THydratedDocument<T> = TOmitId<HydratedDocument<T>>;
 export type TFlattenOption = { shouldFlatten?: boolean };
 
 export type TQueryOptions<D> = (QueryOptions<D> & TFlattenOption) | null;
+
+export type TProjectField = 0 | 1;
+
+export type TProjectionType<T> = {
+  [K in keyof T]?: TProjectField;
+};
