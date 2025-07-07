@@ -121,10 +121,17 @@ export type TTransformFieldProps = {
   _id?: string;
   _context?: TContext;
   _operator?: TOperator;
-  // data?: {
-  //   [x: string]: undefined | string | RegExp | (string | undefined)[];
-  // };
-  data?: Record<string, any>; // <-- allow MongoDB operators like $text
+  data?: {
+    [x: string]:
+      | undefined
+      | string
+      | RegExp
+      | (string | undefined)[]
+      | {
+          $search?: string;
+          [key: string]: unknown;
+        };
+  };
 };
 
 /* mongoose */

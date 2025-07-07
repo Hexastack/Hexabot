@@ -68,7 +68,6 @@ export class SubscriberStub extends BaseSchema {
 
   @Prop({
     type: String,
-    index: true,
   })
   foreign_id: string;
 
