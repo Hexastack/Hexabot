@@ -107,10 +107,11 @@ export type NlpSampleEntityDocument = THydratedDocument<NlpSampleEntity>;
 export const NlpSampleEntityModel: ModelDefinition =
   LifecycleHookManager.attach({
     name: NlpSampleEntity.name,
-    schema: SchemaFactory.createForClass(NlpSampleEntityStub).index(
-      { sample: 1, entity: 1, value: 1 },
-      { unique: true },
-    ),
+    schema: SchemaFactory.createForClass(NlpSampleEntityStub).index({
+      sample: 1,
+      entity: 1,
+      value: 1,
+    }),
   });
 
 export default NlpSampleEntityModel.schema;
