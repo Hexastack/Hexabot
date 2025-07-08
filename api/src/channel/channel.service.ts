@@ -9,6 +9,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+import { AuthorizationService } from '@/authorization/authorization.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
 import { CONSOLE_CHANNEL_NAME } from '@/extensions/channels/console/settings';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
@@ -33,6 +34,7 @@ export class ChannelService {
   constructor(
     private readonly logger: LoggerService,
     private readonly subscriberService: SubscriberService,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   /**
@@ -142,6 +144,19 @@ export class ChannelService {
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
+    const hasAccess = await this.authorizationService.canAccess(
+      req.method,
+      req.session.passport?.user?.id || '',
+      'message',
+    );
+
+    if (!hasAccess) {
+      this.logger.error(`[${req.method}] access denied to this WS channel`);
+      return res
+        .status(403)
+        .send(`Don't have sufficient permissions to access!`);
+    }
+
     this.logger.log(
       'Channel notification (Admin Chat Console Socket) : ',
       req.method,
