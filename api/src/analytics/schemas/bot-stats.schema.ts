@@ -119,7 +119,7 @@ export type BotStatsDocument = THydratedDocument<BotStats>;
 
 export const BotStatsModel: ModelDefinition = LifecycleHookManager.attach({
   name: BotStats.name,
-  schema: SchemaFactory.createForClass(BotStats),
+  schema: SchemaFactory.createForClass(BotStats).index({ day: 1, type: 1 }),
 });
 
 export default BotStatsModel.schema;
