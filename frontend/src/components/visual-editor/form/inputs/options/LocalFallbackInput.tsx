@@ -95,6 +95,8 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
               multiline={true}
               minInput={1}
               minRows={3}
+              error={!!errors.options?.fallback}
+              helperText={errors.options?.fallback?.message as string}
               onChange={(message) => {
                 setFallback({
                   ...fallback,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -104,15 +104,13 @@ const MultipleInput = forwardRef<HTMLDivElement, MultipleInputProps>(
     useEffect(() => {
       // Call the provided onChange with all current values whenever inputs change
       if (onChange) {
-        const newValue = inputs
-          .filter(({ value }) => value)
-          .map(({ value }) => value);
+        const newValue = inputs.map(({ value }) => value);
 
         if (value && value.join() !== newValue.join()) {
           onChange(newValue);
         }
       }
-    }, [inputs, onChange]);
+    }, [inputs, onChange, value]);
 
     return (
       <Grid container ref={ref} direction="column" mb={1}>
