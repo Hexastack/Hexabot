@@ -119,11 +119,10 @@ describe('WebsocketGateway', () => {
       const serverSockets = await gateway.io.fetchSockets();
 
       expect(serverSockets.length).toBe(2);
-
-      jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce(
+      const getNotificationSpy = jest.spyOn(gateway, 'getNotificationSockets');
+      getNotificationSpy.mockResolvedValueOnce(
         serverSockets.filter(({ handshake: { headers } }) => {
           const uuid = headers.uuid?.toString() || '';
-
           return validUuids.includes(uuid);
         }),
       );
