@@ -6,14 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
-import { PermissionService } from '@/user/services/permission.service';
-import { UserService } from '@/user/services/user.service';
 import { BaseService } from '@/utils/generics/base-service';
 import {
   SocketGet,
@@ -41,8 +35,6 @@ export class MessageService extends BaseService<
   constructor(
     private readonly messageRepository: MessageRepository,
     private readonly gateway: WebsocketGateway,
-    private readonly userService: UserService,
-    private readonly permissionService: PermissionService,
   ) {
     super(messageRepository);
   }
@@ -60,32 +52,15 @@ export class MessageService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      const user = await this.userService.findOne(
-        req.session.passport?.user?.id || '',
-      );
+      await this.gateway.joinNotificationSockets(req, Room.MESSAGE, 'message');
 
-      if (!user?.roles) {
-        throw new ForbiddenException('User is required!');
-      }
-
-      const canAccess = await this.permissionService.canAccess(
-        req.method.toUpperCase(),
-        user.roles,
-        'message',
-      );
-
-      if (canAccess) {
-        await this.gateway.joinNotificationSockets(req.sessionID, Room.MESSAGE);
-
-        return res.status(200).json({
-          success: true,
-          subscribe: Room.MESSAGE,
-        });
-      }
-
-      throw new ForbiddenException('Not able to access');
-    } catch (e) {
-      throw new InternalServerErrorException(e);
+      return res.status(200).json({
+        success: true,
+        subscribe: Room.MESSAGE,
+      });
+    } catch (err) {
+      this.logger.error('Websocket message room subscription error', err);
+      throw new InternalServerErrorException(err);
     }
   }
 

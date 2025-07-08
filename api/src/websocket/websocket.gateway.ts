@@ -25,6 +25,7 @@ import { RemoteSocket, Server, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { sync as uid } from 'uid-safe';
 
+import { AuthorizationService } from '@/authorization/authorization.service';
 import { MessageFull } from '@/chat/schemas/message.schema';
 import {
   Subscriber,
@@ -34,6 +35,7 @@ import {
 import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { TModel } from '@/user/types/model.type';
 import { getSessionStore } from '@/utils/constants/session-store';
 
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
@@ -51,6 +53,7 @@ export class WebsocketGateway
     private readonly logger: LoggerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly socketEventDispatcherService: SocketEventDispatcherService,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   @WebSocketServer() io: Server;
@@ -449,7 +452,12 @@ export class WebsocketGateway
    * @param sessionId - The session id
    * @param room - the joined room name
    */
-  async joinNotificationSockets(sessionId: string, room: Room): Promise<void> {
+  async joinNotificationSockets(
+    req: SocketRequest,
+    room: Room,
+    targetModel: TModel,
+  ): Promise<void> {
+    const sessionId = req.sessionID;
     if (!sessionId) {
       throw new Error('SessionId is required!');
     }
@@ -458,6 +466,28 @@ export class WebsocketGateway
 
     if (!notificationSockets.length) {
       throw new Error('No notification sockets found!');
+    }
+
+    const method = req?.method.toUpperCase();
+
+    if (!method) {
+      throw new Error('Method is required!');
+    }
+
+    const userId = req?.session.passport?.user?.id;
+
+    if (!userId) {
+      throw new Error('UserId is required!');
+    }
+
+    const hasAccess = await this.authorizationService.canAccess(
+      method,
+      userId,
+      targetModel,
+    );
+
+    if (!hasAccess) {
+      throw new Error('Not able to access!');
     }
 
     notificationSockets.forEach((notificationSocket) =>
