@@ -8,8 +8,6 @@
 
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { UserService } from '@/user/services/user.service';
 import {
   installMessageFixtures,
   messageFixtures,
@@ -54,8 +52,6 @@ describe('MessageService', () => {
     success: true,
     subscribe: Room.MESSAGE,
   };
-  let userService: UserService;
-  let permissionService: PermissionService;
   let buildReqRes: (
     method: 'GET' | 'POST',
     subscriberId: string,
@@ -68,21 +64,13 @@ describe('MessageService', () => {
       imports: [rootMongooseTestModule(installMessageFixtures)],
       providers: [MessageService, SubscriberRepository, UserRepository],
     });
-    [
-      messageService,
-      messageRepository,
-      subscriberRepository,
-      userRepository,
-      userService,
-      permissionService,
-    ] = await getMocks([
-      MessageService,
-      MessageRepository,
-      SubscriberRepository,
-      UserRepository,
-      UserService,
-      PermissionService,
-    ]);
+    [messageService, messageRepository, subscriberRepository, userRepository] =
+      await getMocks([
+        MessageService,
+        MessageRepository,
+        SubscriberRepository,
+        UserRepository,
+      ]);
     allSubscribers = await subscriberRepository.findAll();
     allUsers = await userRepository.findAll();
     allMessages = await messageRepository.findAll();
@@ -99,12 +87,7 @@ describe('MessageService', () => {
     mockGateway = {
       joinNotificationSockets: jest.fn(),
     };
-    mockMessageService = new MessageService(
-      {} as any,
-      mockGateway as any,
-      userService,
-      permissionService,
-    );
+    mockMessageService = new MessageService({} as any, mockGateway as any);
     buildReqRes = (method: 'GET' | 'POST', userId: string) => [
       {
         sessionID: SESSION_ID,
@@ -127,8 +110,9 @@ describe('MessageService', () => {
       await mockMessageService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.MESSAGE,
+        'message',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
@@ -139,8 +123,9 @@ describe('MessageService', () => {
       await mockMessageService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.MESSAGE,
+        'message',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);

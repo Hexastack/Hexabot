@@ -10,6 +10,9 @@ import { INestApplication } from '@nestjs/common';
 import { Socket, io } from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 
+import { UserRepository } from '@/user/repositories/user.repository';
+import { User } from '@/user/schemas/user.schema';
+import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -18,6 +21,8 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';
+import { SocketRequest } from './utils/socket-request';
+import { SocketResponse } from './utils/socket-response';
 import { WebsocketGateway } from './websocket.gateway';
 
 describe('WebsocketGateway', () => {
@@ -29,18 +34,27 @@ describe('WebsocketGateway', () => {
   let messageRoomSockets: Socket[];
   let uuids: string[];
   let validUuids: string[];
+  let allUsers: User[];
+  let userRepository: UserRepository;
+  const SESSION_ID = 'sessionId';
+  let buildReqRes: (
+    method: 'GET' | 'POST',
+    subscriberId: string,
+  ) => [SocketRequest, SocketResponse];
 
   beforeAll(async () => {
     // Instantiate the app
-    const { module } = await buildTestingMocks({
+    const { getMocks, module } = await buildTestingMocks({
       providers: [WebsocketGateway, SocketEventDispatcherService],
       imports: [
-        rootMongooseTestModule(({ uri, dbName }) => {
+        rootMongooseTestModule(async ({ uri, dbName }) => {
+          await installSubscriberFixtures();
           process.env.MONGO_URI = uri;
           process.env.MONGO_DB = dbName;
           return Promise.resolve();
         }),
       ],
+      autoInjectFrom: ['providers'],
     });
     app = module.createNestApplication();
     // Get the gateway instance from the app instance
@@ -65,6 +79,21 @@ describe('WebsocketGateway', () => {
     );
 
     await app.listen(3000);
+
+    [userRepository] = await getMocks([UserRepository]);
+    allUsers = await userRepository.findAll();
+
+    buildReqRes = (method: 'GET' | 'POST', userId: string) => [
+      {
+        sessionID: SESSION_ID,
+        method,
+        session: { passport: { user: { id: userId } } },
+      } as SocketRequest,
+      {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      } as any,
+    ];
   });
 
   afterAll(async () => {
@@ -146,17 +175,20 @@ describe('WebsocketGateway', () => {
 
     it('should throw an error when socket array is empty', async () => {
       jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce([]);
+      const [req] = buildReqRes('GET', allUsers[0].id);
 
       await expect(
-        gateway.joinNotificationSockets('sessionId', Room.MESSAGE),
+        gateway.joinNotificationSockets(req, Room.MESSAGE, 'message'),
       ).rejects.toThrow('No notification sockets found!');
 
       expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
     });
 
     it('should throw an error with empty sessionId', async () => {
+      const [req] = buildReqRes('GET', allUsers[0].id);
+      req.sessionID = '';
       await expect(
-        gateway.joinNotificationSockets('', Room.MESSAGE),
+        gateway.joinNotificationSockets(req, Room.MESSAGE, 'message'),
       ).rejects.toThrow('SessionId is required!');
     });
   });

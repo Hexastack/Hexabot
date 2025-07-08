@@ -18,8 +18,6 @@ import {
 } from '@/attachment/types';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { UserService } from '@/user/services/user.service';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
 import { sortRowsBy } from '@/utils/test/sort';
@@ -59,8 +57,6 @@ describe('SubscriberService', () => {
     success: true,
     subscribe: Room.SUBSCRIBER,
   };
-  let permissionService: PermissionService;
-  let userService: UserService;
   let buildReqRes: (
     method: 'GET' | 'POST',
     subscriberId: string,
@@ -79,16 +75,12 @@ describe('SubscriberService', () => {
       subscriberService,
       subscriberRepository,
       attachmentService,
-      permissionService,
-      userService,
     ] = await getMocks([
       LabelRepository,
       UserRepository,
       SubscriberService,
       SubscriberRepository,
       AttachmentService,
-      PermissionService,
-      UserService,
     ]);
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
@@ -100,8 +92,6 @@ describe('SubscriberService', () => {
       subscriberRepository,
       {} as any,
       mockGateway as any,
-      userService,
-      permissionService,
     );
     buildReqRes = (method: 'GET' | 'POST', userId: string) => [
       {
@@ -125,8 +115,9 @@ describe('SubscriberService', () => {
       await mockSubscriberService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.SUBSCRIBER,
+        'subscriber',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
@@ -137,8 +128,9 @@ describe('SubscriberService', () => {
       await mockSubscriberService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.SUBSCRIBER,
+        'subscriber',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
