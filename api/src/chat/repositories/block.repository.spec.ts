@@ -343,6 +343,25 @@ describe('BlockRepository', () => {
       });
       expect(mockUpdateOne).toHaveBeenCalledTimes(2);
     });
+
+    it('should not update references for blocks that are themselves in the moved blocks list', async () => {
+      const movedBlockId = blockValidIds[0];
+      const movedBlock = {
+        id: movedBlockId,
+        attachedBlock: null,
+        nextBlocks: [movedBlockId, blockValidIds[2]],
+      } as unknown as Block;
+      const otherBlocks = [movedBlock];
+
+      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+
+      // The movedBlock is both referencing and is itself a moved block, so should not be updated
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        movedBlockId,
+      ]);
+
+      expect(mockUpdateOne).not.toHaveBeenCalled();
+    });
   });
 
   describe('preUpdateMany', () => {
