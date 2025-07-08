@@ -72,17 +72,18 @@ export class SubscriberService extends BaseService<
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
       await this.gateway.joinNotificationSockets(
-        req.sessionID,
+        req,
         Room.SUBSCRIBER,
+        'subscriber',
       );
 
       return res.status(200).json({
         success: true,
         subscribe: Room.SUBSCRIBER,
       });
-    } catch (e) {
-      this.logger.error('Websocket subscription');
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      this.logger.error('Websocket subscriber room subscription error', err);
+      throw new InternalServerErrorException(err);
     }
   }
 

@@ -15,7 +15,7 @@ import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
 import { installLabelFixtures } from './label';
-import { installUserFixtures } from './user';
+import { installPermissionFixtures } from './permission';
 
 type TSubscriberFixtures = FixturesTypeBuilder<Subscriber, SubscriberCreateDto>;
 
@@ -106,7 +106,7 @@ export const installSubscriberFixtures = async () => {
     SubscriberModel.name,
     SubscriberModel.schema,
   );
-  const { users } = await installUserFixtures();
+  const { users } = await installPermissionFixtures();
   const labels = await installLabelFixtures();
   const subscribers = await Subscriber.insertMany(
     subscriberFixtures.map((subscriberFixture) => ({

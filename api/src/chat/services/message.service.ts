@@ -52,15 +52,15 @@ export class MessageService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      await this.gateway.joinNotificationSockets(req.sessionID, Room.MESSAGE);
+      await this.gateway.joinNotificationSockets(req, Room.MESSAGE, 'message');
 
       return res.status(200).json({
         success: true,
         subscribe: Room.MESSAGE,
       });
-    } catch (e) {
-      this.logger.error('Websocket subscription', e);
-      throw new InternalServerErrorException(e);
+    } catch (err) {
+      this.logger.error('Websocket message room subscription error', err);
+      throw new InternalServerErrorException(err);
     }
   }
 

@@ -21,6 +21,8 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
+import { SocketRequest } from '@/websocket/utils/socket-request';
+import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { MessageRepository } from '../repositories/message.repository';
@@ -50,9 +52,14 @@ describe('MessageService', () => {
     success: true,
     subscribe: Room.MESSAGE,
   };
+  let buildReqRes: (
+    method: 'GET' | 'POST',
+    subscriberId: string,
+  ) => [SocketRequest, SocketResponse];
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['RoleModel', 'ModelModel'],
       autoInjectFrom: ['providers'],
       imports: [rootMongooseTestModule(installMessageFixtures)],
       providers: [MessageService, SubscriberRepository, UserRepository],
@@ -81,24 +88,44 @@ describe('MessageService', () => {
       joinNotificationSockets: jest.fn(),
     };
     mockMessageService = new MessageService({} as any, mockGateway as any);
+    buildReqRes = (method: 'GET' | 'POST', userId: string) => [
+      {
+        sessionID: SESSION_ID,
+        method,
+        session: { passport: { user: { id: userId } } },
+      } as SocketRequest,
+      {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      } as any,
+    ];
   });
 
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);
 
   describe('subscribe', () => {
-    it('should join Notification sockets message room and return a success response', async () => {
-      const req = { sessionID: SESSION_ID };
-      const res = {
-        json: jest.fn(),
-        status: jest.fn().mockReturnThis(),
-      };
-
-      await mockMessageService.subscribe(req as any, res as any);
+    it('should join Notification sockets GET message room and return a success response', async () => {
+      const [req, res] = buildReqRes('GET', allUsers[0].id);
+      await mockMessageService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.MESSAGE,
+        'message',
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
+    });
+
+    it('should join Notification sockets POST message room and return a success response', async () => {
+      const [req, res] = buildReqRes('POST', allUsers[0].id);
+      await mockMessageService.subscribe(req, res);
+
+      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+        req,
+        Room.MESSAGE,
+        'message',
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);

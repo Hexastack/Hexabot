@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -22,6 +22,8 @@ import {
   PermissionFull,
   PermissionPopulate,
 } from '../schemas/permission.schema';
+import { MethodToAction } from '../types/action.type';
+import { TModel } from '../types/model.type';
 import { PermissionsTree } from '../types/permission.type';
 
 @Injectable()
@@ -79,5 +81,42 @@ export class PermissionService extends BaseService<
       acc[role][model].push(p.action);
       return acc;
     }, {});
+  }
+
+  /**
+   * Checks if a request (REST/WebSocket) is authorized to get access
+   *
+   * @param method - The Request Method
+   * @param userRoles - An array of ID's user Roles or empty
+   * @param targetModel - The target model that we want access
+   * @returns
+   */
+  async canAccess(
+    method: string,
+    userRoles: string[],
+    targetModel: TModel,
+  ): Promise<boolean> {
+    try {
+      const permissions = await this.getPermissions();
+
+      if (permissions && userRoles.length) {
+        const permissionsFromRoles = Object.entries(permissions)
+          .filter(([key, _]) => userRoles.includes(key))
+          .map(([_, value]) => value);
+
+        if (
+          permissionsFromRoles.some((permission) =>
+            permission[targetModel]?.includes(MethodToAction[method]),
+          )
+        ) {
+          return true;
+        }
+      }
+    } catch (e) {
+      this.logger.error('Request has no ability to get access', e);
+      return false;
+    }
+
+    return false;
   }
 }
