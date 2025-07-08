@@ -7,27 +7,15 @@
  */
 
 import { Global, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { PermissionRepository } from '@/user/repositories/permission.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { UserModel } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { UserService } from '@/user/services/user.service';
+import { UserModule } from '@/user/user.module';
 
 import { AuthorizationService } from './authorization.service';
 
 @Global()
 @Module({
-  imports: [MongooseModule.forFeature([PermissionModel, UserModel])],
-  providers: [
-    PermissionService,
-    PermissionRepository,
-    UserService,
-    UserRepository,
-    AuthorizationService,
-  ],
+  imports: [UserModule],
+  providers: [AuthorizationService],
   exports: [AuthorizationService],
 })
 export class AuthorizationModule {}
