@@ -216,6 +216,7 @@ export class BlockRepository extends BaseRepository<
   ): Promise<void> {
     for (const block of otherBlocks) {
       try {
+        if (ids.includes(block.id)) continue;
         const updates: Partial<Block> = {};
 
         // Check if the block has an attachedBlock
