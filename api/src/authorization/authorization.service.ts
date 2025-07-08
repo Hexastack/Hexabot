@@ -33,9 +33,12 @@ export class AuthorizationService {
   async canAccess(
     method: string,
     userId: string,
-    targetModel: TModel,
+    targetModel?: TModel,
   ): Promise<boolean> {
     try {
+      if (!targetModel) {
+        return false;
+      }
       const user = await this.userService.findOne(userId);
       const permissions = await this.permissionService.getPermissions();
 

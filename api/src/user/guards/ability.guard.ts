@@ -67,22 +67,16 @@ export class Ability implements CanActivate {
       ) {
         return true;
       }
-      const modelFromPathname = _parsedUrl?.pathname
-        ?.split('/')[1]
-        .toLowerCase() as TModel | undefined;
-
-      if (!modelFromPathname) {
-        return false;
-      }
+      const targetModel = _parsedUrl?.pathname?.split('/')[1].toLowerCase() as
+        | TModel
+        | undefined;
 
       try {
-        const hasAbility = await this.authorizationService.canAccess(
+        return await this.authorizationService.canAccess(
           method,
           user.id,
-          modelFromPathname,
+          targetModel,
         );
-
-        return hasAbility;
       } catch (e) {
         throw new NotFoundException('Failed to load permissions');
       }
