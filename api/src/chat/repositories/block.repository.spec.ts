@@ -313,6 +313,36 @@ describe('BlockRepository', () => {
 
       expect(mockUpdateOne).not.toHaveBeenCalled();
     });
+
+    it('should correctly update multiple out-of-scope blocks referencing the same moved block', async () => {
+      const movedBlockId = blockValidIds[0];
+      const otherBlocks = [
+        {
+          id: 'block-with-attached',
+          attachedBlock: movedBlockId,
+          nextBlocks: [],
+        },
+        {
+          id: 'block-with-next',
+          attachedBlock: null,
+          nextBlocks: [movedBlockId, blockValidIds[2]],
+        },
+      ] as unknown as Block[];
+
+      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        movedBlockId,
+      ]);
+
+      expect(mockUpdateOne).toHaveBeenCalledWith('block-with-attached', {
+        attachedBlock: null,
+      });
+      expect(mockUpdateOne).toHaveBeenCalledWith('block-with-next', {
+        nextBlocks: [blockValidIds[2]],
+      });
+      expect(mockUpdateOne).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('preUpdateMany', () => {
