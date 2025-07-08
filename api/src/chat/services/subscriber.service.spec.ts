@@ -18,6 +18,8 @@ import {
 } from '@/attachment/types';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
+import { PermissionService } from '@/user/services/permission.service';
+import { UserService } from '@/user/services/user.service';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
 import { sortRowsBy } from '@/utils/test/sort';
@@ -28,6 +30,8 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 import { IOOutgoingSubscribeMessage } from '@/websocket/pipes/io-message.pipe';
 import { Room } from '@/websocket/types';
+import { SocketRequest } from '@/websocket/utils/socket-request';
+import { SocketResponse } from '@/websocket/utils/socket-response';
 import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { LabelRepository } from '../repositories/label.repository';
@@ -55,9 +59,16 @@ describe('SubscriberService', () => {
     success: true,
     subscribe: Room.SUBSCRIBER,
   };
+  let permissionService: PermissionService;
+  let userService: UserService;
+  let buildReqRes: (
+    method: 'GET' | 'POST',
+    subscriberId: string,
+  ) => [SocketRequest, SocketResponse];
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['RoleModel', 'ModelModel'],
       autoInjectFrom: ['providers'],
       imports: [rootMongooseTestModule(installSubscriberFixtures)],
       providers: [SubscriberService, LabelRepository, UserRepository],
@@ -68,12 +79,16 @@ describe('SubscriberService', () => {
       subscriberService,
       subscriberRepository,
       attachmentService,
+      permissionService,
+      userService,
     ] = await getMocks([
       LabelRepository,
       UserRepository,
       SubscriberService,
       SubscriberRepository,
       AttachmentService,
+      PermissionService,
+      UserService,
     ]);
     allSubscribers = await subscriberRepository.findAll();
     allLabels = await labelRepository.findAll();
@@ -82,24 +97,44 @@ describe('SubscriberService', () => {
       joinNotificationSockets: jest.fn(),
     };
     mockSubscriberService = new SubscriberService(
-      {} as any,
+      subscriberRepository,
       {} as any,
       mockGateway as any,
+      userService,
+      permissionService,
     );
+    buildReqRes = (method: 'GET' | 'POST', userId: string) => [
+      {
+        sessionID: SESSION_ID,
+        method,
+        session: { passport: { user: { id: userId } } },
+      } as SocketRequest,
+      {
+        json: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      } as any,
+    ];
   });
 
   afterEach(jest.clearAllMocks);
   afterAll(closeInMongodConnection);
 
   describe('subscribe', () => {
-    it('should join Notification sockets subscriber room and return a success response', async () => {
-      const req = { sessionID: SESSION_ID };
-      const res = {
-        json: jest.fn(),
-        status: jest.fn().mockReturnThis(),
-      };
+    it('should join Notification sockets GET subscriber room and return a success response', async () => {
+      const [req, res] = buildReqRes('GET', allUsers[0].id);
+      await mockSubscriberService.subscribe(req, res);
 
-      await mockSubscriberService.subscribe(req as any, res as any);
+      expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
+        SESSION_ID,
+        Room.SUBSCRIBER,
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(SUCCESS_PAYLOAD);
+    });
+
+    it('should join Notification sockets POST subscriber room and return a success response', async () => {
+      const [req, res] = buildReqRes('POST', allUsers[0].id);
+      await mockSubscriberService.subscribe(req, res);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
         SESSION_ID,
