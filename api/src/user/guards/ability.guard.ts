@@ -16,21 +16,19 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request } from 'express';
+
+import { AuthorizationService } from '@/authorization/authorization.service';
 
 import { TRole } from '../schemas/role.schema';
 import { User } from '../schemas/user.schema';
-import { PermissionService } from '../services/permission.service';
-import { MethodToAction } from '../types/action.type';
 import { TModel } from '../types/model.type';
 
 @Injectable()
 export class Ability implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly permissionService: PermissionService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly authorizationService: AuthorizationService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -73,22 +71,19 @@ export class Ability implements CanActivate {
         ?.split('/')[1]
         .toLowerCase() as TModel | undefined;
 
-      const permissions = await this.permissionService.getPermissions();
+      if (!modelFromPathname) {
+        return false;
+      }
 
-      if (permissions) {
-        const permissionsFromRoles = Object.entries(permissions)
-          .filter(([key, _]) => user.roles.includes(key))
-          .map(([_, value]) => value);
+      try {
+        const hasAbility = await this.authorizationService.canAccess(
+          method,
+          user.id,
+          modelFromPathname,
+        );
 
-        if (
-          modelFromPathname &&
-          permissionsFromRoles.some((permission) =>
-            permission[modelFromPathname]?.includes(MethodToAction[method]),
-          )
-        ) {
-          return true;
-        }
-      } else {
+        return hasAbility;
+      } catch (e) {
         throw new NotFoundException('Failed to load permissions');
       }
     }
