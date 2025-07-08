@@ -131,31 +131,39 @@ export class BlockRepository extends BaseRepository<
     criteria: TFilterQuery<Block>,
     updates: UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const categoryId: string = updates.$set.category;
-    if (categoryId) {
-      const movedBlocks = await this.find(criteria);
+    const targetCategoryId: string = updates.$set.category;
+    if (targetCategoryId) {
+      const blocksToMove = await this.find(criteria);
 
-      if (movedBlocks.length) {
-        const ids: string[] = movedBlocks.map(({ id }) => id);
+      if (blocksToMove.length) {
+        const blocksToMoveIds: string[] = blocksToMove.map(({ id }) => id);
 
         // Step 1: Map IDs and Category
-        const objIds = ids.map((id) => new Types.ObjectId(id));
-        const sourceCategoryId = movedBlocks[0].category;
+        const movedBlocksobjIds = blocksToMoveIds.map(
+          (id) => new Types.ObjectId(id),
+        );
+        const sourceCategoryId = blocksToMove[0].category;
 
         // Step 2: Find blocks in source category that reference the moved blocks
-        const otherBlocks = await this.find({
-          _id: { $nin: objIds },
+        const linkedBlocks = await this.find({
+          _id: { $nin: movedBlocksobjIds },
           category: sourceCategoryId,
           $or: [
-            { attachedBlock: { $in: objIds } },
-            { nextBlocks: { $in: objIds } },
+            { attachedBlock: { $in: movedBlocksobjIds } },
+            { nextBlocks: { $in: movedBlocksobjIds } },
           ],
         });
         // Step 3: Update blocks in the provided scope
-        await this.prepareBlocksInCategoryUpdateScope(categoryId, ids);
+        await this.prepareBlocksInCategoryUpdateScope(
+          targetCategoryId,
+          blocksToMoveIds,
+        );
 
         // Step 4: Update blocks in source category
-        await this.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, ids);
+        await this.prepareBlocksOutOfCategoryUpdateScope(
+          linkedBlocks,
+          blocksToMoveIds,
+        );
       }
     }
   }
