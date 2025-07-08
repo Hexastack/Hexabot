@@ -6,7 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +23,8 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
+import { PermissionService } from '@/user/services/permission.service';
+import { UserService } from '@/user/services/user.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 import {
@@ -53,6 +59,8 @@ export class SubscriberService extends BaseService<
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
     private readonly gateway: WebsocketGateway,
+    private readonly userService: UserService,
+    private readonly permissionService: PermissionService,
   ) {
     super(repository);
   }
@@ -71,15 +79,33 @@ export class SubscriberService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      await this.gateway.joinNotificationSockets(
-        req.sessionID,
-        Room.SUBSCRIBER,
+      const user = await this.userService.findOne(
+        req.session.passport?.user?.id || '',
       );
 
-      return res.status(200).json({
-        success: true,
-        subscribe: Room.SUBSCRIBER,
-      });
+      if (!user?.roles) {
+        throw new ForbiddenException('User is required!');
+      }
+
+      const canAccess = await this.permissionService.canAccess(
+        req.method.toUpperCase(),
+        user.roles,
+        'subscriber',
+      );
+
+      if (canAccess) {
+        await this.gateway.joinNotificationSockets(
+          req.sessionID,
+          Room.SUBSCRIBER,
+        );
+
+        return res.status(200).json({
+          success: true,
+          subscribe: Room.SUBSCRIBER,
+        });
+      }
+
+      throw new ForbiddenException('Not able to access');
     } catch (e) {
       this.logger.error('Websocket subscription');
       throw new InternalServerErrorException(e);

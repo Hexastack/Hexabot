@@ -6,8 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
+import { PermissionService } from '@/user/services/permission.service';
+import { UserService } from '@/user/services/user.service';
 import { BaseService } from '@/utils/generics/base-service';
 import {
   SocketGet,
@@ -35,6 +41,8 @@ export class MessageService extends BaseService<
   constructor(
     private readonly messageRepository: MessageRepository,
     private readonly gateway: WebsocketGateway,
+    private readonly userService: UserService,
+    private readonly permissionService: PermissionService,
   ) {
     super(messageRepository);
   }
@@ -52,14 +60,31 @@ export class MessageService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      await this.gateway.joinNotificationSockets(req.sessionID, Room.MESSAGE);
+      const user = await this.userService.findOne(
+        req.session.passport?.user?.id || '',
+      );
 
-      return res.status(200).json({
-        success: true,
-        subscribe: Room.MESSAGE,
-      });
+      if (!user?.roles) {
+        throw new ForbiddenException('User is required!');
+      }
+
+      const canAccess = await this.permissionService.canAccess(
+        req.method.toUpperCase(),
+        user.roles,
+        'message',
+      );
+
+      if (canAccess) {
+        await this.gateway.joinNotificationSockets(req.sessionID, Room.MESSAGE);
+
+        return res.status(200).json({
+          success: true,
+          subscribe: Room.MESSAGE,
+        });
+      }
+
+      throw new ForbiddenException('Not able to access');
     } catch (e) {
-      this.logger.error('Websocket subscription', e);
       throw new InternalServerErrorException(e);
     }
   }
