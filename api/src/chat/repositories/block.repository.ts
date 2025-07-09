@@ -131,31 +131,39 @@ export class BlockRepository extends BaseRepository<
     criteria: TFilterQuery<Block>,
     updates: UpdateQuery<Document<Block, any, any>>,
   ): Promise<void> {
-    const categoryId: string = updates.$set.category;
-    if (categoryId) {
-      const movedBlocks = await this.find(criteria);
+    const targetCategoryId: string = updates.$set.category;
+    if (targetCategoryId) {
+      const blocksToMove = await this.find(criteria);
 
-      if (movedBlocks.length) {
-        const ids: string[] = movedBlocks.map(({ id }) => id);
+      if (blocksToMove.length) {
+        const blocksToMoveIds: string[] = blocksToMove.map(({ id }) => id);
 
         // Step 1: Map IDs and Category
-        const objIds = ids.map((id) => new Types.ObjectId(id));
-        const objCategoryId = new Types.ObjectId(categoryId);
+        const movedBlocksobjIds = blocksToMoveIds.map(
+          (id) => new Types.ObjectId(id),
+        );
+        const sourceCategoryId = blocksToMove[0].category;
 
-        // Step 2: Find other blocks
-        const otherBlocks = await this.find({
-          _id: { $nin: objIds },
-          category: { $ne: objCategoryId },
+        // Step 2: Find blocks in source category that reference the moved blocks
+        const linkedBlocks = await this.find({
+          _id: { $nin: movedBlocksobjIds },
+          category: sourceCategoryId,
           $or: [
-            { attachedBlock: { $in: objIds } },
-            { nextBlocks: { $in: objIds } },
+            { attachedBlock: { $in: movedBlocksobjIds } },
+            { nextBlocks: { $in: movedBlocksobjIds } },
           ],
         });
         // Step 3: Update blocks in the provided scope
-        await this.prepareBlocksInCategoryUpdateScope(categoryId, ids);
+        await this.prepareBlocksInCategoryUpdateScope(
+          targetCategoryId,
+          blocksToMoveIds,
+        );
 
-        // Step 4: Update external blocks
-        await this.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, ids);
+        // Step 4: Update blocks in source category
+        await this.prepareBlocksOutOfCategoryUpdateScope(
+          linkedBlocks,
+          blocksToMoveIds,
+        );
       }
     }
   }
@@ -178,18 +186,27 @@ export class BlockRepository extends BaseRepository<
     });
 
     for (const { id, nextBlocks, attachedBlock } of blocks) {
-      const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
-        ids.includes(nextBlock),
-      );
+      try {
+        const updatedNextBlocks = nextBlocks.filter((nextBlock) =>
+          ids.includes(nextBlock),
+        );
 
-      const updatedAttachedBlock = ids.includes(attachedBlock || '')
-        ? attachedBlock
-        : null;
+        const updatedAttachedBlock = ids.includes(attachedBlock || '')
+          ? attachedBlock
+          : null;
 
-      await this.updateOne(id, {
-        nextBlocks: updatedNextBlocks,
-        attachedBlock: updatedAttachedBlock,
-      });
+        const updates: Partial<Block> = {
+          nextBlocks: updatedNextBlocks,
+          attachedBlock: updatedAttachedBlock,
+        };
+
+        await this.updateOne(id, updates);
+      } catch (error) {
+        this.logger?.error(
+          `Failed to update block ${id} during in-category scope update.`,
+          error,
+        );
+      }
     }
   }
 
@@ -206,16 +223,32 @@ export class BlockRepository extends BaseRepository<
     ids: string[],
   ): Promise<void> {
     for (const block of otherBlocks) {
-      if (block.attachedBlock && ids.includes(block.attachedBlock)) {
-        await this.updateOne(block.id, { attachedBlock: null });
-      }
+      try {
+        if (ids.includes(block.id)) continue;
+        const updates: Partial<Block> = {};
 
-      const nextBlocks = block.nextBlocks?.filter(
-        (nextBlock) => !ids.includes(nextBlock),
-      );
+        // Check if the block has an attachedBlock
+        if (block.attachedBlock && ids.includes(block.attachedBlock)) {
+          updates.attachedBlock = null;
+        } else {
+          // Only check nextBlocks if there is no attachedBlock
+          const filteredNextBlocks = block.nextBlocks?.filter(
+            (nextBlock) => !ids.includes(nextBlock),
+          );
 
-      if (nextBlocks?.length) {
-        await this.updateOne(block.id, { nextBlocks });
+          if (filteredNextBlocks?.length !== block.nextBlocks?.length) {
+            updates.nextBlocks = filteredNextBlocks || [];
+          }
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await this.updateOne(block.id, updates);
+        }
+      } catch (error) {
+        this.logger?.error(
+          `Failed to update block ${block.id} during out-of-category scope update.`,
+          error,
+        );
       }
     }
   }

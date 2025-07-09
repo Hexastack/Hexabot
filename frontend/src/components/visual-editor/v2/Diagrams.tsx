@@ -562,9 +562,14 @@ const Diagrams = () => {
               },
             });
 
-            onCategoryChange(
-              categories.findIndex(({ id }) => id === targetCategoryId),
+            const targetCategoryIndex = categories.findIndex(
+              ({ id }) => id === targetCategoryId,
             );
+
+            onCategoryChange(targetCategoryIndex);
+          },
+          onError: () => {
+            toast.error(t("message.move_block_error"));
           },
         },
       );
