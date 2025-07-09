@@ -33,10 +33,12 @@ export class BotStatsRepository extends BaseRepository<BotStats> {
     to: Date,
     types: BotStatsType[],
   ): Promise<BotStats[]> {
-    const query = this.model.find({
-      type: { $in: types },
-      day: { $gte: from, $lte: to },
-    });
+    const query = this.model
+      .find({
+        type: { $in: types },
+        day: { $gte: from, $lte: to },
+      })
+      .sort({ $natural: 1 });
     return await this.execute(query, BotStats);
   }
 

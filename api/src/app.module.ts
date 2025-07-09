@@ -63,6 +63,7 @@ const i18nOptions: I18nOptions = {
     MailerModule,
     MongooseModule.forRoot(config.mongo.uri, {
       dbName: config.mongo.dbName,
+      autoIndex: config.env !== 'production', // Disable in production
       connectionFactory: (connection) => {
         connection.plugin(idPlugin);
         // eslint-disable-next-line @typescript-eslint/no-var-requires

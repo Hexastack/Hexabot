@@ -32,6 +32,7 @@ export class BlockStub extends BaseSchema {
   @Prop({
     type: String,
     required: true,
+    index: true,
   })
   name: string;
 
