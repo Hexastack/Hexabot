@@ -94,6 +94,7 @@ export class SubscriberStub extends BaseSchema {
   @Prop({
     type: Date,
     default: () => Date.now(),
+    index: true,
   })
   lastvisit?: Date;
 

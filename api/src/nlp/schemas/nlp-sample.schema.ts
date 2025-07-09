@@ -77,10 +77,7 @@ export class NlpSampleFull extends NlpSampleStub {
 export type NlpSampleDocument = THydratedDocument<NlpSample>;
 
 const NlpSampleSchema = SchemaFactory.createForClass(NlpSampleStub);
-NlpSampleSchema.index(
-  { text: 'text' },
-  { background: false, language_override: 'none' },
-);
+NlpSampleSchema.index({ text: 'text' }, { language_override: 'none' });
 
 export const NlpSampleModel: ModelDefinition = LifecycleHookManager.attach({
   name: NlpSample.name,

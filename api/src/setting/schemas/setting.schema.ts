@@ -58,6 +58,7 @@ export class Setting extends BaseSchema {
   @Prop({
     type: Number,
     default: 0,
+    index: true,
   })
   weight?: number;
 
