@@ -8,7 +8,6 @@
 
 import { INestApplication } from '@nestjs/common';
 import { Socket, io } from 'socket.io-client';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   closeInMongodConnection,
@@ -23,15 +22,10 @@ import { WebsocketGateway } from './websocket.gateway';
 describe('WebsocketGateway', () => {
   let gateway: WebsocketGateway;
   let app: INestApplication;
-  let createSocket: (index: number) => Socket;
+  let createSocket: (id: string, query?: any) => Socket;
   let sockets: Socket[];
-  // eslint-disable-next-line
-  let messageRoomSockets: Socket[];
-  let uuids: string[];
-  let validUuids: string[];
 
   beforeAll(async () => {
-    // Instantiate the app
     const { module } = await buildTestingMocks({
       providers: [WebsocketGateway, SocketEventDispatcherService],
       imports: [
@@ -43,26 +37,23 @@ describe('WebsocketGateway', () => {
       ],
     });
     app = module.createNestApplication();
-    // Get the gateway instance from the app instance
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
-    // Create a new client that will interact with the gateway
 
-    uuids = [uuidv4(), uuidv4(), uuidv4()];
-    validUuids = [uuids[0], uuids[2]];
-
-    createSocket = (index: number) =>
+    createSocket = (id: string, query: any = {}) =>
       io('http://localhost:3000', {
         autoConnect: false,
-        transports: ['websocket', 'polling'],
-        // path: '/socket.io/?EIO=4&transport=websocket&channel=web-channel',
-        query: { EIO: '4', transport: 'websocket', channel: 'web-channel' },
-        extraHeaders: { uuid: uuids[index] },
+        transports: ['websocket'],
+        query: { EIO: '4', transport: 'websocket', ...query },
+        extraHeaders: {
+          'x-client-id': id,
+        },
       });
-
-    sockets = uuids.map((_e, index) => createSocket(index));
-    messageRoomSockets = sockets.filter((socket) =>
-      validUuids.includes(socket?.io.opts.extraHeaders?.['uuid'] || ''),
-    );
+    sockets = [
+      createSocket('admin-1'), // Admin user 1
+      createSocket('admin-2'), // Admin user 2
+      createSocket('admin-3'), // Admin user 3
+      createSocket('subscriber', { channel: 'web-channel' }), // Subscriber
+    ];
 
     await app.listen(3000);
   });
@@ -71,6 +62,8 @@ describe('WebsocketGateway', () => {
     await app.close();
     await closeInMongodConnection();
   });
+
+  afterEach(jest.clearAllMocks);
 
   it('should be defined', () => {
     expect(gateway).toBeDefined();
@@ -108,67 +101,153 @@ describe('WebsocketGateway', () => {
     socket1.disconnect();
   });
 
-  describe('joinNotificationSockets', () => {
-    it('should make socket1 and socket3 join the room MESSAGE', async () => {
-      messageRoomSockets.forEach((socket) => socket.connect());
+  it('should join user to a giving room', async () => {
+    const [admin1ClientSocket] = sockets;
+    admin1ClientSocket.connect();
 
-      for (const socket of messageRoomSockets) {
-        await new Promise<void>((resolve) => socket.on('connect', resolve));
-      }
+    await new Promise<void>((resolve) =>
+      admin1ClientSocket.on('connect', () => {
+        resolve();
+      }),
+    );
 
-      const serverSockets = await gateway.io.fetchSockets();
+    const serverSockets = await gateway.io.fetchSockets();
 
-      expect(serverSockets.length).toBe(2);
-      const getNotificationSpy = jest.spyOn(gateway, 'getNotificationSockets');
-      getNotificationSpy.mockResolvedValueOnce(
-        serverSockets.filter(({ handshake: { headers } }) => {
-          const uuid = headers.uuid?.toString() || '';
-          return validUuids.includes(uuid);
-        }),
-      );
+    expect(serverSockets.length).toBe(1);
 
-      await gateway.joinNotificationSockets('sessionId', Room.MESSAGE);
+    const admin1ServerSocket = serverSockets.find(
+      (s) => s.handshake.headers['x-client-id'] === 'admin-1',
+    );
 
-      gateway.io.to(Room.MESSAGE).emit('message', { data: 'OK' });
+    await gateway.joinNotificationSockets(
+      admin1ServerSocket?.data.sessionID,
+      Room.MESSAGE,
+    );
 
-      for (const socket of messageRoomSockets) {
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Timeout waiting for message'));
-          }, 5000);
-          socket.on('message', async ({ data }) => {
-            clearTimeout(timeout);
-            expect(data).toBe('OK');
-            resolve();
-          });
-        });
-      }
-
-      messageRoomSockets.forEach((socket) => socket.disconnect());
+    const onMessagePromise = new Promise<void>((resolve) => {
+      admin1ClientSocket.on('message', async ({ msg }) => {
+        expect(msg).toBe('OK');
+        resolve();
+      });
     });
 
-    it('should throw an error when socket array is empty', async () => {
-      jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce([]);
-
-      await expect(
-        gateway.joinNotificationSockets('sessionId', Room.MESSAGE),
-      ).rejects.toThrow('No notification sockets found!');
-
-      expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
+    gateway.io.to(Room.MESSAGE).emit('message', {
+      op: 'messageSent',
+      speakerId: 'speakerId',
+      msg: 'OK',
     });
 
-    it('should throw an error with empty sessionId', async () => {
-      await expect(
-        gateway.joinNotificationSockets('', Room.MESSAGE),
-      ).rejects.toThrow('SessionId is required!');
-    });
+    await onMessagePromise;
+    admin1ClientSocket.disconnect();
   });
 
-  describe('getNotificationSockets', () => {
-    it('should throw an error with empty sessionId', async () => {
-      await expect(gateway.getNotificationSockets('')).rejects.toThrow(
-        'SessionId is required!',
-      );
+  it('should allow users to join the global "Message" room', async () => {
+    const [, admin2ClientSocket, admin3ClientSocket, subscriberSocket] =
+      sockets;
+
+    const onSubscriberConnect = new Promise<void>((resolve) =>
+      subscriberSocket.on('connect', resolve),
+    );
+    subscriberSocket.connect();
+    await onSubscriberConnect;
+
+    const onSocket2Connect = new Promise<void>((resolve) =>
+      admin2ClientSocket.on('connect', resolve),
+    );
+    admin2ClientSocket.connect();
+    await onSocket2Connect;
+
+    const onSocket3Connect = new Promise<void>((resolve) =>
+      admin3ClientSocket.on('connect', resolve),
+    );
+    admin3ClientSocket.connect();
+    await onSocket3Connect;
+
+    const serverSockets = await gateway.io.fetchSockets();
+    const admin2ServerSocket = serverSockets.find(
+      (s) => s.handshake.headers['x-client-id'] === 'admin-2',
+    );
+    const admin3ServerSocket = serverSockets.find(
+      (s) => s.handshake.headers['x-client-id'] === 'admin-3',
+    );
+
+    const subscriberServerSocket = serverSockets.find(
+      (s) => s.handshake.headers['x-client-id'] === 'subscriber',
+    );
+
+    await gateway.joinNotificationSockets(
+      admin2ServerSocket?.data.sessionID,
+      Room.MESSAGE,
+    );
+
+    await gateway.joinNotificationSockets(
+      admin3ServerSocket?.data.sessionID,
+      Room.MESSAGE,
+    );
+
+    await expect(
+      gateway.joinNotificationSockets(
+        subscriberServerSocket?.data.sessionID,
+        Room.MESSAGE,
+      ),
+    ).rejects.toThrow('No notification sockets found!');
+
+    const onMessagePromise2 = new Promise<void>((resolve) => {
+      admin2ClientSocket.on('message', async ({ data }) => {
+        expect(data).toBe('The subscriber message');
+        resolve();
+      });
     });
+
+    const onMessagePromise3 = new Promise<void>((resolve) => {
+      admin3ClientSocket.on('message', async ({ data }) => {
+        expect(data).toBe('The subscriber message');
+        resolve();
+      });
+    });
+
+    const onSubscriberMessagePromise = new Promise<void>((resolve, reject) => {
+      subscriberSocket.on('message', async () => {
+        reject();
+      });
+      setTimeout(() => resolve(), 100);
+    });
+
+    gateway.io
+      .to(Room.MESSAGE)
+      .emit('message', { data: 'The subscriber message' });
+
+    await onMessagePromise2;
+    await onMessagePromise3;
+    await onSubscriberMessagePromise;
+
+    admin2ClientSocket.disconnect();
+    admin3ClientSocket.disconnect();
+    subscriberSocket.disconnect();
+  });
+
+  it('should throw an error when socket array is empty', async () => {
+    const originalGetNotificationSocket = gateway.getNotificationSockets;
+
+    jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce([]);
+
+    await expect(
+      gateway.joinNotificationSockets('sessionId', Room.MESSAGE),
+    ).rejects.toThrow('No notification sockets found!');
+
+    expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
+    gateway.getNotificationSockets = originalGetNotificationSocket;
+  });
+
+  it('should throw an error with empty sessionId', async () => {
+    await expect(
+      gateway.joinNotificationSockets('', Room.MESSAGE),
+    ).rejects.toThrow('SessionId is required!');
+  });
+
+  it('should throw an error with empty sessionId', async () => {
+    await expect(gateway.getNotificationSockets('')).rejects.toThrow(
+      'SessionId is required!',
+    );
   });
 });
