@@ -21,7 +21,7 @@ export const useCount = <TE extends THook["entity"]>(
       { count: number },
       Error,
       { count: number },
-      [QueryType, EntityType, unknown]
+      [QueryType, EntityType, string]
     >,
     "queryFn"
   >,
