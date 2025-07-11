@@ -35,7 +35,8 @@ export const useInfiniteFind = <
       string[],
       Error,
       string[],
-      [QueryType, EntityType, any]
+      TBasic[],
+      [QueryType, EntityType, string]
     >,
     "queryFn" | "onSuccess"
   > & { onSuccess?: (result: TBasic[]) => void },

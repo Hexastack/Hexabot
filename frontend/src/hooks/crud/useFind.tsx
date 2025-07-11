@@ -74,7 +74,7 @@ export const useFind = <
 
       return result;
     },
-    queryKey: [QueryType.collection, entity, normalizedParams],
+    queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
     onSuccess: (ids) => {
       if (onSuccess) {
         onSuccess(
