@@ -108,8 +108,10 @@ export class TranslationController extends BaseController<Translation> {
         {} as { [key: string]: string },
       );
     // Scan Blocks
-    let strings = await this.translationService.getAllBlockStrings();
-    const settingStrings = await this.translationService.getSettingStrings();
+    let strings = (await this.translationService.getAllBlockStrings()).flat();
+    const settingStrings = (
+      await this.translationService.getSettingStrings()
+    ).flat();
     // Scan global settings
     strings = strings.concat(settingStrings);
     // Filter unique and not empty messages
