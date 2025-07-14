@@ -270,6 +270,38 @@ describe('BaseNlpHelper', () => {
       ]);
     });
 
+    it('should correctly match keywords with French accents (Unicode characters) and return accurate start and end indices', () => {
+      const entity: NlpEntityFull = {
+        name: 'items',
+        values: [{ value: 'key', expressions: ['clé', 'porte-clés'] }],
+      } as any;
+      const result = helper.extractKeywordBasedSlots(
+        'il a perdu son porte-clés',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'items',
+          value: 'key',
+          start: 15,
+          end: 25,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should not match partial keywords and return an empty result', () => {
+      const entity: NlpEntityFull = {
+        name: 'items',
+        values: [{ value: 'key', expressions: ['clé', 'porte-clés'] }],
+      } as any;
+      const result = helper.extractKeywordBasedSlots(
+        'Dieu est clément',
+        entity,
+      );
+      expect(result).toEqual([]);
+    });
+
     it('should return empty array if no values present', () => {
       const result = helper.extractKeywordBasedSlots('anything', {
         name: 'empty',
