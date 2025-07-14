@@ -226,6 +226,11 @@ export default abstract class BaseNlpHelper<
     project?: string,
   ): Promise<NLU.ParseEntities>;
 
+  private buildUnicodeRegexExpression(term: string): RegExp {
+    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|\\P{L})${escapedTerm}(?=\\P{L}|$)`, 'gu');
+  }
+
   /**
    * Finds entities in a given text based on their values and synonyms.
    *
@@ -252,21 +257,24 @@ export default abstract class BaseNlpHelper<
         const allValues = [value, ...expressions];
 
         // Filter the terms that are found in the text
-        return allValues
-          .flatMap((term) => {
-            const regex = new RegExp(`\\b${term}\\b`, 'g');
-            const matches = [...text.matchAll(regex)];
+        return allValues.flatMap((term) => {
+          const regex = this.buildUnicodeRegexExpression(term);
+          const matches = [...text.matchAll(regex)];
 
-            // Map matches to FoundEntity format
-            return matches.map((match) => ({
-              entity: entity.name,
-              value,
-              start: match.index!,
-              end: match.index! + term.length,
-              confidence: 1,
-            }));
-          })
-          .shift();
+          // Map matches to FoundEntity format
+          return matches
+            .map((match) => {
+              const prefixLength = match[1]?.length ?? 0;
+              return {
+                entity: entity.name,
+                value,
+                start: match.index! + prefixLength,
+                end: match.index! + prefixLength + term.length,
+                confidence: 1,
+              };
+            })
+            .shift();
+        });
       })
       .filter((v) => !!v) || []) as NLU.ParseEntity[];
   }

@@ -221,7 +221,7 @@ describe('BaseNlpHelper', () => {
   });
 
   describe('extractKeywordBasedSlots', () => {
-    it('should return matches for exact keywords and synonyms', () => {
+    it('should return matches for keywords and synonyms in English using Latin script', () => {
       const entity: NlpEntityFull = {
         name: 'color',
         values: [
@@ -247,6 +247,24 @@ describe('BaseNlpHelper', () => {
           value: 'green',
           start: 21,
           end: 28,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should return matches for keywords in Arabic using non-Latin Unicode script', () => {
+      const entity: NlpEntityFull = {
+        name: 'color',
+        values: [{ value: 'blue', expressions: ['أزرق', 'ازرق', 'زرقاء'] }],
+      } as any;
+
+      const result = helper.extractKeywordBasedSlots('السماء زرقاء', entity);
+      expect(result).toEqual([
+        {
+          entity: 'color',
+          value: 'blue',
+          start: 7,
+          end: 12,
           confidence: 1,
         },
       ]);
