@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import escapeRegExp from 'lodash/escapeRegExp';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -227,8 +228,8 @@ export default abstract class BaseNlpHelper<
   ): Promise<NLU.ParseEntities>;
 
   private buildUnicodeRegexExpression(term: string): RegExp {
-    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return new RegExp(`(^|\\P{L})(${escapedTerm})(?=\\P{L}|$)`, 'gu');
+    const escapedTerm = escapeRegExp(term);
+    return new RegExp(`(?<=^|\\P{L})(${escapedTerm})(?=\\P{L}|$)`, 'gu');
   }
 
   /**
@@ -263,16 +264,13 @@ export default abstract class BaseNlpHelper<
 
           // Map matches to FoundEntity format
           return matches
-            .map((match) => {
-              const prefixLength = match[1]?.length ?? 0;
-              return {
-                entity: entity.name,
-                value,
-                start: match.index! + prefixLength,
-                end: match.index! + prefixLength + term.length,
-                confidence: 1,
-              };
-            })
+            .map((match) => ({
+              entity: entity.name,
+              value,
+              start: match.index!,
+              end: match.index! + term.length,
+              confidence: 1,
+            }))
             .shift();
         });
       })
