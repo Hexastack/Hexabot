@@ -290,6 +290,22 @@ describe('BaseNlpHelper', () => {
       ]);
     });
 
+    it('should not return matches when expressions are not bounded by whitespace (e.g., surrounded by quotes)', () => {
+      const entity: NlpEntityFull = {
+        name: 'color',
+        values: [
+          { value: 'blue', expressions: ['azure', 'navy'] },
+          { value: 'green', expressions: ['emerald', 'lime'] },
+        ],
+      } as any;
+
+      const result = helper.extractKeywordBasedSlots(
+        `The sky is "azure" and "emerald"`,
+        entity,
+      );
+      expect(result).toEqual([]);
+    });
+
     it('should not match partial keywords and return an empty result', () => {
       const entity: NlpEntityFull = {
         name: 'items',
