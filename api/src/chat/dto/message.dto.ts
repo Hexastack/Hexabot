@@ -11,17 +11,18 @@ import {
   IsBoolean,
   IsNotEmpty,
   IsObject,
-  IsString,
   IsOptional,
+  IsString,
 } from 'class-validator';
 
+import { Validate } from '@/utils/decorators/validate.decorator';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
   StdIncomingMessage,
   StdOutgoingMessage,
+  validMessageTextSchema,
 } from '../schemas/types/message';
-import { IsValidMessageText } from '../validation-rules/is-valid-message-text';
 
 export class MessageCreateDto {
   @ApiProperty({ description: 'Message id', type: String })
@@ -55,7 +56,7 @@ export class MessageCreateDto {
   @ApiProperty({ description: 'Message', type: Object })
   @IsObject()
   @IsNotEmpty()
-  @IsValidMessageText({ message: 'Message should have text property' })
+  @Validate(validMessageTextSchema)
   message: StdOutgoingMessage | StdIncomingMessage;
 
   @ApiPropertyOptional({ description: 'Message is read', type: Boolean })
