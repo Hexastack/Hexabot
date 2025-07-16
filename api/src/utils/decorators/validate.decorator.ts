@@ -28,12 +28,13 @@ export const Validate =
           return buildZodSchemaValidator(schema)(data);
         },
         defaultMessage({ value, property }: ValidationArguments) {
-          return (
-            schema
-              ?.safeParse?.(value)
-              ?.error?.errors.map((e) => `${property}: ${e.message}`)
-              .join(', ') || 'Validation failed'
-          );
+          const { error, success } = schema.safeParse(value);
+          if (!success && error?.errors) {
+            return error.errors
+              .map((e) => `${property}: ${e.message}`)
+              .join(', ');
+          }
+          return `${property}: Validation failed`;
         },
       },
     });
