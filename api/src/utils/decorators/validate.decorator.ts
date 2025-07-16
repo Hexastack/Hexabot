@@ -34,6 +34,7 @@ export const Validate =
               .map((e) => `${property}: ${e.message}`)
               .join(', ');
           }
+
           return `${property}: Validation failed`;
         },
       },
