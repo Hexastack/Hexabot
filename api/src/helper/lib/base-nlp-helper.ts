@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import escapeRegExp from 'lodash/escapeRegExp';
+import { escapeRegExp } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -229,7 +229,7 @@ export default abstract class BaseNlpHelper<
 
   private buildUnicodeRegexExpression(term: string): RegExp {
     const escapedTerm = escapeRegExp(term);
-    return new RegExp(`(?<=^|\\s)(${escapedTerm})(?=\\s|$)`, 'gu');
+    return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gu');
   }
 
   /**
@@ -258,21 +258,21 @@ export default abstract class BaseNlpHelper<
         const allValues = [value, ...expressions];
 
         // Filter the terms that are found in the text
-        return allValues.flatMap((term) => {
-          const regex = this.buildUnicodeRegexExpression(term);
-          const matches = [...text.matchAll(regex)];
+        return allValues
+          .flatMap((term) => {
+            const regex = this.buildUnicodeRegexExpression(term);
+            const matches = [...text.matchAll(regex)];
 
-          // Map matches to FoundEntity format
-          return matches
-            .map((match) => ({
+            // Map matches to FoundEntity format
+            return matches.map((match) => ({
               entity: entity.name,
               value,
               start: match.index!,
               end: match.index! + term.length,
               confidence: 1,
-            }))
-            .shift();
-        });
+            }));
+          })
+          .shift();
       })
       .filter((v) => !!v) || []) as NLU.ParseEntity[];
   }
@@ -305,7 +305,10 @@ export default abstract class BaseNlpHelper<
         let regex: RegExp;
         try {
           const shouldWrap = nlpValue.metadata?.wordBoundary;
-          regex = new RegExp(shouldWrap ? `\\b${pattern}\\b` : pattern, 'gi');
+          regex = new RegExp(
+            shouldWrap ? `(?<!\\p{L})${pattern}(?!\\p{L})` : pattern,
+            'gui',
+          );
         } catch {
           this.logger.error('Invalid NLP regex pattern');
           return [];

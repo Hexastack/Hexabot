@@ -290,7 +290,7 @@ describe('BaseNlpHelper', () => {
       ]);
     });
 
-    it('should not return matches when expressions are not bounded by whitespace (e.g., surrounded by quotes)', () => {
+    it('should return matches when expressions are not bounded by whitespace (e.g., surrounded by quotes)', () => {
       const entity: NlpEntityFull = {
         name: 'color',
         values: [
@@ -303,7 +303,22 @@ describe('BaseNlpHelper', () => {
         `The sky is "azure" and "emerald"`,
         entity,
       );
-      expect(result).toEqual([]);
+      expect(result).toEqual([
+        {
+          entity: 'color',
+          value: 'blue',
+          start: 12,
+          end: 17,
+          confidence: 1,
+        },
+        {
+          entity: 'color',
+          value: 'green',
+          start: 24,
+          end: 31,
+          confidence: 1,
+        },
+      ]);
     });
 
     it('should not match partial keywords and return an empty result', () => {
@@ -390,6 +405,120 @@ describe('BaseNlpHelper', () => {
           value: 'hexbot',
           start: 11,
           end: 18,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match varied forms using a regex pattern with Unicode characters', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'endommagé',
+            metadata: {
+              pattern: 'endommag[ée](e|é|s|es)?',
+              wordBoundary: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'clé USB est endommagée',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'endommagé',
+          value: 'endommagée',
+          start: 12,
+          end: 22,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match words followed by special characters using a Unicode-aware regex pattern', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: {
+              pattern: 'endommag[ée](e|é|s|es)?',
+              wordBoundary: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'comment réparer un clé USB endommagée?',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'endommagée',
+          start: 27,
+          end: 37,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match Arabic word using a regex pattern with Unicode characters', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: { pattern: 'معطب', wordBoundary: true },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'هذا الحاسوب معطب',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'معطب',
+          start: 12,
+          end: 16,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match Arabic word with optional definite article followed by special characters using a Unicode-aware regex pattern', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: { pattern: '(ال)?عطب', wordBoundary: true },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'كيف يمكن إصلاح هذا العطب؟',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'العطب',
+          start: 19,
+          end: 24,
           confidence: 1,
         },
       ]);
