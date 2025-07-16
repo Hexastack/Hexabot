@@ -13,6 +13,8 @@ import {
 } from 'class-validator';
 import { ZodType } from 'zod';
 
+import { buildZodSchemaValidator } from '../helpers/zod-validation';
+
 export const Validate =
   (schema: ZodType, validationOptions?: ValidationOptions) =>
   (object: object, propertyName: string) => {
@@ -23,11 +25,7 @@ export const Validate =
       constraints: [],
       validator: {
         validate(data: unknown, _validationArguments?: ValidationArguments) {
-          if (Array.isArray(data)) {
-            return data.every((datum) => schema.safeParse(datum).success);
-          }
-
-          return schema.safeParse(data).success;
+          return buildZodSchemaValidator(schema)(data);
         },
         defaultMessage({ value, property }: ValidationArguments) {
           return (
