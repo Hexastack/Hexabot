@@ -29,11 +29,11 @@ export const Validate =
 
           return schema.safeParse(data).success;
         },
-        defaultMessage(args: ValidationArguments) {
+        defaultMessage({ value, property }: ValidationArguments) {
           return (
             schema
-              ?.safeParse?.(args.value)
-              ?.error?.errors.map((e) => e.message)
+              ?.safeParse?.(value)
+              ?.error?.errors.map((e) => `${property}: ${e.message}`)
               .join(', ') || 'Validation failed'
           );
         },

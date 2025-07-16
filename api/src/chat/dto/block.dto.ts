@@ -42,7 +42,7 @@ export class BlockCreateDto {
 
   @ApiPropertyOptional({ description: 'Block patterns', type: Array })
   @IsOptional()
-  @Validate(patternSchema, { message: 'Patterns are invalid' })
+  @Validate(patternSchema)
   patterns?: Pattern[] = [];
 
   @ApiPropertyOptional({
@@ -73,12 +73,12 @@ export class BlockCreateDto {
   @ApiPropertyOptional({ description: 'Block options', type: Object })
   @IsOptional()
   @IsObject()
-  @Validate(BlockOptionsSchema, { message: 'Options are invalid' })
+  @Validate(BlockOptionsSchema)
   options?: BlockOptions;
 
   @ApiProperty({ description: 'Block message', type: Object })
   @IsNotEmpty()
-  @Validate(blockMessageObjectSchema, { message: 'Message is invalid' })
+  @Validate(blockMessageObjectSchema)
   message: BlockMessage;
 
   @ApiPropertyOptional({ description: 'next blocks', type: Array })
@@ -114,7 +114,7 @@ export class BlockCreateDto {
     type: Array,
   })
   @IsOptional()
-  @Validate(captureVarSchema, { message: 'Capture vars are invalid' })
+  @Validate(captureVarSchema)
   capture_vars?: CaptureVar[];
 
   @ApiProperty({
@@ -122,7 +122,7 @@ export class BlockCreateDto {
     type: Object,
   })
   @IsNotEmpty()
-  @Validate(positionSchema, { message: 'Position is invalid' })
+  @Validate(positionSchema)
   position: Position;
 }
 
@@ -137,7 +137,7 @@ export class BlockUpdateDto extends PartialType(
 ) {
   @ApiPropertyOptional({ description: 'Block patterns', type: Array })
   @IsOptional()
-  @Validate(patternSchema, { message: 'Patterns list is invalid' })
+  @Validate(patternSchema)
   patterns?: Pattern[];
 
   @ApiPropertyOptional({
