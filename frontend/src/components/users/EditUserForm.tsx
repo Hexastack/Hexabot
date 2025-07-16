@@ -34,7 +34,7 @@ export const EditUserForm: FC<ComponentFormProps<IUser, IRole[]>> = ({
   const { mutate: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
       rest.onError?.();
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       rest.onSuccess?.();

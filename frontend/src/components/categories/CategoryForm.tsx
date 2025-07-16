@@ -32,7 +32,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: ({ id }: ICategory) => {
       rest.onSuccess?.();
