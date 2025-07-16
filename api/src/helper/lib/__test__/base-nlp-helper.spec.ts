@@ -415,7 +415,7 @@ describe('BaseNlpHelper', () => {
         name: 'state',
         values: [
           {
-            value: 'endommagé',
+            value: 'damage',
             metadata: {
               pattern: 'endommag[ée](e|é|s|es)?',
               wordBoundary: true,
@@ -431,7 +431,7 @@ describe('BaseNlpHelper', () => {
       expect(result).toEqual([
         {
           entity: 'state',
-          canonicalValue: 'endommagé',
+          canonicalValue: 'damage',
           value: 'endommagée',
           start: 12,
           end: 22,
