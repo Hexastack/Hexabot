@@ -9,7 +9,6 @@
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
-import { z } from 'zod';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -38,7 +37,7 @@ export class BlockStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    validate: buildZodSchemaValidator(z.array(patternSchema)),
+    validate: buildZodSchemaValidator(patternSchema),
     default: [],
   })
   patterns: Pattern[];
@@ -114,7 +113,7 @@ export class BlockStub extends BaseSchema {
 
   @Prop({
     type: Object,
-    validate: buildZodSchemaValidator(z.array(captureVarSchema)),
+    validate: buildZodSchemaValidator(captureVarSchema),
     default: [],
   })
   capture_vars: CaptureVar[];
