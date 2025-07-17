@@ -226,7 +226,19 @@ export default abstract class BaseNlpHelper<
     threshold?: boolean,
     project?: string,
   ): Promise<NLU.ParseEntities>;
-
+  /**
+   * Builds a Unicode-aware regular expression to match a term as a whole word in NLU samples.
+   *
+   * This method uses Unicode property escapes and lookbehind/lookahead to ensure the term is not part of a larger word,
+   * making it robust for non-Latin scripts (e.g., Arabic, Cyrillic, accented characters).
+   *
+   * @param term - The keyword or expression to match literally in the text.
+   * @returns A RegExp that matches the term as a whole word, using Unicode boundaries.
+   *
+   * @notes
+   * - The returned RegExp uses the 'gu' flags (global, unicode).
+   * - The term is escaped to avoid regex injection.
+   */
   private buildUnicodeRegexExpression(term: string): RegExp {
     const escapedTerm = escapeRegExp(term);
     return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gu');
