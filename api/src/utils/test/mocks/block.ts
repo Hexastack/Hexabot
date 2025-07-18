@@ -47,7 +47,7 @@ const blockListOptions: BlockOptions = {
       },
     ],
     limit: 2,
-    entity: 1,
+    entity: '1',
   },
 };
 
@@ -67,7 +67,7 @@ const blockCarouselOptions: BlockOptions = {
       },
     ],
     limit: 3,
-    entity: 1,
+    entity: '1',
   },
 };
 
