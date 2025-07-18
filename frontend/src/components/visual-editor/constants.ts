@@ -96,7 +96,6 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
     content: {
       display: OutgoingMessageFormat.list,
       limit: 2,
-      entity: null,
       fields: {
         title: "title",
         subtitle: "",
