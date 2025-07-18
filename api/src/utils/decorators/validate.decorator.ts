@@ -7,12 +7,12 @@
  */
 
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { ZodType } from 'zod';
+import { ZodArray, ZodType } from 'zod';
 
 import { buildZodSchemaValidator } from '../helpers/zod-validation';
 
 export const Validate =
-  (schema: ZodType, validationOptions?: ValidationOptions) =>
+  (schema: ZodType | ZodArray<any>, validationOptions?: ValidationOptions) =>
   (object: object, propertyName: string) => {
     registerDecorator({
       target: object.constructor,

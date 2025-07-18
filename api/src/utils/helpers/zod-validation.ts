@@ -6,10 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { array, ParseParams, ZodSchema } from 'zod';
+import { ParseParams, ZodArray, ZodSchema } from 'zod';
 
 export const buildZodSchemaValidator =
-  <T>(schema: ZodSchema<T>, params?: Partial<ParseParams>) =>
+  <T>(schema: ZodSchema<T> | ZodArray<any>, params?: Partial<ParseParams>) =>
   (data: unknown) =>
-    (Array.isArray(data) ? array(schema) : schema).safeParse(data, params)
-      .success;
+    schema.safeParse(data, params).success;

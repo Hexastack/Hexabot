@@ -20,6 +20,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { z } from 'zod';
 
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { DtoConfig } from '@/utils/types/dto.types';
@@ -42,7 +43,7 @@ export class BlockCreateDto {
 
   @ApiPropertyOptional({ description: 'Block patterns', type: Array })
   @IsOptional()
-  @Validate(patternSchema)
+  @Validate(z.array(patternSchema))
   patterns?: Pattern[] = [];
 
   @ApiPropertyOptional({
@@ -114,7 +115,7 @@ export class BlockCreateDto {
     type: Array,
   })
   @IsOptional()
-  @Validate(captureVarSchema)
+  @Validate(z.array(captureVarSchema))
   capture_vars?: CaptureVar[];
 
   @ApiProperty({
@@ -137,7 +138,7 @@ export class BlockUpdateDto extends PartialType(
 ) {
   @ApiPropertyOptional({ description: 'Block patterns', type: Array })
   @IsOptional()
-  @Validate(patternSchema)
+  @Validate(z.array(patternSchema))
   patterns?: Pattern[];
 
   @ApiPropertyOptional({
