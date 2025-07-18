@@ -332,7 +332,7 @@ export class BotService {
       event.getMessageType() === IncomingMessageType.message &&
       !!fallbackOptions?.active &&
       maxAttempts > 0 &&
-      convo.context.attempt + 1 < maxAttempts
+      convo.context.attempt <= maxAttempts
     );
   }
 
