@@ -327,10 +327,12 @@ export class BotService {
     event: EventWrapper<any, any>,
   ): boolean {
     const fallbackOptions = this.blockService.getFallbackOptions(convo.current);
+    const maxAttempts = fallbackOptions?.max_attempts ?? 0;
     return (
       event.getMessageType() === IncomingMessageType.message &&
       !!fallbackOptions?.active &&
-      convo.context.attempt < (fallbackOptions?.max_attempts ?? 0)
+      maxAttempts > 0 &&
+      convo.context.attempt <= maxAttempts
     );
   }
 

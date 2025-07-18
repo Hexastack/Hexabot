@@ -460,6 +460,27 @@ describe('BotService', () => {
       jest.resetAllMocks();
     });
 
+    it('should return true when fallback is active and max attempts not exceeded', () => {
+      const result = botService.shouldAttemptLocalFallback(
+        {
+          ...conversationGetStarted,
+          context: { ...conversationGetStarted.context, attempt: 1 },
+          current: {
+            ...conversationGetStarted.current,
+            options: {
+              fallback: {
+                active: true,
+                max_attempts: 1,
+                message: ['Please pick an option.'],
+              },
+            },
+          },
+        },
+        mockEvent,
+      );
+      expect(result).toBe(true);
+    });
+
     it('should return true when fallback is active and max attempts not reached', () => {
       const result = botService.shouldAttemptLocalFallback(
         {
@@ -506,7 +527,7 @@ describe('BotService', () => {
       const result = botService.shouldAttemptLocalFallback(
         {
           ...conversationGetStarted,
-          context: { ...conversationGetStarted.context, attempt: 3 },
+          context: { ...conversationGetStarted.context, attempt: 4 },
           current: {
             ...conversationGetStarted.current,
             options: {
