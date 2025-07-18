@@ -54,7 +54,7 @@ export const Categories = () => {
   );
   const options = {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       setSelectedCategories([]);

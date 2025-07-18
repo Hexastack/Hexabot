@@ -163,7 +163,7 @@ export const ContentForm: FC<ComponentFormProps<IContent, IContentType>> = ({
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       rest.onSuccess?.();

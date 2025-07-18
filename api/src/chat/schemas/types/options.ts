@@ -23,7 +23,7 @@ export const contentOptionsSchema = z.object({
   buttons: z.array(buttonSchema),
   limit: z.number().finite(),
   query: z.any().optional(),
-  entity: z.union([z.string(), z.number().finite()]).optional(),
+  entity: z.string().optional(),
   top_element_style: z.enum(['large', 'compact']).optional(),
 });
 

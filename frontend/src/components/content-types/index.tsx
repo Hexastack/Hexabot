@@ -56,7 +56,7 @@ export const ContentTypes = () => {
       toast.success(t("message.item_delete_success"));
     },
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
   });
   const actionColumns = useActionColumns<IContentType>(

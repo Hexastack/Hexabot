@@ -76,7 +76,7 @@ export interface ContentOptions {
   buttons: AnyButton[];
   limit: number;
   query?: any; // Waterline model criteria
-  entity?: string | number | null; // ContentTypeID
+  entity?: string | null; // ContentTypeID
   top_element_style?: "large" | "compact";
 }
 

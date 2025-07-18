@@ -17,11 +17,14 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
+import { Validate } from '@/utils/decorators/validate.decorator';
 import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
-import { SubscriberChannelData } from '../schemas/types/channel';
-import { IsChannelData } from '../validation-rules/is-channel-data';
+import {
+  channelDataSchema,
+  SubscriberChannelData,
+} from '../schemas/types/channel';
 
 export class SubscriberCreateDto {
   @ApiProperty({ description: 'Subscriber first name', type: String })
@@ -110,7 +113,7 @@ export class SubscriberCreateDto {
     type: Object,
   })
   @IsNotEmpty()
-  @IsChannelData()
+  @Validate(channelDataSchema)
   channel: SubscriberChannelData<ChannelName>;
 
   @ApiPropertyOptional({

@@ -65,7 +65,7 @@ export const Contents = () => {
   );
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       toast.success(t("message.success_save"));
