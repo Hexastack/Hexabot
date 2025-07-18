@@ -221,7 +221,7 @@ describe('BaseNlpHelper', () => {
   });
 
   describe('extractKeywordBasedSlots', () => {
-    it('should return matches for exact keywords and synonyms', () => {
+    it('should return matches for keywords and synonyms in English using Latin script', () => {
       const entity: NlpEntityFull = {
         name: 'color',
         values: [
@@ -250,6 +250,87 @@ describe('BaseNlpHelper', () => {
           confidence: 1,
         },
       ]);
+    });
+
+    it('should return matches for keywords in Arabic using non-Latin Unicode script', () => {
+      const entity: NlpEntityFull = {
+        name: 'color',
+        values: [{ value: 'blue', expressions: ['أزرق', 'ازرق', 'زرقاء'] }],
+      } as any;
+
+      const result = helper.extractKeywordBasedSlots('السماء زرقاء', entity);
+      expect(result).toEqual([
+        {
+          entity: 'color',
+          value: 'blue',
+          start: 7,
+          end: 12,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should correctly match keywords with French accents (Unicode characters) and return accurate start and end indices', () => {
+      const entity: NlpEntityFull = {
+        name: 'items',
+        values: [{ value: 'key', expressions: ['clé', 'porte-clés'] }],
+      } as any;
+      const result = helper.extractKeywordBasedSlots(
+        'il a perdu son porte-clés',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'items',
+          value: 'key',
+          start: 15,
+          end: 25,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should return matches when expressions are not bounded by whitespace (e.g., surrounded by quotes)', () => {
+      const entity: NlpEntityFull = {
+        name: 'color',
+        values: [
+          { value: 'blue', expressions: ['azure', 'navy'] },
+          { value: 'green', expressions: ['emerald', 'lime'] },
+        ],
+      } as any;
+
+      const result = helper.extractKeywordBasedSlots(
+        `The sky is "azure" and "emerald"`,
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'color',
+          value: 'blue',
+          start: 12,
+          end: 17,
+          confidence: 1,
+        },
+        {
+          entity: 'color',
+          value: 'green',
+          start: 24,
+          end: 31,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should not match partial keywords and return an empty result', () => {
+      const entity: NlpEntityFull = {
+        name: 'items',
+        values: [{ value: 'key', expressions: ['clé', 'porte-clés'] }],
+      } as any;
+      const result = helper.extractKeywordBasedSlots(
+        'Dieu est clément',
+        entity,
+      );
+      expect(result).toEqual([]);
     });
 
     it('should return empty array if no values present', () => {
@@ -324,6 +405,120 @@ describe('BaseNlpHelper', () => {
           value: 'hexbot',
           start: 11,
           end: 18,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match varied forms using a regex pattern with Unicode characters', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: {
+              pattern: 'endommag[ée](e|é|s|es)?',
+              wordBoundary: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'clé USB est endommagée',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'endommagée',
+          start: 12,
+          end: 22,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match words followed by special characters using a Unicode-aware regex pattern', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: {
+              pattern: 'endommag[ée](e|é|s|es)?',
+              wordBoundary: true,
+            },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'comment réparer un clé USB endommagée?',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'endommagée',
+          start: 27,
+          end: 37,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match Arabic word using a regex pattern with Unicode characters', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: { pattern: 'معطب', wordBoundary: true },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'هذا الحاسوب معطب',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'معطب',
+          start: 12,
+          end: 16,
+          confidence: 1,
+        },
+      ]);
+    });
+
+    it('should match Arabic word with optional definite article followed by special characters using a Unicode-aware regex pattern', () => {
+      const entity: NlpEntityFull = {
+        name: 'state',
+        values: [
+          {
+            value: 'damage',
+            metadata: { pattern: '(ال)?عطب', wordBoundary: true },
+          },
+        ],
+      } as NlpEntityFull;
+
+      const result = helper.extractPatternBasedSlots(
+        'كيف يمكن إصلاح هذا العطب؟',
+        entity,
+      );
+      expect(result).toEqual([
+        {
+          entity: 'state',
+          canonicalValue: 'damage',
+          value: 'العطب',
+          start: 19,
+          end: 24,
           confidence: 1,
         },
       ]);
