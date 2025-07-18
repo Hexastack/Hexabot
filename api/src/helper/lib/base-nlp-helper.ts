@@ -241,7 +241,7 @@ export default abstract class BaseNlpHelper<
    */
   private buildUnicodeRegexExpression(term: string): RegExp {
     const escapedTerm = escapeRegExp(term);
-    return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gu');
+    return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gui');
   }
 
   /**
