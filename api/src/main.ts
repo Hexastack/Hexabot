@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ValidationPipe } from '@nestjs/common';
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import bodyParser from 'body-parser';
 import session from 'express-session';
@@ -21,7 +21,6 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
-import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
@@ -105,11 +104,23 @@ async function bootstrap() {
     app.useWebSocketAdapter(redisIoAdapter);
   }
 
-  process.on('uncaughtException', async (error) => {
-    if (error.stack?.toLowerCase().includes('smtp')) {
-      const logger = await app.resolve(LoggerService);
-      logger.error('SMTP error', error.stack);
-    } else throw error;
+  /**
+   * Global handler for uncaught exceptions.
+   *
+   * This handler logs all uncaught exceptions directly to stderr (console.error)
+   * with a timestamp and the error stack (or error object if no stack is present).
+   *
+   * The log format is:
+   *   [timestamp] Uncaught Exception <error stack or error>
+   *
+   * NOTE: Do NOT include async calls inside this handler. The Node.js process may be in an unstable state,
+   * and async operations are discouraged and may not complete as expected.
+   *
+   * @see https://nodejs.org/api/process.html#event-uncaughtexception
+   */
+  const fatalLogger = new ConsoleLogger('UncaughtException');
+  process.on('uncaughtException', (error) => {
+    fatalLogger.error(error.stack || error.message || error);
   });
 
   if (!isProduction) {
