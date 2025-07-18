@@ -105,16 +105,16 @@ async function bootstrap() {
   }
 
   /**
-   * Global handler for uncaught exceptions.
+   * Global handler for uncaught exceptions in the Node.js process.
    *
-   * This handler logs all uncaught exceptions directly to stderr (console.error)
-   * with a timestamp and the error stack (or error object if no stack is present).
+   * Logs all uncaught exceptions directly to stderr using ConsoleLogger,
    *
-   * The log format is:
-   *   [timestamp] Uncaught Exception <error stack or error>
+   * Format:
+   *   [timestamp] Uncaught Exception <error stack | error message | error object>
    *
-   * NOTE: Do NOT include async calls inside this handler. The Node.js process may be in an unstable state,
-   * and async operations are discouraged and may not complete as expected.
+   * ⚠️  Do NOT perform any async operations here. The process may be unstable,
+   * and async code may not execute as expected. This handler is for last-resort
+   * synchronous logging only.
    *
    * @see https://nodejs.org/api/process.html#event-uncaughtexception
    */
