@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -24,4 +24,24 @@ export type TBuildParamProps<T> = {
 
 export type TBuildInitialParamProps<T> = {
   initialParams?: { [key in keyof T]?: T[key] }[];
+};
+
+export interface SearchHookOptions {
+  syncUrl?: boolean;
+}
+
+export type OrParam<T> = {
+  [K in TFilterStringFields<T>]?: { contains: string };
+};
+
+export type IlikeParam<T> = {
+  [K in TFilterStringFields<T>]?: { contains: string };
+};
+
+export type EqParam<T> = { [key in keyof T]?: T[key] | undefined };
+
+export type NeqParam<T> = { [key in keyof T]?: T[key] | undefined };
+
+export type SearchPayload<T> = {
+  where: { or?: OrParam<T>[] } & IlikeParam<T> & EqParam<T> & NeqParam<T>;
 };

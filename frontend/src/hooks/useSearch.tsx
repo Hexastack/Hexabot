@@ -9,6 +9,12 @@
 import { ChangeEvent, useState } from "react";
 
 import {
+  EqParam,
+  IlikeParam,
+  NeqParam,
+  OrParam,
+  SearchHookOptions,
+  SearchPayload,
   TBuildInitialParamProps,
   TBuildParamProps,
   TParamItem,
@@ -19,7 +25,7 @@ import { useUrlQueryParam } from "./useUrlQueryParam";
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
     [field]: { contains: searchText },
-  })),
+  })) as OrParam<T>[],
 });
 const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
   params?.reduce(
@@ -27,7 +33,7 @@ const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
       ...acc,
       [field]: { contains: searchText },
     }),
-    {},
+    {} as IlikeParam<T>,
   );
 const buildEqInitialParams = <T,>({
   initialParams,
@@ -37,7 +43,7 @@ const buildEqInitialParams = <T,>({
       ...acc,
       ...obj,
     }),
-    {},
+    {} as EqParam<T>,
   );
 const buildNeqInitialParams = <T,>({
   initialParams,
@@ -49,26 +55,15 @@ const buildNeqInitialParams = <T,>({
         "!=": Object.entries(obj)[0][1],
       },
     }),
-    {},
+    {} as NeqParam<T>,
   );
-
-interface SearchHookOptions {
-  syncUrl?: boolean;
-}
 
 export const useSearch = <T,>(
   params: TParamItem<T>,
-  options: SearchHookOptions = { syncUrl: false },
+  { syncUrl }: SearchHookOptions = { syncUrl: false },
 ) => {
-  const { syncUrl } = options;
   const [searchQuery, setSearchQuery] = useUrlQueryParam("search", "");
   const [search, setSearch] = useState<string>("");
-  const {
-    $eq: eqInitialParams,
-    $iLike: iLikeParams,
-    $neq: neqInitialParams,
-    $or: orParams,
-  } = params;
   const searchText = syncUrl ? searchQuery : search;
 
   return {
@@ -87,13 +82,13 @@ export const useSearch = <T,>(
     },
     searchPayload: {
       where: {
-        ...buildEqInitialParams({ initialParams: eqInitialParams }),
-        ...buildNeqInitialParams({ initialParams: neqInitialParams }),
+        ...buildEqInitialParams({ initialParams: params.$eq }),
+        ...buildNeqInitialParams({ initialParams: params.$neq }),
         ...(searchText?.length > 0 && {
-          ...buildOrParams({ params: orParams, searchText }),
-          ...buildILikeParams({ params: iLikeParams, searchText }),
+          ...buildOrParams({ params: params.$or, searchText }),
+          ...buildILikeParams({ params: params.$iLike, searchText }),
         }),
       },
-    },
+    } as SearchPayload<T>,
   };
 };
