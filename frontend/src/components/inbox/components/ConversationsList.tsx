@@ -20,6 +20,8 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { EntityType, RouterType } from "@/services/types";
+import { SearchPayload } from "@/types/search.types";
+import { ISubscriber } from "@/types/subscriber.types";
 import { normalizeDate } from "@/utils/date";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
@@ -29,7 +31,7 @@ import { AssignedTo } from "../types";
 
 export const SubscribersList = (props: {
   channels: string[];
-  searchPayload: any;
+  searchPayload: SearchPayload<ISubscriber>;
   assignedTo: AssignedTo;
 }) => {
   const router = useRouter();
@@ -38,7 +40,7 @@ export const SubscribersList = (props: {
   const { t, i18n } = useTranslate();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
-    useInfiniteLiveSubscribers(props);
+    useInfiniteLiveSubscribers<ISubscriber>(props);
   const handleLoadMore = debounce(() => {
     !isFetching && hasNextPage && fetchNextPage();
   }, 400);

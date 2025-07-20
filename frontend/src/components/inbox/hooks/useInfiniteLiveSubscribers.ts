@@ -14,13 +14,14 @@ import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQu
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
+import { SearchPayload } from "@/types/search.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { AssignedTo, SocketSubscriberEvents } from "../types";
 
-export const useInfiniteLiveSubscribers = (props: {
+export const useInfiniteLiveSubscribers = <T>(props: {
   channels: string[];
-  searchPayload: any;
+  searchPayload: SearchPayload<T>;
   assignedTo: AssignedTo;
 }) => {
   const { user } = useAuth();
