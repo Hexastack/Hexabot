@@ -85,9 +85,7 @@ export default function NlpSample() {
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload, searchText } = useSearch<
-    INlpSample & { patterns: NlpPattern[] }
-  >(
+  const { onSearch, searchPayload, searchText } = useSearch<INlpSample>(
     {
       $eq: [
         ...(type !== "all" ? [{ type }] : []),
