@@ -70,7 +70,7 @@ const AutoCompleteEntitySelect = <
   const idRef = useRef(generateId());
   const params = {
     where: {
-      or: [...(searchPayload.where.or || [])],
+      or: searchPayload.where?.or || [],
     },
   };
   const { data, isFetching, fetchNextPage } = useInfiniteFind(
