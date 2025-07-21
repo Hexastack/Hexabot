@@ -42,10 +42,16 @@ export type NeqParam<T> = {
   };
 };
 
-export type SearchPayload<T> = {
-  where: {
-    or?: (IlikeParam<T> | EqParam<T> | NeqParam<T>)[];
-  } & IlikeParam<T> &
-    EqParam<T> &
-    NeqParam<T>;
+export type SearchItem<T> = {
+  [K in keyof T]?:
+    | T[K]
+    | (T[K] extends string ? { contains?: T[K] } : undefined)
+    | {
+        "=!"?: T[K];
+      };
+};
+export type SearchPayload<T> = EqParam<T> & {
+  where?: {
+    or?: SearchItem<T>[];
+  } & SearchItem<T>;
 };
