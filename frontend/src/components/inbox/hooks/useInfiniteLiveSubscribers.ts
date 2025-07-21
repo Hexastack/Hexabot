@@ -34,7 +34,7 @@ export const useInfiniteLiveSubscribers = (props: {
       ...props.searchPayload.where,
       ...(props.channels.length > 0 && {
         or: [
-          ...(props.searchPayload.where.or || []),
+          ...(props.searchPayload.where?.or || []),
           ...props.channels.map((channel) => ({
             "channel.name": channel,
           })),
