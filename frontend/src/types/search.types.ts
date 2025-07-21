@@ -30,18 +30,22 @@ export interface SearchHookOptions {
   syncUrl?: boolean;
 }
 
-export type OrParam<T> = {
-  [K in TFilterStringFields<T>]?: { contains: string };
-};
-
 export type IlikeParam<T> = {
   [K in TFilterStringFields<T>]?: { contains: string };
 };
 
-export type EqParam<T> = { [key in keyof T]?: T[key] | undefined };
+export type EqParam<T> = { [key in keyof T]?: T[key] };
 
-export type NeqParam<T> = { [key in keyof T]?: T[key] | undefined };
+export type NeqParam<T> = {
+  [key in keyof T]?: {
+    "=!"?: T[key];
+  };
+};
 
 export type SearchPayload<T> = {
-  where: { or?: OrParam<T>[] } & IlikeParam<T> & EqParam<T> & NeqParam<T>;
+  where: {
+    or?: (IlikeParam<T> | EqParam<T> | NeqParam<T>)[];
+  } & IlikeParam<T> &
+    EqParam<T> &
+    NeqParam<T>;
 };

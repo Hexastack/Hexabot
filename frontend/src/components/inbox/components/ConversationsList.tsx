@@ -40,7 +40,7 @@ export const SubscribersList = (props: {
   const { t, i18n } = useTranslate();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
-    useInfiniteLiveSubscribers<ISubscriber>(props);
+    useInfiniteLiveSubscribers(props);
   const handleLoadMore = debounce(() => {
     !isFetching && hasNextPage && fetchNextPage();
   }, 400);

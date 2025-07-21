@@ -15,13 +15,14 @@ import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
+import { ISubscriber } from "@/types/subscriber.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { AssignedTo, SocketSubscriberEvents } from "../types";
 
-export const useInfiniteLiveSubscribers = <T>(props: {
+export const useInfiniteLiveSubscribers = (props: {
   channels: string[];
-  searchPayload: SearchPayload<T>;
+  searchPayload: SearchPayload<ISubscriber>;
   assignedTo: AssignedTo;
 }) => {
   const { user } = useAuth();
@@ -49,7 +50,7 @@ export const useInfiniteLiveSubscribers = <T>(props: {
           }
         : {}),
     },
-  };
+  } as SearchPayload<ISubscriber>;
   const {
     data,
     fetchNextPage,

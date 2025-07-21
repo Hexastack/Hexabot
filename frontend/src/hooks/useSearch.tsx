@@ -12,7 +12,6 @@ import {
   EqParam,
   IlikeParam,
   NeqParam,
-  OrParam,
   SearchHookOptions,
   SearchPayload,
   TBuildInitialParamProps,
@@ -25,7 +24,7 @@ import { useUrlQueryParam } from "./useUrlQueryParam";
 const buildOrParams = <T,>({ params, searchText }: TBuildParamProps<T>) => ({
   or: params?.map((field) => ({
     [field]: { contains: searchText },
-  })) as OrParam<T>[],
+  })) as IlikeParam<T>[],
 });
 const buildILikeParams = <T,>({ params, searchText }: TBuildParamProps<T>) =>
   params?.reduce(
