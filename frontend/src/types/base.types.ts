@@ -15,6 +15,7 @@ import {
   IBlock,
   IBlockAttributes,
   IBlockFull,
+  ICustomBlockSettingAttributes,
   ICustomBlockTemplate,
 } from "./block.types";
 import { ICategory, ICategoryAttributes } from "./category.types";
@@ -39,8 +40,8 @@ import {
   INlpEntityFull,
 } from "./nlp-entity.types";
 import {
-  INlpDatasetSampleAttributes,
   INlpSample,
+  INlpSampleAttributes,
   INlpSampleFull,
 } from "./nlp-sample.types";
 import {
@@ -59,6 +60,7 @@ import {
   IPermissionFull,
 } from "./permission.types";
 import { IRole, IRoleAttributes, IRoleFull } from "./role.types";
+import { SearchPayload } from "./search.types";
 import { ISetting, ISettingAttributes } from "./setting.types";
 import {
   ISubscriber,
@@ -149,7 +151,7 @@ export interface IEntityMapTypes {
     ICustomBlockTemplate
   >;
   [EntityType.CUSTOM_BLOCK_SETTINGS]: IEntityTypes<
-    ISettingAttributes,
+    ICustomBlockSettingAttributes,
     ISetting
   >;
   [EntityType.LABEL]: IEntityTypes<ILabelAttributes, ILabel, ILabelFull>;
@@ -170,7 +172,7 @@ export interface IEntityMapTypes {
     INlpEntityFull
   >;
   [EntityType.NLP_SAMPLE]: IEntityTypes<
-    INlpDatasetSampleAttributes,
+    INlpSampleAttributes,
     INlpSample,
     INlpSampleFull
   >;
@@ -247,8 +249,8 @@ export type THook<
   attributes: TType<TE>["attributes"];
 };
 
-export interface IFindConfigProps {
-  params?: any;
+export interface IFindConfigProps<T = unknown> {
+  params?: SearchPayload<T>;
   hasCount?: boolean;
   initialSortState?: GridSortModel;
   initialPaginationState?: GridPaginationModel;
