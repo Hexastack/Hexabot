@@ -11,7 +11,6 @@ import {
   ButtonType,
   FileType,
   OutgoingMessageFormat,
-  PayloadType,
   QuickReplyType,
   StdOutgoingListMessage,
 } from "@/types/message.types";
@@ -118,30 +117,6 @@ export const LIST_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
   },
   message: { elements: true } as unknown as StdOutgoingListMessage,
   starts_conversation: false,
-};
-
-export const CUSTOM_BLOCK_TEMPLATE: Partial<IBlockAttributes> = {
-  patterns: [
-    {
-      label: "User location",
-      value: "",
-      type: PayloadType.location,
-    },
-  ],
-  capture_vars: [],
-  options: {
-    typing: 0,
-    fallback: { active: false, max_attempts: 0, message: [] },
-  },
-  starts_conversation: false,
-  message: {
-    plugin: "storelocator",
-    args: {
-      fallback_msg: ["Sorry but no data is available for the moment :("],
-      max_results: 3,
-      btn_title: "Go !",
-    },
-  },
 };
 
 export const ZOOM_LEVEL = {
