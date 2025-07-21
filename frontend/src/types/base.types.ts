@@ -249,7 +249,7 @@ export type THook<
   attributes: TType<TE>["attributes"];
 };
 
-export interface IFindConfigProps<T = unknown> {
+export interface IFindConfigProps<T> {
   params?: SearchPayload<T>;
   hasCount?: boolean;
   initialSortState?: GridSortModel;
