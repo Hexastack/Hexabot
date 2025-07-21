@@ -9,12 +9,7 @@
 import { useQuery, UseQueryOptions } from "react-query";
 
 import { EntityType, Format, QueryType } from "@/services/types";
-import {
-  IBaseSchema,
-  IFindConfigProps,
-  POPULATE_BY_TYPE,
-  THook,
-} from "@/types/base.types";
+import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { usePagination } from "../usePagination";
@@ -25,13 +20,13 @@ import { useGetFromCache } from "./useGet";
 
 export const useFind = <
   TP extends THook["params"],
-  TAttr = THook<TP>["attributes"],
-  TBasic extends IBaseSchema = THook<TP>["basic"],
-  TFull extends IBaseSchema = THook<TP>["full"],
+  TAttr extends THook<TP>["attributes"],
+  TBasic extends THook<TP>["basic"],
+  TFull extends THook<TP>["full"],
   P = THook<TP>["populate"],
 >(
   { entity, format }: THook<TP>["params"],
-  config?: IFindConfigProps,
+  config?: IFindConfigProps<TAttr>,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
     "queryFn" | "queryKey" | "onSuccess"
