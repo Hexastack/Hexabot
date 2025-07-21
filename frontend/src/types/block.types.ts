@@ -139,6 +139,10 @@ export interface ICustomBlockTemplateAttributes {
   effects: string[];
 }
 
+export interface ICustomBlockSettingAttributes {
+  plugin?: string;
+}
+
 // @TODO : templates doe not contain base schema attributes
 export interface ICustomBlockTemplate
   extends IBaseSchema,

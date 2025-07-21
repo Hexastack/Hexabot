@@ -9,6 +9,7 @@
 import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { NlpPattern } from "./block.types";
 import { ILanguage } from "./language.types";
 import { INlpSampleEntity } from "./nlp-sample_entity.types";
 
@@ -24,6 +25,7 @@ export interface INlpSampleAttributes {
   type?: NlpSampleType;
   entities: string[];
   language: string | null;
+  patterns?: NlpPattern[];
 }
 
 export interface INlpSampleStub

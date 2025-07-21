@@ -46,7 +46,7 @@ export interface IAttachmentAttributes {
   location: string;
   url: string;
   channel?: Record<string, any>;
-  resourceRef: AttachmentResourceRef;
+  resourceRef: AttachmentResourceRef[];
   access: AttachmentAccess;
   createdByRef: AttachmentCreatedByRef;
   createdBy: string | null;
