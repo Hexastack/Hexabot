@@ -23,14 +23,11 @@ export const useUpload = <
   TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
-  options?: Omit<
-    TMutationOptions<
-      TBasic,
-      Error,
-      { file: File; resourceRef: AttachmentResourceRef },
-      TBasic
-    >,
-    "mutationFn" | "mutationKey"
+  options?: TMutationOptions<
+    TBasic,
+    Error,
+    { file: File; resourceRef: AttachmentResourceRef },
+    TBasic
   >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);

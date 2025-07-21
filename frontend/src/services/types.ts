@@ -82,9 +82,12 @@ export type TMutationOptions<
   TError = unknown,
   TVariables = void,
   TContext = unknown,
-> = UseMutationOptions<TData, TError, TVariables, TContext> & {
-  invalidate?: boolean;
-};
+> = Omit<
+  UseMutationOptions<TData, TError, TVariables, TContext> & {
+    invalidate?: boolean;
+  },
+  "mutationFn" | "mutationKey"
+>;
 
 export type TSetCacheProps<TData> = {
   id: string;
