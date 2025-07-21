@@ -20,7 +20,6 @@ import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
-import { TFilterStringFields } from "@/types/search.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import {
@@ -54,17 +53,10 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
             AttachmentResourceRef.ContentAttachment,
           ],
           ...searchPayload.where,
-          or: {
-            ...searchPayload.where.or,
-            ...(accept
-              ? accept
-                  .split(",")
-                  .map(
-                    (type) =>
-                      ({ type } as unknown as TFilterStringFields<IAttachment>),
-                  )
-              : undefined),
-          },
+          or: [
+            ...(searchPayload.where?.or || []),
+            ...(accept ? accept.split(",").map((type) => ({ type })) : []),
+          ],
         },
       },
     },
