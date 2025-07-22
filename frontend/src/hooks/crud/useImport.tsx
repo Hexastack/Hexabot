@@ -21,10 +21,7 @@ export const useImport = <
   TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
 >(
   entity: TE,
-  options: Omit<
-    TMutationOptions<TBasic[], Error, TAttr, TBasic[]>,
-    "mutationFn" | "mutationKey"
-  > = {},
+  options: TMutationOptions<TBasic[], Error, TAttr, TBasic[]> = {},
   params: Record<string, any> = {},
 ) => {
   const api = useEntityApiClient<TAttr, TBasic>(entity);

@@ -22,17 +22,14 @@ export const useUpdateMany = <
   TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
-  options?: Omit<
-    TMutationOptions<
-      string,
-      Error,
-      {
-        ids: string[];
-        payload: Partial<TAttr>;
-      },
-      TBasic
-    >,
-    "mutationFn" | "mutationKey"
+  options?: TMutationOptions<
+    string,
+    Error,
+    {
+      ids: string[];
+      payload: Partial<TAttr>;
+    },
+    TBasic
   >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);

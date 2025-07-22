@@ -24,14 +24,11 @@ export const useUpdate = <
   TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
-  options?: Omit<
-    TMutationOptions<
-      TBasic,
-      Error,
-      { id: string; params: Partial<TAttr> },
-      TBasic
-    >,
-    "mutationFn" | "mutationKey"
+  options?: TMutationOptions<
+    TBasic,
+    Error,
+    { id: string; params: Partial<TAttr> },
+    TBasic
   >,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
