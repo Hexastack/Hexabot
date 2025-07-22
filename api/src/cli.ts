@@ -6,17 +6,43 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { NestFactory } from '@nestjs/core';
 import moduleAlias from 'module-alias';
-import { CommandFactory } from 'nest-commander';
 
 moduleAlias.addAliases({
   '@': __dirname,
 });
 
 import { HexabotModule } from './app.module';
+import { LoggerService } from './logger/logger.service';
+import { MigrationCommand } from './migration/migration.command';
+
+const ALLOWED_COMMANDS = ['migration'];
 
 async function bootstrap() {
-  await CommandFactory.run(HexabotModule);
+  const [command, ...restArgs] = process.argv.slice(2);
+  const appContext = await NestFactory.createApplicationContext(HexabotModule, {
+    logger: false,
+  });
+  const logger = await appContext.resolve(LoggerService);
+
+  if (!ALLOWED_COMMANDS.includes(command)) {
+    if (!command) {
+      logger.error('No command provided.');
+    } else {
+      logger.error(`Unknown command '${command}'`);
+    }
+    process.exit(1);
+  } else if (command === 'migration') {
+    const migrationCommand = appContext.get(MigrationCommand);
+    try {
+      await migrationCommand.run(restArgs);
+    } catch (error) {
+      logger.error(`Migration command failed: ${error.message}`);
+      process.exit(1);
+    }
+  }
+  await appContext.close();
 }
 
 bootstrap();
