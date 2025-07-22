@@ -194,7 +194,16 @@ export abstract class BaseService<
     dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
     options?: TQueryOptions<Partial<U>>,
   ): Promise<T> {
-    return await this.repository.updateOne(criteria, dto, options);
+    try {
+      return await this.repository.updateOne(criteria, dto, options);
+    } catch (error) {
+      if (error instanceof MongoError && error.code === 11000) {
+        throw new ConflictException(
+          'Duplicate key error: element already exists',
+        );
+      }
+      throw error;
+    }
   }
 
   async updateMany(

@@ -41,7 +41,7 @@ export const MenuForm: FC<ComponentFormProps<MenuFormData>> = ({
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       rest.onSuccess?.();

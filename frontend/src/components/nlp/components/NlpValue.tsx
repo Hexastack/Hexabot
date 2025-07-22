@@ -63,7 +63,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   );
   const { mutate: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       refetchEntity();
@@ -72,7 +72,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   });
   const { mutate: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       toast.success(t("message.item_delete_success"));

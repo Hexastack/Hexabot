@@ -65,7 +65,7 @@ export const TranslationForm: FC<ComponentFormProps<ITranslation>> = ({
   const { mutate: updateTranslation } = useUpdate(EntityType.TRANSLATION, {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       rest.onSuccess?.();

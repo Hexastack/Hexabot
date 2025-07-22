@@ -35,7 +35,7 @@ export const OptionsForm = () => {
           fullWidth={false}
           defaultValue={block?.options?.typing || 0}
           label={t("label.typing_indicator")}
-          {...register("options.typing")}
+          {...register("options.typing", { valueAsNumber: true })}
           type="number"
         />
         <Typography component="span" display="inline-block" p={0.5}>

@@ -404,10 +404,10 @@ const attachmentBlockMessageSchema = z.object({
 // BlockMessage Schema
 export const blockMessageObjectSchema = z.union([
   textSchema,
-  pluginBlockMessageSchema,
   textBlockMessageSchema,
   buttonMessageSchema,
   quickReplyMessageSchema,
   listBlockMessageSchema,
   attachmentBlockMessageSchema,
+  pluginBlockMessageSchema,
 ]);

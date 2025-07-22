@@ -133,7 +133,6 @@ describe('ContentService', () => {
     });
 
     it('should get content using query', async () => {
-      contentOptions.entity = 1;
       const contentType = await contentTypeService.findOne({ name: 'Product' });
       const actualData = await contentService.find(
         { status: true, entity: contentType!.id, title: /^Jean/ },
@@ -144,7 +143,6 @@ describe('ContentService', () => {
         {
           ...contentOptions,
           query: { title: /^Jean/ },
-          entity: 1,
         },
         0,
       );
