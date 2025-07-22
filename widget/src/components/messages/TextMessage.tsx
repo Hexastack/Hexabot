@@ -14,6 +14,18 @@ import { Direction, TMessage } from "../../types/message.types";
 
 import "./TextMessage.scss";
 
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+const encodeUrl = (text: string) => {
+  return text.replace(URL_REGEX, (url) => {
+    try {
+      return encodeURI(url);
+    } catch (e) {
+      // Ignore invalid URLs
+      return url;
+    }
+  });
+};
+
 interface TextMessageProps {
   message: TMessage;
 }
@@ -29,8 +41,9 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
   const autoLink = () => {
     if (messageTextRef.current) {
       const text = messageTextRef.current.innerText;
+      const encodedText = encodeUrl(text);
 
-      messageTextRef.current.innerHTML = Autolinker.link(text, {
+      messageTextRef.current.innerHTML = Autolinker.link(encodedText, {
         className: "chatLink",
         truncate: { length: 50, location: "smart" },
         sanitizeHtml: true,
