@@ -92,7 +92,6 @@
     "rxjs": "^7.8.1",
     "sanitize-filename": "^1.6.3",
     "slug": "^8.2.2",
-    "ts-migrate-mongoose": "^3.8.9",
     "uuid": "^9.0.1",
     "zod": "^3.24.1"
   },
