@@ -86,7 +86,7 @@ export default class LocalStorageHelper
     if (Buffer.isBuffer(file)) {
       await fs.promises.writeFile(filePath, file);
     } else if (file instanceof Readable || file instanceof Stream) {
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const writeStream = fs.createWriteStream(filePath);
         file.pipe(writeStream);
         // @TODO: Calc size here?
