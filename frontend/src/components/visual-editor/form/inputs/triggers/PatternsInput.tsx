@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,22 +14,55 @@ import PsychologyAltIcon from "@mui/icons-material/PsychologyAlt";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import SpellcheckIcon from "@mui/icons-material/Spellcheck";
 import { Box, Chip, IconButton, styled, useTheme } from "@mui/material";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 
 import DropdownButton, {
   DropdownButtonAction,
 } from "@/app-components/buttons/DropdownButton";
+import { Input } from "@/app-components/inputs/Input";
+import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
+import { RegexInput } from "@/app-components/inputs/RegexInput";
+import { useSimpleFieldArray } from "@/hooks/useSimpleFieldArray";
 import { useTranslate } from "@/hooks/useTranslate";
-import { Pattern } from "@/types/block.types";
+import {
+  IBlockAttributes,
+  NlpPattern,
+  Pattern,
+  PatternType,
+  PayloadPattern,
+} from "@/types/block.types";
 import { PayloadType } from "@/types/message.types";
+import {
+  extractRegexBody,
+  formatWithSlashes,
+  isRegex,
+  isRegexString,
+} from "@/utils/string";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
-import { createValueWithId, ValueWithId } from "@/utils/valueWithId";
 
-import { getInputControls } from "../../utils/inputControls";
+import { OutcomeInput } from "./OutcomeInput";
+import { PostbackInput } from "./PostbackInput";
 
-import PatternInput from "./PatternInput";
-
+const getPatternType = (pattern: Pattern): PatternType => {
+  if (isRegexString(pattern)) {
+    return "regex";
+  } else if (Array.isArray(pattern)) {
+    return "nlp";
+  } else if (typeof pattern === "object") {
+    if (pattern?.type === "menu") {
+      return "menu";
+    } else if (pattern?.type === "content") {
+      return "content";
+    } else if (pattern?.type === "outcome") {
+      return "outcome";
+    } else {
+      return "payload";
+    }
+  } else {
+    return "text";
+  }
+};
 const StyledNoPatternsDiv = styled("div")(
   SXStyleOptions({
     color: "grey.500",
@@ -40,42 +73,19 @@ const StyledNoPatternsDiv = styled("div")(
   }),
 );
 
-type PatternsInputProps = {
-  value: Pattern[];
-  onChange: (patterns: Pattern[]) => void;
-  minInput: number;
-};
+type PatternsInputProps = {};
 
-const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
+const PatternsInput: FC<PatternsInputProps> = () => {
   const { t } = useTranslate();
   const theme = useTheme();
-  const [patterns, setPatterns] = useState<ValueWithId<Pattern>[]>(
-    value.map((pattern) => createValueWithId(pattern)),
-  );
   const {
-    register,
     formState: { errors },
-  } = useFormContext<any>();
-  const addInput = (defaultValue: Pattern) => {
-    setPatterns([...patterns, createValueWithId<Pattern>(defaultValue)]);
-  };
-  const removeInput = (index: number) => {
-    const updatedPatterns = [...patterns];
-
-    updatedPatterns.splice(index, 1);
-
-    setPatterns(updatedPatterns);
-  };
-  const updateInput = (index: number) => (p: Pattern) => {
-    patterns[index].value = p;
-    setPatterns([...patterns]);
-  };
-
-  useEffect(() => {
-    onChange(patterns.map(({ value }) => value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patterns]);
-
+    setError,
+    clearErrors,
+  } = useFormContext<IBlockAttributes>();
+  const { fields, append, remove, update } = useSimpleFieldArray<Pattern>({
+    name: "patterns",
+  });
   const actions: DropdownButtonAction[] = useMemo(
     () => [
       {
@@ -117,46 +127,114 @@ const PatternsInput: FC<PatternsInputProps> = ({ value, onChange }) => {
   return (
     <Box display="flex" flexDirection="column">
       <Box display="flex" flexDirection="column">
-        {patterns.length == 0 ? (
+        {fields?.length == 0 ? (
           <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
         ) : (
-          patterns.map(({ value, id }, idx) => (
-            <Box display="flex" alignItems="center" mt={2} key={id}>
-              {idx > 0 && (
-                <Chip
-                  sx={{ m: 1, color: theme.palette.grey[600] }}
-                  label={t("label.or")}
-                  size="small"
-                  variant="outlined"
-                />
-              )}
-              <PatternInput
-                idx={idx}
-                value={value}
-                onChange={updateInput(idx)}
-                getInputProps={getInputControls(
-                  "label",
-                  errors,
-                  register,
-                  t("message.text_is_required"),
-                )}
-              />
-              <IconButton
-                size="small"
-                color="error"
-                onClick={() => removeInput(idx)}
+          fields?.map(({ id, value }, idx) => {
+            const patternType = getPatternType(value);
+
+            return (
+              <Box
+                display="flex"
+                alignItems="center"
+                mt={2}
+                key={`${patternType}-${id}`}
               >
-                <RemoveCircleOutlineIcon />
-              </IconButton>
-            </Box>
-          ))
+                {idx > 0 && (
+                  <Chip
+                    sx={{ m: 1, color: theme.palette.grey[600] }}
+                    label={t("label.or")}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+                <Box display="flex" flexGrow={1}>
+                  {patternType === "nlp" && (
+                    <NlpPatternSelect
+                      patterns={value as NlpPattern[]}
+                      onChange={(patterns) => update(idx, patterns)}
+                      fullWidth={true}
+                    />
+                  )}
+                  {["payload", "content", "menu"].includes(patternType) ? (
+                    <PostbackInput
+                      onChange={(pattern) => update(idx, pattern)}
+                      defaultValue={value as PayloadPattern}
+                    />
+                  ) : null}
+                  {patternType === "outcome" ? (
+                    <OutcomeInput
+                      onChange={(pattern) => update(idx, pattern)}
+                      defaultValue={value as PayloadPattern}
+                    />
+                  ) : null}
+                  {typeof value === "string" && patternType === "regex" ? (
+                    <RegexInput
+                      helperText={
+                        errors.patterns?.[idx]
+                          ? errors.patterns[idx].message
+                          : undefined
+                      }
+                      error={!!errors.patterns?.[idx]}
+                      value={extractRegexBody(value)}
+                      label={t("label.regex")}
+                      onChange={(e) => {
+                        const pattern = e.target.value;
+
+                        if (!isRegex(extractRegexBody(pattern as string))) {
+                          setError(`patterns.${idx}`, {
+                            type: "manual",
+                            message: t("message.regex_is_invalid"),
+                          });
+                        } else {
+                          clearErrors(`patterns.${idx}`);
+                        }
+
+                        update(idx, formatWithSlashes(pattern));
+                      }}
+                      required
+                    />
+                  ) : null}
+                  {typeof value === "string" && patternType === "text" ? (
+                    <Input
+                      value={value}
+                      label={t("label.text")}
+                      error={!!errors?.patterns?.[idx]}
+                      helperText={errors?.patterns?.[idx]?.message}
+                      onChange={(e) => {
+                        const pattern = e.target.value;
+
+                        if (!pattern) {
+                          setError(`patterns.${idx}`, {
+                            type: "manual",
+                            message: t("message.required"),
+                          });
+                        } else {
+                          clearErrors(`patterns.${idx}`);
+                        }
+
+                        update(idx, pattern);
+                      }}
+                    />
+                  ) : null}
+                </Box>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => remove(idx)}
+                >
+                  <RemoveCircleOutlineIcon />
+                </IconButton>
+              </Box>
+            );
+          })
         )}
       </Box>
       <DropdownButton
         sx={{ alignSelf: "end", marginTop: 2 }}
         label={t("button.add_pattern")}
         actions={actions}
-        onClick={(action) => addInput(action.defaultValue as Pattern)}
+        onClick={(action) => append(action.defaultValue as Pattern)}
         icon={<AddIcon />}
       />
     </Box>
