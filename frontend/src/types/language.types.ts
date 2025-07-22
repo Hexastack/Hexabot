@@ -9,7 +9,6 @@
 import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
-import { NlpPattern } from "./block.types";
 
 export type ILanguages = {
   title: string;
@@ -23,7 +22,6 @@ export interface ILanguageAttributes {
   code: string;
   isDefault: boolean;
   isRTL: boolean;
-  patterns: NlpPattern[];
 }
 
 export interface ILanguageStub
