@@ -11,6 +11,7 @@ import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid } from "@mui/material";
 import Autolinker from "autolinker";
+import { format, formatDistanceToNow, isThisWeek, isToday } from "date-fns";
 import { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
@@ -86,19 +87,58 @@ function formatMessageText(text: string): ReactNode {
   }
 }
 
+export function formatSmartDate(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  if (diffMs < 60000) {
+    return "a few seconds ago";
+  } else if (diffMs < 3600000) {
+    return formatDistanceToNow(date, { addSuffix: true }); // e.g. "5 minutes ago"
+  } else if (isToday(date)) {
+    return format(date, "p"); // e.g. 3:25 PM
+  } else if (isThisWeek(date)) {
+    return format(date, "EEE p"); // e.g. Tue 3:25 PM
+  } else {
+    return format(date, "MMM d, yyyy p"); // e.g. "Jul 21, 2025 3:25 PM"
+  }
+}
+
 /**
  * @description this function constructs the message children basen on message type
  */
 export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
+  formattedTimestamp?: string,
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
+
+  // Helper to render timestamp
+  const renderTimestamp = (keySuffix: string) =>
+    formattedTimestamp ? (
+      <span
+        key={`timestamp-${keySuffix}`}
+        style={{
+          fontSize: "0.75rem",
+          marginTop: "6px",
+          textAlign: messageEntity.recipient ? "right" : "left",
+          color: messageEntity.recipient
+            ? "rgba(255, 255, 255, 0.7)"
+            : "rgba(0, 0, 0, 0.6)",
+          userSelect: "none",
+          display: "block",
+        }}
+      >
+        {formattedTimestamp}
+      </span>
+    ) : null;
 
   if ("coordinates" in message) {
     content.push(
       <Message.CustomContent>
         <GeolocationMessage message={message} key={message.type} />
+        {renderTimestamp(message.type)}
       </Message.CustomContent>,
     );
   }
@@ -107,9 +147,11 @@ export function getMessageContent(
     content.push(
       <Message.CustomContent key={messageEntity.id}>
         {formatMessageText(message.text)}
+        {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
   }
+
   let chips: { title: string }[] = [];
   let chipsIcon: ReactNode;
 
@@ -122,9 +164,12 @@ export function getMessageContent(
     chipsIcon = <ReplyIcon color="disabled" />;
   }
 
-  if (chips.length > 0)
+  if (chips.length > 0) {
     content.push(
-      <Message.Footer style={{ marginTop: "5px" }}>
+      <Message.Footer
+        style={{ marginTop: "5px" }}
+        key={`chips-${messageEntity.id}`}
+      >
         <Grid
           container
           justifyItems="center"
@@ -141,22 +186,25 @@ export function getMessageContent(
             </Grid>
           ))}
         </Grid>
+        {renderTimestamp(`chips-${messageEntity.id}`)}
       </Message.Footer>,
     );
+  }
 
-  // If there's an attachment, create a component that handles its display
   if ("attachment" in message) {
     content.push(
-      <Message.CustomContent>
+      <Message.CustomContent key={`attachment-${messageEntity.id}`}>
         <MessageAttachmentsViewer message={message} />
+        {renderTimestamp(`attachment-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
   }
 
   if ("options" in message) {
     content.push(
-      <Message.CustomContent>
+      <Message.CustomContent key={`carousel-${messageEntity.id}`}>
         <Carousel {...message} />
+        {renderTimestamp(`carousel-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
   }

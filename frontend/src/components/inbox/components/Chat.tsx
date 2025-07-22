@@ -25,6 +25,7 @@ import { EntityType } from "@/services/types";
 import { normalizeDate } from "@/utils/date";
 
 import {
+  formatSmartDate,
   getAvatarSrc,
   getMessageContent,
   getMessagePosition,
@@ -131,7 +132,10 @@ export function Chat() {
                         />,
                       ]
                     : []),
-                  ...getMessageContent(message),
+                  ...getMessageContent(
+                    message,
+                    formatSmartDate(message.createdAt),
+                  ),
                 ]}
               />
             );
