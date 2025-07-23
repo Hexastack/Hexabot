@@ -11,7 +11,6 @@ import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid } from "@mui/material";
 import Autolinker from "autolinker";
-import { format, formatDistanceToNow, isThisWeek, isToday } from "date-fns";
 import { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
@@ -86,24 +85,6 @@ function formatMessageText(text: string): ReactNode {
     return <div>{text}</div>;
   }
 }
-
-export function formatSmartDate(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-
-  if (diffMs < 60000) {
-    return "a few seconds ago";
-  } else if (diffMs < 3600000) {
-    return formatDistanceToNow(date, { addSuffix: true }); // e.g. "5 minutes ago"
-  } else if (isToday(date)) {
-    return format(date, "p"); // e.g. 3:25 PM
-  } else if (isThisWeek(date)) {
-    return format(date, "EEE p"); // e.g. Tue 3:25 PM
-  } else {
-    return format(date, "MMM d, yyyy p"); // e.g. "Jul 21, 2025 3:25 PM"
-  }
-}
-
 /**
  * @description this function constructs the message children basen on message type
  */

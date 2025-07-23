@@ -22,10 +22,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { normalizeDate } from "@/utils/date";
+import { formatSmartDate, normalizeDate } from "@/utils/date";
 
 import {
-  formatSmartDate,
   getAvatarSrc,
   getMessageContent,
   getMessagePosition,
@@ -134,7 +133,7 @@ export function Chat() {
                     : []),
                   ...getMessageContent(
                     message,
-                    formatSmartDate(message.createdAt),
+                    formatSmartDate(message.createdAt, i18n.language),
                   ),
                 ]}
               />
