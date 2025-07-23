@@ -6,21 +6,21 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useCallback, useRef } from 'react';
-import { useFormContext, useWatch } from 'react-hook-form';
+import { useCallback, useRef } from "react";
+import { useFormContext, useWatch } from "react-hook-form";
 
-import { generateId } from '@/utils/generateId';
+import { generateId } from "@/utils/generateId";
 
 type UseSimpleFieldArrayProps = {
   /** Dot-path of the array field in RHF form state (e.g. `"items"`). */
   name: string;
 };
 
-type FieldWithId<T> ={ value: T; id: string };
+type FieldWithId<T> = { value: T; id: string };
 
-export function useSimpleFieldArray<T = unknown>(
-  { name }: UseSimpleFieldArrayProps,
-) {
+export function useSimpleFieldArray<T = unknown>({
+  name,
+}: UseSimpleFieldArrayProps) {
   const { control, getValues, setValue } = useFormContext();
   const values: T[] = useWatch({ name, control }) ?? [];
   const ids = useRef<string[]>([]);
@@ -34,7 +34,10 @@ export function useSimpleFieldArray<T = unknown>(
     (value: T) => {
       const current = (getValues(name) as T[]) ?? [];
 
-      setValue(name, [...current, value], { shouldDirty: true, shouldTouch: true });
+      setValue(name, [...current, value], {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
       ids.current.push(generateId());
     },
     [getValues, setValue, name],
@@ -42,7 +45,9 @@ export function useSimpleFieldArray<T = unknown>(
   const remove = useCallback(
     (index: number | number[]) => {
       const current = (getValues(name) as T[]) ?? [];
-      const targets = (Array.isArray(index) ? index : [index]).sort((a, b) => b - a); // remove from back
+      const targets = (Array.isArray(index) ? index : [index]).sort(
+        (a, b) => b - a,
+      ); // remove from back
       const next = [...current];
 
       targets.forEach((i) => {
@@ -59,7 +64,10 @@ export function useSimpleFieldArray<T = unknown>(
       shouldDirty: true,
     });
   };
-  const fields = values.map((v, i) => ({ value: v, id: ids.current[i] })) as FieldWithId<T>[];
+  const fields = values.map((v, i) => ({
+    value: v,
+    id: ids.current[i],
+  })) as FieldWithId<T>[];
 
   return { fields, append, remove, update };
 }
