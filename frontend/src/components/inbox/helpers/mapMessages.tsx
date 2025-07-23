@@ -167,7 +167,6 @@ export function getMessageContent(
             </Grid>
           ))}
         </Grid>
-        {renderTimestamp(`chips-${messageEntity.id}`)}
       </Message.Footer>,
     );
   }
