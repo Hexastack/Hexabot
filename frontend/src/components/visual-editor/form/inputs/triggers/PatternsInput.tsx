@@ -46,22 +46,27 @@ import { PostbackInput } from "./PostbackInput";
 
 const getPatternType = (pattern: Pattern): PatternType => {
   if (isRegexString(pattern)) {
-    return "regex";
-  } else if (Array.isArray(pattern)) {
-    return "nlp";
-  } else if (typeof pattern === "object") {
-    if (pattern?.type === "menu") {
-      return "menu";
-    } else if (pattern?.type === "content") {
-      return "content";
-    } else if (pattern?.type === "outcome") {
-      return "outcome";
-    } else {
-      return "payload";
-    }
-  } else {
-    return "text";
+    return PatternType.regex;
   }
+
+  if (Array.isArray(pattern)) {
+    return PatternType.nlp;
+  }
+
+  if (typeof pattern === "object" && pattern !== null) {
+    switch (pattern.type) {
+      case PayloadType.menu:
+        return PatternType.menu;
+      case PayloadType.content:
+        return PatternType.content;
+      case PayloadType.outcome:
+        return PatternType.outcome;
+      default:
+        return PatternType.payload;
+    }
+  }
+
+  return PatternType.text;
 };
 const StyledNoPatternsDiv = styled("div")(
   SXStyleOptions({

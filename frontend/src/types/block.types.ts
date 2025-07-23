@@ -83,14 +83,15 @@ export type NlpPattern = NlpEntityMatchPattern | NlpValueMatchPattern;
 
 export type Pattern = null | string | PayloadPattern | NlpPattern[];
 
-export type PatternType =
-  | "regex"
-  | "nlp"
-  | "menu"
-  | "content"
-  | "outcome"
-  | "payload"
-  | "text";
+export enum PatternType {
+  regex = "regex",
+  nlp = "nlp",
+  menu = "menu",
+  content = "content",
+  outcome = "outcome",
+  payload = "payload",
+  text = "text",
+}
 
 export interface IBlockAttributes {
   name: string;
