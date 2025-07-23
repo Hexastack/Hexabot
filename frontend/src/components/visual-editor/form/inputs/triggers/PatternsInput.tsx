@@ -72,10 +72,7 @@ const StyledNoPatternsDiv = styled("div")(
     width: "100%",
   }),
 );
-
-type PatternsInputProps = {};
-
-const PatternsInput: FC<PatternsInputProps> = () => {
+const PatternsInput: FC = () => {
   const { t } = useTranslate();
   const theme = useTheme();
   const {
@@ -179,9 +176,9 @@ const PatternsInput: FC<PatternsInputProps> = () => {
                       value={extractRegexBody(value)}
                       label={t("label.regex")}
                       onChange={(e) => {
-                        const pattern = e.target.value;
+                        const patternBody = e.target.value;
 
-                        if (!isRegex(extractRegexBody(pattern as string))) {
+                        if (!isRegex(patternBody as string)) {
                           setError(`patterns.${idx}`, {
                             type: "manual",
                             message: t("message.regex_is_invalid"),
@@ -190,7 +187,7 @@ const PatternsInput: FC<PatternsInputProps> = () => {
                           clearErrors(`patterns.${idx}`);
                         }
 
-                        update(idx, formatWithSlashes(pattern));
+                        update(idx, formatWithSlashes(patternBody));
                       }}
                       required
                     />
