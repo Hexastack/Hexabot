@@ -44,13 +44,14 @@ export const Subscribers = () => {
     { hasCount: false },
   );
   const [labelFilter, setLabelFilter] = useState<string>("");
-  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>(
-    {
-      $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
-      $or: ["first_name", "last_name"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.SUBSCRIBER>(
+      {
+        $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
+        $or: ["first_name", "last_name"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.SUBSCRIBER, format: Format.FULL },
     { params: searchPayload },

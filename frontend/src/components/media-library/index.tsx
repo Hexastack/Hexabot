@@ -36,13 +36,14 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const formatFileSize = useFormattedFileSize();
-  const { onSearch, searchPayload, searchText } = useSearch<IAttachment>(
-    {
-      $iLike: ["name"],
-    },
-    // Sync URL only in the media library page (not the modal)
-    { syncUrl: !onSelect },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.ATTACHMENT>(
+      {
+        $iLike: ["name"],
+      },
+      // Sync URL only in the media library page (not the modal)
+      { syncUrl: !onSelect },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.ATTACHMENT },
     {

@@ -85,20 +85,21 @@ export default function NlpSample() {
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload, searchText } = useSearch<INlpSample>(
-    {
-      $eq: [
-        ...(type !== "all" ? [{ type }] : []),
-        ...(language ? [{ language }] : []),
-        // We send only value match patterns
-        ...(patterns
-          ? [{ patterns: patterns.filter(({ match }) => match === "value") }]
-          : []),
-      ],
-      $iLike: ["text"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_SAMPLE>(
+      {
+        $eq: [
+          ...(type !== "all" ? [{ type }] : []),
+          ...(language ? [{ language }] : []),
+          // We send only value match patterns
+          ...(patterns
+            ? [{ patterns: patterns.filter(({ match }) => match === "value") }]
+            : []),
+        ],
+        $iLike: ["text"],
+      },
+      { syncUrl: true },
+    );
   const { mutate: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));

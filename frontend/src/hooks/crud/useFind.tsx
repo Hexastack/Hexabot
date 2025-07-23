@@ -20,13 +20,14 @@ import { useGetFromCache } from "./useGet";
 
 export const useFind = <
   TP extends THook["params"],
-  TAttr extends THook<TP>["attributes"],
   TBasic extends THook<TP>["basic"],
+  TAttr extends THook<TP>["attributes"],
+  TFilters extends THook<TP>["filters"],
   TFull extends THook<TP>["full"],
   P = THook<TP>["populate"],
 >(
   { entity, format }: THook<TP>["params"],
-  config?: IFindConfigProps<TAttr>,
+  config?: IFindConfigProps<TFilters>,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
     "queryFn" | "queryKey" | "onSuccess"

@@ -54,7 +54,7 @@ const NlpPatternSelect = (
   const inputRef = useRef(null);
   const theme = useTheme();
   const { t } = useTranslate();
-  const { searchPayload } = useSearch<INlpEntity>({
+  const { searchPayload } = useSearch<EntityType.NLP_ENTITY>({
     $iLike: ["name"],
   });
   const { data: options, isLoading } = useFind(

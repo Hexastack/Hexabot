@@ -38,7 +38,7 @@ export type EqParam<T> = { [key in keyof T]?: T[key] };
 
 export type NeqParam<T> = {
   [key in keyof T]?: {
-    "=!"?: T[key];
+    "!="?: T[key];
   };
 };
 
@@ -47,7 +47,7 @@ export type SearchItem<T> = {
     | T[K]
     | (T[K] extends string ? { contains?: T[K] } : undefined)
     | {
-        "=!"?: T[K];
+        "!="?: T[K];
       };
 };
 export type SearchPayload<T> = EqParam<T> & {

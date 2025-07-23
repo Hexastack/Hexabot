@@ -49,3 +49,5 @@ export interface INlpEntity extends INlpEntityStub, IFormat<Format.BASIC> {
 export interface INlpEntityFull extends INlpEntityStub, IFormat<Format.FULL> {
   values: INlpValue[];
 }
+
+export interface INlpEntityFilters extends INlpEntity {}

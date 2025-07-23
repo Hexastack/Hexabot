@@ -46,12 +46,13 @@ export const Translations = () => {
       hasCount: false,
     },
   );
-  const { onSearch, searchPayload, searchText } = useSearch<ITranslation>(
-    {
-      $iLike: ["str"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.TRANSLATION>(
+      {
+        $iLike: ["str"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps, refetch: refreshTranslations } = useFind(
     { entity: EntityType.TRANSLATION },
     {

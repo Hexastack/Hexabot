@@ -48,13 +48,14 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const { onSearch, searchPayload, searchText } = useSearch<INlpValue>(
-    {
-      $eq: [{ entity: entityId }],
-      $or: ["doc", "value"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_VALUE>(
+      {
+        $eq: [{ entity: entityId }],
+        $or: ["doc", "value"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {

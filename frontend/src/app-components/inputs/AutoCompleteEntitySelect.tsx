@@ -64,7 +64,7 @@ const AutoCompleteEntitySelect = <
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
-  const { onSearch, searchPayload } = useSearch<Value>({
+  const { onSearch, searchPayload } = useSearch<typeof entity>({
     $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
   });
   const idRef = useRef(generateId());
