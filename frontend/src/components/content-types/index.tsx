@@ -39,12 +39,13 @@ export const ContentTypes = () => {
   const router = useRouter();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload, searchText } = useSearch<IContentType>(
-    {
-      $iLike: ["name"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CONTENT_TYPE>(
+      {
+        $iLike: ["name"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT_TYPE },
     {

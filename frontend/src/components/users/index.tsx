@@ -53,7 +53,7 @@ export const Users = () => {
     },
   });
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<IUser>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.USER>(
     {
       $or: ["first_name", "last_name", "email"],
     },

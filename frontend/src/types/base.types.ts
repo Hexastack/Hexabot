@@ -10,12 +10,16 @@ import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
-import { IAttachment, IAttachmentAttributes } from "./attachment.types";
+import {
+  IAttachment,
+  IAttachmentAttributes,
+  IAttachmentFilters,
+} from "./attachment.types";
 import {
   IBlock,
   IBlockAttributes,
   IBlockFull,
-  ICustomBlockSettingAttributes,
+  ICustomBlockSettingFilters,
   ICustomBlockTemplate,
 } from "./block.types";
 import { ICategory, ICategoryAttributes } from "./category.types";
@@ -37,11 +41,13 @@ import { IModel, IModelAttributes, IModelFull } from "./model.types";
 import {
   INlpEntity,
   INlpEntityAttributes,
+  INlpEntityFilters,
   INlpEntityFull,
 } from "./nlp-entity.types";
 import {
   INlpSample,
   INlpSampleAttributes,
+  INlpSampleFilters,
   INlpSampleFull,
 } from "./nlp-sample.types";
 import {
@@ -130,89 +136,112 @@ export type OmitPopulate<Attrs, C extends EntityType> = Omit<
   Populate<C>
 >;
 
-interface IEntityTypes<TAttr = never, TStub = never, TFull = never> {
-  attributes: TAttr;
+export type IsNever<T> = [T] extends [never] ? true : false;
+
+interface IEntityTypes<
+  TStub = never,
+  TAttr = never,
+  TFilters = never,
+  TFull = never,
+> {
   basic: TStub;
+  attributes: TAttr;
+  filters: IsNever<TFilters> extends true ? TStub : TFilters;
   full: TFull;
 }
 
 export interface IEntityMapTypes {
-  [EntityType.BLOCK]: IEntityTypes<IBlockAttributes, IBlock, IBlockFull>;
-  [EntityType.CATEGORY]: IEntityTypes<ICategoryAttributes, ICategory>;
+  [EntityType.BLOCK]: IEntityTypes<IBlock, IBlockAttributes, never, IBlockFull>;
+  [EntityType.CATEGORY]: IEntityTypes<ICategory, ICategoryAttributes>;
   [EntityType.CONTENT]: IEntityTypes<
-    IContentAttributes,
     IContent,
+    IContentAttributes,
+    never,
     IContentFull
   >;
-  [EntityType.CONTENT_TYPE]: IEntityTypes<IContentTypeAttributes, IContentType>;
-  [EntityType.CONTEXT_VAR]: IEntityTypes<IContextVarAttributes, IContextVar>;
+  [EntityType.CONTENT_TYPE]: IEntityTypes<IContentType, IContentTypeAttributes>;
+  [EntityType.CONTEXT_VAR]: IEntityTypes<IContextVar, IContextVarAttributes>;
   [EntityType.CUSTOM_BLOCK]: IEntityTypes<
     ICustomBlockTemplate,
     ICustomBlockTemplate
   >;
   [EntityType.CUSTOM_BLOCK_SETTINGS]: IEntityTypes<
-    ICustomBlockSettingAttributes,
-    ISetting
+    ISetting,
+    never,
+    ICustomBlockSettingFilters
   >;
-  [EntityType.LABEL]: IEntityTypes<ILabelAttributes, ILabel, ILabelFull>;
+  [EntityType.LABEL]: IEntityTypes<ILabel, ILabelAttributes, never, ILabelFull>;
   [EntityType.MENU]: IEntityTypes<
-    IMenuItemAttributes,
     IMenuItem,
+    IMenuItemAttributes,
+    never,
     IMenuItemFull
   >;
   [EntityType.MENUTREE]: IEntityTypes<
-    IMenuNodeAttributes,
     IMenuNode,
+    IMenuNodeAttributes,
+    never,
     IMenuNodeFull
   >;
-  [EntityType.MODEL]: IEntityTypes<IModelAttributes, IModel, IModelFull>;
+  [EntityType.MODEL]: IEntityTypes<IModel, IModelAttributes, never, IModelFull>;
   [EntityType.NLP_ENTITY]: IEntityTypes<
-    INlpEntityAttributes,
     INlpEntity,
+    INlpEntityAttributes,
+    INlpEntityFilters,
     INlpEntityFull
   >;
   [EntityType.NLP_SAMPLE]: IEntityTypes<
-    INlpSampleAttributes,
     INlpSample,
+    INlpSampleAttributes,
+    INlpSampleFilters,
     INlpSampleFull
   >;
   [EntityType.NLP_VALUE]: IEntityTypes<
-    INlpValueAttributes,
     INlpValue,
+    INlpValueAttributes,
+    never,
     INlpValueFull
   >;
   [EntityType.NLP_SAMPLE_ENTITY]: IEntityTypes<
-    INlpSampleEntityAttributes,
     INlpSampleEntity,
+    INlpSampleEntityAttributes,
+    never,
     INlpSampleEntityFull
   >;
   [EntityType.PERMISSION]: IEntityTypes<
-    IPermissionAttributes,
     IPermission,
+    IPermissionAttributes,
+    never,
     IPermissionFull
   >;
-  [EntityType.ROLE]: IEntityTypes<IRoleAttributes, IRole, IRoleFull>;
-  [EntityType.SETTING]: IEntityTypes<ISettingAttributes, ISetting>;
+  [EntityType.ROLE]: IEntityTypes<IRole, IRoleAttributes, never, IRoleFull>;
+  [EntityType.SETTING]: IEntityTypes<ISetting, ISettingAttributes>;
   [EntityType.SUBSCRIBER]: IEntityTypes<
-    ISubscriberAttributes,
     ISubscriber,
+    ISubscriberAttributes,
+    never,
     ISubscriberFull
   >;
-  [EntityType.LANGUAGE]: IEntityTypes<ILanguageAttributes, ILanguage>;
-  [EntityType.TRANSLATION]: IEntityTypes<ITranslationAttributes, ITranslation>;
-  [EntityType.USER]: IEntityTypes<IUserAttributes, IUser, IUserFull>;
-  [EntityType.ATTACHMENT]: IEntityTypes<IAttachmentAttributes, IAttachment>;
+  [EntityType.LANGUAGE]: IEntityTypes<ILanguage, ILanguageAttributes>;
+  [EntityType.TRANSLATION]: IEntityTypes<ITranslation, ITranslationAttributes>;
+  [EntityType.USER]: IEntityTypes<IUser, IUserAttributes, never, IUserFull>;
+  [EntityType.ATTACHMENT]: IEntityTypes<
+    IAttachment,
+    IAttachmentAttributes,
+    IAttachmentFilters
+  >;
   [EntityType.MESSAGE]: IEntityTypes<
-    IMessageAttributes,
     IMessage,
+    IMessageAttributes,
+    never,
     IMessageFull
   >;
-  [EntityType.CHANNEL]: IEntityTypes<IChannelAttributes, IChannel>;
-  [EntityType.HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
-  [EntityType.NLU_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
-  [EntityType.LLM_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
-  [EntityType.FLOW_ESCAPE_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
-  [EntityType.STORAGE_HELPER]: IEntityTypes<IHelperAttributes, IHelper>;
+  [EntityType.CHANNEL]: IEntityTypes<IChannel, IChannelAttributes>;
+  [EntityType.HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
+  [EntityType.NLU_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
+  [EntityType.LLM_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
+  [EntityType.FLOW_ESCAPE_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
+  [EntityType.STORAGE_HELPER]: IEntityTypes<IHelper, IHelperAttributes>;
 }
 
 export type TType<TParam extends keyof IEntityMapTypes> =
@@ -243,6 +272,7 @@ export type THook<
 > = {
   full: TType<TE>["full"];
   basic: TType<TE>["basic"];
+  filters: TType<TE>["filters"];
   params: TP;
   entity: TE;
   populate: TPopulateTypeFromFormat<G>;

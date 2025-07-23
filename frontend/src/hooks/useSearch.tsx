@@ -8,6 +8,7 @@
 
 import { ChangeEvent, useState } from "react";
 
+import { THook } from "@/types/base.types";
 import {
   EqParam,
   IlikeParam,
@@ -57,8 +58,13 @@ const buildNeqInitialParams = <T,>({
     {} as NeqParam<T>,
   );
 
-export const useSearch = <T,>(
-  params: TParamItem<T>,
+export const useSearch = <
+  TE extends THook["entity"],
+  TFilters extends THook<{ entity: TE }>["filters"] = THook<{
+    entity: TE;
+  }>["filters"],
+>(
+  params: TParamItem<TFilters>,
   { syncUrl }: SearchHookOptions = { syncUrl: false },
 ) => {
   const [searchQuery, setSearchQuery] = useUrlQueryParam("search", "");
@@ -88,6 +94,6 @@ export const useSearch = <T,>(
           ...buildILikeParams({ params: params.$iLike, searchText }),
         }),
       },
-    } as SearchPayload<T>,
+    } as SearchPayload<TFilters>,
   };
 };

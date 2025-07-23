@@ -139,13 +139,13 @@ export interface ICustomBlockTemplateAttributes {
   effects: string[];
 }
 
-export interface ICustomBlockSettingAttributes {
-  plugin?: string;
-}
-
 // @TODO : templates doe not contain base schema attributes
 export interface ICustomBlockTemplate
   extends IBaseSchema,
     OmitPopulate<ICustomBlockTemplateAttributes, EntityType.CUSTOM_BLOCK> {
   namespace: string;
+}
+
+export interface ICustomBlockSettingFilters {
+  plugin?: string;
 }

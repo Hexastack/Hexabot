@@ -39,7 +39,7 @@ export const Labels = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const { onSearch, searchPayload, searchText } = useSearch<ILabel>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.LABEL>(
     {
       $or: ["name", "title"],
     },

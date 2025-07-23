@@ -25,7 +25,6 @@ export interface INlpSampleAttributes {
   type?: NlpSampleType;
   entities: string[];
   language: string | null;
-  patterns?: NlpPattern[];
 }
 
 export interface INlpSampleStub
@@ -70,3 +69,7 @@ export interface INlpDatasetSampleAttributes
 export interface INlpDatasetSample
   extends IBaseSchema,
     INlpDatasetSampleAttributes {}
+
+export interface INlpSampleFilters extends INlpSample {
+  patterns?: NlpPattern[];
+}
