@@ -121,13 +121,12 @@ div .cs-message-input__content-editor-container,
   font-size: 0.65rem;
   margin-top: 6px;
   user-select: none;
-  display: block;
 }
 .timestamp-left {
-  text-align: left;
+  float: left;
   color: rgba(0, 0, 0, 0.6);
 }
 .timestamp-right {
-  text-align: right;
+  float: right;
   color: rgba(255, 255, 255, 0.7);
 }

@@ -11,7 +11,7 @@ import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { Chip, Grid, Tooltip } from "@mui/material";
 import Autolinker from "autolinker";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
@@ -96,7 +96,10 @@ export function getMessageContent(
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
-  const wrapWithTooltip = (child: ReactNode, key: string): ReactNode => {
+  const wrapWithTooltip = (
+    child: React.ReactElement,
+    key: string,
+  ): ReactNode => {
     if (!normalizedTimestamp) return child;
 
     return (
@@ -104,12 +107,10 @@ export function getMessageContent(
         key={key}
         title={normalizedTimestamp}
         arrow
-        followCursor
         enterDelay={300}
         leaveDelay={150}
-        placement="top"
       >
-        <span>{child}</span>
+        {child}
       </Tooltip>
     );
   };
