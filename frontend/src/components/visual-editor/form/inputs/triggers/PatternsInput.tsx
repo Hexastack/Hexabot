@@ -133,7 +133,7 @@ const PatternsInput: FC = () => {
   return (
     <Box display="flex" flexDirection="column">
       <Box display="flex" flexDirection="column">
-        {fields?.length == 0 ? (
+        {!fields?.length ? (
           <StyledNoPatternsDiv>{t("label.no_patterns")}</StyledNoPatternsDiv>
         ) : (
           fields?.map(({ id, value }, idx) => {
