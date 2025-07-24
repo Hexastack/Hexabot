@@ -100,16 +100,9 @@ export function getMessageContent(
     formattedTimestamp ? (
       <span
         key={`timestamp-${keySuffix}`}
-        style={{
-          fontSize: "0.75rem",
-          marginTop: "6px",
-          textAlign: messageEntity.recipient ? "right" : "left",
-          color: messageEntity.recipient
-            ? "rgba(255, 255, 255, 0.7)"
-            : "rgba(0, 0, 0, 0.6)",
-          userSelect: "none",
-          display: "block",
-        }}
+        className={`timestamp ${
+          messageEntity.recipient ? "timestamp-right" : "timestamp-left"
+        }`}
       >
         {formattedTimestamp}
       </span>
