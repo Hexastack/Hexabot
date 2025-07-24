@@ -22,7 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { normalizeDate } from "@/utils/date";
+import { formatSmartDate, normalizeDate } from "@/utils/date";
 
 import {
   getAvatarSrc,
@@ -114,12 +114,7 @@ export function Chat() {
                     ? [
                         <Avatar
                           key={message.id}
-                          title={`${subscriber.first_name} ${
-                            subscriber.last_name
-                          } : ${normalizeDate(
-                            i18n.language,
-                            message.createdAt,
-                          )}`}
+                          title={`${subscriber.first_name} ${subscriber.last_name}`}
                           src={getAvatarSrc(
                             apiUrl,
                             message.sender
@@ -131,7 +126,11 @@ export function Chat() {
                         />,
                       ]
                     : []),
-                  ...getMessageContent(message),
+                  ...getMessageContent(
+                    message,
+                    formatSmartDate(message.createdAt, i18n.language),
+                    normalizeDate(i18n.language, message.createdAt),
+                  ),
                 ]}
               />
             );
