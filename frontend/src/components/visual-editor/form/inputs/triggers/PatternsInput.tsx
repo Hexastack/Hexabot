@@ -155,26 +155,31 @@ const PatternsInput: FC = () => {
                   />
                 )}
                 <Box display="flex" flexGrow={1}>
-                  {patternType === "nlp" && (
+                  {patternType === PatternType.nlp && (
                     <NlpPatternSelect
                       patterns={value as NlpPattern[]}
                       onChange={(patterns) => update(idx, patterns)}
                       fullWidth={true}
                     />
                   )}
-                  {["payload", "content", "menu"].includes(patternType) ? (
+                  {[
+                    PatternType.payload,
+                    PatternType.content,
+                    PatternType.menu,
+                  ].includes(patternType) ? (
                     <PostbackInput
                       onChange={(pattern) => update(idx, pattern)}
                       defaultValue={value as PayloadPattern}
                     />
                   ) : null}
-                  {patternType === "outcome" ? (
+                  {patternType === PatternType.outcome ? (
                     <OutcomeInput
                       onChange={(pattern) => update(idx, pattern)}
                       defaultValue={value as PayloadPattern}
                     />
                   ) : null}
-                  {typeof value === "string" && patternType === "regex" ? (
+                  {typeof value === "string" &&
+                  patternType === PatternType.regex ? (
                     <RegexInput
                       helperText={
                         errors.patterns?.[idx]
@@ -201,7 +206,8 @@ const PatternsInput: FC = () => {
                       required
                     />
                   ) : null}
-                  {typeof value === "string" && patternType === "text" ? (
+                  {typeof value === "string" &&
+                  patternType === PatternType.text ? (
                     <Input
                       value={value}
                       label={t("label.text")}
