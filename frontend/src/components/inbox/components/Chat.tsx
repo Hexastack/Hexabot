@@ -114,12 +114,6 @@ export function Chat() {
                     ? [
                         <Avatar
                           key={message.id}
-                          title={`${subscriber.first_name} ${
-                            subscriber.last_name
-                          } : ${normalizeDate(
-                            i18n.language,
-                            message.createdAt,
-                          )}`}
                           src={getAvatarSrc(
                             apiUrl,
                             message.sender
@@ -134,6 +128,7 @@ export function Chat() {
                   ...getMessageContent(
                     message,
                     formatSmartDate(message.createdAt, i18n.language),
+                    normalizeDate(i18n.language, message.createdAt),
                   ),
                 ]}
               />

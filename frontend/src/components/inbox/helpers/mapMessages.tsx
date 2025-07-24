@@ -9,7 +9,7 @@
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
-import { Chip, Grid } from "@mui/material";
+import { Chip, Grid, Tooltip } from "@mui/material";
 import Autolinker from "autolinker";
 import { ReactNode } from "react";
 
@@ -91,10 +91,19 @@ function formatMessageText(text: string): ReactNode {
 export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
   formattedTimestamp?: string,
+  normalizedTimestamp?: string,
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
+  const wrapWithTooltip = (child: ReactNode, key: string) =>
+    normalizedTimestamp ? (
+      <Tooltip title={normalizedTimestamp} key={key}>
+        <div>{child}</div>
+      </Tooltip>
+    ) : (
+      <div>{child}</div>
+    );
   // Helper to render timestamp
   const renderTimestamp = (keySuffix: string) =>
     formattedTimestamp ? (
@@ -110,8 +119,11 @@ export function getMessageContent(
 
   if ("coordinates" in message) {
     content.push(
-      <Message.CustomContent>
-        <GeolocationMessage message={message} key={message.type} />
+      <Message.CustomContent key={message.type}>
+        {wrapWithTooltip(
+          <GeolocationMessage message={message} />,
+          message.type,
+        )}
         {renderTimestamp(message.type)}
       </Message.CustomContent>,
     );
@@ -120,7 +132,7 @@ export function getMessageContent(
   if ("text" in message) {
     content.push(
       <Message.CustomContent key={messageEntity.id}>
-        {formatMessageText(message.text)}
+        {wrapWithTooltip(formatMessageText(message.text), messageEntity.id)}
         {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
@@ -167,7 +179,10 @@ export function getMessageContent(
   if ("attachment" in message) {
     content.push(
       <Message.CustomContent key={`attachment-${messageEntity.id}`}>
-        <MessageAttachmentsViewer message={message} />
+        {wrapWithTooltip(
+          <MessageAttachmentsViewer message={message} />,
+          `attachment-${messageEntity.id}`,
+        )}
         {renderTimestamp(`attachment-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
@@ -176,7 +191,10 @@ export function getMessageContent(
   if ("options" in message) {
     content.push(
       <Message.CustomContent key={`carousel-${messageEntity.id}`}>
-        <Carousel {...message} />
+        {wrapWithTooltip(
+          <Carousel {...message} />,
+          `carousel-${messageEntity.id}`,
+        )}
         {renderTimestamp(`carousel-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
