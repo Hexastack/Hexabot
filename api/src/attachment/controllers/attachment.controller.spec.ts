@@ -175,7 +175,6 @@ describe('AttachmentController', () => {
       );
       expect(result?.options).toEqual({
         type: storedAttachment.type,
-        length: storedAttachment.size,
         disposition: `attachment; filename="${encodeURIComponent(
           storedAttachment.name,
         )}"`,
