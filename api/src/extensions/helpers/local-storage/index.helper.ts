@@ -141,7 +141,6 @@ export default class LocalStorageHelper
       path,
       options: {
         type: attachment.type,
-        length: attachment.size,
         disposition,
       },
     });

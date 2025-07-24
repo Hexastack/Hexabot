@@ -122,15 +122,9 @@ export class NlpSampleController extends BaseController<
     const result = await helper.format(samples, entities);
 
     // Sending the JSON data as a file
-    const buffer = Buffer.from(JSON.stringify(result));
-    const readableInstance = new Readable({
-      read() {
-        this.push(buffer);
-        this.push(null); // indicates the end of the stream
-      },
-    });
+    const readable = Readable.from(JSON.stringify(result));
 
-    return new StreamableFile(readableInstance, {
+    return new StreamableFile(readable, {
       type: 'application/json',
       disposition: `attachment; filename=nlp_export${
         type ? `_${type}` : ''

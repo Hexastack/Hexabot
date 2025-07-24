@@ -8,6 +8,7 @@
 
 import { createReadStream, existsSync } from 'fs';
 import { extname } from 'path';
+import { Readable } from 'stream';
 
 import { Logger, StreamableFile } from '@nestjs/common';
 import { StreamableFileOptions } from '@nestjs/common/file-stream/interfaces/streamable-options.interface';
@@ -62,11 +63,12 @@ export const getStreamableFile = ({
 }) => {
   // bypass test env
   if (config.env === 'test') {
-    return new StreamableFile(Buffer.from(''), options);
+    return new StreamableFile(Readable.from(''), options);
   }
-  const fileReadStream = createReadStream(path);
 
-  return new StreamableFile(fileReadStream, options);
+  const readable = createReadStream(path);
+
+  return new StreamableFile(readable, options);
 };
 
 /**
