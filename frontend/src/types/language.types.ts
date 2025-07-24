@@ -10,8 +10,6 @@ import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
 
-export type ILanguages = Record<string, string>;
-
 export interface ILanguageAttributes {
   title: string;
   code: string;

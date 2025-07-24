@@ -40,7 +40,7 @@ export const Roles = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<IRole>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.ROLE>(
     {
       $iLike: ["name"],
     },

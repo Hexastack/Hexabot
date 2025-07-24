@@ -77,12 +77,13 @@ const NlpEntity = () => {
     },
   });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
-  const { onSearch, searchPayload, searchText } = useSearch<INlpEntity>(
-    {
-      $or: ["name", "doc"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_ENTITY>(
+      {
+        $or: ["name", "doc"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps: nlpEntityGrid } = useFind(
     {
       entity: EntityType.NLP_ENTITY,

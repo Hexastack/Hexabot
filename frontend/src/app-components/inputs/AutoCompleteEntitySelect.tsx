@@ -64,13 +64,13 @@ const AutoCompleteEntitySelect = <
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
-  const { onSearch, searchPayload } = useSearch<Value>({
+  const { onSearch, searchPayload } = useSearch<typeof entity>({
     $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
   });
   const idRef = useRef(generateId());
   const params = {
     where: {
-      or: [...(searchPayload.where.or || [])],
+      or: searchPayload.where?.or || [],
     },
   };
   const { data, isFetching, fetchNextPage } = useInfiniteFind(

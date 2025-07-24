@@ -18,7 +18,6 @@ import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IChannel } from "@/types/channel.types";
-import { ISubscriber } from "@/types/subscriber.types";
 
 import { Chat } from "./components/Chat";
 import { SubscribersList } from "./components/ConversationsList";
@@ -27,12 +26,13 @@ import { AssignedTo } from "./types";
 
 export const Inbox = () => {
   const { t } = useTranslate();
-  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>(
-    {
-      $or: ["first_name", "last_name"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.SUBSCRIBER>(
+      {
+        $or: ["first_name", "last_name"],
+      },
+      { syncUrl: true },
+    );
   const [channels, setChannels] = useState<string[]>([]);
   const [assignment, setAssignment] = useState<AssignedTo>(AssignedTo.ALL);
 
