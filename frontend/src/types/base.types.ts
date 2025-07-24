@@ -7,6 +7,7 @@
  */
 
 import { GridPaginationModel, GridSortModel } from "@mui/x-data-grid";
+import { Path, PathValue } from "react-hook-form";
 
 import { EntityType, Format, TPopulateTypeFromFormat } from "@/services/types";
 
@@ -277,6 +278,10 @@ export type THook<
   entity: TE;
   populate: TPopulateTypeFromFormat<G>;
   attributes: TType<TE>["attributes"];
+};
+
+export type TNestedPaths<T> = {
+  [K in Path<T>]: PathValue<T, K>;
 };
 
 export interface IFindConfigProps<T = unknown> {

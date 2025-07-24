@@ -14,6 +14,7 @@ import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQu
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
+import { TNestedPaths } from "@/types/base.types";
 import { SearchPayload } from "@/types/search.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
@@ -35,9 +36,11 @@ export const useInfiniteLiveSubscribers = (props: {
       ...(props.channels.length > 0 && {
         or: [
           ...(props.searchPayload.where?.or || []),
-          ...props.channels.map((channel) => ({
-            "channel.name": channel,
-          })),
+          ...props.channels.map(
+            (channel): Partial<TNestedPaths<ISubscriber>> => ({
+              "channel.name": channel,
+            }),
+          ),
         ],
       }),
       ...(props.assignedTo === AssignedTo.ME
@@ -50,7 +53,7 @@ export const useInfiniteLiveSubscribers = (props: {
           }
         : {}),
     },
-  } as SearchPayload<ISubscriber>;
+  } satisfies SearchPayload<ISubscriber>;
   const {
     data,
     fetchNextPage,

@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { TNestedPaths } from "./base.types";
+
 export type TFilterStringFields<T> = {
   [K in keyof T]: T[K] extends string | undefined ? K : never;
 }[keyof T];
@@ -50,8 +52,8 @@ export type SearchItem<T> = {
         "!="?: T[K];
       };
 };
-export type SearchPayload<T> = EqParam<T> & {
+export type SearchPayload<T, N = TNestedPaths<T>> = EqParam<N> & {
   where?: {
-    or?: SearchItem<T>[];
-  } & SearchItem<T>;
+    or?: SearchItem<N>[];
+  } & SearchItem<N>;
 };
