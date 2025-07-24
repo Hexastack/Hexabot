@@ -125,6 +125,10 @@ const PatternsInput: FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
+  const handleRemove = (idx: number) => {
+    clearErrors(`patterns.${idx}`);
+    remove(idx);
+  };
 
   return (
     <Box display="flex" flexDirection="column">
@@ -209,7 +213,7 @@ const PatternsInput: FC = () => {
                         if (!pattern) {
                           setError(`patterns.${idx}`, {
                             type: "manual",
-                            message: t("message.required"),
+                            message: t("message.text_is_required"),
                           });
                         } else {
                           clearErrors(`patterns.${idx}`);
@@ -223,7 +227,7 @@ const PatternsInput: FC = () => {
                 <IconButton
                   size="small"
                   color="error"
-                  onClick={() => remove(idx)}
+                  onClick={() => handleRemove(idx)}
                 >
                   <RemoveCircleOutlineIcon />
                 </IconButton>
