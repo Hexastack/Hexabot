@@ -184,6 +184,7 @@ export function getMessageContent(
     );
   }
 
+  // If there's an attachment, create a component that handles its display
   if ("attachment" in message) {
     content.push(
       <Message.CustomContent key={`attachment-${messageEntity.id}`}>
