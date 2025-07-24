@@ -114,6 +114,7 @@ export function Chat() {
                     ? [
                         <Avatar
                           key={message.id}
+                          title={`${subscriber.first_name} ${subscriber.last_name}`}
                           src={getAvatarSrc(
                             apiUrl,
                             message.sender

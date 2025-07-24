@@ -96,34 +96,42 @@ export function getMessageContent(
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
-  const wrapWithTooltip = (child: ReactNode, key: string) =>
-    normalizedTimestamp ? (
-      <Tooltip title={normalizedTimestamp} key={key}>
-        <div>{child}</div>
-      </Tooltip>
-    ) : (
-      <div>{child}</div>
-    );
-  // Helper to render timestamp
-  const renderTimestamp = (keySuffix: string) =>
-    formattedTimestamp ? (
-      <span
-        key={`timestamp-${keySuffix}`}
-        className={`timestamp ${
-          messageEntity.recipient ? "timestamp-right" : "timestamp-left"
-        }`}
+  const wrapWithTooltip = (child: ReactNode, key: string): ReactNode => {
+    if (!normalizedTimestamp) return child;
+
+    return (
+      <Tooltip
+        key={key}
+        title={normalizedTimestamp}
+        arrow
+        followCursor
+        enterDelay={300}
+        leaveDelay={150}
+        placement="top"
       >
-        {formattedTimestamp}
-      </span>
-    ) : null;
+        <span>{child}</span>
+      </Tooltip>
+    );
+  };
+  const renderTimestamp = (keySuffix: string) =>
+    formattedTimestamp
+      ? wrapWithTooltip(
+          <span
+            key={`timestamp-${keySuffix}`}
+            className={`timestamp ${
+              messageEntity.recipient ? "timestamp-right" : "timestamp-left"
+            }`}
+          >
+            {formattedTimestamp}
+          </span>,
+          `timestamp-${keySuffix}`,
+        )
+      : null;
 
   if ("coordinates" in message) {
     content.push(
       <Message.CustomContent key={message.type}>
-        {wrapWithTooltip(
-          <GeolocationMessage message={message} />,
-          message.type,
-        )}
+        <GeolocationMessage message={message} key={message.type} />
         {renderTimestamp(message.type)}
       </Message.CustomContent>,
     );
@@ -132,7 +140,7 @@ export function getMessageContent(
   if ("text" in message) {
     content.push(
       <Message.CustomContent key={messageEntity.id}>
-        {wrapWithTooltip(formatMessageText(message.text), messageEntity.id)}
+        {formatMessageText(message.text)}
         {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
@@ -179,10 +187,7 @@ export function getMessageContent(
   if ("attachment" in message) {
     content.push(
       <Message.CustomContent key={`attachment-${messageEntity.id}`}>
-        {wrapWithTooltip(
-          <MessageAttachmentsViewer message={message} />,
-          `attachment-${messageEntity.id}`,
-        )}
+        <MessageAttachmentsViewer message={message} />
         {renderTimestamp(`attachment-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
@@ -191,10 +196,7 @@ export function getMessageContent(
   if ("options" in message) {
     content.push(
       <Message.CustomContent key={`carousel-${messageEntity.id}`}>
-        {wrapWithTooltip(
-          <Carousel {...message} />,
-          `carousel-${messageEntity.id}`,
-        )}
+        <Carousel {...message} />
         {renderTimestamp(`carousel-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
