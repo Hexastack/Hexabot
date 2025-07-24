@@ -9,12 +9,7 @@
 import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
 
 import { EntityType, Format, QueryType } from "@/services/types";
-import {
-  IBaseSchema,
-  IFindConfigProps,
-  POPULATE_BY_TYPE,
-  THook,
-} from "@/types/base.types";
+import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
@@ -23,13 +18,14 @@ import { useGetFromCache } from "./useGet";
 
 export const useInfiniteFind = <
   T extends THook["params"],
-  TAttr = THook<T>["attributes"],
-  TBasic extends IBaseSchema = THook<T>["basic"],
-  TFull extends IBaseSchema = THook<T>["full"],
+  TAttr extends THook<T>["attributes"],
+  TBasic extends THook<T>["basic"],
+  TFilters extends THook<T>["filters"],
+  TFull extends THook<T>["full"],
   P = THook<T>["populate"],
 >(
   { entity, format }: THook<T>["params"],
-  config?: IFindConfigProps,
+  config?: IFindConfigProps<TFilters>,
   options?: Omit<
     UseInfiniteQueryOptions<
       string[],
