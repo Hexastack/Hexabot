@@ -81,7 +81,7 @@ export type NlpValueMatchPattern = {
 
 export type NlpPattern = NlpEntityMatchPattern | NlpValueMatchPattern;
 
-export type Pattern = null | string | PayloadPattern | NlpPattern[];
+export type Pattern = string | PayloadPattern | NlpPattern[];
 
 export enum PatternType {
   regex = "regex",
