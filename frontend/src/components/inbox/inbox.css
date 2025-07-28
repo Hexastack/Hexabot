@@ -116,3 +116,17 @@ div .cs-message-input__content-editor-container,
 .chat-link:hover {
   opacity: 0.8;
 }
+
+.timestamp {
+  font-size: 0.65rem;
+  margin-top: 6px;
+  user-select: none;
+}
+.timestamp-left {
+  float: left;
+  color: rgba(0, 0, 0, 0.6);
+}
+.timestamp-right {
+  float: right;
+  color: rgba(255, 255, 255, 0.7);
+}

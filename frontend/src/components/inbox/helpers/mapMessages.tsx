@@ -9,9 +9,9 @@
 import { Message, MessageModel } from "@chatscope/chat-ui-kit-react";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import ReplyIcon from "@mui/icons-material/Reply";
-import { Chip, Grid } from "@mui/material";
+import { Chip, Grid, Tooltip } from "@mui/material";
 import Autolinker from "autolinker";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 import { ROUTES } from "@/services/api.class";
 import { EntityType } from "@/services/types";
@@ -85,20 +85,55 @@ function formatMessageText(text: string): ReactNode {
     return <div>{text}</div>;
   }
 }
-
 /**
  * @description this function constructs the message children basen on message type
  */
 export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
+  formattedTimestamp?: string,
+  normalizedTimestamp?: string,
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
 
+  const wrapWithTooltip = (
+    child: React.ReactElement,
+    key: string,
+  ): ReactNode => {
+    if (!normalizedTimestamp) return child;
+
+    return (
+      <Tooltip
+        key={key}
+        title={normalizedTimestamp}
+        arrow
+        enterDelay={300}
+        leaveDelay={150}
+      >
+        {child}
+      </Tooltip>
+    );
+  };
+  const renderTimestamp = (keySuffix: string) =>
+    formattedTimestamp
+      ? wrapWithTooltip(
+          <span
+            key={`timestamp-${keySuffix}`}
+            className={`timestamp ${
+              messageEntity.recipient ? "timestamp-right" : "timestamp-left"
+            }`}
+          >
+            {formattedTimestamp}
+          </span>,
+          `timestamp-${keySuffix}`,
+        )
+      : null;
+
   if ("coordinates" in message) {
     content.push(
-      <Message.CustomContent>
+      <Message.CustomContent key={message.type}>
         <GeolocationMessage message={message} key={message.type} />
+        {renderTimestamp(message.type)}
       </Message.CustomContent>,
     );
   }
@@ -107,9 +142,11 @@ export function getMessageContent(
     content.push(
       <Message.CustomContent key={messageEntity.id}>
         {formatMessageText(message.text)}
+        {renderTimestamp(messageEntity.id)}
       </Message.CustomContent>,
     );
   }
+
   let chips: { title: string }[] = [];
   let chipsIcon: ReactNode;
 
@@ -122,9 +159,12 @@ export function getMessageContent(
     chipsIcon = <ReplyIcon color="disabled" />;
   }
 
-  if (chips.length > 0)
+  if (chips.length > 0) {
     content.push(
-      <Message.Footer style={{ marginTop: "5px" }}>
+      <Message.Footer
+        style={{ marginTop: "5px" }}
+        key={`chips-${messageEntity.id}`}
+      >
         <Grid
           container
           justifyItems="center"
@@ -143,20 +183,23 @@ export function getMessageContent(
         </Grid>
       </Message.Footer>,
     );
+  }
 
   // If there's an attachment, create a component that handles its display
   if ("attachment" in message) {
     content.push(
-      <Message.CustomContent>
+      <Message.CustomContent key={`attachment-${messageEntity.id}`}>
         <MessageAttachmentsViewer message={message} />
+        {renderTimestamp(`attachment-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
   }
 
   if ("options" in message) {
     content.push(
-      <Message.CustomContent>
+      <Message.CustomContent key={`carousel-${messageEntity.id}`}>
         <Carousel {...message} />
+        {renderTimestamp(`carousel-${messageEntity.id}`)}
       </Message.CustomContent>,
     );
   }
