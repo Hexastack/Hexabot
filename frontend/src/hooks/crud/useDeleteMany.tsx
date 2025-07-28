@@ -22,10 +22,7 @@ export const useDeleteMany = <
   TFull extends IBaseSchema = THook<{ entity: TE }>["full"],
 >(
   entity: TE,
-  options?: Omit<
-    TMutationOptions<string, Error, string[], TBasic>,
-    "mutationFn" | "mutationKey"
-  >,
+  options?: TMutationOptions<string, Error, string[], TBasic>,
 ) => {
   const api = useEntityApiClient<TAttr, TBasic, TFull>(entity);
   const queryClient = useQueryClient();
