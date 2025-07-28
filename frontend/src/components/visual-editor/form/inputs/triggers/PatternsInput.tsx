@@ -23,7 +23,7 @@ import { useSimpleFieldArray } from "@/hooks/useSimpleFieldArray";
 import { useTranslate } from "@/hooks/useTranslate";
 import { IBlockAttributes, Pattern, PatternType } from "@/types/block.types";
 import { PayloadType } from "@/types/message.types";
-import { isRegex, isRegexString } from "@/utils/string";
+import { extractRegexBody, isRegex, isRegexString } from "@/utils/string";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
 
 import PatternInput from "./PatternInput";
@@ -127,7 +127,9 @@ const PatternsInput: FC = () => {
                   validate: (value) => {
                     if (
                       patternType === PatternType.regex &&
-                      (value === "//" || !isRegex(value as string))
+                      (!(typeof value === "string") ||
+                        value === "//" ||
+                        !isRegex(extractRegexBody(value)))
                     ) {
                       return t("message.regex_is_invalid");
                     } else if (patternType === PatternType.text && !value) {
