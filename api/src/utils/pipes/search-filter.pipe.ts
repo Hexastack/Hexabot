@@ -158,7 +158,7 @@ export class SearchFilterPipe<T>
             ...acc,
             $nor: [...(acc?.$nor || []), { ...filter, ...data }],
           };
-        case 'in':
+        case 'in': {
           // Handle $in operator - convert to MongoDB $in syntax
           const inQuery = Object.entries(data || {}).reduce(
             (inAcc, [field, values]) => {
@@ -187,6 +187,7 @@ export class SearchFilterPipe<T>
                 ...inQuery,
               };
           }
+        }
         default:
           switch (_context) {
             case 'or':
