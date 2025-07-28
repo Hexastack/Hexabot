@@ -125,13 +125,15 @@ const PatternsInput: FC = () => {
                 defaultValue={value}
                 rules={{
                   validate: (value) => {
-                    if (
-                      patternType === PatternType.regex &&
-                      (!(typeof value === "string") ||
-                        value === "//" ||
-                        !isRegex(extractRegexBody(value)))
-                    ) {
-                      return t("message.regex_is_invalid");
+                    if (patternType === PatternType.regex) {
+                      if (!value || value === "//") {
+                        return t("message.regex_is_empty");
+                      } else if (
+                        !(typeof value === "string") ||
+                        !isRegex(extractRegexBody(value))
+                      ) {
+                        return t("message.regex_is_invalid");
+                      }
                     } else if (patternType === PatternType.text && !value) {
                       return t("message.text_is_required");
                     } else if (!value) {
