@@ -82,7 +82,7 @@ const Diagrams = () => {
     selectedCategoryId,
     createNode,
   } = useVisualEditor();
-  const { searchPayload } = useSearch<IBlock>({
+  const { searchPayload } = useSearch<EntityType.BLOCK>({
     $eq: [{ category: selectedCategoryId }],
   });
   const { toast } = useToast();

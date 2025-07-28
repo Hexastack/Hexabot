@@ -146,3 +146,7 @@ export interface ICustomBlockTemplate
     OmitPopulate<ICustomBlockTemplateAttributes, EntityType.CUSTOM_BLOCK> {
   namespace: string;
 }
+
+export interface ICustomBlockSettingFilters {
+  plugin?: string;
+}

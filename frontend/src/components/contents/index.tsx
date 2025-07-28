@@ -49,7 +49,7 @@ export const Contents = () => {
   const queryClient = useQueryClient();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload, searchText } = useSearch<IContent>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.CONTENT>(
     {
       $eq: [{ entity: String(query.id) }],
       $iLike: ["title"],

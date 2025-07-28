@@ -20,7 +20,6 @@ import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType } from "@/services/types";
-import { TFilterStringFields } from "@/types/search.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
 import {
@@ -37,13 +36,14 @@ type MediaLibraryProps = {
 export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
   const { t } = useTranslate();
   const formatFileSize = useFormattedFileSize();
-  const { onSearch, searchPayload, searchText } = useSearch<IAttachment>(
-    {
-      $iLike: ["name"],
-    },
-    // Sync URL only in the media library page (not the modal)
-    { syncUrl: !onSelect },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.ATTACHMENT>(
+      {
+        $iLike: ["name"],
+      },
+      // Sync URL only in the media library page (not the modal)
+      { syncUrl: !onSelect },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.ATTACHMENT },
     {
@@ -54,17 +54,10 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
             AttachmentResourceRef.ContentAttachment,
           ],
           ...searchPayload.where,
-          or: {
-            ...searchPayload.where.or,
-            ...(accept
-              ? accept
-                  .split(",")
-                  .map(
-                    (type) =>
-                      ({ type } as unknown as TFilterStringFields<IAttachment>),
-                  )
-              : undefined),
-          },
+          or: [
+            ...(searchPayload.where?.or || []),
+            ...(accept ? accept.split(",").map((type) => ({ type })) : []),
+          ],
         },
       },
     },

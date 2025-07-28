@@ -65,3 +65,7 @@ export interface ISubscriberAttachmentFull
     IFormat<Format.FULL> {
   createdBy: (ISubscriber | IUser)[];
 }
+
+export interface IAttachmentFilters extends Omit<IAttachment, "resourceRef"> {
+  resourceRef: AttachmentResourceRef[];
+}

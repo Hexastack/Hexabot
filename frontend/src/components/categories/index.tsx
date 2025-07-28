@@ -40,12 +40,13 @@ export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const { onSearch, searchPayload, searchText } = useSearch<ICategory>(
-    {
-      $iLike: ["label"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CATEGORY>(
+      {
+        $iLike: ["label"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CATEGORY },
     {

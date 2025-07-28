@@ -42,12 +42,13 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<IContextVar>(
-    {
-      $iLike: ["label"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CONTEXT_VAR>(
+      {
+        $iLike: ["label"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTEXT_VAR },
     {

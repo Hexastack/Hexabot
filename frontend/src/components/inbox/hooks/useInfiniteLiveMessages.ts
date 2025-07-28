@@ -12,6 +12,8 @@ import { InfiniteData, useQueryClient } from "react-query";
 import { useNormalizeAndCache } from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
 import { EntityType, QueryType } from "@/services/types";
+import { IMessage } from "@/types/message.types";
+import { SearchPayload } from "@/types/search.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { SocketMessageEvents } from "../types";
@@ -22,7 +24,7 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
-  const params = {
+  const params: SearchPayload<IMessage> = {
     where: {
       or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
     },
