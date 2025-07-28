@@ -28,18 +28,7 @@ export const TriggersForm = () => {
   return (
     <ContentContainer>
       <ContentItem>
-        <Controller
-          name="patterns"
-          control={control}
-          defaultValue={block?.patterns || []}
-          render={({ field }) => (
-            <PatternsInput
-              value={field?.value || []}
-              onChange={field.onChange}
-              minInput={1}
-            />
-          )}
-        />
+        <PatternsInput />
       </ContentItem>
       <Divider orientation="horizontal" flexItem />
       <ContentItem>

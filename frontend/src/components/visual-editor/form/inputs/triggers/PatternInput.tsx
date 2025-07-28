@@ -6,148 +6,105 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, TextFieldProps } from "@mui/material";
-import { FC, useEffect, useState } from "react";
-import { RegisterOptions, useFormContext } from "react-hook-form";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import { Box, Chip, IconButton, useTheme } from "@mui/material";
+import { forwardRef } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { Input } from "@/app-components/inputs/Input";
 import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import { RegexInput } from "@/app-components/inputs/RegexInput";
 import { useTranslate } from "@/hooks/useTranslate";
 import {
-  IBlockAttributes,
-  IBlockFull,
-  NlpPattern,
-  Pattern,
-  PatternType,
-  PayloadPattern,
+    IBlockAttributes,
+    NlpPattern,
+    Pattern,
+    PatternType,
+    PayloadPattern,
 } from "@/types/block.types";
-import {
-  extractRegexBody,
-  formatWithSlashes,
-  isRegex,
-  isRegexString,
-} from "@/utils/string";
+import { extractRegexBody, formatWithSlashes } from "@/utils/string";
 
 import { OutcomeInput } from "./OutcomeInput";
 import { PostbackInput } from "./PostbackInput";
 
-const getPatternType = (pattern: Pattern): PatternType => {
-  if (isRegexString(pattern)) {
-    return "regex";
-  } else if (Array.isArray(pattern)) {
-    return "nlp";
-  } else if (typeof pattern === "object") {
-    if (pattern?.type === "menu") {
-      return "menu";
-    } else if (pattern?.type === "content") {
-      return "content";
-    } else if (pattern?.type === "outcome") {
-      return "outcome";
-    } else {
-      return "payload";
-    }
-  } else {
-    return "text";
-  }
-};
-
 type PatternInputProps = {
+  name: string;
   value: Pattern;
-  onChange: (pattern: Pattern) => void;
-  block?: IBlockFull;
-  idx: number;
-  getInputProps?: (index: number) => TextFieldProps;
+  index: number;
+  patternType: PatternType;
+  onChange: (value: Pattern) => void;
+  onRemove: (idx: number) => void;
 };
 
-const PatternInput: FC<PatternInputProps> = ({
-  value,
-  onChange,
-  idx,
-  getInputProps,
-}) => {
+const PatternInput = forwardRef<HTMLDivElement, PatternInputProps>(
+  ({ value, index, patternType, onChange, onRemove }, ref) => {
   const { t } = useTranslate();
+  const theme = useTheme();
   const {
-    register,
     formState: { errors },
   } = useFormContext<IBlockAttributes>();
-  const [pattern, setPattern] = useState<Pattern>(value);
-  const patternType = getPatternType(value);
-  const registerInput = (
-    errorMessage: string,
-    idx: number,
-    additionalOptions?: RegisterOptions<IBlockAttributes>,
-  ) => {
-    return {
-      ...register(`patterns.${idx}`, {
-        required: errorMessage,
-        ...additionalOptions,
-      }),
-      helperText: errors.patterns?.[idx]
-        ? errors.patterns[idx].message
-        : undefined,
-      error: !!errors.patterns?.[idx],
-    };
-  };
-
-  useEffect(() => {
-    if (pattern || pattern === "") {
-      onChange(pattern);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pattern]);
 
   return (
-    <Box display="flex" flexGrow={1}>
-      {patternType === "nlp" && (
-        <NlpPatternSelect
-          patterns={pattern as NlpPattern[]}
-          onChange={setPattern}
-          fullWidth={true}
+    <Box display="flex" alignItems="center" mt={2} ref={ref}>
+      {index > 0 && (
+        <Chip
+          sx={{ m: 1, color: theme.palette.grey[600] }}
+          label={t("label.or")}
+          size="small"
+          variant="outlined"
         />
       )}
-      {["payload", "content", "menu"].includes(patternType) ? (
-        <PostbackInput
-          onChange={(payload) => {
-            payload && setPattern(payload);
-          }}
-          defaultValue={pattern as PayloadPattern}
-        />
-      ) : null}
-      {patternType === "outcome" ? (
-        <OutcomeInput
-          onChange={(payload) => {
-            payload && setPattern(payload);
-          }}
-          defaultValue={pattern as PayloadPattern}
-        />
-      ) : null}
-      {typeof value === "string" && patternType === "regex" ? (
-        <RegexInput
-          {...registerInput(t("message.regex_is_empty"), idx, {
-            validate: (pattern) => {
-              return isRegex(extractRegexBody(pattern))
-                ? true
-                : t("message.regex_is_invalid");
-            },
-            setValueAs: (v) => (isRegexString(v) ? v : formatWithSlashes(v)),
-          })}
-          value={extractRegexBody(value)}
-          label={t("label.regex")}
-          onChange={(e) => onChange(formatWithSlashes(e.target.value))}
-          required
-        />
-      ) : null}
-      {typeof value === "string" && patternType === "text" ? (
-        <Input
-          {...(getInputProps ? getInputProps(idx) : null)}
-          label={t("label.text")}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      ) : null}
+      <Box display="flex" flexGrow={1}>
+        {patternType === PatternType.nlp && (
+          <NlpPatternSelect
+            patterns={value as NlpPattern[]}
+            onChange={onChange}
+            fullWidth={true}
+          />
+        )}
+        {[PatternType.payload, PatternType.content, PatternType.menu].includes(
+          patternType,
+        ) ? (
+          <PostbackInput
+            onChange={onChange}
+            defaultValue={value as PayloadPattern}
+          />
+        ) : null}
+        {patternType === PatternType.outcome ? (
+          <OutcomeInput
+            onChange={onChange}
+            defaultValue={value as PayloadPattern}
+          />
+        ) : null}
+        {typeof value === "string" && patternType === PatternType.regex ? (
+          <RegexInput
+            value={extractRegexBody(value)}
+            onChange={(e) => onChange(formatWithSlashes(e.target.value))}
+            label={t("label.regex")}
+            error={!!errors?.patterns?.[index]}
+            helperText={errors?.patterns?.[index]?.message}
+            required
+          />
+        ) : null}
+        {typeof value === "string" && patternType === PatternType.text ? (
+          <Input
+            label={t("label.text")}
+            onChange={(e) => {
+              onChange(e.target.value);
+            }}
+            defaultValue={value}
+            error={!!errors?.patterns?.[index]}
+            helperText={errors?.patterns?.[index]?.message}
+          />
+        ) : null}
+      </Box>
+      <IconButton size="small" color="error" onClick={() => onRemove(index)} sx={{ alignSelf: 'flex-start'}}>
+        <RemoveCircleOutlineIcon />
+      </IconButton>
     </Box>
   );
-};
+});
+
+PatternInput.displayName = "PatternInput";
 
 export default PatternInput;
