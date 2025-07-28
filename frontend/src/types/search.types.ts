@@ -50,6 +50,9 @@ export type SearchItem<T> = {
     | (T[K] extends string ? { contains?: T[K] } : undefined)
     | {
         "!="?: T[K];
+      }
+    | {
+        $in?: T[K][];
       };
 };
 export type SearchPayload<T, N = TNestedPaths<T>> = EqParam<N> & {
