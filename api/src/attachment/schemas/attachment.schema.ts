@@ -96,7 +96,11 @@ export class AttachmentStub extends BaseSchema {
   /**
    * Resource reference of the attachment
    */
-  @Prop({ type: String, enum: Object.values(AttachmentResourceRef) })
+  @Prop({
+    type: String,
+    enum: Object.values(AttachmentResourceRef),
+    index: true,
+  })
   resourceRef: AttachmentResourceRef;
 
   /**

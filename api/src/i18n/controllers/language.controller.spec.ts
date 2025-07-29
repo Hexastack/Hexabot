@@ -6,11 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { I18nService } from '@/i18n/services/i18n.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -25,8 +22,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LanguageUpdateDto } from '../dto/language.dto';
-import { LanguageRepository } from '../repositories/language.repository';
-import { Language, LanguageModel } from '../schemas/language.schema';
+import { Language } from '../schemas/language.schema';
 import { LanguageService } from '../services/language.service';
 
 import { LanguageController } from './language.controller';
@@ -38,30 +34,9 @@ describe('LanguageController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installLanguageFixtures),
-        MongooseModule.forFeature([LanguageModel]),
-      ],
-      providers: [
-        LanguageController,
-        LanguageService,
-        LanguageRepository,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-            initDynamicLanguages: jest.fn(),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      autoInjectFrom: ['controllers'],
+      imports: [rootMongooseTestModule(installLanguageFixtures)],
+      controllers: [LanguageController],
     });
     [languageService, languageController] = await getMocks([
       LanguageService,
@@ -95,7 +70,7 @@ describe('LanguageController', () => {
     });
   });
 
-  describe('findPage', () => {
+  describe('find', () => {
     const pageQuery = getPageQuery<Language>({ sort: ['code', 'asc'] });
     it('should find languages', async () => {
       jest.spyOn(languageService, 'find');

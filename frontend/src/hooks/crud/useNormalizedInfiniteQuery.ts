@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -8,20 +8,8 @@
 
 import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
 
-import {
-  EntityType,
-  Format,
-  QueryType,
-  TPopulateTypeFromFormat,
-} from "@/services/types";
-import {
-  IBaseSchema,
-  IDynamicProps,
-  IFindConfigProps,
-  POPULATE_BY_TYPE,
-  TAllowedFormat,
-  TType,
-} from "@/types/base.types";
+import { EntityType, Format, QueryType } from "@/services/types";
+import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { toPageQueryPayload } from "../usePagination";
@@ -32,20 +20,20 @@ import { useGetFromCache } from "./useGet";
 const PAGE_SIZE = 20;
 
 export const useNormalizedInfiniteQuery = <
-  TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
-  P = TPopulateTypeFromFormat<TDynamicProps>,
+  T extends THook["params"],
+  TAttr extends THook<T>["attributes"],
+  TBasic extends THook<T>["basic"],
+  TFull extends THook<T>["full"],
+  P = THook<T>["populate"],
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
-  config?: IFindConfigProps,
+  { entity, format }: THook<T>["params"],
+  config?: IFindConfigProps<TAttr>,
   options?: Omit<
     UseInfiniteQueryOptions<
       string[],
       Error,
       string[],
-      [QueryType, EntityType, any]
+      [QueryType, EntityType, string]
     >,
     "queryFn" | "queryKey" | "onSuccess"
   > & { onSuccess?: (result: TBasic[]) => void },
@@ -73,7 +61,7 @@ export const useNormalizedInfiniteQuery = <
   // @TODO : fix the following
   // @ts-ignore
   const { data: infiniteData, ...infiniteQuery } = useInfiniteQuery({
-    queryKey: [QueryType.infinite, entity, config?.params],
+    queryKey: [QueryType.infinite, entity, JSON.stringify(config?.params)],
     initialPageParam: {
       limit: PAGE_SIZE,
       skip: 0,

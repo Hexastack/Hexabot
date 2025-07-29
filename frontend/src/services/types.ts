@@ -38,6 +38,7 @@ export enum EntityType {
   HELPER = "Helper",
   NLU_HELPER = "NluHelper",
   LLM_HELPER = "LlmHelper",
+  FLOW_ESCAPE_HELPER = "FlowEscapeHelper",
   STORAGE_HELPER = "StorageHelper",
 }
 
@@ -81,9 +82,12 @@ export type TMutationOptions<
   TError = unknown,
   TVariables = void,
   TContext = unknown,
-> = UseMutationOptions<TData, TError, TVariables, TContext> & {
-  invalidate?: boolean;
-};
+> = Omit<
+  UseMutationOptions<TData, TError, TVariables, TContext> & {
+    invalidate?: boolean;
+  },
+  "mutationFn" | "mutationKey"
+>;
 
 export type TSetCacheProps<TData> = {
   id: string;

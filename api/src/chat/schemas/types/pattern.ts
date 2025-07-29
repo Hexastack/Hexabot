@@ -18,19 +18,27 @@ export const payloadPatternSchema = z.object({
 
 export type PayloadPattern = z.infer<typeof payloadPatternSchema>;
 
+export const nlpEntityMatchPatternSchema = z.object({
+  entity: z.string(),
+  match: z.literal('entity'),
+});
+
+export type NlpEntityMatchPattern = z.infer<typeof nlpEntityMatchPatternSchema>;
+
+export const nlpValueMatchPatternSchema = z.object({
+  entity: z.string(),
+  match: z.literal('value'),
+  value: z.string(),
+});
+
+export type NlpValueMatchPattern = z.infer<typeof nlpValueMatchPatternSchema>;
+
 export const nlpPatternSchema = z.discriminatedUnion('match', [
-  z.object({
-    entity: z.string(),
-    match: z.literal('entity'),
-  }),
-  z.object({
-    entity: z.string(),
-    match: z.literal('value'),
-    value: z.string(),
-  }),
+  nlpEntityMatchPatternSchema,
+  nlpValueMatchPatternSchema,
 ]);
 
-export type NlpPattern = z.infer<typeof nlpPatternSchema>;
+export type NlpPattern = NlpEntityMatchPattern | NlpValueMatchPattern;
 
 export const stringRegexPatternSchema = z.string().refine(
   (value) => {
@@ -45,8 +53,17 @@ export const stringRegexPatternSchema = z.string().refine(
     }
     return value !== '';
   },
-  {
-    message: 'Invalid regex or empty string',
+  (value) => {
+    if (value.startsWith('/') && value.endsWith('/')) {
+      if (value.length === 2) {
+        return { message: 'Empty regex' };
+      }
+      return { message: 'Invalid regex' };
+    } else if (value.length === 0) {
+      return { message: 'Empty string' };
+    } else {
+      return {};
+    }
   },
 );
 

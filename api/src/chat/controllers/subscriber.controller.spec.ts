@@ -6,19 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { User, UserModel } from '@/user/schemas/user.schema';
-import { RoleService } from '@/user/services/role.service';
+import { User } from '@/user/schemas/user.schema';
 import {
   installSubscriberFixtures,
   subscriberFixtures,
@@ -30,13 +18,9 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
-import { LabelRepository } from '../repositories/label.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Label, LabelModel } from '../schemas/label.schema';
-import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+import { Label } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import { SubscriberService } from '../services/subscriber.service';
 
 import { UserService } from './../../user/services/user.service';
@@ -55,34 +39,10 @@ describe('SubscriberController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [SubscriberController],
-      imports: [
-        rootMongooseTestModule(installSubscriberFixtures),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          LabelModel,
-          UserModel,
-          RoleModel,
-          InvitationModel,
-          PermissionModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        SubscriberRepository,
-        SubscriberService,
-        LabelService,
-        LabelRepository,
-        UserService,
-        WebsocketGateway,
-        SocketEventDispatcherService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        AttachmentService,
-        AttachmentRepository,
-      ],
+      imports: [rootMongooseTestModule(installSubscriberFixtures)],
+      providers: [LabelService, UserService],
     });
     [subscriberService, labelService, userService, subscriberController] =
       await getMocks([

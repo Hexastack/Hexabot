@@ -6,6 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { PUBLIC_PATHS } from "@/hooks/useAuth";
+import { RouterType } from "@/services/types";
+
 export const buildURL = (baseUrl: string, relativePath: string): string => {
   try {
     return new URL(relativePath).toString();
@@ -36,4 +39,20 @@ export const isAbsoluteUrl = (value: string = ""): boolean => {
   } catch (error) {
     return false;
   }
+};
+
+export const getStaticPath = (pathname: string) => {
+  return pathname.includes("[")
+    ? pathname.split("[")[0].slice(0, -1)
+    : pathname;
+};
+
+export const isLoginPath = (pathname: string) => {
+  return getStaticPath(pathname) === `/${RouterType.LOGIN}`;
+};
+
+export const hasPublicPath = (pathname: string) => {
+  return PUBLIC_PATHS.some(
+    (path) => getStaticPath(path) === getStaticPath(pathname),
+  );
 };

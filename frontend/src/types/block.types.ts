@@ -68,22 +68,30 @@ export interface PayloadPattern {
   type?: PayloadType;
 }
 
-export type NlpPattern = {
+export type NlpEntityMatchPattern = {
   entity: string;
-  match: "value" | "entity";
+  match: "entity";
+};
+
+export type NlpValueMatchPattern = {
+  entity: string;
+  match: "value";
   value: string;
 };
 
-export type Pattern = null | string | PayloadPattern | NlpPattern[];
+export type NlpPattern = NlpEntityMatchPattern | NlpValueMatchPattern;
 
-export type PatternType =
-  | "regex"
-  | "nlp"
-  | "menu"
-  | "content"
-  | "outcome"
-  | "payload"
-  | "text";
+export type Pattern = string | PayloadPattern | NlpPattern[];
+
+export enum PatternType {
+  regex = "regex",
+  nlp = "nlp",
+  menu = "menu",
+  content = "content",
+  outcome = "outcome",
+  payload = "payload",
+  text = "text",
+}
 
 export interface IBlockAttributes {
   name: string;
@@ -137,4 +145,8 @@ export interface ICustomBlockTemplate
   extends IBaseSchema,
     OmitPopulate<ICustomBlockTemplateAttributes, EntityType.CUSTOM_BLOCK> {
   namespace: string;
+}
+
+export interface ICustomBlockSettingFilters {
+  plugin?: string;
 }

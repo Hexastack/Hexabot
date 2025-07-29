@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { escapeRegExp } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import { LoggerService } from '@/logger/logger.service';
@@ -225,6 +226,23 @@ export default abstract class BaseNlpHelper<
     threshold?: boolean,
     project?: string,
   ): Promise<NLU.ParseEntities>;
+  /**
+   * Builds a Unicode-aware regular expression to match a term as a whole word in NLU samples.
+   *
+   * This method uses Unicode property escapes and lookbehind/lookahead to ensure the term is not part of a larger word,
+   * making it robust for non-Latin scripts (e.g., Arabic, Cyrillic, accented characters).
+   *
+   * @param term - The keyword or expression to match literally in the text.
+   * @returns A RegExp that matches the term as a whole word, using Unicode boundaries.
+   *
+   * @notes
+   * - The returned RegExp uses the 'gu' flags (global, unicode).
+   * - The term is escaped to avoid regex injection.
+   */
+  private buildUnicodeRegexExpression(term: string): RegExp {
+    const escapedTerm = escapeRegExp(term);
+    return new RegExp(`(?<!\\p{L})${escapedTerm}(?!\\p{L})`, 'gui');
+  }
 
   /**
    * Finds entities in a given text based on their values and synonyms.
@@ -254,7 +272,7 @@ export default abstract class BaseNlpHelper<
         // Filter the terms that are found in the text
         return allValues
           .flatMap((term) => {
-            const regex = new RegExp(`\\b${term}\\b`, 'g');
+            const regex = this.buildUnicodeRegexExpression(term);
             const matches = [...text.matchAll(regex)];
 
             // Map matches to FoundEntity format
@@ -299,7 +317,10 @@ export default abstract class BaseNlpHelper<
         let regex: RegExp;
         try {
           const shouldWrap = nlpValue.metadata?.wordBoundary;
-          regex = new RegExp(shouldWrap ? `\\b${pattern}\\b` : pattern, 'gi');
+          regex = new RegExp(
+            shouldWrap ? `(?<!\\p{L})${pattern}(?!\\p{L})` : pattern,
+            'gui',
+          );
         } catch {
           this.logger.error('Invalid NLP regex pattern');
           return [];

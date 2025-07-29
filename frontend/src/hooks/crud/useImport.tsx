@@ -9,22 +9,19 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { QueryType, TMutationOptions } from "@/services/types";
-import { IBaseSchema, IDynamicProps, TType } from "@/types/base.types";
+import { IBaseSchema, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
 import { isSameEntity, useNormalizeAndCache } from "./helpers";
 
 export const useImport = <
-  TEntity extends IDynamicProps["entity"],
+  TE extends THook["entity"],
   TAttr extends File = File,
-  TBasic extends IBaseSchema = TType<TEntity>["basic"],
+  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
 >(
-  entity: TEntity,
-  options: Omit<
-    TMutationOptions<TBasic[], Error, TAttr, TBasic[]>,
-    "mutationFn" | "mutationKey"
-  > = {},
+  entity: TE,
+  options: TMutationOptions<TBasic[], Error, TAttr, TBasic[]> = {},
   params: Record<string, any> = {},
 ) => {
   const api = useEntityApiClient<TAttr, TBasic>(entity);

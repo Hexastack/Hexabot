@@ -7,8 +7,8 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   contextVarFixtures,
@@ -26,8 +26,7 @@ import {
   ContextVarCreateDto,
   ContextVarUpdateDto,
 } from '../dto/context-var.dto';
-import { ContextVarRepository } from '../repositories/context-var.repository';
-import { ContextVar, ContextVarModel } from '../schemas/context-var.schema';
+import { ContextVar } from '../schemas/context-var.schema';
 import { ContextVarService } from '../services/context-var.service';
 
 import { ContextVarController } from './context-var.controller';
@@ -40,12 +39,17 @@ describe('ContextVarController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [ContextVarController],
-      imports: [
-        rootMongooseTestModule(installContextVarFixtures),
-        MongooseModule.forFeature([ContextVarModel]),
+      imports: [rootMongooseTestModule(installContextVarFixtures)],
+      providers: [
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
-      providers: [ContextVarService, ContextVarRepository],
     });
     [contextVarController, contextVarService] = await getMocks([
       ContextVarController,

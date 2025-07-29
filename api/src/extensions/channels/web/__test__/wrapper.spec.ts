@@ -6,41 +6,20 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
+import { JwtService } from '@nestjs/jwt';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import {
-  Attachment,
-  AttachmentModel,
-} from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { MessageRepository } from '@/chat/repositories/message.repository';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { MessageModel } from '@/chat/schemas/message.schema';
-import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import {
   IncomingMessageType,
   StdEventType,
 } from '@/chat/schemas/types/message';
-import { MessageService } from '@/chat/services/message.service';
-import { SubscriberService } from '@/chat/services/subscriber.service';
-import { MenuRepository } from '@/cms/repositories/menu.repository';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { MenuService } from '@/cms/services/menu.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
-import { SocketEventDispatcherService } from '@/websocket/services/socket-event-dispatcher.service';
-import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import WebChannelHandler from '../index.channel';
 import { WEB_CHANNEL_NAME } from '../settings';
@@ -50,61 +29,17 @@ import { webEvents } from './events.mock';
 
 describe(`Web event wrapper`, () => {
   let handler: WebChannelHandler;
-  const webSettings = {};
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installSubscriberFixtures),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          AttachmentModel,
-          MessageModel,
-          MenuModel,
-        ]),
-        JwtModule,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installSubscriberFixtures)],
       providers: [
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({
-              web: webSettings,
-            })),
-          },
-        },
-        {
-          provide: NlpService,
-          useValue: {
-            getNLP: jest.fn(() => undefined),
-          },
-        },
-        ChannelService,
-        SubscriberService,
-        SubscriberRepository,
-        WebsocketGateway,
-        SocketEventDispatcherService,
-        AttachmentService,
-        AttachmentRepository,
-        MessageService,
-        MessageRepository,
-        MenuService,
-        MenuRepository,
+        JwtService,
         WebChannelHandler,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],

@@ -46,14 +46,14 @@ export const Users = () => {
   const { user } = useAuth();
   const { mutate: updateUser } = useUpdate(EntityType.USER, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       toast.success(t("message.success_save"));
     },
   });
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<IUser>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.USER>(
     {
       $or: ["first_name", "last_name", "email"],
     },
@@ -205,22 +205,20 @@ export const Users = () => {
           </Grid>
           {!ssoEnabled &&
           hasPermission(EntityType.USER, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<PersonAddAlt1Icon />}
-                variant="contained"
-                sx={{
-                  float: "right",
-                }}
-                onClick={() =>
-                  dialogs.open(InviteUserFormDialog, {
-                    defaultValues: null,
-                  })
-                }
-              >
-                {t("button.invite")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<PersonAddAlt1Icon />}
+              variant="contained"
+              sx={{
+                float: "right",
+              }}
+              onClick={() =>
+                dialogs.open(InviteUserFormDialog, {
+                  defaultValues: null,
+                })
+              }
+            >
+              {t("button.invite")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

@@ -35,7 +35,7 @@ export const OptionsForm = () => {
           fullWidth={false}
           defaultValue={block?.options?.typing || 0}
           label={t("label.typing_indicator")}
-          {...register("options.typing")}
+          {...register("options.typing", { valueAsNumber: true })}
           type="number"
         />
         <Typography component="span" display="inline-block" p={0.5}>
@@ -104,6 +104,21 @@ export const OptionsForm = () => {
           name="options.fallback"
           control={control}
           defaultValue={block?.options?.fallback}
+          rules={{
+            validate: (value) => {
+              const localFallbackDisabled =
+                typeof value?.max_attempts === "number" &&
+                value?.max_attempts <= 0;
+              const allMessagesNonEmpty =
+                Array.isArray(value?.message) &&
+                value.message.length > 0 &&
+                value.message.every((m) => typeof m === "string" && m.trim());
+
+              return localFallbackDisabled || allMessagesNonEmpty
+                ? true
+                : t("message.fallback_message_required");
+            },
+          }}
           render={({ field }) => (
             <LocalFallbackInput
               value={field?.value}

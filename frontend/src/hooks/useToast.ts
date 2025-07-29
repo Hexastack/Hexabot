@@ -7,8 +7,8 @@
  */
 
 import {
-  OptionsObject,
   enqueueSnackbar,
+  OptionsObject,
   SnackbarProvider as ToastProvider,
 } from "notistack";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,8 @@ const TOAST_COMMON_STYLE = {
   border: "1px solid",
   fontWeight: "500",
   borderRadius: "36px",
+  display: "grid",
+  gridTemplateColumns: "auto 50px",
 };
 const TOAST_ERROR_STYLE = {
   ...TOAST_COMMON_STYLE,
@@ -42,12 +44,12 @@ const TOAST_WARNING_STYLE = {
 export const useToast = () => {
   const { t } = useTranslation();
   const extractErrorMessage = (error: any) => {
-    if(typeof error === 'string') {
+    if (typeof error === "string") {
       return error;
-    }
-
-    else if (error?.statusCode == 409) {
+    } else if (error?.statusCode == 409) {
       return t("message.duplicate_error");
+    } else if (Array.isArray(error?.message)) {
+      return error?.message.toString();
     }
 
     return error?.message || t("message.internal_server_error");

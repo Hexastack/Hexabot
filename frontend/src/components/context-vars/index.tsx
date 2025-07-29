@@ -7,12 +7,11 @@
  */
 
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Grid, Paper, Switch } from "@mui/material";
+import { Grid, Paper, Switch } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -43,12 +42,13 @@ export const ContextVars = () => {
   const { toast } = useToast();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<IContextVar>(
-    {
-      $iLike: ["label"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CONTEXT_VAR>(
+      {
+        $iLike: ["label"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTEXT_VAR },
     {
@@ -181,40 +181,30 @@ export const ContextVars = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          {hasPermission(EntityType.CONTEXT_VAR, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                sx={{ float: "right" }}
-                onClick={() =>
-                  dialogs.open(ContextVarFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
-          ) : null}
-          <Grid item>
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedContextVars.length,
-                });
+          <ButtonActionsGroup
+            entity={EntityType.CONTEXT_VAR}
+            buttons={[
+              {
+                permissionAction: PermissionAction.CREATE,
+                onClick: () =>
+                  dialogs.open(ContextVarFormDialog, { defaultValues: null }),
+              },
+              {
+                permissionAction: PermissionAction.DELETE,
+                onClick: async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedContextVars.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteContextVars(selectedContextVars);
-                }
-              }}
-              disabled={!selectedContextVars.length}
-            >
-              {t("button.delete")}
-            </Button>
-          </Grid>
+                  if (isConfirmed) {
+                    deleteContextVars(selectedContextVars);
+                  }
+                },
+                disabled: !selectedContextVars.length,
+              },
+            ]}
+          />
         </Grid>
       </PageHeader>
       <Grid item xs={12}>

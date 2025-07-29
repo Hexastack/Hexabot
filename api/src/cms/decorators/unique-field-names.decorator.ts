@@ -6,34 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { registerDecorator, ValidationOptions } from 'class-validator';
 
-import { Channel, channelDataSchema } from '../schemas/types/channel';
+import { UniqueFieldNamesConstraint } from '../validators/validate-unique-names.validator';
 
-export function isChannelData(channel: Channel) {
-  return channelDataSchema.safeParse(channel).success;
-}
-
-@ValidatorConstraint({ async: false })
-export class ChannelDataValidator implements ValidatorConstraintInterface {
-  validate(channel: Channel) {
-    return isChannelData(channel);
-  }
-}
-
-export function IsChannelData(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
+export function UniqueFieldNames(validationOptions?: ValidationOptions) {
+  return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName,
       options: validationOptions,
       constraints: [],
-      validator: ChannelDataValidator,
+      validator: UniqueFieldNamesConstraint,
     });
   };
 }

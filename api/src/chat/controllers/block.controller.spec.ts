@@ -6,34 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ContentRepository } from '@/cms/repositories/content.repository';
-import { ContentModel } from '@/cms/schemas/content.schema';
-import { ContentService } from '@/cms/services/content.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { PermissionRepository } from '@/user/repositories/permission.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { UserModel } from '@/user/schemas/user.schema';
-import { PermissionService } from '@/user/services/permission.service';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -47,17 +22,12 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
-import { BlockRepository } from '../repositories/block.repository';
-import { CategoryRepository } from '../repositories/category.repository';
-import { LabelRepository } from '../repositories/label.repository';
-import { Block, BlockModel } from '../schemas/block.schema';
-import { LabelModel } from '../schemas/label.schema';
+import { Block } from '../schemas/block.schema';
 import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
-import { LabelService } from '../services/label.service';
 
-import { Category, CategoryModel } from './../schemas/category.schema';
+import { Category } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
 
 describe('BlockController', () => {
@@ -80,69 +50,15 @@ describe('BlockController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [BlockController],
-      imports: [
-        rootMongooseTestModule(installBlockFixtures),
-        MongooseModule.forFeature([
-          BlockModel,
-          LabelModel,
-          CategoryModel,
-          ContentModel,
-          InvitationModel,
-          AttachmentModel,
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          LanguageModel,
-        ]),
-      ],
+      imports: [rootMongooseTestModule(installBlockFixtures)],
       providers: [
-        BlockRepository,
-        LabelRepository,
-        CategoryRepository,
-        ContentRepository,
-        AttachmentRepository,
-        UserRepository,
-        RoleRepository,
-        PermissionRepository,
-        InvitationRepository,
-        LanguageRepository,
-        BlockService,
-        LabelService,
-        CategoryService,
-        ContentService,
-        AttachmentService,
-        UserService,
-        RoleService,
-        PermissionService,
-        LanguageService,
-        PluginService,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
           },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({})),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-        {
-          provide: NlpService,
-          useValue: {},
         },
       ],
     });

@@ -101,7 +101,6 @@ ContentSchema.index(
       title: 2,
       rag: 1,
     },
-    background: false,
   },
 );
 

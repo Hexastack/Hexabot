@@ -6,13 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
 import FolderIcon from "@mui/icons-material/Folder";
-import { Button, Grid, Paper } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -25,7 +24,6 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -42,13 +40,13 @@ export const Categories = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<ICategory>(
-    {
-      $iLike: ["label"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CATEGORY>(
+      {
+        $iLike: ["label"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -57,7 +55,7 @@ export const Categories = () => {
   );
   const options = {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       setSelectedCategories([]);
@@ -147,38 +145,33 @@ export const Categories = () => {
             <Grid item>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
-              <Grid item>
-                <Button
-                  startIcon={<AddIcon />}
-                  variant="contained"
-                  sx={{ float: "right" }}
-                  onClick={() =>
-                    dialogs.open(CategoryFormDialog, { defaultValues: null })
-                  }
-                >
-                  {t("button.add")}
-                </Button>
-              </Grid>
-            ) : null}
-            <Button
-              color="error"
-              variant="contained"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedCategories.length,
-                });
+            <ButtonActionsGroup
+              entity={EntityType.CATEGORY}
+              buttons={[
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  onClick: () =>
+                    dialogs.open(CategoryFormDialog, { defaultValues: null }),
+                },
+                {
+                  permissionAction: PermissionAction.DELETE,
+                  onClick: async () => {
+                    const isConfirmed = await dialogs.confirm(
+                      ConfirmDialogBody,
+                      {
+                        mode: "selection",
+                        count: selectedCategories.length,
+                      },
+                    );
 
-                if (isConfirmed) {
-                  deleteCategories(selectedCategories);
-                }
-              }}
-              disabled={!selectedCategories.length}
-              startIcon={<DeleteIcon />}
-            >
-              {t("button.delete")}
-            </Button>
+                    if (isConfirmed) {
+                      deleteCategories(selectedCategories);
+                    }
+                  },
+                  disabled: !selectedCategories.length,
+                },
+              ]}
+            />
           </Grid>
         </PageHeader>
       </Grid>

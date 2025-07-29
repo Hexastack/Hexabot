@@ -6,17 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { HelperService } from '@/helper/helper.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
-import { LanguageService } from '@/i18n/services/language.service';
-import { SettingRepository } from '@/setting/repositories/setting.repository';
-import { SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingSeeder } from '@/setting/seeds/setting.seed';
-import { SettingService } from '@/setting/services/setting.service';
 import { installNlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import {
   closeInMongodConnection,
@@ -24,19 +13,6 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
-import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
-import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntityModel } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from '../schemas/nlp-sample.schema';
-import { NlpValueModel } from '../schemas/nlp-value.schema';
-
-import { NlpEntityService } from './nlp-entity.service';
-import { NlpSampleEntityService } from './nlp-sample-entity.service';
-import { NlpSampleService } from './nlp-sample.service';
-import { NlpValueService } from './nlp-value.service';
 import { NlpService } from './nlp.service';
 
 describe('NlpService', () => {
@@ -44,42 +20,9 @@ describe('NlpService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installNlpValueFixtures),
-        MongooseModule.forFeature([
-          NlpEntityModel,
-          NlpValueModel,
-          NlpSampleEntityModel,
-          NlpSampleModel,
-          LanguageModel,
-          SettingModel,
-        ]),
-      ],
-      providers: [
-        NlpService,
-        NlpEntityService,
-        NlpEntityRepository,
-        NlpValueService,
-        NlpSampleService,
-        NlpSampleEntityService,
-        HelperService,
-        LanguageService,
-        SettingService,
-        NlpValueRepository,
-        NlpSampleEntityRepository,
-        NlpSampleRepository,
-        SettingRepository,
-        SettingSeeder,
-        LanguageRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            set: jest.fn(),
-            get: jest.fn(),
-          },
-        },
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installNlpValueFixtures)],
+      providers: [NlpService],
     });
     [nlpService] = await getMocks([NlpService]);
   });

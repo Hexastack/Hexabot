@@ -6,47 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   subscriberWithLabels,
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
 import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
-import { ContentTypeRepository } from '@/cms/repositories/content-type.repository';
-import { ContentRepository } from '@/cms/repositories/content.repository';
-import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
-import { Content, ContentModel } from '@/cms/schemas/content.schema';
+import { Content } from '@/cms/schemas/content.schema';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
 import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 import { Web } from '@/extensions/channels/web/types';
 import WebEventWrapper from '@/extensions/channels/web/wrapper';
-import { HelperService } from '@/helper/helper.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
-import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
-import { NlpSampleRepository } from '@/nlp/repositories/nlp-sample.repository';
-import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
-import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
-import { NlpSampleModel } from '@/nlp/schemas/nlp-sample.schema';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
-import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
-import { NlpSampleEntityService } from '@/nlp/services/nlp-sample-entity.service';
-import { NlpSampleService } from '@/nlp/services/nlp-sample.service';
-import { NlpValueService } from '@/nlp/services/nlp-value.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { FALLBACK_DEFAULT_NLU_PENALTY_FACTOR } from '@/utils/constants/nlp';
 import {
   blockFixtures,
@@ -65,6 +37,7 @@ import {
   mockNlpGreetingNamePatterns,
   mockNlpGreetingPatterns,
   mockNlpGreetingWrongNamePatterns,
+  mockWebChannelData,
 } from '@/utils/test/mocks/block';
 import {
   contextBlankInstance,
@@ -82,9 +55,8 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockRepository } from '../repositories/block.repository';
-import { Block, BlockFull, BlockModel } from '../schemas/block.schema';
-import { Category, CategoryModel } from '../schemas/category.schema';
-import { LabelModel } from '../schemas/label.schema';
+import { Block, BlockFull } from '../schemas/block.schema';
+import { Category } from '../schemas/category.schema';
 import { Subscriber } from '../schemas/subscriber.schema';
 import { FileType } from '../schemas/types/attachment';
 import { Context } from '../schemas/types/context';
@@ -96,7 +68,6 @@ import { QuickReplyType } from '../schemas/types/quick-reply';
 
 import { CategoryRepository } from './../repositories/category.repository';
 import { BlockService } from './block.service';
-import { CategoryService } from './category.service';
 
 function makeMockBlock(overrides: Partial<Block>): Block {
   return {
@@ -134,79 +105,25 @@ describe('BlockService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      models: ['LabelModel'],
+      autoInjectFrom: ['providers'],
       imports: [
         rootMongooseTestModule(async () => {
           await installContentFixtures();
           await installBlockFixtures();
           await installNlpValueFixtures();
         }),
-        MongooseModule.forFeature([
-          BlockModel,
-          CategoryModel,
-          ContentTypeModel,
-          ContentModel,
-          AttachmentModel,
-          LabelModel,
-          LanguageModel,
-          NlpEntityModel,
-          NlpSampleEntityModel,
-          NlpValueModel,
-          NlpSampleModel,
-        ]),
       ],
       providers: [
-        BlockRepository,
-        CategoryRepository,
-        ContentTypeRepository,
-        ContentRepository,
-        AttachmentRepository,
-        LanguageRepository,
         BlockService,
-        CategoryService,
         ContentTypeService,
-        ContentService,
-        AttachmentService,
-        LanguageService,
-        NlpEntityRepository,
-        NlpValueRepository,
-        NlpSampleRepository,
-        NlpSampleEntityRepository,
-        NlpEntityService,
-        NlpValueService,
-        NlpSampleService,
-        NlpSampleEntityService,
-        NlpService,
-        HelperService,
-        {
-          provide: PluginService,
-          useValue: {},
-        },
+        CategoryRepository,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => {
               return t === 'Welcome' ? 'Bienvenue' : t;
             }),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({
-              contact: { company_name: 'Your company name' },
-              chatbot_settings: { default_nlu_penalty_factor: 0.95 },
-            })),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
           },
         },
       ],
@@ -288,11 +205,7 @@ describe('BlockService', () => {
           text: 'Hello',
         },
       },
-      {
-        isSocket: true,
-        ipAddress: '1.1.1.1',
-        agent: 'Chromium',
-      },
+      mockWebChannelData,
     );
     const webEventGetStarted = new WebEventWrapper(
       handlerMock,
@@ -303,11 +216,18 @@ describe('BlockService', () => {
           payload: 'GET_STARTED',
         },
       },
+      mockWebChannelData,
+    );
+
+    const webEventAmbiguous = new WebEventWrapper(
+      handlerMock,
       {
-        isSocket: true,
-        ipAddress: '1.1.1.1',
-        agent: 'Chromium',
+        type: Web.IncomingMessageType.text,
+        data: {
+          text: "It's not a yes or no answer!",
+        },
       },
+      mockWebChannelData,
     );
 
     it('should return undefined when no blocks are provided', async () => {
@@ -330,6 +250,24 @@ describe('BlockService', () => {
       webEventGreeting.setSender(subscriberWithLabels);
       const result = await blockService.match(blocks, webEventGreeting);
       expect(result).toEqual(blockGetStarted);
+    });
+
+    it('should return undefined when multiple matches are not allowed', async () => {
+      const result = await blockService.match(
+        [
+          {
+            ...blockEmpty,
+            patterns: ['/yes/'],
+          },
+          {
+            ...blockEmpty,
+            patterns: ['/no/'],
+          },
+        ],
+        webEventAmbiguous,
+        false,
+      );
+      expect(result).toEqual(undefined);
     });
 
     it('should match block with payload', async () => {
@@ -1067,7 +1005,7 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.findPage(
+      const elements = await contentService.find(
         { status: true, entity: contentType.id },
         { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
       );
@@ -1101,7 +1039,7 @@ describe('BlockService', () => {
         false,
         'conv_id',
       );
-      const elements = await contentService.findPage(
+      const elements = await contentService.find(
         { status: true, entity: contentType.id },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );

@@ -6,27 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { MenuRepository } from '@/cms/repositories/menu.repository';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { MenuService } from '@/cms/services/menu.service';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { SettingService } from '@/setting/services/setting.service';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { User, UserModel } from '@/user/schemas/user.schema';
-import { RoleService } from '@/user/services/role.service';
+import { User } from '@/user/schemas/user.schema';
 import { UserService } from '@/user/services/user.service';
 import {
   installMessageFixtures,
@@ -39,10 +19,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { MessageRepository } from '../repositories/message.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Message, MessageModel } from '../schemas/message.schema';
-import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+import { Message } from '../schemas/message.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 
@@ -63,66 +41,10 @@ describe('MessageController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [MessageController],
-      imports: [
-        rootMongooseTestModule(installMessageFixtures),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          MessageModel,
-          UserModel,
-          RoleModel,
-          InvitationModel,
-          PermissionModel,
-          AttachmentModel,
-          MenuModel,
-        ]),
-      ],
-      providers: [
-        MessageController,
-        MessageRepository,
-        MessageService,
-        SubscriberService,
-        UserService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        SubscriberRepository,
-        ChannelService,
-        AttachmentService,
-        AttachmentRepository,
-        MenuService,
-        MenuRepository,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: NlpService,
-          useValue: {
-            getNLP: jest.fn(() => undefined),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({})),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      imports: [rootMongooseTestModule(installMessageFixtures)],
+      providers: [UserService],
     });
     [messageService, userService, subscriberService, messageController] =
       await getMocks([

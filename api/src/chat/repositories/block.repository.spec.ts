@@ -6,9 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { getModelToken } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 
+import { I18nService } from '@/i18n/services/i18n.service';
 import {
   blockFixtures,
   installBlockFixtures,
@@ -19,9 +20,8 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Block, BlockModel } from '../schemas/block.schema';
-import { Category, CategoryModel } from '../schemas/category.schema';
-import { LabelModel } from '../schemas/label.schema';
+import { Block } from '../schemas/block.schema';
+import { Category } from '../schemas/category.schema';
 
 import { BlockRepository } from './block.repository';
 import { CategoryRepository } from './category.repository';
@@ -39,11 +39,19 @@ describe('BlockRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installBlockFixtures),
-        MongooseModule.forFeature([BlockModel, CategoryModel, LabelModel]),
+      models: ['LabelModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installBlockFixtures)],
+      providers: [
+        BlockRepository,
+        CategoryRepository,
+        {
+          provide: I18nService,
+          useValue: {
+            t: jest.fn().mockImplementation((t) => t),
+          },
+        },
       ],
-      providers: [BlockRepository, CategoryRepository],
     });
     [blockRepository, categoryRepository, blockModel] = await getMocks([
       BlockRepository,
@@ -204,6 +212,43 @@ describe('BlockRepository', () => {
       expect(blockRepository.find).toHaveBeenCalled();
       expect(blockRepository.updateOne).not.toHaveBeenCalled();
     });
+
+    it('should handle circular references within moved blocks', async () => {
+      const blockA = {
+        id: 'blockA',
+        nextBlocks: ['blockB'],
+        attachedBlock: null,
+      } as Block;
+      const blockB = {
+        id: 'blockB',
+        nextBlocks: ['blockA'],
+        attachedBlock: null,
+      } as Block;
+      const movedBlocks = [blockA, blockB];
+      const movedBlockIds = movedBlocks.map((b) => b.id);
+
+      jest.spyOn(blockRepository, 'find').mockResolvedValue(movedBlocks);
+      const mockUpdateOne = jest
+        .spyOn(blockRepository, 'updateOne')
+        .mockResolvedValue({} as any);
+
+      await blockRepository.prepareBlocksInCategoryUpdateScope(
+        'new-category',
+        movedBlockIds,
+      );
+
+      expect(mockUpdateOne).toHaveBeenCalledWith('blockA', {
+        nextBlocks: ['blockB'],
+        attachedBlock: null,
+      });
+
+      expect(mockUpdateOne).toHaveBeenCalledWith('blockB', {
+        nextBlocks: ['blockA'],
+        attachedBlock: null,
+      });
+
+      expect(mockUpdateOne).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe('prepareBlocksOutOfCategoryUpdateScope', () => {
@@ -212,16 +257,15 @@ describe('BlockRepository', () => {
         {
           id: blockValidIds[1],
           attachedBlock: blockValidIds[0],
-          nextBlocks: [blockValidIds[0]],
+          nextBlocks: [],
         },
-      ] as Block[];
+      ] as unknown as Block[];
 
       const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
 
-      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(
-        otherBlocks,
-        blockValidIds,
-      );
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        blockValidIds[0],
+      ]);
 
       expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[1], {
         attachedBlock: null,
@@ -233,7 +277,7 @@ describe('BlockRepository', () => {
         {
           id: blockValidIds[1],
           attachedBlock: null,
-          nextBlocks: [blockValidIds[0], blockValidIds[1]],
+          nextBlocks: [blockValidIds[0], blockValidIds[2]],
         },
       ] as unknown as Block[];
 
@@ -244,29 +288,107 @@ describe('BlockRepository', () => {
       ]);
 
       expect(mockUpdateOne).toHaveBeenCalledWith(blockValidIds[1], {
-        nextBlocks: [blockValidIds[1]],
+        nextBlocks: [blockValidIds[2]],
       });
+    });
+
+    it('should not update blocks if their references are not in the moved ids', async () => {
+      const otherBlocks = [
+        {
+          id: blockValidIds[1],
+          attachedBlock: 'some-other-id',
+          nextBlocks: [],
+        },
+        {
+          id: blockValidIds[2],
+          attachedBlock: null,
+          nextBlocks: ['some-other-id-2'],
+        },
+      ] as Block[];
+      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        blockValidIds[0],
+      ]);
+
+      expect(mockUpdateOne).not.toHaveBeenCalled();
+    });
+
+    it('should correctly update multiple out-of-scope blocks referencing the same moved block', async () => {
+      const movedBlockId = blockValidIds[0];
+      const otherBlocks = [
+        {
+          id: 'block-with-attached',
+          attachedBlock: movedBlockId,
+          nextBlocks: [],
+        },
+        {
+          id: 'block-with-next',
+          attachedBlock: null,
+          nextBlocks: [movedBlockId, blockValidIds[2]],
+        },
+      ] as unknown as Block[];
+
+      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        movedBlockId,
+      ]);
+
+      expect(mockUpdateOne).toHaveBeenCalledWith('block-with-attached', {
+        attachedBlock: null,
+      });
+      expect(mockUpdateOne).toHaveBeenCalledWith('block-with-next', {
+        nextBlocks: [blockValidIds[2]],
+      });
+      expect(mockUpdateOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('should not update references for blocks that are themselves in the moved blocks list', async () => {
+      const movedBlockId = blockValidIds[0];
+      const movedBlock = {
+        id: movedBlockId,
+        attachedBlock: null,
+        nextBlocks: [movedBlockId, blockValidIds[2]],
+      } as unknown as Block;
+      const otherBlocks = [movedBlock];
+
+      const mockUpdateOne = jest.spyOn(blockRepository, 'updateOne');
+
+      // The movedBlock is both referencing and is itself a moved block, so should not be updated
+      await blockRepository.prepareBlocksOutOfCategoryUpdateScope(otherBlocks, [
+        movedBlockId,
+      ]);
+
+      expect(mockUpdateOne).not.toHaveBeenCalled();
     });
   });
 
   describe('preUpdateMany', () => {
     it('should update blocks in and out of the scope', async () => {
-      const mockFind = jest.spyOn(blockRepository, 'find').mockResolvedValue([
+      const movedBlocks = [
+        { id: validIds[0], category: 'old_category_id' },
+        { id: validIds[1], category: 'old_category_id' },
+      ] as Block[];
+      const otherBlocks = [
         {
-          id: blockValidIds[1],
+          id: 'other-block-1',
           attachedBlock: validIds[0],
-          nextBlocks: [validIds[0]],
+          nextBlocks: [],
         },
-      ] as Block[]);
+      ] as unknown as Block[];
 
-      const prepareBlocksInCategoryUpdateScope = jest.spyOn(
-        blockRepository,
-        'prepareBlocksInCategoryUpdateScope',
-      );
-      const prepareBlocksOutOfCategoryUpdateScope = jest.spyOn(
-        blockRepository,
-        'prepareBlocksOutOfCategoryUpdateScope',
-      );
+      const mockFind = jest
+        .spyOn(blockRepository, 'find')
+        .mockResolvedValueOnce(movedBlocks)
+        .mockResolvedValueOnce(otherBlocks);
+
+      const prepareBlocksInCategoryUpdateScope = jest
+        .spyOn(blockRepository, 'prepareBlocksInCategoryUpdateScope')
+        .mockResolvedValue(undefined);
+      const prepareBlocksOutOfCategoryUpdateScope = jest
+        .spyOn(blockRepository, 'prepareBlocksOutOfCategoryUpdateScope')
+        .mockResolvedValue(undefined);
 
       await blockRepository.preUpdateMany(
         {} as any,
@@ -274,20 +396,27 @@ describe('BlockRepository', () => {
         { $set: { category: validCategory } },
       );
 
-      expect(mockFind).toHaveBeenCalled();
+      const objectIds = validIds.map((id) => new Types.ObjectId(id));
+
+      expect(mockFind).toHaveBeenCalledTimes(2);
+      expect(mockFind).toHaveBeenNthCalledWith(1, {
+        _id: { $in: validIds },
+      });
+      expect(mockFind).toHaveBeenNthCalledWith(2, {
+        _id: { $nin: objectIds },
+        category: movedBlocks[0].category,
+        $or: [
+          { attachedBlock: { $in: objectIds } },
+          { nextBlocks: { $in: objectIds } },
+        ],
+      });
       expect(prepareBlocksInCategoryUpdateScope).toHaveBeenCalledWith(
         validCategory,
-        [blockValidIds[1]],
+        validIds,
       );
       expect(prepareBlocksOutOfCategoryUpdateScope).toHaveBeenCalledWith(
-        [
-          {
-            id: blockValidIds[1],
-            attachedBlock: validIds[0],
-            nextBlocks: [validIds[0]],
-          },
-        ],
-        [blockValidIds[1]],
+        otherBlocks,
+        validIds,
       );
     });
 

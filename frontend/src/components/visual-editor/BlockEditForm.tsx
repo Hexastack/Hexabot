@@ -47,9 +47,9 @@ export const BlockEditForm: FC<ComponentFormProps<IBlock>> = ({
   };
   const { toast } = useToast();
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
-    onError: () => {
+    onError: (error) => {
       rest.onError?.();
-      toast.error(t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       rest.onSuccess?.();

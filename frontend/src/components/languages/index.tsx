@@ -43,12 +43,13 @@ export const Languages = () => {
   const dialogs = useDialogs();
   const queryClient = useQueryClient();
   const hasPermission = useHasPermission();
-  const { onSearch, searchPayload, searchText } = useSearch<ILanguage>(
-    {
-      $or: ["title", "code"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.LANGUAGE>(
+      {
+        $or: ["title", "code"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps, refetch } = useFind(
     { entity: EntityType.LANGUAGE },
     {
@@ -203,18 +204,15 @@ export const Languages = () => {
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
           {hasPermission(EntityType.LANGUAGE, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                sx={{ float: "right" }}
-                onClick={() =>
-                  dialogs.open(LanguageFormDialog, { defaultValues: null })
-                }
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
+            <Button
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() =>
+                dialogs.open(LanguageFormDialog, { defaultValues: null })
+              }
+            >
+              {t("button.add")}
+            </Button>
           ) : null}
         </Grid>
       </PageHeader>

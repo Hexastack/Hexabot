@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -21,16 +21,9 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import {
-  Invitation,
-  InvitationFull,
-  InvitationModel,
-} from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { RoleModel } from '../schemas/role.schema';
+import { Invitation, InvitationFull } from '../schemas/invitation.schema';
 
 import { InvitationRepository } from './invitation.repository';
-import { PermissionRepository } from './permission.repository';
 import { RoleRepository } from './role.repository';
 
 describe('InvitationRepository', () => {
@@ -39,15 +32,10 @@ describe('InvitationRepository', () => {
   let invitationModel: Model<Invitation>;
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installInvitationFixtures),
-        MongooseModule.forFeature([
-          RoleModel,
-          PermissionModel,
-          InvitationModel,
-        ]),
-      ],
-      providers: [RoleRepository, InvitationRepository, PermissionRepository],
+      models: ['PermissionModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installInvitationFixtures)],
+      providers: [RoleRepository, InvitationRepository],
     });
     [roleRepository, invitationRepository, invitationModel] = await getMocks([
       RoleRepository,
@@ -85,14 +73,13 @@ describe('InvitationRepository', () => {
       });
     });
   });
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
       jest.spyOn(invitationModel, 'find');
       const pageQuery: PageQueryDto<Invitation> = getPageQuery<Invitation>();
-      jest.spyOn(invitationRepository, 'findPageAndPopulate');
       const allInvitations = await invitationRepository.findAll();
       const allRoles = await roleRepository.findAll();
-      const result = await invitationRepository.findPageAndPopulate(
+      const result = await invitationRepository.findAndPopulate(
         {},
         {
           ...pageQuery,

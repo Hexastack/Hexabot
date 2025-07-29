@@ -22,15 +22,12 @@ import { useSocket } from "@/websocket/socket-hooks";
 
 import { useFind } from "../crud/useFind";
 import { useApiClient } from "../useApiClient";
-import { CURRENT_USER_KEY, useAuth, useLogoutRedirection } from "../useAuth";
+import { useAuth, useLogoutRedirection } from "../useAuth";
 import { useToast } from "../useToast";
 import { useTranslate } from "../useTranslate";
 
 export const useLogin = (
-  options?: Omit<
-    TMutationOptions<IUser, Error, ILoginAttributes>,
-    "mutationFn"
-  >,
+  options?: TMutationOptions<IUser, Error, ILoginAttributes>,
 ) => {
   const { apiClient } = useApiClient();
   const { postMessage } = useBroadcastChannel();
@@ -48,14 +45,11 @@ export const useLogin = (
 };
 
 export const useLogout = (
-  options?: Omit<
-    TMutationOptions<
-      {
-        status: "ok";
-      },
-      Error
-    >,
-    "mutationFn"
+  options?: TMutationOptions<
+    {
+      status: "ok";
+    },
+    Error
   >,
 ) => {
   const queryClient = useQueryClient();
@@ -74,7 +68,7 @@ export const useLogout = (
       return await apiClient.logout();
     },
     onSuccess: async () => {
-      queryClient.removeQueries([CURRENT_USER_KEY]);
+      queryClient.clear();
       postMessage({ event: "logout" });
       await logoutRedirection();
       toast.success(t("message.logout_success"));
@@ -116,15 +110,12 @@ export const useUserPermissions = () => {
 };
 
 export const useAcceptInvite = (
-  options?: Omit<
-    TMutationOptions<
-      {
-        success: boolean;
-      },
-      Error,
-      Partial<IUserAttributes> & { token: string }
-    >,
-    "mutationFn"
+  options?: TMutationOptions<
+    {
+      success: boolean;
+    },
+    Error,
+    Partial<IUserAttributes> & { token: string }
   >,
 ) => {
   const { apiClient } = useApiClient();
@@ -138,10 +129,7 @@ export const useAcceptInvite = (
 };
 
 export const useConfirmAccount = (
-  options?: Omit<
-    TMutationOptions<never, Error, { token: string }>,
-    "mutationFn"
-  >,
+  options?: TMutationOptions<never, Error, { token: string }>,
 ) => {
   const { apiClient } = useApiClient();
 
@@ -181,10 +169,7 @@ export const useLoadSettings = () => {
 };
 
 export const useUpdateProfile = (
-  options?: Omit<
-    TMutationOptions<IUserStub, Error, Partial<IProfileAttributes>>,
-    "mutationFn"
-  >,
+  options?: TMutationOptions<IUserStub, Error, Partial<IProfileAttributes>>,
 ) => {
   const { apiClient } = useApiClient();
   const { user } = useAuth();

@@ -7,21 +7,13 @@
  */
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {
-  Button,
-  ButtonGroup,
-  Chip,
-  Grid,
-  Paper,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
@@ -57,7 +49,7 @@ export const Contents = () => {
   const queryClient = useQueryClient();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload, searchText } = useSearch<IContent>(
+  const { onSearch, searchPayload, searchText } = useSearch<EntityType.CONTENT>(
     {
       $eq: [{ entity: String(query.id) }],
       $iLike: ["title"],
@@ -73,7 +65,7 @@ export const Contents = () => {
   );
   const { mutate: updateContent } = useUpdate(EntityType.CONTENT, {
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       toast.success(t("message.success_save"));
@@ -162,32 +154,29 @@ export const Contents = () => {
             <Grid item>
               <FilterTextfield onChange={onSearch} defaultValue={searchText} />
             </Grid>
-            {hasPermission(EntityType.CONTENT, PermissionAction.CREATE) ? (
-              <ButtonGroup sx={{ marginLeft: "auto" }}>
-                <Grid item>
-                  <Button
-                    startIcon={<AddIcon />}
-                    variant="contained"
-                    onClick={() =>
-                      dialogs.open(ContentFormDialog, {
-                        presetValues: contentType,
-                      })
-                    }
-                    sx={{ float: "right" }}
-                  >
-                    {t("button.add")}
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <FileUploadButton
-                    accept="text/csv"
-                    label={t("button.import")}
-                    onChange={handleImportChange}
-                    isLoading={isLoading}
-                  />
-                </Grid>
-              </ButtonGroup>
-            ) : null}
+            <ButtonActionsGroup
+              entity={EntityType.CONTENT}
+              buttons={[
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  onClick: () =>
+                    dialogs.open(ContentFormDialog, {
+                      presetValues: contentType,
+                    }),
+                },
+                {
+                  permissionAction: PermissionAction.CREATE,
+                  children: (
+                    <FileUploadButton
+                      accept="text/csv"
+                      label={t("button.import")}
+                      onChange={handleImportChange}
+                      isLoading={isLoading}
+                    />
+                  ),
+                },
+              ]}
+            />
           </Grid>
         </PageHeader>
       </Grid>

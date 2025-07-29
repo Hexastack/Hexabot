@@ -6,14 +6,13 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Button, Chip, Grid } from "@mui/material";
+import { Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -27,7 +26,6 @@ import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useApiClient } from "@/hooks/useApiClient";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -44,7 +42,6 @@ const NlpEntity = () => {
   const dialogs = useDialogs();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const hasPermission = useHasPermission();
   const { mutate: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -80,12 +77,13 @@ const NlpEntity = () => {
     },
   });
   const [selectedNlpEntities, setSelectedNlpEntities] = useState<string[]>([]);
-  const { onSearch, searchPayload, searchText } = useSearch<INlpEntity>(
-    {
-      $or: ["name", "doc"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_ENTITY>(
+      {
+        $or: ["name", "doc"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps: nlpEntityGrid } = useFind(
     {
       entity: EntityType.NLP_ENTITY,
@@ -229,41 +227,30 @@ const NlpEntity = () => {
         <Grid item>
           <FilterTextfield onChange={onSearch} defaultValue={searchText} />
         </Grid>
+        <ButtonActionsGroup
+          entity={EntityType.NLP_ENTITY}
+          buttons={[
+            {
+              permissionAction: PermissionAction.CREATE,
+              onClick: () =>
+                dialogs.open(NlpEntityFormDialog, { defaultValues: null }),
+            },
+            {
+              permissionAction: PermissionAction.DELETE,
+              onClick: async () => {
+                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                  mode: "selection",
+                  count: selectedNlpEntities.length,
+                });
 
-        {hasPermission(EntityType.NLP_ENTITY, PermissionAction.CREATE) ? (
-          <Grid item>
-            <Button
-              startIcon={<AddIcon />}
-              variant="contained"
-              sx={{ float: "right" }}
-              onClick={() =>
-                dialogs.open(NlpEntityFormDialog, { defaultValues: null })
-              }
-            >
-              {t("button.add")}
-            </Button>
-          </Grid>
-        ) : null}
-        <Grid item>
-          <Button
-            startIcon={<DeleteIcon />}
-            variant="contained"
-            color="error"
-            onClick={async () => {
-              const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                mode: "selection",
-                count: selectedNlpEntities.length,
-              });
-
-              if (isConfirmed) {
-                deleteNlpEntities(selectedNlpEntities);
-              }
-            }}
-            disabled={!selectedNlpEntities.length}
-          >
-            {t("button.delete")}
-          </Button>
-        </Grid>
+                if (isConfirmed) {
+                  deleteNlpEntities(selectedNlpEntities);
+                }
+              },
+              disabled: !selectedNlpEntities.length,
+            },
+          ]}
+        />
       </Grid>
 
       <Grid mt={3}>

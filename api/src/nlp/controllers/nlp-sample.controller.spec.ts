@@ -6,19 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { HelperService } from '@/helper/helper.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language, LanguageModel } from '@/i18n/schemas/language.schema';
-import { I18nService } from '@/i18n/services/i18n.service';
+import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
-import { SettingRepository } from '@/setting/repositories/setting.repository';
-import { SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingSeeder } from '@/setting/seeds/setting.seed';
-import { SettingService } from '@/setting/services/setting.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installAttachmentFixtures } from '@/utils/test/fixtures/attachment';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
@@ -32,18 +24,7 @@ import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { NlpSampleDto } from '../dto/nlp-sample.dto';
-import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '../repositories/nlp-sample-entity.repository';
-import { NlpSampleRepository } from '../repositories/nlp-sample.repository';
-import { NlpValueRepository } from '../repositories/nlp-value.repository';
-import { NlpEntityModel } from '../schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '../schemas/nlp-sample-entity.schema';
-import {
-  NlpSample,
-  NlpSampleFull,
-  NlpSampleModel,
-} from '../schemas/nlp-sample.schema';
-import { NlpValueModel } from '../schemas/nlp-value.schema';
+import { NlpSample, NlpSampleFull } from '../schemas/nlp-sample.schema';
 import { NlpSampleState } from '../schemas/types';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
@@ -64,50 +45,13 @@ describe('NlpSampleController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [NlpSampleController],
       imports: [
         rootMongooseTestModule(async () => {
           await installNlpSampleEntityFixtures();
           await installAttachmentFixtures();
         }),
-        MongooseModule.forFeature([
-          NlpSampleModel,
-          NlpSampleEntityModel,
-          NlpEntityModel,
-          NlpValueModel,
-          SettingModel,
-          LanguageModel,
-        ]),
-      ],
-      providers: [
-        NlpSampleRepository,
-        NlpSampleEntityRepository,
-        NlpEntityService,
-        NlpEntityRepository,
-        NlpValueService,
-        NlpValueRepository,
-        NlpSampleService,
-        NlpSampleEntityService,
-        LanguageRepository,
-        LanguageService,
-        HelperService,
-        SettingRepository,
-        SettingService,
-        SettingSeeder,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
       ],
     });
     [
@@ -181,11 +125,51 @@ describe('NlpSampleController', () => {
         })),
       );
     });
+
+    it('should find nlp samples with patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      // Should only return samples matching the pattern
+      const nlpSamples = await nlpSampleService.findByPatternsAndPopulate(
+        { filters: {}, patterns },
+        pageQuery,
+      );
+      expect(result).toEqualPayload(nlpSamples);
+    });
+
+    it('should return empty array if no samples match the patterns', async () => {
+      const pageQuery = getPageQuery<NlpSample>({ sort: ['text', 'desc'] });
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      jest.spyOn(nlpSampleService, 'findByPatternsAndPopulate');
+      const result = await nlpSampleController.findPage(
+        pageQuery,
+        ['language', 'entities'],
+        {},
+        patterns,
+      );
+      expect(nlpSampleService.findByPatternsAndPopulate).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(Array.isArray(result)).toBe(true);
+      expect(result).toHaveLength(0);
+    });
   });
 
   describe('count', () => {
     it('should count the nlp samples', async () => {
+      jest.spyOn(nlpSampleService, 'count');
       const result = await nlpSampleController.count({});
+      expect(nlpSampleService.count).toHaveBeenCalledTimes(1);
       const count = nlpSampleFixtures.length;
       expect(result).toEqual({ count });
     });
@@ -437,6 +421,36 @@ describe('NlpSampleController', () => {
       await expect(
         nlpSampleController.deleteMany(nonExistentIds),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('filterCount', () => {
+    it('should count the nlp samples without patterns', async () => {
+      const filters = { text: 'Hello' };
+      jest.spyOn(nlpSampleService, 'countByPatterns');
+      const result = await nlpSampleController.filterCount(filters, []);
+      expect(nlpSampleService.countByPatterns).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should count the nlp samples with patterns', async () => {
+      const filters = { text: 'Hello' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'greeting' },
+      ];
+      jest.spyOn(nlpSampleService, 'countByPatterns');
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(nlpSampleService.countByPatterns).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ count: 1 });
+    });
+
+    it('should return zero count when no samples match the filters and patterns', async () => {
+      const filters = { text: 'Nonexistent' };
+      const patterns: NlpValueMatchPattern[] = [
+        { entity: 'intent', match: 'value', value: 'nonexistent' },
+      ];
+      const result = await nlpSampleController.filterCount(filters, patterns);
+      expect(result).toEqual({ count: 0 });
     });
   });
 });

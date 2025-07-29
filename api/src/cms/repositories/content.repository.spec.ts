@@ -6,13 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import {
-  ContentType,
-  ContentTypeModel,
-} from '@/cms/schemas/content-type.schema';
+import { ContentType } from '@/cms/schemas/content-type.schema';
 import { contentTypeFixtures } from '@/utils/test/fixtures/contenttype';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
@@ -21,7 +18,7 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Content, ContentModel } from '../schemas/content.schema';
+import { Content } from '../schemas/content.schema';
 
 import {
   contentFixtures,
@@ -36,10 +33,9 @@ describe('ContentRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installContentFixtures),
-        MongooseModule.forFeature([ContentTypeModel, ContentModel]),
-      ],
+      models: ['ContentTypeModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installContentFixtures)],
       providers: [ContentRepository],
     });
     [contentRepository, contentModel, contentTypeModel] = await getMocks([
@@ -71,13 +67,13 @@ describe('ContentRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find contents and populate their content types', async () => {
       const pageQuery = getPageQuery<Content>({
         limit: 1,
         sort: ['_id', 'asc'],
       });
-      const result = await contentRepository.findPageAndPopulate({}, pageQuery);
+      const result = await contentRepository.findAndPopulate({}, pageQuery);
       expect(result).toEqualPayload([
         {
           ...contentFixtures.find(({ title }) => title === 'Jean'),

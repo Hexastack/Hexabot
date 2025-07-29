@@ -11,22 +11,22 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
 import EventWrapper from '@/channel/lib/EventWrapper';
+import { HelperService } from '@/helper/helper.service';
+import { FlowEscape, HelperType } from '@/helper/types';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 
+import { getDefaultConversationContext } from '../constants/conversation';
 import { MessageCreateDto } from '../dto/message.dto';
 import { BlockFull } from '../schemas/block.schema';
-import {
-  Conversation,
-  ConversationFull,
-  getDefaultConversationContext,
-} from '../schemas/conversation.schema';
+import { Conversation, ConversationFull } from '../schemas/conversation.schema';
 import { Context } from '../schemas/types/context';
 import {
   IncomingMessageType,
   OutgoingMessageFormat,
   StdOutgoingMessageEnvelope,
 } from '../schemas/types/message';
+import { FallbackOptions } from '../schemas/types/options';
 
 import { BlockService } from './block.service';
 import { ConversationService } from './conversation.service';
@@ -41,6 +41,7 @@ export class BotService {
     private readonly conversationService: ConversationService,
     private readonly subscriberService: SubscriberService,
     private readonly settingService: SettingService,
+    private readonly helperService: HelperService,
   ) {}
 
   /**
@@ -244,6 +245,98 @@ export class BotService {
   }
 
   /**
+   * Handles advancing the conversation to the specified *next* block.
+   *
+   * @param convo - The current conversation object containing context and state.
+   * @param next - The next block to proceed to in the conversation flow.
+   * @param event - The incoming event that triggered the conversation flow.
+   * @param fallback - Boolean indicating if this is a fallback response in case no appropriate reply was found.
+   *
+   * @returns A promise that resolves to a boolean indicating whether the next block was successfully triggered.
+   */
+  async proceedToNextBlock(
+    convo: ConversationFull,
+    next: BlockFull,
+    event: EventWrapper<any, any>,
+    fallback: boolean,
+  ): Promise<boolean> {
+    // Increment stats about popular blocks
+    this.eventEmitter.emit('hook:stats:entry', BotStatsType.popular, next.name);
+    this.logger.debug(
+      `Proceeding to next block ${next.id} for conversation ${convo.id}`,
+    );
+
+    try {
+      convo.context.attempt = fallback ? convo.context.attempt + 1 : 0;
+      const updatedConversation =
+        await this.conversationService.storeContextData(
+          convo,
+          next,
+          event,
+          // If this is a local fallback then we don’t capture vars.
+          !fallback,
+        );
+
+      await this.triggerBlock(event, updatedConversation, next, fallback);
+      return true;
+    } catch (err) {
+      this.logger.error('Unable to proceed to the next block!', err);
+      this.eventEmitter.emit('hook:conversation:end', convo);
+      return false;
+    }
+  }
+
+  /**
+   * Finds the next block that matches the event criteria within the conversation's next blocks.
+   *
+   * @param convo - The current conversation object containing context and state.
+   * @param event - The incoming event that triggered the conversation flow.
+   *
+   * @returns A promise that resolves with the matched block or undefined if no match is found.
+   */
+  async findNextMatchingBlock(
+    convo: ConversationFull,
+    event: EventWrapper<any, any>,
+  ): Promise<BlockFull | undefined> {
+    const fallbackOptions: FallbackOptions =
+      this.blockService.getFallbackOptions(convo.current);
+    // We will avoid having multiple matches when we are not at the start of a conversation
+    // and only if local fallback is enabled
+    const canHaveMultipleMatches = !fallbackOptions?.active;
+    // Find the next block that matches
+    const nextBlocks = await this.blockService.findAndPopulate({
+      _id: { $in: convo.next.map(({ id }) => id) },
+    });
+    return await this.blockService.match(
+      nextBlocks,
+      event,
+      canHaveMultipleMatches,
+    );
+  }
+
+  /**
+   * Determines if a fallback should be attempted based on the event type, fallback options, and conversation context.
+   *
+   * @param convo - The current conversation object containing context and state.
+   * @param event - The incoming event that triggered the conversation flow.
+   *
+   * @returns A boolean indicating whether a fallback should be attempted.
+   */
+  shouldAttemptLocalFallback(
+    convo: ConversationFull,
+    event: EventWrapper<any, any>,
+  ): boolean {
+    const fallbackOptions = this.blockService.getFallbackOptions(convo.current);
+    const maxAttempts = fallbackOptions?.max_attempts ?? 0;
+    return (
+      event.getMessageType() === IncomingMessageType.message &&
+      !!fallbackOptions?.active &&
+      maxAttempts > 0 &&
+      convo.context.attempt <= maxAttempts
+    );
+  }
+
+  /**
    * Processes and responds to an incoming message within an ongoing conversation flow.
    * Determines the next block in the conversation, attempts to match the message with available blocks,
    * and handles fallback scenarios if no match is found.
@@ -253,54 +346,22 @@ export class BotService {
    *
    * @returns A promise that resolves with a boolean indicating whether the conversation is active and a matching block was found.
    */
-  async handleIncomingMessage(
+  async handleOngoingConversationMessage(
     convo: ConversationFull,
     event: EventWrapper<any, any>,
   ) {
-    const nextIds = convo.next.map(({ id }) => id);
-    // Reload blocks in order to populate his nextBlocks
-    // nextBlocks & trigger/assign _labels
     try {
-      const nextBlocks = await this.blockService.findAndPopulate({
-        _id: { $in: nextIds },
-      });
       let fallback = false;
-      const fallbackOptions = convo.current?.options?.fallback
-        ? convo.current.options.fallback
-        : {
-            active: false,
-            max_attempts: 0,
-          };
-
-      // Find the next block that matches
-      const matchedBlock = await this.blockService.match(nextBlocks, event);
-      // If there is no match in next block then loopback (current fallback)
-      // This applies only to text messages + there's a max attempt to be specified
-      let fallbackBlock: BlockFull | undefined;
-      if (
-        !matchedBlock &&
-        event.getMessageType() === IncomingMessageType.message &&
-        fallbackOptions.active &&
-        convo.context.attempt < fallbackOptions.max_attempts
-      ) {
-        // Trigger block fallback
-        // NOTE : current is not populated, this may cause some anomaly
-        const currentBlock = convo.current;
-        fallbackBlock = {
-          ...currentBlock,
-          nextBlocks: convo.next,
-          // If there's labels, they should be already have been assigned
-          assign_labels: [],
-          trigger_labels: [],
-          attachedBlock: null,
-          category: null,
-          previousBlocks: [],
-        };
-        convo.context.attempt++;
-        fallback = true;
-      } else {
-        convo.context.attempt = 0;
-        fallbackBlock = undefined;
+      this.logger.debug('Handling ongoing conversation message ...', convo.id);
+      const matchedBlock = await this.findNextMatchingBlock(convo, event);
+      let fallbackBlock: BlockFull | undefined = undefined;
+      if (!matchedBlock && this.shouldAttemptLocalFallback(convo, event)) {
+        const fallbackResult = await this.handleFlowEscapeFallback(
+          convo,
+          event,
+        );
+        fallbackBlock = fallbackResult.nextBlock;
+        fallback = fallbackResult.fallback;
       }
 
       const next = matchedBlock || fallbackBlock;
@@ -308,30 +369,8 @@ export class BotService {
       this.logger.debug('Responding ...', convo.id);
 
       if (next) {
-        // Increment stats about popular blocks
-        this.eventEmitter.emit(
-          'hook:stats:entry',
-          BotStatsType.popular,
-          next.name,
-        );
-        // Go next!
-        this.logger.debug('Respond to nested conversion! Go next ', next.id);
-        try {
-          const updatedConversation =
-            await this.conversationService.storeContextData(
-              convo,
-              next,
-              event,
-              // If this is a local fallback then we don't capture vars
-              // Otherwise, old captured const value may be replaced by another const value
-              !fallback,
-            );
-          await this.triggerBlock(event, updatedConversation, next, fallback);
-        } catch (err) {
-          this.logger.error('Unable to store context data!', err);
-          return this.eventEmitter.emit('hook:conversation:end', convo);
-        }
-        return true;
+        // Proceed to the execution of the next block
+        return await this.proceedToNextBlock(convo, next, event, fallback);
       } else {
         // Conversation is still active, but there's no matching block to call next
         // We'll end the conversation but this message is probably lost in time and space.
@@ -343,6 +382,91 @@ export class BotService {
       this.logger.error('Unable to populate the next blocks!', err);
       this.eventEmitter.emit('hook:conversation:end', convo);
       throw err;
+    }
+  }
+
+  /**
+   * Handles the flow escape fallback logic for a conversation.
+   *
+   * This method adjudicates the flow escape event and helps determine the next block to execute based on the helper's response.
+   * It can coerce the event to a specific next block, create a new context, or reprompt the user with a fallback message.
+   * If the helper cannot handle the flow escape, it returns a fallback block with the current conversation's state.
+   *
+   * @param convo - The current conversation object.
+   * @param event - The incoming event that triggered the fallback.
+   *
+   * @returns An object containing the next block to execute (if any) and a flag indicating if a fallback should occur.
+   */
+  async handleFlowEscapeFallback(
+    convo: ConversationFull,
+    event: EventWrapper<any, any>,
+  ): Promise<{ nextBlock?: BlockFull; fallback: boolean }> {
+    const currentBlock = convo.current;
+    const fallbackOptions: FallbackOptions =
+      this.blockService.getFallbackOptions(currentBlock);
+    const fallbackBlock: BlockFull = {
+      ...currentBlock,
+      nextBlocks: convo.next,
+      assign_labels: [],
+      trigger_labels: [],
+      attachedBlock: null,
+      category: null,
+      previousBlocks: [],
+    };
+
+    try {
+      const helper = await this.helperService.getDefaultHelper(
+        HelperType.FLOW_ESCAPE,
+      );
+
+      if (!helper.canHandleFlowEscape(currentBlock)) {
+        return { nextBlock: fallbackBlock, fallback: true };
+      }
+
+      // Adjudicate the flow escape event
+      this.logger.debug(
+        `Adjudicating flow escape for block '${currentBlock.id}' in conversation '${convo.id}'.`,
+      );
+      const result = await helper.adjudicate(event, currentBlock);
+
+      switch (result.action) {
+        case FlowEscape.Action.COERCE: {
+          // Coerce the option to the next block
+          this.logger.debug(`Coercing option to the next block ...`, convo.id);
+          const proxiedEvent = new Proxy(event, {
+            get(target, prop, receiver) {
+              if (prop === 'getText') {
+                return () => result.coercedOption + '';
+              }
+              return Reflect.get(target, prop, receiver);
+            },
+          });
+          const matchedBlock = await this.findNextMatchingBlock(
+            convo,
+            proxiedEvent,
+          );
+          return { nextBlock: matchedBlock, fallback: false };
+        }
+
+        case FlowEscape.Action.NEW_CTX:
+          return { nextBlock: undefined, fallback: false };
+
+        case FlowEscape.Action.REPROMPT:
+        default:
+          if (result.repromptMessage) {
+            fallbackBlock.options.fallback = {
+              ...fallbackOptions,
+              message: [result.repromptMessage],
+            };
+          }
+          return { nextBlock: fallbackBlock, fallback: true };
+      }
+    } catch (err) {
+      this.logger.warn(
+        'Unable to handle flow escape, using default local fallback ...',
+        err,
+      );
+      return { nextBlock: fallbackBlock, fallback: true };
     }
   }
 
@@ -376,7 +500,7 @@ export class BotService {
         'Existing conversations',
       );
       this.logger.debug('Conversation has been captured! Responding ...');
-      return await this.handleIncomingMessage(conversation, event);
+      return await this.handleOngoingConversationMessage(conversation, event);
     } catch (err) {
       this.logger.error(
         'An error occurred when searching for a conversation ',
@@ -509,7 +633,7 @@ export class BotService {
                 'No global fallback block defined, sending a message ...',
                 err,
               );
-              const globalFallbackBlock = {
+              const globalFallbackBlock: BlockFull = {
                 id: 'global-fallback',
                 name: 'Global Fallback',
                 message: settings.chatbot_settings.fallback_message,
@@ -523,7 +647,12 @@ export class BotService {
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 attachedBlock: null,
-              } as any as BlockFull;
+                trigger_labels: [],
+                nextBlocks: [],
+                category: null,
+                outcomes: [],
+                trigger_channels: [],
+              };
 
               const envelope = await this.blockService.processMessage(
                 globalFallbackBlock,

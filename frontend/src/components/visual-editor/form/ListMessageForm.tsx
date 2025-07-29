@@ -26,6 +26,7 @@ import ListIcon from "@/app-components/svg/toolbar/ListIcon";
 import { useGet } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import { IBlockAttributes } from "@/types/block.types";
 import {
   ContentField,
   ContentFieldType,
@@ -45,8 +46,8 @@ const ListMessageForm = () => {
     register,
     watch,
     formState: { errors },
-  } = useFormContext();
-  const contentTypeId = watch("options.content.entity");
+  } = useFormContext<IBlockAttributes>();
+  const contentTypeId = watch("options.content.entity") || "";
   const displayMode = watch("options.content.display");
   const { data: contentType } = useGet(contentTypeId, {
     entity: EntityType.CONTENT_TYPE,
@@ -136,8 +137,8 @@ const ListMessageForm = () => {
               },
               valueAsNumber: true,
             })}
-            error={errors?.options?.["content"]?.["limit"]}
-            helperText={errors?.options?.["content"]?.["limit"]?.message}
+            error={!!errors?.options?.content?.limit}
+            helperText={errors?.options?.content?.limit?.message}
           />
         </ContentItem>
         <ContentItem>
@@ -159,8 +160,8 @@ const ListMessageForm = () => {
                   labelKey="name"
                   {...rest}
                   label={t("label.content")}
-                  error={!!errors?.options?.["content"].entity}
-                  helperText={errors?.options?.["content"].entity?.message}
+                  error={!!errors?.options?.content?.entity}
+                  helperText={errors?.options?.content?.entity?.message}
                   multiple={false}
                   noOptionsWarning={t("message.no_content_type")}
                   onChange={(_e, selected) => {
@@ -295,21 +296,14 @@ const ListMessageForm = () => {
           name="options.content.buttons"
           control={control}
           defaultValue={content?.buttons || []}
-          render={({ field }) => {
-            const { value, onChange } = field;
-
-            return (
-              <ButtonsInput
-                fieldPath="options.content.buttons"
-                value={value}
-                onChange={(buttons) => {
-                  onChange(buttons);
-                }}
-                disablePayload={true}
-                maxInput={displayMode === "list" ? 1 : 2}
-              />
-            );
-          }}
+          render={({ field }) => (
+            <ButtonsInput
+              {...field}
+              fieldPath="options.content.buttons"
+              disablePayload={true}
+              maxInput={displayMode === "list" ? 1 : 2}
+            />
+          )}
         />
       </ContentItem>
     </Grid>

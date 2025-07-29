@@ -36,6 +36,7 @@ type AutoCompleteEntitySelectProps<
   value?: Multiple extends true ? string[] : string | null;
   label: string;
   idKey?: string;
+  sortKey?: string;
   labelKey: Label;
   entity: keyof IEntityMapTypes;
   format: Format;
@@ -52,29 +53,24 @@ const AutoCompleteEntitySelect = <
   Multiple extends boolean | undefined = true,
 >(
   {
-    label,
-    value,
     entity,
     format,
     searchFields,
-    multiple,
-    onChange,
-    error,
-    helperText,
     preprocess,
     idKey = "id",
+    sortKey = "id",
     labelKey,
     ...rest
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
-  const { onSearch, searchPayload } = useSearch<Value>({
+  const { onSearch, searchPayload } = useSearch<typeof entity>({
     $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
   });
   const idRef = useRef(generateId());
   const params = {
     where: {
-      or: [...(searchPayload.where.or || [])],
+      or: searchPayload.where?.or || [],
     },
   };
   const { data, isFetching, fetchNextPage } = useInfiniteFind(
@@ -88,12 +84,13 @@ const AutoCompleteEntitySelect = <
       queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
     },
   );
-  // flatten & filter unique
+  // flatten & filter unique & sort
   const flattenedData = data?.pages
     ?.flat()
     .filter(
       (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
-    );
+    )
+    .sort((a, b) => -b[sortKey]?.localeCompare(a[sortKey]));
   const options =
     preprocess && flattenedData
       ? preprocess((flattenedData || []) as unknown as Value[])
@@ -106,17 +103,11 @@ const AutoCompleteEntitySelect = <
 
   return (
     <AutoCompleteSelect<Value, Label, Multiple>
-      value={value}
-      onChange={onChange}
-      label={label}
-      multiple={multiple}
       ref={ref}
       idKey={idKey}
       labelKey={labelKey}
       options={options || []}
       onSearch={onSearch}
-      error={error}
-      helperText={helperText}
       loading={isFetching}
       {...rest}
     />

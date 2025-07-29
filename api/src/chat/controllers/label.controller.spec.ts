@@ -7,20 +7,7 @@
  */
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
-import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { UserModel } from '@/user/schemas/user.schema';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
@@ -35,10 +22,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LabelCreateDto, LabelUpdateDto } from '../dto/label.dto';
-import { LabelRepository } from '../repositories/label.repository';
-import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Label, LabelModel } from '../schemas/label.schema';
-import { SubscriberModel } from '../schemas/subscriber.schema';
+import { Label } from '../schemas/label.schema';
 import { LabelService } from '../services/label.service';
 import { SubscriberService } from '../services/subscriber.service';
 
@@ -54,33 +38,10 @@ describe('LabelController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers', 'providers'],
       controllers: [LabelController],
-      imports: [
-        rootMongooseTestModule(installSubscriberFixtures),
-        MongooseModule.forFeature([
-          LabelModel,
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          SubscriberModel,
-          InvitationModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        LabelController,
-        LabelService,
-        LabelRepository,
-        UserService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        SubscriberService,
-        SubscriberRepository,
-        AttachmentService,
-        AttachmentRepository,
-      ],
+      imports: [rootMongooseTestModule(installSubscriberFixtures)],
+      providers: [SubscriberService],
     });
     [labelService, subscriberService, labelController] = await getMocks([
       LabelService,

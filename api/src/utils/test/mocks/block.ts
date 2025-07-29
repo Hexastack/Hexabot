@@ -18,6 +18,7 @@ import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { BlockOptions, ContentOptions } from '@/chat/schemas/types/options';
 import { NlpPattern, Pattern } from '@/chat/schemas/types/pattern';
 import { QuickReplyType } from '@/chat/schemas/types/quick-reply';
+import { WEB_CHANNEL_NAME } from '@/extensions/channels/web/settings';
 
 import { modelInstance } from './misc';
 
@@ -46,7 +47,7 @@ const blockListOptions: BlockOptions = {
       },
     ],
     limit: 2,
-    entity: 1,
+    entity: '1',
   },
 };
 
@@ -66,7 +67,7 @@ const blockCarouselOptions: BlockOptions = {
       },
     ],
     limit: 3,
-    entity: 1,
+    entity: '1',
   },
 };
 
@@ -80,7 +81,7 @@ const position = {
   y: 0,
 };
 
-export const baseBlockInstance = {
+export const baseBlockInstance: Partial<BlockFull> = {
   trigger_labels: [labelMock],
   assign_labels: [labelMock],
   options: blockOptions,
@@ -89,7 +90,7 @@ export const baseBlockInstance = {
   position,
   builtin: true,
   attachedBlock: null,
-  category: undefined,
+  category: null,
   previousBlocks: [],
   trigger_channels: [],
   nextBlocks: [],
@@ -391,3 +392,10 @@ export const blockCarouselMock = {
 } as unknown as BlockFull;
 
 export const blocks: BlockFull[] = [blockGetStarted, blockEmpty];
+
+export const mockWebChannelData: SubscriberChannelDict[typeof WEB_CHANNEL_NAME] =
+  {
+    isSocket: true,
+    ipAddress: '1.1.1.1',
+    agent: 'Chromium',
+  };

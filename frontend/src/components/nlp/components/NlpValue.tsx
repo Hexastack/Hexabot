@@ -7,14 +7,13 @@
  */
 
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, Button, ButtonGroup, Chip, Grid, Slide } from "@mui/material";
+import { Box, Button, Chip, Grid, Slide } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -28,7 +27,6 @@ import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -46,18 +44,18 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const dialogs = useDialogs();
   const router = useRouter();
   const [direction, setDirection] = useState<"up" | "down">("up");
-  const hasPermission = useHasPermission();
   const { data: nlpEntity, refetch: refetchEntity } = useGet(entityId, {
     entity: EntityType.NLP_ENTITY,
     format: Format.FULL,
   });
-  const { onSearch, searchPayload, searchText } = useSearch<INlpValue>(
-    {
-      $eq: [{ entity: entityId }],
-      $or: ["doc", "value"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_VALUE>(
+      {
+        $eq: [{ entity: entityId }],
+        $or: ["doc", "value"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.NLP_VALUE, format: Format.FULL },
     {
@@ -66,7 +64,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   );
   const { mutate: deleteNlpValue } = useDelete(EntityType.NLP_VALUE, {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       refetchEntity();
@@ -75,7 +73,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   });
   const { mutate: deleteNlpValues } = useDeleteMany(EntityType.NLP_VALUE, {
     onError: (error: Error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess() {
       toast.success(t("message.item_delete_success"));
@@ -93,6 +91,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             defaultValues: row,
             presetValues: nlpEntity,
           }),
+        requires: [PermissionAction.UPDATE],
       },
       {
         label: ActionColumnLabel.Delete,
@@ -103,6 +102,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
             deleteNlpValue(id);
           }
         },
+        requires: [PermissionAction.DELETE],
       },
     ],
     t("label.operations"),
@@ -236,37 +236,23 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                     defaultValue={searchText}
                   />
                 </Grid>
-                <ButtonGroup sx={{ marginLeft: "auto" }}>
-                  {hasPermission(
-                    EntityType.NLP_VALUE,
-                    PermissionAction.CREATE,
-                  ) ? (
-                    <Button
-                      startIcon={<AddIcon />}
-                      variant="contained"
-                      sx={{ float: "right" }}
-                      onClick={() =>
+                <ButtonActionsGroup
+                  entity={EntityType.NLP_VALUE}
+                  buttons={[
+                    {
+                      permissionAction: PermissionAction.CREATE,
+                      onClick: () =>
                         dialogs.open(NlpValueFormDialog, {
                           presetValues: nlpEntity,
-                        })
-                      }
-                    >
-                      {t("button.add")}
-                    </Button>
-                  ) : null}
-                  {selectedNlpValues.length > 0 && (
-                    <Grid item>
-                      <Button
-                        color="error"
-                        variant="contained"
-                        onClick={handleDeleteNlpValues}
-                        startIcon={<DeleteIcon />}
-                      >
-                        {t("button.delete")}
-                      </Button>
-                    </Grid>
-                  )}
-                </ButtonGroup>
+                        }),
+                    },
+                    {
+                      permissionAction: PermissionAction.DELETE,
+                      onClick: handleDeleteNlpValues,
+                      disabled: !selectedNlpValues.length,
+                    },
+                  ]}
+                />
               </Grid>
             </PageHeader>
             <Grid padding={1} marginTop={2} container>

@@ -8,20 +8,8 @@
 
 import { useInfiniteQuery, UseInfiniteQueryOptions } from "react-query";
 
-import {
-  EntityType,
-  Format,
-  QueryType,
-  TPopulateTypeFromFormat,
-} from "@/services/types";
-import {
-  IBaseSchema,
-  IDynamicProps,
-  IFindConfigProps,
-  POPULATE_BY_TYPE,
-  TAllowedFormat,
-  TType,
-} from "@/types/base.types";
+import { EntityType, Format, QueryType } from "@/services/types";
+import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 
@@ -29,20 +17,22 @@ import { useNormalizeAndCache } from "./helpers";
 import { useGetFromCache } from "./useGet";
 
 export const useInfiniteFind = <
-  TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
-  P = TPopulateTypeFromFormat<TDynamicProps>,
+  T extends THook["params"],
+  TAttr extends THook<T>["attributes"],
+  TBasic extends THook<T>["basic"],
+  TFilters extends THook<T>["filters"],
+  TFull extends THook<T>["full"],
+  P = THook<T>["populate"],
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
-  config?: IFindConfigProps,
+  { entity, format }: THook<T>["params"],
+  config?: IFindConfigProps<TFilters>,
   options?: Omit<
     UseInfiniteQueryOptions<
       string[],
       Error,
       string[],
-      [QueryType, EntityType, any]
+      TBasic[],
+      [QueryType, EntityType, string]
     >,
     "queryFn" | "onSuccess"
   > & { onSuccess?: (result: TBasic[]) => void },

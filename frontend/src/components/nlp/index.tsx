@@ -13,22 +13,14 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { TabPanel } from "@/app-components/tabs/TabPanel";
-import { useCreate } from "@/hooks/crud/useCreate";
 import { useFind } from "@/hooks/crud/useFind";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
-import {
-  INlpDatasetSampleAttributes,
-  INlpSample,
-  INlpSampleFormAttributes,
-  INlpSampleFull,
-} from "@/types/nlp-sample.types";
 
 import NlpDatasetCounter from "./components/NlpDatasetCounter";
 import NlpSample from "./components/NlpSample";
-import NlpDatasetSample from "./components/NlpTrainForm";
+import { NlpSampleForm } from "./components/NlpSampleForm";
 import { NlpValues } from "./components/NlpValue";
 
 const NlpEntity = dynamic(() => import("./components/NlpEntity"));
@@ -61,28 +53,6 @@ export const Nlp = ({
     );
   };
   const { t } = useTranslate();
-  const { toast } = useToast();
-  const { mutate: createSample } = useCreate<
-    EntityType.NLP_SAMPLE,
-    INlpDatasetSampleAttributes,
-    INlpSample,
-    INlpSampleFull
-  >(EntityType.NLP_SAMPLE, {
-    onError: () => {
-      toast.error(t("message.internal_server_error"));
-    },
-    onSuccess: () => {
-      toast.success(t("message.success_save"));
-    },
-  });
-  const onSubmitForm = (params: INlpSampleFormAttributes) => {
-    createSample({
-      text: params.text,
-      type: params.type,
-      entities: [...params.traitEntities, ...params.keywordEntities],
-      language: params.language,
-    });
-  };
 
   return (
     <Grid container gap={2} flexDirection="column">
@@ -90,8 +60,8 @@ export const Nlp = ({
       <Grid item xs={12}>
         <Grid container flexDirection="row">
           <Grid item xs={7}>
-            <Paper>
-              <NlpDatasetSample submitForm={onSubmitForm} />
+            <Paper sx={{ px: 3, py: 2 }}>
+              <NlpSampleForm data={{ defaultValues: null }} />
             </Paper>
           </Grid>
           <Grid item xs={5} pl={2}>
@@ -116,12 +86,18 @@ export const Nlp = ({
           {/* NLP SAMPLES */}
           <Grid sx={{ padding: "20px" }}>
             <TabPanel value={selectedTab} index="sample">
-              <NlpSample />
+              {selectedTab === "sample" ? <NlpSample /> : null}
             </TabPanel>
 
             {/* NLP ENTITIES */}
             <TabPanel value={selectedTab} index="entity">
-              {entityId ? <NlpValues entityId={entityId} /> : <NlpEntity />}
+              {selectedTab === "entity" ? (
+                entityId ? (
+                  <NlpValues entityId={entityId} />
+                ) : (
+                  <NlpEntity />
+                )
+              ) : null}
             </TabPanel>
           </Grid>
         </Paper>

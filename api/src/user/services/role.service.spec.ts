@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
-
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
@@ -16,14 +14,12 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { InvitationRepository } from '../repositories/invitation.repository';
 import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { Permission, PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleFull, RoleModel } from '../schemas/role.schema';
-import { User, UserModel } from '../schemas/user.schema';
+import { Permission } from '../schemas/permission.schema';
+import { Role, RoleFull } from '../schemas/role.schema';
+import { User } from '../schemas/user.schema';
 
 import { roleFixtures } from './../../utils/test/fixtures/role';
 import { RoleService } from './role.service';
@@ -39,22 +35,10 @@ describe('RoleService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          UserModel,
-          PermissionModel,
-          RoleModel,
-          InvitationModel,
-        ]),
-      ],
-      providers: [
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        PermissionRepository,
-      ],
+      models: ['PermissionModel', 'InvitationModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [RoleService, UserRepository, PermissionRepository],
     });
     [roleService, roleRepository, userRepository, permissionRepository] =
       await getMocks([
@@ -91,14 +75,14 @@ describe('RoleService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find roles, and for each role populate the corresponding permissions and users', async () => {
       const pageQuery = getPageQuery<Role>({ sort: ['_id', 'asc'] });
-      jest.spyOn(roleRepository, 'findPageAndPopulate');
+      jest.spyOn(roleRepository, 'findAndPopulate');
       const allRoles = await roleRepository.findAll();
       const allPermissions = await permissionRepository.findAll();
       const allUsers = await userRepository.findAll();
-      const result = await roleService.findPageAndPopulate({}, pageQuery);
+      const result = await roleService.findAndPopulate({}, pageQuery);
       const rolesWithPermissionsAndUsers = allRoles.reduce((acc, currRole) => {
         const roleWithPermissionsAndUsers = {
           ...currRole,
@@ -113,9 +97,10 @@ describe('RoleService', () => {
         return acc;
       }, [] as RoleFull[]);
 
-      expect(roleRepository.findPageAndPopulate).toHaveBeenCalledWith(
+      expect(roleRepository.findAndPopulate).toHaveBeenCalledWith(
         {},
         pageQuery,
+        undefined,
       );
       expect(result).toEqualPayload(rolesWithPermissionsAndUsers);
     });

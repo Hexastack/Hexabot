@@ -14,13 +14,16 @@ import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQu
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
 import { useAuth } from "@/hooks/useAuth";
 import { EntityType, QueryType } from "@/services/types";
+import { TNestedPaths } from "@/types/base.types";
+import { SearchPayload } from "@/types/search.types";
+import { ISubscriber } from "@/types/subscriber.types";
 import { useSubscribe } from "@/websocket/socket-hooks";
 
 import { AssignedTo, SocketSubscriberEvents } from "../types";
 
 export const useInfiniteLiveSubscribers = (props: {
   channels: string[];
-  searchPayload: any;
+  searchPayload: SearchPayload<ISubscriber>;
   assignedTo: AssignedTo;
 }) => {
   const { user } = useAuth();
@@ -32,10 +35,12 @@ export const useInfiniteLiveSubscribers = (props: {
       ...props.searchPayload.where,
       ...(props.channels.length > 0 && {
         or: [
-          ...(props.searchPayload.where.or || []),
-          ...props.channels.map((channel) => ({
-            "channel.name": channel,
-          })),
+          ...(props.searchPayload.where?.or || []),
+          ...props.channels.map(
+            (channel): Partial<TNestedPaths<ISubscriber>> => ({
+              "channel.name": channel,
+            }),
+          ),
         ],
       }),
       ...(props.assignedTo === AssignedTo.ME
@@ -48,7 +53,7 @@ export const useInfiniteLiveSubscribers = (props: {
           }
         : {}),
     },
-  };
+  } satisfies SearchPayload<ISubscriber>;
   const {
     data,
     fetchNextPage,
@@ -73,8 +78,9 @@ export const useInfiniteLiveSubscribers = (props: {
       if (event.op === "newSubscriber") {
         const { result } = normalizeAndCache(event.profile);
 
+        // Only update the unfiltered (all-subscribers) cache
         queryClient.setQueryData(
-          [QueryType.infinite, EntityType.SUBSCRIBER, params],
+          [QueryType.infinite, EntityType.SUBSCRIBER, { where: {} }],
           (oldData) => {
             if (oldData) {
               const data = oldData as InfiniteData<string[]>;

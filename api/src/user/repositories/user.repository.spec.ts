@@ -6,11 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule, getModelToken } from '@nestjs/mongoose';
+import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { userFixtures } from '@/utils/test/fixtures/user';
@@ -21,15 +19,10 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { PermissionRepository } from '../repositories/permission.repository';
 import { RoleRepository } from '../repositories/role.repository';
 import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
-import { User, UserFull, UserModel } from '../schemas/user.schema';
-
-import { InvitationRepository } from './invitation.repository';
+import { Role } from '../schemas/role.schema';
+import { User, UserFull } from '../schemas/user.schema';
 
 describe('UserRepository', () => {
   let roleRepository: RoleRepository;
@@ -52,30 +45,10 @@ describe('UserRepository', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installPermissionFixtures),
-        MongooseModule.forFeature([
-          UserModel,
-          PermissionModel,
-          RoleModel,
-          InvitationModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        UserRepository,
-        RoleRepository,
-        InvitationRepository,
-        PermissionRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-      ],
+      models: ['PermissionModel', 'InvitationModel', 'AttachmentModel'],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installPermissionFixtures)],
+      providers: [UserRepository, RoleRepository],
     });
     [roleRepository, userRepository, userModel] = await getMocks([
       RoleRepository,
@@ -105,14 +78,13 @@ describe('UserRepository', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     it('should find users, and for each user populate the corresponding roles', async () => {
       jest.spyOn(userModel, 'find');
       const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
-      jest.spyOn(userRepository, 'findPageAndPopulate');
       const allUsers = await userRepository.findAll();
       const allRoles = await roleRepository.findAll();
-      const result = await userRepository.findPageAndPopulate({}, pageQuery);
+      const result = await userRepository.findAndPopulate({}, pageQuery);
       const usersWithRoles = allUsers.reduce((acc, currUser) => {
         acc.push({
           ...currUser,

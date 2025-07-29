@@ -6,41 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { MongooseModule } from '@nestjs/mongoose';
-
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { ChannelService } from '@/channel/channel.service';
-import { MessageController } from '@/chat/controllers/message.controller';
-import { BlockRepository } from '@/chat/repositories/block.repository';
-import { MessageRepository } from '@/chat/repositories/message.repository';
-import { SubscriberRepository } from '@/chat/repositories/subscriber.repository';
-import { BlockModel } from '@/chat/schemas/block.schema';
-import { MessageModel } from '@/chat/schemas/message.schema';
-import { SubscriberModel } from '@/chat/schemas/subscriber.schema';
-import { BlockService } from '@/chat/services/block.service';
-import { MessageService } from '@/chat/services/message.service';
-import { SubscriberService } from '@/chat/services/subscriber.service';
-import { ContentRepository } from '@/cms/repositories/content.repository';
-import { MenuRepository } from '@/cms/repositories/menu.repository';
-import { ContentModel } from '@/cms/schemas/content.schema';
-import { MenuModel } from '@/cms/schemas/menu.schema';
-import { ContentService } from '@/cms/services/content.service';
-import { MenuService } from '@/cms/services/menu.service';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { NlpEntityRepository } from '@/nlp/repositories/nlp-entity.repository';
-import { NlpSampleEntityRepository } from '@/nlp/repositories/nlp-sample-entity.repository';
-import { NlpValueRepository } from '@/nlp/repositories/nlp-value.repository';
-import { NlpEntityModel } from '@/nlp/schemas/nlp-entity.schema';
-import { NlpSampleEntityModel } from '@/nlp/schemas/nlp-sample-entity.schema';
-import { NlpValueModel } from '@/nlp/schemas/nlp-value.schema';
-import { NlpEntityService } from '@/nlp/services/nlp-entity.service';
-import { NlpValueService } from '@/nlp/services/nlp-value.service';
-import { NlpService } from '@/nlp/services/nlp.service';
-import { PluginService } from '@/plugins/plugins.service';
-import { SettingService } from '@/setting/services/setting.service';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -55,11 +20,8 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { LanguageRepository } from '../repositories/language.repository';
-import { TranslationRepository } from '../repositories/translation.repository';
-import { LanguageModel } from '../schemas/language.schema';
-import { Translation, TranslationModel } from '../schemas/translation.schema';
-import { LanguageService } from '../services/language.service';
+import { Translation } from '../schemas/translation.schema';
+import { I18nService } from '../services/i18n.service';
 import { TranslationService } from '../services/translation.service';
 
 import { TranslationController } from './translation.controller';
@@ -71,59 +33,10 @@ describe('TranslationController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      controllers: [MessageController],
-      imports: [
-        rootMongooseTestModule(installTranslationFixtures),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          TranslationModel,
-          MessageModel,
-          AttachmentModel,
-          MenuModel,
-          BlockModel,
-          ContentModel,
-          LanguageModel,
-          NlpEntityModel,
-          NlpSampleEntityModel,
-          NlpValueModel,
-        ]),
-      ],
+      autoInjectFrom: ['controllers'],
+      controllers: [TranslationController],
+      imports: [rootMongooseTestModule(installTranslationFixtures)],
       providers: [
-        TranslationController,
-        TranslationService,
-        TranslationRepository,
-        MessageService,
-        MessageRepository,
-        SubscriberService,
-        SubscriberRepository,
-        ChannelService,
-        AttachmentService,
-        AttachmentRepository,
-        MenuService,
-        MenuRepository,
-        {
-          provide: NlpService,
-          useValue: {
-            getNLP: jest.fn(() => undefined),
-          },
-        },
-        {
-          provide: SettingService,
-          useValue: {
-            getConfig: jest.fn(() => ({
-              chatbot: { lang: { default: 'fr' } },
-            })),
-            getSettings: jest.fn(() => ({})),
-          },
-        },
-        BlockService,
-        BlockRepository,
-        ContentService,
-        ContentRepository,
-        {
-          provide: PluginService,
-          useValue: {},
-        },
         {
           provide: I18nService,
           useValue: {
@@ -131,21 +44,6 @@ describe('TranslationController', () => {
             refreshDynamicTranslations: jest.fn(),
           },
         },
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-        LanguageService,
-        LanguageRepository,
-        NlpEntityRepository,
-        NlpEntityService,
-        NlpValueRepository,
-        NlpValueService,
-        NlpSampleEntityRepository,
       ],
     });
     [translationService, translationController] = await getMocks([
@@ -184,7 +82,7 @@ describe('TranslationController', () => {
     });
   });
 
-  describe('findPage', () => {
+  describe('find', () => {
     const pageQuery = getPageQuery<Translation>();
     it('should find translations', async () => {
       jest.spyOn(translationService, 'find');

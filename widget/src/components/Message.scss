@@ -55,6 +55,8 @@
     .sc-message--wrapper {
       display: flex;
       flex-direction: column;
+      overflow: hidden;
+      word-break: break-word;
 
       .sc-message--text {
         padding: 10px 20px;

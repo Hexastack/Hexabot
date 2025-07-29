@@ -10,6 +10,8 @@ import { ModelDefinition } from '@nestjs/mongoose';
 
 import { LifecycleHookManager } from './lifecycle-hook-manager';
 
+afterEach(jest.clearAllMocks);
+
 describe('LifecycleHookManager', () => {
   let modelMock: ModelDefinition;
 
@@ -42,8 +44,10 @@ describe('LifecycleHookManager', () => {
   });
 
   it('should return hooks attached to a specific model', () => {
-    // Attach hooks to mock model
-    LifecycleHookManager.attach(modelMock);
+    if (!LifecycleHookManager.getModel(modelMock.name)) {
+      // Attach hooks to mock model
+      LifecycleHookManager.attach(modelMock);
+    }
 
     // Retrieve hooks
     const hooks = LifecycleHookManager.getHooks('TestModel');

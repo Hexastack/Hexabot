@@ -37,9 +37,9 @@ const StyledIconButton = styled(IconButton)({
   transition: "all 0.1s",
   ".carousel-wrapper:hover &": {
     opacity: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
-  backgroundColor: "#fff"
+  backgroundColor: "#fff",
 });
 const StyledCarouselDiv = styled("div")({
   display: "flex",
@@ -52,8 +52,8 @@ const StyledCarouselDiv = styled("div")({
   padding: "2px 0px",
   position: "relative",
 
-  "-ms-overflow-style": "none",
-  "scrollbar-width": "none",
+  msOverflowStyle: "none",
+  scrollbarWidth: "none",
   "&::-webkit-scrollbar": {
     display: "none",
   },

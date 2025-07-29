@@ -6,15 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-// eslint-disable-next-line import/order
-import { MailerService } from '@nestjs-modules/mailer';
 import {
   BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -24,6 +21,7 @@ import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { LanguageService } from '@/i18n/services/language.service';
 import { LoggerService } from '@/logger/logger.service';
+import { MailerService } from '@/mailer/mailer.service';
 
 import { UserRequestResetDto, UserResetPasswordDto } from '../dto/user.dto';
 
@@ -37,7 +35,7 @@ export class PasswordResetService {
     private readonly userService: UserService,
     public readonly i18n: I18nService,
     public readonly languageService: LanguageService,
-    @Optional() private readonly mailerService?: MailerService,
+    private readonly mailerService: MailerService,
   ) {}
 
   public readonly jwtSignOptions: JwtSignOptions = {
@@ -60,31 +58,28 @@ export class PasswordResetService {
     }
     const jwt = await this.sign({ ...dto });
 
-    if (this.mailerService) {
-      try {
-        const defaultLanguage = await this.languageService.getDefaultLanguage();
-        await this.mailerService.sendMail({
-          to: dto.email,
-          template: 'password_reset.mjml',
-          context: {
-            appName: config.parameters.appName,
-            appUrl: config.uiBaseUrl,
-            token: jwt,
-            first_name: user.first_name,
-            t: (key: string) =>
-              this.i18n.t(key, { lang: defaultLanguage.code }),
-          },
-          subject: this.i18n.t('password_reset_subject'),
-        });
-      } catch (e) {
-        this.logger.error(
-          'Could not send email',
-          e.message,
-          e.stack,
-          'InvitationService',
-        );
-        throw new InternalServerErrorException('Could not send email');
-      }
+    try {
+      const defaultLanguage = await this.languageService.getDefaultLanguage();
+      await this.mailerService.sendMail({
+        to: dto.email,
+        template: 'password_reset.mjml',
+        context: {
+          appName: config.parameters.appName,
+          appUrl: config.uiBaseUrl,
+          token: jwt,
+          first_name: user.first_name,
+          t: (key: string) => this.i18n.t(key, { lang: defaultLanguage.code }),
+        },
+        subject: this.i18n.t('password_reset_subject'),
+      });
+    } catch (e) {
+      this.logger.error(
+        'Could not send email',
+        e.message,
+        e.stack,
+        'PasswordResetService',
+      );
+      throw new InternalServerErrorException('Could not send email');
     }
 
     // TODO: hash the token before saving it

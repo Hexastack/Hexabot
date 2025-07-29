@@ -8,20 +8,8 @@
 
 import { useQuery, UseQueryOptions } from "react-query";
 
-import {
-  EntityType,
-  Format,
-  QueryType,
-  TPopulateTypeFromFormat,
-} from "@/services/types";
-import {
-  IBaseSchema,
-  IDynamicProps,
-  IFindConfigProps,
-  POPULATE_BY_TYPE,
-  TAllowedFormat,
-  TType,
-} from "@/types/base.types";
+import { EntityType, Format, QueryType } from "@/services/types";
+import { IFindConfigProps, POPULATE_BY_TYPE, THook } from "@/types/base.types";
 
 import { useEntityApiClient } from "../useApiClient";
 import { usePagination } from "../usePagination";
@@ -31,14 +19,15 @@ import { useCount } from "./useCount";
 import { useGetFromCache } from "./useGet";
 
 export const useFind = <
-  TDynamicProps extends IDynamicProps,
-  TAttr = TType<TDynamicProps["entity"]>["attributes"],
-  TBasic extends IBaseSchema = TType<TDynamicProps["entity"]>["basic"],
-  TFull extends IBaseSchema = TType<TDynamicProps["entity"]>["full"],
-  P = TPopulateTypeFromFormat<TDynamicProps>,
+  TP extends THook["params"],
+  TBasic extends THook<TP>["basic"],
+  TAttr extends THook<TP>["attributes"],
+  TFilters extends THook<TP>["filters"],
+  TFull extends THook<TP>["full"],
+  P = THook<TP>["populate"],
 >(
-  { entity, format }: TDynamicProps & TAllowedFormat<TDynamicProps["entity"]>,
-  config?: IFindConfigProps,
+  { entity, format }: THook<TP>["params"],
+  config?: IFindConfigProps<TFilters>,
   options?: Omit<
     UseQueryOptions<string[], Error, string[], [QueryType, EntityType, string]>,
     "queryFn" | "queryKey" | "onSuccess"
@@ -56,29 +45,32 @@ export const useFind = <
     entity,
   );
   const getFromCache = useGetFromCache(entity);
-  const { data: total } = useCount(entity, params["where"], {
+  const countQuery = useCount(entity, params["where"], {
     enabled: hasCount,
   });
   const { dataGridPaginationProps, pageQueryPayload } = usePagination(
-    total?.count,
+    countQuery.data?.count,
     initialPaginationState,
     initialSortState,
     hasCount,
   );
   const normalizedParams = { ...pageQueryPayload, ...(params || {}) };
-  const enabled = !!total || !hasCount;
+  const enabled = !!countQuery.data || !hasCount;
   const { data: ids, ...normalizedQuery } = useQuery({
     enabled,
     queryFn: async () => {
-      const data = await api.find(
-        normalizedParams,
-        format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
-      );
+      const data =
+        !hasCount || (hasCount && !!countQuery.data?.count)
+          ? await api.find(
+              normalizedParams,
+              format === Format.FULL && (POPULATE_BY_TYPE[entity] as P),
+            )
+          : [];
       const { result } = normalizeAndCache(data);
 
       return result;
     },
-    queryKey: [QueryType.collection, entity, normalizedParams],
+    queryKey: [QueryType.collection, entity, JSON.stringify(normalizedParams)],
     onSuccess: (ids) => {
       if (onSuccess) {
         onSuccess(
@@ -100,7 +92,11 @@ export const useFind = <
     dataGridProps: {
       ...dataGridPaginationProps,
       rows: data || [],
-      loading: normalizedQuery.isLoading || normalizedQuery.isFetching,
+      loading:
+        normalizedQuery.isLoading ||
+        normalizedQuery.isFetching ||
+        countQuery.isLoading ||
+        countQuery.isFetching,
     },
   };
 };

@@ -8,12 +8,9 @@
 
 import CircleIcon from "@mui/icons-material/Circle";
 import ClearIcon from "@mui/icons-material/Clear";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
-  Button,
-  ButtonGroup,
   Chip,
   Grid,
   IconButton,
@@ -26,15 +23,17 @@ import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useQueryClient } from "react-query";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import FileUploadButton from "@/app-components/inputs/FileInput";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
+import NlpPatternSelect from "@/app-components/inputs/NlpPatternSelect";
 import {
   ActionColumnLabel,
-  getActionsColumn,
+  useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
@@ -46,11 +45,11 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useConfig } from "@/hooks/useConfig";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
+import { NlpPattern } from "@/types/block.types";
 import { ILanguage } from "@/types/language.types";
 import {
   INlpDatasetSample,
@@ -79,23 +78,28 @@ export default function NlpSample() {
   const queryClient = useQueryClient();
   const [type, setType] = useState<NlpSampleType | "all">("all");
   const [language, setLanguage] = useState<string | undefined>(undefined);
-  const hasPermission = useHasPermission();
+  const [patterns, setPatterns] = useState<NlpPattern[]>([]);
   const getNlpEntityFromCache = useGetFromCache(EntityType.NLP_ENTITY);
   const getNlpValueFromCache = useGetFromCache(EntityType.NLP_VALUE);
   const getSampleEntityFromCache = useGetFromCache(
     EntityType.NLP_SAMPLE_ENTITY,
   );
   const getLanguageFromCache = useGetFromCache(EntityType.LANGUAGE);
-  const { onSearch, searchPayload, searchText } = useSearch<INlpSample>(
-    {
-      $eq: [
-        ...(type !== "all" ? [{ type }] : []),
-        ...(language ? [{ language }] : []),
-      ],
-      $iLike: ["text"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.NLP_SAMPLE>(
+      {
+        $eq: [
+          ...(type !== "all" ? [{ type }] : []),
+          ...(language ? [{ language }] : []),
+          // We send only value match patterns
+          ...(patterns
+            ? [{ patterns: patterns.filter(({ match }) => match === "value") }]
+            : []),
+        ],
+        $iLike: ["text"],
+      },
+      { syncUrl: true },
+    );
   const { mutate: deleteNlpSample } = useDelete(EntityType.NLP_SAMPLE, {
     onError: () => {
       toast.error(t("message.internal_server_error"));
@@ -146,7 +150,8 @@ export default function NlpSample() {
       params: searchPayload,
     },
   );
-  const actionColumns = getActionsColumn<INlpSample>(
+  const actionColumns = useActionColumns<INlpSample>(
+    EntityType.NLP_SAMPLE,
     [
       {
         label: ActionColumnLabel.Edit,
@@ -175,7 +180,6 @@ export default function NlpSample() {
             { defaultValues: data },
             {
               maxWidth: "md",
-              hasButtons: false,
             },
           );
         },
@@ -212,6 +216,7 @@ export default function NlpSample() {
           {row.entities
             .map((e) => getSampleEntityFromCache(e) as INlpSampleEntity)
             .filter((e) => !!e)
+            .sort((a, b) => String(a.entity).localeCompare(String(b.entity)))
             .map((entity) => (
               <ChipEntity
                 key={entity.id}
@@ -375,55 +380,66 @@ export default function NlpSample() {
               ),
             )}
           </Input>
-          <ButtonGroup sx={{ marginLeft: "auto" }}>
-            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.CREATE) &&
-            hasPermission(
-              EntityType.NLP_SAMPLE_ENTITY,
-              PermissionAction.CREATE,
-            ) ? (
-              <FileUploadButton
-                accept="text/csv"
-                label={t("button.import")}
-                onChange={handleImportChange}
-                isLoading={isLoading}
-              />
-            ) : null}
-            {hasPermission(EntityType.NLP_SAMPLE, PermissionAction.READ) &&
-            hasPermission(
-              EntityType.NLP_SAMPLE_ENTITY,
-              PermissionAction.READ,
-            ) ? (
-              <Button
-                variant="contained"
-                href={buildURL(
+          <ButtonActionsGroup
+            entity={EntityType.NLP_SAMPLE}
+            buttons={[
+              {
+                permissions: {
+                  [EntityType.NLP_SAMPLE]: PermissionAction.CREATE,
+                  [EntityType.NLP_SAMPLE_ENTITY]: PermissionAction.CREATE,
+                },
+                children: (
+                  <FileUploadButton
+                    accept="text/csv"
+                    label={t("button.import")}
+                    onChange={handleImportChange}
+                    isLoading={isLoading}
+                  />
+                ),
+              },
+              {
+                permissions: {
+                  [EntityType.NLP_SAMPLE]: PermissionAction.READ,
+                  [EntityType.NLP_SAMPLE_ENTITY]: PermissionAction.READ,
+                },
+                startIcon: <DownloadIcon />,
+                children: t("button.export"),
+                href: buildURL(
                   apiUrl,
                   `nlpsample/export${type ? `?type=${type}` : ""}`,
-                )}
-                startIcon={<DownloadIcon />}
-                disabled={dataGridProps?.rows?.length === 0}
-              >
-                {t("button.export")}
-              </Button>
-            ) : null}
-            <Button
-              startIcon={<DeleteIcon />}
-              variant="contained"
-              color="error"
-              onClick={async () => {
-                const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-                  mode: "selection",
-                  count: selectedNlpSamples.length,
-                });
+                ),
+              },
+              {
+                permissionAction: PermissionAction.DELETE,
+                onClick: async () => {
+                  const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+                    mode: "selection",
+                    count: selectedNlpSamples.length,
+                  });
 
-                if (isConfirmed) {
-                  deleteNlpSamples(selectedNlpSamples);
-                }
-              }}
-              disabled={!selectedNlpSamples.length}
-            >
-              {t("button.delete")}
-            </Button>
-          </ButtonGroup>
+                  if (isConfirmed) {
+                    deleteNlpSamples(selectedNlpSamples);
+                  }
+                },
+                disabled: !selectedNlpSamples.length,
+              },
+            ]}
+          />
+        </Grid>
+        <Grid
+          container
+          display="flex"
+          flexDirection="row"
+          gap={2}
+          direction="row"
+          mt={2}
+        >
+          <NlpPatternSelect
+            patterns={patterns}
+            onChange={setPatterns}
+            fullWidth={true}
+            noneLabel={t("label.select")}
+          />
         </Grid>
       </Grid>
 

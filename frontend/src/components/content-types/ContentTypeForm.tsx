@@ -8,7 +8,7 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
-import { FC, Fragment, useEffect } from "react";
+import { FC, Fragment } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
@@ -19,10 +19,14 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ContentFieldType, IContentType } from "@/types/content-type.types";
+import {
+  ContentFieldType,
+  IContentType,
+  IContentTypeAttributes,
+} from "@/types/content-type.types";
 
 import { FieldInput } from "./components/FieldInput";
-import { FIELDS_FORM_DEFAULT_VALUES, READ_ONLY_FIELDS } from "./constants";
+import { FIELDS_FORM_DEFAULT_VALUES } from "./constants";
 
 export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
   data: { defaultValues: contentType },
@@ -33,26 +37,42 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
   const { toast } = useToast();
   const { t } = useTranslate();
   const {
-    reset,
     control,
     register,
     setValue,
     formState: { errors },
     handleSubmit,
-  } = useForm<Partial<IContentType>>({
-    defaultValues: {
-      name: contentType?.name || "",
-      fields: contentType?.fields || FIELDS_FORM_DEFAULT_VALUES,
-    },
+  } = useForm<IContentType>({
+    defaultValues: contentType
+      ? { name: contentType.name, fields: contentType.fields }
+      : {
+          name: "",
+          fields: FIELDS_FORM_DEFAULT_VALUES,
+        },
   });
   const { append, fields, remove } = useFieldArray({
     name: "fields",
+    rules: {
+      validate: (fields) => {
+        const hasUniqueLabels =
+          new Set(fields.map((f) => f["label"] as string)).size ===
+          fields.length;
+
+        if (!hasUniqueLabels) {
+          toast.error(t("message.duplicate_labels_not_allowed"));
+
+          return false;
+        }
+
+        return true;
+      },
+    },
     control,
   });
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
     onSuccess: () => {
       rest.onSuccess?.();
@@ -67,43 +87,13 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
     EntityType.CONTENT_TYPE,
     options,
   );
-  const onSubmitForm = (params) => {
-    const labelCounts: Record<string, number> = params.fields.reduce(
-      (acc, field) => {
-        if (!field.label.trim()) return acc;
-        acc[field.label] = (acc[field.label] || 0) + 1;
-
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-    const hasDuplicates = Object.values(labelCounts).some(
-      (count: number) => count > 1,
-    );
-
-    if (hasDuplicates) {
-      toast.error(t("message.duplicate_labels_not_allowed"));
-
-      return;
-    }
-
-    if (contentType) {
+  const onSubmitForm = (params: IContentTypeAttributes) => {
+    if (contentType?.id) {
       updateContentType({ id: contentType.id, params });
     } else {
       createContentType(params);
     }
   };
-
-  useEffect(() => {
-    if (contentType) {
-      reset({
-        name: contentType.name,
-        fields: contentType.fields || FIELDS_FORM_DEFAULT_VALUES,
-      });
-    } else {
-      reset({ name: "", fields: FIELDS_FORM_DEFAULT_VALUES });
-    }
-  }, [contentType, reset]);
 
   return (
     <Wrapper onSubmit={handleSubmit(onSubmitForm)} {...WrapperProps}>
@@ -121,20 +111,19 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               autoFocus
             />
           </ContentItem>
-
-          {fields.map((f, index) => (
+          {fields.map((field, idx) => (
             <ContentItem
-              key={f.id}
+              key={field.id}
               display="flex"
               justifyContent="space-between"
               gap={2}
             >
               <FieldInput
-                setValue={setValue}
-                control={control}
+                idx={idx}
+                name={field.name}
                 remove={remove}
-                index={index}
-                disabled={READ_ONLY_FIELDS.includes(f.label as any)}
+                control={control}
+                setValue={setValue}
               />
             </ContentItem>
           ))}
@@ -143,7 +132,11 @@ export const ContentTypeForm: FC<ComponentFormProps<IContentType>> = ({
               startIcon={<AddIcon />}
               variant="contained"
               onClick={() =>
-                append({ label: "", name: "", type: ContentFieldType.TEXT })
+                append({
+                  label: "",
+                  name: "",
+                  type: ContentFieldType.TEXT,
+                })
               }
             >
               {t("button.add")}

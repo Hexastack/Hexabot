@@ -6,14 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { MongooseModule } from '@nestjs/mongoose';
 import mime from 'mime';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import {
-  Attachment,
-  AttachmentModel,
-} from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -21,15 +16,8 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
-import { InvitationRepository } from '@/user/repositories/invitation.repository';
-import { RoleRepository } from '@/user/repositories/role.repository';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { InvitationModel } from '@/user/schemas/invitation.schema';
-import { PermissionModel } from '@/user/schemas/permission.schema';
-import { RoleModel } from '@/user/schemas/role.schema';
-import { User, UserModel } from '@/user/schemas/user.schema';
-import { RoleService } from '@/user/services/role.service';
-import { UserService } from '@/user/services/user.service';
+import { User } from '@/user/schemas/user.schema';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
 import { sortRowsBy } from '@/utils/test/sort';
@@ -44,10 +32,9 @@ import { WebsocketGateway } from '@/websocket/websocket.gateway';
 
 import { LabelRepository } from '../repositories/label.repository';
 import { SubscriberRepository } from '../repositories/subscriber.repository';
-import { Label, LabelModel } from '../schemas/label.schema';
-import { Subscriber, SubscriberModel } from '../schemas/subscriber.schema';
+import { Label } from '../schemas/label.schema';
+import { Subscriber } from '../schemas/subscriber.schema';
 
-import { LabelService } from './label.service';
 import { SubscriberService } from './subscriber.service';
 
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'test-uuid') }));
@@ -71,31 +58,9 @@ describe('SubscriberService', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      imports: [
-        rootMongooseTestModule(installSubscriberFixtures),
-        MongooseModule.forFeature([
-          SubscriberModel,
-          LabelModel,
-          UserModel,
-          RoleModel,
-          InvitationModel,
-          PermissionModel,
-          AttachmentModel,
-        ]),
-      ],
-      providers: [
-        SubscriberService,
-        SubscriberRepository,
-        LabelService,
-        LabelRepository,
-        UserService,
-        UserRepository,
-        RoleService,
-        RoleRepository,
-        InvitationRepository,
-        AttachmentService,
-        AttachmentRepository,
-      ],
+      autoInjectFrom: ['providers'],
+      imports: [rootMongooseTestModule(installSubscriberFixtures)],
+      providers: [SubscriberService, LabelRepository, UserRepository],
     });
     [
       labelRepository,
@@ -166,11 +131,11 @@ describe('SubscriberService', () => {
     });
   });
 
-  describe('findPageAndPopulate', () => {
+  describe('findAndPopulate', () => {
     const pageQuery = getPageQuery<Subscriber>();
     it('should find subscribers, and foreach subscriber populate its corresponding labels', async () => {
-      jest.spyOn(subscriberRepository, 'findPageAndPopulate');
-      const result = await subscriberService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(subscriberRepository, 'findAndPopulate');
+      const result = await subscriberService.findAndPopulate({}, pageQuery);
       const subscribersWithLabels = allSubscribers.map((subscriber) => ({
         ...subscriber,
         labels: allLabels.filter((label) =>
@@ -179,7 +144,7 @@ describe('SubscriberService', () => {
         assignedTo: allUsers.find(({ id }) => subscriber.assignedTo === id),
       }));
 
-      expect(subscriberRepository.findPageAndPopulate).toHaveBeenCalled();
+      expect(subscriberRepository.findAndPopulate).toHaveBeenCalled();
       expect(result).toEqualPayload(subscribersWithLabels.sort(sortRowsBy));
     });
   });

@@ -17,7 +17,7 @@ import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { Input } from "@/app-components/inputs/Input";
 import {
   ActionColumnLabel,
-  getActionsColumn,
+  useActionColumns,
 } from "@/app-components/tables/columns/getColumns";
 import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { buildRenderPicture } from "@/app-components/tables/columns/renderPicture";
@@ -28,6 +28,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
+import { PermissionAction } from "@/types/permission.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { getDateTimeFormatter } from "@/utils/date";
 
@@ -43,16 +44,30 @@ export const Subscribers = () => {
     { hasCount: false },
   );
   const [labelFilter, setLabelFilter] = useState<string>("");
-  const { onSearch, searchPayload, searchText } = useSearch<ISubscriber>(
-    {
-      $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
-      $or: ["first_name", "last_name"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.SUBSCRIBER>(
+      {
+        $eq: labelFilter ? [{ labels: [labelFilter] }] : [],
+        $or: ["first_name", "last_name"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.SUBSCRIBER, format: Format.FULL },
     { params: searchPayload },
+  );
+  const actionColumns = useActionColumns<ISubscriber>(
+    EntityType.SUBSCRIBER,
+    [
+      {
+        label: ActionColumnLabel.Manage_Labels,
+        action: (row) => {
+          dialogs.open(SubscriberFormDialog, { defaultValues: row });
+        },
+        requires: [PermissionAction.UPDATE],
+      },
+    ],
+    t("label.operations"),
   );
   const columns: GridColDef<ISubscriber>[] = [
     { field: "id", headerName: "ID" },
@@ -150,17 +165,7 @@ export const Subscribers = () => {
       valueGetter: (params) =>
         t("datetime.updated_at", getDateTimeFormatter(params)),
     },
-    getActionsColumn(
-      [
-        {
-          label: ActionColumnLabel.Manage_Labels,
-          action: (row) => {
-            dialogs.open(SubscriberFormDialog, { defaultValues: row });
-          },
-        },
-      ],
-      t("label.operations"),
-    ),
+    actionColumns,
   ];
 
   return (

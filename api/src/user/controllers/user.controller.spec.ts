@@ -6,21 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
-import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { JwtService } from '@nestjs/jwt';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { Session as ExpressSession } from 'express-session';
 import { SentMessageInfo } from 'nodemailer';
 
-import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { AttachmentService } from '@/attachment/services/attachment.service';
-import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { LanguageModel } from '@/i18n/schemas/language.schema';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { LanguageService } from '@/i18n/services/language.service';
+import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { installLanguageFixtures } from '@/utils/test/fixtures/language';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
@@ -38,19 +31,11 @@ import {
   UserEditProfileDto,
   UserUpdateStateAndRolesDto,
 } from '../dto/user.dto';
-import { InvitationRepository } from '../repositories/invitation.repository';
-import { PermissionRepository } from '../repositories/permission.repository';
-import { RoleRepository } from '../repositories/role.repository';
-import { UserRepository } from '../repositories/user.repository';
-import { InvitationModel } from '../schemas/invitation.schema';
-import { PermissionModel } from '../schemas/permission.schema';
-import { Role, RoleModel } from '../schemas/role.schema';
-import { User, UserFull, UserModel } from '../schemas/user.schema';
+import { Role } from '../schemas/role.schema';
+import { User, UserFull } from '../schemas/user.schema';
 import { PasswordResetService } from '../services/passwordReset.service';
-import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
-import { ValidateAccountService } from '../services/validate-account.service';
 
 import { InvitationService } from './../services/invitation.service';
 import { ReadWriteUserController } from './user.controller';
@@ -68,28 +53,15 @@ describe('UserController', () => {
   let jwtService: JwtService;
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['controllers'],
       controllers: [ReadWriteUserController],
       imports: [
         rootMongooseTestModule(async () => {
           await installLanguageFixtures();
           await installPermissionFixtures();
         }),
-        MongooseModule.forFeature([
-          UserModel,
-          RoleModel,
-          PermissionModel,
-          InvitationModel,
-          AttachmentModel,
-          LanguageModel,
-        ]),
-        JwtModule,
       ],
       providers: [
-        RoleService,
-        UserService,
-        InvitationService,
-        PasswordResetService,
-        PermissionService,
         {
           provide: MailerService,
           useValue: {
@@ -98,23 +70,6 @@ describe('UserController', () => {
             },
           },
         },
-        UserRepository,
-        RoleRepository,
-        PermissionRepository,
-        InvitationRepository,
-        {
-          provide: CACHE_MANAGER,
-          useValue: {
-            del: jest.fn(),
-            get: jest.fn(),
-            set: jest.fn(),
-          },
-        },
-        AttachmentService,
-        AttachmentRepository,
-        LanguageService,
-        LanguageRepository,
-        ValidateAccountService,
         {
           provide: I18nService,
           useValue: {
@@ -175,8 +130,8 @@ describe('UserController', () => {
     const pageQuery = getPageQuery<User>({ sort: ['_id', 'asc'] });
 
     it('should find users, and for each user populate the corresponding roles', async () => {
-      jest.spyOn(userService, 'findPageAndPopulate');
-      const result = await userService.findPageAndPopulate({}, pageQuery);
+      jest.spyOn(userService, 'findAndPopulate');
+      const result = await userService.findAndPopulate({}, pageQuery);
 
       const usersWithRoles = userFixtures.reduce(
         (acc, currUser) => {
@@ -190,10 +145,7 @@ describe('UserController', () => {
         [] as Omit<UserFull, 'id' | 'createdAt' | 'updatedAt'>[],
       );
 
-      expect(userService.findPageAndPopulate).toHaveBeenCalledWith(
-        {},
-        pageQuery,
-      );
+      expect(userService.findAndPopulate).toHaveBeenCalledWith({}, pageQuery);
       expect(result).toEqualPayload(usersWithRoles, [
         ...IGNORED_FIELDS,
         'password',

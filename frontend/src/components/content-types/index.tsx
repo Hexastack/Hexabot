@@ -7,10 +7,10 @@
  */
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
+import { Grid, Paper } from "@mui/material";
 import { useRouter } from "next/router";
 
+import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import {
@@ -22,7 +22,6 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
-import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -40,12 +39,13 @@ export const ContentTypes = () => {
   const router = useRouter();
   const dialogs = useDialogs();
   // data fetching
-  const { onSearch, searchPayload, searchText } = useSearch<IContentType>(
-    {
-      $iLike: ["name"],
-    },
-    { syncUrl: true },
-  );
+  const { onSearch, searchPayload, searchText } =
+    useSearch<EntityType.CONTENT_TYPE>(
+      {
+        $iLike: ["name"],
+      },
+      { syncUrl: true },
+    );
   const { dataGridProps } = useFind(
     { entity: EntityType.CONTENT_TYPE },
     {
@@ -57,10 +57,9 @@ export const ContentTypes = () => {
       toast.success(t("message.item_delete_success"));
     },
     onError: (error) => {
-      toast.error(error.message || t("message.internal_server_error"));
+      toast.error(error);
     },
   });
-  const hasPermission = useHasPermission();
   const actionColumns = useActionColumns<IContentType>(
     EntityType.CONTENT_TYPE,
     [
@@ -104,22 +103,18 @@ export const ContentTypes = () => {
           <Grid item>
             <FilterTextfield onChange={onSearch} defaultValue={searchText} />
           </Grid>
-          {hasPermission(EntityType.CONTENT_TYPE, PermissionAction.CREATE) ? (
-            <Grid item>
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                onClick={() =>
+          <ButtonActionsGroup
+            entity={EntityType.CONTENT_TYPE}
+            buttons={[
+              {
+                permissionAction: PermissionAction.CREATE,
+                onClick: () =>
                   dialogs.open(ContentTypeFormDialog, {
                     defaultValues: null,
-                  })
-                }
-                sx={{ float: "right" }}
-              >
-                {t("button.add")}
-              </Button>
-            </Grid>
-          ) : null}
+                  }),
+              },
+            ]}
+          />
         </Grid>
       </PageHeader>
       <Grid item xs={12}>
