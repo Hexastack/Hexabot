@@ -784,8 +784,10 @@ export class BlockService extends BaseService<
    * @param block - The block to retrieve fallback options from.
    * @returns The fallback options for the block, or default options if not specified.
    */
-  getFallbackOptions<T extends BlockStub>(block: T): FallbackOptions {
-    return block.options?.fallback ?? getDefaultFallbackOptions();
+  getFallbackOptions<T extends BlockStub>(
+    block: T | undefined,
+  ): FallbackOptions {
+    return block?.options?.fallback ?? getDefaultFallbackOptions();
   }
 
   /**
