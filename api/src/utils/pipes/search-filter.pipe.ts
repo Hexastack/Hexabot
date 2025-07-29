@@ -115,37 +115,6 @@ export class SearchFilterPipe<T>
     };
   }
 
-  /**
-   * Merges a filter clause into the MongoDB query accumulator based on logical context (and/or/default).
-   *
-   * @param acc The current accumulator object for the MongoDB query.
-   * @param _context The logical context for the filter ('and', 'or', or undefined).
-   * @param filter The filter object to merge (excluding operator and data).
-   * @param payload The filter data or query fragment to merge.
-   * @returns The updated accumulator object with the new filter merged in the correct context.
-   */
-  private mergeMongoQueryByContext(
-    acc: any,
-    _context: string | undefined,
-    filter: any,
-    payload: any,
-  ) {
-    switch (_context) {
-      case 'or':
-        return {
-          ...acc,
-          $or: [...(acc?.$or || []), { ...filter, ...payload }],
-        };
-      case 'and':
-        return {
-          ...acc,
-          $and: [...(acc?.$and || []), { ...filter, ...payload }],
-        };
-      default:
-        return acc;
-    }
-  }
-
   async transform(value: TSearchFilterValue<T>, _metadata: ArgumentMetadata) {
     const whereParams = value['where'] ?? {};
     const filters: TTransformFieldProps[] = [];
@@ -200,19 +169,40 @@ export class SearchFilterPipe<T>
             },
             {},
           );
-          if (_context === 'or' || _context === 'and') {
-            return this.mergeMongoQueryByContext(
-              acc,
-              _context,
-              filter,
-              inQuery,
-            );
-          } else {
-            return { ...acc, ...inQuery };
+
+          switch (_context) {
+            case 'or':
+              return {
+                ...acc,
+                $or: [...(acc?.$or || []), { ...filter, ...inQuery }],
+              };
+            case 'and':
+              return {
+                ...acc,
+                $and: [...(acc?.$and || []), { ...filter, ...inQuery }],
+              };
+            default:
+              return {
+                ...acc,
+                ...inQuery,
+              };
           }
         }
         default:
-          return this.mergeMongoQueryByContext(acc, _context, filter, data);
+          switch (_context) {
+            case 'or':
+              return {
+                ...acc,
+                $or: [...(acc?.$or || []), { ...filter, ...data }],
+              };
+            case 'and':
+              return {
+                ...acc,
+                $and: [...(acc?.$and || []), { ...filter, ...data }],
+              };
+            default:
+              return acc; // Handle any other cases if necessary
+          }
       }
     }, {} as TFilterQuery<T>);
   }
