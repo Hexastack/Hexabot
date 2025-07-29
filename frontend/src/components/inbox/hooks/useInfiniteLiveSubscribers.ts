@@ -34,9 +34,7 @@ export const useInfiniteLiveSubscribers = (props: {
       // Firstname and lastname keyword search
       ...props.searchPayload.where,
       // Channel filter using $in operator
-      ...(props.channels.length > 0 && {
-        "channel.name": { $in: props.channels },
-      }),
+      "channel.name": { $in: props.channels },
       // Assignment filter
       ...(props.assignedTo === AssignedTo.ME
         ? { assignedTo: user?.id }
