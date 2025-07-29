@@ -43,7 +43,7 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
           onError={() => setImageErrored(true)}
           width="auto"
           height={200}
-          style={{ objectFit: "contain", cursor: "pointer" }}
+          style={{ objectFit: "contain", cursor: "pointer", display: "block" }}
           alt={url}
           src={url}
           onClick={() =>
