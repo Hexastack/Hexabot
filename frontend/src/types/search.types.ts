@@ -52,7 +52,7 @@ export type SearchItem<T> = {
         "!="?: T[K];
       }
     | {
-        $in?: T[K][];
+        $in?: T[K] | T[K][];
       };
 };
 export type SearchPayload<T, N = TNestedPaths<T>> = EqParam<N> & {
