@@ -104,14 +104,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
         },
       });
     } else {
-      createLabel(
-        { group: labelGroup, ...params },
-        {
-          onSuccess(data) {
-            setLabelGroup(data.id);
-          },
-        },
-      );
+      createLabel({ group: labelGroup, ...params });
     }
   };
 
