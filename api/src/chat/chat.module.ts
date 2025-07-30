@@ -93,6 +93,7 @@ import { SubscriberService } from './services/subscriber.service';
     CategoryService,
     ContextVarService,
     LabelService,
+    LabelGroupService,
     BlockService,
     MessageService,
     SubscriberService,
