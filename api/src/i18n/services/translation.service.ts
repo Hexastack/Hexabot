@@ -87,6 +87,10 @@ export class TranslationService extends BaseService<Translation> {
                   `Expected type "array" received type "string"`,
                 );
                 strings = strings.concat([value]);
+              } else {
+                this.logger.warn(
+                  `Setting expected type "array" is different from the value type "${typeof value}"`,
+                );
               }
               break;
             case SettingType.text:
@@ -101,6 +105,10 @@ export class TranslationService extends BaseService<Translation> {
                   'Expected type "string" received type "array"',
                 );
                 strings.push(...value.flat());
+              } else {
+                this.logger.warn(
+                  `Setting expected type "string" is different from the value type "${typeof value}"`,
+                );
               }
               break;
             default:
