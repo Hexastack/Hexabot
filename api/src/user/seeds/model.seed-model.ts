@@ -80,6 +80,11 @@ export const modelModels: ModelCreateDto[] = [
     attributes: {},
   },
   {
+    name: 'LabelGroup',
+    identity: 'labelgroup',
+    attributes: {},
+  },
+  {
     name: 'ContextVar',
     identity: 'contextvar',
     attributes: {},

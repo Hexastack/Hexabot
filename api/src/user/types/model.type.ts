@@ -21,6 +21,7 @@ export type TModel =
   | 'block'
   | 'category'
   | 'label'
+  | 'labelgroup'
   | 'contextvar'
   | 'conversation'
   | 'message'
