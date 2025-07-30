@@ -77,11 +77,39 @@ export class TranslationService extends BaseService<Translation> {
 
           switch (settingType) {
             case SettingType.multiple_text:
-              strings = strings.concat(value);
+              if (Array.isArray(value)) {
+                strings = strings.concat(value);
+              } else if (typeof value === 'string') {
+                this.logger.warn(
+                  `The plugin ${plugin?.name} setting '${key}' is incompatible with the settings.ts`,
+                );
+                this.logger.warn(
+                  `Expected type "array" received type "string"`,
+                );
+                strings = strings.concat([value]);
+              } else {
+                this.logger.warn(
+                  `Setting expected type "array" is different from the value type "${typeof value}"`,
+                );
+              }
               break;
             case SettingType.text:
             case SettingType.textarea:
-              strings.push(value);
+              if (typeof value === 'string') {
+                strings.push(value);
+              } else if (Array.isArray(value)) {
+                this.logger.warn(
+                  `The plugin ${plugin?.name} setting '${key}' is incompatible with the settings.ts`,
+                );
+                this.logger.warn(
+                  'Expected type "string" received type "array"',
+                );
+                strings.push(...value.flat());
+              } else {
+                this.logger.warn(
+                  `Setting expected type "string" is different from the value type "${typeof value}"`,
+                );
+              }
               break;
             default:
               break;
@@ -143,6 +171,7 @@ export class TranslationService extends BaseService<Translation> {
       const strings = await this.getBlockStrings(block);
       allStrings.push(...strings);
     }
+
     return allStrings;
   }
 
