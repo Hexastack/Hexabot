@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,7 +7,8 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Type } from 'class-transformer';
+import { Exclude, Transform, Type } from 'class-transformer';
+import { Schema as MongooseSchema } from 'mongoose';
 
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
@@ -16,6 +17,7 @@ import {
   THydratedDocument,
 } from '@/utils/types/filter.types';
 
+import { LabelGroup } from './label-group.schema';
 import { Subscriber } from './subscriber.schema';
 
 @Schema({ timestamps: true })
@@ -34,6 +36,13 @@ export class LabelStub extends BaseSchema {
     match: /^[A-Z_0-9]+$/,
   })
   name: string;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    required: false,
+    ref: 'LabelGroup',
+  })
+  group: unknown; // When provided, any labels sharing the same value are mutually exclusive (only one allowed at a time).
 
   @Prop({
     type: Object,
@@ -56,12 +65,18 @@ export class LabelStub extends BaseSchema {
 export class Label extends LabelStub {
   @Exclude()
   users?: never;
+
+  @Transform(({ obj }) => obj.group?.toString() || null)
+  group: string | null;
 }
 
 @Schema({ timestamps: true })
 export class LabelFull extends LabelStub {
   @Type(() => Subscriber)
   users?: Subscriber[];
+
+  @Type(() => LabelGroup)
+  group: LabelGroup | null;
 }
 
 export type LabelDocument = THydratedDocument<Label>;
@@ -82,4 +97,4 @@ export default LabelModel.schema;
 
 export type LabelPopulate = keyof TFilterPopulateFields<Label, LabelStub>;
 
-export const LABEL_POPULATE: LabelPopulate[] = ['users'];
+export const LABEL_POPULATE: LabelPopulate[] = ['users', 'group'];

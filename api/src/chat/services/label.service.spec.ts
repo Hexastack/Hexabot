@@ -30,7 +30,7 @@ describe('LabelService', () => {
   let labelService: LabelService;
   let subscriberRepository: SubscriberRepository;
   let allSubscribers: Subscriber[];
-  let allLabels: Label[];
+  let allLabels: LabelFull[];
   let labelsWithUsers: LabelFull[];
 
   beforeAll(async () => {
@@ -45,7 +45,7 @@ describe('LabelService', () => {
       SubscriberRepository,
     ]);
     allSubscribers = await subscriberRepository.findAll();
-    allLabels = await labelRepository.findAll();
+    allLabels = await labelRepository.findAllAndPopulate();
     labelsWithUsers = allLabels.map((label) => ({
       ...label,
       users: allSubscribers,
