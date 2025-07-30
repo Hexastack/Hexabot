@@ -158,7 +158,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             multiple={false}
             value={labelGroup}
             onChange={(_e, selected) => {
-              if (selected?.id === "0" && "name" in selected) {
+              if (selected && !selected.id && "name" in selected) {
                 createGroupLabel({
                   name: selected.name.slice(addLabelGroupTitle.length + 2, -1),
                 });
@@ -175,7 +175,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
 
               if (inputValue !== "" && !isExisting) {
                 filtered.push({
-                  id: "0",
+                  id: "",
                   name: `${addLabelGroupTitle} "${inputValue}"`,
                   format: Format.BASIC,
                   createdAt: new Date(),
@@ -188,24 +188,26 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
             renderOption={(props, { id, name }) => (
               <ListItem {...props} key={id}>
                 <ListItemText primary={name} />
-                <InputAdornment
-                  position="end"
-                  onClick={async () => {
-                    const isConfirmed = await dialogs.confirm(
-                      ConfirmDialogBody,
-                    );
+                {id ? (
+                  <InputAdornment
+                    position="end"
+                    onClick={async () => {
+                      const isConfirmed = await dialogs.confirm(
+                        ConfirmDialogBody,
+                      );
 
-                    if (isConfirmed) {
-                      deleteGroupLabel(id);
-                    }
-                  }}
-                >
-                  <Tooltip title={t("button.delete")} placement="left" arrow>
-                    <IconButton size="small" sx={{ marginRight: 1 }}>
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </InputAdornment>
+                      if (isConfirmed) {
+                        deleteGroupLabel(id);
+                      }
+                    }}
+                  >
+                    <Tooltip title={t("button.delete")} placement="left" arrow>
+                      <IconButton size="small" sx={{ marginRight: 1 }}>
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ) : null}
               </ListItem>
             )}
           />
