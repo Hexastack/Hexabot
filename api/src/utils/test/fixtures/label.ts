@@ -14,7 +14,7 @@ import { Label, LabelModel } from '@/chat/schemas/label.schema';
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
-type TLabelFixtures = FixturesTypeBuilder<Label, LabelCreateDto>;
+export type TLabelFixtures = FixturesTypeBuilder<Label, LabelCreateDto>;
 
 export const contentLabelDefaultValues: TLabelFixtures['defaultValues'] = {
   builtin: false,

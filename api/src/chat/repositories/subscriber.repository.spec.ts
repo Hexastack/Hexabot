@@ -13,6 +13,7 @@ import { AttachmentRepository } from '@/attachment/repositories/attachment.repos
 import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
+import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installSubscriberFixtures,
   subscriberFixtures,
@@ -136,6 +137,97 @@ describe('SubscriberRepository', () => {
       expect(result).toEqualPayload(
         subscribersWithPopulatedFields.sort(sortRowsBy),
       );
+    });
+  });
+
+  describe('updateLabels', () => {
+    it('should add labels without duplicates when labelsToPull is empty', async () => {
+      const subscriber = await subscriberRepository.findOne({
+        first_name: 'Maynard',
+      });
+
+      expect(subscriber).toBeTruthy();
+
+      // one existing label (if any) and one new label not already present
+      const existingLabelId = (subscriber!.labels || [])[0] || allLabels[0].id;
+      const newLabel = await labelRepository.create({
+        title: 'New Label',
+        name: 'NEW_LABEL',
+      });
+
+      const labelsToPush = [existingLabelId, newLabel!.id, newLabel!.id]; // duplicates on purpose
+
+      // Act
+      const result = await subscriberRepository.updateLabels(
+        subscriber!.id,
+        labelsToPush,
+        [],
+      );
+
+      // Assert
+      const updated = await subscriberRepository.findOne(subscriber!.id);
+      expect(updated).toBeTruthy();
+
+      // Existing labels remain
+      expect(updated).toEqual(result);
+      expect(updated!.labels).toEqual(
+        expect.arrayContaining(subscriber!.labels),
+      );
+      // New label present only once
+      const occurrences = updated!.labels.filter(
+        (x) => x === newLabel!.id,
+      ).length;
+      expect(occurrences).toBe(1);
+    });
+
+    it('should pull provided labels then push the new ones when labelsToPull is not empty', async () => {
+      // Use another subscriber to avoid interference with the previous test
+      const subscriber = await subscriberRepository.findOne({
+        first_name: 'Queen',
+      });
+
+      const labelToRemove = subscriber!.labels[0];
+      const newLabel = await labelRepository.create({
+        title: 'Royal',
+        name: 'ROYAL',
+      });
+
+      const prevLabels = [...subscriber!.labels];
+
+      await subscriberRepository.updateLabels(
+        subscriber!.id,
+        [newLabel!.id, newLabel!.id],
+        [labelToRemove],
+      );
+
+      const updated = await subscriberRepository.findOne(subscriber!.id);
+      expect(updated).toBeTruthy();
+
+      // We add and remove a new one : count should remain the same
+      expect(updated!.labels.length).toEqual(subscriber?.labels.length);
+      // Removed label is gone
+      expect(updated!.labels).not.toContain(labelToRemove);
+      // New label present
+      expect(updated!.labels).toContain(newLabel!.id);
+      // Other labels remain unchanged
+      const remainingPrev = prevLabels.filter((l) => l !== labelToRemove);
+      expect(updated!.labels).toEqual(expect.arrayContaining(remainingPrev));
+    });
+
+    it('should throw if subscriber does not exist during pull stage', async () => {
+      await expect(
+        subscriberRepository.updateLabels(
+          NOT_FOUND_ID,
+          ['1'.repeat(24)],
+          ['2'.repeat(24)],
+        ),
+      ).rejects.toThrow(`Unable to pull subscriber labels : ${NOT_FOUND_ID}`);
+    });
+
+    it('should throw if subscriber does not exist during add stage', async () => {
+      await expect(
+        subscriberRepository.updateLabels(NOT_FOUND_ID, ['1'.repeat(24)], []),
+      ).rejects.toThrow(`Unable to assign subscriber labels : ${NOT_FOUND_ID}`);
     });
   });
 

@@ -47,6 +47,7 @@ export const ROUTES = {
   // Entities
   [EntityType.SUBSCRIBER]: "/subscriber",
   [EntityType.LABEL]: "/label",
+  [EntityType.LABEL_GROUP]: "/labelgroup",
   [EntityType.ROLE]: "/role",
   [EntityType.USER]: "/user",
   [EntityType.PERMISSION]: "/permission",
@@ -310,8 +311,8 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
       `${ROUTES[this.type]}/import`,
       formData,
       {
-        params: { _csrf , ...params },
-      }
+        params: { _csrf, ...params },
+      },
     );
 
     return data;

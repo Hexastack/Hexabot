@@ -104,13 +104,25 @@ export class BotService {
     // Apply updates : Assign block labels to user
     const blockLabels = (block.assign_labels || []).map(({ id }) => id);
     const assignTo = block.options?.assignTo || null;
-    await this.subscriberService.applyUpdates(
-      event.getSender(),
-      blockLabels,
-      assignTo,
-    );
 
-    this.logger.debug('Assigned labels ', blockLabels);
+    let subscriber = event.getSender();
+
+    // Apply labels update (no-op if labels is empty)
+    if (blockLabels.length > 0) {
+      this.logger.debug('Assigning labels ', blockLabels);
+
+      subscriber = await this.subscriberService.assignLabels(
+        subscriber,
+        blockLabels,
+      );
+    }
+
+    // 2) Apply handover (no-op if assignTo is null)
+    if (assignTo) {
+      subscriber = await this.subscriberService.handOver(subscriber, assignTo);
+    }
+
+    event.setSender(subscriber);
   }
 
   /**

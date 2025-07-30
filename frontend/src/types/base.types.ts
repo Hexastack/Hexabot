@@ -29,6 +29,7 @@ import { IContentType, IContentTypeAttributes } from "./content-type.types";
 import { IContent, IContentAttributes, IContentFull } from "./content.types";
 import { IContextVar, IContextVarAttributes } from "./context-var.types";
 import { IHelper, IHelperAttributes } from "./helper.types";
+import { ILabelGroup, ILabelGroupAttributes } from "./label-group.types";
 import { ILabel, ILabelAttributes, ILabelFull } from "./label.types";
 import { ILanguage, ILanguageAttributes } from "./language.types";
 import {
@@ -92,7 +93,8 @@ export const POPULATE_BY_TYPE = {
   [EntityType.CONTEXT_VAR]: [],
   [EntityType.ROLE]: ["users", "permissions"],
   [EntityType.USER]: ["roles", "avatar"],
-  [EntityType.LABEL]: ["users"],
+  [EntityType.LABEL]: ["users", "group"],
+  [EntityType.LABEL_GROUP]: [],
   [EntityType.MODEL]: ["permissions"],
   [EntityType.PERMISSION]: ["model", "role"],
   [EntityType.SUBSCRIBER]: ["labels", "assignedTo"],
@@ -172,6 +174,7 @@ export interface IEntityMapTypes {
     ICustomBlockSettingFilters
   >;
   [EntityType.LABEL]: IEntityTypes<ILabel, ILabelAttributes, never, ILabelFull>;
+  [EntityType.LABEL_GROUP]: IEntityTypes<ILabelGroup, ILabelGroupAttributes>;
   [EntityType.MENU]: IEntityTypes<
     IMenuItem,
     IMenuItemAttributes,

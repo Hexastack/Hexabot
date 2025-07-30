@@ -18,6 +18,7 @@ import {
 } from '@/attachment/types';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
+import { installLabelGroupFixtures } from '@/utils/test/fixtures/label-group';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
 import { sortRowsBy } from '@/utils/test/sort';
@@ -59,7 +60,12 @@ describe('SubscriberService', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installSubscriberFixtures)],
+      imports: [
+        rootMongooseTestModule(async () => {
+          await installLabelGroupFixtures();
+          await installSubscriberFixtures();
+        }),
+      ],
       providers: [SubscriberService, LabelRepository, UserRepository],
     });
     [
@@ -82,6 +88,7 @@ describe('SubscriberService', () => {
       joinNotificationSockets: jest.fn(),
     };
     mockSubscriberService = new SubscriberService(
+      {} as any,
       {} as any,
       {} as any,
       mockGateway as any,
@@ -245,6 +252,85 @@ describe('SubscriberService', () => {
 
       const { name } = (attachmentService.store as jest.Mock).mock.calls[0][1]; // second arg in the first call
       expect(name).toBe('avatar-test-uuid.png');
+    });
+  });
+
+  describe('assignLabels', () => {
+    it('should merge and deduplicate labels', async () => {
+      const profile = (await subscriberService.findOne({
+        first_name: 'Jhon',
+      }))!;
+      const newLabels = (
+        await labelRepository.createMany([
+          { title: 'Is Interested', name: 'IS_INTERESTED' },
+          { title: 'Follow Up Required', name: 'FOLLOW_UP_REQUIRED' },
+        ])
+      ).map(({ id }) => id);
+
+      const expected: Subscriber = {
+        ...profile,
+        labels: [...profile.labels, ...newLabels],
+      };
+
+      const result = await subscriberService.assignLabels(profile, [
+        ...newLabels,
+        profile.labels[0],
+      ]);
+
+      expect(result).toEqualPayload(expected);
+    });
+
+    it('should handle mutual exclusion for grouped labels', async () => {
+      const oldLabel = (await labelRepository.findOne({ name: 'FREE' }))!;
+      const newLabel = (await labelRepository.findOne({ name: 'PREMIUM' }))!;
+      const originalSubscriber = (await subscriberService.findOne({
+        first_name: 'Carl',
+        last_name: 'Jung',
+      }))!;
+      const alteredSubscriber = await subscriberService.assignLabels(
+        originalSubscriber,
+        [oldLabel.id],
+      );
+
+      const expected: Subscriber = {
+        ...originalSubscriber,
+        labels: [...originalSubscriber.labels, newLabel.id],
+      };
+
+      const result = await subscriberService.assignLabels(alteredSubscriber, [
+        newLabel.id,
+      ]);
+
+      expect(result).toEqualPayload(expected);
+    });
+
+    it('should propagate errors from updateOne', async () => {
+      const base = allSubscribers[0];
+      const [l1] = allLabels.slice(0, 1).map((l) => l.id);
+      const failure = new Error('Any error');
+
+      jest.spyOn(subscriberService, 'assignLabels').mockRejectedValue(failure);
+
+      await expect(
+        subscriberService.applyUpdates(base as any, [l1], null),
+      ).rejects.toThrow(failure);
+    });
+  });
+
+  describe('handOver', () => {
+    it('should set assignedTo when provided without labels', async () => {
+      const base = allSubscribers[1] ?? allSubscribers[0];
+      const assignee = allUsers[0].id;
+      const expected = { ...base, assignedTo: assignee } as Subscriber;
+
+      const updateSpy = jest
+        .spyOn(subscriberService, 'updateOne')
+        .mockResolvedValue(expected as any);
+
+      const result = await subscriberService.handOver(base, assignee);
+
+      expect(updateSpy).toHaveBeenCalledWith(base.id, { assignedTo: assignee });
+      expect(result).toEqualPayload(expected);
     });
   });
 });

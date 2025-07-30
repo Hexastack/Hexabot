@@ -6,19 +6,38 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { FC, Fragment, useEffect } from "react";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import {
+  createFilterOptions,
+  IconButton,
+  InputAdornment,
+  ListItem,
+  ListItemText,
+  Tooltip,
+} from "@mui/material";
+import { FC, Fragment, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import {
+  ConfirmDialogBody,
+  ContentContainer,
+  ContentItem,
+} from "@/app-components/dialogs";
+import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
+import { useDelete } from "@/hooks/crud/useDelete";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType } from "@/services/types";
+import { EntityType, Format } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
+import { ILabelGroup } from "@/types/label-group.types";
 import { ILabel, ILabelAttributes } from "@/types/label.types";
 import { slugify } from "@/utils/string";
+
+const filter = createFilterOptions<ILabelGroup>();
 
 export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
   data: { defaultValues: label },
@@ -28,6 +47,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
+  const dialogs = useDialogs();
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
@@ -38,7 +58,21 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
       toast.success(t("message.success_save"));
     },
   };
+  const addLabelGroupTitle = t("button.add");
+  const [labelGroup, setLabelGroup] = useState<string | null>(
+    label?.group || null,
+  );
   const { mutate: createLabel } = useCreate(EntityType.LABEL, options);
+  const { mutate: createGroupLabel } = useCreate(EntityType.LABEL_GROUP, {
+    onSuccess: () => {
+      toast.success(t("message.success_save"));
+    },
+  });
+  const { mutate: deleteGroupLabel } = useDelete(EntityType.LABEL_GROUP, {
+    onSuccess: () => {
+      toast.success(t("message.item_delete_success"));
+    },
+  });
   const { mutate: updateLabel } = useUpdate(EntityType.LABEL, options);
   const {
     reset,
@@ -62,9 +96,15 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
   };
   const onSubmitForm = (params: ILabelAttributes) => {
     if (label) {
-      updateLabel({ id: label.id, params });
+      updateLabel({
+        id: label.id,
+        params: {
+          group: labelGroup,
+          ...params,
+        },
+      });
     } else {
-      createLabel(params);
+      createLabel({ group: labelGroup, ...params });
     }
   };
 
@@ -100,6 +140,70 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
               helperText={errors.title ? errors.title.message : null}
             />
           </ContentItem>
+          <AutoCompleteEntitySelect<ILabelGroup, "name", false>
+            fullWidth={true}
+            searchFields={["name"]}
+            disableSearch
+            entity={EntityType.LABEL_GROUP}
+            format={Format.BASIC}
+            labelKey="name"
+            label={t("title.group_label")}
+            multiple={false}
+            value={labelGroup}
+            onChange={(_e, selected) => {
+              if (selected && !selected.id && "name" in selected) {
+                createGroupLabel({
+                  name: selected.name.slice(addLabelGroupTitle.length + 2, -1),
+                });
+              } else {
+                setLabelGroup(selected?.id || null);
+              }
+            }}
+            filterOptions={(options, params) => {
+              const filtered = filter(options, params);
+              const { inputValue } = params;
+              const isExisting = options.some(
+                (option) => inputValue === option.name,
+              );
+
+              if (inputValue !== "" && !isExisting) {
+                filtered.push({
+                  id: "",
+                  name: `${addLabelGroupTitle} "${inputValue}"`,
+                  format: Format.BASIC,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                });
+              }
+
+              return filtered;
+            }}
+            renderOption={(props, { id, name }) => (
+              <ListItem {...props} key={id}>
+                <ListItemText primary={name} />
+                {id ? (
+                  <InputAdornment
+                    position="end"
+                    onClick={async () => {
+                      const isConfirmed = await dialogs.confirm(
+                        ConfirmDialogBody,
+                      );
+
+                      if (isConfirmed) {
+                        deleteGroupLabel(id);
+                      }
+                    }}
+                  >
+                    <Tooltip title={t("button.delete")} placement="left" arrow>
+                      <IconButton size="small" sx={{ marginRight: 1 }}>
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ) : null}
+              </ListItem>
+            )}
+          />
           <ContentItem>
             <Input
               placeholder={t("placeholder.name")}

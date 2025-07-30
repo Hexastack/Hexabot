@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 
 import { DtoConfig } from '@/utils/types/dto.types';
+import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class LabelCreateDto {
   @ApiProperty({ description: 'Label title', type: String })
@@ -28,6 +29,16 @@ export class LabelCreateDto {
   @IsString()
   @Matches(/^[A-Z_0-9]+$/)
   name: string;
+
+  @ApiPropertyOptional({
+    description: 'Label group',
+    type: String,
+    default: null,
+  })
+  @IsOptional()
+  @IsString()
+  @IsObjectId({ message: 'group must be a valid ObjectId' })
+  group?: string | null;
 
   @ApiPropertyOptional({ description: 'Label description', type: String })
   @IsOptional()

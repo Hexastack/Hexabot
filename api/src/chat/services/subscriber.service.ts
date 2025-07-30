@@ -42,6 +42,8 @@ import {
   SubscriberPopulate,
 } from '../schemas/subscriber.schema';
 
+import { LabelService } from './label.service';
+
 @Injectable()
 export class SubscriberService extends BaseService<
   Subscriber,
@@ -52,6 +54,7 @@ export class SubscriberService extends BaseService<
   constructor(
     readonly repository: SubscriberRepository,
     protected readonly attachmentService: AttachmentService,
+    protected readonly labelService: LabelService,
     private readonly gateway: WebsocketGateway,
   ) {
     super(repository);
@@ -181,10 +184,79 @@ export class SubscriberService extends BaseService<
   }
 
   /**
+   * Assigns subscriber new labels and handles mutually exclusive labels (belonging to the same group)
+   *
+   * @param subscriberId - The unique identifier of the subscriber whose labels to update
+   * @param labelsToPush - Array of label ids to be assigned to the subscriber
+   * @returns The updated profile (fetches once after the write)
+   */
+  async assignLabels(
+    subscriber: Subscriber,
+    labelsToPush: string[],
+  ): Promise<Subscriber> {
+    if (!labelsToPush || labelsToPush.length === 0) {
+      throw new Error('No labels to be assigned!');
+    }
+
+    let labelsToPull: string[] = [];
+    if (subscriber.labels.length > 0) {
+      const [newMutexLabels, existingMutexLabels] = [
+        // Retrieve new mutex group labels (if any)
+        await this.labelService.find({
+          _id: { $in: labelsToPush },
+          group: { $ne: null },
+        }),
+        // Retrieve existing mutex group labels (if any)
+        await this.labelService.find({
+          _id: { $in: subscriber.labels },
+          group: { $ne: null },
+        }),
+      ];
+
+      if (newMutexLabels.length > 0 && existingMutexLabels.length > 0) {
+        const mutexGroups = newMutexLabels
+          .map(({ group }) => group)
+          .filter((group): group is string => !!group);
+
+        labelsToPull = existingMutexLabels
+          .filter(({ group }) => group && mutexGroups.includes(group))
+          .map(({ id }) => id);
+      }
+    }
+
+    return await this.repository.updateLabels(
+      subscriber.id,
+      labelsToPush,
+      labelsToPull,
+    );
+  }
+
+  /**
+   * Handover (assign) the subscriber to a specific user.
+   * No-op if `assignTo` is falsy.
+   *
+   * @param profile - The end-user (subscriber) profile
+   * @param assignTo - User ID to handover the discussion to
+   * @returns The updated profile (or the original if no assignee was provided)
+   */
+  async handOver(profile: Subscriber, assignTo: string): Promise<Subscriber> {
+    if (!assignTo) {
+      throw new Error('Cannot handover to undefined user!');
+    }
+
+    const updated = await this.updateOne(profile.id, { assignedTo: assignTo });
+    this.logger.debug(
+      `Subscriber "${profile.id}" handed over to "${assignTo}"`,
+    );
+    return updated;
+  }
+
+  /**
    * Apply updates on end-user such as :
    * - Assign labels to specific end-user
    * - Handover discussion to human
    *
+   * @deprecated
    * @param profile - The end-user (subscriber) profile
    * @param labels - Array of label ids that represent new labels to assign to end-user
    * @param assignTo - User ID to handover the discussion to
@@ -197,21 +269,23 @@ export class SubscriberService extends BaseService<
     assignTo: string | null,
   ) {
     try {
-      const updates: SubscriberUpdateDto = {};
+      let current = profile;
+
+      // 1) Apply labels update (no-op if labels is empty)
       if (labels.length > 0) {
-        let userLabels = profile.labels ? profile.labels : [];
-        // Filter unique
-        userLabels = [...new Set(userLabels.concat(labels))];
-        updates.labels = userLabels;
+        current = await this.assignLabels(current, labels);
       }
 
+      // 2) Apply handover (no-op if assignTo is null)
       if (assignTo) {
-        updates.assignedTo = assignTo;
+        current = await this.handOver(current, assignTo);
       }
 
-      const updated = await this.updateOne(profile.id, updates);
-      this.logger.debug('Block updates has been applied!', updates);
-      return updated;
+      this.logger.debug('Block updates have been applied!', {
+        labels,
+        assignTo,
+      });
+      return current;
     } catch (err) {
       this.logger.error('Unable to perform block updates!', err);
       throw err;

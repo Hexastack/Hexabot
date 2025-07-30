@@ -19,6 +19,7 @@ import { UserModule } from '@/user/user.module';
 import { BlockController } from './controllers/block.controller';
 import { CategoryController } from './controllers/category.controller';
 import { ContextVarController } from './controllers/context-var.controller';
+import { LabelGroupController } from './controllers/label-group.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
@@ -26,6 +27,7 @@ import { BlockRepository } from './repositories/block.repository';
 import { CategoryRepository } from './repositories/category.repository';
 import { ContextVarRepository } from './repositories/context-var.repository';
 import { ConversationRepository } from './repositories/conversation.repository';
+import { LabelGroupRepository } from './repositories/label-group.repository';
 import { LabelRepository } from './repositories/label.repository';
 import { MessageRepository } from './repositories/message.repository';
 import { SubscriberRepository } from './repositories/subscriber.repository';
@@ -33,6 +35,7 @@ import { BlockModel } from './schemas/block.schema';
 import { CategoryModel } from './schemas/category.schema';
 import { ContextVarModel } from './schemas/context-var.schema';
 import { ConversationModel } from './schemas/conversation.schema';
+import { LabelGroupModel } from './schemas/label-group.schema';
 import { LabelModel } from './schemas/label.schema';
 import { MessageModel } from './schemas/message.schema';
 import { SubscriberModel } from './schemas/subscriber.schema';
@@ -44,6 +47,7 @@ import { CategoryService } from './services/category.service';
 import { ChatService } from './services/chat.service';
 import { ContextVarService } from './services/context-var.service';
 import { ConversationService } from './services/conversation.service';
+import { LabelGroupService } from './services/label-group.service';
 import { LabelService } from './services/label.service';
 import { MessageService } from './services/message.service';
 import { SubscriberService } from './services/subscriber.service';
@@ -54,6 +58,7 @@ import { SubscriberService } from './services/subscriber.service';
       CategoryModel,
       ContextVarModel,
       LabelModel,
+      LabelGroupModel,
       BlockModel,
       MessageModel,
       SubscriberModel,
@@ -71,6 +76,7 @@ import { SubscriberService } from './services/subscriber.service';
     CategoryController,
     ContextVarController,
     LabelController,
+    LabelGroupController,
     BlockController,
     MessageController,
     SubscriberController,
@@ -79,6 +85,7 @@ import { SubscriberService } from './services/subscriber.service';
     CategoryRepository,
     ContextVarRepository,
     LabelRepository,
+    LabelGroupRepository,
     BlockRepository,
     MessageRepository,
     SubscriberRepository,
@@ -86,6 +93,7 @@ import { SubscriberService } from './services/subscriber.service';
     CategoryService,
     ContextVarService,
     LabelService,
+    LabelGroupService,
     BlockService,
     MessageService,
     SubscriberService,
@@ -99,6 +107,7 @@ import { SubscriberService } from './services/subscriber.service';
     SubscriberService,
     MessageService,
     LabelService,
+    LabelGroupService,
     BlockService,
     ConversationService,
   ],

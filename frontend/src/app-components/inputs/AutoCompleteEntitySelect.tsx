@@ -41,6 +41,7 @@ type AutoCompleteEntitySelectProps<
   entity: keyof IEntityMapTypes;
   format: Format;
   searchFields: string[];
+  disableSearch?: boolean;
   error?: boolean;
   helperText?: string | null | undefined;
   preprocess?: (data: Value[]) => Value[];
@@ -56,6 +57,7 @@ const AutoCompleteEntitySelect = <
     entity,
     format,
     searchFields,
+    disableSearch,
     preprocess,
     idKey = "id",
     sortKey = "id",
@@ -64,9 +66,16 @@ const AutoCompleteEntitySelect = <
   }: AutoCompleteEntitySelectProps<Value, Label, Multiple>,
   ref,
 ) => {
-  const { onSearch, searchPayload } = useSearch<typeof entity>({
-    $or: (searchFields as TFilterStringFields<unknown>) || [idKey, labelKey],
-  });
+  const { onSearch, searchPayload } = useSearch<typeof entity>(
+    disableSearch
+      ? {}
+      : {
+          $or: (searchFields as TFilterStringFields<unknown>) || [
+            idKey,
+            labelKey,
+          ],
+        },
+  );
   const idRef = useRef(generateId());
   const params = {
     where: {
@@ -88,7 +97,8 @@ const AutoCompleteEntitySelect = <
   const flattenedData = data?.pages
     ?.flat()
     .filter(
-      (a, idx, self) => self.findIndex((b) => a[idKey] === b[idKey]) === idx,
+      (a, idx, self) =>
+        self.findIndex((b) => a?.[idKey] === b?.[idKey]) === idx,
     )
     .sort((a, b) => -b[sortKey]?.localeCompare(a[sortKey]));
   const options =

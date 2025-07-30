@@ -200,4 +200,47 @@ export class SubscriberRepository extends BaseRepository<
       },
     );
   }
+
+  /**
+   * Updates a subscriber's labels atomically.
+   *
+   * - If `labelsToPull` is empty, adds `labelsToPush` without duplicates.
+   * - Otherwise, removes `labelsToPull` then adds `labelsToPush`.
+   *
+   * @param subscriberId - The `_id` of the subscriber.
+   * @param labelsToPush - Label IDs to add.
+   * @param labelsToPull - Optional label IDs to remove before adding.
+   *
+   * @returns The subscriber document (pre-update by default), or `null` if not found.
+   */
+  async updateLabels(
+    subscriberId: string,
+    labelsToPush: string[],
+    labelsToPull: string[] = [],
+  ) {
+    if (labelsToPull.length > 0) {
+      const updateResult = await this.model.updateOne(
+        { _id: subscriberId },
+        { $pull: { labels: { $in: labelsToPull } } },
+      );
+
+      if (updateResult.matchedCount === 0) {
+        throw new Error(`Unable to pull subscriber labels : ${subscriberId}`);
+      }
+    }
+
+    const query = this.model.findOneAndUpdate(
+      { _id: subscriberId },
+      { $addToSet: { labels: { $each: labelsToPush } } },
+      { new: true },
+    );
+
+    const result = await this.executeOne(query, Subscriber);
+
+    if (!result) {
+      throw new Error(`Unable to assign subscriber labels : ${subscriberId}`);
+    }
+
+    return result;
+  }
 }
