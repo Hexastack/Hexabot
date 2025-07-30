@@ -70,10 +70,20 @@ export const SubscriberEntity = new schema.Entity(
   },
 );
 
+export const LabelGroupEntity = new schema.Entity(
+  EntityType.LABEL_GROUP,
+  {},
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const LabelEntity = new schema.Entity(
   EntityType.LABEL,
   {
     users: [SubscriberEntity],
+    group: LabelGroupEntity,
   },
   {
     idAttribute: ({ id }) => id,
@@ -323,6 +333,7 @@ export const StorageHelperEntity = new schema.Entity(
 export const ENTITY_MAP = {
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,
+  [EntityType.LABEL_GROUP]: LabelGroupEntity,
   [EntityType.ROLE]: RoleEntity,
   [EntityType.USER]: UserEntity,
   [EntityType.PERMISSION]: PermissionEntity,

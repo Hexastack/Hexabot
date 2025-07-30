@@ -23,6 +23,7 @@ import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -88,6 +89,7 @@ export const Labels = () => {
     t("label.operations"),
   );
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const getEntityFromCache = useGetFromCache(EntityType.LABEL_GROUP);
   const columns: GridColDef<ILabel>[] = [
     { field: "id", headerName: "ID" },
     {
@@ -97,6 +99,19 @@ export const Labels = () => {
       disableColumnMenu: true,
       renderHeader,
       headerAlign: "left",
+    },
+    {
+      minWidth: 110,
+      field: "group",
+      headerName: t("title.group_label"),
+      disableColumnMenu: true,
+      renderHeader,
+      headerAlign: "center",
+      valueGetter: (groupId) => {
+        const group = getEntityFromCache(groupId);
+
+        return group?.name;
+      },
     },
     {
       flex: 1,

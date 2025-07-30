@@ -16,12 +16,14 @@ export interface ILabelAttributes {
   name: string;
   description: string;
   builtin?: boolean;
+  group?: string | null;
 }
 
 export interface ILabelStub
   extends IBaseSchema,
     OmitPopulate<ILabelAttributes, EntityType.LABEL> {
   subscriber_count: number;
+  group?: string | null;
 }
 
 export interface ILabel extends ILabelStub, IFormat<Format.BASIC> {}

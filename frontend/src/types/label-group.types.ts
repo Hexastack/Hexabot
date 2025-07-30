@@ -6,28 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export type TModel =
-  | 'contenttype'
-  | 'content'
-  | 'nlpentity'
-  | 'nlpsampleentity'
-  | 'nlpsample'
-  | 'nlpvalue'
-  | 'setting'
-  | 'attachment'
-  | 'user'
-  | 'role'
-  | 'permission'
-  | 'block'
-  | 'category'
-  | 'label'
-  | 'labelgroup'
-  | 'contextvar'
-  | 'conversation'
-  | 'message'
-  | 'subscriber'
-  | 'language'
-  | 'translation'
-  | 'botstats'
-  | 'menu'
-  | 'model';
+import { Format } from "@/services/types";
+
+import { IBaseSchema, IFormat } from "./base.types";
+
+export interface ILabelGroupStub extends IBaseSchema {
+  name: string;
+}
+
+export interface ILabelGroupAttributes {
+  name: string;
+}
+
+export interface ILabelGroup extends ILabelGroupStub, IFormat<Format.BASIC> {}
