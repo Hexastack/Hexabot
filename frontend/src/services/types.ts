@@ -11,6 +11,7 @@ import { UseMutationOptions } from "react-query";
 export enum EntityType {
   SUBSCRIBER = "Subscriber",
   LABEL = "Label",
+  LABEL_GROUP = "LabelGroup",
   ROLE = "Role",
   USER = "User",
   PERMISSION = "Permission",

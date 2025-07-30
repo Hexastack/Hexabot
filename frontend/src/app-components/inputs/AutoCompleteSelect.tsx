@@ -95,7 +95,7 @@ const AutoCompleteSelect = <
         >)
       : ((multiple
           ? options.filter((o) => value?.includes(o[idKey]))
-          : options.find((o) => o[idKey] === value) ||
+          : options.find((o) => o?.[idKey] === value) ||
             (multiple ? [] : null)) as AutocompleteValue<
           Value,
           Multiple,

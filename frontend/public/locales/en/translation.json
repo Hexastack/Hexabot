@@ -243,7 +243,8 @@
     "log_entry": "Log entry",
     "dashboard": "Dashboard",
     "warning": "Warning",
-    "console": "Admin Chat Console"
+    "console": "Admin Chat Console",
+    "group_label": "Group Label"
   },
   "label": {
     "terms": "I have read and approve the terms and conditions.",
