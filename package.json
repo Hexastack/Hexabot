@@ -10,7 +10,7 @@
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "dev:frontend": "npm run dev --workspace=frontend",
     "dev:widget": "npm run dev --workspace=widget",
     "release:api:patch": "cd api/ && npm version --git-tag-version false --commit-hooks false patch",
