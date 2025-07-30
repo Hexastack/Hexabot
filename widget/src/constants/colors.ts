@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -23,10 +23,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#FF851B",
       text: "#fff",
+      hover: "#0074D9",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",
@@ -58,10 +60,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#FF4136",
       text: "#fff",
+      hover: "#000",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",
@@ -93,10 +97,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#2ECC40",
       text: "#fff",
+      hover: "#000",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",
@@ -128,10 +134,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#0074D9",
       text: "#fff",
+      hover: "#000",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",
@@ -163,10 +171,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#1BA089",
       text: "#fff",
+      hover: "#000",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",
@@ -198,10 +208,12 @@ const colors: Record<string, ColorState> = {
     sent: {
       bg: "#000",
       text: "#FFF",
+      hover: "#0074D9",
     },
     received: {
       bg: "#f6f8f9",
       text: "#000",
+      hover: "#0074D9",
     },
     userInput: {
       bg: "#fff",

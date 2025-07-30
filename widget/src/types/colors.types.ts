@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,8 +10,8 @@ export type ColorState = {
   header: { bg: string; text: string };
   launcher: { bg?: string };
   messageList: { bg?: string };
-  sent: { bg?: string; text?: string };
-  received: { bg?: string; text?: string };
+  sent: { bg?: string; text?: string; hover?: string };
+  received: { bg?: string; text?: string; hover?: string };
   userInput: { bg?: string; text?: string };
   button: { bg?: string; text?: string; border?: string };
   messageStatus: { bg?: string; text?: string };

@@ -50,7 +50,7 @@ const TextMessage: React.FC<TextMessageProps> = ({ message }) => {
       style={{
         color: colors.text,
         backgroundColor: colors.bg,
-        ["--launcher-color" as string]: allColors.launcher.bg,
+        ["--launcher-color" as string]: colors.hover,
       }}
     >
       <p className="sc-message--text-content" ref={messageTextRef}>
