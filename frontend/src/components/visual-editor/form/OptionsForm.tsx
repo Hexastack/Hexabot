@@ -10,12 +10,12 @@ import { Typography } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
-import { ILabelFull } from "@/types/label.types";
 import { IUser } from "@/types/user.types";
 
 import { useBlock } from "./BlockFormProvider";
@@ -51,16 +51,18 @@ export const OptionsForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<ILabelFull>
+              <AutoCompleteEntityDistinctSelect
                 searchFields={["title", "name"]}
                 entity={EntityType.LABEL}
-                format={Format.BASIC}
+                sortEntity={EntityType.LABEL_GROUP}
                 labelKey="title"
                 label={t("label.assign_labels")}
-                multiple={true}
                 onChange={(_e, selected) =>
                   onChange(selected.map(({ id }) => id))
                 }
+                sortKey="group"
+                groupKey="name"
+                defaultGroupTitle={t("title.default_group")}
                 {...rest}
               />
             );
