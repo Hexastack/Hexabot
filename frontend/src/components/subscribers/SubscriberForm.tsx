@@ -11,7 +11,7 @@ import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import AutoCompleteEntitySelectDistinct from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
+import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
@@ -82,14 +82,12 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelectDistinct
-                        autoFocus
+                      <AutoCompleteEntityDistinctSelect
                         searchFields={["name"]}
                         entity={EntityType.LABEL}
                         sortEntity={EntityType.LABEL_GROUP}
                         labelKey="name"
                         label={t("label.labels")}
-                        {...field}
                         error={!!errors.labels}
                         helperText={
                           errors.labels ? errors.labels.message : null
@@ -97,7 +95,7 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                         onChange={(_e, selected) =>
                           onChange(selected.map(({ id }) => id))
                         }
-                        sortKey=""
+                        sortKey="group"
                         groupKey="name"
                         defaultGroupTitle={t("title.default_group")}
                         {...rest}
