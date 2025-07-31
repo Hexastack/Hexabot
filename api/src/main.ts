@@ -106,11 +106,7 @@ async function bootstrap() {
 
   /**
    * Global handler for uncaught exceptions in the Node.js process.
-   *
    * Logs all uncaught exceptions directly to stderr using ConsoleLogger,
-   *
-   * Format:
-   *   [timestamp] Uncaught Exception <error stack | error message | error object>
    *
    * ⚠️  Do NOT perform any async operations here. The process may be unstable,
    * and async code may not execute as expected. This handler is for last-resort
@@ -118,9 +114,61 @@ async function bootstrap() {
    *
    * @see https://nodejs.org/api/process.html#event-uncaughtexception
    */
-  const fatalLogger = new ConsoleLogger('UncaughtException');
   process.on('uncaughtException', (error) => {
-    fatalLogger.error(error.stack || error.message || error);
+    const logger = new ConsoleLogger('UncaughtException');
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : null;
+    const errorName = error instanceof Error ? error.name : 'Unknown';
+
+    // Create a clear, comprehensive log entry
+    logger.error(`
+┌─ UNHANDLED EXCEPTION ──────────────────────────────
+│ Error: ${errorMessage}
+│ Type: ${errorName}
+│ Time: ${new Date().toISOString()}
+${
+  errorStack
+    ? `│ Stack:\n${errorStack
+        .split('\n')
+        .map((line) => `│   ${line}`)
+        .join('\n')}`
+    : '│ Stack: Not available'
+}
+└───────────────────────────────────────────────────`);
+  });
+
+  /**
+   * Global handler for unhandled promise rejections in the Node.js process.
+   * Logs all unhandled promise rejections with detailed error information.
+   *
+   * ⚠️  Do NOT perform any async operations here. Keep operations synchronous
+   * and minimal to ensure reliable logging before potential process termination.
+   *
+   * @see https://nodejs.org/api/process.html#event-unhandledrejection
+   */
+  process.on('unhandledRejection', (reason, _promise) => {
+    const logger = new ConsoleLogger('unhandledRejection');
+
+    const errorMessage =
+      reason instanceof Error ? reason.message : String(reason);
+    const errorStack = reason instanceof Error ? reason.stack : null;
+    const errorName = reason instanceof Error ? reason.name : 'Unknown';
+
+    logger.error(`
+┌─ UNHANDLED PROMISE REJECTION ─────────────────────
+│ Error: ${errorMessage}
+│ Type: ${errorName}
+│ Time: ${new Date().toISOString()}
+${
+  errorStack
+    ? `│ Stack:\n${errorStack
+        .split('\n')
+        .map((line) => `│   ${line}`)
+        .join('\n')}`
+    : '│ Stack: Not available'
+}
+└───────────────────────────────────────────────────`);
   });
 
   if (!isProduction) {
