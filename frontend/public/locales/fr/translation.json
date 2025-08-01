@@ -244,7 +244,8 @@
     "dashboard": "Tableau de bord",
     "warning": "Avertissement",
     "console": "Console de Chat Admin",
-    "group_label": "Groupe de l'étiquette"
+    "group_label": "Groupe de l'étiquette",
+    "default_group": "Groupe par défaut"
   },
   "label": {
     "terms": "J'ai lu et approuvé les termes et conditions.",
