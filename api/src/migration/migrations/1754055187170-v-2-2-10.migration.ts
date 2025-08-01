@@ -78,7 +78,7 @@ const migrateLabelGroupModel = async (services: MigrationServices) => {
         attributes: {},
       } satisfies ModelCreateDto;
 
-      const createdModel = await ModelModel.insertOne(modelPayload);
+      const createdModel = await ModelModel.create(modelPayload);
       const permissionsPayload = actions.map(
         (action) =>
           ({
@@ -92,7 +92,9 @@ const migrateLabelGroupModel = async (services: MigrationServices) => {
       await PermissionModel.insertMany(permissionsPayload);
     }
   } catch (error) {
-    services.logger.error(`Failed to update limit : ${error.message}`);
+    services.logger.error(
+      `Failed to create labelGroup model: ${error.message}`,
+    );
 
     throw error instanceof Error ? error : new Error(error);
   }
