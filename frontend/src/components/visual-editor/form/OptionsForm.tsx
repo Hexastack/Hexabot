@@ -52,7 +52,6 @@ export const OptionsForm = () => {
 
             return (
               <AutoCompleteEntityDistinctSelect
-                searchFields={["title", "name"]}
                 entity={EntityType.LABEL}
                 subEntity={EntityType.LABEL_GROUP}
                 labelKey="title"

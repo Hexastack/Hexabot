@@ -8,15 +8,12 @@
 
 import { Box, ChipTypeMap, ListSubheader } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete";
-import { forwardRef, useEffect, useRef } from "react";
+import { forwardRef } from "react";
 
+import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useInfiniteFind } from "@/hooks/crud/useInfiniteFind";
-import { useSearch } from "@/hooks/useSearch";
-import { Format, QueryType } from "@/services/types";
+import { Format } from "@/services/types";
 import { IEntityMapTypes, THook } from "@/types/base.types";
-import { TFilterStringFields } from "@/types/search.types";
-import { generateId } from "@/utils/generateId";
 
 import AutoCompleteSelect from "./AutoCompleteSelect";
 
@@ -37,7 +34,6 @@ type AutoCompleteEntityDistinctSelectProps<
   labelKey: Label;
   entity: keyof IEntityMapTypes;
   subEntity: keyof IEntityMapTypes;
-  searchFields: string[];
   disableSearch?: boolean;
   error?: boolean;
   helperText?: string | null | undefined;
@@ -55,8 +51,6 @@ const AutoCompleteEntityDistinctSelect = <
     subEntity,
     groupKey,
     defaultGroupTitle,
-    searchFields,
-    disableSearch,
     preprocess,
     idKey = "id",
     sortKey = "id",
@@ -65,52 +59,19 @@ const AutoCompleteEntityDistinctSelect = <
   }: AutoCompleteEntityDistinctSelectProps<TE, Value, Label>,
   ref,
 ) => {
-  const { onSearch, searchPayload } = useSearch<typeof entity>(
-    disableSearch
-      ? {}
-      : {
-          $or: (searchFields as TFilterStringFields<unknown>) || [
-            idKey,
-            labelKey,
-          ],
-        },
-  );
-  const idRef = useRef(generateId());
   const getEntityFromCache = useGetFromCache(entity);
   const getSubEntityFromCache = useGetFromCache(subEntity);
-  const params = {
-    where: {
-      or: searchPayload.where?.or || [],
-    },
-  };
-  const { data, isFetching, fetchNextPage } = useInfiniteFind(
+  const { data, isFetching } = useFind(
     { entity, format: Format.FULL },
     {
-      params,
       hasCount: false,
-    },
-    {
-      keepPreviousData: true,
-      queryKey: [QueryType.collection, entity, `autocomplete/${idRef.current}`],
+      initialSortState: sortKey ? [{ field: sortKey, sort: "asc" }] : [],
     },
   );
-  // flatten & filter unique & sort
-  const flattenedData = data?.pages
-    ?.flat()
-    .filter(
-      (a, idx, self) =>
-        self.findIndex((b) => a?.[idKey] === b?.[idKey]) === idx,
-    )
-    .sort((a, b) => (a[sortKey] ?? "").localeCompare(b[sortKey] ?? ""));
   const options =
-    preprocess && flattenedData
-      ? preprocess((flattenedData || []) as Value[])
-      : ((flattenedData || []) as Value[]);
-
-  useEffect(() => {
-    fetchNextPage({ pageParam: params });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(searchPayload)]);
+    preprocess && data
+      ? preprocess((data || []) as Value[])
+      : ((data || []) as Value[]);
 
   return (
     <AutoCompleteSelect<Value, Label, true>
@@ -118,7 +79,6 @@ const AutoCompleteEntityDistinctSelect = <
       idKey={idKey}
       labelKey={labelKey}
       options={options || []}
-      onSearch={onSearch}
       loading={isFetching}
       getOptionDisabled={(option) => {
         const selectedOptions = rest.value;

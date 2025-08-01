@@ -83,7 +83,6 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
 
                     return (
                       <AutoCompleteEntityDistinctSelect
-                        searchFields={["name"]}
                         entity={EntityType.LABEL}
                         subEntity={EntityType.LABEL_GROUP}
                         labelKey="name"
