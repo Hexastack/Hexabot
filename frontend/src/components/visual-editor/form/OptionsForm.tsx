@@ -54,7 +54,7 @@ export const OptionsForm = () => {
               <AutoCompleteEntityDistinctSelect
                 searchFields={["title", "name"]}
                 entity={EntityType.LABEL}
-                sortEntity={EntityType.LABEL_GROUP}
+                subEntity={EntityType.LABEL_GROUP}
                 labelKey="title"
                 label={t("label.assign_labels")}
                 onChange={(_e, selected) =>

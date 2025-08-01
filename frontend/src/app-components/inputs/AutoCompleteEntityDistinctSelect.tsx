@@ -36,7 +36,7 @@ type AutoCompleteEntityDistinctSelectProps<
   defaultGroupTitle: string;
   labelKey: Label;
   entity: keyof IEntityMapTypes;
-  sortEntity: keyof IEntityMapTypes;
+  subEntity: keyof IEntityMapTypes;
   searchFields: string[];
   disableSearch?: boolean;
   error?: boolean;
@@ -52,7 +52,7 @@ const AutoCompleteEntityDistinctSelect = <
 >(
   {
     entity,
-    sortEntity,
+    subEntity,
     groupKey,
     defaultGroupTitle,
     searchFields,
@@ -77,7 +77,7 @@ const AutoCompleteEntityDistinctSelect = <
   );
   const idRef = useRef(generateId());
   const getEntityFromCache = useGetFromCache(entity);
-  const getSortEntityFromCache = useGetFromCache(sortEntity);
+  const getSubEntityFromCache = useGetFromCache(subEntity);
   const params = {
     where: {
       or: searchPayload.where?.or || [],
@@ -104,7 +104,7 @@ const AutoCompleteEntityDistinctSelect = <
     .sort((a, b) => (a[sortKey] ?? "").localeCompare(b[sortKey] ?? ""));
   const options =
     preprocess && flattenedData
-      ? preprocess((flattenedData || []) as unknown as Value[])
+      ? preprocess((flattenedData || []) as Value[])
       : ((flattenedData || []) as Value[]);
 
   useEffect(() => {
@@ -122,6 +122,8 @@ const AutoCompleteEntityDistinctSelect = <
       loading={isFetching}
       getOptionDisabled={(option) => {
         const selectedOptions = rest.value;
+        const selectedGroup = option[sortKey];
+        const isOptionSelected = selectedOptions?.includes(option[idKey]);
 
         if (Array.isArray(selectedOptions)) {
           const selectedGroups = [
@@ -131,21 +133,19 @@ const AutoCompleteEntityDistinctSelect = <
               ),
             ),
           ];
+          const isOptionGroupSelected = selectedGroups.includes(selectedGroup);
 
-          return (
-            !rest.value?.includes(option[idKey]) &&
-            selectedGroups.includes(option[sortKey])
-          );
+          return !isOptionSelected && isOptionGroupSelected;
         }
 
         return false;
       }}
       groupBy={(option) => {
         if (option[sortKey]) {
-          return (
-            getSortEntityFromCache(option[sortKey])?.[groupKey] ||
-            defaultGroupTitle
-          );
+          const sortEntityId = option[sortKey];
+          const groupTitle = getSubEntityFromCache(sortEntityId)?.[groupKey];
+
+          return groupTitle || defaultGroupTitle;
         }
 
         return defaultGroupTitle;
