@@ -44,7 +44,9 @@ const getAdminUser = async (role: RoleDocument) => {
   return user;
 };
 
-const migrateLabelGroupModel = async (services: MigrationServices) => {
+const migrateLabelGroupModelAndPermissions = async (
+  services: MigrationServices,
+) => {
   const adminRole = await getAdminRole();
 
   if (!adminRole) {
@@ -103,7 +105,7 @@ const migrateLabelGroupModel = async (services: MigrationServices) => {
 module.exports = {
   async up(services: MigrationServices) {
     try {
-      await migrateLabelGroupModel(services);
+      await migrateLabelGroupModelAndPermissions(services);
 
       return true;
     } catch (error) {
