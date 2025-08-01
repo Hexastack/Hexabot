@@ -37,11 +37,11 @@ const getAdminRole = async () => {
 const getAdminUser = async (role: RoleDocument) => {
   const UserModel = mongoose.model<User>(User.name, userSchema);
 
-  const user = await UserModel.findOne({ roles: [role!._id] }).sort({
+  const user = await UserModel.findOne({ roles: [role._id] }).sort({
     createdAt: 'asc',
   });
 
-  return user!;
+  return user;
 };
 
 const migrateLabelGroupModel = async (services: MigrationServices) => {
@@ -60,6 +60,10 @@ const migrateLabelGroupModel = async (services: MigrationServices) => {
   }
 
   const ModelModel = mongoose.model<Model>(Model.name, ModelSchema);
+  const PermissionModel = mongoose.model<Permission>(
+    Permission.name,
+    PermissionSchema,
+  );
 
   try {
     const hasLabelGroup = await ModelModel.findOne({
@@ -75,12 +79,6 @@ const migrateLabelGroupModel = async (services: MigrationServices) => {
       } satisfies ModelCreateDto;
 
       const createdModel = await ModelModel.insertOne(modelPayload);
-
-      const PermissionModel = mongoose.model<Permission>(
-        Permission.name,
-        PermissionSchema,
-      );
-
       const permissionsPayload = actions.map(
         (action) =>
           ({
@@ -111,7 +109,29 @@ module.exports = {
       throw error instanceof Error ? error : new Error(error);
     }
   },
-  async down(_services: MigrationServices) {
-    return true;
+  async down(services: MigrationServices) {
+    try {
+      const ModelModel = mongoose.model<Model>(Model.name, ModelSchema);
+      const PermissionModel = mongoose.model<Permission>(
+        Permission.name,
+        PermissionSchema,
+      );
+
+      const labelGroupModel = await ModelModel.findOne({
+        identity: 'labelgroup',
+      });
+
+      if (labelGroupModel) {
+        await PermissionModel.deleteMany({ model: labelGroupModel._id });
+        await ModelModel.deleteOne({ _id: labelGroupModel._id });
+
+        services.logger.log('Successfully rolled back labelGroup migration');
+      }
+
+      return true;
+    } catch (error) {
+      services.logger.error(`Migration rollback failed: ${error.message}`);
+      throw error instanceof Error ? error : new Error(error);
+    }
   },
 };
