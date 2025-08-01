@@ -203,6 +203,7 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
                 ) : null}
               </ListItem>
             )}
+            isDisabledWhenEmpty={false}
           />
           <ContentItem>
             <Input

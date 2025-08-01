@@ -42,6 +42,7 @@ type AutoCompleteSelectProps<
   error?: boolean;
   helperText?: string | null | undefined;
   noOptionsWarning?: string;
+  isDisabledWhenEmpty?: boolean;
 };
 
 const AutoCompleteSelect = <
@@ -68,6 +69,7 @@ const AutoCompleteSelect = <
     limitTags,
     loading,
     noOptionsWarning,
+    isDisabledWhenEmpty = true,
     ...rest
   }: AutoCompleteSelectProps<
     Value,
@@ -104,8 +106,8 @@ const AutoCompleteSelect = <
         >);
   }, [freeSolo, value, multiple, options, idKey]);
   const isDisabled = useMemo(
-    () => !freeSolo && options.length === 0,
-    [freeSolo, options.length],
+    () => isDisabledWhenEmpty && !freeSolo && options.length === 0,
+    [isDisabledWhenEmpty, freeSolo, options.length],
   );
 
   return (
