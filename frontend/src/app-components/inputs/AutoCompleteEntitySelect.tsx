@@ -46,6 +46,7 @@ type AutoCompleteEntitySelectProps<
   helperText?: string | null | undefined;
   preprocess?: (data: Value[]) => Value[];
   noOptionsWarning?: string;
+  isDisabledWhenEmpty?: boolean;
 };
 
 const AutoCompleteEntitySelect = <
