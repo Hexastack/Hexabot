@@ -85,8 +85,6 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                       <AutoCompleteEntityDistinctSelect
                         entity={EntityType.LABEL}
                         subEntity={EntityType.LABEL_GROUP}
-                        labelKey="name"
-                        label={t("label.labels")}
                         error={!!errors.labels}
                         helperText={
                           errors.labels ? errors.labels.message : null
@@ -94,6 +92,8 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                         onChange={(_e, selected) =>
                           onChange(selected.map(({ id }) => id))
                         }
+                        label={t("label.labels")}
+                        labelKey="name"
                         sortKey="group"
                         groupKey="name"
                         defaultGroupTitle={t("title.default_group")}

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -9,6 +9,7 @@
 import { EntityType, Format } from "@/services/types";
 
 import { IBaseSchema, IFormat, OmitPopulate } from "./base.types";
+import { ILabelGroup } from "./label-group.types";
 import { IUser } from "./user.types";
 
 export interface ILabelAttributes {
@@ -23,11 +24,13 @@ export interface ILabelStub
   extends IBaseSchema,
     OmitPopulate<ILabelAttributes, EntityType.LABEL> {
   subscriber_count: number;
+}
+
+export interface ILabel extends ILabelStub, IFormat<Format.BASIC> {
   group?: string | null;
 }
 
-export interface ILabel extends ILabelStub, IFormat<Format.BASIC> {}
-
 export interface ILabelFull extends ILabelStub, IFormat<Format.FULL> {
   users: IUser[];
+  group: ILabelGroup;
 }

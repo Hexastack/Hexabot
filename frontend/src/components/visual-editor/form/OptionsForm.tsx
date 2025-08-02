@@ -25,7 +25,12 @@ import LocalFallbackInput from "./inputs/options/LocalFallbackInput";
 export const OptionsForm = () => {
   const { t } = useTranslate();
   const block = useBlock();
-  const { control, register, watch } = useFormContext<IBlockAttributes>();
+  const {
+    control,
+    register,
+    watch,
+    formState: { errors },
+  } = useFormContext<IBlockAttributes>();
   const computed = watch("options.typing");
 
   return (
@@ -54,11 +59,15 @@ export const OptionsForm = () => {
               <AutoCompleteEntityDistinctSelect
                 entity={EntityType.LABEL}
                 subEntity={EntityType.LABEL_GROUP}
-                labelKey="title"
-                label={t("label.assign_labels")}
+                error={!!errors.assign_labels}
+                helperText={
+                  errors.assign_labels ? errors.assign_labels.message : null
+                }
                 onChange={(_e, selected) =>
                   onChange(selected.map(({ id }) => id))
                 }
+                label={t("label.assign_labels")}
+                labelKey="title"
                 sortKey="group"
                 groupKey="name"
                 defaultGroupTitle={t("title.default_group")}
