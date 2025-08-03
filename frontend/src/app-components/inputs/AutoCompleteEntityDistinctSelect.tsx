@@ -29,7 +29,7 @@ type AutoCompleteEntityDistinctSelectProps<
   label: string;
   idKey?: string;
   sortKey?: string;
-  groupKey: string;
+  groupKey?: string | never;
   defaultGroupTitle: string;
   labelKey: Label;
   entity: keyof IEntityMapTypes;
@@ -61,24 +61,21 @@ const AutoCompleteEntityDistinctSelect = <
 ) => {
   const getEntityFromCache = useGetFromCache(entity);
   const getSubEntityFromCache = useGetFromCache(subEntity);
-  const { data, isFetching } = useFind(
+  const { data = [], isFetching } = useFind(
     { entity, format: Format.FULL },
     {
       hasCount: false,
       initialSortState: sortKey ? [{ field: sortKey, sort: "asc" }] : [],
     },
   );
-  const options =
-    preprocess && data
-      ? preprocess((data || []) as Value[])
-      : ((data || []) as Value[]);
+  const options = preprocess ? preprocess(data as Value[]) : (data as Value[]);
 
   return (
     <AutoCompleteSelect<Value, Label, true>
       ref={ref}
       idKey={idKey}
       labelKey={labelKey}
-      options={options || []}
+      options={options}
       loading={isFetching}
       getOptionDisabled={(option) => {
         const selectedOptions = rest.value;
@@ -101,7 +98,7 @@ const AutoCompleteEntityDistinctSelect = <
         return false;
       }}
       groupBy={(option) => {
-        if (option[sortKey]) {
+        if (option[sortKey] && groupKey) {
           const sortEntityId = option[sortKey];
           const groupTitle = getSubEntityFromCache(sortEntityId)?.[groupKey];
 
@@ -138,9 +135,14 @@ AutoCompleteEntityDistinctSelect.displayName =
 
 export default forwardRef(AutoCompleteEntityDistinctSelect) as <
   TE extends THook["entity"],
+  Value extends THook<{ entity: TE }>["full"],
+  TSortKey extends keyof Value,
+  TGroupKey extends Value[TSortKey],
 >(
   props: AutoCompleteEntityDistinctSelectProps<TE> & {
     ref?: React.ForwardedRef<HTMLDivElement>;
     entity: TE;
+    sortKey?: TSortKey;
+    groupKey?: TGroupKey extends object ? keyof TGroupKey : never;
   },
 ) => ReturnType<typeof AutoCompleteEntityDistinctSelect>;
