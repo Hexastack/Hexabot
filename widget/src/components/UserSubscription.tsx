@@ -161,7 +161,12 @@ const UserSubscription: React.FC = () => {
       isInitialized.current = true;
       const localStorageProfile = getLocalStorageProfile();
 
-      if (localStorageProfile || hasSession)
+      //TODO: temp fix related to subscribers named "Anon. Web User"
+      if (
+        localStorageProfile?.first_name !== "Anon." &&
+        localStorageProfile?.last_name !== "Web User" &&
+        (localStorageProfile || hasSession)
+      )
         handleSubmit({
           first_name: localStorageProfile?.first_name || "",
           last_name: localStorageProfile?.last_name || "",

@@ -445,6 +445,18 @@ export default abstract class BaseWebChannelHandler<
     // Subscriber has already a session
     const sessionProfile = req.session?.web?.profile;
     if (sessionProfile) {
+      //TODO: temp fix related to subscribers named "Anon. Web User"
+      if (
+        req.query?.['channel'] === 'web-channel' &&
+        sessionProfile?.['first_name'] === 'Anon.' &&
+        sessionProfile?.['last_name'] === 'Web User'
+      ) {
+        await this.subscriberService.updateOne(sessionProfile.id, {
+          first_name: req.query?.['first_name'],
+          last_name: req.query?.['last_name'],
+        });
+      }
+
       const subscriber = await this.subscriberService.findOneAndPopulate(
         sessionProfile.id,
       );
