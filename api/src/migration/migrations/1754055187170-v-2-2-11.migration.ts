@@ -37,7 +37,7 @@ const getAdminRole = async () => {
 const getAdminUser = async (role: RoleDocument) => {
   const UserModel = mongoose.model<User>(User.name, userSchema);
 
-  const user = await UserModel.findOne({ roles: [role._id] }).sort({
+  const user = await UserModel.findOne({ roles: { $in: [role._id] } }).sort({
     createdAt: 'asc',
   });
 
@@ -50,15 +50,13 @@ const migrateLabelGroupModelAndPermissions = async (
   const adminRole = await getAdminRole();
 
   if (!adminRole) {
-    services.logger.warn('Unable to process labelGroup, no admin role found');
-    return;
+    throw new Error('Unable to process labelGroup: no admin role found');
   }
 
   const adminUser = await getAdminUser(adminRole);
 
   if (!adminUser) {
-    services.logger.warn('Unable to process labelGroup, no admin user found');
-    return;
+    throw new Error('Unable to process labelGroup: no admin user found');
   }
 
   const ModelModel = mongoose.model<Model>(Model.name, ModelSchema);
