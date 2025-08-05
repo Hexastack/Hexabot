@@ -80,7 +80,11 @@ export const useInfiniteLiveSubscribers = (props: {
 
         // Only update the unfiltered (all-subscribers) cache
         queryClient.setQueryData(
-          [QueryType.infinite, EntityType.SUBSCRIBER, { where: {} }],
+          [
+            QueryType.infinite,
+            EntityType.SUBSCRIBER,
+            JSON.stringify({ where: {} }),
+          ],
           (oldData) => {
             if (oldData) {
               const data = oldData as InfiniteData<string[]>;
