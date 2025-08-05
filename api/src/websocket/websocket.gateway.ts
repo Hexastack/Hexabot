@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { IncomingMessage } from 'http';
+
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -18,10 +20,13 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import cookie from 'cookie';
-import * as cookieParser from 'cookie-parser';
 import signature from 'cookie-signature';
-import { Session as ExpressSession, SessionData } from 'express-session';
-import { RemoteSocket, Server, Socket } from 'socket.io';
+import {
+  Session as ExpressSession,
+  Session,
+  SessionData,
+} from 'express-session';
+import { Server, Socket } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { sync as uid } from 'uid-safe';
 
@@ -34,6 +39,7 @@ import {
 import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
+import { getSessionMiddleware } from '@/utils/constants/session-middleware';
 import { getSessionStore } from '@/utils/constants/session-store';
 
 import { IOIncomingMessage, IOMessagePipe } from './pipes/io-message.pipe';
@@ -145,8 +151,8 @@ export class WebsocketGateway
         client.emit('set-cookie', cookies);
         // Optionally set the cookie on the client's handshake object if needed
         client.handshake.headers.cookie = cookies;
-        client.data.session = newSession;
-        client.data.sessionID = sid;
+        // client.data.session = newSession;
+        // client.data.sessionID = sid;
         this.logger.verbose(`
           Could not fetch session, since connecting socket has no cookie in its handshake.
           Generated a one-time-use cookie:
@@ -208,63 +214,50 @@ export class WebsocketGateway
   afterInit(): void {
     this.logger.log('Initialized websocket gateway');
 
-    // Handle session
-    this.io.use(async (client, next) => {
-      this.logger.verbose('Client connected, attempting to load session.');
-      try {
-        const { searchParams } = new URL(`ws://localhost${client.request.url}`);
+    if (config.env !== 'test') {
+      // Share the same session middleware (main.ts > express-session)
+      this.io.engine.use(getSessionMiddleware());
+    }
 
-        if (config.env === 'test') {
-          await this.createAndStoreSession(client);
-        }
-        if (client.request.headers.cookie) {
-          const cookies = cookie.parse(client.request.headers.cookie);
-          if (cookies && config.session.name in cookies) {
-            const sessionID = cookieParser.signedCookie(
-              cookies[config.session.name],
-              config.session.secret,
-            );
-            if (sessionID) {
-              return this.loadSession(sessionID, async (err, session) => {
-                if (err || !session) {
-                  this.logger.warn(
-                    'Unable to load session, creating a new one ...',
-                    err,
-                  );
-                  if (searchParams.get('channel') !== 'console-channel') {
-                    try {
-                      await this.createAndStoreSession(client);
-                      next();
-                    } catch (e) {
-                      next(e);
-                    }
-                  } else {
-                    return next(new Error('Unauthorized: Unknown session ID'));
-                  }
-                }
-                client.data.session = session;
-                client.data.sessionID = sessionID;
-                next();
-              });
-            } else {
-              next(new Error('Unable to parse session ID from cookie'));
-            }
-          }
-        } else if (searchParams.get('channel') === 'web-channel') {
-          try {
+    // Handle session
+    this.io.use(
+      async (
+        client: Socket<
+          DefaultEventsMap,
+          DefaultEventsMap,
+          DefaultEventsMap,
+          any
+        > & { request: IncomingMessage & { session: Session } },
+        next,
+      ) => {
+        this.logger.verbose('Client connected, attempting to load session.');
+        try {
+          const { searchParams } = new URL(
+            `ws://localhost${client.request.url}`,
+          );
+
+          if (config.env === 'test') {
             await this.createAndStoreSession(client);
             next();
-          } catch (e) {
-            next(e);
+            return;
           }
-        } else {
-          next(new Error('Unauthorized to connect to WS'));
+
+          if (
+            // Either the WS connection is with an authenticated user
+            client.request.session?.passport?.user?.id ||
+            // Or, the WS connection is established with a chat widget using the web channel (subscriber)
+            searchParams.get('channel') === 'web-channel'
+          ) {
+            next();
+          } else {
+            next(new Error('Unauthorized to connect to WS'));
+          }
+        } catch (e) {
+          this.logger.warn('Something unexpected happening');
+          next(e);
         }
-      } catch (e) {
-        this.logger.warn('Something unexpected happening');
-        next(e);
-      }
-    });
+      },
+    );
   }
 
   handleConnection(client: Socket, ..._args: any[]): void {
@@ -424,44 +417,18 @@ export class WebsocketGateway
   }
 
   /**
-   * Retrieves notification sockets based on session id.
+   * Allows a given socket to join a notification room.
    *
-   * @param sessionId - The session id
-   * @returns An RemoteSocket array
+   * @param req - Socket request
+   * @param room - The room name
    */
-  async getNotificationSockets(
-    sessionId: string,
-  ): Promise<RemoteSocket<DefaultEventsMap, any>[]> {
-    if (!sessionId) {
-      throw new Error('SessionId is required!');
-    }
-    const allSockets = await this.io.fetchSockets();
-
-    return allSockets.filter(
-      ({ handshake, data }) =>
-        !handshake.query.channel && data.sessionID === sessionId,
-    );
-  }
-
-  /**
-   * Join notification sockets based on session id.
-   *
-   * @param sessionId - The session id
-   * @param room - the joined room name
-   */
-  async joinNotificationSockets(sessionId: string, room: Room): Promise<void> {
-    if (!sessionId) {
-      throw new Error('SessionId is required!');
+  async joinNotificationSockets(req: SocketRequest, room: Room): Promise<void> {
+    if (!req.session.passport?.user?.id) {
+      throw new Error(
+        'Only authenticated users are allowed to join notification rooms!',
+      );
     }
 
-    const notificationSockets = await this.getNotificationSockets(sessionId);
-
-    if (!notificationSockets.length) {
-      throw new Error('No notification sockets found!');
-    }
-
-    notificationSockets.forEach((notificationSocket) =>
-      notificationSocket.join(room),
-    );
+    return await req.socket.join(room);
   }
 }

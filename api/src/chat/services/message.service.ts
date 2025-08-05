@@ -52,7 +52,7 @@ export class MessageService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      await this.gateway.joinNotificationSockets(req.sessionID, Room.MESSAGE);
+      await this.gateway.joinNotificationSockets(req, Room.MESSAGE);
 
       return res.status(200).json({
         success: true,
