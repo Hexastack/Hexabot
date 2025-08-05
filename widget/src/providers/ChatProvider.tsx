@@ -242,6 +242,16 @@ const ChatProvider: React.FC<{
   };
   const handleNewIOMessage = (newIOMessage: TEvent | null) => {
     setNewIOMessage(newIOMessage);
+
+    const extendedNewIOMessage = newIOMessage as TEvent | { success: boolean };
+
+    if (
+      "success" in extendedNewIOMessage &&
+      extendedNewIOMessage?.success === false
+    ) {
+      window.location.reload();
+    }
+
     if (
       newIOMessage &&
       "type" in newIOMessage &&
