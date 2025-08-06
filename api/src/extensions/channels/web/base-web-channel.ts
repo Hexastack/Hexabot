@@ -27,7 +27,11 @@ import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import {
+  Subscriber,
+  SubscriberFull,
+  SubscriberStub,
+} from '@/chat/schemas/subscriber.schema';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import {
@@ -390,7 +394,7 @@ export default abstract class BaseWebChannelHandler<
   private validateSession(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-    next: (profile: Subscriber) => void,
+    next: <S extends SubscriberStub>(profile: S) => void,
   ) {
     if (!req.session?.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
@@ -507,7 +511,7 @@ export default abstract class BaseWebChannelHandler<
         .json({ err: 'Polling not authorized when using websockets' });
     }
     // Session must be active
-    if (!(req.session && req.session.web && req.session.web.profile.id)) {
+    if (!(req.session && req.session.web && req.session?.web?.profile?.id)) {
       this.logger.warn('Must be connected to poll messages');
       return res
         .status(403)
@@ -639,6 +643,11 @@ export default abstract class BaseWebChannelHandler<
     _res: Response,
   ): Promise<Attachment | null | undefined> {
     try {
+      if (!req.session?.web?.profile?.id) {
+        this.logger.debug('Upload denied, no session is defined');
+        return null;
+      }
+
       // Check if any file is provided
       if (!req.file) {
         this.logger.debug('No files provided');
@@ -652,7 +661,7 @@ export default abstract class BaseWebChannelHandler<
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session.web.profile?.id,
+        createdBy: req.session.web.profile.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
@@ -789,11 +798,11 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile);
+      event.setSender(profile as Subscriber);
 
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile, type, event._adapter.raw);
+        this.broadcast(profile as Subscriber, type, event._adapter.raw);
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);

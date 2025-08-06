@@ -8,10 +8,8 @@
 
 // Import required modules and configurations
 
-import { SessionData } from 'express-session';
 import { Socket } from 'socket.io';
 
-import { SubscriberStub } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
 import { User } from '@/user/schemas/user.schema';
 
@@ -56,17 +54,8 @@ export class SocketRequest {
     [key: string]: string | boolean | undefined;
   };
 
-  sessionID: string;
-
-  private _session: SessionData<SubscriberStub>;
-
   get session() {
-    return this._session;
-  }
-
-  set session(data: SessionData<SubscriberStub>) {
-    this._session = data;
-    this.socket.data.session = data;
+    return this.socket.request.session;
   }
 
   // User information
@@ -124,11 +113,5 @@ export class SocketRequest {
       origin: socket.handshake.headers.origin || undefined,
       ...incomingMessage.headers,
     };
-
-    // Assign the session from the socket's session data
-    // @ts-expect-error todo
-    this.sessionID = socket.request.session?.id;
-    // @ts-expect-error todo
-    this.session = socket.request.session;
   }
 }

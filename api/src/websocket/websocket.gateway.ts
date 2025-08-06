@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { IncomingMessage } from 'http';
-
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import {
   ConnectedSocket,
@@ -21,21 +19,12 @@ import {
 } from '@nestjs/websockets';
 import cookie from 'cookie';
 import signature from 'cookie-signature';
-import {
-  Session as ExpressSession,
-  Session,
-  SessionData,
-} from 'express-session';
+import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { sync as uid } from 'uid-safe';
 
 import { MessageFull } from '@/chat/schemas/message.schema';
-import {
-  Subscriber,
-  SubscriberFull,
-  SubscriberStub,
-} from '@/chat/schemas/subscriber.schema';
+import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
 import { OutgoingMessage, StdEventType } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
@@ -130,7 +119,7 @@ export class WebsocketGateway
         signedSid,
         config.session.cookie,
       );
-      const newSession: SessionData<SubscriberStub> = {
+      const newSession: SessionData = {
         cookie: {
           // Prevent access from client-side javascript
           httpOnly: true,
@@ -220,44 +209,32 @@ export class WebsocketGateway
     }
 
     // Handle session
-    this.io.use(
-      async (
-        client: Socket<
-          DefaultEventsMap,
-          DefaultEventsMap,
-          DefaultEventsMap,
-          any
-        > & { request: IncomingMessage & { session: Session } },
-        next,
-      ) => {
-        this.logger.verbose('Client connected, attempting to load session.');
-        try {
-          const { searchParams } = new URL(
-            `ws://localhost${client.request.url}`,
-          );
+    this.io.use(async (client, next) => {
+      this.logger.verbose('Client connected, attempting to load session.');
+      try {
+        const { searchParams } = new URL(`ws://localhost${client.request.url}`);
 
-          if (config.env === 'test') {
-            await this.createAndStoreSession(client);
-            next();
-            return;
-          }
-
-          if (
-            // Either the WS connection is with an authenticated user
-            client.request.session?.passport?.user?.id ||
-            // Or, the WS connection is established with a chat widget using the web channel (subscriber)
-            searchParams.get('channel') === 'web-channel'
-          ) {
-            next();
-          } else {
-            next(new Error('Unauthorized to connect to WS'));
-          }
-        } catch (e) {
-          this.logger.warn('Something unexpected happening');
-          next(e);
+        if (config.env === 'test') {
+          await this.createAndStoreSession(client);
+          next();
+          return;
         }
-      },
-    );
+
+        if (
+          // Either the WS connection is with an authenticated user
+          client.request.session?.passport?.user?.id ||
+          // Or, the WS connection is established with a chat widget using the web channel (subscriber)
+          searchParams.get('channel') === 'web-channel'
+        ) {
+          next();
+        } else {
+          next(new Error('Unauthorized to connect to WS'));
+        }
+      } catch (e) {
+        this.logger.warn('Something unexpected happening');
+        next(e);
+      }
+    });
   }
 
   handleConnection(client: Socket, ..._args: any[]): void {
