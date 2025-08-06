@@ -9,7 +9,10 @@
 import { useCallback, useMemo } from "react";
 import { InfiniteData, useQueryClient } from "react-query";
 
-import { useNormalizeAndCache } from "@/hooks/crud/helpers";
+import {
+  useNormalizeAndCache,
+  useSortCachedEntities,
+} from "@/hooks/crud/helpers";
 import { useNormalizedInfiniteQuery } from "@/hooks/crud/useNormalizedInfiniteQuery";
 import { EntityType, QueryType } from "@/services/types";
 import { IMessage } from "@/types/message.types";
@@ -24,6 +27,7 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
+  const sortCachedMessages = useSortCachedEntities(EntityType.MESSAGE);
   const params: SearchPayload<IMessage> = {
     where: {
       or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
@@ -61,10 +65,12 @@ export const useInfinitedLiveMessages = () => {
           (oldData) => {
             if (oldData) {
               const data = oldData as InfiniteData<string[]>;
+              const page1 = [result, ...data.pages[0]] as string[];
+              const sortedPage = page1.sort(sortCachedMessages);
 
               return {
                 ...data,
-                pages: [[result, ...data.pages[0]], ...data.pages.slice(1)],
+                pages: [sortedPage],
               };
             }
 
