@@ -22,6 +22,8 @@ import { MessageAttachmentsViewer } from "../components/AttachmentViewer";
 import { Carousel } from "../components/Carousel";
 import GeolocationMessage from "../components/GeolocationMessage";
 
+import { highlightSearchText } from "./highlightSearchText";
+
 function hasSameSender(
   m1: IMessage | IMessageFull,
   m2: IMessage | IMessageFull,
@@ -92,6 +94,12 @@ export function getMessageContent(
   messageEntity: IMessageFull | IMessage,
   formattedTimestamp?: string,
   normalizedTimestamp?: string,
+  searchContext?: {
+    searchTerm: string;
+    matchPositions: { start: number; end: number }[];
+    currentMatchInMessageIndex: number;
+    originalText: string;
+  },
 ): ReactNode[] {
   const message = messageEntity.message;
   let content: ReactNode[] = [];
@@ -139,10 +147,30 @@ export function getMessageContent(
   }
 
   if ("text" in message) {
+    let textNode: ReactNode;
+
+    if (searchContext && searchContext.matchPositions.length > 0) {
+      textNode = highlightSearchText(
+        message.text,
+        searchContext.searchTerm,
+        searchContext.matchPositions,
+        searchContext.currentMatchInMessageIndex,
+      );
+    } else {
+      textNode = formatMessageText(message.text);
+    }
     content.push(
       <Message.CustomContent key={messageEntity.id}>
-        {formatMessageText(message.text)}
-        {renderTimestamp(messageEntity.id)}
+        <div>
+          <div style={{ marginBottom: "4px" }}>{textNode}</div>
+          <div
+            style={{
+              alignSelf: messageEntity.recipient ? "flex-end" : "flex-start",
+            }}
+          >
+            {renderTimestamp(messageEntity.id)}
+          </div>
+        </div>
       </Message.CustomContent>,
     );
   }

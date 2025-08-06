@@ -126,7 +126,9 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a strictly positive number"
+    "weight_positive_number_error": "Weight must be a strictly positive number",
+    "conversation_search.no_match_found": "No match found",
+    "conversation_search.loading_messages": "Loading messages..."
   },
   "menu": {
     "terms": "Terms of Use",
@@ -534,7 +536,8 @@
     "type_message_here": "Type message here ....",
     "mark_as_default": "By Default",
     "pattern": "Pattern",
-    "full_name": "First and last name"
+    "full_name": "First and last name",
+    "conversation_search": "Search in chat history..."
   },
   "button": {
     "login": "Sign In",
@@ -607,7 +610,8 @@
     "location": "Location",
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle",
-    "annotate": "Annotate Dataset"
+    "annotate": "Annotate Dataset",
+    "conversation_search": "Search in chat history"
   },
   "input": {
     "search": "Search"
