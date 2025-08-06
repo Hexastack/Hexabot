@@ -70,7 +70,7 @@ export const useInfinitedLiveMessages = () => {
 
               return {
                 ...data,
-                pages: [sortedPage],
+                pages: [sortedPage, ...data.pages.slice(1)],
               };
             }
 
