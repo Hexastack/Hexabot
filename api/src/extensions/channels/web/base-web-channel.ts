@@ -130,7 +130,7 @@ export default abstract class BaseWebChannelHandler<
 
       try {
         const menu = await this.menuService.getTree();
-        const hasSession = !!client.data.session?.web?.profile;
+        const hasSession = !!client.request.session.web?.profile;
         client.emit('settings', {
           menu,
           hasSession,
