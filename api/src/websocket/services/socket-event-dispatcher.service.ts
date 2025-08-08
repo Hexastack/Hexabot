@@ -19,7 +19,6 @@ import { Mutex } from 'async-mutex';
 import { Socket } from 'socket.io';
 
 import { LoggerService } from '@/logger/logger.service';
-import { getSessionStore } from '@/utils/constants/session-store';
 
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
 import { SocketRequest } from '../utils/socket-request';
@@ -76,11 +75,9 @@ export class SocketEventDispatcherService implements OnModuleInit {
       const [_, handler] = foundHandler;
 
       await new Promise<void>(async (resolve, reject) => {
-        getSessionStore().load(req.session.id, (_err, _session) => {
-          req.session.reload((_err) => {
-            if (_err) reject();
-            resolve();
-          });
+        req.session.reload((_err) => {
+          if (_err) reject();
+          resolve();
         });
       });
 

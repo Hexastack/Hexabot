@@ -194,6 +194,7 @@ const UserSubscription: React.FC = () => {
             onChange={(e) => setFirstName(e.target.value)}
             placeholder={t("user_subscription.first_name")}
             required
+            disabled={hasSubmitted}
           />
           <input
             className="user-subscription-form-input"
@@ -201,6 +202,7 @@ const UserSubscription: React.FC = () => {
             onChange={(e) => setLastName(e.target.value)}
             placeholder={t("user_subscription.last_name")}
             required
+            disabled={hasSubmitted}
           />
           <button
             type="submit"
