@@ -71,7 +71,8 @@ interface ChatContextType {
 
   /**
    * Represents the connection state of the chat.
-   * 0 = Disconnected
+   * -1 = Disconnected
+   * 0 = Not connected yet
    * 1 = Want to connect
    * 2 = Trying to connect
    * 3 = Connected
@@ -417,10 +418,12 @@ const ChatProvider: React.FC<{
         const profile = JSON.parse(item) as ISubscriber;
 
         handleSubscription(profile.first_name, profile.last_name);
+      } else {
+        setConnectionState(0);
       }
     };
     const endConnection = () => {
-      setConnectionState(0);
+      setConnectionState(-1);
     };
 
     socketCtx.socket.io.on("reconnect", reSubscribe);

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -10,12 +10,14 @@ import React, { PropsWithChildren } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useWidget } from "../providers/WidgetProvider";
+import { ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
 import Messages from "./Messages";
 import UserInput from "./UserInput";
 import Webview from "./Webview";
+
 import "./ChatWindow.scss";
 
 type ChatWindowProps = PropsWithChildren<{
@@ -37,15 +39,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   return (
     <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
       <ChatHeader>{CustomHeader && <CustomHeader />}</ChatHeader>
-      {screen === "prechat" && PreChat && <PreChat />}
+      {connectionState}
+      {screen === "prechat" &&
+        PreChat &&
+        (connectionState === ConnectionState.notConnectedYet ||
+          connectionState == ConnectionState.tryingToConnect) && <PreChat />}
       {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
-        connectionState === 3 && <Messages Avatar={CustomAvatar} />}
-      {screen !== "prechat" &&
-        screen !== "postchat" &&
-        connectionState !== 3 && <ConnectionLost />}
+        connectionState === ConnectionState.connected && (
+          <Messages Avatar={CustomAvatar} />
+        )}
+      {connectionState === ConnectionState.disconnected && <ConnectionLost />}
       {screen === "postchat" && PostChat && <PostChat />}
       {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
-        connectionState === 3 && <UserInput />}
+        connectionState === ConnectionState.connected && <UserInput />}
       {screen === "webview" && <Webview />}
     </div>
   );
