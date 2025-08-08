@@ -160,7 +160,7 @@ export class MessageController extends BaseController<
         mid,
         recipient: subscriber.id,
         message: messageDto.message as StdOutgoingMessage,
-        sentBy: req.session?.passport?.user.id,
+        sentBy: req.session?.passport?.user?.id,
         read: false,
         delivery: false,
       };

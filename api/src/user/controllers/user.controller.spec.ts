@@ -6,10 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+// eslint-disable-next-line import/order
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ISendMailOptions } from '@nestjs-modules/mailer';
-import { Session as ExpressSession } from 'express-session';
+import { Request } from 'express';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -209,10 +210,12 @@ describe('UserController', () => {
         user!.id,
         updateDto,
         {
-          passport: {
-            user: { id: user!.id },
+          session: {
+            passport: {
+              user: { id: user!.id },
+            },
           },
-        } as ExpressSession,
+        } as Request,
       );
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toEqualPayload(
@@ -233,10 +236,12 @@ describe('UserController', () => {
         user!.id,
         updateDto,
         {
-          passport: {
-            user: { id: user!.id },
+          session: {
+            passport: {
+              user: { id: user!.id },
+            },
           },
-        } as ExpressSession,
+        } as Request,
       );
       expect(userService.updateOne).toHaveBeenCalledWith(user!.id, updateDto);
       expect(result).toEqualPayload(
@@ -255,10 +260,12 @@ describe('UserController', () => {
       };
       await expect(
         userController.updateStateAndRoles(user!.id, updateDto, {
-          passport: {
-            user: { id: user!.id },
+          session: {
+            passport: {
+              user: { id: user!.id },
+            },
           },
-        } as ExpressSession),
+        } as Request),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -268,10 +275,12 @@ describe('UserController', () => {
       };
       await expect(
         userController.updateStateAndRoles(user!.id, updateDto, {
-          passport: {
-            user: { id: user!.id },
+          session: {
+            passport: {
+              user: { id: user!.id },
+            },
           },
-        } as ExpressSession),
+        } as Request),
       ).rejects.toThrow(ForbiddenException);
     });
   });

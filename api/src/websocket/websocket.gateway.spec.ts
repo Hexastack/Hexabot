@@ -7,6 +7,7 @@
  */
 
 import { INestApplication } from '@nestjs/common';
+import { Session } from 'express-session';
 import { Socket, io } from 'socket.io-client';
 
 import {
@@ -127,12 +128,13 @@ describe('WebsocketGateway', () => {
       (s) => s.handshake.headers['x-client-id'] === 'admin-1',
     );
 
-    // @ts-expect-error to be ignored
     admin1ServerSocket!.request.session = {
       id: 'admin-1',
-      cookie: {},
+      cookie: {
+        originalMaxAge: null,
+      },
       passport: { user: { id: 'admin-1' } },
-    };
+    } as unknown as Session;
     // @ts-expect-error to be ignored
     admin1ServerSocket!.request.sessionID = 'admin-1';
 
@@ -190,39 +192,35 @@ describe('WebsocketGateway', () => {
     const admin2ServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'admin-2',
     )!;
-    // @ts-expect-error to be ignored
+
     admin2ServerSocket!.request.session = {
       id: 'admin-2',
       cookie: {},
       passport: { user: { id: 'admin-2' } },
-    };
-    // @ts-expect-error to be ignored
-    admin2ServerSocket!.request.sessionID = 'admin-2';
+    } as unknown as Session;
 
     const admin3ServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'admin-3',
     )!;
 
-    // @ts-expect-error to be ignored
     admin3ServerSocket!.request.session = {
       id: 'admin-3',
-      cookie: {},
+      cookie: {
+        originalMaxAge: null,
+      },
       passport: { user: { id: 'admin-3' } },
-    };
-    // @ts-expect-error to be ignored
-    admin3ServerSocket!.request.sessionID = 'admin-2';
+    } as unknown as Session;
 
     const subscriberServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'subscriber',
     )!;
 
-    // @ts-expect-error to be ignored
     subscriberServerSocket!.request.session = {
       id: 'subscriber',
-      cookie: {},
-    };
-    // @ts-expect-error to be ignored
-    subscriberServerSocket!.request.sessionID = 'subscriber';
+      cookie: {
+        originalMaxAge: null,
+      },
+    } as Session;
 
     await gateway.joinNotificationSockets(
       new SocketRequest(admin2ServerSocket, 'GET', {

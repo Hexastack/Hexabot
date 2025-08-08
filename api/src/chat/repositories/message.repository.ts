@@ -18,7 +18,7 @@ import {
   MessageFull,
   MessagePopulate,
 } from '../schemas/message.schema';
-import { Subscriber } from '../schemas/subscriber.schema';
+import { SubscriberStub } from '../schemas/subscriber.schema';
 import { AnyMessage } from '../schemas/types/message';
 
 @Injectable()
@@ -62,8 +62,8 @@ export class MessageRepository extends BaseRepository<
    *
    * @returns The message history until the specified date.
    */
-  async findHistoryUntilDate(
-    subscriber: Subscriber,
+  async findHistoryUntilDate<S extends SubscriberStub>(
+    subscriber: S,
     until = new Date(),
     limit: number = 30,
   ) {
@@ -86,8 +86,8 @@ export class MessageRepository extends BaseRepository<
    *
    * @returns The message history since the specified date.
    */
-  async findHistorySinceDate(
-    subscriber: Subscriber,
+  async findHistorySinceDate<S extends SubscriberStub>(
+    subscriber: S,
     since = new Date(),
     limit: number = 30,
   ) {

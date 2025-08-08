@@ -18,6 +18,8 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Mutex } from 'async-mutex';
 import { Socket } from 'socket.io';
 
+import { LoggerService } from '@/logger/logger.service';
+
 import { SocketEventMetadataStorage } from '../storage/socket-event-metadata.storage';
 import { SocketRequest } from '../utils/socket-request';
 import { SocketResponse } from '../utils/socket-response';
@@ -39,6 +41,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly modulesContainer: ModulesContainer,
+    private readonly logger: LoggerService,
   ) {}
 
   @OnEvent('hook:websocket:connection')
@@ -70,7 +73,16 @@ export class SocketEventDispatcherService implements OnModuleInit {
       }
 
       const [_, handler] = foundHandler;
-      return await handler(req, res);
+      const response = await handler(req, res);
+
+      // Update session object (similar to what is done in express-session)
+      req.session.save((err) => {
+        if (err) {
+          this.logger.error('WS : Unable to update session!', err);
+        }
+      });
+
+      return response;
     } catch (error) {
       return this.handleException(error, res);
     } finally {

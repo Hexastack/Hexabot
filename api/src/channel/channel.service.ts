@@ -187,7 +187,7 @@ export class ChannelService {
       };
 
       // @TODO: temporary fix until it's fixed properly: https://github.com/Hexastack/Hexabot/issues/578
-      getSessionStore().set(req.sessionID, req.session, (err) => {
+      getSessionStore().set(req.session.id, req.session, (err) => {
         if (err) {
           this.logger.warn('Unable to store WS Console session', err);
         }
