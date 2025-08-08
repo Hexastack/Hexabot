@@ -19,7 +19,7 @@ import { getQuickReplies, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
-import { useSocket } from "../providers/SocketProvider";
+import { useSocket, useSubscribe } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
 import {
   Direction,
@@ -45,6 +45,7 @@ const UserSubscription: React.FC = () => {
     setSuggestions,
     hasSession,
   } = useChat();
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const isInitialized = useRef(false);
@@ -83,6 +84,7 @@ const UserSubscription: React.FC = () => {
       first_name?: string;
       last_name?: string;
     }) => {
+      setHasSubmitted(true);
       event?.preventDefault();
       try {
         setConnectionState(2);
@@ -132,6 +134,7 @@ const UserSubscription: React.FC = () => {
               author: profile.foreign_id,
             },
           });
+          setHasSubmitted(false);
         }
         setConnectionState(3);
         setScreen("chat");
@@ -154,6 +157,12 @@ const UserSubscription: React.FC = () => {
       socket,
     ],
   );
+
+  useSubscribe("settings", () => {
+    if (hasSubmitted) {
+      handleSubmit({ first_name: "", last_name: "" });
+    }
+  });
 
   useEffect(() => {
     // User already subscribed ? (example : refreshed the page)
@@ -195,7 +204,16 @@ const UserSubscription: React.FC = () => {
           />
           <button
             type="submit"
-            style={{ background: colors.header.bg, color: colors.header.text }}
+            disabled={hasSubmitted}
+            style={
+              hasSubmitted
+                ? {}
+                : {
+                    background: colors.header.bg,
+                    color: colors.header.text,
+                    cursor: "pointer",
+                  }
+            }
             className="user-subscription-form-button-submit"
           >
             {t("user_subscription.get_started")}
