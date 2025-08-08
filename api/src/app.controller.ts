@@ -30,7 +30,7 @@ export class AppController {
   @CsrfGenAuth(true)
   csrf(@Req() req: Request) {
     return {
-      _csrf: req.session?.csrfSecret
+      _csrf: req.session.csrfSecret
         ? new CsrfGenerator().create(req.session.csrfSecret)
         : '',
     };

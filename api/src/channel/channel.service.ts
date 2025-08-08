@@ -147,7 +147,7 @@ export class ChannelService {
       req.method,
     );
 
-    if (!req.session?.passport?.user?.id) {
+    if (!req.session.passport?.user?.id) {
       setTimeout(() => {
         req.socket.client.conn.close();
       }, 300);

@@ -102,8 +102,7 @@ describe('SubscriberService', () => {
     it('should join Notification sockets subscriber room and return a success response', async () => {
       const req = {
         request: {
-          sessionID: SESSION_ID,
-          session: { passport: { user: { id: 'user-id' } } },
+          session: { passport: { user: { id: SESSION_ID } } },
         },
       };
       const res = {

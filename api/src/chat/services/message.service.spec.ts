@@ -90,8 +90,7 @@ describe('MessageService', () => {
     it('should join Notification sockets message room and return a success response', async () => {
       const req = {
         request: {
-          sessionID: SESSION_ID,
-          session: { passport: { user: { id: 'user-id' } } },
+          session: { passport: { user: { id: SESSION_ID } } },
         },
       };
       const res = {
