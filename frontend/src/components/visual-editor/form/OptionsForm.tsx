@@ -10,12 +10,12 @@ import { Typography } from "@mui/material";
 import { Controller, useFormContext } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
+import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
-import { ILabelFull } from "@/types/label.types";
 import { IUser } from "@/types/user.types";
 
 import { useBlock } from "./BlockFormProvider";
@@ -25,7 +25,12 @@ import LocalFallbackInput from "./inputs/options/LocalFallbackInput";
 export const OptionsForm = () => {
   const { t } = useTranslate();
   const block = useBlock();
-  const { control, register, watch } = useFormContext<IBlockAttributes>();
+  const {
+    control,
+    register,
+    watch,
+    formState: { errors },
+  } = useFormContext<IBlockAttributes>();
   const computed = watch("options.typing");
 
   return (
@@ -51,16 +56,21 @@ export const OptionsForm = () => {
             const { onChange, ...rest } = field;
 
             return (
-              <AutoCompleteEntitySelect<ILabelFull>
-                searchFields={["title", "name"]}
+              <AutoCompleteEntityDistinctSelect
                 entity={EntityType.LABEL}
-                format={Format.BASIC}
-                labelKey="title"
-                label={t("label.assign_labels")}
-                multiple={true}
+                subEntity={EntityType.LABEL_GROUP}
+                error={!!errors.assign_labels}
+                helperText={
+                  errors.assign_labels ? errors.assign_labels.message : null
+                }
                 onChange={(_e, selected) =>
                   onChange(selected.map(({ id }) => id))
                 }
+                label={t("label.assign_labels")}
+                labelKey="title"
+                sortKey="group"
+                groupKey="name"
+                defaultGroupTitle={t("title.default_group")}
                 {...rest}
               />
             );
