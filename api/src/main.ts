@@ -9,7 +9,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import bodyParser from 'body-parser';
-import session from 'express-session';
 import moduleAlias from 'module-alias';
 import { resolveDynamicProviders } from 'nestjs-dynamic-providers';
 import passport from 'passport';
@@ -25,7 +24,7 @@ import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
-import { getSessionStore } from './utils/constants/session-store';
+import { getSessionMiddleware } from './utils/constants/session-middleware';
 import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
@@ -78,24 +77,7 @@ async function bootstrap() {
     }),
     new ObjectIdPipe(),
   );
-  app.use(
-    session({
-      name: config.session.name,
-      secret: config.session.secret,
-      proxy: config.security.trustProxy,
-      resave: true,
-      saveUninitialized: false,
-      store: getSessionStore(),
-      cookie: {
-        httpOnly: true,
-        secure: config.security.httpsEnabled,
-        path: '/',
-        maxAge: isProduction
-          ? 1000 * 60 * 60 * 24 //prod 24h
-          : 1000 * 60 * 60, //dev 1h
-      },
-    }),
-  );
+  app.use(getSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
 

@@ -6,11 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Controller, Get, Req, Session } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { CsrfCheck, CsrfGenAuth } from '@tekuconcept/nestjs-csrf';
 import { CsrfGenerator } from '@tekuconcept/nestjs-csrf/dist/csrf.generator';
 import { Request } from 'express';
-import { Session as ExpressSession } from 'express-session';
 
 import { AppService } from './app.service';
 import { Roles } from './utils/decorators/roles.decorator';
@@ -29,10 +28,10 @@ export class AppController {
   @Get('csrftoken')
   @CsrfCheck(false)
   @CsrfGenAuth(true)
-  csrf(@Session() session: ExpressSession) {
+  csrf(@Req() req: Request) {
     return {
-      _csrf: session?.csrfSecret
-        ? new CsrfGenerator().create(session.csrfSecret)
+      _csrf: req.session.csrfSecret
+        ? new CsrfGenerator().create(req.session.csrfSecret)
         : '',
     };
   }

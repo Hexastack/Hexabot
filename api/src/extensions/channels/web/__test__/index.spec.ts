@@ -241,7 +241,15 @@ describe('WebChannelHandler', () => {
     const req = {
       isSocket: true,
       query: { since: tomorrow },
-      session: {},
+      session: {
+        cookie: { originalMaxAge: 0 },
+        web: {
+          isSocket: true,
+          messageQueue: [],
+          polling: false,
+          profile: subscriber,
+        },
+      },
       headers: { 'user-agent': 'browser' },
       socket: {
         join: (_foreignId: string) => {},
@@ -256,15 +264,7 @@ describe('WebChannelHandler', () => {
         expect(payload.messages.length).toEqual(3);
       },
     } as any as SocketResponse;
-    req.session = {
-      cookie: { originalMaxAge: 0 },
-      web: {
-        isSocket: true,
-        messageQueue: [],
-        polling: false,
-        profile: subscriber,
-      },
-    };
+
     let joinedSocket = false;
 
     const clearMock = jest

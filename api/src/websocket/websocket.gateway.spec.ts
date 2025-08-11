@@ -7,6 +7,7 @@
  */
 
 import { INestApplication } from '@nestjs/common';
+import { Session } from 'express-session';
 import { Socket, io } from 'socket.io-client';
 
 import {
@@ -17,6 +18,7 @@ import { buildTestingMocks } from '@/utils/test/utils';
 
 import { SocketEventDispatcherService } from './services/socket-event-dispatcher.service';
 import { Room } from './types';
+import { SocketRequest } from './utils/socket-request';
 import { WebsocketGateway } from './websocket.gateway';
 
 describe('WebsocketGateway', () => {
@@ -39,8 +41,8 @@ describe('WebsocketGateway', () => {
     app = module.createNestApplication();
     gateway = app.get<WebsocketGateway>(WebsocketGateway);
 
-    createSocket = (id: string, query: any = {}) =>
-      io('http://localhost:3000', {
+    createSocket = (id: string, query: any = {}) => {
+      const socket = io('http://localhost:3000', {
         autoConnect: false,
         transports: ['websocket'],
         query: { EIO: '4', transport: 'websocket', ...query },
@@ -48,6 +50,9 @@ describe('WebsocketGateway', () => {
           'x-client-id': id,
         },
       });
+
+      return socket;
+    };
     sockets = [
       createSocket('admin-1'), // Admin user 1
       createSocket('admin-2'), // Admin user 2
@@ -71,14 +76,16 @@ describe('WebsocketGateway', () => {
 
   it('should connect successfully', async () => {
     const [socket1] = sockets;
-    socket1.connect();
-
-    await new Promise<void>((resolve) => {
+    const connectionPromise = new Promise<void>((resolve) => {
       socket1.on('connect', async () => {
         expect(true).toBe(true);
         resolve();
       });
     });
+
+    socket1.connect();
+
+    await connectionPromise;
 
     socket1.disconnect();
   });
@@ -86,9 +93,7 @@ describe('WebsocketGateway', () => {
   it('should emit "OK" on "healthcheck"', async () => {
     const [socket1] = sockets;
 
-    socket1.connect();
-
-    await new Promise<void>((resolve) => {
+    const connectionPromise = new Promise<void>((resolve) => {
       socket1.on('connect', () => {
         socket1.emit('healthcheck', 'Hello world!');
         socket1.on('event', (data) => {
@@ -97,6 +102,10 @@ describe('WebsocketGateway', () => {
         });
       });
     });
+
+    socket1.connect();
+
+    await connectionPromise;
 
     socket1.disconnect();
   });
@@ -111,7 +120,7 @@ describe('WebsocketGateway', () => {
       }),
     );
 
-    const serverSockets = await gateway.io.fetchSockets();
+    const serverSockets = Array.from(gateway.io.sockets.sockets.values());
 
     expect(serverSockets.length).toBe(1);
 
@@ -119,8 +128,22 @@ describe('WebsocketGateway', () => {
       (s) => s.handshake.headers['x-client-id'] === 'admin-1',
     );
 
+    admin1ServerSocket!.request.session = {
+      id: 'admin-1',
+      cookie: {
+        originalMaxAge: null,
+      },
+      passport: { user: { id: 'admin-1' } },
+    } as unknown as Session;
+
     await gateway.joinNotificationSockets(
-      admin1ServerSocket?.data.sessionID,
+      new SocketRequest(admin1ServerSocket!, 'GET', {
+        method: 'GET',
+        headers: {},
+        params: {},
+        url: '/',
+        data: {},
+      }),
       Room.MESSAGE,
     );
 
@@ -163,34 +186,74 @@ describe('WebsocketGateway', () => {
     admin3ClientSocket.connect();
     await onSocket3Connect;
 
-    const serverSockets = await gateway.io.fetchSockets();
+    const serverSockets = Array.from(gateway.io.sockets.sockets.values());
     const admin2ServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'admin-2',
-    );
+    )!;
+
+    admin2ServerSocket!.request.session = {
+      id: 'admin-2',
+      cookie: {},
+      passport: { user: { id: 'admin-2' } },
+    } as unknown as Session;
+
     const admin3ServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'admin-3',
-    );
+    )!;
+
+    admin3ServerSocket!.request.session = {
+      id: 'admin-3',
+      cookie: {
+        originalMaxAge: null,
+      },
+      passport: { user: { id: 'admin-3' } },
+    } as unknown as Session;
 
     const subscriberServerSocket = serverSockets.find(
       (s) => s.handshake.headers['x-client-id'] === 'subscriber',
-    );
+    )!;
+
+    subscriberServerSocket!.request.session = {
+      id: 'subscriber',
+      cookie: {
+        originalMaxAge: null,
+      },
+    } as Session;
 
     await gateway.joinNotificationSockets(
-      admin2ServerSocket?.data.sessionID,
+      new SocketRequest(admin2ServerSocket, 'GET', {
+        method: 'GET',
+        data: {},
+        headers: {},
+        url: '/',
+        params: {},
+      }),
       Room.MESSAGE,
     );
 
     await gateway.joinNotificationSockets(
-      admin3ServerSocket?.data.sessionID,
+      new SocketRequest(admin3ServerSocket, 'GET', {
+        method: 'GET',
+        data: {},
+        headers: {},
+        url: '/',
+        params: {},
+      }),
       Room.MESSAGE,
     );
 
     await expect(
       gateway.joinNotificationSockets(
-        subscriberServerSocket?.data.sessionID,
+        new SocketRequest(subscriberServerSocket, 'GET', {
+          method: 'GET',
+          data: {},
+          headers: {},
+          url: '/',
+          params: {},
+        }),
         Room.MESSAGE,
       ),
-    ).rejects.toThrow('No notification sockets found!');
+    ).rejects.toThrow();
 
     const onMessagePromise2 = new Promise<void>((resolve) => {
       admin2ClientSocket.on('message', async ({ data }) => {
@@ -226,28 +289,20 @@ describe('WebsocketGateway', () => {
     subscriberSocket.disconnect();
   });
 
-  it('should throw an error when socket array is empty', async () => {
-    const originalGetNotificationSocket = gateway.getNotificationSockets;
-
-    jest.spyOn(gateway, 'getNotificationSockets').mockResolvedValueOnce([]);
-
+  it('should throw an error when user is not authenticated', async () => {
     await expect(
-      gateway.joinNotificationSockets('sessionId', Room.MESSAGE),
-    ).rejects.toThrow('No notification sockets found!');
-
-    expect(gateway.getNotificationSockets).toHaveBeenCalledWith('sessionId');
-    gateway.getNotificationSockets = originalGetNotificationSocket;
-  });
-
-  it('should throw an error with empty sessionId', async () => {
-    await expect(
-      gateway.joinNotificationSockets('', Room.MESSAGE),
-    ).rejects.toThrow('SessionId is required!');
-  });
-
-  it('should throw an error with empty sessionId', async () => {
-    await expect(gateway.getNotificationSockets('')).rejects.toThrow(
-      'SessionId is required!',
-    );
+      gateway.joinNotificationSockets(
+        new SocketRequest(
+          {
+            request: { session: {} },
+            handshake: { query: {}, headers: {} },
+            data: {},
+          } as any,
+          'GET',
+          { method: 'GET', data: {}, headers: {}, url: '/', params: {} },
+        ),
+        Room.MESSAGE,
+      ),
+    ).rejects.toThrow();
   });
 });

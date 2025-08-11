@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -7,10 +7,9 @@
  */
 
 // Import required modules and configurations
-import { SessionData } from 'express-session';
+
 import { Socket } from 'socket.io';
 
-import { SubscriberStub } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
 import { User } from '@/user/schemas/user.schema';
 
@@ -55,17 +54,8 @@ export class SocketRequest {
     [key: string]: string | boolean | undefined;
   };
 
-  sessionID: string;
-
-  private _session: SessionData<SubscriberStub>;
-
   get session() {
-    return this._session;
-  }
-
-  set session(data: SessionData<SubscriberStub>) {
-    this._session = data;
-    this.socket.data.session = data;
+    return this.socket.request.session;
   }
 
   // User information
@@ -78,9 +68,9 @@ export class SocketRequest {
     incomingMessage: IOIncomingMessage,
   ) {
     // Set IP and possible IPs list from the socket handshake information
-    this.ip = socket.handshake.address;
+    this.ip = socket.handshake?.address || '';
     this.ips =
-      'ips' in socket.handshake
+      socket.handshake && 'ips' in socket.handshake
         ? (socket.handshake.ips as string[])
         : [this.ip];
 
@@ -123,9 +113,5 @@ export class SocketRequest {
       origin: socket.handshake.headers.origin || undefined,
       ...incomingMessage.headers,
     };
-
-    // Assign the session from the socket's session data
-    this.sessionID = socket.data.sessionID;
-    this.session = socket.data.session;
   }
 }

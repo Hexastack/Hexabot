@@ -27,7 +27,11 @@ import { ChannelName } from '@/channel/types';
 import { MessageCreateDto } from '@/chat/dto/message.dto';
 import { SubscriberCreateDto } from '@/chat/dto/subscriber.dto';
 import { VIEW_MORE_PAYLOAD } from '@/chat/helpers/constants';
-import { Subscriber, SubscriberFull } from '@/chat/schemas/subscriber.schema';
+import {
+  Subscriber,
+  SubscriberFull,
+  SubscriberStub,
+} from '@/chat/schemas/subscriber.schema';
 import { AttachmentRef } from '@/chat/schemas/types/attachment';
 import { Button, ButtonType, PayloadType } from '@/chat/schemas/types/button';
 import {
@@ -126,7 +130,7 @@ export default abstract class BaseWebChannelHandler<
 
       try {
         const menu = await this.menuService.getTree();
-        const hasSession = !!client.data.session?.web?.profile;
+        const hasSession = !!client.request.session.web?.profile;
         client.emit('settings', {
           menu,
           hasSession,
@@ -278,7 +282,7 @@ export default abstract class BaseWebChannelHandler<
     until: Date = new Date(),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session?.web?.profile;
+    const profile = req.session.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistoryUntilDate(
         profile,
@@ -303,7 +307,7 @@ export default abstract class BaseWebChannelHandler<
     since: Date = new Date(10e14),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session?.web?.profile;
+    const profile = req.session.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistorySinceDate(
         profile,
@@ -390,9 +394,9 @@ export default abstract class BaseWebChannelHandler<
   private validateSession(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-    next: (profile: Subscriber) => void,
+    next: <S extends SubscriberStub>(profile: S) => void,
   ) {
-    if (!req.session?.web?.profile?.id) {
+    if (!req.session.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
       return res
         .status(403)
@@ -410,7 +414,7 @@ export default abstract class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
-    next(req.session?.web?.profile);
+    next(req.session.web?.profile);
   }
 
   /**
@@ -443,7 +447,7 @@ export default abstract class BaseWebChannelHandler<
   ): Promise<SubscriberFull> {
     const data = req.query;
     // Subscriber has already a session
-    const sessionProfile = req.session?.web?.profile;
+    const sessionProfile = req.session.web?.profile;
     if (sessionProfile) {
       const subscriber = await this.subscriberService.findOneAndPopulate(
         sessionProfile.id,
@@ -507,7 +511,7 @@ export default abstract class BaseWebChannelHandler<
         .json({ err: 'Polling not authorized when using websockets' });
     }
     // Session must be active
-    if (!(req.session && req.session.web && req.session.web.profile.id)) {
+    if (!(req.session && req.session.web && req.session.web?.profile?.id)) {
       this.logger.warn('Must be connected to poll messages');
       return res
         .status(403)
@@ -597,7 +601,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
-      if (!req.session?.web?.profile?.id) {
+      if (!req.session.web?.profile?.id) {
         this.logger.debug('No session');
         return null;
       }
@@ -621,7 +625,7 @@ export default abstract class BaseWebChannelHandler<
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session?.web?.profile?.id,
+        createdBy: req.session.web?.profile?.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
@@ -639,6 +643,11 @@ export default abstract class BaseWebChannelHandler<
     _res: Response,
   ): Promise<Attachment | null | undefined> {
     try {
+      if (!req.session.web?.profile?.id) {
+        this.logger.debug('Upload denied, no session is defined');
+        return null;
+      }
+
       // Check if any file is provided
       if (!req.file) {
         this.logger.debug('No files provided');
@@ -652,7 +661,7 @@ export default abstract class BaseWebChannelHandler<
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session.web.profile?.id,
+        createdBy: req.session.web.profile.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
@@ -789,11 +798,11 @@ export default abstract class BaseWebChannelHandler<
         }
       }
 
-      event.setSender(profile);
+      event.setSender(profile as Subscriber);
 
       const type = event.getEventType();
       if (type) {
-        this.broadcast(profile, type, event._adapter.raw);
+        this.broadcast(profile as Subscriber, type, event._adapter.raw);
         this.eventEmitter.emit(`hook:chatbot:${type}`, event);
       } else {
         this.logger.error('Webhook received unknown event ', event);
@@ -1290,7 +1299,7 @@ export default abstract class BaseWebChannelHandler<
    * @return True, if requester is authorized to download the attachment
    */
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
-    const subscriberId = req.session?.web?.profile?.id as string;
+    const subscriberId = req.session.web?.profile?.id as string;
     if (attachment.access === AttachmentAccess.Public) {
       return true;
     } else if (!subscriberId) {

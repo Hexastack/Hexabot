@@ -137,7 +137,7 @@ export class AttachmentController extends BaseController<Attachment> {
       throw new BadRequestException('No file was selected');
     }
 
-    const userId = req.session?.passport?.user?.id;
+    const userId = req.session.passport?.user?.id;
     if (!userId) {
       throw new ForbiddenException(
         'Unexpected Error: Only authenticated users are allowed to upload',

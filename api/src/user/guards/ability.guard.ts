@@ -47,7 +47,10 @@ export class Ability implements CanActivate {
     if (!user) {
       throw new UnauthorizedException();
     }
-    if (!session?.cookie || session.cookie.expires < new Date()) {
+    if (
+      !session.cookie ||
+      (session.cookie?.expires && session.cookie?.expires < new Date())
+    ) {
       throw new UnauthorizedException('Session expired');
     }
 

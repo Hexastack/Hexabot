@@ -88,7 +88,11 @@ describe('MessageService', () => {
 
   describe('subscribe', () => {
     it('should join Notification sockets message room and return a success response', async () => {
-      const req = { sessionID: SESSION_ID };
+      const req = {
+        request: {
+          session: { passport: { user: { id: SESSION_ID } } },
+        },
+      };
       const res = {
         json: jest.fn(),
         status: jest.fn().mockReturnThis(),
@@ -97,7 +101,7 @@ describe('MessageService', () => {
       await mockMessageService.subscribe(req as any, res as any);
 
       expect(mockGateway.joinNotificationSockets).toHaveBeenCalledWith(
-        SESSION_ID,
+        req,
         Room.MESSAGE,
       );
       expect(res.status).toHaveBeenCalledWith(200);

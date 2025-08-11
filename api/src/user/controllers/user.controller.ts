@@ -19,7 +19,6 @@ import {
   Post,
   Query,
   Req,
-  Session,
   UnauthorizedException,
   UploadedFile,
   UseInterceptors,
@@ -27,7 +26,6 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
-import { Session as ExpressSession } from 'express-session';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
@@ -333,7 +331,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
   async updateStateAndRoles(
     @Param('id') id: string,
     @Body() body: UserUpdateStateAndRolesDto,
-    @Session() session: ExpressSession,
+    @Req() req: Request,
   ) {
     const oldRoles = (await this.userService.findOne(id))?.roles;
     const newRoles = body.roles;
@@ -341,12 +339,12 @@ export class ReadWriteUserController extends ReadOnlyUserController {
       (await this.roleService.findOne({
         name: 'admin',
       })) || {};
-    if (id === session.passport?.user?.id && body.state === false) {
+    if (id === req.session.passport?.user?.id && body.state === false) {
       throw new ForbiddenException('Your account state is protected');
     }
     if (
       adminRoleId &&
-      session?.passport?.user?.id === id &&
+      req.session.passport?.user?.id === id &&
       oldRoles?.includes(adminRoleId) &&
       !newRoles?.includes(adminRoleId)
     ) {

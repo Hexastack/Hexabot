@@ -74,10 +74,7 @@ export class SubscriberService extends BaseService<
     @SocketRes() res: SocketResponse,
   ): Promise<IOOutgoingSubscribeMessage> {
     try {
-      await this.gateway.joinNotificationSockets(
-        req.sessionID,
-        Room.SUBSCRIBER,
-      );
+      await this.gateway.joinNotificationSockets(req, Room.SUBSCRIBER);
 
       return res.status(200).json({
         success: true,
