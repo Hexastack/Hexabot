@@ -90,6 +90,10 @@ describe('BlockController', () => {
     }))!;
   });
 
+  beforeEach(() => {
+    (conversationRepository.model.exists as jest.Mock).mockResolvedValue(false);
+  });
+
   afterEach(jest.clearAllMocks);
 
   afterAll(closeInMongodConnection);
@@ -227,10 +231,6 @@ describe('BlockController', () => {
       );
       await expect(blockController.deleteOne(block.id)).rejects.toThrow(
         ConflictException,
-      );
-      // reset to default false for subsequent tests
-      (conversationRepository.model.exists as jest.Mock).mockResolvedValue(
-        false,
       );
     });
     it('should delete block', async () => {
