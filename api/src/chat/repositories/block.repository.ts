@@ -17,6 +17,7 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
+import { SettingService } from '@/setting/services/setting.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
@@ -39,6 +40,7 @@ export class BlockRepository extends BaseRepository<
   constructor(
     @InjectModel(Block.name) readonly model: Model<Block>,
     private readonly conversationRepository: ConversationRepository,
+    private readonly settingService: SettingService,
   ) {
     super(model, Block, BLOCK_POPULATE, BlockFull);
   }
@@ -308,6 +310,21 @@ export class BlockRepository extends BaseRepository<
       if (inUse) {
         throw new ConflictException(
           'Cannot delete block: it is currently used by an active conversation.',
+        );
+      }
+
+      // Prevent deleting a block that is configured as the global fallback in settings
+      const settings = await this.settingService.getSettings();
+      const fallbackBlockId = settings?.chatbot_settings?.fallback_block;
+      const isGlobalFallbackEnabled =
+        settings?.chatbot_settings?.global_fallback;
+      if (
+        isGlobalFallbackEnabled &&
+        fallbackBlockId &&
+        idsToDelete.includes(fallbackBlockId)
+      ) {
+        throw new ConflictException(
+          'Cannot delete block: it is configured as the global fallback block in settings.',
         );
       }
 
