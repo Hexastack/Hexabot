@@ -64,8 +64,10 @@ export const LabelForm: FC<ComponentFormProps<ILabel>> = ({
   );
   const { mutate: createLabel } = useCreate(EntityType.LABEL, options);
   const { mutate: createGroupLabel } = useCreate(EntityType.LABEL_GROUP, {
-    onSuccess: () => {
+    onSuccess: (createdGroup: ILabelGroup) => {
       toast.success(t("message.success_save"));
+      // Automatically select the newly created group label
+      setLabelGroup(createdGroup.id);
     },
   });
   const { mutate: deleteGroupLabel } = useDelete(EntityType.LABEL_GROUP, {

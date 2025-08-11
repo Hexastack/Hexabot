@@ -111,7 +111,7 @@ export class WebsocketGateway
 
   async createAndStoreSession(client: Socket): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const sid = uid(24); // Sign the sessionID before sending
+      const sid = uid(24); // Sign the session ID before sending
       const signedSid = 's:' + signature.sign(sid, config.session.secret);
       // Send session ID to client to set cookie
       const cookies = cookie.serialize(
@@ -140,8 +140,7 @@ export class WebsocketGateway
         client.emit('set-cookie', cookies);
         // Optionally set the cookie on the client's handshake object if needed
         client.handshake.headers.cookie = cookies;
-        // client.data.session = newSession;
-        // client.data.sessionID = sid;
+
         this.logger.verbose(`
           Could not fetch session, since connecting socket has no cookie in its handshake.
           Generated a one-time-use cookie:
@@ -163,22 +162,22 @@ export class WebsocketGateway
   }
 
   saveSession(client: Socket): void {
-    const { sessionID, session } = client.data;
-    if (!sessionID || !session) {
+    const { session } = client.request;
+    if (!session) {
       this.logger.warn('No socket session found ...');
       return;
     }
 
     // On disconnect we may want to update the session, but
     // it shouldn't save it if the user logged out (session destroyed)
-    this.loadSession(sessionID, (err, oldSession) => {
+    this.loadSession(session.id, (err, oldSession) => {
       if (err || !oldSession) {
         this.logger.debug(
           'Unable to save websocket session, probably the user logged out ...',
         );
         return;
       }
-      getSessionStore().set(sessionID, session, (err) => {
+      getSessionStore().set(session.id, session, (err) => {
         if (err) {
           this.logger.error(
             'Error saving session in `config.sockets.afterDisconnect`:',
@@ -222,7 +221,7 @@ export class WebsocketGateway
 
         if (
           // Either the WS connection is with an authenticated user
-          client.request.session?.passport?.user?.id ||
+          client.request.session.passport?.user?.id ||
           // Or, the WS connection is established with a chat widget using the web channel (subscriber)
           searchParams.get('channel') === 'web-channel'
         ) {
@@ -248,7 +247,7 @@ export class WebsocketGateway
   @OnEvent('hook:user:logout')
   disconnectSockets({ id }: ExpressSession) {
     for (const [, socket] of this.io.sockets.sockets) {
-      if (socket.data['sessionID'] === id) {
+      if (socket.request.session.id === id) {
         socket.disconnect(true);
       }
     }

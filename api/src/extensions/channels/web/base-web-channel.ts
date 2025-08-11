@@ -282,7 +282,7 @@ export default abstract class BaseWebChannelHandler<
     until: Date = new Date(),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session?.web?.profile;
+    const profile = req.session.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistoryUntilDate(
         profile,
@@ -307,7 +307,7 @@ export default abstract class BaseWebChannelHandler<
     since: Date = new Date(10e14),
     n: number = 30,
   ): Promise<Web.Message[]> {
-    const profile = req.session?.web?.profile;
+    const profile = req.session.web?.profile;
     if (profile) {
       const messages = await this.messageService.findHistorySinceDate(
         profile,
@@ -396,7 +396,7 @@ export default abstract class BaseWebChannelHandler<
     res: Response | SocketResponse,
     next: <S extends SubscriberStub>(profile: S) => void,
   ) {
-    if (!req.session?.web?.profile?.id) {
+    if (!req.session.web?.profile?.id) {
       this.logger.warn('No session ID to be found!', req.session);
       return res
         .status(403)
@@ -414,7 +414,7 @@ export default abstract class BaseWebChannelHandler<
         .status(403)
         .json({ err: 'Web Channel Handler : Unauthorized!' });
     }
-    next(req.session?.web?.profile);
+    next(req.session.web?.profile);
   }
 
   /**
@@ -447,7 +447,7 @@ export default abstract class BaseWebChannelHandler<
   ): Promise<SubscriberFull> {
     const data = req.query;
     // Subscriber has already a session
-    const sessionProfile = req.session?.web?.profile;
+    const sessionProfile = req.session.web?.profile;
     if (sessionProfile) {
       const subscriber = await this.subscriberService.findOneAndPopulate(
         sessionProfile.id,
@@ -511,7 +511,7 @@ export default abstract class BaseWebChannelHandler<
         .json({ err: 'Polling not authorized when using websockets' });
     }
     // Session must be active
-    if (!(req.session && req.session.web && req.session?.web?.profile?.id)) {
+    if (!(req.session && req.session.web && req.session.web?.profile?.id)) {
       this.logger.warn('Must be connected to poll messages');
       return res
         .status(403)
@@ -601,7 +601,7 @@ export default abstract class BaseWebChannelHandler<
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
-      if (!req.session?.web?.profile?.id) {
+      if (!req.session.web?.profile?.id) {
         this.logger.debug('No session');
         return null;
       }
@@ -625,7 +625,7 @@ export default abstract class BaseWebChannelHandler<
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session?.web?.profile?.id,
+        createdBy: req.session.web?.profile?.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
@@ -643,7 +643,7 @@ export default abstract class BaseWebChannelHandler<
     _res: Response,
   ): Promise<Attachment | null | undefined> {
     try {
-      if (!req.session?.web?.profile?.id) {
+      if (!req.session.web?.profile?.id) {
         this.logger.debug('Upload denied, no session is defined');
         return null;
       }
@@ -1299,7 +1299,7 @@ export default abstract class BaseWebChannelHandler<
    * @return True, if requester is authorized to download the attachment
    */
   public async hasDownloadAccess(attachment: Attachment, req: Request) {
-    const subscriberId = req.session?.web?.profile?.id as string;
+    const subscriberId = req.session.web?.profile?.id as string;
     if (attachment.access === AttachmentAccess.Public) {
       return true;
     } else if (!subscriberId) {
