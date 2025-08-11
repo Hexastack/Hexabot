@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -88,6 +88,21 @@ export class SearchFilterPipe<T>
           [field]: this.getNullableValue(val['!=']),
         },
       };
+    } else if (val?.[`$in`]) {
+      const inValues = (Array.isArray(val[`$in`]) ? val[`$in`] : [val[`$in`]])
+        .map((v) => this.getNullableValue(String(v)))
+        .filter((v) => v);
+
+      if (inValues.length === 0) {
+        return {};
+      }
+
+      return {
+        _operator: `in`,
+        data: {
+          [field]: inValues,
+        },
+      };
     }
 
     return {
@@ -143,6 +158,36 @@ export class SearchFilterPipe<T>
             ...acc,
             $nor: [...(acc?.$nor || []), { ...filter, ...data }],
           };
+        case 'in': {
+          // Handle $in operator - convert to MongoDB $in syntax
+          const inQuery = Object.entries(data || {}).reduce(
+            (inAcc, [field, values]) => {
+              return {
+                ...inAcc,
+                [field]: { $in: values },
+              };
+            },
+            {},
+          );
+
+          switch (_context) {
+            case 'or':
+              return {
+                ...acc,
+                $or: [...(acc?.$or || []), { ...filter, ...inQuery }],
+              };
+            case 'and':
+              return {
+                ...acc,
+                $and: [...(acc?.$and || []), { ...filter, ...inQuery }],
+              };
+            default:
+              return {
+                ...acc,
+                ...inQuery,
+              };
+          }
+        }
         default:
           switch (_context) {
             case 'or':
