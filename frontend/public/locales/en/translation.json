@@ -244,7 +244,8 @@
     "dashboard": "Dashboard",
     "warning": "Warning",
     "console": "Admin Chat Console",
-    "group_label": "Group Label"
+    "group_label": "Group Label",
+    "default_group": "Default Group"
   },
   "label": {
     "terms": "I have read and approve the terms and conditions.",
