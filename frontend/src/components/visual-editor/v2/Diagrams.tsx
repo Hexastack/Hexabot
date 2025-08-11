@@ -126,8 +126,18 @@ const Diagrams = () => {
     onSuccess: () => {
       setSelectedBlockId(undefined);
     },
-    onError: (error) => {
-      toast.error(error.message);
+    onError: (error: any) => {
+      const errorType = error?.error;
+      const apiErrorMessage = error?.message;
+      // Map error codes to i18n keys
+      const errorMap: Record<string, string> = {
+        BlockInUse: "message.block_delete_in_use_conflict",
+        BlockIsGlobalFallback: "message.block_delete_global_fallback_conflict",
+      };
+      const i18nKey = errorType && errorMap[errorType];
+      const localizedFeedbackMessage = i18nKey ? t(i18nKey) : apiErrorMessage;
+
+      toast.error(localizedFeedbackMessage);
     },
   });
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
