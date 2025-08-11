@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
@@ -22,6 +22,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block } from '../schemas/block.schema';
 import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
@@ -34,6 +35,7 @@ describe('BlockController', () => {
   let blockController: BlockController;
   let blockService: BlockService;
   let categoryService: CategoryService;
+  let conversationRepository: ConversationRepository;
   let category: Category;
   let block: Block;
   let blockToDelete: Block;
@@ -60,13 +62,23 @@ describe('BlockController', () => {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
+        {
+          provide: ConversationRepository,
+          useValue: {
+            model: {
+              exists: jest.fn().mockResolvedValue(false),
+            },
+          },
+        },
       ],
     });
-    [blockController, blockService, categoryService] = await getMocks([
-      BlockController,
-      BlockService,
-      CategoryService,
-    ]);
+    [blockController, blockService, categoryService, conversationRepository] =
+      await getMocks([
+        BlockController,
+        BlockService,
+        CategoryService,
+        ConversationRepository,
+      ]);
     category = (await categoryService.findOne({ label: 'default' }))!;
     block = (await blockService.findOne({ name: 'first' }))!;
     blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
@@ -209,6 +221,18 @@ describe('BlockController', () => {
   });
 
   describe('deleteOne', () => {
+    it('should throw ConflictException when block is referenced by an active conversation', async () => {
+      (conversationRepository.model.exists as jest.Mock).mockResolvedValueOnce(
+        true,
+      );
+      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
+        ConflictException,
+      );
+      // reset to default false for subsequent tests
+      (conversationRepository.model.exists as jest.Mock).mockResolvedValue(
+        false,
+      );
+    });
     it('should delete block', async () => {
       jest.spyOn(blockService, 'deleteOne');
       const result = await blockController.deleteOne(blockToDelete.id);
