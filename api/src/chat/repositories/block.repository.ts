@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   Document,
@@ -21,6 +21,7 @@ import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { BlockCreateDto, BlockDto, BlockUpdateDto } from '../dto/block.dto';
+import { ConversationRepository } from '../repositories/conversation.repository';
 import {
   Block,
   BLOCK_POPULATE,
@@ -35,7 +36,10 @@ export class BlockRepository extends BaseRepository<
   BlockFull,
   BlockDto
 > {
-  constructor(@InjectModel(Block.name) readonly model: Model<Block>) {
+  constructor(
+    @InjectModel(Block.name) readonly model: Model<Block>,
+    private readonly conversationRepository: ConversationRepository,
+  ) {
     super(model, Block, BLOCK_POPULATE, BlockFull);
   }
 
@@ -293,6 +297,20 @@ export class BlockRepository extends BaseRepository<
     const docsToDelete = await this.model.find(criteria);
     const idsToDelete = docsToDelete.map(({ id }) => id);
     if (idsToDelete.length > 0) {
+      // Check if any active conversation references this block in current or next
+      const inUse = await this.conversationRepository.model.exists({
+        active: true,
+        $or: [
+          { current: { $in: idsToDelete } },
+          { next: { $in: idsToDelete } },
+        ],
+      });
+      if (inUse) {
+        throw new ConflictException(
+          'Cannot delete block: it is currently used by an active conversation.',
+        );
+      }
+
       // Remove from all other blocks
       await this.model.updateMany(
         { attachedBlock: { $in: idsToDelete } },
