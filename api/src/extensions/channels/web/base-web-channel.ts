@@ -131,9 +131,16 @@ export default abstract class BaseWebChannelHandler<
       try {
         const menu = await this.menuService.getTree();
         const hasSession = !!client.request.session.web?.profile;
+        const profile = client.request.session.web?.profile;
+        const messages = profile
+          ? await this.messageService.findHistoryUntilDate(profile)
+          : [];
+        const formattedMessages = await this.formatMessages(messages.reverse());
         client.emit('settings', {
           menu,
           hasSession,
+          profile,
+          messages: formattedMessages,
           ...settings,
         });
       } catch (err) {

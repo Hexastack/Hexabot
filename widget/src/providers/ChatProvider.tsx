@@ -17,6 +17,7 @@ import React, {
 } from "react";
 
 import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
+import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -26,6 +27,7 @@ import {
   QuickReplyType,
   TEvent,
   TMessage,
+  TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
 import { ConnectionState, OutgoingMessageState } from "../types/state.types";
@@ -144,8 +146,8 @@ interface ChatContextType {
     source,
     data,
   }: {
-    event: SyntheticEvent;
-    source: string;
+    event?: SyntheticEvent;
+    source?: string;
     data: TPostMessageEvent;
   }) => void;
 
@@ -158,6 +160,7 @@ interface ChatContextType {
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
   hasSession: boolean;
+  profile?: ISubscriber;
 }
 
 const defaultCtx: ChatContextType = {
@@ -195,6 +198,7 @@ const defaultCtx: ChatContextType = {
   send: () => {},
   handleSubscription: () => {},
   hasSession: false,
+  profile: undefined,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -207,6 +211,7 @@ const ChatProvider: React.FC<{
   const { screen, setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
+  const { t } = useTranslation();
   const [participants, setParticipants] = useState<Participant[]>(
     defaultCtx.participants,
   );
@@ -233,6 +238,7 @@ const ChatProvider: React.FC<{
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
   const [hasSession, setHasSession] = useState(false);
+  const [profile, setProfile] = useState<undefined | ISubscriber>();
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -284,8 +290,8 @@ const ChatProvider: React.FC<{
   const handleSend = async ({
     data,
   }: {
-    event: SyntheticEvent;
-    source: string;
+    event?: SyntheticEvent;
+    source?: string;
     data: TPostMessageEvent;
   }) => {
     setOutgoingMessageState(
@@ -399,9 +405,42 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
-  useSubscribe("settings", ({ hasSession }: ChannelSettings) => {
-    setHasSession(hasSession);
-  });
+  useSubscribe(
+    "settings",
+    ({ hasSession, profile, messages }: ChannelSettings) => {
+      setHasSession(hasSession);
+      setProfile(profile);
+
+      if (profile && messages.length === 0) {
+        handleSend({
+          data: {
+            type: TOutgoingMessageType.postback,
+            data: {
+              text: t("messages.get_started"),
+              payload: "GET_STARTED",
+            },
+            author: profile.foreign_id,
+          },
+        });
+      }
+
+      messages.forEach((message) => {
+        const direction =
+          message.author === profile?.foreign_id ||
+          message.author === profile?.id
+            ? Direction.sent
+            : Direction.received;
+
+        message.direction = direction;
+        if (message.direction === Direction.sent) {
+          message.read = true;
+          message.delivery = false;
+        }
+      });
+
+      setMessages(messages);
+    },
+  );
 
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
@@ -479,6 +518,7 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
     hasSession,
+    profile,
   };
 
   return (

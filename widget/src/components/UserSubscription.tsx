@@ -6,13 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
 import { getQuickReplies, useChat } from "../providers/ChatProvider";
@@ -43,26 +37,9 @@ const UserSubscription: React.FC = () => {
     participants,
     setParticipants,
     setSuggestions,
-    hasSession,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
-  const isInitialized = useRef(false);
-  const getLocalStorageProfile = (): ISubscriber | null => {
-    const profile = localStorage.getItem("profile");
-
-    if (profile) {
-      try {
-        return JSON.parse(profile);
-      } catch (error) {
-        localStorage.removeItem("profile");
-
-        return null;
-      }
-    }
-
-    return null;
-  };
   const getBody = async (first_name: string = "", last_name: string = "") => {
     const { body } = await socket.get<{
       messages: TMessage[];
@@ -121,8 +98,6 @@ const UserSubscription: React.FC = () => {
 
         if (messages.length === 0) {
           send({
-            event: event as SyntheticEvent,
-            source: "get_started_button",
             data: {
               type: TOutgoingMessageType.postback,
               data: {
@@ -154,20 +129,6 @@ const UserSubscription: React.FC = () => {
       socket,
     ],
   );
-
-  useEffect(() => {
-    // User already subscribed ? (example : refreshed the page)
-    if (!isInitialized.current) {
-      isInitialized.current = true;
-      const localStorageProfile = getLocalStorageProfile();
-
-      if (localStorageProfile || hasSession)
-        handleSubmit({
-          first_name: localStorageProfile?.first_name || "",
-          last_name: localStorageProfile?.last_name || "",
-        });
-    }
-  }, [handleSubmit, hasSession, setScreen]);
 
   return (
     <div className="user-subscription-wrapper">
