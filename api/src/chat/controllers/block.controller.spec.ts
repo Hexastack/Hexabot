@@ -9,6 +9,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -36,6 +37,7 @@ describe('BlockController', () => {
   let blockService: BlockService;
   let categoryService: CategoryService;
   let conversationRepository: ConversationRepository;
+  let settingService: SettingService;
   let category: Category;
   let block: Block;
   let blockToDelete: Block;
@@ -70,15 +72,32 @@ describe('BlockController', () => {
             },
           },
         },
+        {
+          provide: SettingService,
+          useValue: {
+            getSettings: jest.fn().mockResolvedValue({
+              chatbot_settings: {
+                global_fallback: true,
+                fallback_block: null,
+              },
+            }),
+          },
+        },
       ],
     });
-    [blockController, blockService, categoryService, conversationRepository] =
-      await getMocks([
-        BlockController,
-        BlockService,
-        CategoryService,
-        ConversationRepository,
-      ]);
+    [
+      blockController,
+      blockService,
+      categoryService,
+      conversationRepository,
+      settingService,
+    ] = await getMocks([
+      BlockController,
+      BlockService,
+      CategoryService,
+      ConversationRepository,
+      SettingService,
+    ]);
     category = (await categoryService.findOne({ label: 'default' }))!;
     block = (await blockService.findOne({ name: 'first' }))!;
     blockToDelete = (await blockService.findOne({ name: 'buttons' }))!;
@@ -92,6 +111,12 @@ describe('BlockController', () => {
 
   beforeEach(() => {
     (conversationRepository.model.exists as jest.Mock).mockResolvedValue(false);
+    (settingService.getSettings as jest.Mock).mockResolvedValue({
+      chatbot_settings: {
+        global_fallback: true,
+        fallback_block: null,
+      },
+    });
   });
 
   afterEach(jest.clearAllMocks);
@@ -233,6 +258,20 @@ describe('BlockController', () => {
         ConflictException,
       );
     });
+
+    it('should throw ConflictException when block is configured as global fallback in settings', async () => {
+      (settingService.getSettings as jest.Mock).mockResolvedValueOnce({
+        chatbot_settings: {
+          global_fallback: true,
+          fallback_block: block.id,
+        },
+      });
+
+      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
     it('should delete block', async () => {
       jest.spyOn(blockService, 'deleteOne');
       const result = await blockController.deleteOne(blockToDelete.id);
