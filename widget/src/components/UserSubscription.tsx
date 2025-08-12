@@ -9,14 +9,13 @@
 import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { getQuickReplies, useChat } from "../providers/ChatProvider";
+import { messagesPostProcess, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
 import {
-  Direction,
   ISubscriber,
   TMessage,
   TOutgoingMessageType,
@@ -68,33 +67,14 @@ const UserSubscription: React.FC = () => {
           last_name || lastName,
         );
         const { messages, profile } = body;
-        const quickReplies = getQuickReplies(body.messages.at(-1));
+        const { quickReplies, arrangedMessages, participantsList } =
+          messagesPostProcess(messages, participants, profile);
 
         setSuggestions(quickReplies);
+        setMessages(arrangedMessages);
+        setParticipants(participantsList);
 
         localStorage.setItem("profile", JSON.stringify(profile));
-        messages.forEach((message) => {
-          const direction =
-            message.author === profile.foreign_id ||
-            message.author === profile.id
-              ? Direction.sent
-              : Direction.received;
-
-          message.direction = direction;
-          if (message.direction === Direction.sent) {
-            message.read = true;
-            message.delivery = false;
-          }
-        });
-        setMessages(messages);
-        setParticipants([
-          participants[0],
-          {
-            id: profile.foreign_id,
-            foreign_id: profile.foreign_id,
-            name: `${profile.first_name} ${profile.last_name}`,
-          },
-        ]);
 
         if (messages.length === 0) {
           send({

@@ -36,8 +36,7 @@ export type ChannelSettings = {
   show_location: boolean;
   allowed_upload_types: string;
   greeting_message: string;
-  hasSession: boolean;
-  messages: TMessage[];
+  messages?: TMessage[];
   profile?: ISubscriber;
 };
 

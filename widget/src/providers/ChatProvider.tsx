@@ -48,6 +48,40 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
           } as ISuggestion),
       )
     : [];
+export const messagesPostProcess = (
+  messages: TMessage[],
+  participants: Participant[],
+  profile?: ISubscriber,
+) => {
+  const quickReplies = getQuickReplies(messages.at(-1));
+  const arrangedMessages = messages.map((message) => {
+    return {
+      ...message,
+      direction:
+        message.author === profile?.foreign_id || message.author === profile?.id
+          ? Direction.sent
+          : Direction.received,
+      read: message.direction === Direction.sent || message.read,
+      delivery: message.direction === Direction.sent || message.delivery,
+    } as TMessage;
+  });
+  const participantsList: Participant[] = profile
+    ? [
+        participants[0],
+        {
+          id: profile.foreign_id,
+          foreign_id: profile.foreign_id,
+          name: `${profile.first_name} ${profile.last_name}`,
+        },
+      ]
+    : [participants[0]];
+
+  return {
+    quickReplies,
+    arrangedMessages,
+    participantsList,
+  };
+};
 
 interface Participant {
   id: string;
@@ -159,7 +193,6 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
-  hasSession: boolean;
   profile?: ISubscriber;
 }
 
@@ -197,7 +230,6 @@ const defaultCtx: ChatContextType = {
   setFile: () => {},
   send: () => {},
   handleSubscription: () => {},
-  hasSession: false,
   profile: undefined,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
@@ -237,7 +269,6 @@ const ChatProvider: React.FC<{
   const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
-  const [hasSession, setHasSession] = useState(false);
   const [profile, setProfile] = useState<undefined | ISubscriber>();
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
@@ -334,34 +365,15 @@ const ChatProvider: React.FC<{
             queryParams,
           ).toString()}`,
         );
-        const quickReplies = getQuickReplies(body.messages.at(-1));
+        const { quickReplies, arrangedMessages, participantsList } =
+          messagesPostProcess(body.messages, participants, body.profile);
 
         setSuggestions(quickReplies);
+        setMessages(arrangedMessages);
+        setParticipants(participantsList);
 
         localStorage.setItem("profile", JSON.stringify(body.profile));
-        setMessages(
-          body.messages.map((message) => {
-            return {
-              ...message,
-              direction:
-                message.author === body.profile.foreign_id ||
-                message.author === body.profile.id
-                  ? Direction.sent
-                  : Direction.received,
-              read: message.direction === Direction.sent || message.read,
-              delivery:
-                message.direction === Direction.sent || message.delivery,
-            } as TMessage;
-          }),
-        );
-        setParticipants([
-          participants[0],
-          {
-            id: body.profile.foreign_id,
-            foreign_id: body.profile.foreign_id,
-            name: `${body.profile.first_name} ${body.profile.last_name}`,
-          },
-        ]);
+
         setConnectionState(3);
         setScreen("chat");
       } catch (e) {
@@ -405,42 +417,29 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
-  useSubscribe(
-    "settings",
-    ({ hasSession, profile, messages }: ChannelSettings) => {
-      setHasSession(hasSession);
-      setProfile(profile);
+  useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
+    setProfile(profile);
 
-      if (profile && messages.length === 0) {
-        handleSend({
+    if (profile && messages.length === 0) {
+      handleSend({
+        data: {
+          type: TOutgoingMessageType.postback,
           data: {
-            type: TOutgoingMessageType.postback,
-            data: {
-              text: t("messages.get_started"),
-              payload: "GET_STARTED",
-            },
-            author: profile.foreign_id,
+            text: t("messages.get_started"),
+            payload: "GET_STARTED",
           },
-        });
-      }
-
-      messages.forEach((message) => {
-        const direction =
-          message.author === profile?.foreign_id ||
-          message.author === profile?.id
-            ? Direction.sent
-            : Direction.received;
-
-        message.direction = direction;
-        if (message.direction === Direction.sent) {
-          message.read = true;
-          message.delivery = false;
-        }
+          author: profile.foreign_id,
+        },
       });
+    }
 
-      setMessages(messages);
-    },
-  );
+    const { quickReplies, arrangedMessages, participantsList } =
+      messagesPostProcess(messages, participants, profile);
+
+    setSuggestions(quickReplies);
+    setMessages(arrangedMessages);
+    setParticipants(participantsList);
+  });
 
   useEffect(() => {
     if (screen === "chat" && connectionState === ConnectionState.connected) {
@@ -517,7 +516,6 @@ const ChatProvider: React.FC<{
     message,
     setMessage,
     handleSubscription,
-    hasSession,
     profile,
   };
 
