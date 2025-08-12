@@ -74,8 +74,6 @@ const UserSubscription: React.FC = () => {
         setMessages(arrangedMessages);
         setParticipants(participantsList);
 
-        localStorage.setItem("profile", JSON.stringify(profile));
-
         if (messages.length === 0) {
           send({
             data: {

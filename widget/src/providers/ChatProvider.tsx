@@ -372,8 +372,6 @@ const ChatProvider: React.FC<{
         setMessages(arrangedMessages);
         setParticipants(participantsList);
 
-        localStorage.setItem("profile", JSON.stringify(body.profile));
-
         setConnectionState(3);
         setScreen("chat");
       } catch (e) {
@@ -446,28 +444,15 @@ const ChatProvider: React.FC<{
       handleSubscription();
     }
 
-    // When user loses internet connection, on reconnect
-    // we will need to subscribe him again (join the io room)
-    const reSubscribe = () => {
-      const item = localStorage.getItem("profile");
-
-      if (item) {
-        const profile = JSON.parse(item) as ISubscriber;
-
-        handleSubscription(profile.first_name, profile.last_name);
-      }
-    };
     const endConnection = () => {
       setConnectionState(0);
     };
 
-    socketCtx.socket.io.on("reconnect", reSubscribe);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
-      socketCtx.socket.io.off("reconnect", reSubscribe);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
       socketCtx.socket.io.off("reconnect_failed", endConnection);
