@@ -21,7 +21,6 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
-import { LoggerService } from './logger/logger.service';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
@@ -90,13 +89,6 @@ async function bootstrap() {
     await redisIoAdapter.connectToRedis();
     app.useWebSocketAdapter(redisIoAdapter);
   }
-
-  process.on('uncaughtException', async (error) => {
-    if (error.stack?.toLowerCase().includes('smtp')) {
-      const logger = await app.resolve(LoggerService);
-      logger.error('SMTP error', error.stack);
-    } else throw error;
-  });
 
   if (!isProduction) {
     await seedDatabase(app);
