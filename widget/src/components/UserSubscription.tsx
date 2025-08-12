@@ -27,7 +27,7 @@ const UserSubscription: React.FC = () => {
   const config = useConfig();
   const { t } = useTranslation();
   const { colors } = useColors();
-  const { socket } = useSocket();
+  const { socket, resetSocket } = useSocket();
   const settings = useSettings();
   const { setScreen } = useWidget();
   const {
@@ -90,9 +90,15 @@ const UserSubscription: React.FC = () => {
         }
         setConnectionState(ConnectionState.connected);
         setScreen("chat");
-      } catch (e) {
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message.startsWith("Request failed with status code 401")
+        ) {
+          await resetSocket();
+        }
         // eslint-disable-next-line no-console
-        console.error("Unable to subscribe user", e);
+        console.error("Unable to subscribe user", error);
         setScreen("prechat");
         if (connectionState === ConnectionState.tryingToConnect) {
           setConnectionState(ConnectionState.disconnected);

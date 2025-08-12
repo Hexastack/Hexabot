@@ -6,11 +6,22 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { createContext, ReactNode, useEffect, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import { useConfig } from "./ConfigProvider";
 
-const CookieContext = createContext({});
+interface ICookieContext {
+  getCookie: () => Promise<void>;
+}
+const CookieContext = createContext<ICookieContext>({
+  getCookie: async () => {},
+});
 
 export const CookieProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -40,5 +51,19 @@ export const CookieProvider: React.FC<{ children: ReactNode }> = ({
     return null;
   }
 
-  return <CookieContext.Provider value={{}}>{children}</CookieContext.Provider>;
+  return (
+    <CookieContext.Provider value={{ getCookie }}>
+      {children}
+    </CookieContext.Provider>
+  );
+};
+
+export const useCookie = () => {
+  const context = useContext(CookieContext);
+
+  if (!context) {
+    throw new Error("useCookie must be used within a CookieContext");
+  }
+
+  return context;
 };

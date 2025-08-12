@@ -346,6 +346,12 @@ const ChatProvider: React.FC<{
 
       handleNewIOMessage(sentMessage.body);
     } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.startsWith("Request failed with status code 401")
+      ) {
+        await socketCtx.resetSocket();
+      }
       // eslint-disable-next-line no-console
       console.error("Unable to subscribe user", error);
     }

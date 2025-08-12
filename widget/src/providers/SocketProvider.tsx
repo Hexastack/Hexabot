@@ -17,17 +17,21 @@ import {
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
+import { useCookie } from "./CookieProvider";
 
 interface socketContext {
   socket: SocketIoClient;
+  resetSocket: () => Promise<void>;
 }
 
 const socketContext = createContext<socketContext>({
   socket: {} as SocketIoClient,
+  resetSocket: async () => {},
 });
 
 export const SocketProvider = (props: PropsWithChildren) => {
   const config = useConfig();
+  const { getCookie } = useCookie();
   const socketRef = useRef(
     getSocketIoClient(config, {
       onConnect: () => {
@@ -46,9 +50,14 @@ export const SocketProvider = (props: PropsWithChildren) => {
       },
     }),
   );
+  const resetSocket = async () => {
+    socketRef.current.disconnect();
+    await getCookie();
+    socketRef.current.connect();
+  };
 
   return (
-    <socketContext.Provider value={{ socket: socketRef.current }}>
+    <socketContext.Provider value={{ socket: socketRef.current, resetSocket }}>
       {props.children}
     </socketContext.Provider>
   );
