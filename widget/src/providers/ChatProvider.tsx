@@ -445,15 +445,22 @@ const ChatProvider: React.FC<{
       handleSubscription();
     }
 
+    const startConnection = () => {
+      setConnectionState(ConnectionState.notConnectedYet);
+    };
     const endConnection = () => {
       setConnectionState(ConnectionState.disconnected);
     };
 
+    socketCtx.socket.io.on("open", startConnection);
+    socketCtx.socket.io.on("reconnect", startConnection);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
+      socketCtx.socket.io.off("open", startConnection);
+      socketCtx.socket.io.off("reconnect", startConnection);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
       socketCtx.socket.io.off("reconnect_failed", endConnection);

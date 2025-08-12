@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren, useMemo } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useWidget } from "../providers/WidgetProvider";
@@ -33,25 +33,37 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   PreChat,
   PostChat,
 }) => {
-  const { connectionState } = useChat();
+  const { connectionState, messages } = useChat();
   const { screen, isOpen } = useWidget();
+  const isPreChatView =
+    // partial update wrap up
+    // screen === "prechat" &&
+    PreChat &&
+    messages.length === 0 &&
+    (connectionState === ConnectionState.notConnectedYet ||
+      connectionState === ConnectionState.tryingToConnect);
+  const isChatView =
+    !isPreChatView &&
+    // partial update wrap up
+    // ["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
+    connectionState !== ConnectionState.disconnected;
+  const ChatView = useMemo(
+    () => (
+      <>
+        <Messages Avatar={CustomAvatar} />
+        <UserInput />
+      </>
+    ),
+    [CustomAvatar],
+  );
 
   return (
     <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
       <ChatHeader>{CustomHeader && <CustomHeader />}</ChatHeader>
-      {connectionState}
-      {screen === "prechat" &&
-        PreChat &&
-        (connectionState === ConnectionState.notConnectedYet ||
-          connectionState == ConnectionState.tryingToConnect) && <PreChat />}
-      {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
-        connectionState === ConnectionState.connected && (
-          <Messages Avatar={CustomAvatar} />
-        )}
+      {isPreChatView && <PreChat />}
+      {isChatView && ChatView}
       {connectionState === ConnectionState.disconnected && <ConnectionLost />}
       {screen === "postchat" && PostChat && <PostChat />}
-      {["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
-        connectionState === ConnectionState.connected && <UserInput />}
       {screen === "webview" && <Webview />}
     </div>
   );

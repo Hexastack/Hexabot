@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { PropsWithChildren } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
@@ -16,6 +16,7 @@ import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
 import ChatWindow from "./ChatWindow";
 import CloseIcon from "./icons/CloseIcon";
 import OpenIcon from "./icons/OpenIcon";
+
 import "./Launcher.scss";
 
 type LauncherProps = PropsWithChildren<{
@@ -42,13 +43,6 @@ const Launcher: React.FC<LauncherProps> = ({
   };
 
   useSocketLifecycle();
-
-  useEffect(() => {
-    if (chat.messages.length > 0) {
-      widget.setScreen("chat");
-      chat.setConnectionState(3);
-    }
-  }, [chat, chat.messages.length, widget]);
 
   return (
     <div>
