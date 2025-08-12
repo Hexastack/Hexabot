@@ -135,8 +135,6 @@ describe('WebsocketGateway', () => {
       },
       passport: { user: { id: 'admin-1' } },
     } as unknown as Session;
-    // @ts-expect-error to be ignored
-    admin1ServerSocket!.request.sessionID = 'admin-1';
 
     await gateway.joinNotificationSockets(
       new SocketRequest(admin1ServerSocket!, 'GET', {
@@ -296,7 +294,7 @@ describe('WebsocketGateway', () => {
       gateway.joinNotificationSockets(
         new SocketRequest(
           {
-            request: { session: {}, sessionID: 'none' },
+            request: { session: {} },
             handshake: { query: {}, headers: {} },
             data: {},
           } as any,

@@ -114,7 +114,7 @@ type TNorField<T> = {
 
 export type TSearchFilterValue<T> = TOrField<T> | TAndField<T> | TNorField<T>;
 
-type TOperator = 'eq' | 'iLike' | 'neq';
+type TOperator = 'eq' | 'iLike' | 'neq' | 'in';
 type TContext = 'and' | 'or';
 
 export type TTransformFieldProps = {

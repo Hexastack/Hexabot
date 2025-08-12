@@ -73,6 +73,14 @@ export class SocketEventDispatcherService implements OnModuleInit {
       }
 
       const [_, handler] = foundHandler;
+
+      await new Promise<void>(async (resolve, reject) => {
+        req.session.reload((_err) => {
+          if (_err) reject();
+          resolve();
+        });
+      });
+
       const response = await handler(req, res);
 
       // Update session object (similar to what is done in express-session)

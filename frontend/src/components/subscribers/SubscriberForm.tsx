@@ -11,14 +11,13 @@ import { FC, Fragment, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
-import AutoCompleteEntitySelect from "@/app-components/inputs/AutoCompleteEntitySelect";
+import AutoCompleteEntityDistinctSelect from "@/app-components/inputs/AutoCompleteEntityDistinctSelect";
 import { Input } from "@/app-components/inputs/Input";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format } from "@/services/types";
+import { EntityType } from "@/services/types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
-import { ILabel } from "@/types/label.types";
 import { ISubscriber, ISubscriberAttributes } from "@/types/subscriber.types";
 
 const getFullName = (subscriber: ISubscriber | null) =>
@@ -83,15 +82,9 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                     const { onChange, ...rest } = field;
 
                     return (
-                      <AutoCompleteEntitySelect<ILabel>
-                        autoFocus
-                        searchFields={["name"]}
+                      <AutoCompleteEntityDistinctSelect
                         entity={EntityType.LABEL}
-                        format={Format.BASIC}
-                        labelKey="name"
-                        label={t("label.labels")}
-                        multiple
-                        {...field}
+                        subEntity={EntityType.LABEL_GROUP}
                         error={!!errors.labels}
                         helperText={
                           errors.labels ? errors.labels.message : null
@@ -99,6 +92,11 @@ export const SubscriberForm: FC<ComponentFormProps<ISubscriber>> = ({
                         onChange={(_e, selected) =>
                           onChange(selected.map(({ id }) => id))
                         }
+                        label={t("label.labels")}
+                        labelKey="name"
+                        sortKey="group"
+                        groupKey="name"
+                        defaultGroupTitle={t("title.default_group")}
                         {...rest}
                       />
                     );

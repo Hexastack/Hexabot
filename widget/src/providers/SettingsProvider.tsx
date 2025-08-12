@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -16,6 +16,7 @@ import React, {
 
 import { useTranslation } from "../hooks/useTranslation";
 import { IMenuNode } from "../types/menu.type";
+import { ISubscriber, TMessage } from "../types/message.types";
 import { SessionStorage } from "../utils/sessionStorage";
 
 import { useSubscribe } from "./SocketProvider";
@@ -35,7 +36,8 @@ export type ChannelSettings = {
   show_location: boolean;
   allowed_upload_types: string;
   greeting_message: string;
-  hasSession: boolean;
+  messages?: TMessage[];
+  profile?: ISubscriber;
 };
 
 type ChatSettings = {

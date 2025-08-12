@@ -344,7 +344,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
     }
     if (
       adminRoleId &&
-      req.session?.passport?.user?.id === id &&
+      req.session.passport?.user?.id === id &&
       oldRoles?.includes(adminRoleId) &&
       !newRoles?.includes(adminRoleId)
     ) {
