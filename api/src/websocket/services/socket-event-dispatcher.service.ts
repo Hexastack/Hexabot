@@ -74,7 +74,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       const [_, handler] = foundHandler;
 
-      await new Promise<HttpStatus>(async (resolve, reject) => {
+      await new Promise<HttpStatus | Error>(async (resolve, reject) => {
         req.session.reload((_err) => {
           if (
             _err instanceof Error &&
