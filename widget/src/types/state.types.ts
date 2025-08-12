@@ -28,4 +28,8 @@ export type ChatScreen =
   // Screen shows up when user clicks on a url button where there is a webview
   | "webview"
   // Screen that shows the messages and text input
-  | "chat";
+  | "chat"
+  // Screen that shows when trying to connect
+  | "loading"
+  // Screen that shows when connection is closed
+  | "disconnect";

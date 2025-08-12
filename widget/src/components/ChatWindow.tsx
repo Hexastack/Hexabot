@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, { PropsWithChildren, useMemo } from "react";
+import React, { PropsWithChildren, useEffect, useMemo } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useWidget } from "../providers/WidgetProvider";
@@ -14,6 +14,7 @@ import { ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
+import { LoadingComponent } from "./LoadingComponent";
 import Messages from "./Messages";
 import UserInput from "./UserInput";
 import Webview from "./Webview";
@@ -34,19 +35,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   PostChat,
 }) => {
   const { connectionState, messages } = useChat();
-  const { screen, isOpen } = useWidget();
-  const isPreChatView =
-    // partial update wrap up
-    // screen === "prechat" &&
-    PreChat &&
-    messages.length === 0 &&
-    (connectionState === ConnectionState.notConnectedYet ||
-      connectionState === ConnectionState.tryingToConnect);
-  const isChatView =
-    !isPreChatView &&
-    // partial update wrap up
-    // ["prechat", "postchat", "webview"].indexOf(screen) === -1 &&
-    connectionState !== ConnectionState.disconnected;
+  const { screen, isOpen, setScreen } = useWidget();
   const ChatView = useMemo(
     () => (
       <>
@@ -57,14 +46,45 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     [CustomAvatar],
   );
 
+  useEffect(() => {
+    if (
+      messages.length === 0 &&
+      (connectionState === ConnectionState.notConnectedYet ||
+        connectionState === ConnectionState.tryingToConnect)
+    ) {
+      setScreen("prechat");
+    } else if (connectionState === ConnectionState.tryingToConnect) {
+      setScreen("loading");
+    } else if (connectionState !== ConnectionState.disconnected) {
+      setScreen("chat");
+    } else {
+      setScreen("disconnect");
+    }
+  }, [messages.length, connectionState, setScreen]);
+
+  const getCurrentScreen = () => {
+    switch (screen) {
+      case "prechat":
+        return PreChat && <PreChat />;
+      case "chat":
+        return ChatView;
+      case "postchat":
+        return PostChat && <PostChat />;
+      case "webview":
+        return <Webview />;
+      case "loading":
+        return <LoadingComponent />;
+      case "disconnect":
+        return <ConnectionLost />;
+      default:
+        return PreChat && <PreChat />;
+    }
+  };
+
   return (
     <div className={`sc-chat-window ${isOpen ? "opened" : "closed"}`}>
       <ChatHeader>{CustomHeader && <CustomHeader />}</ChatHeader>
-      {isPreChatView && <PreChat />}
-      {isChatView && ChatView}
-      {connectionState === ConnectionState.disconnected && <ConnectionLost />}
-      {screen === "postchat" && PostChat && <PostChat />}
-      {screen === "webview" && <Webview />}
+      {getCurrentScreen()}
     </div>
   );
 };

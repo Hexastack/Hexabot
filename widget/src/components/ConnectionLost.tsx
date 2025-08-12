@@ -15,15 +15,15 @@ import { ConnectionState } from "../types/state.types";
 
 import "./ConnectionLost.scss";
 import ConnectionIcon from "./icons/ConnectionIcon";
-import LoadingIcon from "./icons/LoadingIcon";
+import { LoadingComponent } from "./LoadingComponent";
 
 const ConnectionLost: React.FC = () => {
   const { t } = useTranslation();
   const { connectionState, setConnectionState } = useChat();
   const { colors } = useColors();
   const handleClick = () => {
-    if (connectionState === ConnectionState.notConnectedYet) {
-      setConnectionState(ConnectionState.wantToConnect);
+    if (connectionState === ConnectionState.disconnected) {
+      setConnectionState(ConnectionState.tryingToConnect);
     }
   };
   const loading = connectionState > ConnectionState.notConnectedYet;
@@ -34,10 +34,7 @@ const ConnectionLost: React.FC = () => {
       style={{ backgroundColor: colors.messageList.bg }}
     >
       {loading ? (
-        <div className="sc-chat--attempt-reconnect">
-          <h3>{t("messages.attempting_reconnect")}</h3>
-          <LoadingIcon color={colors.button.text} />
-        </div>
+        <LoadingComponent />
       ) : (
         <div className="sc-chat--disconnected-icon">
           <ConnectionIcon />
