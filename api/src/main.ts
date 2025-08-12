@@ -8,6 +8,7 @@
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import bodyParser from 'body-parser';
 import moduleAlias from 'module-alias';
 import { resolveDynamicProviders } from 'nestjs-dynamic-providers';
@@ -32,12 +33,15 @@ async function bootstrap() {
   const isProduction = config.env.toLowerCase().includes('prod');
 
   await resolveDynamicProviders();
-  const app = await NestFactory.create(HexabotModule, {
+  const app = await NestFactory.create<NestExpressApplication>(HexabotModule, {
     bodyParser: false,
   });
 
   // Set the global app instance
   AppInstance.setApp(app);
+
+  // Disable Express "X-Powered-By" header for all environments
+  app.getHttpAdapter().getInstance().disable('x-powered-by');
 
   const rawBodyBuffer = (req, res, buf, encoding) => {
     if (buf?.length) {
