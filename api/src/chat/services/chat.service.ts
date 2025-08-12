@@ -297,6 +297,8 @@ export class ChatService {
         await event.preprocess();
       }
 
+      await this.enrichEventWithNLU(event);
+
       // Trigger message received event
       this.eventEmitter.emit('hook:chatbot:received', event);
 
@@ -304,8 +306,6 @@ export class ChatService {
         this.logger.debug('Conversation taken over', subscriber.assignedTo);
         return;
       }
-
-      await this.enrichEventWithNLU(event);
 
       this.botService.handleMessageEvent(event);
     } catch (err) {
