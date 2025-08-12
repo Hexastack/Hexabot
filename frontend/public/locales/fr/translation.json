@@ -126,9 +126,7 @@
     "video_error": "Vidéo introuvable",
     "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement",
     "weight_positive_number_error": "Le poids doit être un nombre strictement positif",
-    "weight_required_error": "Le poids est requis ou bien invalide",
-    "block_delete_global_fallback_conflict": "Impossible de supprimer le bloc : il est configuré comme bloc de secours global dans les paramètres.",
-    "block_delete_in_use_conflict": "Impossible de supprimer le bloc : il est actuellement utilisé par une conversation active."
+    "weight_required_error": "Le poids est requis ou bien invalide"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

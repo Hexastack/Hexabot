@@ -308,12 +308,9 @@ export class BlockRepository extends BaseRepository<
         ],
       });
       if (inUse) {
-        throw new ConflictException({
-          statusCode: 409,
-          message:
-            'Cannot delete block: it is currently used by an active conversation.',
-          error: 'BlockInUse',
-        });
+        throw new ConflictException(
+          'Cannot delete block: it is currently used by an active conversation.',
+        );
       }
 
       // Prevent deleting a block that is configured as the global fallback in settings
@@ -326,12 +323,9 @@ export class BlockRepository extends BaseRepository<
         fallbackBlockId &&
         idsToDelete.includes(fallbackBlockId)
       ) {
-        throw new ConflictException({
-          statusCode: 409,
-          message:
-            'Cannot delete block: it is configured as the global fallback block in settings.',
-          error: 'BlockIsGlobalFallback',
-        });
+        throw new ConflictException(
+          'Cannot delete block: it is configured as the global fallback block in settings.',
+        );
       }
 
       // Remove from all other blocks

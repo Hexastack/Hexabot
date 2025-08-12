@@ -126,9 +126,7 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a strictly positive number",
-    "block_delete_global_fallback_conflict": "Cannot delete block: it is configured as the global fallback block in settings.",
-    "block_delete_in_use_conflict": "Cannot delete block: it is currently used by an active conversation."
+    "weight_positive_number_error": "Weight must be a strictly positive number"
   },
   "menu": {
     "terms": "Terms of Use",
