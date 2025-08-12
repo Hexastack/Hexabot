@@ -74,10 +74,17 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       const [_, handler] = foundHandler;
 
-      await new Promise<void>(async (resolve, reject) => {
+      await new Promise<HttpStatus>(async (resolve, reject) => {
         req.session.reload((_err) => {
-          if (_err) reject();
-          resolve();
+          if (
+            _err instanceof Error &&
+            _err.message === 'failed to load session'
+          ) {
+            reject(new Error(HttpStatus.UNAUTHORIZED.toString()));
+          }
+          if (_err)
+            reject(new Error(HttpStatus.INTERNAL_SERVER_ERROR.toString()));
+          resolve(HttpStatus.OK);
         });
       });
 
@@ -136,6 +143,10 @@ export class SocketEventDispatcherService implements OnModuleInit {
     if (error instanceof HttpException) {
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
+    } else if (error.message === HttpStatus.UNAUTHORIZED.toString()) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .send({ message: 'Expired session' });
     } else {
       // Handle generic errors
       return res
