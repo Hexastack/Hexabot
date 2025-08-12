@@ -48,7 +48,7 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
           } as ISuggestion),
       )
     : [];
-export const messagesPostProcess = (
+export const preprocessMessages = (
   messages: TMessage[],
   participants: Participant[],
   profile?: ISubscriber,
@@ -366,7 +366,7 @@ const ChatProvider: React.FC<{
           ).toString()}`,
         );
         const { quickReplies, arrangedMessages, participantsList } =
-          messagesPostProcess(body.messages, participants, body.profile);
+          preprocessMessages(body.messages, participants, body.profile);
 
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
@@ -434,7 +434,7 @@ const ChatProvider: React.FC<{
     }
 
     const { quickReplies, arrangedMessages, participantsList } =
-      messagesPostProcess(messages, participants, profile);
+      preprocessMessages(messages, participants, profile);
 
     setSuggestions(quickReplies);
     setMessages(arrangedMessages);

@@ -9,7 +9,7 @@
 import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { messagesPostProcess, useChat } from "../providers/ChatProvider";
+import { preprocessMessages, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
@@ -68,7 +68,7 @@ const UserSubscription: React.FC = () => {
         );
         const { messages, profile } = body;
         const { quickReplies, arrangedMessages, participantsList } =
-          messagesPostProcess(messages, participants, profile);
+          preprocessMessages(messages, participants, profile);
 
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
