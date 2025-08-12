@@ -11,6 +11,7 @@ import React from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
+import { ConnectionState } from "../types/state.types";
 
 import "./ConnectionLost.scss";
 import ConnectionIcon from "./icons/ConnectionIcon";
@@ -21,11 +22,11 @@ const ConnectionLost: React.FC = () => {
   const { connectionState, setConnectionState } = useChat();
   const { colors } = useColors();
   const handleClick = () => {
-    if (connectionState === 0) {
-      setConnectionState(1);
+    if (connectionState === ConnectionState.notConnectedYet) {
+      setConnectionState(ConnectionState.wantToConnect);
     }
   };
-  const loading = connectionState > 0;
+  const loading = connectionState > ConnectionState.notConnectedYet;
 
   return (
     <div

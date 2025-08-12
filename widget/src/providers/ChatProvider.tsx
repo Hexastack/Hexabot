@@ -316,7 +316,7 @@ const ChatProvider: React.FC<{
   const handleSubscription = useCallback(
     async (firstName?: string, lastName?: string) => {
       try {
-        setConnectionState(2);
+        setConnectionState(ConnectionState.tryingToConnect);
         const queryParams: Record<string, string> =
           firstName && lastName
             ? { first_name: firstName, last_name: lastName }
@@ -357,13 +357,13 @@ const ChatProvider: React.FC<{
             name: `${body.profile.first_name} ${body.profile.last_name}`,
           },
         ]);
-        setConnectionState(3);
+        setConnectionState(ConnectionState.connected);
         setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
         setScreen("prechat");
-        setConnectionState(0);
+        setConnectionState(ConnectionState.notConnectedYet);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -419,11 +419,11 @@ const ChatProvider: React.FC<{
 
         handleSubscription(profile.first_name, profile.last_name);
       } else {
-        setConnectionState(0);
+        setConnectionState(ConnectionState.notConnectedYet);
       }
     };
     const endConnection = () => {
-      setConnectionState(-1);
+      setConnectionState(ConnectionState.disconnected);
     };
 
     socketCtx.socket.io.on("reconnect", reSubscribe);

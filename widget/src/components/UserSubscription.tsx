@@ -135,7 +135,7 @@ const UserSubscription: React.FC = () => {
             },
           });
         }
-        setConnectionState(3);
+        setConnectionState(ConnectionState.connected);
         setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
