@@ -130,17 +130,20 @@ export default abstract class BaseWebChannelHandler<
 
       try {
         const menu = await this.menuService.getTree();
-        const hasSession = !!client.request.session.web?.profile;
         const profile = client.request.session.web?.profile;
-        const messages = profile
-          ? await this.messageService.findHistoryUntilDate(profile)
-          : [];
-        const formattedMessages = await this.formatMessages(messages.reverse());
+        let messages: Web.Message[] | undefined;
+
+        if (profile?.foreign_id) {
+          await this.joinForeignIdRoom(client, profile.foreign_id);
+          const messagesHistory =
+            await this.messageService.findHistoryUntilDate(profile);
+          messages = await this.formatMessages(messagesHistory.reverse());
+        }
+
         client.emit('settings', {
           menu,
-          hasSession,
           profile,
-          messages: formattedMessages,
+          messages,
           ...settings,
         });
       } catch (err) {
@@ -563,6 +566,14 @@ export default abstract class BaseWebChannelHandler<
       }
     };
     fetchMessages(req, res);
+  }
+
+  private async joinForeignIdRoom(socket: Socket, foreign_id: string) {
+    try {
+      await socket.join(foreign_id);
+    } catch (err) {
+      this.logger.error('Unable to subscribe via websocket', err);
+    }
   }
 
   /**
