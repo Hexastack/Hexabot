@@ -11,7 +11,7 @@ import React, { PropsWithChildren, useEffect, useMemo } from "react";
 import { useChat } from "../providers/ChatProvider";
 import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import { ConnectionState } from "../types/state.types";
+import { ChatScreen, ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
@@ -58,24 +58,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       if (screen == "chat") {
         resetSocket();
       }
-      setScreen("prechat");
+      setScreen(ChatScreen.PRE_CHAT);
     } else if (connectionState === ConnectionState.tryingToConnect) {
-      setScreen("loading");
+      setScreen(ChatScreen.LOADING);
     } else if (connectionState !== ConnectionState.disconnected) {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     } else {
-      setScreen("disconnect");
+      setScreen(ChatScreen.DISCONNECT);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, connectionState, setScreen, profile, resetSocket]);
 
   const getCurrentScreen = () => {
     switch (screen) {
-      case "prechat":
+      case "preChat":
         return PreChat && <PreChat />;
       case "chat":
         return ChatView;
-      case "postchat":
+      case "postChat":
         return PostChat && <PostChat />;
       case "webview":
         return <Webview />;

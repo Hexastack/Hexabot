@@ -20,7 +20,7 @@ import {
   TMessage,
   TOutgoingMessageType,
 } from "../types/message.types";
-import { ConnectionState } from "../types/state.types";
+import { ChatScreen, ConnectionState } from "../types/state.types";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
@@ -89,7 +89,7 @@ const UserSubscription: React.FC = () => {
           });
         }
         setConnectionState(ConnectionState.connected);
-        setScreen("chat");
+        setScreen(ChatScreen.CHAT);
       } catch (error) {
         if (
           error instanceof Error &&
@@ -99,7 +99,7 @@ const UserSubscription: React.FC = () => {
         }
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", error);
-        setScreen("prechat");
+        setScreen(ChatScreen.PRE_CHAT);
         if (connectionState === ConnectionState.tryingToConnect) {
           setConnectionState(ConnectionState.disconnected);
         } else {

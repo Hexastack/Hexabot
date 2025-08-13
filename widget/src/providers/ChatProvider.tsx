@@ -30,7 +30,11 @@ import {
   TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
-import { ConnectionState, OutgoingMessageState } from "../types/state.types";
+import {
+  ChatScreen,
+  ConnectionState,
+  OutgoingMessageState,
+} from "../types/state.types";
 
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
@@ -380,11 +384,11 @@ const ChatProvider: React.FC<{
         setParticipants(participantsList);
 
         setConnectionState(3);
-        setScreen("chat");
+        setScreen(ChatScreen.CHAT);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
-        setScreen("prechat");
+        setScreen(ChatScreen.PRE_CHAT);
         setConnectionState(ConnectionState.notConnectedYet);
       }
     },
@@ -406,9 +410,9 @@ const ChatProvider: React.FC<{
   const updateWebviewUrl = (url: string) => {
     if (url) {
       setWebviewUrl(url);
-      setScreen("webview");
+      setScreen(ChatScreen.WEBVIEW);
     } else {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     }
   };
 
