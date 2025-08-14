@@ -48,7 +48,8 @@ const Launcher: React.FC<LauncherProps> = ({
       widget.setScreen("chat");
       chat.setConnectionState(3);
     }
-  }, [chat, chat.messages.length, widget]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chat.messages.length]);
 
   return (
     <div>
