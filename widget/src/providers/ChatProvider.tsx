@@ -54,6 +54,7 @@ export const preprocessMessages = (
   profile?: ISubscriber,
 ) => {
   const quickReplies = getQuickReplies(messages.at(-1));
+  const arrangedMessages = messages.map((message) => {
     const direction =
       message.author === profile?.foreign_id || message.author === profile?.id
         ? Direction.sent
