@@ -247,7 +247,7 @@ const ChatProvider: React.FC<{
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
   const config = useConfig();
   const settings = useSettings();
-  const { screen, setScreen } = useWidget();
+  const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
   const { t } = useTranslation();
@@ -425,7 +425,7 @@ const ChatProvider: React.FC<{
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (profile && messages.length === 0) {
+    if (config.channel === "web-channel" && profile && messages.length === 0) {
       handleSend({
         data: {
           type: TOutgoingMessageType.postback,
@@ -436,6 +436,8 @@ const ChatProvider: React.FC<{
           author: profile.foreign_id,
         },
       });
+    } else if (config.channel === "console-channel" && !profile) {
+      handleSubscription();
     }
 
     const { quickReplies, arrangedMessages, participantsList } =
@@ -447,10 +449,6 @@ const ChatProvider: React.FC<{
   });
 
   useEffect(() => {
-    if (screen === "chat" && connectionState === ConnectionState.connected) {
-      handleSubscription();
-    }
-
     const startConnection = () => {
       setConnectionState(ConnectionState.notConnectedYet);
     };
