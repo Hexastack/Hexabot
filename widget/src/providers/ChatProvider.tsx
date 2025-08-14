@@ -55,14 +55,16 @@ export const preprocessMessages = (
 ) => {
   const quickReplies = getQuickReplies(messages.at(-1));
   const arrangedMessages = messages.map((message) => {
+    const direction =
+      message.author === profile?.foreign_id || message.author === profile?.id
+        ? Direction.sent
+        : Direction.received;
+
     return {
       ...message,
-      direction:
-        message.author === profile?.foreign_id || message.author === profile?.id
-          ? Direction.sent
-          : Direction.received,
-      read: message.direction === Direction.sent || message.read,
-      delivery: message.direction === Direction.sent || message.delivery,
+      direction,
+      read: direction === Direction.sent || message.read,
+      delivery: direction === Direction.sent || message.delivery,
     } as TMessage;
   });
   const participantsList: Participant[] = profile
