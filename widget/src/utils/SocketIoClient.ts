@@ -60,8 +60,8 @@ export class SocketIoClient {
     apiUrl: string,
     socketConfig: SocketIoClientConfig,
     handlers: SocketIoEventHandlers,
-    readonly resInterceptor?: <T>(
-      res: IOIncomingMessage<T>,
+    readonly responseInterceptor?: <T>(
+      response: IOIncomingMessage<T>,
     ) => Promise<IOIncomingMessage<T>>,
   ) {
     this.config = {
@@ -154,8 +154,8 @@ export class SocketIoClient {
       options,
     );
 
-    if (this.resInterceptor) {
-      return await this.resInterceptor(response);
+    if (this.responseInterceptor) {
+      return await this.responseInterceptor(response);
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -211,7 +211,7 @@ export const getSocketIoClient = (
   config: Config,
   handlers: SocketIoEventHandlers,
   responseInterceptor?: <T>(
-    res: IOIncomingMessage<T>,
+    response: IOIncomingMessage<T>,
   ) => Promise<IOIncomingMessage<T>>,
 ) => {
   if (!socketIoClient) {

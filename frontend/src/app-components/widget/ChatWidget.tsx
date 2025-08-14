@@ -25,7 +25,7 @@ const SETTING_TYPE = "console_channel" as const;
 export const ChatWidget = () => {
   const { pathname } = useRouter();
   const { apiUrl } = useConfig();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
   const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
   const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
@@ -56,6 +56,9 @@ export const ChatWidget = () => {
             }
           />
         )}
+        logout={async () => {
+          logout();
+        }}
       />
     </Box>
   ) : null;

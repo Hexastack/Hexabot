@@ -81,11 +81,6 @@ export class SocketEventDispatcherService implements OnModuleInit {
           const isSessionExpired =
             _err instanceof Error && _err.message === 'failed to load session';
           if (isSessionExpired) {
-            if (req.query?.channel === 'console-channel') {
-              req.session.resetMaxAge();
-              resolve();
-            }
-
             reject(new UnauthorizedException());
           } else if (_err) reject(new InternalServerErrorException());
           resolve();

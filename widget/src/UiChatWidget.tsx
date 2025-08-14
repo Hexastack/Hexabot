@@ -19,6 +19,7 @@ import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
+import { IOIncomingMessage } from "./types/io-message.types";
 import { ChatScreen, ConnectionState } from "./types/state.types";
 import "./UiChatWidget.css";
 
@@ -29,17 +30,27 @@ type UiChatWidgetProps = PropsWithChildren<{
   PreChat?: React.FC;
   PostChat?: React.FC;
   config: Partial<Config>;
+  logout?: () => Promise<void>;
 }>;
 
 function UiChatWidget({
   CustomHeader,
   CustomAvatar,
   config,
+  logout,
 }: UiChatWidgetProps) {
+  const responseInterceptor = async <T,>(response: IOIncomingMessage<T>) => {
+    if (response.statusCode === 401) {
+      await logout?.();
+    }
+
+    return response;
+  };
+
   return (
     <ConfigProvider {...config}>
       <TranslationProvider>
-        <SocketProvider>
+        <SocketProvider responseInterceptor={responseInterceptor}>
           <SettingsProvider>
             <ColorProvider>
               <BroadcastChannelProvider channelName="main-channel">

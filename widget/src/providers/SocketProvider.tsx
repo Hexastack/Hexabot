@@ -30,15 +30,23 @@ const socketContext = createContext<socketContext>({
   resetSocket: async () => {},
 });
 
-export const SocketProvider = (props: PropsWithChildren) => {
+interface SocketProviderProps extends PropsWithChildren {
+  responseInterceptor?: <T>(
+    response: IOIncomingMessage<T>,
+  ) => Promise<IOIncomingMessage<T>>;
+}
+
+export const SocketProvider = (props: SocketProviderProps) => {
   const config = useConfig();
   const { getCookie } = useCookie();
-  const responseInterceptor = async <T,>(res: IOIncomingMessage<T>) => {
-    if (res?.statusCode === 401) {
+  const defaultResponseInterceptor = async <T,>(
+    response: IOIncomingMessage<T>,
+  ) => {
+    if (response.statusCode === 401) {
       await resetSocket();
     }
 
-    return res;
+    return response;
   };
   const socketRef = useRef(
     getSocketIoClient(
@@ -61,7 +69,7 @@ export const SocketProvider = (props: PropsWithChildren) => {
           console.info("Hexabot Live Chat : Disconnected WS.");
         },
       },
-      responseInterceptor,
+      props.responseInterceptor || defaultResponseInterceptor,
     ),
   );
   const resetSocket = async () => {
