@@ -338,7 +338,7 @@ const ChatProvider: React.FC<{
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      const sentMessage = await socketCtx.socket.post<TMessage>(
+      const response = await socketCtx.socket.post<TMessage>(
         `/webhook/${config.channel}/`,
         {
           data: {
@@ -348,14 +348,8 @@ const ChatProvider: React.FC<{
         },
       );
 
-      handleNewIOMessage(sentMessage.body);
+      handleNewIOMessage(response.body);
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.startsWith("Request failed with status code 401")
-      ) {
-        await socketCtx.resetSocket();
-      }
       // eslint-disable-next-line no-console
       console.error("Unable to subscribe user", error);
     }

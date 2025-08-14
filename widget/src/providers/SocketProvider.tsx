@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,6 +14,7 @@ import {
   useRef,
 } from "react";
 
+import { IOIncomingMessage } from "../types/io-message.types";
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
@@ -32,23 +33,36 @@ const socketContext = createContext<socketContext>({
 export const SocketProvider = (props: PropsWithChildren) => {
   const config = useConfig();
   const { getCookie } = useCookie();
+  const responseInterceptor = async <T,>(res: IOIncomingMessage<T>) => {
+    if (res?.statusCode === 401) {
+      await resetSocket();
+    }
+
+    return res;
+  };
   const socketRef = useRef(
-    getSocketIoClient(config, {
-      onConnect: () => {
-        // eslint-disable-next-line no-console
-        console.info(
-          "Hexabot Live Chat : Successfully established WS Connection!",
-        );
+    getSocketIoClient(
+      config,
+      {
+        onConnect: () => {
+          // eslint-disable-next-line no-console
+          console.info(
+            "Hexabot Live Chat : Successfully established WS Connection!",
+          );
+        },
+        onConnectError: () => {
+          // eslint-disable-next-line no-console
+          console.error(
+            "Hexabot Live Chat : Failed to establish WS Connection!",
+          );
+        },
+        onDisconnect: () => {
+          // eslint-disable-next-line no-console
+          console.info("Hexabot Live Chat : Disconnected WS.");
+        },
       },
-      onConnectError: () => {
-        // eslint-disable-next-line no-console
-        console.error("Hexabot Live Chat : Failed to establish WS Connection!");
-      },
-      onDisconnect: () => {
-        // eslint-disable-next-line no-console
-        console.info("Hexabot Live Chat : Disconnected WS.");
-      },
-    }),
+      responseInterceptor,
+    ),
   );
   const resetSocket = async () => {
     socketRef.current.disconnect();
