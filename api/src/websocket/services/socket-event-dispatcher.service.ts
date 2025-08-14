@@ -78,13 +78,16 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       await new Promise<Error | void>(async (resolve, reject) => {
         req.session.reload((_err) => {
-          if (
-            _err instanceof Error &&
-            _err.message === 'failed to load session'
-          ) {
+          const isSessionExpired =
+            _err instanceof Error && _err.message === 'failed to load session';
+          if (isSessionExpired) {
+            if (req.query?.channel === 'console-channel') {
+              req.session.resetMaxAge();
+              resolve();
+            }
+
             reject(new UnauthorizedException());
-          }
-          if (_err) reject(new InternalServerErrorException());
+          } else if (_err) reject(new InternalServerErrorException());
           resolve();
         });
       });
@@ -144,7 +147,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
     if (error instanceof HttpException) {
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
-    } else if (error.message === HttpStatus.UNAUTHORIZED.toString()) {
+    } else if (error instanceof UnauthorizedException) {
       return res
         .status(HttpStatus.UNAUTHORIZED)
         .send({ message: 'Expired session' });
