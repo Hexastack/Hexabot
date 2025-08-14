@@ -148,9 +148,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
     } else if (error instanceof UnauthorizedException) {
-      return res
-        .status(HttpStatus.UNAUTHORIZED)
-        .send({ message: 'Expired session' });
+      throw error;
     } else {
       // Handle generic errors
       return res
