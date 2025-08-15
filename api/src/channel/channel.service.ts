@@ -124,6 +124,23 @@ export class ChannelService {
     @SocketReq() req: SocketRequest,
     @SocketRes() res: SocketResponse,
   ) {
+    type SessionStatus = 'valid' | 'expired';
+    const sessionStatus = await new Promise<SessionStatus>(async (resolve) => {
+      getSessionStore().get(req.sessionID, async (err, session) => {
+        if (!session) {
+          return resolve('expired');
+        }
+
+        return resolve('valid');
+      });
+    });
+
+    if (sessionStatus === 'expired') {
+      return res.status(200).json({
+        success: false,
+      });
+    }
+
     this.logger.log('Channel notification (Web Socket) : ', req.method);
     const handler = this.getChannelHandler(WEB_CHANNEL_NAME);
     return await handler.handle(req, res);
