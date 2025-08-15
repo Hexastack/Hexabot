@@ -75,7 +75,6 @@ const UserSubscription: React.FC = () => {
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
         if (messages.length === 0) {
           send({
             data: {
@@ -88,17 +87,9 @@ const UserSubscription: React.FC = () => {
             },
           });
         }
-        setConnectionState(ConnectionState.connected);
-        setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
-        setScreen("prechat");
-        if (connectionState === ConnectionState.tryingToConnect) {
-          setConnectionState(ConnectionState.disconnected);
-        } else {
-          setConnectionState(ConnectionState.notConnectedYet);
-        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
