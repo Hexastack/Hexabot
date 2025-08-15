@@ -17,6 +17,7 @@ import React, {
 } from "react";
 
 import { useSubscribeBroadcastChannel } from "../hooks/useSubscribeBroadcastChannel";
+import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
@@ -26,6 +27,7 @@ import {
   QuickReplyType,
   TEvent,
   TMessage,
+  TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
 import { ConnectionState, OutgoingMessageState } from "../types/state.types";
@@ -46,6 +48,42 @@ export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
           } as ISuggestion),
       )
     : [];
+export const preprocessMessages = (
+  messages: TMessage[],
+  participants: Participant[],
+  profile?: ISubscriber,
+) => {
+  const quickReplies = getQuickReplies(messages.at(-1));
+  const arrangedMessages = messages.map((message) => {
+    const direction =
+      message.author === profile?.foreign_id || message.author === profile?.id
+        ? Direction.sent
+        : Direction.received;
+
+    return {
+      ...message,
+      direction,
+      read: direction === Direction.sent || message.read,
+      delivery: direction === Direction.sent || message.delivery,
+    } as TMessage;
+  });
+  const participantsList: Participant[] = profile
+    ? [
+        participants[0],
+        {
+          id: profile.foreign_id,
+          foreign_id: profile.foreign_id,
+          name: `${profile.first_name} ${profile.last_name}`,
+        },
+      ]
+    : [participants[0]];
+
+  return {
+    quickReplies,
+    arrangedMessages,
+    participantsList,
+  };
+};
 
 interface Participant {
   id: string;
@@ -144,8 +182,8 @@ interface ChatContextType {
     source,
     data,
   }: {
-    event: SyntheticEvent;
-    source: string;
+    event?: SyntheticEvent;
+    source?: string;
     data: TPostMessageEvent;
   }) => void;
 
@@ -157,7 +195,7 @@ interface ChatContextType {
    * @param lastName
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
-  hasSession: boolean;
+  profile?: ISubscriber;
 }
 
 const defaultCtx: ChatContextType = {
@@ -194,7 +232,7 @@ const defaultCtx: ChatContextType = {
   setFile: () => {},
   send: () => {},
   handleSubscription: () => {},
-  hasSession: false,
+  profile: undefined,
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -207,6 +245,7 @@ const ChatProvider: React.FC<{
   const { screen, setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
+  const { t } = useTranslation();
   const [participants, setParticipants] = useState<Participant[]>(
     defaultCtx.participants,
   );
@@ -232,7 +271,7 @@ const ChatProvider: React.FC<{
   const [payload, setPayload] = useState<IPayload | null>(defaultCtx.payload);
   const [file, setFile] = useState<File | null>(defaultCtx.file);
   const [webviewUrl, setWebviewUrl] = useState<string>(defaultCtx.webviewUrl);
-  const [hasSession, setHasSession] = useState(false);
+  const [profile, setProfile] = useState<undefined | ISubscriber>();
   const updateConnectionState = (state: ConnectionState) => {
     setConnectionState(state);
     state === ConnectionState.wantToConnect && wantToConnect && wantToConnect();
@@ -284,8 +323,8 @@ const ChatProvider: React.FC<{
   const handleSend = async ({
     data,
   }: {
-    event: SyntheticEvent;
-    source: string;
+    event?: SyntheticEvent;
+    source?: string;
     data: TPostMessageEvent;
   }) => {
     setOutgoingMessageState(
@@ -328,34 +367,13 @@ const ChatProvider: React.FC<{
             queryParams,
           ).toString()}`,
         );
-        const quickReplies = getQuickReplies(body.messages.at(-1));
+        const { quickReplies, arrangedMessages, participantsList } =
+          preprocessMessages(body.messages, participants, body.profile);
 
         setSuggestions(quickReplies);
+        setMessages(arrangedMessages);
+        setParticipants(participantsList);
 
-        localStorage.setItem("profile", JSON.stringify(body.profile));
-        setMessages(
-          body.messages.map((message) => {
-            return {
-              ...message,
-              direction:
-                message.author === body.profile.foreign_id ||
-                message.author === body.profile.id
-                  ? Direction.sent
-                  : Direction.received,
-              read: message.direction === Direction.sent || message.read,
-              delivery:
-                message.direction === Direction.sent || message.delivery,
-            } as TMessage;
-          }),
-        );
-        setParticipants([
-          participants[0],
-          {
-            id: body.profile.foreign_id,
-            foreign_id: body.profile.foreign_id,
-            name: `${body.profile.first_name} ${body.profile.last_name}`,
-          },
-        ]);
         setConnectionState(3);
         setScreen("chat");
       } catch (e) {
@@ -399,8 +417,28 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
-  useSubscribe("settings", ({ hasSession }: ChannelSettings) => {
-    setHasSession(hasSession);
+  useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
+    setProfile(profile);
+
+    if (profile && messages.length === 0) {
+      handleSend({
+        data: {
+          type: TOutgoingMessageType.postback,
+          data: {
+            text: t("messages.get_started"),
+            payload: "GET_STARTED",
+          },
+          author: profile.foreign_id,
+        },
+      });
+    }
+
+    const { quickReplies, arrangedMessages, participantsList } =
+      preprocessMessages(messages, participants, profile);
+
+    setSuggestions(quickReplies);
+    setMessages(arrangedMessages);
+    setParticipants(participantsList);
   });
 
   useEffect(() => {
@@ -408,28 +446,15 @@ const ChatProvider: React.FC<{
       handleSubscription();
     }
 
-    // When user loses internet connection, on reconnect
-    // we will need to subscribe him again (join the io room)
-    const reSubscribe = () => {
-      const item = localStorage.getItem("profile");
-
-      if (item) {
-        const profile = JSON.parse(item) as ISubscriber;
-
-        handleSubscription(profile.first_name, profile.last_name);
-      }
-    };
     const endConnection = () => {
       setConnectionState(0);
     };
 
-    socketCtx.socket.io.on("reconnect", reSubscribe);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
-      socketCtx.socket.io.off("reconnect", reSubscribe);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
       socketCtx.socket.io.off("reconnect_failed", endConnection);
@@ -478,7 +503,7 @@ const ChatProvider: React.FC<{
     message,
     setMessage,
     handleSubscription,
-    hasSession,
+    profile,
   };
 
   return (

@@ -6,23 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import React, {
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { getQuickReplies, useChat } from "../providers/ChatProvider";
+import { preprocessMessages, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
 import {
-  Direction,
   ISubscriber,
   TMessage,
   TOutgoingMessageType,
@@ -43,26 +36,9 @@ const UserSubscription: React.FC = () => {
     participants,
     setParticipants,
     setSuggestions,
-    hasSession,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
-  const isInitialized = useRef(false);
-  const getLocalStorageProfile = (): ISubscriber | null => {
-    const profile = localStorage.getItem("profile");
-
-    if (profile) {
-      try {
-        return JSON.parse(profile);
-      } catch (error) {
-        localStorage.removeItem("profile");
-
-        return null;
-      }
-    }
-
-    return null;
-  };
   const getBody = async (first_name: string = "", last_name: string = "") => {
     const { body } = await socket.get<{
       messages: TMessage[];
@@ -91,38 +67,15 @@ const UserSubscription: React.FC = () => {
           last_name || lastName,
         );
         const { messages, profile } = body;
-        const quickReplies = getQuickReplies(body.messages.at(-1));
+        const { quickReplies, arrangedMessages, participantsList } =
+          preprocessMessages(messages, participants, profile);
 
         setSuggestions(quickReplies);
-
-        localStorage.setItem("profile", JSON.stringify(profile));
-        messages.forEach((message) => {
-          const direction =
-            message.author === profile.foreign_id ||
-            message.author === profile.id
-              ? Direction.sent
-              : Direction.received;
-
-          message.direction = direction;
-          if (message.direction === Direction.sent) {
-            message.read = true;
-            message.delivery = false;
-          }
-        });
-        setMessages(messages);
-        setParticipants([
-          participants[0],
-          {
-            id: profile.foreign_id,
-            foreign_id: profile.foreign_id,
-            name: `${profile.first_name} ${profile.last_name}`,
-          },
-        ]);
+        setMessages(arrangedMessages);
+        setParticipants(participantsList);
 
         if (messages.length === 0) {
           send({
-            event: event as SyntheticEvent,
-            source: "get_started_button",
             data: {
               type: TOutgoingMessageType.postback,
               data: {
@@ -154,20 +107,6 @@ const UserSubscription: React.FC = () => {
       socket,
     ],
   );
-
-  useEffect(() => {
-    // User already subscribed ? (example : refreshed the page)
-    if (!isInitialized.current) {
-      isInitialized.current = true;
-      const localStorageProfile = getLocalStorageProfile();
-
-      if (localStorageProfile || hasSession)
-        handleSubmit({
-          first_name: localStorageProfile?.first_name || "",
-          last_name: localStorageProfile?.last_name || "",
-        });
-    }
-  }, [handleSubmit, hasSession, setScreen]);
 
   return (
     <div className="user-subscription-wrapper">

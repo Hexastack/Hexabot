@@ -121,24 +121,35 @@ export default abstract class BaseWebChannelHandler<
       const settings = await this.getSettings();
       const handshake = client.handshake;
       const { channel } = handshake.query;
+      const profile = client.request.session.web?.profile;
 
       if (channel !== this.getName()) {
         return;
+      }
+
+      let messages: Web.Message[] | undefined;
+
+      if (profile?.foreign_id) {
+        await client.join(profile.foreign_id);
+        const messagesHistory =
+          await this.messageService.findHistoryUntilDate(profile);
+        messages = await this.formatMessages(messagesHistory.reverse());
       }
 
       this.logger.debug('WS connected .. sending settings');
 
       try {
         const menu = await this.menuService.getTree();
-        const hasSession = !!client.request.session.web?.profile;
+
         client.emit('settings', {
           menu,
-          hasSession,
+          profile,
+          messages,
           ...settings,
         });
       } catch (err) {
         this.logger.warn('Unable to retrieve menu ', err);
-        client.emit('settings', settings);
+        client.emit('settings', { profile, messages, ...settings });
       }
     } catch (err) {
       this.logger.error('Unable to initiate websocket connection', err);

@@ -59,7 +59,7 @@ const Messages: React.FC<MessagesProps> = ({ Avatar }) => {
         scrollTo(scroll);
       }, 100);
     }
-  }, [scroll, isOpen]);
+  }, [scroll, isOpen, messages.length]);
 
   useEffect(() => {
     setNewIOMessage(messages[messages.length - 1]);
