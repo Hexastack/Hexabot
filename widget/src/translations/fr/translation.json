@@ -2,7 +2,8 @@
   "user_subscription": {
     "get_started": "Commencer",
     "first_name": "Prénom",
-    "last_name": "Nom"
+    "last_name": "Nom",
+    "refresh": "Actualiser"
   },
   "settings": {
     "greeting": "Bienvenue !",

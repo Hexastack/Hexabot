@@ -30,7 +30,11 @@ import {
   TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
-import { ConnectionState, OutgoingMessageState } from "../types/state.types";
+import {
+  ChatScreen,
+  ConnectionState,
+  OutgoingMessageState,
+} from "../types/state.types";
 
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
@@ -243,7 +247,7 @@ const ChatProvider: React.FC<{
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
   const config = useConfig();
   const settings = useSettings();
-  const { screen, setScreen } = useWidget();
+  const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
   const { t } = useTranslation();
@@ -336,7 +340,7 @@ const ChatProvider: React.FC<{
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      const sentMessage = await socketCtx.socket.post<TMessage>(
+      const response = await socketCtx.socket.post<TMessage>(
         `/webhook/${config.channel}/`,
         {
           data: {
@@ -346,7 +350,7 @@ const ChatProvider: React.FC<{
         },
       );
 
-      handleNewIOMessage(sentMessage.body);
+      handleNewIOMessage(response.body);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Unable to subscribe user", error);
@@ -397,9 +401,9 @@ const ChatProvider: React.FC<{
   const updateWebviewUrl = (url: string) => {
     if (url) {
       setWebviewUrl(url);
-      setScreen("webview");
+      setScreen(ChatScreen.WEBVIEW);
     } else {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     }
   };
 
@@ -416,7 +420,7 @@ const ChatProvider: React.FC<{
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (profile && messages.length === 0) {
+    if (config.channel === "web-channel" && profile && messages.length === 0) {
       handleSend({
         data: {
           type: TOutgoingMessageType.postback,
@@ -427,6 +431,8 @@ const ChatProvider: React.FC<{
           author: profile.foreign_id,
         },
       });
+    } else if (config.channel === "console-channel" && !profile) {
+      handleSubscription();
     }
 
     const { quickReplies, arrangedMessages, participantsList } =
@@ -438,10 +444,6 @@ const ChatProvider: React.FC<{
   });
 
   useEffect(() => {
-    if (screen === "chat" && connectionState === ConnectionState.connected) {
-      handleSubscription();
-    }
-
     const startConnection = () => {
       setConnectionState(ConnectionState.notConnectedYet);
     };
