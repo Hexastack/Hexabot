@@ -52,8 +52,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (
       !profile &&
       messages.length === 0 &&
-      (connectionState === ConnectionState.notConnectedYet ||
-        connectionState === ConnectionState.tryingToConnect)
+      connectionState === ConnectionState.notConnectedYet
     ) {
       if (screen == "chat") {
         resetSocket();

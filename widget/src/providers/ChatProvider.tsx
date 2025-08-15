@@ -378,14 +378,9 @@ const ChatProvider: React.FC<{
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
-        setConnectionState(3);
-        setScreen(ChatScreen.CHAT);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
-        setScreen(ChatScreen.PRE_CHAT);
-        setConnectionState(ConnectionState.notConnectedYet);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

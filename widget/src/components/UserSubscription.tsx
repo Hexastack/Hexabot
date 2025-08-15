@@ -20,7 +20,7 @@ import {
   TMessage,
   TOutgoingMessageType,
 } from "../types/message.types";
-import { ChatScreen, ConnectionState } from "../types/state.types";
+import { ConnectionState } from "../types/state.types";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
@@ -75,7 +75,6 @@ const UserSubscription: React.FC = () => {
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
         if (messages.length === 0) {
           send({
             data: {
@@ -88,17 +87,9 @@ const UserSubscription: React.FC = () => {
             },
           });
         }
-        setConnectionState(ConnectionState.connected);
-        setScreen(ChatScreen.CHAT);
-      } catch (error) {
+      } catch (e) {
         // eslint-disable-next-line no-console
-        console.error("Unable to subscribe user", error);
-        setScreen(ChatScreen.PRE_CHAT);
-        if (connectionState === ConnectionState.tryingToConnect) {
-          setConnectionState(ConnectionState.disconnected);
-        } else {
-          setConnectionState(ConnectionState.notConnectedYet);
-        }
+        console.error("Unable to subscribe user", e);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
