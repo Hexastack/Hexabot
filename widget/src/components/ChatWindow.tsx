@@ -49,8 +49,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     if (
       messages.length === 0 &&
-      (connectionState === ConnectionState.notConnectedYet ||
-        connectionState === ConnectionState.tryingToConnect)
+      connectionState === ConnectionState.notConnectedYet
     ) {
       setScreen("prechat");
     } else if (connectionState === ConnectionState.tryingToConnect) {
