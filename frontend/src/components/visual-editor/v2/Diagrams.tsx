@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SearchIcon from "@mui/icons-material/Search";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
@@ -30,7 +31,13 @@ import {
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
-import { SyntheticEvent, useCallback, useEffect, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -56,6 +63,7 @@ import { PermissionAction } from "@/types/permission.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
+import BlockSearchPanel from "../BlockSearchPanel";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 
@@ -70,6 +78,7 @@ const Diagrams = () => {
   >();
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
+  const [isSearchOpen, setSearchOpen] = useState(false);
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
@@ -186,6 +195,20 @@ const Diagrams = () => {
       enabled: !!selectedCategoryId,
     },
   );
+  // Signature to track meaningful block changes without causing deep deps
+  const blocksSignature = useMemo(
+    () =>
+      JSON.stringify(
+        (blocks || []).map((b) => ({
+          ...b,
+          position: undefined,
+          updatedAt: undefined,
+        })),
+      ),
+    [blocks],
+  );
+
+  // eslint-disable-next-line padding-line-between-statements
   const handleDuplicateBlock = () => {
     const block = getBlockFromCache(selectedEntities[0]);
 
@@ -352,14 +375,8 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
-  }, [
-    selectedCategoryId,
-    JSON.stringify(
-      blocks.map((b) => {
-        return { ...b, position: undefined, updatedAt: undefined };
-      }),
-    ),
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategoryId, blocksSignature]);
 
   const handleLinkDeletion = (linkId: string, model: DiagramModel) => {
     const link = model?.getLink(linkId) as any;
@@ -581,10 +598,34 @@ const Diagrams = () => {
     selectedEntities[0]?.length !== 24 ||
     isDuplicatingBlock;
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
+
+      if (isCmdF) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
     <div
       className="visual-editor"
       id="visual-editor"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: 0,
+      }}
       onDrop={(event) => {
         const stormDiagramNode =
           event.dataTransfer.getData("storm-diagram-node");
@@ -611,7 +652,7 @@ const Diagrams = () => {
         event.preventDefault();
       }}
     >
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: "100%", flex: "0 0 auto" }}>
         <Grid sx={{ bgcolor: "#fff", padding: "0" }}>
           <Grid
             sx={{
@@ -705,6 +746,27 @@ const Diagrams = () => {
                 <Add />
               </Button>
             ) : null}
+            <Button
+              title={t("label.search_blocks_panel_header")}
+              sx={{
+                mt: "7px",
+                ml: "auto",
+                mr: "5px",
+                borderRadius: "0",
+                minHeight: "30px",
+                border: "1px solid #DDDDDD",
+                backgroundColor: "#F8F8F8",
+                borderBottom: "none",
+                width: "42px",
+                minWidth: "42px",
+              }}
+              onClick={(e) => {
+                setSearchOpen(true);
+                e.preventDefault();
+              }}
+            >
+              <SearchIcon />
+            </Button>
           </Grid>
           <Grid container>
             <ButtonGroup
@@ -874,7 +936,16 @@ const Diagrams = () => {
           </Grid>
         </Grid>
       </Box>
-      {canvas}
+      <Box
+        id="ve-canvas-container"
+        sx={{ position: "relative", flex: 1, minHeight: 0, overflow: "hidden" }}
+      >
+        {canvas}
+        <BlockSearchPanel
+          open={isSearchOpen}
+          onClose={() => setSearchOpen(false)}
+        />
+      </Box>
     </div>
   );
 };

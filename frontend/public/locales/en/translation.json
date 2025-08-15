@@ -126,7 +126,9 @@
     "video_error": "Video not found",
     "missing_fields_error": "Please make sure that all required fields are filled",
     "weight_required_error": "Weight is required or invalid",
-    "weight_positive_number_error": "Weight must be a strictly positive number"
+    "weight_positive_number_error": "Weight must be a strictly positive number",
+    "failed_to_load_blocks": "Failed to load blocks. Please try again.",
+    "no_matching_results": "No matching results found. Try other keywords."
   },
   "menu": {
     "terms": "Terms of Use",
@@ -497,7 +499,8 @@
     "outputs": "Outputs",
     "any": "Any",
     "full_name": "First and last name",
-    "password": "Password"
+    "password": "Password",
+    "search_blocks_panel_header": "Search blocks"
   },
   "placeholder": {
     "your_username": "Your username",
@@ -535,7 +538,8 @@
     "type_message_here": "Type message here ....",
     "mark_as_default": "By Default",
     "pattern": "Pattern",
-    "full_name": "First and last name"
+    "full_name": "First and last name",
+    "search_blocks": "Search blocks by name, message content"
   },
   "button": {
     "login": "Sign In",
@@ -608,7 +612,8 @@
     "location": "Location",
     "mark_as_default": "Mark as Default",
     "toggle": "Toggle",
-    "annotate": "Annotate Dataset"
+    "annotate": "Annotate Dataset",
+    "show_more": "Show more"
   },
   "input": {
     "search": "Search"
