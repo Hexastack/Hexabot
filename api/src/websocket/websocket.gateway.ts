@@ -205,6 +205,22 @@ export class WebsocketGateway
     if (config.env !== 'test') {
       // Share the same session middleware (main.ts > express-session)
       this.io.engine.use(getSessionMiddleware());
+      this.io.engine.on('initial_headers', (headers, request) => {
+        const sessionId = request.session.id;
+        if (sessionId) {
+          const signedSid =
+            's:' + signature.sign(sessionId, config.session.secret);
+
+          // Send session ID to client to set cookie
+          const cookies = cookie.serialize(
+            config.session.name,
+            signedSid,
+            config.sockets.cookie,
+          );
+
+          headers['Set-Cookie'] = cookies;
+        }
+      });
     }
 
     // Handle session
@@ -221,10 +237,17 @@ export class WebsocketGateway
 
         if (
           // Either the WS connection is with an authenticated user
-          client.request.session.passport?.user?.id ||
+          client.request.session.passport?.user?.id
           // Or, the WS connection is established with a chat widget using the web channel (subscriber)
-          searchParams.get('channel') === 'web-channel'
         ) {
+          next();
+        } else if (searchParams.get('channel') === 'web-channel') {
+          client.request.session.anonymous = true;
+          client.request.session.save((err) => {
+            if (err) {
+              this.logger.error('WS : Unable to save session!', err);
+            }
+          });
           next();
         } else {
           next(new Error('Unauthorized to connect to WS'));
