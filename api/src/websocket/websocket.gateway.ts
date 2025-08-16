@@ -17,8 +17,9 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import cookie from 'cookie';
+import Cookie from 'cookie';
 import signature from 'cookie-signature';
+import { Request } from 'express';
 import { Session as ExpressSession, SessionData } from 'express-session';
 import { Server, Socket } from 'socket.io';
 import { sync as uid } from 'uid-safe';
@@ -114,7 +115,7 @@ export class WebsocketGateway
       const sid = uid(24); // Sign the session ID before sending
       const signedSid = 's:' + signature.sign(sid, config.session.secret);
       // Send session ID to client to set cookie
-      const cookies = cookie.serialize(
+      const cookies = Cookie.serialize(
         config.session.name,
         signedSid,
         config.session.cookie,
@@ -205,18 +206,21 @@ export class WebsocketGateway
     if (config.env !== 'test') {
       // Share the same session middleware (main.ts > express-session)
       this.io.engine.use(getSessionMiddleware());
-      this.io.engine.on('initial_headers', (headers, request) => {
+      this.io.engine.on('initial_headers', (headers, request: Request) => {
         const sessionId = request.session.id;
         if (sessionId) {
           const signedSid =
             's:' + signature.sign(sessionId, config.session.secret);
+          const cookie = request.session.cookie;
 
           // Send session ID to client to set cookie
-          const cookies = cookie.serialize(
-            config.session.name,
-            signedSid,
-            config.sockets.cookie,
-          );
+          const cookies = Cookie.serialize(config.session.name, signedSid, {
+            path: cookie.path,
+            httpOnly: cookie.httpOnly,
+            secure: cookie.secure,
+            // @ts-expect-error type mismatch Cookie vs CookieOptions
+            expires: cookie._expires,
+          });
 
           headers['Set-Cookie'] = cookies;
         }
@@ -234,16 +238,19 @@ export class WebsocketGateway
           next();
           return;
         }
-
+        const session = client.request.session;
         if (
           // Either the WS connection is with an authenticated user
-          client.request.session.passport?.user?.id
-          // Or, the WS connection is established with a chat widget using the web channel (subscriber)
+          session.passport?.user?.id
         ) {
           next();
-        } else if (searchParams.get('channel') === 'web-channel') {
-          client.request.session.anonymous = true;
-          client.request.session.save((err) => {
+        } else if (
+          // Or, the WS connection is established with a chat widget using the web channel (subscriber)
+          searchParams.get('channel') === 'web-channel'
+        ) {
+          session.anonymous =
+            typeof session.anonymous === 'undefined' ? true : session.anonymous;
+          session.save((err) => {
             if (err) {
               this.logger.error('WS : Unable to save session!', err);
             }

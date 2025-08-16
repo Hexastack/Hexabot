@@ -165,7 +165,7 @@ export const config: Config = {
       (process.env.MONGO_AUTO_MIGRATE === 'true' &&
         (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
       // Otherwise, run only in dev mode
-      !(process.env.NODE_ENV || 'development').toLowerCase().includes('prod'),
+      !isProduction,
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {
