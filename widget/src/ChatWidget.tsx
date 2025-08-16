@@ -14,7 +14,6 @@ import BroadcastChannelProvider from "./providers/BroadcastChannelProvider";
 import ChatProvider from "./providers/ChatProvider";
 import { ColorProvider } from "./providers/ColorProvider";
 import { ConfigProvider } from "./providers/ConfigProvider";
-import { CookieProvider } from "./providers/CookieProvider";
 import { SettingsProvider } from "./providers/SettingsProvider";
 import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
@@ -25,21 +24,19 @@ function ChatWidget(props: Partial<Config>) {
   return (
     <ConfigProvider {...props}>
       <TranslationProvider>
-        <CookieProvider>
-          <SocketProvider>
-            <SettingsProvider>
-              <ColorProvider>
-                <WidgetProvider>
-                  <BroadcastChannelProvider channelName="main-channel">
-                    <ChatProvider>
-                      <Launcher PreChat={UserSubscription} />
-                    </ChatProvider>
-                  </BroadcastChannelProvider>
-                </WidgetProvider>
-              </ColorProvider>
-            </SettingsProvider>
-          </SocketProvider>
-        </CookieProvider>
+        <SocketProvider>
+          <SettingsProvider>
+            <ColorProvider>
+              <WidgetProvider>
+                <BroadcastChannelProvider channelName="main-channel">
+                  <ChatProvider>
+                    <Launcher PreChat={UserSubscription} />
+                  </ChatProvider>
+                </BroadcastChannelProvider>
+              </WidgetProvider>
+            </ColorProvider>
+          </SettingsProvider>
+        </SocketProvider>
       </TranslationProvider>
     </ConfigProvider>
   );

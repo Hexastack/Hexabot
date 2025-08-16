@@ -23,6 +23,15 @@ type TCacheConfig = {
   port: number;
   type: 'memory' | 'redis';
 };
+type SocketCookie =
+  | {
+      maxAge?: number | undefined;
+      name: string;
+      path?: string | undefined;
+      httpOnly?: boolean | undefined;
+      secure?: boolean | undefined;
+    }
+  | boolean;
 
 export type Config = {
   i18n: { translationFilename: string };
@@ -51,7 +60,7 @@ export type Config = {
     pingInterval: number;
     maxHttpBufferSize: number;
     allowUpgrades: boolean;
-    cookie: boolean;
+    cookie: SocketCookie;
     sendResponseHeaders: boolean;
     sendStatusCode: boolean;
     grant3rdPartyCookie: boolean;
