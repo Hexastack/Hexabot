@@ -109,7 +109,8 @@ interface ChatContextType {
 
   /**
    * Represents the connection state of the chat.
-   * 0 = Disconnected
+   * -1 = Disconnected
+   * 0 = Not connected yet
    * 1 = Want to connect
    * 2 = Trying to connect
    * 3 = Connected
@@ -354,7 +355,7 @@ const ChatProvider: React.FC<{
   const handleSubscription = useCallback(
     async (firstName?: string, lastName?: string) => {
       try {
-        setConnectionState(2);
+        setConnectionState(ConnectionState.tryingToConnect);
         const queryParams: Record<string, string> =
           firstName && lastName
             ? { first_name: firstName, last_name: lastName }
@@ -373,14 +374,9 @@ const ChatProvider: React.FC<{
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
-        setConnectionState(3);
-        setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
-        setScreen("prechat");
-        setConnectionState(0);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -446,15 +442,22 @@ const ChatProvider: React.FC<{
       handleSubscription();
     }
 
+    const startConnection = () => {
+      setConnectionState(ConnectionState.notConnectedYet);
+    };
     const endConnection = () => {
-      setConnectionState(0);
+      setConnectionState(ConnectionState.disconnected);
     };
 
+    socketCtx.socket.io.on("open", startConnection);
+    socketCtx.socket.io.on("reconnect", startConnection);
     socketCtx.socket.io.on("close", endConnection);
     socketCtx.socket.io.on("reconnect_error", endConnection);
     socketCtx.socket.io.on("reconnect_failed", endConnection);
 
     return () => {
+      socketCtx.socket.io.off("open", startConnection);
+      socketCtx.socket.io.off("reconnect", startConnection);
       socketCtx.socket.io.off("close", endConnection);
       socketCtx.socket.io.off("reconnect_error", endConnection);
       socketCtx.socket.io.off("reconnect_failed", endConnection);

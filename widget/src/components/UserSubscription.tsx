@@ -20,6 +20,7 @@ import {
   TMessage,
   TOutgoingMessageType,
 } from "../types/message.types";
+import { ConnectionState } from "../types/state.types";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
@@ -32,6 +33,7 @@ const UserSubscription: React.FC = () => {
   const {
     send,
     setMessages,
+    connectionState,
     setConnectionState,
     participants,
     setParticipants,
@@ -61,7 +63,7 @@ const UserSubscription: React.FC = () => {
     }) => {
       event?.preventDefault();
       try {
-        setConnectionState(2);
+        setConnectionState(ConnectionState.tryingToConnect);
         const body = await getBody(
           first_name || firstName,
           last_name || lastName,
@@ -73,7 +75,6 @@ const UserSubscription: React.FC = () => {
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
         if (messages.length === 0) {
           send({
             data: {
@@ -86,13 +87,9 @@ const UserSubscription: React.FC = () => {
             },
           });
         }
-        setConnectionState(3);
-        setScreen("chat");
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
-        setScreen("prechat");
-        setConnectionState(0);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,6 +116,7 @@ const UserSubscription: React.FC = () => {
         </div>
         <div className="user-subscription-form">
           <input
+            disabled={connectionState === ConnectionState.tryingToConnect}
             className="user-subscription-form-input"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -126,6 +124,7 @@ const UserSubscription: React.FC = () => {
             required
           />
           <input
+            disabled={connectionState === ConnectionState.tryingToConnect}
             className="user-subscription-form-input"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -134,7 +133,12 @@ const UserSubscription: React.FC = () => {
           />
           <button
             type="submit"
-            style={{ background: colors.header.bg, color: colors.header.text }}
+            disabled={connectionState === ConnectionState.tryingToConnect}
+            style={
+              connectionState === ConnectionState.tryingToConnect
+                ? {}
+                : { background: colors.header.bg, color: colors.header.text }
+            }
             className="user-subscription-form-button-submit"
           >
             {t("user_subscription.get_started")}
