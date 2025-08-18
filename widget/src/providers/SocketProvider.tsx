@@ -21,12 +21,12 @@ import { useConfig } from "./ConfigProvider";
 
 interface socketContext {
   socket: SocketIoClient;
-  resetSocket: () => Promise<void>;
+  resetSocket: () => void;
 }
 
 const socketContext = createContext<socketContext>({
   socket: {} as SocketIoClient,
-  resetSocket: async () => {},
+  resetSocket: () => {},
 });
 
 interface SocketProviderProps extends PropsWithChildren {
@@ -41,7 +41,7 @@ export const SocketProvider = (props: SocketProviderProps) => {
     response: IOIncomingMessage<T>,
   ) => {
     if (response.statusCode === 401) {
-      await resetSocket();
+      resetSocket();
     }
 
     return response;
@@ -70,7 +70,7 @@ export const SocketProvider = (props: SocketProviderProps) => {
       props.responseInterceptor || defaultResponseInterceptor,
     ),
   );
-  const resetSocket = async () => {
+  const resetSocket = () => {
     socketRef.current.disconnect();
     socketRef.current.connect();
   };
