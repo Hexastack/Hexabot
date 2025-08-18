@@ -41,14 +41,10 @@ function UiChatWidget({
   config,
   customResponseMiddleware,
 }: UiChatWidgetProps) {
-  const responseInterceptor = async <T,>(response: IOIncomingMessage<T>) => {
-    return (await customResponseMiddleware?.(response)) || response;
-  };
-
   return (
     <ConfigProvider {...config}>
       <TranslationProvider>
-        <SocketProvider responseInterceptor={responseInterceptor}>
+        <SocketProvider responseInterceptor={customResponseMiddleware}>
           <SettingsProvider>
             <ColorProvider>
               <BroadcastChannelProvider channelName="main-channel">
