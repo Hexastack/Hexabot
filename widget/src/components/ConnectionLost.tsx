@@ -53,7 +53,7 @@ const ConnectionLost: React.FC = () => {
             }}
             onClick={handleClick}
           >
-            Refresh
+            {t("user_subscription.refresh")}
           </button>
         </div>
       )}
