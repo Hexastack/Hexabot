@@ -379,8 +379,8 @@ const ChatProvider: React.FC<{
         setMessages(arrangedMessages);
         setParticipants(participantsList);
 
-        setConnectionState(3);
         setScreen(ChatScreen.CHAT);
+        setConnectionState(ConnectionState.connected);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
