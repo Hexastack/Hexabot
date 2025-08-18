@@ -30,21 +30,19 @@ type UiChatWidgetProps = PropsWithChildren<{
   PreChat?: React.FC;
   PostChat?: React.FC;
   config: Partial<Config>;
-  logout?: () => Promise<void>;
+  customResponseMiddleware?: <T>(
+    response: IOIncomingMessage<T>,
+  ) => Promise<IOIncomingMessage<T>>;
 }>;
 
 function UiChatWidget({
   CustomHeader,
   CustomAvatar,
   config,
-  logout,
+  customResponseMiddleware,
 }: UiChatWidgetProps) {
   const responseInterceptor = async <T,>(response: IOIncomingMessage<T>) => {
-    if (response.statusCode === 401) {
-      await logout?.();
-    }
-
-    return response;
+    return (await customResponseMiddleware?.(response)) || response;
   };
 
   return (

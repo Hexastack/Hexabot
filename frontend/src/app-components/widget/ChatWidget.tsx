@@ -56,8 +56,12 @@ export const ChatWidget = () => {
             }
           />
         )}
-        logout={async () => {
-          logout();
+        customResponseMiddleware={async (response) => {
+          if (response.statusCode === 401) {
+            logout();
+          }
+
+          return response;
         }}
       />
     </Box>
