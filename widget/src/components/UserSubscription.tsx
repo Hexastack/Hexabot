@@ -75,7 +75,6 @@ const UserSubscription: React.FC = () => {
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-
         if (messages.length === 0) {
           send({
             data: {

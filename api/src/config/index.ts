@@ -10,6 +10,10 @@ import { join } from 'path';
 
 import { Config } from './types';
 
+const isProduction = (process.env.NODE_ENV || 'development')
+  .toLowerCase()
+  .includes('prod');
+
 export const config: Config = {
   i18n: {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
@@ -52,7 +56,15 @@ export const config: Config = {
     pingInterval: 10_000,
     maxHttpBufferSize: 10e7,
     allowUpgrades: true,
-    cookie: false,
+    cookie: {
+      name: process.env.SESSION_NAME || 'hex.sid',
+      httpOnly: true,
+      secure: process.env.HTTPS_ENABLED === 'true',
+      path: '/',
+      maxAge: isProduction
+        ? 1000 * 60 * 60 * 24 //prod 24h
+        : 1000 * 60 * 60, //dev 1h
+    },
     // Whether to include response headers in the JWR originated for
     // each socket request (e.g. `io.socket.get()` in the browser)
     // This doesn't affect direct socket.io usage-- only if you're
@@ -153,7 +165,7 @@ export const config: Config = {
       (process.env.MONGO_AUTO_MIGRATE === 'true' &&
         (process.env.API_IS_PRIMARY_NODE || 'true') === 'true') ||
       // Otherwise, run only in dev mode
-      !(process.env.NODE_ENV || 'development').toLowerCase().includes('prod'),
+      !isProduction,
   },
   env: process.env.NODE_ENV || 'development',
   authentication: {
