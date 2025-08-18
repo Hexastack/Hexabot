@@ -18,7 +18,6 @@ import { IOIncomingMessage } from "../types/io-message.types";
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
-import { useCookie } from "./CookieProvider";
 
 interface socketContext {
   socket: SocketIoClient;
@@ -38,7 +37,6 @@ interface SocketProviderProps extends PropsWithChildren {
 
 export const SocketProvider = (props: SocketProviderProps) => {
   const config = useConfig();
-  const { getCookie } = useCookie();
   const defaultResponseInterceptor = async <T,>(
     response: IOIncomingMessage<T>,
   ) => {
@@ -74,7 +72,6 @@ export const SocketProvider = (props: SocketProviderProps) => {
   );
   const resetSocket = async () => {
     socketRef.current.disconnect();
-    await getCookie();
     socketRef.current.connect();
   };
 
