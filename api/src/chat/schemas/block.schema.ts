@@ -203,6 +203,26 @@ BlockModel.schema.virtual('attachedToBlock', {
   justOne: true,
 });
 
+BlockModel.schema.index(
+  {
+    name: 'text',
+    message: 'text',
+    'message.text': 'text',
+    'options.fallback.message': 'text',
+    'message.args': 'text',
+  },
+  {
+    weights: {
+      name: 5,
+      message: 2,
+      'message.text': 2,
+      'message.args': 2,
+      'options.fallback.message': 1,
+    },
+    name: 'block_search_index',
+  },
+);
+
 export default BlockModel.schema;
 
 export type BlockPopulate = keyof TFilterPopulateFields<Block, BlockStub>;

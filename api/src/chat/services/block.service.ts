@@ -67,6 +67,13 @@ export class BlockService extends BaseService<
   }
 
   /**
+   * Full-text search for blocks. Returns basic info and text score.
+   */
+  async search(query: string, limit = 50, category?: string) {
+    return await this.repository.search(query, limit, category);
+  }
+
+  /**
    * Checks if block is supported on the specified channel.
    *
    * @param block - The block

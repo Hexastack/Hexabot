@@ -65,6 +65,34 @@ export class BlockController extends BaseController<
   }
 
   /**
+   * Text search for blocks using MongoDB text index.
+   *
+   * Example: GET /block/search?q=UserSearchPhrase&limit=50
+   */
+  @Get('search')
+  async search(
+    @Query('q') q?: string,
+    @Query('limit') limit?: string,
+    @Query('category') category?: string,
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      message: Block['message'];
+      category: string | null;
+      score: number;
+      fallbackMessage?: string[];
+    }>
+  > {
+    const query = (q || '').trim();
+    if (!query) {
+      return [];
+    }
+    const max = Math.min(Number(limit) || 50, 100);
+    return await this.blockService.search(query, max, category);
+  }
+
+  /**
    * Finds blocks based on the provided query parameters.
    * @param populate - An array of fields to populate in the returned blocks.
    * @param filters - Query filters to apply to the block search.

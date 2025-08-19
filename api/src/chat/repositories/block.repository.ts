@@ -28,6 +28,24 @@ import {
   BlockPopulate,
 } from '../schemas/block.schema';
 
+// Public search result shape for block search
+export type BlockSearchResult = Pick<Block, 'id' | 'name' | 'message'> & {
+  score: number;
+  category: string | null;
+  fallbackMessage?: string[];
+};
+
+// Define the search document type
+type BlockSearchDoc = {
+  _id?: Types.ObjectId | string;
+  id?: string;
+  name: Block['name'];
+  message?: Block['message'];
+  options?: Block['options'];
+  category?: Block['category'] | Types.ObjectId | null;
+  score?: number;
+};
+
 @Injectable()
 export class BlockRepository extends BaseRepository<
   Block,
@@ -37,6 +55,77 @@ export class BlockRepository extends BaseRepository<
 > {
   constructor(@InjectModel(Block.name) readonly model: Model<Block>) {
     super(model, Block, BLOCK_POPULATE, BlockFull);
+  }
+
+  /**
+   * Performs a full-text search on blocks using MongoDB text index.
+   * Returns search results with text score for sorting.
+   *
+   * @param query - The text to search for. Supports MongoDB text operators.
+   * @param limit - Max number of results to return (default: 50).
+   * @param category - Optional category filter.
+   * @returns An array of search results with block ID, name, message, category,
+   *          score, and optional fallback message.
+   */
+  async search(
+    query: string,
+    limit = 50,
+    category?: string,
+  ): Promise<BlockSearchResult[]> {
+    // Return early if query is empty after trimming
+    query = query?.trim();
+    if (!query) return [];
+
+    function escapeMongoQueryString(input: string): string {
+      // Escape backslashes first, then double quotes
+      return input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    }
+
+    const phrase = `"${escapeMongoQueryString(query)}"`; // Use quotes for exact phrase match
+
+    // Guard against excessive or invalid limit values
+    limit = Math.min(Math.max(1, limit ?? 50), 300);
+
+    // Build a category filter that tolerates string or ObjectId storage
+    const categoryFilter = category
+      ? Types.ObjectId.isValid(category)
+        ? { category: { $in: [category, new Types.ObjectId(category)] } }
+        : { category }
+      : {};
+
+    // Perform the search query
+    const cursor = this.model
+      .find<BlockSearchDoc>(
+        {
+          $text: {
+            $search: phrase,
+            $diacriticSensitive: false,
+            $caseSensitive: false,
+            $language: 'none',
+          },
+          ...categoryFilter,
+        },
+        {
+          name: 1,
+          message: 1,
+          category: 1,
+          'options.fallback.message': 1,
+          score: { $meta: 'textScore' },
+        },
+      )
+      .sort({ score: { $meta: 'textScore' } })
+      .limit(limit)
+      .lean(this.leanOpts);
+
+    const docs: BlockSearchDoc[] = await cursor.exec();
+    return docs.map<BlockSearchResult>((d) => ({
+      id: d._id ? String(d._id) : (d.id as string),
+      name: d.name,
+      message: d.message as Block['message'],
+      category: d.category ? String(d.category) : null,
+      fallbackMessage: d.options?.fallback?.message,
+      score: typeof d.score === 'number' ? d.score : 0,
+    }));
   }
 
   /**
