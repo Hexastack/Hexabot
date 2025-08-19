@@ -26,6 +26,7 @@ export enum EntityType {
   BLOCK = "Block",
   CUSTOM_BLOCK = "CustomBlock",
   CUSTOM_BLOCK_SETTINGS = "CustomBlockSetting",
+  BLOCK_SEARCH = "BlockSearch",
   NLP_SAMPLE = "NlpSample",
   NLP_SAMPLE_ENTITY = "NlpSampleEntity",
   NLP_ENTITY = "NlpEntity",

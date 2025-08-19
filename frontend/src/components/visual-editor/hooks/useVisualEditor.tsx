@@ -6,13 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
+import debounce from "@mui/material/utils/debounce";
 import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
+import { useRouter } from "next/router";
 import * as React from "react";
 import { createContext, useContext } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import {
   BlockPorts,
@@ -33,6 +34,13 @@ import { BLOCK_HEIGHT, BLOCK_WIDTH } from "../v2/CustomDiagramNodes/NodeWidget";
 const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
 
+// Focus behavior tuning and timing
+const FOCUS_CONFIG = {
+  MAX_RETRIES: 10,
+  RETRY_INTERVAL_MS: 200,
+  ZOOM_MARGIN: 320,
+  HIGHLIGHT_DURATION_MS: 3000,
+};
 const addNode = (block: IBlock) => {
   const node = new NodeModel({
     id: block.id,
@@ -247,11 +255,27 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   createNode: async (): Promise<IBlock> => ({} as IBlock),
   selectedCategoryId: "",
   setSelectedCategoryId: () => {},
+  focusBlock: async () => {},
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
+  const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
+  // Token to cancel/ignore previous focus attempts (latest-wins)
+  const focusRequestIdRef = React.useRef(0);
+  // Track highlight timeout to avoid leaks and overlapping highlights
+  const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup effect to clear the highlight timeout when the component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) {
+        clearTimeout(highlightTimeoutRef.current);
+        highlightTimeoutRef.current = null;
+      }
+    };
+  }, []);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
@@ -266,6 +290,84 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       },
     });
   };
+  const focusBlock: IVisualEditorContext["focusBlock"] = async (
+    blockId,
+    categoryId,
+  ) => {
+    // Generate a new focus request id; newer calls cancel older ones
+    const requestId = ++focusRequestIdRef.current;
+    const switchFlowIfNeeded = async () => {
+      // Ensure the blockId is valid
+      if (categoryId && categoryId !== selectedCategoryId) {
+        // If a newer request started, abort this one
+        if (requestId !== focusRequestIdRef.current) return;
+        setSelectedCategoryId(categoryId);
+        await router.push(`/${RouterType.VISUAL_EDITOR}/flows/${categoryId}`);
+      }
+    };
+    // If the blockId is not provided, we do not switch flow
+
+    await switchFlowIfNeeded();
+
+    // Wait for the node to be rendered
+    const waitForNode = async (retries = FOCUS_CONFIG.MAX_RETRIES) => {
+      return new Promise<void>((resolve) => {
+        const tick = (n: number) => {
+          // Abort if a newer focus request has been issued
+          if (requestId !== focusRequestIdRef.current) return resolve();
+          const node = model?.getNode(blockId);
+
+          if (node) {
+            // Deselect others and select this node
+            model.getSelectedEntities().forEach((e) => e.setSelected(false));
+            node.setSelected(true);
+
+            // Zoom to fit the selected node
+            try {
+              if (requestId !== focusRequestIdRef.current) return resolve();
+              engine.zoomToFitSelectedNodes({
+                margin: FOCUS_CONFIG.ZOOM_MARGIN,
+              });
+            } catch (_) {
+              // no-op
+            }
+
+            // Highlight the node visually
+            // Remove any previous highlight classes
+            document
+              ?.querySelectorAll(".flash-highlight")
+              ?.forEach((el) => el.classList.remove("flash-highlight"));
+
+            // Find the node element in the DOM
+            const el = document?.querySelector(
+              `[data-nodeid='${blockId}']`,
+            ) as HTMLElement | null;
+
+            if (el) {
+              el.classList.add("flash-highlight");
+              if (highlightTimeoutRef.current) {
+                clearTimeout(highlightTimeoutRef.current);
+              }
+              highlightTimeoutRef.current = setTimeout(() => {
+                el.classList.remove("flash-highlight");
+                highlightTimeoutRef.current = null;
+              }, FOCUS_CONFIG.HIGHLIGHT_DURATION_MS);
+            }
+
+            resolve();
+          } else if (n > 0) {
+            setTimeout(() => tick(n - 1), FOCUS_CONFIG.RETRY_INTERVAL_MS);
+          } else {
+            resolve();
+          }
+        };
+
+        tick(retries);
+      });
+    };
+
+    await waitForNode();
+  };
 
   return (
     <VisualEditorContext.Provider
@@ -277,6 +379,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         setViewerOffset,
         setSelectedCategoryId,
         selectedCategoryId,
+        focusBlock,
       }}
     >
       {children}
