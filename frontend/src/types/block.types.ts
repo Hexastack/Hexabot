@@ -150,3 +150,9 @@ export interface ICustomBlockTemplate
 export interface ICustomBlockSettingFilters {
   plugin?: string;
 }
+
+export type IBlockSearchResult = Pick<IBlock, "id" | "name" | "message"> & {
+  score: number;
+  category: string | null;
+  fallbackMessage?: string[];
+};

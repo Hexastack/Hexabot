@@ -274,6 +274,16 @@ BlockEntity.define({
   attachedToBlock: BlockEntity,
 });
 
+// Block search result
+export const BlockSearchResultEntity = new schema.Entity(
+  `${EntityType.BLOCK}:searchResult`,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+    processStrategy: processCommonStrategy,
+  },
+);
+
 export const CustomBlockEntity = new schema.Entity(
   EntityType.CUSTOM_BLOCK,
   undefined,
