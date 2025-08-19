@@ -157,6 +157,14 @@ export default abstract class BaseWebChannelHandler<
     }
   }
 
+  @OnEvent('hook:websocket:error')
+  broadcastError(subscriber: Subscriber, statusCode: number): void {
+    this.broadcast(subscriber, StdEventType.error, {
+      op: 'error',
+      statusCode,
+    });
+  }
+
   /**
    * Adapt incoming message structure for web channel
    *

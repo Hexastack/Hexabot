@@ -29,7 +29,13 @@ function ChatWidget(props: Partial<Config>) {
             <ColorProvider>
               <WidgetProvider>
                 <BroadcastChannelProvider channelName="main-channel">
-                  <ChatProvider>
+                  <ChatProvider
+                    onError={async (socket, statusCode) => {
+                      if (statusCode === 401) {
+                        socket.resetSocket();
+                      }
+                    }}
+                  >
                     <Launcher PreChat={UserSubscription} />
                   </ChatProvider>
                 </BroadcastChannelProvider>

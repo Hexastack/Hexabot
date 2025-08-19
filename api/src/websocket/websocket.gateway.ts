@@ -295,7 +295,7 @@ export class WebsocketGateway
       // Check if the afterDisconnect logic is an asynchronous function
       await config.sockets.afterDisconnect(client);
 
-      this.saveSession(client);
+      // this.saveSession(client);
     } catch (e) {
       // Catch synchronous errors
       this.logger.error(

@@ -36,9 +36,10 @@ import {
   OutgoingMessageState,
 } from "../types/state.types";
 
+import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
-import { useSocket, useSubscribe } from "./SocketProvider";
+import { socketContext, useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
 export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
@@ -57,7 +58,7 @@ export const preprocessMessages = (
   participants: Participant[],
   profile?: ISubscriber,
 ) => {
-  const quickReplies = getQuickReplies(messages.at(-1));
+  const quickReplies = getQuickReplies(messages[messages.length - 1]);
   const arrangedMessages = messages.map((message) => {
     const direction =
       message.author === profile?.foreign_id || message.author === profile?.id
@@ -244,9 +245,15 @@ const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
-}> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  onError?: (
+    socket: socketContext,
+    statusCode: number,
+    callback?: () => void,
+  ) => Promise<void>;
+}> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
   const config = useConfig();
   const settings = useSettings();
+  const { postMessage } = useBroadcastChannel();
   const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
@@ -422,6 +429,37 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
+  useSubscribeBroadcastChannel("apiError", ({ data = {} }) => {
+    const { op, statusCode } = data as {
+      op: string;
+      statusCode: number;
+    };
+
+    if (op === "error") {
+      onError?.(socketCtx, statusCode);
+    }
+  });
+
+  useSubscribeBroadcastChannel("submitForm", () => {
+    socketCtx.resetSocket();
+  });
+
+  useSubscribe(
+    "error",
+    ({ op, statusCode }: { op: string; statusCode: number }) => {
+      if (op === "error") {
+        postMessage({
+          event: "apiError",
+          data: { op, statusCode },
+        });
+      }
+    },
+  );
+  useSubscribe("message", ({ author }: { author: string }) => {
+    if (author === "chatbot" && messages.length === 1) {
+      postMessage({ event: "submitForm" });
+    }
+  });
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 

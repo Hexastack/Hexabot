@@ -19,7 +19,7 @@ import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
 
-interface socketContext {
+export interface socketContext {
   socket: SocketIoClient;
   resetSocket: () => void;
 }

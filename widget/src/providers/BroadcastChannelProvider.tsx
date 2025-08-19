@@ -17,6 +17,8 @@ import {
 
 export enum EBCEvent {
   LOGOUT = "logout",
+  API_ERROR = "apiError",
+  SUBMIT_FORM = "submitForm",
 }
 
 type BroadcastChannelMessage = {
