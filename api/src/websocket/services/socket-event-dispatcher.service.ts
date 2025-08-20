@@ -143,22 +143,14 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
   private async handleException(
     error: Error,
-    req: SocketRequest,
+    { socket }: SocketRequest,
     res: SocketResponse,
   ) {
     if (error instanceof HttpException) {
-      const statusCode = error.getStatus();
-      const response = error.getResponse();
+      this.eventEmitter.emit('hook:websocket:error', socket, error);
 
-      if (req.session.web?.profile?.id && response?.['statusCode']) {
-        this.eventEmitter.emit(
-          'hook:websocket:error',
-          req.session.web?.profile,
-          statusCode,
-        );
-      }
       // Handle known HTTP exceptions
-      return res.status(statusCode).send(error.getResponse());
+      return res.status(error.getStatus()).send(error.getResponse());
     } else {
       // Handle generic errors
       return res

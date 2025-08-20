@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -158,11 +158,17 @@ export default abstract class BaseWebChannelHandler<
   }
 
   @OnEvent('hook:websocket:error')
-  broadcastError(subscriber: Subscriber, statusCode: number): void {
-    this.broadcast(subscriber, StdEventType.error, {
-      op: 'error',
-      statusCode,
-    });
+  broadcastError(client: Socket, error: HttpException): void {
+    const response = error.getResponse();
+    const subscriber = client.client.request.session.web?.profile as
+      | Subscriber
+      | undefined;
+
+    if (client.handshake.query.channel !== this.getName() || !subscriber) {
+      return;
+    }
+
+    this.broadcast(subscriber, StdEventType.error, response, [client.id]);
   }
 
   /**
@@ -1201,11 +1207,12 @@ export default abstract class BaseWebChannelHandler<
     subscriber: Subscriber,
     type: StdEventType,
     content: any,
+    excludedRooms: string[] = [],
   ): void {
     const channelData =
       Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
     if (channelData.isSocket) {
-      this.websocketGateway.broadcast(subscriber, type, content);
+      this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
       // Do nothing, messages will be retrieved via polling
     }
