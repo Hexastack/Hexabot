@@ -11,7 +11,6 @@ import { AxiosInstance, AxiosResponse } from "axios";
 import { AttachmentResourceRef } from "@/types/attachment.types";
 import { ILoginAttributes } from "@/types/auth/login.types";
 import { IUserPermissions } from "@/types/auth/permission.types";
-import { IBlockSearchResult } from "@/types/block.types";
 import { StatsType } from "@/types/bot-stat.types";
 import { ICsrf } from "@/types/csrf.types";
 import { IInvitation, IInvitationAttributes } from "@/types/invitation.types";
@@ -222,17 +221,6 @@ export class ApiClient {
     const { data } = await this.request.get(ROUTES.FETCH_REMOTE_I18N);
 
     return data;
-  }
-
-  async getBlockSearchResults(query: string, limit = 50, category?: string) {
-    const { data } = await this.request.get<IBlockSearchResult[]>(
-      `${ROUTES.BlockSearch}`,
-      {
-        params: { q: query, limit, ...(category ? { category } : {}) },
-      },
-    );
-
-    return data as IBlockSearchResult[];
   }
 
   async reset(token: string, payload: IResetPayload) {
