@@ -276,7 +276,7 @@ BlockEntity.define({
 
 // Block search result
 export const BlockSearchResultEntity = new schema.Entity(
-  `${EntityType.BLOCK}:searchResult`,
+  EntityType.BLOCK_SEARCH,
   undefined,
   {
     idAttribute: ({ id }) => id,
@@ -340,6 +340,14 @@ export const StorageHelperEntity = new schema.Entity(
   },
 );
 
+export const BlockSearchEntity = new schema.Entity(
+  EntityType.BLOCK_SEARCH,
+  undefined,
+  {
+    idAttribute: ({ id }) => id,
+  },
+);
+
 export const ENTITY_MAP = {
   [EntityType.SUBSCRIBER]: SubscriberEntity,
   [EntityType.LABEL]: LabelEntity,
@@ -365,6 +373,7 @@ export const ENTITY_MAP = {
   [EntityType.ATTACHMENT]: AttachmentEntity,
   [EntityType.BLOCK]: BlockEntity,
   [EntityType.CUSTOM_BLOCK]: CustomBlockEntity,
+  [EntityType.BLOCK_SEARCH]: BlockEntity,
   [EntityType.CUSTOM_BLOCK_SETTINGS]: CustomBlockSettingEntity,
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.HELPER]: HelperEntity,
