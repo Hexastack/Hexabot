@@ -20,6 +20,7 @@ import {
   IBlock,
   IBlockAttributes,
   IBlockFull,
+  IBlockSearchResult,
   ICustomBlockSettingFilters,
   ICustomBlockTemplate,
 } from "./block.types";
@@ -168,6 +169,12 @@ export interface IEntityMapTypes {
   [EntityType.CUSTOM_BLOCK]: IEntityTypes<
     ICustomBlockTemplate,
     ICustomBlockTemplate
+  >;
+  [EntityType.BLOCK_SEARCH]: IEntityTypes<
+    IBlockSearchResult,
+    never,
+    { limit: number; q: string; category?: string },
+    IBlockSearchResult
   >;
   [EntityType.CUSTOM_BLOCK_SETTINGS]: IEntityTypes<
     ISetting,

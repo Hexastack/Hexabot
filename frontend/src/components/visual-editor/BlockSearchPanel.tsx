@@ -30,58 +30,36 @@ import debounce from "@mui/material/utils/debounce";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { ErrorState } from "@/app-components/displays/ErrorState";
-import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
-import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
-import ListIcon from "@/app-components/svg/toolbar/ListIcon";
-import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
-import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
-import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import { useFind } from "@/hooks/crud/useFind";
-import { useSearchBlocks } from "@/hooks/entities/block-hooks";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { BlockMessage, IBlockSearchResult } from "@/types/block.types";
+import { BlockType, IBlockSearchResult } from "@/types/block.types";
+import { determineType, getIconForType } from "@/utils/block.utils";
 
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
-// Block type constants
-const BLOCK_TYPES = {
-  TEXT: "text",
-  ATTACHMENT: "attachment",
-  QUICK_REPLIES: "quickReplies",
-  BUTTONS: "buttons",
-  LIST: "list",
-  PLUGIN: "plugin",
-} as const;
-
-type BlockType = (typeof BLOCK_TYPES)[keyof typeof BLOCK_TYPES];
-
-// Infer block type based on message shape
-const determineType = (message: BlockMessage): BlockType => {
-  if (typeof message === "string" || Array.isArray(message))
-    return BLOCK_TYPES.TEXT;
-  if (message && typeof message === "object") {
-    if ("attachment" in message) return BLOCK_TYPES.ATTACHMENT;
-    if ("quickReplies" in message) return BLOCK_TYPES.QUICK_REPLIES;
-    if ("buttons" in message) return BLOCK_TYPES.BUTTONS;
-    if ("elements" in message) return BLOCK_TYPES.LIST;
-  }
-
-  return BLOCK_TYPES.PLUGIN;
+type BlockSearchItem = {
+  id: string;
+  name: string;
+  categoryId: string;
+  categoryLabel: string;
+  blockTextContent: string;
+  fallbackTextContent?: string;
+  score: number;
+  type: BlockType;
 };
-// Get icon component for a given block type
-const getIconForType = (type: BlockType) => {
-  const iconMap: Record<BlockType, React.ComponentType<any>> = {
-    [BLOCK_TYPES.TEXT]: SimpleTextIcon,
-    [BLOCK_TYPES.ATTACHMENT]: AttachmentIcon,
-    [BLOCK_TYPES.QUICK_REPLIES]: QuickRepliesIcon,
-    [BLOCK_TYPES.BUTTONS]: ButtonsIcon,
-    [BLOCK_TYPES.LIST]: ListIcon,
-    [BLOCK_TYPES.PLUGIN]: PluginIcon,
-  };
 
-  return iconMap[type] || PluginIcon;
+type BlockSearchResult = {
+  item: BlockSearchItem;
+  refIndex: number;
 };
+
+export type SearchScope = "current" | "all";
+export interface BlockSearchPanelProps {
+  open: boolean;
+  onClose: () => void;
+}
+
 const Panel = styled(Box)(() => ({
   position: "absolute",
   top: 0,
@@ -117,12 +95,6 @@ const ScopeToggle = styled(RadioGroup)(() => ({
 }));
 const ResultCount = styled(Box)(() => ({ padding: "4px 16px", color: "#555" }));
 
-export type SearchScope = "current" | "all";
-export interface BlockSearchPanelProps {
-  open: boolean;
-  onClose: () => void;
-}
-
 export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   open,
   onClose,
@@ -142,17 +114,22 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const {
     data: backendResults = [],
     isLoading: isLoadingSearch,
-    error: searchError,
+    error: blockSearchError,
     refetch: refetchSearch,
-  } = useSearchBlocks(
-    searchTerm,
-    200,
-    scope === "current" ? selectedCategoryId : undefined,
+  } = useFind(
+    { entity: EntityType.BLOCK_SEARCH },
     {
-      enabled: open,
+      hasCount: false,
+      params: {
+        q: searchTerm,
+        limit: 200,
+        category: scope === "current" ? selectedCategoryId : undefined,
+      },
     },
+    { enabled: open && Boolean(searchTerm && searchTerm.trim().length > 0) },
   );
   // Fetch categories to resolve category labels locally
+  // TODO: Remove this fetch when the backend search query response includes category labels directly.
   const {
     data: categories = [],
     error: categoriesError,
@@ -173,51 +150,38 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   }, [categories]);
   // Loading and error states
   const loading = isLoadingSearch || isLoadingCategories;
-  const error = searchError || categoriesError;
-
-  type BlockSearchItem = {
-    id: string;
-    name: string;
-    categoryId: string;
-    categoryLabel: string;
-    blockTextContent: string;
-    fallbackTextContent: string;
-    type: BlockType;
-  };
+  const error = blockSearchError || categoriesError;
   // Map backend results into UI items
   const items: BlockSearchItem[] = useMemo(() => {
-    return backendResults.map((r: IBlockSearchResult) => {
-      const type = determineType(r.message);
+    return backendResults.map((blockEntry: IBlockSearchResult) => {
+      const type = determineType(blockEntry.message);
 
       return {
-        id: r.id,
-        name: r.name,
-        categoryId: String(r.category ?? ""),
+        id: blockEntry.id,
+        name: blockEntry.name,
+        categoryId: String(blockEntry.category ?? ""),
         categoryLabel:
-          categoryLabelById.get(String(r.category)) ?? String(r.category ?? ""),
+          categoryLabelById.get(String(blockEntry.category)) ??
+          String(blockEntry.category ?? ""),
         blockTextContent:
-          typeof r.message === "string"
-            ? r.message
-            : Array.isArray(r.message)
-            ? r.message.join(" ")
-            : typeof r.message === "object" && r.message && "text" in r.message
-            ? String(r.message.text ?? "")
+          typeof blockEntry.message === "string"
+            ? blockEntry.message
+            : Array.isArray(blockEntry.message)
+            ? blockEntry.message.join(" ")
+            : typeof blockEntry.message === "object" &&
+              blockEntry.message &&
+              "text" in blockEntry.message
+            ? String(blockEntry.message.text ?? "")
             : "",
-        fallbackTextContent: Array.isArray(r.fallbackMessage)
-          ? r.fallbackMessage.join(" ")
+        fallbackTextContent: Array.isArray(blockEntry.fallbackMessage)
+          ? blockEntry.fallbackMessage.join(" ")
           : "",
         type,
+        score: blockEntry.score,
       };
     });
   }, [backendResults, categoryLabelById]);
-
-  type SearchResult = {
-    item: BlockSearchItem;
-    refIndex: number;
-    score?: number;
-  };
-
-  const [searchResults, setResults] = useState<SearchResult[]>([]);
+  const [searchResults, setResults] = useState<BlockSearchResult[]>([]);
   const visibleCount = Math.min(searchResults.length, shownCount);
   const visibleSearchItems = useMemo(() => {
     if (!searchTerm) return [];
@@ -229,16 +193,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   }, [searchTerm, items]);
   const debouncedSearch = useMemo(
     () =>
-      debounce((results: SearchResult[]) => {
+      debounce((results: BlockSearchResult[]) => {
         setResults(results);
       }, 200),
     [],
   );
-
-  // Focus input when panel opens
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 0);
-  }, [open]);
 
   // Perform search when query changes
   useEffect(() => {
@@ -331,6 +290,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       </PanelHeader>
       <SearchInput>
         <TextField
+          autoFocus={open}
           inputRef={inputRef}
           fullWidth
           size="small"
@@ -435,7 +395,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                   ? secondaryParts.join(" • ")
                   : undefined;
                 const isActive = idx === selectedIndex;
-                const Icon = getIconForType(item?.type || BLOCK_TYPES.PLUGIN);
+                const Icon = getIconForType(item?.type || BlockType.PLUGIN);
 
                 return (
                   <div
@@ -491,7 +451,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                   setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
                 }}
               >
-                {t("button.show_more") || "Show more"}
+                {t("button.show_more")}
               </Button>
             </Box>
           ) : null}

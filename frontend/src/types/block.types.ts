@@ -151,8 +151,21 @@ export interface ICustomBlockSettingFilters {
   plugin?: string;
 }
 
-export type IBlockSearchResult = Pick<IBlock, "id" | "name" | "message"> & {
-  score: number;
-  category: string | null;
+export enum BlockType {
+  TEXT = "text",
+  ATTACHMENT = "attachment",
+  QUICK_REPLIES = "quickReplies",
+  BUTTONS = "buttons",
+  LIST = "list",
+  PLUGIN = "plugin",
+}
+
+export type IBlockSearchResult = Pick<
+  IBlock,
+  "id" | "name" | "message" | "category"
+> & {
   fallbackMessage?: string[];
+  score: number;
+  createdAt: never;
+  updatedAt: never;
 };

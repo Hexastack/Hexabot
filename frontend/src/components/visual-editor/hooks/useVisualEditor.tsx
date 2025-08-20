@@ -336,7 +336,9 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
             // Remove any previous highlight classes
             document
               ?.querySelectorAll(".flash-highlight")
-              ?.forEach((el) => el.classList.remove("flash-highlight"));
+              ?.forEach((targetNode) =>
+                targetNode.classList.remove("flash-highlight"),
+              );
 
             // Find the node element in the DOM
             const el = document?.querySelector(
