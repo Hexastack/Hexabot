@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useSetting } from "@/hooks/useSetting";
@@ -23,10 +24,13 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const { pathname } = useRouter();
+  const router = useRouter();
   const { apiUrl } = useConfig();
-  const { isAuthenticated, logout } = useAuth();
-  const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
+  const { isAuthenticated } = useAuth();
+  const { postMessage } = useBroadcastChannel();
+  const isVisualEditor = router.pathname.startsWith(
+    `/${RouterType.VISUAL_EDITOR}`,
+  );
   const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
   const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
   const key = useMemo(
@@ -58,7 +62,8 @@ export const ChatWidget = () => {
         )}
         customResponseMiddleware={async (response) => {
           if (response.statusCode === 401) {
-            logout();
+            postMessage({ event: "unauthorized" });
+            router.reload();
           }
 
           return response;
