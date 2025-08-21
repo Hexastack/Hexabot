@@ -21,6 +21,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
+  ErrorResponse,
   IPayload,
   ISubscriber,
   ISuggestion,
@@ -247,7 +248,7 @@ const ChatProvider: React.FC<{
   children: ReactNode;
   onError?: (
     socket: socketContext,
-    statusCode: number,
+    response: ErrorResponse,
     callback?: () => void,
   ) => Promise<void>;
 }> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
@@ -429,32 +430,13 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
-  useSubscribeBroadcastChannel("apiError", ({ data = {} }) => {
-    const { op, statusCode } = data as {
-      op: string;
-      statusCode: number;
-    };
-
-    if (op === "error") {
-      onError?.(socketCtx, statusCode);
-    }
-  });
-
   useSubscribeBroadcastChannel("submitForm", () => {
     socketCtx.resetSocket();
   });
 
-  useSubscribe(
-    "error",
-    ({ op, statusCode }: { op: string; statusCode: number }) => {
-      if (op === "error") {
-        postMessage({
-          event: "apiError",
-          data: { op, statusCode },
-        });
-      }
-    },
-  );
+  useSubscribe("error", (response: ErrorResponse) => {
+    onError?.(socketCtx, response);
+  });
   useSubscribe("message", ({ author }: { author: string }) => {
     if (author === "chatbot" && messages.length === 1) {
       postMessage({ event: "submitForm" });

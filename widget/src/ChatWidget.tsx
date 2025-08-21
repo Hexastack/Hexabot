@@ -30,7 +30,7 @@ function ChatWidget(props: Partial<Config>) {
               <WidgetProvider>
                 <BroadcastChannelProvider channelName="main-channel">
                   <ChatProvider
-                    onError={async (socket, statusCode) => {
+                    onError={async (socket, { statusCode }) => {
                       if (statusCode === 401) {
                         socket.resetSocket();
                       }

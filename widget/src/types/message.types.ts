@@ -302,3 +302,8 @@ export type TPostMessageEvent<
 > = T & {
   author?: string;
 };
+
+export interface ErrorResponse {
+  message: string;
+  statusCode: number;
+}
