@@ -62,13 +62,14 @@ export interface BlockSearchPanelProps {
 
 const Panel = styled(Box)(() => ({
   position: "absolute",
-  top: 0,
-  right: 0,
-  height: "100%",
+  top: 16,
+  right: 16,
   width: 420,
+  maxHeight: "calc(100% - 120px)", // Vertical offset to prevent overlap with the chat widget launcher
   background: "#fff",
-  borderLeft: "1px solid #E0E0E0",
-  boxShadow: "-6px 0 12px rgba(0,0,0,0.04)",
+  border: "1px solid #E0E0E0",
+  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+  borderRadius: 12,
   zIndex: 8,
   display: "flex",
   flexDirection: "column",
