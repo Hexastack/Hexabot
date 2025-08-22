@@ -10,7 +10,9 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  InternalServerErrorException,
   OnModuleInit,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ModulesContainer } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
@@ -74,9 +76,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       const [_, handler] = foundHandler;
 
-      await new Promise<void>(async (resolve, reject) => {
+      await new Promise<Error | void>(async (resolve, reject) => {
         req.session.reload((_err) => {
-          if (_err) reject();
+          const isSessionExpired =
+            _err instanceof Error && _err.message === 'failed to load session';
+          if (isSessionExpired) {
+            reject(new UnauthorizedException());
+          } else if (_err) reject(new InternalServerErrorException());
           resolve();
         });
       });
@@ -84,15 +90,19 @@ export class SocketEventDispatcherService implements OnModuleInit {
       const response = await handler(req, res);
 
       // Update session object (similar to what is done in express-session)
-      req.session.save((err) => {
-        if (err) {
-          this.logger.error('WS : Unable to update session!', err);
-        }
+      await new Promise<void>((resolve) => {
+        // Update session object (similar to what is done in express-session)
+        req.session.save((err) => {
+          if (err) {
+            this.logger.error('WS : Unable to update session!', err);
+          }
+          resolve();
+        });
       });
 
       return response;
     } catch (error) {
-      return this.handleException(error, res);
+      return this.handleException(error, req, res);
     } finally {
       release();
     }
@@ -132,8 +142,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
     }
   }
 
-  private handleException(error: Error, res: SocketResponse) {
+  private handleException(
+    error: Error,
+    { socket }: SocketRequest,
+    res: SocketResponse,
+  ) {
     if (error instanceof HttpException) {
+      this.eventEmitter.emit('hook:websocket:error', socket, error);
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
     } else {
