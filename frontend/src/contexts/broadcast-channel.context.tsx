@@ -18,6 +18,7 @@ import {
 export enum EBCEvent {
   LOGIN = "login",
   LOGOUT = "logout",
+  UNAUTHORIZED = "unauthorized",
 }
 
 type BroadcastChannelMessage = {
@@ -58,7 +59,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
 
   useEffect(() => {
     const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
-      subscribersRef.current[data.event].forEach((callback) => callback(data));
+      subscribersRef.current[data.event]?.forEach((callback) => callback(data));
     };
 
     channelRef.current.addEventListener("message", handleMessage);
