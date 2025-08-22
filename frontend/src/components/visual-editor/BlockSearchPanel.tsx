@@ -72,7 +72,7 @@ const Panel = styled(Box)(() => ({
   zIndex: 8,
   display: "flex",
   flexDirection: "column",
-  paddingBottom: "10px",
+  padding: 8,
 }));
 const PanelHeader = styled(Box)(() => ({
   display: "flex",
@@ -361,7 +361,9 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           gap={2}
         >
           <SearchOffIcon sx={{ fontSize: 48 }} />
-          <Typography>{t("message.no_matching_results")}</Typography>
+          <Typography align="center">
+            {t("message.no_matching_results")}
+          </Typography>
         </Box>
       ) : (
         <>
