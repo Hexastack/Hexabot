@@ -208,6 +208,7 @@ interface ChatContextType {
     first_name?: string,
     last_name?: string,
   ) => Promise<ErrorResponse | SubscribeResponse>;
+  sendGetStarted: (foreign_id: string) => Promise<void>;
 }
 
 const defaultCtx: ChatContextType = {
@@ -246,6 +247,9 @@ const defaultCtx: ChatContextType = {
   handleSubscription: () => {},
   profile: undefined,
   subscribe: async () => {
+    return new Promise(() => {});
+  },
+  sendGetStarted: async () => {
     return new Promise(() => {});
   },
 };
@@ -416,6 +420,18 @@ const ChatProvider: React.FC<{
 
     return body;
   };
+  const sendGetStarted = async (foreign_id: string) => {
+    await handleSend({
+      data: {
+        type: TOutgoingMessageType.postback,
+        data: {
+          text: t("messages.get_started"),
+          payload: "GET_STARTED",
+        },
+        author: foreign_id,
+      },
+    });
+  };
 
   useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);
 
@@ -456,16 +472,7 @@ const ChatProvider: React.FC<{
     setProfile(profile);
 
     if (config.channel === "web-channel" && profile && messages.length === 0) {
-      handleSend({
-        data: {
-          type: TOutgoingMessageType.postback,
-          data: {
-            text: t("messages.get_started"),
-            payload: "GET_STARTED",
-          },
-          author: profile.foreign_id,
-        },
-      });
+      sendGetStarted(profile.foreign_id);
     } else if (config.channel === "console-channel" && !profile) {
       handleSubscription();
     }
@@ -545,6 +552,7 @@ const ChatProvider: React.FC<{
     handleSubscription,
     profile,
     subscribe,
+    sendGetStarted,
   };
 
   return (

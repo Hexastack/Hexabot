@@ -14,7 +14,6 @@ import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import { TOutgoingMessageType } from "../types/message.types";
 import { ChatScreen, ConnectionState } from "../types/state.types";
 import "./UserSubscription.scss";
 
@@ -25,7 +24,6 @@ const UserSubscription: React.FC = () => {
   const settings = useSettings();
   const { setScreen } = useWidget();
   const {
-    send,
     setMessages,
     connectionState,
     setConnectionState,
@@ -33,6 +31,7 @@ const UserSubscription: React.FC = () => {
     setParticipants,
     setSuggestions,
     subscribe,
+    sendGetStarted,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
@@ -63,16 +62,7 @@ const UserSubscription: React.FC = () => {
           setMessages(arrangedMessages);
           setParticipants(participantsList);
           if (messages.length === 0) {
-            send({
-              data: {
-                type: TOutgoingMessageType.postback,
-                data: {
-                  text: t("messages.get_started"),
-                  payload: "GET_STARTED",
-                },
-                author: profile.foreign_id,
-              },
-            });
+            await sendGetStarted(profile.foreign_id);
           }
           setConnectionState(ConnectionState.connected);
           setScreen(ChatScreen.CHAT);
