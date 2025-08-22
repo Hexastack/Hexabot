@@ -20,16 +20,19 @@ export enum ConnectionState {
   connected = 3,
 }
 
-export type ChatScreen =
+export enum ChatScreen {
   // Screen that shows up before the chat (user subscription)
-  | "prechat"
+  PRE_CHAT = "preChat",
   // Screen that shows up after the chat is closed (not in use yet)
-  | "postchat"
+  POST_CHAT = "postChat",
   // Screen shows up when user clicks on a url button where there is a webview
-  | "webview"
+  WEBVIEW = "webview",
   // Screen that shows the messages and text input
-  | "chat"
+  CHAT = "chat",
   // Screen that shows when trying to connect
-  | "loading"
+  LOADING = "loading",
   // Screen that shows when connection is closed
-  | "disconnect";
+  DISCONNECT = "disconnect",
+  // Screen that indicates when an error occurs
+  ERROR = "error",
+}

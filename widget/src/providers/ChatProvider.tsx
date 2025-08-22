@@ -21,20 +21,27 @@ import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
+  ErrorResponse,
   IPayload,
   ISubscriber,
   ISuggestion,
   QuickReplyType,
+  SubscribeResponse,
   TEvent,
   TMessage,
   TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
-import { ConnectionState, OutgoingMessageState } from "../types/state.types";
+import {
+  ChatScreen,
+  ConnectionState,
+  OutgoingMessageState,
+} from "../types/state.types";
 
+import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
-import { useSocket, useSubscribe } from "./SocketProvider";
+import { socketContext, useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
 export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
@@ -53,7 +60,7 @@ export const preprocessMessages = (
   participants: Participant[],
   profile?: ISubscriber,
 ) => {
-  const quickReplies = getQuickReplies(messages.at(-1));
+  const quickReplies = getQuickReplies(messages[messages.length - 1]);
   const arrangedMessages = messages.map((message) => {
     const direction =
       message.author === profile?.foreign_id || message.author === profile?.id
@@ -197,6 +204,11 @@ interface ChatContextType {
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
   profile?: ISubscriber;
+  subscribe: (
+    first_name?: string,
+    last_name?: string,
+  ) => Promise<ErrorResponse | SubscribeResponse>;
+  sendGetStarted: (foreign_id: string) => Promise<void>;
 }
 
 const defaultCtx: ChatContextType = {
@@ -234,16 +246,28 @@ const defaultCtx: ChatContextType = {
   send: () => {},
   handleSubscription: () => {},
   profile: undefined,
+  subscribe: async () => {
+    return new Promise(() => {});
+  },
+  sendGetStarted: async () => {
+    return new Promise(() => {});
+  },
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
-}> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  onError?: (
+    socket: socketContext,
+    response: ErrorResponse,
+    setScreen?: (screen: ChatScreen) => void,
+  ) => Promise<void>;
+}> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
   const config = useConfig();
   const settings = useSettings();
-  const { screen, setScreen } = useWidget();
+  const { postMessage } = useBroadcastChannel();
+  const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const socketCtx = useSocket();
   const { t } = useTranslation();
@@ -356,27 +380,25 @@ const ChatProvider: React.FC<{
     async (firstName?: string, lastName?: string) => {
       try {
         setConnectionState(ConnectionState.tryingToConnect);
-        const queryParams: Record<string, string> =
-          firstName && lastName
-            ? { first_name: firstName, last_name: lastName }
-            : {};
-        const { body } = await socketCtx.socket.get<{
-          messages: TMessage[];
-          profile: ISubscriber;
-        }>(
-          `/webhook/${config.channel}/?${new URLSearchParams(
-            queryParams,
-          ).toString()}`,
-        );
-        const { quickReplies, arrangedMessages, participantsList } =
-          preprocessMessages(body.messages, participants, body.profile);
+        const response = await subscribe(firstName, lastName);
 
-        setSuggestions(quickReplies);
-        setMessages(arrangedMessages);
-        setParticipants(participantsList);
+        if ("profile" in response && "messages" in response) {
+          const { messages, profile } = response;
+          const { quickReplies, arrangedMessages, participantsList } =
+            preprocessMessages(messages, participants, profile);
+
+          setSuggestions(quickReplies);
+          setMessages(arrangedMessages);
+          setParticipants(participantsList);
+
+          setScreen(ChatScreen.CHAT);
+          setConnectionState(ConnectionState.connected);
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
+        setScreen(ChatScreen.PRE_CHAT);
+        setConnectionState(ConnectionState.notConnectedYet);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -389,6 +411,27 @@ const ChatProvider: React.FC<{
       socketCtx,
     ],
   );
+  const subscribe = async (first_name: string = "", last_name: string = "") => {
+    const { body } = await socketCtx.socket.get<
+      SubscribeResponse | ErrorResponse
+    >(
+      `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
+    );
+
+    return body;
+  };
+  const sendGetStarted = async (foreign_id: string) => {
+    await handleSend({
+      data: {
+        type: TOutgoingMessageType.postback,
+        data: {
+          text: t("messages.get_started"),
+          payload: "GET_STARTED",
+        },
+        author: foreign_id,
+      },
+    });
+  };
 
   useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);
 
@@ -397,9 +440,9 @@ const ChatProvider: React.FC<{
   const updateWebviewUrl = (url: string) => {
     if (url) {
       setWebviewUrl(url);
-      setScreen("webview");
+      setScreen(ChatScreen.WEBVIEW);
     } else {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     }
   };
 
@@ -413,20 +456,25 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
+  useSubscribeBroadcastChannel("submitForm", () => {
+    socketCtx.resetSocket();
+  });
+
+  useSubscribe("error", (response: ErrorResponse) => {
+    onError?.(socketCtx, response, setScreen);
+  });
+  useSubscribe("message", ({ author }: { author: string }) => {
+    if (author === "chatbot" && messages.length === 1) {
+      postMessage({ event: "submitForm" });
+    }
+  });
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (profile && messages.length === 0) {
-      handleSend({
-        data: {
-          type: TOutgoingMessageType.postback,
-          data: {
-            text: t("messages.get_started"),
-            payload: "GET_STARTED",
-          },
-          author: profile.foreign_id,
-        },
-      });
+    if (config.channel === "web-channel" && profile && messages.length === 0) {
+      sendGetStarted(profile.foreign_id);
+    } else if (config.channel === "console-channel" && !profile) {
+      handleSubscription();
     }
 
     const { quickReplies, arrangedMessages, participantsList } =
@@ -438,10 +486,6 @@ const ChatProvider: React.FC<{
   });
 
   useEffect(() => {
-    if (screen === "chat" && connectionState === ConnectionState.connected) {
-      handleSubscription();
-    }
-
     const startConnection = () => {
       setConnectionState(ConnectionState.notConnectedYet);
     };
@@ -507,6 +551,8 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
     profile,
+    subscribe,
+    sendGetStarted,
   };
 
   return (

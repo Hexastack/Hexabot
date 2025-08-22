@@ -302,3 +302,13 @@ export type TPostMessageEvent<
 > = T & {
   author?: string;
 };
+
+export interface SubscribeResponse {
+  messages: TMessage[];
+  profile: ISubscriber;
+}
+
+export interface ErrorResponse {
+  message: string;
+  statusCode: number;
+}

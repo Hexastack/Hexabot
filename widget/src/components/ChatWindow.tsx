@@ -9,11 +9,13 @@
 import React, { PropsWithChildren, useEffect, useMemo } from "react";
 
 import { useChat } from "../providers/ChatProvider";
+import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import { ConnectionState } from "../types/state.types";
+import { ChatScreen, ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
+import Error from "./Error";
 import { LoadingComponent } from "./LoadingComponent";
 import Messages from "./Messages";
 import UserInput from "./UserInput";
@@ -34,8 +36,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   PreChat,
   PostChat,
 }) => {
-  const { connectionState, messages } = useChat();
+  const { connectionState, messages, profile } = useChat();
   const { screen, isOpen, setScreen } = useWidget();
+  const { resetSocket } = useSocket();
   const ChatView = useMemo(
     () => (
       <>
@@ -48,26 +51,31 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   useEffect(() => {
     if (
+      !profile &&
       messages.length === 0 &&
       connectionState === ConnectionState.notConnectedYet
     ) {
-      setScreen("prechat");
+      if (screen == "chat") {
+        resetSocket();
+      }
+      setScreen(ChatScreen.PRE_CHAT);
     } else if (connectionState === ConnectionState.tryingToConnect) {
-      setScreen("loading");
+      setScreen(ChatScreen.LOADING);
     } else if (connectionState !== ConnectionState.disconnected) {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     } else {
-      setScreen("disconnect");
+      setScreen(ChatScreen.DISCONNECT);
     }
-  }, [messages.length, connectionState, setScreen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length, connectionState, setScreen, profile, resetSocket]);
 
   const getCurrentScreen = () => {
     switch (screen) {
-      case "prechat":
+      case "preChat":
         return PreChat && <PreChat />;
       case "chat":
         return ChatView;
-      case "postchat":
+      case "postChat":
         return PostChat && <PostChat />;
       case "webview":
         return <Webview />;
@@ -75,6 +83,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         return <LoadingComponent />;
       case "disconnect":
         return <ConnectionLost />;
+      case "error":
+        return <Error />;
       default:
         return PreChat && <PreChat />;
     }

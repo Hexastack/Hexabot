@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
     i18n.changeLanguage(lang);
   };
   const { mutate: logoutSession } = useLogout();
-  const logout = async () => {
+  const logout = () => {
     updateLanguage(publicRuntimeConfig.lang.default);
     logoutSession();
   };
@@ -104,6 +104,10 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   });
 
   useSubscribeBroadcastChannel("logout", () => {
+    router.reload();
+  });
+
+  useSubscribeBroadcastChannel("unauthorized", () => {
     router.reload();
   });
 
