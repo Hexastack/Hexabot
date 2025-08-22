@@ -23,6 +23,7 @@ import { LabelGroupController } from './controllers/label-group.controller';
 import { LabelController } from './controllers/label.controller';
 import { MessageController } from './controllers/message.controller';
 import { SubscriberController } from './controllers/subscriber.controller';
+import { BlockSearchResultPipe } from './pipes/block-search-result.pipe';
 import { BlockRepository } from './repositories/block.repository';
 import { CategoryRepository } from './repositories/category.repository';
 import { ContextVarRepository } from './repositories/context-var.repository';
@@ -102,6 +103,7 @@ import { SubscriberService } from './services/subscriber.service';
     ConversationService,
     ChatService,
     BotService,
+    BlockSearchResultPipe,
   ],
   exports: [
     SubscriberService,

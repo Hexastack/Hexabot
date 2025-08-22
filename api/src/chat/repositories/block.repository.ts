@@ -8,6 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Expose, Transform } from 'class-transformer';
 import {
   Document,
   Model,
@@ -28,23 +29,12 @@ import {
   BlockPopulate,
 } from '../schemas/block.schema';
 
-// Public search result shape for block search
-export type BlockSearchResult = Pick<Block, 'id' | 'name' | 'message'> & {
-  score: number;
-  category: string | null;
-  fallbackMessage?: string[];
-};
-
-// Define the search document type
-type BlockSearchDoc = {
-  _id?: Types.ObjectId | string;
-  id?: string;
-  name: Block['name'];
-  message?: Block['message'];
-  options?: Block['options'];
-  category?: Block['category'] | Types.ObjectId | null;
-  score?: number;
-};
+// Full block document with score attached
+export class SearchRankedBlock extends Block {
+  @Expose()
+  @Transform(({ value }) => (typeof value === 'number' ? value : 0))
+  score!: number;
+}
 
 @Injectable()
 export class BlockRepository extends BaseRepository<
@@ -58,23 +48,29 @@ export class BlockRepository extends BaseRepository<
   }
 
   /**
-   * Performs a full-text search on blocks using MongoDB text index.
-   * Returns search results with text score for sorting.
+   * Performs a full-text search on blocks using MongoDB text index with pagination.
+   * Returns paginated search results and total count.
    *
    * @param query - The text to search for. Supports MongoDB text operators.
-   * @param limit - Max number of results to return (default: 50).
+   * @param page - Page number (default: 1).
+   * @param limit - Max number of results per page (default: 50).
    * @param category - Optional category filter.
-   * @returns An array of search results with block ID, name, message, category,
-   *          score, and optional fallback message.
+   * @returns An object with paginated results and total count.
    */
   async search(
     query: string,
+    page = 1,
     limit = 50,
     category?: string,
-  ): Promise<BlockSearchResult[]> {
+  ): Promise<{
+    results: SearchRankedBlock[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     // Return early if query is empty after trimming
     query = query?.trim();
-    if (!query) return [];
+    if (!query) return { results: [], total: 0, page, limit };
 
     function escapeMongoQueryString(input: string): string {
       // Escape backslashes first, then double quotes
@@ -85,47 +81,44 @@ export class BlockRepository extends BaseRepository<
 
     // Guard against excessive or invalid limit values
     limit = Math.min(Math.max(1, limit ?? 50), 300);
+    // Ensure page is at least 1
+    page = Math.max(1, page ?? 1);
+    // Calculate number of documents to skip
+    const skip = (page - 1) * limit;
 
     // Build a category filter that tolerates string or ObjectId storage
     const categoryFilter = category
-      ? Types.ObjectId.isValid(category)
-        ? { category: { $in: [category, new Types.ObjectId(category)] } }
-        : { category }
+      ? { category: new Types.ObjectId(category) }
       : {};
 
-    // Perform the search query
-    const cursor = this.model
-      .find<BlockSearchDoc>(
-        {
-          $text: {
-            $search: phrase,
-            $diacriticSensitive: false,
-            $caseSensitive: false,
-            $language: 'none',
-          },
-          ...categoryFilter,
-        },
-        {
-          name: 1,
-          message: 1,
-          category: 1,
-          'options.fallback.message': 1,
-          score: { $meta: 'textScore' },
-        },
-      )
-      .sort({ score: { $meta: 'textScore' } })
-      .limit(limit)
-      .lean(this.leanOpts);
+    const textSearchFilter = {
+      $text: {
+        $search: phrase,
+        $diacriticSensitive: false,
+        $caseSensitive: false,
+        $language: 'none',
+      },
+      ...categoryFilter,
+    };
 
-    const docs: BlockSearchDoc[] = await cursor.exec();
-    return docs.map<BlockSearchResult>((d) => ({
-      id: d._id ? String(d._id) : (d.id as string),
-      name: d.name,
-      message: d.message as Block['message'],
-      category: d.category ? String(d.category) : null,
-      fallbackMessage: d.options?.fallback?.message,
-      score: typeof d.score === 'number' ? d.score : 0,
-    }));
+    try {
+      // Execute both queries in parallel for better performance
+      const [docs, total] = await Promise.all([
+        this.model
+          .find(textSearchFilter, { score: { $meta: 'textScore' } })
+          .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean<SearchRankedBlock[]>()
+          .exec(),
+        this.model.countDocuments(textSearchFilter),
+      ]);
+
+      return { results: docs, total, page, limit };
+    } catch (error) {
+      this.logger?.error('Search failed:', error);
+      throw error;
+    }
   }
 
   /**
