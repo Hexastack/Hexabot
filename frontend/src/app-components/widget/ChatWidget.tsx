@@ -24,13 +24,11 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const router = useRouter();
+  const { pathname, reload } = useRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const { postMessage } = useBroadcastChannel();
-  const isVisualEditor = router.pathname.startsWith(
-    `/${RouterType.VISUAL_EDITOR}`,
-  );
+  const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
   const allowedDomainsSetting = useSetting(SETTING_TYPE, "allowed_domains");
   const themeColorSetting = useSetting(SETTING_TYPE, "theme_color");
   const key = useMemo(
@@ -63,7 +61,7 @@ export const ChatWidget = () => {
         customResponseMiddleware={async (response) => {
           if (response.statusCode === 401) {
             postMessage({ event: "unauthorized" });
-            router.reload();
+            reload();
           }
 
           return response;
