@@ -33,4 +33,6 @@ export enum ChatScreen {
   LOADING = "loading",
   // Screen that shows when connection is closed
   DISCONNECT = "disconnect",
+  // Screen that indicates when an error occurs
+  ERROR = "error",
 }

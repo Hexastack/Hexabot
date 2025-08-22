@@ -257,7 +257,7 @@ const ChatProvider: React.FC<{
   onError?: (
     socket: socketContext,
     response: ErrorResponse,
-    callback?: () => void,
+    setScreen?: (screen: ChatScreen) => void,
   ) => Promise<void>;
 }> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
   const config = useConfig();
@@ -445,7 +445,7 @@ const ChatProvider: React.FC<{
   });
 
   useSubscribe("error", (response: ErrorResponse) => {
-    onError?.(socketCtx, response);
+    onError?.(socketCtx, response, setScreen);
   });
   useSubscribe("message", ({ author }: { author: string }) => {
     if (author === "chatbot" && messages.length === 1) {

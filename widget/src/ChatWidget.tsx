@@ -19,6 +19,7 @@ import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
+import { ChatScreen } from "./types/state.types";
 
 function ChatWidget(props: Partial<Config>) {
   return (
@@ -30,9 +31,12 @@ function ChatWidget(props: Partial<Config>) {
               <WidgetProvider>
                 <BroadcastChannelProvider channelName="main-channel">
                   <ChatProvider
-                    onError={async (socket, { statusCode }) => {
+                    onError={async (socket, { statusCode }, setScreen) => {
+                      setScreen?.(ChatScreen.ERROR);
                       if (statusCode === 401) {
-                        socket.resetSocket();
+                        setTimeout(() => {
+                          socket.resetSocket();
+                        }, 400);
                       }
                     }}
                   >
