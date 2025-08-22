@@ -16,12 +16,12 @@ import React, {
 
 import { useTranslation } from "../hooks/useTranslation";
 import { IMenuNode } from "../types/menu.type";
-import { ISubscriber, TMessage } from "../types/message.types";
+import { SubscribeResponse } from "../types/message.types";
 import { SessionStorage } from "../utils/sessionStorage";
 
 import { useSubscribe } from "./SocketProvider";
 
-export type ChannelSettings = {
+export type ChannelSettings = Partial<SubscribeResponse> & {
   menu: IMenuNode[];
   secret: string;
   allowed_domains: string;
@@ -36,8 +36,6 @@ export type ChannelSettings = {
   show_location: boolean;
   allowed_upload_types: string;
   greeting_message: string;
-  messages?: TMessage[];
-  profile?: ISubscriber;
 };
 
 type ChatSettings = {

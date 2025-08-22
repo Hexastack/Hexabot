@@ -26,6 +26,7 @@ import {
   ISubscriber,
   ISuggestion,
   QuickReplyType,
+  SubscribeResponse,
   TEvent,
   TMessage,
   TOutgoingMessageType,
@@ -203,6 +204,10 @@ interface ChatContextType {
    */
   handleSubscription: (firstName?: string, lastName?: string) => void;
   profile?: ISubscriber;
+  subscribe: (
+    first_name?: string,
+    last_name?: string,
+  ) => Promise<ErrorResponse | SubscribeResponse>;
 }
 
 const defaultCtx: ChatContextType = {
@@ -240,6 +245,9 @@ const defaultCtx: ChatContextType = {
   send: () => {},
   handleSubscription: () => {},
   profile: undefined,
+  subscribe: async () => {
+    return new Promise(() => {});
+  },
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -368,27 +376,20 @@ const ChatProvider: React.FC<{
     async (firstName?: string, lastName?: string) => {
       try {
         setConnectionState(ConnectionState.tryingToConnect);
-        const queryParams: Record<string, string> =
-          firstName && lastName
-            ? { first_name: firstName, last_name: lastName }
-            : {};
-        const { body } = await socketCtx.socket.get<{
-          messages: TMessage[];
-          profile: ISubscriber;
-        }>(
-          `/webhook/${config.channel}/?${new URLSearchParams(
-            queryParams,
-          ).toString()}`,
-        );
-        const { quickReplies, arrangedMessages, participantsList } =
-          preprocessMessages(body.messages, participants, body.profile);
+        const response = await subscribe(firstName, lastName);
 
-        setSuggestions(quickReplies);
-        setMessages(arrangedMessages);
-        setParticipants(participantsList);
+        if ("profile" in response && "messages" in response) {
+          const { messages, profile } = response;
+          const { quickReplies, arrangedMessages, participantsList } =
+            preprocessMessages(messages, participants, profile);
 
-        setScreen(ChatScreen.CHAT);
-        setConnectionState(ConnectionState.connected);
+          setSuggestions(quickReplies);
+          setMessages(arrangedMessages);
+          setParticipants(participantsList);
+
+          setScreen(ChatScreen.CHAT);
+          setConnectionState(ConnectionState.connected);
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
@@ -406,6 +407,15 @@ const ChatProvider: React.FC<{
       socketCtx,
     ],
   );
+  const subscribe = async (first_name: string = "", last_name: string = "") => {
+    const { body } = await socketCtx.socket.get<
+      SubscribeResponse | ErrorResponse
+    >(
+      `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
+    );
+
+    return body;
+  };
 
   useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);
 
@@ -534,6 +544,7 @@ const ChatProvider: React.FC<{
     setMessage,
     handleSubscription,
     profile,
+    subscribe,
   };
 
   return (
