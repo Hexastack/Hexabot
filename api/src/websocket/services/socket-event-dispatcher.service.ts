@@ -89,6 +89,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       const response = await handler(req, res);
 
+      // Update session object (similar to what is done in express-session)
       await new Promise<void>((resolve) => {
         // Update session object (similar to what is done in express-session)
         req.session.save((err) => {
@@ -141,14 +142,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
     }
   }
 
-  private async handleException(
+  private handleException(
     error: Error,
     { socket }: SocketRequest,
     res: SocketResponse,
   ) {
     if (error instanceof HttpException) {
       this.eventEmitter.emit('hook:websocket:error', socket, error);
-
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
     } else {
