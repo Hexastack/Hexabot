@@ -34,9 +34,7 @@ function ChatWidget(props: Partial<Config>) {
                     onError={async (socket, { statusCode }, setScreen) => {
                       setScreen?.(ChatScreen.ERROR);
                       if (statusCode === 401) {
-                        setTimeout(() => {
-                          socket.resetSocketConnection();
-                        }, 400);
+                        socket.resetSocketConnection();
                       }
                     }}
                   >
