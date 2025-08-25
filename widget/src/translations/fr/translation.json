@@ -8,7 +8,7 @@
   "settings": {
     "greeting": "Bienvenue !",
     "placeholder": "Écrivez quelque chose...",
-    "connection_lost": "Connexion perdue",
+    "disconnected": "Connexion perdue",
     "back": "Retour"
   },
   "messages": {

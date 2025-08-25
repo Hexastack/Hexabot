@@ -167,34 +167,6 @@ export class WebsocketGateway
     });
   }
 
-  saveSession(client: Socket): void {
-    const { session } = client.request;
-    if (!session) {
-      this.logger.warn('No socket session found ...');
-      return;
-    }
-
-    // On disconnect we may want to update the session, but
-    // it shouldn't save it if the user logged out (session destroyed)
-    this.loadSession(session.id, (err, oldSession) => {
-      if (err || !oldSession) {
-        this.logger.debug(
-          'Unable to save websocket session, probably the user logged out ...',
-        );
-        return;
-      }
-      getSessionStore().set(session.id, session, (err) => {
-        if (err) {
-          this.logger.error(
-            'Error saving session in `config.sockets.afterDisconnect`:',
-            err,
-          );
-          throw err;
-        }
-      });
-    });
-  }
-
   loadSession(
     sessionID: string,
     next: (err: Error, session: any) => void,
@@ -299,8 +271,6 @@ export class WebsocketGateway
     try {
       // Check if the afterDisconnect logic is an asynchronous function
       await config.sockets.afterDisconnect(client);
-
-      this.saveSession(client);
     } catch (e) {
       // Catch synchronous errors
       this.logger.error(
