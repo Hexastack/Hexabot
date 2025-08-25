@@ -35,4 +35,11 @@ export class AppController {
         : '',
     };
   }
+
+  @Roles('public')
+  @Get('__getcookie')
+  cookies(@Req() req: Request): string {
+    req.session.anonymous = true;
+    return '';
+  }
 }
