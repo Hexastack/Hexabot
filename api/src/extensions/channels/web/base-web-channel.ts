@@ -6,7 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -155,6 +160,28 @@ export default abstract class BaseWebChannelHandler<
       this.logger.error('Unable to initiate websocket connection', err);
       client.disconnect();
     }
+  }
+
+  @OnEvent('hook:websocket:error')
+  broadcastError(socket: Socket, error: HttpException): void {
+    const response = (
+      error instanceof HttpException
+        ? error.getResponse()
+        : {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal Server Error',
+          }
+    ) as SocketResponse;
+
+    const subscriber = socket.request.session.web?.profile as
+      | Subscriber
+      | undefined;
+
+    if (socket.handshake.query.channel !== this.getName() || !subscriber) {
+      return;
+    }
+
+    this.broadcast(subscriber, StdEventType.error, response, [socket.id]);
   }
 
   /**
@@ -1193,11 +1220,12 @@ export default abstract class BaseWebChannelHandler<
     subscriber: Subscriber,
     type: StdEventType,
     content: any,
+    excludedRooms: string[] = [],
   ): void {
     const channelData =
       Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
     if (channelData.isSocket) {
-      this.websocketGateway.broadcast(subscriber, type, content);
+      this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
       // Do nothing, messages will be retrieved via polling
     }

@@ -6,12 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-export enum Room {
-  MESSAGE = 'Message',
-  SUBSCRIBER = 'Subscriber',
-}
+import React from "react";
 
-export type SocketErrorResponse = {
-  statusCode: number;
-  message: string;
+import "./ErrorScreen.scss";
+import ErrorIcon from "./icons/Error";
+import Template from "./ScreenTemplate";
+
+const ErrorScreen: React.FC = () => {
+  return <Template name="error" Icon={ErrorIcon} />;
 };
+
+export default ErrorScreen;

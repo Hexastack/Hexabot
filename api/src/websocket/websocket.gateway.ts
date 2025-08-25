@@ -106,8 +106,13 @@ export class WebsocketGateway
     });
   }
 
-  broadcast(subscriber: Subscriber, type: StdEventType, content: any) {
-    this.io.to(subscriber.foreign_id).emit(type, content);
+  broadcast(
+    subscriber: Subscriber,
+    type: StdEventType,
+    content: any,
+    excludedRooms: string[] = [],
+  ) {
+    this.io.to(subscriber.foreign_id).except(excludedRooms).emit(type, content);
   }
 
   async createAndStoreSession(client: Socket): Promise<void> {

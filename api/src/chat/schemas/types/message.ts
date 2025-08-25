@@ -28,6 +28,7 @@ export enum StdEventType {
   typing = 'typing',
   follow = 'follow',
   echo = 'echo',
+  error = 'error',
   unknown = '',
 }
 

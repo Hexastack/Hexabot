@@ -25,16 +25,21 @@ import {
   ISubscriber,
   ISuggestion,
   QuickReplyType,
+  SocketErrorResponse,
   TEvent,
   TMessage,
   TOutgoingMessageType,
   TPostMessageEvent,
 } from "../types/message.types";
-import { ConnectionState, OutgoingMessageState } from "../types/state.types";
+import {
+  ChatScreen,
+  ConnectionState,
+  OutgoingMessageState,
+} from "../types/state.types";
 
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
-import { useSocket, useSubscribe } from "./SocketProvider";
+import { socketContext, useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
 export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
@@ -53,7 +58,7 @@ export const preprocessMessages = (
   participants: Participant[],
   profile?: ISubscriber,
 ) => {
-  const quickReplies = getQuickReplies(messages.at(-1));
+  const quickReplies = getQuickReplies(messages[messages.length - 1]);
   const arrangedMessages = messages.map((message) => {
     const direction =
       message.author === profile?.foreign_id || message.author === profile?.id
@@ -240,7 +245,12 @@ const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
-}> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  onError?: (
+    socket: socketContext,
+    response: SocketErrorResponse,
+    setScreen: (screen: ChatScreen) => void,
+  ) => Promise<void>;
+}> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
   const config = useConfig();
   const settings = useSettings();
   const { screen, setScreen } = useWidget();
@@ -397,9 +407,9 @@ const ChatProvider: React.FC<{
   const updateWebviewUrl = (url: string) => {
     if (url) {
       setWebviewUrl(url);
-      setScreen("webview");
+      setScreen(ChatScreen.WEBVIEW);
     } else {
-      setScreen("chat");
+      setScreen(ChatScreen.CHAT);
     }
   };
 
@@ -411,6 +421,10 @@ const ChatProvider: React.FC<{
 
   useSubscribeBroadcastChannel("logout", () => {
     socketCtx.socket.disconnect();
+  });
+
+  useSubscribe("error", (response: SocketErrorResponse) => {
+    onError?.(socketCtx, response, setScreen);
   });
 
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {

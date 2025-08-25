@@ -106,12 +106,15 @@ declare module '@nestjs/event-emitter' {
         typing: unknown;
         follow: unknown;
         echo: unknown;
+        error: unknown;
       }
     >;
     websocket: TDefinition<
       object,
       {
         connection: Socket;
+        //TODO: error need to be typed as a function
+        error: unknown;
       }
     >;
   }
