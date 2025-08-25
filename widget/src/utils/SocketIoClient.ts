@@ -60,6 +60,9 @@ export class SocketIoClient {
     apiUrl: string,
     socketConfig: SocketIoClientConfig,
     handlers: SocketIoEventHandlers,
+    readonly responseMiddleware?: <T>(
+      response: IOIncomingMessage<T>,
+    ) => Promise<IOIncomingMessage<T>>,
   ) {
     this.config = {
       ...SocketIoClient.defaultConfig,
@@ -151,6 +154,10 @@ export class SocketIoClient {
       options,
     );
 
+    if (this.responseMiddleware) {
+      return await this.responseMiddleware(response);
+    }
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return response;
     }
@@ -203,6 +210,9 @@ let socketIoClient: SocketIoClient;
 export const getSocketIoClient = (
   config: Config,
   handlers: SocketIoEventHandlers,
+  responseMiddleware?: <T>(
+    response: IOIncomingMessage<T>,
+  ) => Promise<IOIncomingMessage<T>>,
 ) => {
   if (!socketIoClient) {
     socketIoClient = new SocketIoClient(
@@ -213,6 +223,7 @@ export const getSocketIoClient = (
         },
       },
       handlers,
+      responseMiddleware,
     );
   }
 
