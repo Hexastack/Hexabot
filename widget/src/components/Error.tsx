@@ -8,12 +8,12 @@
 
 import React from "react";
 
-import "./ConnectionLost.scss";
-import ConnectionIcon from "./icons/ConnectionIcon";
+import "./Error.scss";
+import ErrorIcon from "./icons/Error";
 import Template from "./ScreenTemplate";
 
-const ConnectionLost: React.FC = () => {
-  return <Template name="disconnected" Icon={ConnectionIcon} />;
+const Error: React.FC = () => {
+  return <Template name="error" Icon={ErrorIcon} />;
 };
 
-export default ConnectionLost;
+export default Error;
