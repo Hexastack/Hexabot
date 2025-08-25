@@ -150,3 +150,21 @@ export interface ICustomBlockTemplate
 export interface ICustomBlockSettingFilters {
   plugin?: string;
 }
+
+export enum BlockType {
+  TEXT = "text",
+  ATTACHMENT = "attachment",
+  QUICK_REPLIES = "quickReplies",
+  BUTTONS = "buttons",
+  LIST = "list",
+  PLUGIN = "plugin",
+}
+
+export type IBlockSearchResult = Pick<
+  IBlock,
+  "id" | "name" | "message" | "category" | "options"
+> & {
+  score: number;
+  createdAt: never;
+  updatedAt: never;
+};

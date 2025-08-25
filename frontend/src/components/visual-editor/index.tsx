@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -25,7 +25,12 @@ export const VisualEditor = () => {
         height="calc(100vh - 64px)"
         width="100%"
       >
-        <Grid container height="100%" margin="auto">
+        <Grid
+          container
+          height="100%"
+          margin="auto"
+          sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}
+        >
           <Aside />
           <Grid
             item
@@ -34,6 +39,8 @@ export const VisualEditor = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
+              height: "100%",
+              minHeight: 0,
             }}
           >
             <Diagrams />

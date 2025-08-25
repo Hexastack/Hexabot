@@ -20,6 +20,7 @@ import {
   IBlock,
   IBlockAttributes,
   IBlockFull,
+  IBlockSearchResult,
   ICustomBlockSettingFilters,
   ICustomBlockTemplate,
 } from "./block.types";
@@ -111,6 +112,7 @@ export const POPULATE_BY_TYPE = {
     "trigger_labels",
     "assignTo",
   ],
+  [EntityType.BLOCK_SEARCH]: [],
   [EntityType.NLP_SAMPLE]: ["language", "entities"],
   [EntityType.NLP_SAMPLE_ENTITY]: ["sample", "entity", "value"],
   [EntityType.NLP_ENTITY]: ["values"],
@@ -167,6 +169,12 @@ export interface IEntityMapTypes {
   [EntityType.CUSTOM_BLOCK]: IEntityTypes<
     ICustomBlockTemplate,
     ICustomBlockTemplate
+  >;
+  [EntityType.BLOCK_SEARCH]: IEntityTypes<
+    IBlockSearchResult,
+    never,
+    { limit: number; q: string; category?: string },
+    IBlockSearchResult
   >;
   [EntityType.CUSTOM_BLOCK_SETTINGS]: IEntityTypes<
     ISetting,
