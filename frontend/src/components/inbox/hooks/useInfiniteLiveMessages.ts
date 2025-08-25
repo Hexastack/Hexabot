@@ -24,11 +24,14 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
-  const params: SearchPayload<IMessage> = {
-    where: {
-      or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
-    },
-  };
+  const params = useMemo<SearchPayload<IMessage>>(
+    () => ({
+      where: {
+        or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
+      },
+    }),
+    [activeChat?.id],
+  );
   const {
     data,
     hasNextPage,
@@ -48,6 +51,30 @@ export const useInfinitedLiveMessages = () => {
       enabled: !!activeChat?.id,
     },
   );
+  // Fetch all pages/messages for the current conversation
+  const fetchAllMessages = useCallback(async () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    let more: boolean = hasNextPage;
+
+    while (more) {
+      const result = await fetchNextPage();
+      // Try to get the latest hasNextPage from result or from query state
+
+      if (result && typeof result.hasNextPage === "boolean") {
+        more = result.hasNextPage;
+      } else {
+        // fallback: get from query state (React Query updates this after fetch)
+        const qState = queryClient.getQueryState([
+          QueryType.infinite,
+          EntityType.MESSAGE,
+          params,
+        ]);
+        // qState?.data may be undefined or any, so check for hasNextPage property
+
+        more = !!(qState && qState.data && (qState.data as any).hasNextPage);
+      }
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, queryClient, params]);
   const addMessage = useCallback(
     (event: SocketMessageEvents) => {
       if (
@@ -73,7 +100,7 @@ export const useInfinitedLiveMessages = () => {
         );
       }
     },
-    [queryClient, activeChat?.id],
+    [activeChat?.id, normalizeAndCache, queryClient, params],
   );
 
   useSubscribe<SocketMessageEvents>("message", addMessage);
@@ -95,5 +122,6 @@ export const useInfinitedLiveMessages = () => {
     isFetchingNextPage,
     isLoading,
     isFetching,
+    fetchAllMessages,
   };
 };
