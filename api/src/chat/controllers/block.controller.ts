@@ -13,6 +13,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -21,6 +22,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Types } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
@@ -36,6 +38,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import { SearchRankedBlock } from '../repositories/block.repository';
 import {
   Block,
   BlockFull,
@@ -62,6 +65,38 @@ export class BlockController extends BaseController<
     private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
     super(blockService);
+  }
+
+  /**
+   * Text search for blocks using MongoDB text index.
+   *
+   * Example: GET /block/search?q=UserSearchPhrase&limit=50
+   */
+  @Get('search')
+  async search(
+    @Query('q') q?: string,
+    @Query('limit') limitQuery?: string,
+    @Query('category') category?: string,
+  ): Promise<SearchRankedBlock[]> {
+    const query = q?.trim();
+    const limit = Number(limitQuery) > 0 ? Number(limitQuery) : 50;
+    if (!query) return [];
+
+    try {
+      // Validate category ObjectId if provided
+      if (category && !Types.ObjectId.isValid(category)) {
+        throw new BadRequestException('Invalid category parameter');
+      }
+
+      // retrieve and return transformed search results from the service
+      return await this.blockService.search(query, limit, category);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error('Block search failed:', error);
+      throw new InternalServerErrorException('Block search failed');
+    }
   }
 
   /**
