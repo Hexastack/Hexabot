@@ -162,9 +162,8 @@ export enum BlockType {
 
 export type IBlockSearchResult = Pick<
   IBlock,
-  "id" | "name" | "message" | "category"
+  "id" | "name" | "message" | "category" | "options"
 > & {
-  fallbackMessage?: string[];
   score: number;
   createdAt: never;
   updatedAt: never;
