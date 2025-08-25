@@ -248,7 +248,7 @@ const ChatProvider: React.FC<{
   onError?: (
     socket: socketContext,
     response: SocketErrorResponse,
-    setScreen?: (screen: ChatScreen) => void,
+    setScreen: (screen: ChatScreen) => void,
   ) => Promise<void>;
 }> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
   const config = useConfig();
