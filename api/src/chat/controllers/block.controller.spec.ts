@@ -6,9 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { SettingService } from '@/setting/services/setting.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
@@ -22,6 +23,7 @@ import {
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block } from '../schemas/block.schema';
 import { PayloadType } from '../schemas/types/button';
 import { BlockService } from '../services/block.service';
@@ -34,6 +36,8 @@ describe('BlockController', () => {
   let blockController: BlockController;
   let blockService: BlockService;
   let categoryService: CategoryService;
+  let conversationRepository: ConversationRepository;
+  let settingService: SettingService;
   let category: Category;
   let block: Block;
   let blockToDelete: Block;
@@ -60,12 +64,39 @@ describe('BlockController', () => {
             t: jest.fn().mockImplementation((t) => t),
           },
         },
+        {
+          provide: ConversationRepository,
+          useValue: {
+            model: {
+              exists: jest.fn().mockResolvedValue(false),
+            },
+          },
+        },
+        {
+          provide: SettingService,
+          useValue: {
+            getSettings: jest.fn().mockResolvedValue({
+              chatbot_settings: {
+                global_fallback: true,
+                fallback_block: null,
+              },
+            }),
+          },
+        },
       ],
     });
-    [blockController, blockService, categoryService] = await getMocks([
+    [
+      blockController,
+      blockService,
+      categoryService,
+      conversationRepository,
+      settingService,
+    ] = await getMocks([
       BlockController,
       BlockService,
       CategoryService,
+      ConversationRepository,
+      SettingService,
     ]);
     category = (await categoryService.findOne({ label: 'default' }))!;
     block = (await blockService.findOne({ name: 'first' }))!;
@@ -76,6 +107,16 @@ describe('BlockController', () => {
     hasPreviousBlocks = (await blockService.findOne({
       name: 'hasPreviousBlocks',
     }))!;
+  });
+
+  beforeEach(() => {
+    (conversationRepository.model.exists as jest.Mock).mockResolvedValue(false);
+    (settingService.getSettings as jest.Mock).mockResolvedValue({
+      chatbot_settings: {
+        global_fallback: true,
+        fallback_block: null,
+      },
+    });
   });
 
   afterEach(jest.clearAllMocks);
@@ -209,6 +250,28 @@ describe('BlockController', () => {
   });
 
   describe('deleteOne', () => {
+    it('should throw ConflictException when block is referenced by an active conversation', async () => {
+      (conversationRepository.model.exists as jest.Mock).mockResolvedValueOnce(
+        true,
+      );
+      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
+    it('should throw ConflictException when block is configured as global fallback in settings', async () => {
+      (settingService.getSettings as jest.Mock).mockResolvedValueOnce({
+        chatbot_settings: {
+          global_fallback: true,
+          fallback_block: block.id,
+        },
+      });
+
+      await expect(blockController.deleteOne(block.id)).rejects.toThrow(
+        ConflictException,
+      );
+    });
+
     it('should delete block', async () => {
       jest.spyOn(blockService, 'deleteOne');
       const result = await blockController.deleteOne(blockToDelete.id);
