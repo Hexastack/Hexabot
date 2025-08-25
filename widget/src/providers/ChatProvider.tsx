@@ -21,11 +21,11 @@ import { useTranslation } from "../hooks/useTranslation";
 import { StdEventType } from "../types/chat-io-messages.types";
 import {
   Direction,
-  ErrorResponse,
   IPayload,
   ISubscriber,
   ISuggestion,
   QuickReplyType,
+  SocketErrorResponse,
   TEvent,
   TMessage,
   TOutgoingMessageType,
@@ -247,7 +247,7 @@ const ChatProvider: React.FC<{
   children: ReactNode;
   onError?: (
     socket: socketContext,
-    response: ErrorResponse,
+    response: SocketErrorResponse,
     setScreen?: (screen: ChatScreen) => void,
   ) => Promise<void>;
 }> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
@@ -423,7 +423,7 @@ const ChatProvider: React.FC<{
     socketCtx.socket.disconnect();
   });
 
-  useSubscribe("error", (response: ErrorResponse) => {
+  useSubscribe("error", (response: SocketErrorResponse) => {
     onError?.(socketCtx, response, setScreen);
   });
 

@@ -99,6 +99,7 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       return response;
     } catch (error) {
+      this.logger.error('Error while handling Web-socket event', error);
       return this.handleException(error, req, res);
     } finally {
       release();

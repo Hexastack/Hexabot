@@ -11,7 +11,7 @@ export enum Room {
   SUBSCRIBER = 'Subscriber',
 }
 
-export type SocketResponse = {
+export type SocketErrorResponse = {
   statusCode: number;
   message: string;
 };

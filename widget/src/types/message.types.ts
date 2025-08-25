@@ -308,7 +308,7 @@ export interface SubscribeResponse {
   profile: ISubscriber;
 }
 
-export interface ErrorResponse {
+export interface SocketErrorResponse {
   message: string;
   statusCode: number;
 }
