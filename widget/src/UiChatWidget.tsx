@@ -19,7 +19,7 @@ import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
-import { ConnectionState } from "./types/state.types";
+import { ChatScreen, ConnectionState } from "./types/state.types";
 import "./UiChatWidget.css";
 
 type UiChatWidgetProps = PropsWithChildren<{
@@ -43,7 +43,7 @@ function UiChatWidget({
           <SettingsProvider>
             <ColorProvider>
               <BroadcastChannelProvider channelName="main-channel">
-                <WidgetProvider defaultScreen="chat">
+                <WidgetProvider defaultScreen={ChatScreen.CHAT}>
                   <ChatProvider
                     defaultConnectionState={ConnectionState.connected}
                   >
