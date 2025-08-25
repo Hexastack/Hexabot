@@ -10,7 +10,6 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  InternalServerErrorException,
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -77,13 +76,12 @@ export class SocketEventDispatcherService implements OnModuleInit {
       const [_, handler] = foundHandler;
 
       await new Promise<Error | void>(async (resolve, reject) => {
-        req.session.reload((_err) => {
-          const isSessionExpired =
-            _err instanceof Error && _err.message === 'failed to load session';
-          if (isSessionExpired) {
+        req.session.reload((error) => {
+          if (error) {
             reject(new UnauthorizedException());
-          } else if (_err) reject(new InternalServerErrorException());
-          resolve();
+          } else {
+            resolve();
+          }
         });
       });
 
