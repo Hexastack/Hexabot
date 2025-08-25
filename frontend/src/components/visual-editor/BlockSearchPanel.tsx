@@ -174,8 +174,10 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               "text" in blockEntry.message
             ? String(blockEntry.message.text ?? "")
             : "",
-        fallbackTextContent: Array.isArray(blockEntry.fallbackMessage)
-          ? blockEntry.fallbackMessage.join(" ")
+        fallbackTextContent: Array.isArray(
+          blockEntry.options?.fallback?.message,
+        )
+          ? blockEntry.options?.fallback?.message.join(" ")
           : "",
         type,
         score: blockEntry.score,
