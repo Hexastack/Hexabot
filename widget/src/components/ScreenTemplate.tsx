@@ -22,11 +22,8 @@ const Template: React.FC<{ name: string; Icon: React.FC }> = ({
   const { t } = useTranslation();
   const { connectionState, setConnectionState } = useChat();
   const { colors } = useColors();
-  //   const { resetSocket } = useSocket();
   const handleClick = () => {
     setConnectionState(ConnectionState.tryingToConnect);
-    //TODO
-    // resetSocket();
   };
   const loading = connectionState > ConnectionState.notConnectedYet;
 
