@@ -6,7 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -159,7 +164,13 @@ export default abstract class BaseWebChannelHandler<
 
   @OnEvent('hook:websocket:error')
   broadcastError(client: Socket, error: HttpException): void {
-    const response = error.getResponse();
+    const response =
+      error instanceof HttpException
+        ? error.getResponse()
+        : {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal Server Error',
+          };
     const subscriber = client.client.request.session.web?.profile as
       | Subscriber
       | undefined;

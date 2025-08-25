@@ -144,8 +144,9 @@ export class SocketEventDispatcherService implements OnModuleInit {
     { socket }: SocketRequest,
     res: SocketResponse,
   ) {
+    this.eventEmitter.emit('hook:websocket:error', socket, error);
+
     if (error instanceof HttpException) {
-      this.eventEmitter.emit('hook:websocket:error', socket, error);
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
     } else {
