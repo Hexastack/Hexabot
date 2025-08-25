@@ -66,7 +66,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     } else {
       setScreen(ChatScreen.DISCONNECT);
     }
-  }, [messages.length, connectionState, setScreen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    messages.length,
+    connectionState,
+    setScreen,
+    profile,
+    resetSocketConnection,
+  ]);
 
   const getCurrentScreen = () => {
     switch (screen) {
