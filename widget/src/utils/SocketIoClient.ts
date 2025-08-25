@@ -153,18 +153,17 @@ export class SocketIoClient {
       options.method,
       options,
     );
-
-    if (this.responseMiddleware) {
-      return await this.responseMiddleware(response);
-    }
+    const processed = this.responseMiddleware
+      ? await this.responseMiddleware(response)
+      : response;
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return response;
+      return processed;
     }
 
     throw new Error(
       `Request failed with status code ${response.statusCode}: ${JSON.stringify(
-        response.body,
+        processed.body,
       )}`,
     );
   }
