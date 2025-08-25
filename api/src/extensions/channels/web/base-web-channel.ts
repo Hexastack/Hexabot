@@ -164,13 +164,14 @@ export default abstract class BaseWebChannelHandler<
 
   @OnEvent('hook:websocket:error')
   broadcastError(client: Socket, error: HttpException): void {
-    const response =
+    const response = (
       error instanceof HttpException
         ? error.getResponse()
         : {
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: 'Internal Server Error',
-          };
+          }
+    ) as SocketResponse;
     const subscriber = client.client.request.session.web?.profile as
       | Subscriber
       | undefined;
