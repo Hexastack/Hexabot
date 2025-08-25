@@ -89,7 +89,6 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       // Update session object (similar to what is done in express-session)
       await new Promise<void>((resolve) => {
-        // Update session object (similar to what is done in express-session)
         req.session.save((err) => {
           if (err) {
             this.logger.error('WS : Unable to update session!', err);
