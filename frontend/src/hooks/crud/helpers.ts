@@ -11,7 +11,9 @@ import { useQueryClient } from "react-query";
 
 import { ENTITY_MAP } from "@/services/entities";
 import { EntityType, QueryType } from "@/services/types";
-import { IBaseSchema, IEntityMapTypes } from "@/types/base.types";
+import { IBaseSchema, IEntityMapTypes, THook, TType } from "@/types/base.types";
+
+import { useGetFromCache } from "./useGet";
 
 export const useNormalizeAndCache = <
   TData extends IBaseSchema,
@@ -63,4 +65,26 @@ export const useNormalizeAndCache = <
 export const isSameEntity = (qEntity: unknown, entity: string) => {
   // We may have entities referencing the same entity type : Menu and Menu/tree
   return typeof qEntity === "string" && qEntity.split("/")[0] === entity;
+};
+
+export const useSortCachedEntities = <
+  TE extends THook["entity"],
+  TBasic extends IBaseSchema = THook<{ entity: TE }>["basic"],
+>(
+  entity: TE,
+  criteria: keyof TBasic & keyof TType<TE>["basic"] = "updatedAt",
+  order: "ASC" | "DESC" = "ASC",
+) => {
+  const getMessageFromCache = useGetFromCache(entity);
+
+  return (a: string, b: string) => {
+    const [cached1, cached2] = [a, b].map(getMessageFromCache);
+    const xor = order === "ASC" ? 1 : -1;
+
+    if (cached1?.[criteria] && cached2?.[criteria]) {
+      return cached1[criteria] > cached2[criteria] ? -1 * xor : 1 * xor;
+    }
+
+    return 1;
+  };
 };
