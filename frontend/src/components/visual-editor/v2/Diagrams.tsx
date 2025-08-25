@@ -764,7 +764,7 @@ const Diagrams = () => {
                 minWidth: "42px",
               }}
               onClick={(e) => {
-                setSearchOpen(true);
+                setSearchOpen((prev) => !prev);
                 e.preventDefault();
               }}
             >
