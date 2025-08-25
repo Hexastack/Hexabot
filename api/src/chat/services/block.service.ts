@@ -69,8 +69,8 @@ export class BlockService extends BaseService<
   /**
    * Full-text search for blocks. Returns paginated results and text score.
    */
-  async search(query: string, page = 1, limit = 50, category?: string) {
-    return await this.repository.search(query, page, limit, category);
+  async search(query: string, limit = 50, category?: string) {
+    return await this.repository.search(query, limit, category);
   }
 
   /**

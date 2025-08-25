@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Expose, Transform } from 'class-transformer';
+import { Expose, plainToInstance, Transform } from 'class-transformer';
 import {
   Document,
   Model,
@@ -52,25 +52,17 @@ export class BlockRepository extends BaseRepository<
    * Returns paginated search results and total count.
    *
    * @param query - The text to search for. Supports MongoDB text operators.
-   * @param page - Page number (default: 1).
-   * @param limit - Max number of results per page (default: 50).
+   * @param limit - Maximum number of results returned (default and maximum: 500).
    * @param category - Optional category filter.
-   * @returns An object with paginated results and total count.
+   * @returns An array of blocks with search text score for sorting.
    */
   async search(
     query: string,
-    page = 1,
-    limit = 50,
+    limit = 500,
     category?: string,
-  ): Promise<{
-    results: SearchRankedBlock[];
-    total: number;
-    page: number;
-    limit: number;
-  }> {
-    // Return early if query is empty after trimming
-    query = query?.trim();
-    if (!query) return { results: [], total: 0, page, limit };
+  ): Promise<SearchRankedBlock[]> {
+    // Return early if query is empty
+    if (!query) return [];
 
     function escapeMongoQueryString(input: string): string {
       // Escape backslashes first, then double quotes
@@ -80,11 +72,8 @@ export class BlockRepository extends BaseRepository<
     const phrase = `"${escapeMongoQueryString(query)}"`; // Use quotes for exact phrase match
 
     // Guard against excessive or invalid limit values
-    limit = Math.min(Math.max(1, limit ?? 50), 300);
-    // Ensure page is at least 1
-    page = Math.max(1, page ?? 1);
-    // Calculate number of documents to skip
-    const skip = (page - 1) * limit;
+    const MAX_LIMIT = 500;
+    limit = Math.min(Math.max(1, limit ?? MAX_LIMIT), MAX_LIMIT);
 
     // Build a category filter that tolerates string or ObjectId storage
     const categoryFilter = category
@@ -102,21 +91,17 @@ export class BlockRepository extends BaseRepository<
     };
 
     try {
-      // Execute both queries in parallel for better performance
-      const [docs, total] = await Promise.all([
-        this.model
-          .find(textSearchFilter, { score: { $meta: 'textScore' } })
-          .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .lean<SearchRankedBlock[]>()
-          .exec(),
-        this.model.countDocuments(textSearchFilter),
-      ]);
-
-      return { results: docs, total, page, limit };
+      const docs = await this.model
+        .find(textSearchFilter, { score: { $meta: 'textScore' } })
+        .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
+        .limit(limit)
+        .lean<SearchRankedBlock[]>()
+        .exec();
+      return plainToInstance(SearchRankedBlock, docs, {
+        excludePrefixes: ['_'],
+      }) as SearchRankedBlock[];
     } catch (error) {
-      this.logger?.error('Search failed:', error);
+      this.logger?.error('Block search failed:', error);
       throw error;
     }
   }

@@ -38,10 +38,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
-import {
-  BlockSearchResult,
-  BlockSearchResultPipe,
-} from '../pipes/block-search-result.pipe';
+import { SearchRankedBlock } from '../repositories/block.repository';
 import {
   Block,
   BlockFull,
@@ -66,7 +63,6 @@ export class BlockController extends BaseController<
     private readonly labelService: LabelService,
     private readonly userService: UserService,
     private pluginsService: PluginService<BaseBlockPlugin<any>>,
-    private readonly blockSearchResultPipe: BlockSearchResultPipe,
   ) {
     super(blockService);
   }
@@ -78,19 +74,13 @@ export class BlockController extends BaseController<
    */
   @Get('search')
   async search(
-    @Query('q')
-    q?: string,
+    @Query('q') q?: string,
+    @Query('limit') limitQuery?: string,
     @Query('category') category?: string,
-    @Query(PageQueryPipe) pageQuery?: PageQueryDto<Block>,
-  ): Promise<BlockSearchResult> {
+  ): Promise<SearchRankedBlock[]> {
     const query = q?.trim();
-    // get limit from pageQuery or default to 50
-    const limit = pageQuery?.limit ?? 50;
-    // get skip from pageQuery or default to 0
-    const skip = pageQuery?.skip ?? 0;
-    if (!query) {
-      return { results: [], total: 0, page: 1, limit };
-    }
+    const limit = Number(limitQuery) > 0 ? Number(limitQuery) : 50;
+    if (!query) return [];
 
     try {
       // Validate category ObjectId if provided
@@ -98,19 +88,8 @@ export class BlockController extends BaseController<
         throw new BadRequestException('Invalid category parameter');
       }
 
-      // Calculate page number from skip and limit for response
-      const page = limit > 0 ? Math.floor(skip / limit) + 1 : 1;
-
-      const rawResult = await this.blockService.search(
-        query,
-        page,
-        limit,
-        category,
-      );
-
-      // Transform raw MongoDB documents using the injected pipe
-      const transformedResult = this.blockSearchResultPipe.transform(rawResult);
-      return transformedResult;
+      // retrieve and return transformed search results from the service
+      return await this.blockService.search(query, limit, category);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
