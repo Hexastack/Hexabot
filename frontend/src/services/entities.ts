@@ -274,16 +274,6 @@ BlockEntity.define({
   attachedToBlock: BlockEntity,
 });
 
-// Block search result
-export const BlockSearchResultEntity = new schema.Entity(
-  EntityType.BLOCK_SEARCH,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
-  },
-);
-
 export const CustomBlockEntity = new schema.Entity(
   EntityType.CUSTOM_BLOCK,
   undefined,
@@ -337,14 +327,6 @@ export const StorageHelperEntity = new schema.Entity(
   undefined,
   {
     idAttribute: ({ name }) => name,
-  },
-);
-
-export const BlockSearchEntity = new schema.Entity(
-  EntityType.BLOCK_SEARCH,
-  undefined,
-  {
-    idAttribute: ({ id }) => id,
   },
 );
 
