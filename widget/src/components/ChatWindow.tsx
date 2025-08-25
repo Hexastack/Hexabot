@@ -15,7 +15,7 @@ import { ChatScreen, ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
-import Error from "./Error";
+import ErrorScreen from "./ErrorScreen";
 import { LoadingComponent } from "./LoadingComponent";
 import Messages from "./Messages";
 import UserInput from "./UserInput";
@@ -90,7 +90,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       case ChatScreen.DISCONNECT:
         return <ConnectionLost />;
       case ChatScreen.ERROR:
-        return <Error />;
+        return <ErrorScreen />;
       default:
         return PreChat && <PreChat />;
     }

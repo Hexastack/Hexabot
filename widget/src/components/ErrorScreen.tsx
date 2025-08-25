@@ -8,12 +8,12 @@
 
 import React from "react";
 
-import "./Error.scss";
+import "./ErrorScreen.scss";
 import ErrorIcon from "./icons/Error";
 import Template from "./ScreenTemplate";
 
-const Error: React.FC = () => {
+const ErrorScreen: React.FC = () => {
   return <Template name="error" Icon={ErrorIcon} />;
 };
 
-export default Error;
+export default ErrorScreen;
