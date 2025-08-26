@@ -56,10 +56,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       setScreen(ChatScreen.PRE_CHAT);
     } else if (connectionState === ConnectionState.tryingToConnect) {
       setScreen(ChatScreen.LOADING);
-    } else if (connectionState !== ConnectionState.disconnected) {
-      setScreen(ChatScreen.CHAT);
-    } else {
+    } else if (connectionState === ConnectionState.disconnected) {
       setScreen(ChatScreen.DISCONNECT);
+    } else if (connectionState === ConnectionState.error) {
+      setScreen(ChatScreen.ERROR);
+    } else {
+      setScreen(ChatScreen.CHAT);
     }
   }, [messages.length, connectionState, setScreen, profile]);
 

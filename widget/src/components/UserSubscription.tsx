@@ -14,7 +14,6 @@ import { useColors } from "../providers/ColorProvider";
 import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
-import { useWidget } from "../providers/WidgetProvider";
 import {
   ISubscriber,
   TMessage,
@@ -29,7 +28,6 @@ const UserSubscription: React.FC = () => {
   const { colors } = useColors();
   const { socket } = useSocket();
   const settings = useSettings();
-  const { setScreen } = useWidget();
   const {
     send,
     setMessages,
@@ -87,6 +85,7 @@ const UserSubscription: React.FC = () => {
             },
           });
         }
+        setConnectionState(ConnectionState.connected);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error("Unable to subscribe user", e);
@@ -100,7 +99,6 @@ const UserSubscription: React.FC = () => {
       setConnectionState,
       setMessages,
       setParticipants,
-      setScreen,
       socket,
     ],
   );

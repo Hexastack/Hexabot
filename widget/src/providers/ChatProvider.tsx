@@ -362,7 +362,7 @@ const ChatProvider: React.FC<{
       ) {
         socketErrorHandlers[error.statusCode](error);
       } else {
-        setScreen(ChatScreen.ERROR);
+        setConnectionState(ConnectionState.error);
         // eslint-disable-next-line no-console
         console.error("Unable to send message", error);
       }
@@ -396,14 +396,7 @@ const ChatProvider: React.FC<{
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      participants,
-      setConnectionState,
-      setMessages,
-      setParticipants,
-      setScreen,
-      socket,
-    ],
+    [participants, setConnectionState, setMessages, setParticipants, socket],
   );
 
   useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);

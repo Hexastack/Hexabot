@@ -18,6 +18,7 @@ export enum ConnectionState {
   wantToConnect = 1,
   tryingToConnect = 2,
   connected = 3,
+  error = 4,
 }
 
 export enum ChatScreen {
