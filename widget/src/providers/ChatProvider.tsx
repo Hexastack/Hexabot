@@ -402,7 +402,6 @@ const ChatProvider: React.FC<{
           // eslint-disable-next-line no-console
           console.error("Unable to subscribe user", error);
         }
-        // eslint-disable-next-line no-console
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
