@@ -11,46 +11,30 @@ import React, { useCallback, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { preprocessMessages, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
-import { useConfig } from "../providers/ConfigProvider";
 import { useSettings } from "../providers/SettingsProvider";
 import { useSocket } from "../providers/SocketProvider";
-import {
-  ISubscriber,
-  TMessage,
-  TOutgoingMessageType,
-} from "../types/message.types";
 import { ConnectionState } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
-  const config = useConfig();
   const { t } = useTranslation();
   const { socketErrorHandlers } = useSocket();
   const { colors } = useColors();
   const { socket } = useSocket();
   const settings = useSettings();
   const {
-    send,
     setMessages,
     connectionState,
     setConnectionState,
     participants,
     setParticipants,
     setSuggestions,
+    subscribe,
+    sendGetStarted,
   } = useChat();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
-  const getBody = async (first_name: string = "", last_name: string = "") => {
-    const { body } = await socket.get<{
-      messages: TMessage[];
-      profile: ISubscriber;
-    }>(
-      `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
-    );
-
-    return body;
-  };
   const handleSubmit = useCallback(
     async ({
       event,
@@ -64,11 +48,10 @@ const UserSubscription: React.FC = () => {
       event?.preventDefault();
       try {
         setConnectionState(ConnectionState.tryingToConnect);
-        const body = await getBody(
+        const { messages, profile } = await subscribe(
           first_name || firstName,
           last_name || lastName,
         );
-        const { messages, profile } = body;
         const { quickReplies, arrangedMessages, participantsList } =
           preprocessMessages(messages, participants, profile);
 
@@ -76,16 +59,7 @@ const UserSubscription: React.FC = () => {
         setMessages(arrangedMessages);
         setParticipants(participantsList);
         if (messages.length === 0) {
-          send({
-            data: {
-              type: TOutgoingMessageType.postback,
-              data: {
-                text: t("messages.get_started"),
-                payload: "GET_STARTED",
-              },
-              author: profile.foreign_id,
-            },
-          });
+          sendGetStarted(profile.foreign_id);
         }
         setConnectionState(ConnectionState.connected);
       } catch (error) {
