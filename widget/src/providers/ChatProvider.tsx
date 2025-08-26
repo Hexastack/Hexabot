@@ -251,7 +251,7 @@ const ChatProvider: React.FC<{
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
   const config = useConfig();
   const settings = useSettings();
-  const { screen, setScreen } = useWidget();
+  const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const { socket, socketErrorHandlers } = useSocket();
   const { t } = useTranslation();
@@ -455,13 +455,6 @@ const ChatProvider: React.FC<{
   });
 
   useEffect(() => {
-    if (
-      screen === ChatScreen.CHAT &&
-      connectionState === ConnectionState.connected
-    ) {
-      handleSubscription();
-    }
-
     const startConnection = () => {
       setConnectionState(ConnectionState.notConnectedYet);
     };
