@@ -20,11 +20,13 @@ import {
   TOutgoingMessageType,
 } from "../types/message.types";
 import { ConnectionState } from "../types/state.types";
+import { SocketIoClientError } from "../utils/SocketIoClientError";
 import "./UserSubscription.scss";
 
 const UserSubscription: React.FC = () => {
   const config = useConfig();
   const { t } = useTranslation();
+  const { socketErrorHandlers } = useSocket();
   const { colors } = useColors();
   const { socket } = useSocket();
   const settings = useSettings();
@@ -86,9 +88,17 @@ const UserSubscription: React.FC = () => {
           });
         }
         setConnectionState(ConnectionState.connected);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("Unable to subscribe user", e);
+      } catch (error) {
+        if (
+          error instanceof SocketIoClientError &&
+          socketErrorHandlers?.[error.statusCode]
+        ) {
+          socketErrorHandlers[error.statusCode](error);
+        } else {
+          setConnectionState(ConnectionState.error);
+          // eslint-disable-next-line no-console
+          console.error("Unable to subscribe user", error);
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
