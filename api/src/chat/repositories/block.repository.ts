@@ -8,7 +8,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Expose, plainToInstance, Transform } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import {
   Document,
   Model,
@@ -28,14 +28,8 @@ import {
   BLOCK_POPULATE,
   BlockFull,
   BlockPopulate,
+  SearchRankedBlock,
 } from '../schemas/block.schema';
-
-// Full block document with score attached
-export class SearchRankedBlock extends Block {
-  @Expose()
-  @Transform(({ value }) => (typeof value === 'number' ? value : 0))
-  score!: number;
-}
 
 @Injectable()
 export class BlockRepository extends BaseRepository<

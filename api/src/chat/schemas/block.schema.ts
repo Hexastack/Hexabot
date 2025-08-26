@@ -7,7 +7,7 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 import { z } from 'zod';
 
@@ -180,6 +180,13 @@ export class BlockFull extends BlockStub {
 
   @Type(() => Block)
   attachedToBlock?: Block;
+}
+
+// Full block document with text search score attached
+export class SearchRankedBlock extends Block {
+  @Expose()
+  @Transform(({ value }) => (typeof value === 'number' ? value : 0))
+  score!: number;
 }
 
 export type BlockDocument = THydratedDocument<Block>;

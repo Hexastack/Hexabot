@@ -39,12 +39,12 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import { BlockSearchQueryDto } from '../dto/block-search.dto';
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
-import { SearchRankedBlock } from '../repositories/block.repository';
 import {
   Block,
   BlockFull,
   BlockPopulate,
   BlockStub,
+  SearchRankedBlock,
 } from '../schemas/block.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
