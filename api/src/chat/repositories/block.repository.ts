@@ -21,6 +21,7 @@ import {
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import { BlockCreateDto, BlockDto, BlockUpdateDto } from '../dto/block.dto';
 import {
   Block,
@@ -58,7 +59,7 @@ export class BlockRepository extends BaseRepository<
    */
   async search(
     query: string,
-    limit = 500,
+    limit = DEFAULT_BLOCK_SEARCH_LIMIT,
     category?: string,
   ): Promise<SearchRankedBlock[]> {
     // Return early if query is empty
@@ -68,10 +69,10 @@ export class BlockRepository extends BaseRepository<
     const phrase = `"${query}"`; // Use quotes for exact phrase match
 
     // Guard against excessive or invalid limit values
-    const MAX_LIMIT = 500;
+    const MAX_LIMIT = DEFAULT_BLOCK_SEARCH_LIMIT;
     limit = Math.min(Math.max(1, limit ?? MAX_LIMIT), MAX_LIMIT);
 
-    // Build a category filter that tolerates string or ObjectId storage
+    // Build a category filter if category is provided
     const categoryFilter = category
       ? { category: new Types.ObjectId(category) }
       : {};

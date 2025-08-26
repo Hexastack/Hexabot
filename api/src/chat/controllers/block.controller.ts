@@ -22,7 +22,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { Types } from 'mongoose';
 
 import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
@@ -37,6 +36,8 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
+import { BlockSearchQueryDto } from '../dto/block-search.dto';
 import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
 import { SearchRankedBlock } from '../repositories/block.repository';
 import {
@@ -74,26 +75,20 @@ export class BlockController extends BaseController<
    */
   @Get('search')
   async search(
-    @Query('q') q?: string,
-    @Query('limit') limitQuery?: string,
-    @Query('category') category?: string,
+    @Query()
+    query: BlockSearchQueryDto,
   ): Promise<SearchRankedBlock[]> {
-    const query = q?.trim();
-    const limit = Number(limitQuery) > 0 ? Number(limitQuery) : 50;
-    if (!query) return [];
+    const queryString = query.q?.trim();
+    const limit =
+      query.limit && query.limit > 0 ? query.limit : DEFAULT_BLOCK_SEARCH_LIMIT;
+    const category = query.category;
+
+    if (!queryString) return [];
 
     try {
-      // Validate category ObjectId if provided
-      if (category && !Types.ObjectId.isValid(category)) {
-        throw new BadRequestException('Invalid category parameter');
-      }
-
       // retrieve and return transformed search results from the service
-      return await this.blockService.search(query, limit, category);
+      return await this.blockService.search(queryString, limit, category);
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
       this.logger.error('Block search failed:', error);
       throw new InternalServerErrorException('Block search failed');
     }
