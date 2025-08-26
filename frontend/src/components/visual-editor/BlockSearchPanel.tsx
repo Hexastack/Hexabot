@@ -6,8 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import BackspaceIcon from "@mui/icons-material/Backspace";
 import ClearIcon from "@mui/icons-material/Clear";
-import MinimizeIcon from "@mui/icons-material/Minimize";
 import SearchIcon from "@mui/icons-material/Search";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import {
@@ -288,10 +288,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           onClick={onClose}
           size="small"
         >
-          <MinimizeIcon />
+          <ClearIcon />
         </IconButton>
       </PanelHeader>
       <SearchInput>
+        {/* TODO: Replace TextField with FilterTextfield component */}
         <TextField
           autoFocus={open}
           inputRef={inputRef}
@@ -310,7 +311,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             endAdornment: searchTerm ? (
               <InputAdornment position="end">
                 <IconButton aria-label="clear" onClick={() => setQuery("")}>
-                  <ClearIcon />
+                  <BackspaceIcon />
                 </IconButton>
               </InputAdornment>
             ) : undefined,
