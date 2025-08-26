@@ -190,8 +190,7 @@ export class WebsocketGateway
             path: cookie.path,
             httpOnly: cookie.httpOnly,
             secure: cookie.secure,
-            // @ts-expect-error type mismatch Cookie vs CookieOptions
-            expires: cookie._expires,
+            expires: cookie.expires,
           });
 
           headers['Set-Cookie'] = cookies;
