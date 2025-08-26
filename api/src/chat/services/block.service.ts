@@ -67,9 +67,14 @@ export class BlockService extends BaseService<
   }
 
   /**
-   * Full-text search for blocks. Returns paginated results and text score.
+   * Full-text search for blocks. Searches for blocks matching the given query string.
+   *
+   * @param query - The search query to filter blocks.
+   * @param limit - The maximum number of results to return. Defaults to 50.
+   * @param category - (Optional) The category to filter the search results.
+   * @returns A promise that resolves to the search results.
    */
-  async search(query: string, limit = 50, category?: string) {
+  async search(query: string, limit = 500, category?: string) {
     return await this.repository.search(query, limit, category);
   }
 
