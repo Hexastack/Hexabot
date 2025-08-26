@@ -64,12 +64,8 @@ export class BlockRepository extends BaseRepository<
     // Return early if query is empty
     if (!query) return [];
 
-    function escapeMongoQueryString(input: string): string {
-      // Escape backslashes first, then double quotes
-      return input.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    }
-
-    const phrase = `"${escapeMongoQueryString(query)}"`; // Use quotes for exact phrase match
+    // TODO: Consider sanitizing input to prevent injection attacks for search query and other types of queries.
+    const phrase = `"${query}"`; // Use quotes for exact phrase match
 
     // Guard against excessive or invalid limit values
     const MAX_LIMIT = 500;
