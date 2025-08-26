@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { SocketIoClientError } from "../utils/SocketIoClientError";
+
 export enum Direction {
   sent = "sent",
   received = "received",
@@ -312,3 +314,8 @@ export interface SocketErrorResponse {
   message: string;
   statusCode: number;
 }
+
+export type SocketErrorHandlers = Record<
+  string,
+  (err: SocketIoClientError) => Promise<void> | void
+>;

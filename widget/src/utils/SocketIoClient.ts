@@ -14,6 +14,8 @@ import {
   IOOutgoingMessage,
 } from "../types/io-message.types";
 
+import { SocketIoClientError } from "./SocketIoClientError";
+
 type SocketIoClientConfig = Partial<ManagerOptions & SocketOptions>;
 
 type SocketIoEventHandlers = {
@@ -60,9 +62,6 @@ export class SocketIoClient {
     apiUrl: string,
     socketConfig: SocketIoClientConfig,
     handlers: SocketIoEventHandlers,
-    readonly responseMiddleware?: <T>(
-      response: IOIncomingMessage<T>,
-    ) => Promise<IOIncomingMessage<T>>,
   ) {
     this.config = {
       ...SocketIoClient.defaultConfig,
@@ -153,18 +152,15 @@ export class SocketIoClient {
       options.method,
       options,
     );
-    const processed = this.responseMiddleware
-      ? await this.responseMiddleware(response)
-      : response;
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return processed;
+      return response;
     }
 
-    throw new Error(
-      `Request failed with status code ${response.statusCode}: ${JSON.stringify(
-        processed.body,
-      )}`,
+    throw new SocketIoClientError(
+      this,
+      JSON.stringify(response.body),
+      response.statusCode,
     );
   }
 
@@ -209,9 +205,6 @@ let socketIoClient: SocketIoClient;
 export const getSocketIoClient = (
   config: Config,
   handlers: SocketIoEventHandlers,
-  responseMiddleware?: <T>(
-    response: IOIncomingMessage<T>,
-  ) => Promise<IOIncomingMessage<T>>,
 ) => {
   if (!socketIoClient) {
     socketIoClient = new SocketIoClient(
@@ -222,7 +215,6 @@ export const getSocketIoClient = (
         },
       },
       handlers,
-      responseMiddleware,
     );
   }
 

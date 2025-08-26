@@ -14,72 +14,53 @@ import {
   useRef,
 } from "react";
 
-import { IOIncomingMessage } from "../types/io-message.types";
+import { SocketErrorHandlers } from "../types/message.types";
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
 
 export interface socketContext {
   socket: SocketIoClient;
-  resetSocketConnection: () => void;
+  socketErrorHandlers?: SocketErrorHandlers;
 }
 
 interface SocketProviderProps extends PropsWithChildren {
-  responseMiddleware?: <T>(
-    response: IOIncomingMessage<T>,
-  ) => Promise<IOIncomingMessage<T>>;
+  socketErrorHandlers?: SocketErrorHandlers;
 }
 
 const socketContext = createContext<socketContext>({
   socket: {} as SocketIoClient,
-  resetSocketConnection: () => {},
 });
 
-export const SocketProvider = (props: SocketProviderProps) => {
+export const SocketProvider = ({
+  children,
+  socketErrorHandlers,
+}: SocketProviderProps) => {
   const config = useConfig();
-  const defaultResponseMiddleware = async <T,>(
-    response: IOIncomingMessage<T>,
-  ) => {
-    if (response.statusCode === 401) {
-      resetSocketConnection();
-    }
-
-    return response;
-  };
   const socketRef = useRef(
-    getSocketIoClient(
-      config,
-      {
-        onConnect: () => {
-          // eslint-disable-next-line no-console
-          console.info(
-            "Hexabot Live Chat : Successfully established WS Connection!",
-          );
-        },
-        onConnectError: () => {
-          // eslint-disable-next-line no-console
-          console.error(
-            "Hexabot Live Chat : Failed to establish WS Connection!",
-          );
-        },
-        onDisconnect: () => {
-          // eslint-disable-next-line no-console
-          console.info("Hexabot Live Chat : Disconnected WS.");
-        },
+    getSocketIoClient(config, {
+      onConnect: () => {
+        // eslint-disable-next-line no-console
+        console.info(
+          "Hexabot Live Chat : Successfully established WS Connection!",
+        );
       },
-      props.responseMiddleware || defaultResponseMiddleware,
-    ),
+      onConnectError: () => {
+        // eslint-disable-next-line no-console
+        console.error("Hexabot Live Chat : Failed to establish WS Connection!");
+      },
+      onDisconnect: () => {
+        // eslint-disable-next-line no-console
+        console.info("Hexabot Live Chat : Disconnected WS.");
+      },
+    }),
   );
-  const resetSocketConnection = () => {
-    socketRef.current.disconnect();
-    socketRef.current.connect();
-  };
 
   return (
     <socketContext.Provider
-      value={{ socket: socketRef.current, resetSocketConnection }}
+      value={{ socket: socketRef.current, socketErrorHandlers }}
     >
-      {props.children}
+      {children}
     </socketContext.Provider>
   );
 };

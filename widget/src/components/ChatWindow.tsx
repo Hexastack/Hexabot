@@ -9,7 +9,6 @@
 import React, { PropsWithChildren, useEffect, useMemo } from "react";
 
 import { useChat } from "../providers/ChatProvider";
-import { useSocket } from "../providers/SocketProvider";
 import { useWidget } from "../providers/WidgetProvider";
 import { ChatScreen, ConnectionState } from "../types/state.types";
 
@@ -38,7 +37,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 }) => {
   const { connectionState, messages, profile } = useChat();
   const { screen, isOpen, setScreen } = useWidget();
-  const { resetSocketConnection } = useSocket();
   const ChatView = useMemo(
     () => (
       <>
@@ -55,9 +53,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       messages.length === 0 &&
       connectionState === ConnectionState.notConnectedYet
     ) {
-      if (screen === ChatScreen.CHAT) {
-        resetSocketConnection();
-      }
       setScreen(ChatScreen.PRE_CHAT);
     } else if (connectionState === ConnectionState.tryingToConnect) {
       setScreen(ChatScreen.LOADING);
@@ -67,13 +62,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       setScreen(ChatScreen.DISCONNECT);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    messages.length,
-    connectionState,
-    setScreen,
-    profile,
-    resetSocketConnection,
-  ]);
+  }, [messages.length, connectionState, setScreen, profile]);
 
   const getCurrentScreen = () => {
     switch (screen) {

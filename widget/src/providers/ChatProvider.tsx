@@ -25,6 +25,7 @@ import {
   ISubscriber,
   ISuggestion,
   QuickReplyType,
+  SocketErrorHandlers,
   SocketErrorResponse,
   TEvent,
   TMessage,
@@ -36,10 +37,11 @@ import {
   ConnectionState,
   OutgoingMessageState,
 } from "../types/state.types";
+import { SocketIoClientError } from "../utils/SocketIoClientError";
 
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
-import { socketContext, useSocket, useSubscribe } from "./SocketProvider";
+import { useSocket, useSubscribe } from "./SocketProvider";
 import { useWidget } from "./WidgetProvider";
 
 export const getQuickReplies = (message?: TMessage): ISuggestion[] =>
@@ -245,17 +247,13 @@ const ChatProvider: React.FC<{
   wantToConnect?: () => void;
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
-  onError?: (
-    socket: socketContext,
-    response: SocketErrorResponse,
-    setScreen: (screen: ChatScreen) => void,
-  ) => Promise<void>;
-}> = ({ wantToConnect, defaultConnectionState = 0, children, onError }) => {
+  socketErrorHandlers?: SocketErrorHandlers;
+}> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
   const config = useConfig();
   const settings = useSettings();
   const { screen, setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
-  const socketCtx = useSocket();
+  const { socket, socketErrorHandlers } = useSocket();
   const { t } = useTranslation();
   const [participants, setParticipants] = useState<Participant[]>(
     defaultCtx.participants,
@@ -346,7 +344,7 @@ const ChatProvider: React.FC<{
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      const sentMessage = await socketCtx.socket.post<TMessage>(
+      const sentMessage = await socket.post<TMessage>(
         `/webhook/${config.channel}/`,
         {
           data: {
@@ -358,8 +356,16 @@ const ChatProvider: React.FC<{
 
       handleNewIOMessage(sentMessage.body);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error("Unable to subscribe user", error);
+      if (
+        error instanceof SocketIoClientError &&
+        socketErrorHandlers?.[error.statusCode]
+      ) {
+        socketErrorHandlers[error.statusCode](error);
+      } else {
+        setScreen(ChatScreen.ERROR);
+        // eslint-disable-next-line no-console
+        console.error("Unable to send message", error);
+      }
     }
   };
   const handleSubscription = useCallback(
@@ -370,7 +376,7 @@ const ChatProvider: React.FC<{
           firstName && lastName
             ? { first_name: firstName, last_name: lastName }
             : {};
-        const { body } = await socketCtx.socket.get<{
+        const { body } = await socket.get<{
           messages: TMessage[];
           profile: ISubscriber;
         }>(
@@ -396,7 +402,7 @@ const ChatProvider: React.FC<{
       setMessages,
       setParticipants,
       setScreen,
-      socketCtx,
+      socket,
     ],
   );
 
@@ -420,11 +426,13 @@ const ChatProvider: React.FC<{
   }, [syncState, isOpen]);
 
   useSubscribeBroadcastChannel("logout", () => {
-    socketCtx.socket.disconnect();
+    socket.disconnect();
   });
 
-  useSubscribe("error", (response: SocketErrorResponse) => {
-    onError?.(socketCtx, response, setScreen);
+  useSubscribe("error", ({ message, statusCode }: SocketErrorResponse) => {
+    const err = new SocketIoClientError(socket, message, statusCode);
+
+    socketErrorHandlers?.[statusCode](err);
   });
 
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
@@ -463,18 +471,18 @@ const ChatProvider: React.FC<{
       setConnectionState(ConnectionState.disconnected);
     };
 
-    socketCtx.socket.io.on("open", startConnection);
-    socketCtx.socket.io.on("reconnect", startConnection);
-    socketCtx.socket.io.on("close", endConnection);
-    socketCtx.socket.io.on("reconnect_error", endConnection);
-    socketCtx.socket.io.on("reconnect_failed", endConnection);
+    socket.io.on("open", startConnection);
+    socket.io.on("reconnect", startConnection);
+    socket.io.on("close", endConnection);
+    socket.io.on("reconnect_error", endConnection);
+    socket.io.on("reconnect_failed", endConnection);
 
     return () => {
-      socketCtx.socket.io.off("open", startConnection);
-      socketCtx.socket.io.off("reconnect", startConnection);
-      socketCtx.socket.io.off("close", endConnection);
-      socketCtx.socket.io.off("reconnect_error", endConnection);
-      socketCtx.socket.io.off("reconnect_failed", endConnection);
+      socket.io.off("open", startConnection);
+      socket.io.off("reconnect", startConnection);
+      socket.io.off("close", endConnection);
+      socket.io.off("reconnect_error", endConnection);
+      socket.io.off("reconnect_failed", endConnection);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

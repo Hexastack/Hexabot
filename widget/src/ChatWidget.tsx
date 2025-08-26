@@ -19,25 +19,24 @@ import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
-import { ChatScreen } from "./types/state.types";
 
 function ChatWidget(props: Partial<Config>) {
   return (
     <ConfigProvider {...props}>
       <TranslationProvider>
-        <SocketProvider>
+        <SocketProvider
+          socketErrorHandlers={{
+            "401": (err) => {
+              err.socket.disconnect();
+              err.socket.connect();
+            },
+          }}
+        >
           <SettingsProvider>
             <ColorProvider>
               <WidgetProvider>
                 <BroadcastChannelProvider channelName="main-channel">
-                  <ChatProvider
-                    onError={async (socket, { statusCode }, setScreen) => {
-                      setScreen?.(ChatScreen.ERROR);
-                      if (statusCode === 401) {
-                        socket.resetSocketConnection();
-                      }
-                    }}
-                  >
+                  <ChatProvider>
                     <Launcher PreChat={UserSubscription} />
                   </ChatProvider>
                 </BroadcastChannelProvider>

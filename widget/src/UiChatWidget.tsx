@@ -19,7 +19,7 @@ import { SocketProvider } from "./providers/SocketProvider";
 import { TranslationProvider } from "./providers/TranslationProvider";
 import WidgetProvider, { WidgetContextType } from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
-import { IOIncomingMessage } from "./types/io-message.types";
+import { SocketErrorHandlers } from "./types/message.types";
 import { ChatScreen, ConnectionState } from "./types/state.types";
 import "./UiChatWidget.css";
 
@@ -30,21 +30,19 @@ type UiChatWidgetProps = PropsWithChildren<{
   PreChat?: React.FC;
   PostChat?: React.FC;
   config: Partial<Config>;
-  customResponseMiddleware?: <T>(
-    response: IOIncomingMessage<T>,
-  ) => Promise<IOIncomingMessage<T>>;
+  socketErrorHandlers?: SocketErrorHandlers;
 }>;
 
 function UiChatWidget({
   CustomHeader,
   CustomAvatar,
   config,
-  customResponseMiddleware,
+  socketErrorHandlers,
 }: UiChatWidgetProps) {
   return (
     <ConfigProvider {...config}>
       <TranslationProvider>
-        <SocketProvider responseMiddleware={customResponseMiddleware}>
+        <SocketProvider socketErrorHandlers={socketErrorHandlers}>
           <SettingsProvider>
             <ColorProvider>
               <BroadcastChannelProvider channelName="main-channel">
