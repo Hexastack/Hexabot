@@ -390,9 +390,19 @@ const ChatProvider: React.FC<{
         setSuggestions(quickReplies);
         setMessages(arrangedMessages);
         setParticipants(participantsList);
-      } catch (e) {
+        setConnectionState(ConnectionState.connected);
+      } catch (error) {
+        if (
+          error instanceof SocketIoClientError &&
+          socketErrorHandlers?.[error.statusCode]
+        ) {
+          socketErrorHandlers[error.statusCode](error);
+        } else {
+          setConnectionState(ConnectionState.error);
+          // eslint-disable-next-line no-console
+          console.error("Unable to subscribe user", error);
+        }
         // eslint-disable-next-line no-console
-        console.error("Unable to subscribe user", e);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
