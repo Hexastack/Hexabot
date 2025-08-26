@@ -8,8 +8,10 @@
 
 import BackspaceIcon from "@mui/icons-material/Backspace";
 import ClearIcon from "@mui/icons-material/Clear";
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import SearchIcon from "@mui/icons-material/Search";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
+import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
   Button,
@@ -19,9 +21,9 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Radio,
-  RadioGroup,
   Skeleton,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -88,11 +90,19 @@ const SearchInput = styled(Box)(() => ({
   padding: 8,
   gap: 8,
 }));
-const ScopeToggle = styled(RadioGroup)(() => ({
+const ScopeToggle = styled(Tabs)(() => ({
   display: "flex",
   flexDirection: "row",
-  gap: 16,
-  padding: "0 16px",
+  gap: 8,
+  padding: "0 8px",
+  // make tabs look like compact icon tabs
+  minHeight: 36,
+  "& .MuiTab-root": {
+    minHeight: 36,
+    minWidth: 120,
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
 }));
 const ResultCount = styled(Box)(() => ({ padding: "4px 16px", color: "#555" }));
 
@@ -311,7 +321,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             endAdornment: searchTerm ? (
               <InputAdornment position="end">
                 <IconButton aria-label="clear" onClick={() => setQuery("")}>
-                  <BackspaceIcon />
+                  <BackspaceIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
             ) : undefined,
@@ -319,18 +329,23 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
         />
       </SearchInput>
       <ScopeToggle
-        row
         value={scope}
         onChange={(_, v) => setScope(v as SearchScope)}
+        aria-label="search-scope"
+        variant="fullWidth"
       >
-        <Box display="flex" alignItems="center">
-          <Radio value="current" checked={scope === "current"} />
-          <Typography>Current flow</Typography>
-        </Box>
-        <Box display="flex" alignItems="center">
-          <Radio value="all" checked={scope === "all"} />
-          <Typography>All flows</Typography>
-        </Box>
+        <Tab
+          value="current"
+          icon={<ManageSearchIcon />}
+          iconPosition="start"
+          label="Current flow"
+        />
+        <Tab
+          value="all"
+          icon={<TravelExploreIcon />}
+          iconPosition="start"
+          label="All flows"
+        />
       </ScopeToggle>
       <Divider />
       {error ? (
