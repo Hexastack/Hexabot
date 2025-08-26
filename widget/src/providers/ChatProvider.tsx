@@ -40,6 +40,7 @@ import {
 } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
 
+import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
@@ -263,6 +264,7 @@ const ChatProvider: React.FC<{
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
   const config = useConfig();
   const settings = useSettings();
+  const { postMessage } = useBroadcastChannel();
   const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const { socket, socketErrorHandlers } = useSocket();
@@ -460,6 +462,17 @@ const ChatProvider: React.FC<{
 
   useSubscribeBroadcastChannel("logout", () => {
     socket.disconnect();
+  });
+
+  useSubscribeBroadcastChannel("subscribeUser", () => {
+    socket.disconnect();
+    socket.connect();
+  });
+
+  useSubscribe("message", ({ author }: { author: string }) => {
+    if (author === "chatbot" && messages.length === 1) {
+      postMessage({ event: "subscribeUser" });
+    }
   });
 
   useSubscribe("error", ({ message, statusCode }: SocketErrorResponse) => {
