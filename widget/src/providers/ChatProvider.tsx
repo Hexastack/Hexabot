@@ -471,8 +471,10 @@ const ChatProvider: React.FC<{
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (profile && messages.length === 0) {
+    if (config.channel === "web-channel" && profile && messages.length === 0) {
       sendGetStarted(profile.foreign_id);
+    } else if (config.channel === "console-channel" && !profile) {
+      handleSubscription();
     }
 
     const { quickReplies, arrangedMessages, participantsList } =
