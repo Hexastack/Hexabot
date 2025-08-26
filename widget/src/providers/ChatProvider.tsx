@@ -462,6 +462,11 @@ const ChatProvider: React.FC<{
     socket.disconnect();
   });
 
+  useSubscribeBroadcastChannel("subscribed", () => {
+    socket.disconnect();
+    socket.connect();
+  });
+
   useSubscribe("error", ({ message, statusCode }: SocketErrorResponse) => {
     const err = new SocketIoClientError(socket, message, statusCode);
 

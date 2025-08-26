@@ -17,6 +17,7 @@ import {
 
 export enum EBCEvent {
   LOGOUT = "logout",
+  SUBSCRIBED = "subscribed",
 }
 
 type BroadcastChannelMessage = {
