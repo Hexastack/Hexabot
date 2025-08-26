@@ -14,6 +14,8 @@ import {
   IOOutgoingMessage,
 } from "../types/io-message.types";
 
+import { SocketIoClientError } from "./SocketIoClientError";
+
 type SocketIoClientConfig = Partial<ManagerOptions & SocketOptions>;
 
 type SocketIoEventHandlers = {
@@ -155,10 +157,10 @@ export class SocketIoClient {
       return response;
     }
 
-    throw new Error(
-      `Request failed with status code ${response.statusCode}: ${JSON.stringify(
-        response.body,
-      )}`,
+    throw new SocketIoClientError(
+      this,
+      JSON.stringify(response.body),
+      response.statusCode,
     );
   }
 

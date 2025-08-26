@@ -21,20 +21,22 @@ export interface WidgetContextType {
   setScroll: (scroll: number) => void;
 }
 
-const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
-const WidgetProvider: React.FC<{
+interface WidgetProviderProps {
   onOpen?: () => void;
   onClose?: () => void;
   onScrollToTop?: () => void;
   defaultScreen?: ChatScreen;
   children: ReactNode;
-}> = ({
+}
+
+const WidgetContext = createContext<WidgetContextType | undefined>(undefined);
+const WidgetProvider: React.FC<WidgetProviderProps> = ({
   onOpen,
   onClose,
   onScrollToTop,
-  defaultScreen = "prechat",
+  defaultScreen = ChatScreen.PRE_CHAT,
   children,
-}) => {
+}: WidgetProviderProps) => {
   const [syncState, setSyncState] = useState<boolean>(true);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [screen, setScreen] = useState<ChatScreen>(defaultScreen);

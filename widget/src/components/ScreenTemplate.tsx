@@ -11,6 +11,7 @@ import React from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
+import { useSocket } from "../providers/SocketProvider";
 import { ConnectionState } from "../types/state.types";
 
 import { LoadingComponent } from "./LoadingComponent";
@@ -21,11 +22,15 @@ const Template: React.FC<{ name: string; Icon: React.FC }> = ({
 }) => {
   const { t } = useTranslation();
   const { connectionState, setConnectionState } = useChat();
+  const { socket } = useSocket();
   const { colors } = useColors();
   const handleClick = () => {
     setConnectionState(ConnectionState.tryingToConnect);
+
+    socket.disconnect();
+    socket.connect();
   };
-  const loading = connectionState > ConnectionState.notConnectedYet;
+  const loading = connectionState === ConnectionState.tryingToConnect;
 
   return (
     <div
