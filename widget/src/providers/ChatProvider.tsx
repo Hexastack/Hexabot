@@ -460,7 +460,10 @@ const ChatProvider: React.FC<{
   });
 
   useEffect(() => {
-    if (screen === "chat" && connectionState === ConnectionState.connected) {
+    if (
+      screen === ChatScreen.CHAT &&
+      connectionState === ConnectionState.connected
+    ) {
       handleSubscription();
     }
 

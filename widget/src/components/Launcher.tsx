@@ -12,7 +12,7 @@ import { useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useSocketLifecycle } from "../providers/SocketProvider";
 import { useWidget, WidgetContextType } from "../providers/WidgetProvider";
-import { ChatScreen } from "../types/state.types";
+import { ChatScreen, ConnectionState } from "../types/state.types";
 
 import ChatWindow from "./ChatWindow";
 import CloseIcon from "./icons/CloseIcon";
@@ -48,7 +48,7 @@ const Launcher: React.FC<LauncherProps> = ({
   useEffect(() => {
     if (chat.messages.length > 0) {
       widget.setScreen(ChatScreen.CHAT);
-      chat.setConnectionState(3);
+      chat.setConnectionState(ConnectionState.connected);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.messages.length]);
