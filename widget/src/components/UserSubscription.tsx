@@ -48,11 +48,10 @@ const UserSubscription: React.FC = () => {
       event?.preventDefault();
       try {
         setConnectionState(ConnectionState.tryingToConnect);
-        const response = await subscribe(
+        const { messages, profile } = await subscribe(
           first_name || firstName,
           last_name || lastName,
         );
-        const { messages, profile } = response;
         const { quickReplies, arrangedMessages, participantsList } =
           preprocessMessages(messages, participants, profile);
 
