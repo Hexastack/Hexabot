@@ -220,6 +220,7 @@ BlockModel.schema.index(
       'options.fallback.message': 1,
     },
     name: 'block_search_index',
+    default_language: 'none',
   },
 );
 

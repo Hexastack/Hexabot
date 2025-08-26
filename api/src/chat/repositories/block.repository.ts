@@ -85,7 +85,6 @@ export class BlockRepository extends BaseRepository<
         $search: phrase,
         $diacriticSensitive: false,
         $caseSensitive: false,
-        $language: 'none',
       },
       ...categoryFilter,
     };
