@@ -323,6 +323,10 @@ const ChatProvider: React.FC<{
             : Direction.sent;
         newIOMessage.read = true;
         newIOMessage.delivery = true;
+
+        if (!isOpen && newIOMessage.direction === Direction.received) {
+          updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
+        }
       }
 
       setMessages((prevMessages) => [
@@ -336,8 +340,6 @@ const ChatProvider: React.FC<{
 
     setSuggestions(quickReplies);
 
-    isOpen ||
-      updateNewMessagesCount((prevMessagesCount) => prevMessagesCount + 1);
     settings.alwaysScrollToBottom && setScroll(101); // @hack
     setOutgoingMessageState(OutgoingMessageState.sent);
   };
@@ -356,17 +358,12 @@ const ChatProvider: React.FC<{
     setMessage("");
     try {
       // when the request timeout it throws exception & break frontend
-      const sentMessage = await socket.post<TMessage>(
-        `/webhook/${config.channel}/`,
-        {
-          data: {
-            ...data,
-            author: data.author ?? participants[1].id,
-          },
+      await socket.post<TMessage>(`/webhook/${config.channel}/`, {
+        data: {
+          ...data,
+          author: data.author ?? participants[1].id,
         },
-      );
-
-      handleNewIOMessage(sentMessage.body);
+      });
     } catch (error) {
       if (
         error instanceof SocketIoClientError &&
