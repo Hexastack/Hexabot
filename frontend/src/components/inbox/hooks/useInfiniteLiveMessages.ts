@@ -24,11 +24,14 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
-  const params: SearchPayload<IMessage> = {
-    where: {
-      or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
-    },
-  };
+  const params = useMemo<SearchPayload<IMessage>>(
+    () => ({
+      where: {
+        or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
+      },
+    }),
+    [activeChat?.id],
+  );
   const {
     data,
     hasNextPage,
