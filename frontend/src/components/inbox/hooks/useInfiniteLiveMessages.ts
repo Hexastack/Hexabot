@@ -79,19 +79,26 @@ export const useInfinitedLiveMessages = () => {
 
   useSubscribe<SocketMessageEvents>("message", addMessage);
 
-  const messages = useMemo(
-    () =>
-      (data?.pages || [])
-        .flat()
-        .filter((m, idx, self) => self.indexOf(m) === idx)
-        .sort((a, b) => {
-          return (
-            new Date(a.createdAt ?? 0).getTime() -
-            new Date(b.createdAt ?? 0).getTime()
-          );
-        }),
-    [data],
-  );
+  const messages = useMemo(() => {
+    const seen = new Set<string>();
+
+    return (data?.pages || [])
+      .flat()
+      .reduce<IMessage[]>((acc, m) => {
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          acc.push(m);
+        }
+
+        return acc;
+      }, [])
+      .sort((a, b) => {
+        return (
+          new Date(a.createdAt ?? 0).getTime() -
+          new Date(b.createdAt ?? 0).getTime()
+        );
+      });
+  }, [data]);
 
   return {
     replyTo:
