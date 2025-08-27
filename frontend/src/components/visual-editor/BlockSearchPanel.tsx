@@ -36,7 +36,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { BlockType, IBlockSearchResult } from "@/types/block.types";
-import { determineType, getIconForType } from "@/utils/block.utils";
+import { getBlockType, getIconForType } from "@/utils/block.utils";
 
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
@@ -173,7 +173,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   // Map backend results into UI items
   const items: BlockSearchItem[] = useMemo(() => {
     return backendResults.map((blockEntry: IBlockSearchResult) => {
-      const type = determineType(blockEntry.message);
+      const type = getBlockType(blockEntry.message);
 
       return {
         id: blockEntry.id,
