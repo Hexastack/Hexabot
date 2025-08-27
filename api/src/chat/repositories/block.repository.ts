@@ -67,10 +67,16 @@ export class BlockRepository extends BaseRepository<
     limit = Math.min(Math.max(1, limit ?? MAX_LIMIT), MAX_LIMIT);
 
     // Build a category filter if category is provided
-    const categoryFilter = category
-      ? { category: new Types.ObjectId(category) }
-      : {};
-
+    let categoryFilter = {};
+    if (category) {
+      if (Types.ObjectId.isValid(category)) {
+        categoryFilter = { category: new Types.ObjectId(category) };
+      } else {
+        this.logger?.warn(
+          `Ignoring invalid category ObjectId in search filter: ${category}`,
+        );
+      }
+    }
     const textSearchFilter = {
       $text: {
         $search: phrase,
