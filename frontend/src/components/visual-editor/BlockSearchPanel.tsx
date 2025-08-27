@@ -142,7 +142,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       hasCount: false,
       params: {
         q: searchTerm,
-        limit: 200,
         category: scope === "current" ? selectedCategoryId : undefined,
       },
     },
