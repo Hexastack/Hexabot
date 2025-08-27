@@ -73,6 +73,7 @@ export const useInfinitedLiveMessages = () => {
         );
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [queryClient, activeChat?.id],
   );
 
@@ -80,9 +81,15 @@ export const useInfinitedLiveMessages = () => {
 
   const messages = useMemo(
     () =>
-      (data?.pages.reverse().map((p) => p.reverse()) || [])
+      (data?.pages || [])
         .flat()
-        .filter((m, idx, self) => self.indexOf(m) === idx),
+        .filter((m, idx, self) => self.indexOf(m) === idx)
+        .sort((a, b) => {
+          return (
+            new Date(a.createdAt ?? 0).getTime() -
+            new Date(b.createdAt ?? 0).getTime()
+          );
+        }),
     [data],
   );
 
