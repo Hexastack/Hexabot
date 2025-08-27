@@ -126,6 +126,9 @@ const Diagrams = () => {
     onSuccess: () => {
       setSelectedBlockId(undefined);
     },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
