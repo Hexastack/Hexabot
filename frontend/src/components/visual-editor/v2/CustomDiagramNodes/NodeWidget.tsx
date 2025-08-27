@@ -41,6 +41,7 @@ export interface NodeWidgetProps {
   node: NodeModel;
   engine: DiagramEngine;
   color: string;
+  highlightedNodeId?: string | null;
 }
 
 const IconContainer = styled("div")(({ theme }) => ({
@@ -261,6 +262,11 @@ class NodeWidget extends React.Component<
         className={clsx(
           "custom-node",
           this.props.node.isSelected() ? "selected" : "",
+          // add flash highlight class when the highlighted node id from context matches this node
+          this.props.highlightedNodeId &&
+            this.props.node.getOptions?.().id === this.props.highlightedNodeId
+            ? "flash-highlight"
+            : "",
         )}
         style={{
           border: `1px solid ${this.config.color}`,

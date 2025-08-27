@@ -256,6 +256,7 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   selectedCategoryId: "",
   setSelectedCategoryId: () => {},
   focusBlock: async () => {},
+  highlightedNodeId: null,
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
@@ -264,16 +265,15 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
   // Token to cancel/ignore previous focus attempts (latest-wins)
   const focusRequestIdRef = React.useRef(0);
-  // Track highlight timeout to avoid leaks and overlapping highlights
-  const highlightTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  // Track highlighted node id to pass to NodeWidget for highlight class toggling
+  const [highlightedNodeId, setHighlightedNodeId] = React.useState<
+    string | null
+  >(null);
 
   // Cleanup effect to clear the highlight timeout when the component unmounts
   React.useEffect(() => {
     return () => {
-      if (highlightTimeoutRef.current) {
-        clearTimeout(highlightTimeoutRef.current);
-        highlightTimeoutRef.current = null;
-      }
+      setHighlightedNodeId(null);
     };
   }, []);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
@@ -331,30 +331,8 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
             } catch (_) {
               // no-op
             }
-
             // Highlight the node visually
-            // Remove any previous highlight classes
-            document
-              ?.querySelectorAll(".flash-highlight")
-              ?.forEach((targetNode) =>
-                targetNode.classList.remove("flash-highlight"),
-              );
-
-            // Find the node element in the DOM
-            const el = document?.querySelector(
-              `[data-nodeid='${blockId}']`,
-            ) as HTMLElement | null;
-
-            if (el) {
-              el.classList.add("flash-highlight");
-              if (highlightTimeoutRef.current) {
-                clearTimeout(highlightTimeoutRef.current);
-              }
-              highlightTimeoutRef.current = setTimeout(() => {
-                el.classList.remove("flash-highlight");
-                highlightTimeoutRef.current = null;
-              }, FOCUS_CONFIG.HIGHLIGHT_DURATION_MS);
-            }
+            setHighlightedNodeId(blockId);
 
             resolve();
           } else if (n > 0) {
@@ -382,6 +360,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         setSelectedCategoryId,
         selectedCategoryId,
         focusBlock,
+        highlightedNodeId,
       }}
     >
       {children}
