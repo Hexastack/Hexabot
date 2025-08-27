@@ -20,7 +20,7 @@ import { BlockMessage, BlockType } from "@/types/block.types";
  * @param message - The block message to determine the type of.
  * @returns The determined `BlockType` for the given message.
  */
-export const determineType = (message: BlockMessage): BlockType => {
+export const getBlockType = (message: BlockMessage): BlockType => {
   if (typeof message === "string" || Array.isArray(message))
     return BlockType.TEXT;
   if (message && typeof message === "object") {
