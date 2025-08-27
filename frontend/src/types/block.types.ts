@@ -160,11 +160,6 @@ export enum BlockType {
   PLUGIN = "plugin",
 }
 
-export type IBlockSearchResult = Pick<
-  IBlock,
-  "id" | "name" | "message" | "category" | "options"
-> & {
+export interface IBlockSearchResult extends IBlock {
   score: number;
-  createdAt: never;
-  updatedAt: never;
-};
+}
