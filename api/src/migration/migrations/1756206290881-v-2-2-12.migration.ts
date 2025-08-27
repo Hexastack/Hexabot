@@ -25,10 +25,10 @@ module.exports = {
         await BlockModel.collection.dropIndex('block_search_index');
       }
     } catch (e) {
-      services.logger.error(
-        'block_search_index does not exist, skipping index drop',
+      services.logger.log(
+        'block_search_index does not exist or failed to drop, continuing',
+        e,
       );
-      return false;
     }
 
     // Create index with language-agnostic setting
@@ -73,7 +73,9 @@ module.exports = {
     } catch (e) {
       services.logger.error(
         'Failed to drop block_search_index, it may not exist',
+        e,
       );
+      // return false to indicate rollback did not complete fully
       return false;
     }
   },
