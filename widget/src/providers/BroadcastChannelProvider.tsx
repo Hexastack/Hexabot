@@ -46,9 +46,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   children,
   channelName,
 }) => {
-  const channelRef = useRef<BroadcastChannel>(
-    new BroadcastChannel(channelName),
-  );
+  const channelRef = useRef<BroadcastChannel>();
   const subscribersRef = useRef<
     Record<
       string,
@@ -57,18 +55,21 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   >({});
 
   useEffect(() => {
+    const channel = new BroadcastChannel(channelName);
+
+    channelRef.current = channel;
+
     const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
-      subscribersRef.current[data.event]?.forEach((callback) => callback(data));
+      subscribersRef.current[data.event]?.forEach((cb) => cb(data));
     };
 
-    channelRef.current.addEventListener("message", handleMessage);
+    channel.addEventListener("message", handleMessage);
 
     return () => {
-      channelRef.current.removeEventListener("message", handleMessage);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      channelRef.current.close();
+      channel.removeEventListener("message", handleMessage);
+      channel.close();
     };
-  }, []);
+  }, [channelName]);
 
   const subscribe: IBroadcastChannelContext["subscribe"] = (
     event,
@@ -86,7 +87,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     };
   };
   const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
-    channelRef.current.postMessage(message);
+    channelRef.current?.postMessage(message);
   };
 
   return (
