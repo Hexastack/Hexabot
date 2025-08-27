@@ -64,18 +64,24 @@ module.exports = {
   async down(services: MigrationServices) {
     // Rollback logic
     const BlockModel = mongoose.model<Block>(Block.name, blockSchema);
-
-    // Drop the index
+    // check if index exists
     try {
+      const indexes = await BlockModel.collection.indexes();
+      const hasIdx = indexes.some((i) => i.name === 'block_search_index');
+      if (!hasIdx) {
+        services.logger.warn(
+          'block_search_index is already dropped. Aborting rollback.',
+        );
+        return false;
+      }
+
+      // Index exists - attempt to drop
       await BlockModel.collection.dropIndex('block_search_index');
       services.logger.verbose('Dropped block_search_index successfully');
       return true;
     } catch (e) {
-      services.logger.error(
-        'Failed to drop block_search_index, it may not exist',
-        e,
-      );
-      // return false to indicate rollback did not complete fully
+      // Drop failed — log error and fail the rollback
+      services.logger.error('Failed to drop block_search_index', e);
       return false;
     }
   },
