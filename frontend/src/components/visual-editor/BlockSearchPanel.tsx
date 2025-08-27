@@ -76,6 +76,7 @@ const Panel = styled(Box)(() => ({
   display: "flex",
   flexDirection: "column",
   padding: 8,
+  overflow: "auto", // Enable scrolling if content overflows
 }));
 const PanelHeader = styled(Box)(() => ({
   display: "flex",
@@ -105,6 +106,14 @@ const ScopeToggle = styled(Tabs)(() => ({
   },
 }));
 const ResultCount = styled(Box)(() => ({ padding: "4px 16px", color: "#555" }));
+const PanelBody = styled(Box)(() => ({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minHeight: 120, // ensure at least one list item and footer can be shown without overlap on small viewports
+  minWidth: 0,
+  overflow: "hidden",
+}));
 
 export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   open,
@@ -348,136 +357,146 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
         />
       </ScopeToggle>
       <Divider />
-      {error ? (
-        <ErrorState
-          message={t("message.failed_to_load_blocks")}
-          action={handleRetry}
-          ctaText={t("button.retry")}
-        />
-      ) : loading ? (
-        <Box p={2} display="grid" gap={1}>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Box key={i} display="flex" alignItems="center" gap={2} height={56}>
-              {/* Avatar skeleton */}
-              <Skeleton variant="circular" width={32} height={32} />
-              {/* Text content skeleton */}
-              <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
-                <Skeleton variant="text" width="90%" height={20} />
-                <Skeleton variant="text" width="60%" height={16} />
+      <PanelBody>
+        {error ? (
+          <Box p={2} display="flex" flexDirection="column" gap={2}>
+            <ErrorState
+              message={t("message.failed_to_load_blocks")}
+              action={handleRetry}
+              ctaText={t("button.retry")}
+            />
+          </Box>
+        ) : loading ? (
+          <Box p={2} display="grid" gap={1}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Box
+                key={i}
+                display="flex"
+                alignItems="center"
+                gap={2}
+                height={56}
+              >
+                {/* Avatar skeleton */}
+                <Skeleton variant="circular" width={32} height={32} />
+                {/* Text content skeleton */}
+                <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
+                  <Skeleton variant="text" width="90%" height={20} />
+                  <Skeleton variant="text" width="60%" height={16} />
+                </Box>
               </Box>
-            </Box>
-          ))}
-        </Box>
-      ) : searchResults.length === 0 && searchTerm ? (
-        <Box
-          p={2}
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          sx={{ height: "100%" }}
-          flex={1}
-          gap={2}
-        >
-          <SearchOffIcon sx={{ fontSize: 48 }} />
-          <Typography align="center">
-            {t("message.no_matching_results")}
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          <ResultCount>
-            <Typography variant="caption">
-              {visibleCount} / {searchResults.length} results
-            </Typography>
-          </ResultCount>
+            ))}
+          </Box>
+        ) : searchResults.length === 0 && searchTerm ? (
           <Box
-            ref={listContainerRef}
-            sx={{
-              flex: 1,
-              minHeight: 0,
-              overflow: "auto",
-            }}
-            onKeyDown={onKeyDown}
+            p={2}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            sx={{ height: "100%" }}
+            flex={1}
+            gap={2}
           >
-            <Box>
-              {searchResults.slice(0, visibleCount).map((res, idx) => {
-                const item = res.item;
-                const primary = item?.name || "";
-                const secondaryParts: string[] = [];
+            <SearchOffIcon sx={{ fontSize: 48 }} />
+            <Typography align="center">
+              {t("message.no_matching_results")}
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <ResultCount>
+              <Typography variant="caption">
+                {visibleCount} / {searchResults.length} results
+              </Typography>
+            </ResultCount>
+            <Box
+              ref={listContainerRef}
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                overflow: "auto",
+              }}
+              onKeyDown={onKeyDown}
+            >
+              <Box>
+                {searchResults.slice(0, visibleCount).map((res, idx) => {
+                  const item = res.item;
+                  const primary = item?.name || "";
+                  const secondaryParts: string[] = [];
 
-                if (item?.blockTextContent)
-                  secondaryParts.push(item.blockTextContent);
-                if (item?.fallbackTextContent)
-                  secondaryParts.push(
-                    `(fallback: ${item.fallbackTextContent})`,
-                  );
-                const secondary = secondaryParts.length
-                  ? secondaryParts.join(" • ")
-                  : undefined;
-                const isActive = idx === selectedIndex;
-                const Icon = getIconForType(item?.type || BlockType.PLUGIN);
+                  if (item?.blockTextContent)
+                    secondaryParts.push(item.blockTextContent);
+                  if (item?.fallbackTextContent)
+                    secondaryParts.push(
+                      `(fallback: ${item.fallbackTextContent})`,
+                    );
+                  const secondary = secondaryParts.length
+                    ? secondaryParts.join(" • ")
+                    : undefined;
+                  const isActive = idx === selectedIndex;
+                  const Icon = getIconForType(item?.type || BlockType.PLUGIN);
 
-                return (
-                  <div
-                    key={item?.id ?? idx}
-                    ref={(el) => {
-                      itemRefs.current[idx] = el;
-                    }}
-                  >
-                    <ListItem
-                      button
-                      selected={isActive}
-                      onClick={() => activate(idx)}
-                      sx={{
-                        height: 56,
-                        overflow: "hidden",
+                  return (
+                    <div
+                      key={item?.id ?? idx}
+                      ref={(el) => {
+                        itemRefs.current[idx] = el;
                       }}
                     >
-                      <ListItemAvatar sx={{ minWidth: 44, flexShrink: 0 }}>
-                        <Box
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Icon width={24} height={24} />
-                        </Box>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={primary}
-                        secondary={`${item?.categoryLabel || ""}${
-                          secondary ? " • " + secondary : ""
-                        }`}
-                        primaryTypographyProps={{ noWrap: true }}
-                        secondaryTypographyProps={{ noWrap: true }}
-                        sx={{ minWidth: 0 }}
-                      />
-                    </ListItem>
-                  </div>
-                );
-              })}
+                      <ListItem
+                        button
+                        selected={isActive}
+                        onClick={() => activate(idx)}
+                        sx={{
+                          height: 56,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <ListItemAvatar sx={{ minWidth: 44, flexShrink: 0 }}>
+                          <Box
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Icon width={24} height={24} />
+                          </Box>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={primary}
+                          secondary={`${item?.categoryLabel || ""}${
+                            secondary ? " • " + secondary : ""
+                          }`}
+                          primaryTypographyProps={{ noWrap: true }}
+                          secondaryTypographyProps={{ noWrap: true }}
+                          sx={{ minWidth: 0 }}
+                        />
+                      </ListItem>
+                    </div>
+                  );
+                })}
+              </Box>
             </Box>
-          </Box>
-          {searchResults.length > shownCount ? (
-            <Box p={1} display="flex" justifyContent="center">
-              <Button
-                size="small"
-                onClick={() => {
-                  // Remember first newly visible index, then increase page size
-                  scrollIndexTrackerRef.current = shownCount;
-                  setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
-                }}
-              >
-                {t("button.show_more")}
-              </Button>
-            </Box>
-          ) : null}
-        </>
-      )}
+          </>
+        )}
+      </PanelBody>
+      {searchResults.length > shownCount ? (
+        <Box p={1} display="flex" justifyContent="center">
+          <Button
+            size="small"
+            onClick={() => {
+              // Remember first newly visible index, then increase page size
+              scrollIndexTrackerRef.current = shownCount;
+              setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
+            }}
+          >
+            {t("button.show_more")}
+          </Button>
+        </Box>
+      ) : null}
     </Panel>
   );
 };
