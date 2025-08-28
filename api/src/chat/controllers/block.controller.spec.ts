@@ -36,7 +36,7 @@ import { Category } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
 
 // Helper function to instantiate BlockSearchQueryDto
-export function createSearchQuery(
+function createSearchQuery(
   data: Partial<BlockSearchQueryDto>,
 ): BlockSearchQueryDto {
   return plainToInstance(BlockSearchQueryDto, data, {
