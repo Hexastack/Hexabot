@@ -127,7 +127,7 @@
     "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement",
     "weight_required_error": "Le poids est requis ou bien invalide",
     "weight_positive_number_error": "Le poids doit être un nombre strictement positif",
-    "failed_to_load_blocks": "Échec du chargement des blocs. Veuillez réessayer.",
+    "failed_to_load_blocks": "Échec du chargement des résultats de recherche de blocs",
     "no_matching_results": "Aucun résultat correspondant trouvé. Essayez d'autres mots-clés."
   },
   "menu": {
