@@ -59,8 +59,9 @@ export class BlockRepository extends BaseRepository<
     // Return early if query is empty
     if (!query) return [];
 
-    // TODO: Consider sanitizing input to prevent injection attacks for search query and other types of queries.
-    const phrase = `"${query}"`; // Use quotes for exact phrase match
+    // Use quotes for exact phrase match
+    const phrase = `"${query}"`;
+    this.logger?.debug(`Searching blocks with phrase: ${phrase}`);
 
     // Guard against excessive or invalid limit values
     const MAX_LIMIT = DEFAULT_BLOCK_SEARCH_LIMIT;

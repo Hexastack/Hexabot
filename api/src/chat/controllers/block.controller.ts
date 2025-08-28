@@ -36,9 +36,11 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
-import { BlockSearchQueryDto } from '../dto/block-search.dto';
-import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import {
+  BlockCreateDto,
+  BlockSearchQueryDto,
+  BlockUpdateDto,
+} from '../dto/block.dto';
 import {
   Block,
   BlockFull,
@@ -78,9 +80,8 @@ export class BlockController extends BaseController<
     @Query()
     query: BlockSearchQueryDto,
   ): Promise<SearchRankedBlock[]> {
-    const queryString = query.q?.trim();
-    const limit =
-      query.limit && query.limit > 0 ? query.limit : DEFAULT_BLOCK_SEARCH_LIMIT;
+    const queryString = query.q;
+    const limit = query.limit;
     const category = query.category;
 
     if (!queryString) return [];
