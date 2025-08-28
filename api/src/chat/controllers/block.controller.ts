@@ -13,6 +13,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -90,6 +91,9 @@ export class BlockController extends BaseController<
       // retrieve and return transformed search results from the service
       return await this.blockService.search(queryString, limit, category);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       this.logger.error('Block search failed:', error);
       throw new InternalServerErrorException('Block search failed');
     }
