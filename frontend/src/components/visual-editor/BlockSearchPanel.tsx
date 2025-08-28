@@ -261,6 +261,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 
     el?.scrollIntoView({ block: "nearest" });
   };
+  // Focus the selected block
   const activate = async (idx: number) => {
     const item = searchResults[idx]?.item;
 

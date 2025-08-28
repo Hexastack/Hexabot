@@ -256,7 +256,6 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   selectedCategoryId: "",
   setSelectedCategoryId: () => {},
   focusBlock: async () => {},
-  highlightedNodeId: null,
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
@@ -265,17 +264,6 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
   // Token to cancel/ignore previous focus attempts (latest-wins)
   const focusRequestIdRef = React.useRef(0);
-  // Track highlighted node id to pass to NodeWidget for highlight class toggling
-  const [highlightedNodeId, setHighlightedNodeId] = React.useState<
-    string | null
-  >(null);
-
-  // Cleanup effect to clear the highlight timeout when the component unmounts
-  React.useEffect(() => {
-    return () => {
-      setHighlightedNodeId(null);
-    };
-  }, []);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
@@ -331,8 +319,6 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
             } catch (_) {
               // no-op
             }
-            // Highlight the node visually
-            setHighlightedNodeId(blockId);
 
             resolve();
           } else if (n > 0) {
@@ -360,7 +346,6 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         setSelectedCategoryId,
         selectedCategoryId,
         focusBlock,
-        highlightedNodeId,
       }}
     >
       {children}

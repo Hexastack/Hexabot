@@ -51,7 +51,6 @@ export interface IVisualEditorContext {
 
   // Focus a block by id. If categoryId is provided and differs from current, switch flow first.
   focusBlock: (blockId: string, categoryId?: string) => Promise<void> | void;
-  highlightedNodeId: string | null;
 }
 
 export interface VisualEditorContextProps {
