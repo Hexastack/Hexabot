@@ -31,8 +31,8 @@ import { styled } from "@mui/material/styles";
 import debounce from "@mui/material/utils/debounce";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { ErrorState } from "@/app-components/displays/ErrorState";
 import { useFind } from "@/hooks/crud/useFind";
+import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { BlockType, IBlockSearchResult } from "@/types/block.types";
@@ -121,6 +121,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 }) => {
   const MAX_ITEMS_PER_PAGE = 10;
   const { t } = useTranslate();
+  const { toast } = useToast();
   const { selectedCategoryId, focusBlock } = useVisualEditor();
   const [scope, setScope] = useState<SearchScope>("all");
   const [searchTerm, setQuery] = useState("");
@@ -135,7 +136,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     data: backendResults = [],
     isLoading: isLoadingSearch,
     error: blockSearchError,
-    refetch: refetchSearch,
   } = useFind(
     { entity: EntityType.BLOCK_SEARCH },
     {
@@ -152,7 +152,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const {
     data: categories = [],
     error: categoriesError,
-    refetch: refetchCategories,
     isLoading: isLoadingCategories,
   } = useFind(
     { entity: EntityType.CATEGORY },
@@ -220,6 +219,14 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     [],
   );
 
+  useEffect(() => {
+    // Show error toast if API returns an error
+    if (error) {
+      toast.error(t("message.failed_to_load_blocks"));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
+
   // Perform search when query changes
   useEffect(() => {
     debouncedSearch(visibleSearchItems);
@@ -276,21 +283,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       e.preventDefault();
       onClose();
     }
-  };
-  // Reset search state
-  const resetSearchState = () => {
-    setResults([]);
-    setQuery("");
-    setShownCount(MAX_ITEMS_PER_PAGE);
-    setSelectedIndex(0);
-  };
-  const handleRetry = () => {
-    // Clear search results
-    resetSearchState();
-
-    // Refetch unified data
-    refetchSearch();
-    refetchCategories();
   };
 
   if (!open) return null;
@@ -357,15 +349,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       </ScopeToggle>
       <Divider />
       <PanelBody>
-        {error ? (
-          <Box p={2} display="flex" flexDirection="column" gap={2}>
-            <ErrorState
-              message={t("message.failed_to_load_blocks")}
-              action={handleRetry}
-              ctaText={t("button.retry")}
-            />
-          </Box>
-        ) : loading ? (
+        {loading ? (
           <Box p={2} display="grid" gap={1}>
             {Array.from({ length: 6 }).map((_, i) => (
               <Box
