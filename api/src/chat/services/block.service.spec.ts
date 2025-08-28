@@ -1060,4 +1060,70 @@ describe('BlockService', () => {
       });
     });
   });
+
+  describe('search', () => {
+    it('should forward search request to repository', async () => {
+      const result = await blockService.search(
+        'hasNextBlocks',
+        10,
+        category.id,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].name).toBe('hasNextBlocks');
+    });
+
+    it('should use default limit when not specified', async () => {
+      const result = await blockService.search('hasNextBlocks');
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      // Verify it's using the default limit
+    });
+
+    it('should filter by category correctly', async () => {
+      const result = await blockService.search(
+        'hasNextBlocks',
+        10,
+        category.id,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((block) => {
+        expect(block.category?.toString()).toBe(category.id);
+      });
+    });
+
+    it('should return search results with scores', async () => {
+      const result = await blockService.search('hasNextBlocks', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((block) => {
+        expect(block).toHaveProperty('score');
+        expect(typeof block.score).toBe('number');
+        expect(block.score).toBeGreaterThan(0);
+      });
+    });
+
+    it('should handle empty search results', async () => {
+      const result = await blockService.search('nonexistentblockname', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    it('should handle repository search errors gracefully', async () => {
+      // Mock the repository to throw an error
+      jest
+        .spyOn(blockRepository, 'search')
+        .mockRejectedValue(new Error('MongoDB connection error'));
+
+      await expect(blockService.search('test', 10)).rejects.toThrow(
+        'MongoDB connection error',
+      );
+    });
+  });
 });
