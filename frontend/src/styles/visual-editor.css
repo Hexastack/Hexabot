@@ -212,21 +212,3 @@
   cursor: grab;
   transform: translateY(-50%) scale(1.1);
 }
-
-@keyframes flashPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(29, 199, 252, 0.8);
-  }
-  70% {
-    box-shadow: 0 0 0 20px rgba(29, 199, 252, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(29, 199, 252, 0);
-  }
-}
-
-.flash-highlight {
-  animation: flashPulse 1.2s ease-out infinite;
-  outline: 3px solid #1dc7fc !important;
-  border-radius: 12px;
-}
