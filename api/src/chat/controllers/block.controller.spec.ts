@@ -158,7 +158,7 @@ describe('BlockController', () => {
 
     it('should handle service errors gracefully', async () => {
       // This test can still mock the service to test error handling
-      const error = new Error('Database error');
+      const error = new Error('Block search failed');
       jest.spyOn(blockService, 'search').mockRejectedValueOnce(error);
 
       const query = createSearchQuery({ q: 'error' });
