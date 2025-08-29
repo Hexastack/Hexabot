@@ -26,6 +26,8 @@ namespace S {
     position: relative;
     cursor: move;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
   `;
 }
 
@@ -91,7 +93,11 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     const model = engine.getModel();
 
     return (
-      <div className="canvas-container" tabIndex={0}>
+      <div
+        className="canvas-container"
+        tabIndex={0}
+        style={{ width: "100%", height: "100%", position: "relative" }}
+      >
         <S.Canvas
           className={this.props.className}
           ref={this.ref}

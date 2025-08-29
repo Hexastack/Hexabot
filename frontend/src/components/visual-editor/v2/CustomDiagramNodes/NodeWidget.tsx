@@ -41,6 +41,7 @@ export interface NodeWidgetProps {
   node: NodeModel;
   engine: DiagramEngine;
   color: string;
+  highlightedNodeId?: string | null;
 }
 
 const IconContainer = styled("div")(({ theme }) => ({

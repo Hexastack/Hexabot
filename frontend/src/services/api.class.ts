@@ -61,6 +61,7 @@ export const ROUTES = {
   [EntityType.SETTING]: "/setting",
   [EntityType.BOTSTATS]: "/botstats",
   [EntityType.BLOCK]: "/block",
+  [EntityType.BLOCK_SEARCH]: "/block/search",
   [EntityType.CUSTOM_BLOCK]: "/block/customBlocks",
   [EntityType.CUSTOM_BLOCK_SETTINGS]: "/block/customBlocks/settings",
   [EntityType.NLP_SAMPLE]: "/nlpsample",

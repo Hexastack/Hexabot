@@ -355,6 +355,7 @@ export const ENTITY_MAP = {
   [EntityType.ATTACHMENT]: AttachmentEntity,
   [EntityType.BLOCK]: BlockEntity,
   [EntityType.CUSTOM_BLOCK]: CustomBlockEntity,
+  [EntityType.BLOCK_SEARCH]: BlockEntity,
   [EntityType.CUSTOM_BLOCK_SETTINGS]: CustomBlockSettingEntity,
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.HELPER]: HelperEntity,
