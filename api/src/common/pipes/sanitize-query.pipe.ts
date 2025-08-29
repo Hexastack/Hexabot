@@ -27,8 +27,13 @@ export class SanitizeQueryPipe implements PipeTransform<string, string> {
 
     let s = input.trim();
 
-    // Remove C0 control characters (null, bell, etc.) and DEL
-    s = s.replace(/[\x00-\x1F\x7F]+/g, '');
+    // Remove C0 control characters (null..US) and DEL without regex control ranges (Biome-safe)
+    s = Array.from(s)
+      .filter((ch) => {
+        const code = ch.charCodeAt(0);
+        return code >= 0x20 && code !== 0x7f;
+      })
+      .join('');
 
     // Remove characters that can be used in injection payloads for MongoDB or
     // shell-like expressions: dollar sign, braces, semicolon, backslash, slashes.
