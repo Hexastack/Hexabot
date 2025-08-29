@@ -168,12 +168,22 @@ describe('BlockController', () => {
     });
 
     it('should use default limit when not specified', async () => {
+      const blockServiceSearchSpy = jest.spyOn(blockService, 'search');
+
       const query = createSearchQuery({ q: 'hasNextBlocks' });
       const result = await blockController.search(query);
 
+      // Verify the service was called with the default limit (500)
+      expect(blockServiceSearchSpy).toHaveBeenCalledWith(
+        'hasNextBlocks',
+        500,
+        undefined,
+      );
+
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      // Verify it's using the default limit (500) by checking we get all matching results
+
+      blockServiceSearchSpy.mockRestore();
     });
 
     it('should filter by category when provided', async () => {
