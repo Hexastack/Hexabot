@@ -67,29 +67,25 @@ export class BlockRepository extends BaseRepository<
     const MAX_LIMIT = DEFAULT_BLOCK_SEARCH_LIMIT;
     limit = Math.min(Math.max(1, limit ?? MAX_LIMIT), MAX_LIMIT);
 
-    // Build a category filter if category is provided
-    let categoryFilter = {};
-    if (category) {
-      if (Types.ObjectId.isValid(category)) {
-        categoryFilter = { category: new Types.ObjectId(category) };
-      } else {
-        this.logger?.warn(
-          `Ignoring invalid category ObjectId in search filter: ${category}`,
-        );
-      }
-    }
-    const textSearchFilter = {
-      $text: {
-        $search: phrase,
-        $diacriticSensitive: false,
-        $caseSensitive: false,
-      },
-      ...categoryFilter,
-    };
-
     try {
       const docs = await this.model
-        .find(textSearchFilter, { score: { $meta: 'textScore' } })
+        .find(
+          {
+            $text: {
+              $search: phrase,
+              $diacriticSensitive: false,
+              $caseSensitive: false,
+            },
+            ...(category && Types.ObjectId.isValid(category)
+              ? { category }
+              : (category &&
+                  this.logger?.warn(
+                    `Ignoring invalid category ObjectId in search filter: ${category}`,
+                  ),
+                {})),
+          },
+          { score: { $meta: 'textScore' } },
+        )
         .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
         .limit(limit)
         .lean<SearchRankedBlock[]>()
