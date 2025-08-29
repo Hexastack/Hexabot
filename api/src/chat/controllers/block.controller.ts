@@ -35,12 +35,17 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import {
+  BlockCreateDto,
+  BlockSearchQueryDto,
+  BlockUpdateDto,
+} from '../dto/block.dto';
 import {
   Block,
   BlockFull,
   BlockPopulate,
   BlockStub,
+  SearchRankedBlock,
 } from '../schemas/block.schema';
 import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
@@ -62,6 +67,22 @@ export class BlockController extends BaseController<
     private pluginsService: PluginService<BaseBlockPlugin<any>>,
   ) {
     super(blockService);
+  }
+
+  /**
+   * Text search for blocks using MongoDB text index.
+   *
+   * Example: GET /block/search?q=UserSearchPhrase&limit=50
+   */
+  @Get('search')
+  async search(
+    @Query()
+    { q, limit, category }: BlockSearchQueryDto,
+  ): Promise<SearchRankedBlock[]> {
+    if (!q) return [];
+
+    // retrieve and return transformed search results from the service
+    return await this.blockService.search(q, limit, category);
   }
 
   /**

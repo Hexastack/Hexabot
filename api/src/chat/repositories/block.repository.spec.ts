@@ -438,4 +438,83 @@ describe('BlockRepository', () => {
       expect(prepareBlocksOutOfCategoryUpdateScope).not.toHaveBeenCalled();
     });
   });
+
+  describe('search', () => {
+    it('should return empty array when query is empty', async () => {
+      const blockModelFindSpy = jest.spyOn(blockRepository['model'], 'find');
+
+      const result = await blockRepository.search('', 10);
+      // Early return with empty query
+      expect(result).toEqual([]);
+      // Ensure no database query was made
+      expect(blockModelFindSpy).not.toHaveBeenCalled();
+    });
+
+    it('should find blocks by name with exact phrase match', async () => {
+      const result = await blockRepository.search('hasNextBlocks', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.find((r) => r.name === 'hasNextBlocks')).toBeDefined();
+    });
+
+    it('should find blocks based on message content', async () => {
+      const result = await blockRepository.search('Hi back', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.find((r) => r.name === 'hasNextBlocks')).toBeDefined();
+    });
+
+    it('should filter by category when provided', async () => {
+      const result = await blockRepository.search(
+        'hasNextBlocks',
+        10,
+        category.id,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((r) => {
+        expect(r.category?.toString()).toBe(category.id);
+      });
+    });
+
+    it('should ignore invalid category ObjectId', async () => {
+      const result = await blockRepository.search(
+        'hasNextBlocks',
+        10,
+        'invalid-id',
+      );
+      expect(result.length).toBeGreaterThan(0); // Should still find blocks
+    });
+
+    it('should limit results correctly', async () => {
+      const result = await blockRepository.search('Hi', 1);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeLessThanOrEqual(1);
+    });
+
+    it('should return results with search scores', async () => {
+      const result = await blockRepository.search('hasNextBlocks', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      result.forEach((r) => {
+        expect(r).toHaveProperty('score');
+        expect(typeof r.score).toBe('number');
+        expect(r.score).toBeGreaterThan(0);
+      });
+    });
+
+    it('should sort results by score in descending order', async () => {
+      const result = await blockRepository.search('Hi', 10);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i - 1].score).toBeGreaterThanOrEqual(result[i].score);
+      }
+    });
+  });
 });
