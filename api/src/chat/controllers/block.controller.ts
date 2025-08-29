@@ -13,8 +13,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
-  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -79,24 +77,12 @@ export class BlockController extends BaseController<
   @Get('search')
   async search(
     @Query()
-    query: BlockSearchQueryDto,
+    { q, limit, category }: BlockSearchQueryDto,
   ): Promise<SearchRankedBlock[]> {
-    const queryString = query.q;
-    const limit = query.limit;
-    const category = query.category;
+    if (!q) return [];
 
-    if (!queryString) return [];
-
-    try {
-      // retrieve and return transformed search results from the service
-      return await this.blockService.search(queryString, limit, category);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.logger.error('Block search failed:', error);
-      throw new InternalServerErrorException('Block search failed');
-    }
+    // retrieve and return transformed search results from the service
+    return await this.blockService.search(q, limit, category);
   }
 
   /**
