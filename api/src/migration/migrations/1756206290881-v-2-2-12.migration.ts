@@ -56,7 +56,7 @@ module.exports = {
       services.logger.verbose('Created block_search_index successfully');
       return true;
     } catch (err) {
-      services.logger.error('Failed to create block_search_index', err as any);
+      services.logger.error('Failed to create block_search_index', err);
       return false;
     }
   },
