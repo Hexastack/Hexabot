@@ -341,13 +341,13 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           value="current"
           icon={<ManageSearchIcon />}
           iconPosition="start"
-          label="Current flow"
+          label={t("label.current_flow")}
         />
         <Tab
           value="all"
           icon={<TravelExploreIcon />}
           iconPosition="start"
-          label="All flows"
+          label={t("label.all_flows")}
         />
       </ScopeToggle>
       <Divider />
@@ -392,7 +392,8 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           <>
             <ResultCount>
               <Typography variant="caption">
-                {visibleCount} / {searchResults.length} results
+                {visibleCount} / {searchResults.length}{" "}
+                {t("label.results_count")}
               </Typography>
             </ResultCount>
             <Box
