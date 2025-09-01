@@ -502,7 +502,10 @@
     "any": "Toutes",
     "full_name": "Nom et Prénom",
     "password": "Mot de passe",
-    "search_blocks_panel_header": "Recherche par blocs"
+    "search_blocks_panel_header": "Recherche par blocs",
+    "current_flow": "Flux actuel",
+    "all_flows": "Tous les flux",
+    "results_count": "résultats"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",

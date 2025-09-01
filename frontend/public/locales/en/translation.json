@@ -501,7 +501,10 @@
     "any": "Any",
     "full_name": "First and last name",
     "password": "Password",
-    "search_blocks_panel_header": "Search blocks"
+    "search_blocks_panel_header": "Search blocks",
+    "current_flow": "Current flow",
+    "all_flows": "All flows",
+    "results_count": "results"
   },
   "placeholder": {
     "your_username": "Your username",
