@@ -163,7 +163,10 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     isLoading: isLoadingCategories,
   } = useFind(
     { entity: EntityType.CATEGORY },
-    { hasCount: false },
+    {
+      hasCount: false,
+      initialSortState: [{ field: "createdAt", sort: "asc" }],
+    },
     { enabled: open },
   );
   // Create a map of category labels by ID for quick lookup
