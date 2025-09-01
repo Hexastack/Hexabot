@@ -28,8 +28,13 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import debounce from "@mui/material/utils/debounce";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useToast } from "@/hooks/useToast";
@@ -125,6 +130,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const { selectedCategoryId, focusBlock } = useVisualEditor();
   const [scope, setScope] = useState<SearchScope>("all");
   const [searchTerm, setQuery] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [shownCount, setShownCount] = useState(MAX_ITEMS_PER_PAGE);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -141,11 +147,13 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     {
       hasCount: false,
       params: {
-        q: searchTerm,
+        q: debouncedSearchTerm,
         category: scope === "current" ? selectedCategoryId : undefined,
       },
     },
-    { enabled: open && Boolean(searchTerm && searchTerm.trim().length > 0) },
+    {
+      enabled: open && Boolean(debouncedSearchTerm.length > 0),
+    },
   );
   // Fetch categories to resolve category labels locally
   // TODO: Remove this fetch when the backend search query response includes category labels directly.
@@ -201,23 +209,13 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       };
     });
   }, [backendResults, categoryLabelById]);
-  const [searchResults, setResults] = useState<BlockSearchResult[]>([]);
-  const visibleCount = Math.min(searchResults.length, shownCount);
-  const visibleSearchItems = useMemo(() => {
+  const deferredItems = useDeferredValue(items);
+  const searchResults: BlockSearchResult[] = useMemo(() => {
     if (!searchTerm) return [];
 
-    return items.map((item, idx) => ({
-      item,
-      refIndex: idx,
-    }));
-  }, [searchTerm, items]);
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((results: BlockSearchResult[]) => {
-        setResults(results);
-      }, 200),
-    [],
-  );
+    return deferredItems.map((item, idx) => ({ item, refIndex: idx }));
+  }, [deferredItems, searchTerm]);
+  const visibleCount = Math.min(searchResults.length, shownCount);
 
   useEffect(() => {
     // Show error toast if API returns an error
@@ -227,17 +225,18 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error]);
 
-  // Perform search when query changes
-  useEffect(() => {
-    debouncedSearch(visibleSearchItems);
-
-    return () => debouncedSearch.clear();
-  }, [debouncedSearch, visibleSearchItems]);
-
   // Reset pagination and selection when the query changes
   useEffect(() => {
     setShownCount(MAX_ITEMS_PER_PAGE);
     setSelectedIndex(0);
+  }, [searchTerm, scope]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm.trim());
+    }, 250);
+
+    return () => clearTimeout(handle);
   }, [searchTerm]);
 
   // After increasing shownCount, scroll/select the first newly visible item
