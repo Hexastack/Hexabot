@@ -42,7 +42,6 @@ module.exports = {
           'message.args': 'text',
         },
         {
-          name: 'block_search_index',
           weights: {
             name: 5,
             message: 2,
@@ -50,13 +49,14 @@ module.exports = {
             'message.args': 2,
             'options.fallback.message': 1,
           },
+          name: 'block_search_index',
           default_language: 'none',
         },
       );
       services.logger.verbose('Created block_search_index successfully');
       return true;
     } catch (err) {
-      services.logger.error('Failed to create block_search_index', err);
+      services.logger.error('Failed to create block_search_index', err as any);
       return false;
     }
   },
