@@ -645,7 +645,11 @@ export default abstract class BaseWebChannelHandler<
       }
 
       // Check if any file is provided
-      if (type !== 'file' || !('file' in data) || !data.file) {
+      if (
+        type !== Web.IncomingMessageType.file ||
+        !('file' in data) ||
+        !data.file
+      ) {
         this.logger.debug('No files provided');
         return null;
       }
@@ -658,12 +662,12 @@ export default abstract class BaseWebChannelHandler<
 
       return await this.attachmentService.store(data.file, {
         name: data.name,
-        size: Buffer.byteLength(data.file),
+        size,
         type: data.type,
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session.web?.profile?.id,
+        createdBy: req.session.web.profile.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
