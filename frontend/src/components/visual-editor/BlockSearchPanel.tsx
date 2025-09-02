@@ -215,7 +215,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 
     if (!item) return;
     setSelectedIndex(idx);
-    await focusBlock(item.id, scope === "all" ? item.categoryId : undefined);
+    await focusBlock(item.id, item.categoryId);
   };
   // Keyboard navigation handlers
   const onKeyDown = (e: React.KeyboardEvent) => {

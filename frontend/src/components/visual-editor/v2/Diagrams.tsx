@@ -73,6 +73,7 @@ const Diagrams = () => {
   const { t } = useTranslate();
   const router = useRouter();
   const flowId = router.query.id?.toString();
+  const highlightedBlockId = router.query.blockId?.toString();
   const [model, setModel] = useState<
     DiagramModel<DiagramModelGenerics> | undefined
   >();
@@ -365,6 +366,7 @@ const Diagrams = () => {
           });
         }
       },
+      highlightedBlockId,
     });
 
     setModel(model);
@@ -376,7 +378,7 @@ const Diagrams = () => {
       offsetUpdated: debouncedOffsetEvent,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategoryId, blocksSignature]);
+  }, [selectedCategoryId, blocksSignature, highlightedBlockId]);
 
   const handleLinkDeletion = (linkId: string, model: DiagramModel) => {
     const link = model?.getLink(linkId) as any;
