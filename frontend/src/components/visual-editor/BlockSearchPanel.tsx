@@ -412,7 +412,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           </>
         )}
       </PanelBody>
-      {(backendResults.length || 0) > shownCount ? (
+      {(visibleSearchItems.length || 0) > shownCount ? (
         <Box p={1} display="flex" justifyContent="center">
           <Button
             size="small"
