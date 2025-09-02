@@ -233,5 +233,18 @@ export const theme = createTheme({
         },
       ],
     },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          background: "transparent",
+          justifyContent: "center",
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "300px",
+          position: "relative",
+          bottom: "42px",
+        },
+      },
+    },
   },
 });

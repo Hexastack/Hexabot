@@ -11,17 +11,19 @@ import { Alert, Box } from "@mui/material";
 import NoDataIcon from "@/app-components/svg/NoDataIcon";
 import { useTranslate } from "@/hooks/useTranslate";
 
-export const NoDataOverlay = () => {
+export const ErrorOverlay = () => {
   const { t } = useTranslate();
 
   return (
     <>
       <Alert
         iconMapping={{
-          success: <NoDataIcon style={{ fill: "gray" }} />,
+          success: <NoDataIcon style={{ fill: "red" }} />,
         }}
       >
-        <Box>{t("label.no_data")}</Box>
+        <Box textAlign="center" color="red">
+          {t("message.internal_server_error")}
+        </Box>
       </Alert>
     </>
   );
