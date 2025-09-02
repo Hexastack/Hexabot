@@ -78,11 +78,7 @@ export class BlockRepository extends BaseRepository<
             },
             ...(category && Types.ObjectId.isValid(category)
               ? { category }
-              : (category &&
-                  this.logger?.warn(
-                    `Ignoring invalid category ObjectId in search filter: ${category}`,
-                  ),
-                {})),
+              : {}),
           },
           { score: { $meta: 'textScore' } },
         )
