@@ -18,25 +18,20 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Skeleton,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, {
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useMemo, useState } from "react";
 
+import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { useFind } from "@/hooks/crud/useFind";
+import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
@@ -54,11 +49,6 @@ type BlockSearchItem = {
   fallbackTextContent?: string;
   score: number;
   type: BlockType;
-};
-
-type BlockSearchResult = {
-  item: BlockSearchItem;
-  refIndex: number;
 };
 
 export type SearchScope = "current" | "all";
@@ -89,12 +79,6 @@ const PanelHeader = styled(Box)(() => ({
   justifyContent: "space-between",
   padding: "10px 12px",
   borderBottom: "1px solid #E0E0E0",
-}));
-const SearchInput = styled(Box)(() => ({
-  display: "flex",
-  alignItems: "center",
-  padding: 8,
-  gap: 8,
 }));
 const ScopeToggle = styled(Tabs)(() => ({
   display: "flex",
@@ -129,45 +113,44 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const { toast } = useToast();
   const { selectedCategoryId, focusBlock } = useVisualEditor();
   const [scope, setScope] = useState<SearchScope>("all");
-  const [searchTerm, setQuery] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [shownCount, setShownCount] = useState(MAX_ITEMS_PER_PAGE);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const scrollIndexTrackerRef = useRef<number | null>(null);
-  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   // Backend block search
-  const {
-    data: backendResults = [],
-    isLoading: isLoadingSearch,
-    error: blockSearchError,
-  } = useFind(
+  const { data: backendResults = [], isLoading: isLoadingSearch } = useFind(
     { entity: EntityType.BLOCK_SEARCH },
     {
       hasCount: false,
       params: {
-        q: debouncedSearchTerm,
+        q: searchText,
         category: scope === "current" ? selectedCategoryId : undefined,
       },
     },
     {
-      enabled: open && Boolean(debouncedSearchTerm.length > 0),
+      enabled: open && Boolean(searchText && searchText.trim().length > 0),
+      onSuccess() {
+        setShownCount(MAX_ITEMS_PER_PAGE);
+        setSelectedIndex(0);
+      },
+      onError() {
+        toast.error(t("message.failed_to_load_blocks"));
+      },
     },
   );
   // Fetch categories to resolve category labels locally
   // TODO: Remove this fetch when the backend search query response includes category labels directly.
-  const {
-    data: categories = [],
-    error: categoriesError,
-    isLoading: isLoadingCategories,
-  } = useFind(
+  const { data: categories = [], isLoading: isLoadingCategories } = useFind(
     { entity: EntityType.CATEGORY },
     {
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
-    { enabled: open },
+    {
+      enabled: open,
+      onError() {
+        toast.error(t("message.failed_to_load_blocks"));
+      },
+    },
   );
   // Create a map of category labels by ID for quick lookup
   const categoryLabelById = useMemo(() => {
@@ -179,7 +162,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   }, [categories]);
   // Loading and error states
   const loading = isLoadingSearch || isLoadingCategories;
-  const error = blockSearchError || categoriesError;
   // Map backend results into UI items
   const items: BlockSearchItem[] = useMemo(() => {
     return backendResults.map((blockEntry: IBlockSearchResult) => {
@@ -212,63 +194,27 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       };
     });
   }, [backendResults, categoryLabelById]);
-  const deferredItems = useDeferredValue(items);
-  const searchResults: BlockSearchResult[] = useMemo(() => {
-    if (!searchTerm) return [];
+  const visibleSearchItems = useMemo(() => {
+    if (!searchText) return [];
 
-    return deferredItems.map((item, idx) => ({ item, refIndex: idx }));
-  }, [deferredItems, searchTerm]);
-  const visibleCount = Math.min(searchResults.length, shownCount);
-
-  useEffect(() => {
-    // Show error toast if API returns an error
-    if (error) {
-      toast.error(t("message.failed_to_load_blocks"));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error]);
-
-  // Reset pagination and selection when the query changes
-  useEffect(() => {
-    setShownCount(MAX_ITEMS_PER_PAGE);
-    setSelectedIndex(0);
-  }, [searchTerm, scope]);
-
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm.trim());
-    }, 250);
-
-    return () => clearTimeout(handle);
-  }, [searchTerm]);
-
-  // After increasing shownCount, scroll/select the first newly visible item
-  useEffect(() => {
-    if (scrollIndexTrackerRef.current != null) {
-      const idx = scrollIndexTrackerRef.current;
-      const el = itemRefs.current[idx];
-
-      el?.scrollIntoView({ block: "nearest" });
-      setSelectedIndex(idx);
-      scrollIndexTrackerRef.current = null;
-    }
-  }, [shownCount]);
-
+    return items.map((item, idx) => ({
+      item,
+      refIndex: idx,
+    }));
+  }, [searchText, items]);
+  const visibleCount = Math.min(visibleSearchItems.length, shownCount);
   // Navigation in the search results handlers
   const goTo = (idx: number) => {
     if (idx < 0 || idx >= visibleCount) return;
 
     setSelectedIndex(idx);
-    const el = itemRefs.current[idx];
-
-    el?.scrollIntoView({ block: "nearest" });
   };
   // Focus the selected block
   const activate = async (idx: number) => {
-    const item = searchResults[idx]?.item;
+    const item = visibleSearchItems[idx]?.item;
 
     if (!item) return;
-
+    setSelectedIndex(idx);
     await focusBlock(item.id, scope === "all" ? item.categoryId : undefined);
   };
   // Keyboard navigation handlers
@@ -291,7 +237,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   if (!open) return null;
 
   return (
-    <Panel role="dialog" aria-label={t("label.search_blocks_panel_header")}>
+    <Panel
+      role="dialog"
+      aria-label={t("label.search_blocks_panel_header")}
+      onKeyDown={onKeyDown}
+    >
       <PanelHeader>
         <Typography variant="subtitle1" fontWeight={600} component="h2">
           {t("label.search_blocks_panel_header")}
@@ -304,33 +254,32 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           <ClearIcon />
         </IconButton>
       </PanelHeader>
-      <SearchInput>
-        {/* TODO: Replace TextField with FilterTextfield component */}
-        <TextField
-          autoFocus={open}
-          inputRef={inputRef}
-          fullWidth
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={t("placeholder.search_blocks")}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            endAdornment: searchTerm ? (
-              <InputAdornment position="end">
-                <IconButton aria-label="clear" onClick={() => setQuery("")}>
-                  <BackspaceIcon fontSize="small" />
-                </IconButton>
-              </InputAdornment>
-            ) : undefined,
-          }}
-        />
-      </SearchInput>
+      <FilterTextfield
+        sx={{ p: 1 }}
+        onChange={onSearch}
+        autoFocus={open}
+        defaultValue={searchText}
+        placeholder={t("placeholder.search_blocks")}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+          endAdornment: searchText ? (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="clear"
+                onClick={() => {
+                  onSearch("");
+                }}
+              >
+                <BackspaceIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ) : undefined,
+        }}
+      />
       <ScopeToggle
         value={scope}
         onChange={(_, v) => setScope(v as SearchScope)}
@@ -372,7 +321,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               </Box>
             ))}
           </Box>
-        ) : searchResults.length === 0 && searchTerm ? (
+        ) : visibleSearchItems.length === 0 && searchText ? (
           <Box
             p={2}
             display="flex"
@@ -392,21 +341,19 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           <>
             <ResultCount>
               <Typography variant="caption">
-                {visibleCount} / {searchResults.length}{" "}
+                {visibleCount} / {searchText ? backendResults.length : 0}{" "}
                 {t("label.results_count")}
               </Typography>
             </ResultCount>
             <Box
-              ref={listContainerRef}
               sx={{
                 flex: 1,
                 minHeight: 0,
                 overflow: "auto",
               }}
-              onKeyDown={onKeyDown}
             >
               <Box>
-                {searchResults.slice(0, visibleCount).map((res, idx) => {
+                {visibleSearchItems.slice(0, visibleCount).map((res, idx) => {
                   const item = res.item;
                   const primary = item?.name || "";
                   const secondaryParts: string[] = [];
@@ -424,15 +371,10 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                   const Icon = getIconForType(item?.type || BlockType.PLUGIN);
 
                   return (
-                    <div
-                      key={item?.id ?? idx}
-                      ref={(el) => {
-                        itemRefs.current[idx] = el;
-                      }}
-                    >
-                      <ListItem
-                        button
+                    <div key={item?.id ?? idx}>
+                      <ListItemButton
                         selected={isActive}
+                        autoFocus={isActive}
                         onClick={() => activate(idx)}
                         sx={{
                           height: 56,
@@ -461,7 +403,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                           secondaryTypographyProps={{ noWrap: true }}
                           sx={{ minWidth: 0 }}
                         />
-                      </ListItem>
+                      </ListItemButton>
                     </div>
                   );
                 })}
@@ -470,13 +412,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           </>
         )}
       </PanelBody>
-      {searchResults.length > shownCount ? (
+      {(backendResults.length || 0) > shownCount ? (
         <Box p={1} display="flex" justifyContent="center">
           <Button
             size="small"
             onClick={() => {
-              // Remember first newly visible index, then increase page size
-              scrollIndexTrackerRef.current = shownCount;
               setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
             }}
           >
