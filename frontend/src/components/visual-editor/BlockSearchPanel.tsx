@@ -418,6 +418,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             size="small"
             onClick={() => {
               setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
+              setSelectedIndex(shownCount);
             }}
           >
             {t("button.show_more")}
