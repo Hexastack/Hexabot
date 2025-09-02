@@ -108,10 +108,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
   onModuleInit() {
     const allProviders = Array.from(this.modulesContainer.values())
-      .map((module) => module.providers.values())
+      .map(
+        (module) =>
+          module.providers.values() as MapIterator<InstanceWrapper<object>>,
+      )
       .reduce(
         (prev, curr) => prev.concat(Array.from(curr)),
-        [] as InstanceWrapper<unknown>[],
+        [] as InstanceWrapper<object>[],
       )
       .filter((provider) => !!provider.instance);
 
