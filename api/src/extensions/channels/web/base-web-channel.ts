@@ -817,7 +817,7 @@ export default abstract class BaseWebChannelHandler<
           }
         }
 
-        // Handler sync message sent by chabbot
+        // Handler sync message sent by chatbot
         if (body.sync && body.author === 'chatbot') {
           const sentMessage: MessageCreateDto = {
             mid: event.getId(),
@@ -1115,8 +1115,8 @@ export default abstract class BaseWebChannelHandler<
 
     // Items count min check
     if (!data.length) {
-      this.logger.error('Unsufficient content count (must be >= 0 for list)');
-      throw new Error('Unsufficient content count (list >= 0)');
+      this.logger.error('Insufficient content count (must be >= 0 for list)');
+      throw new Error('Insufficient content count (list >= 0)');
     }
 
     // Toggle "View More" button (check if there's more items to display)
@@ -1163,9 +1163,9 @@ export default abstract class BaseWebChannelHandler<
     // Items count min check
     if (data.length === 0) {
       this.logger.error(
-        'Unsufficient content count (must be > 0 for carousel)',
+        'Insufficient content count (must be > 0 for carousel)',
       );
-      throw new Error('Unsufficient content count (carousel > 0)');
+      throw new Error('Insufficient content count (carousel > 0)');
     }
 
     // Populate items (elements/cards) with content
@@ -1383,7 +1383,7 @@ export default abstract class BaseWebChannelHandler<
         // Handle multipart uploads (Long Pooling only)
         return upload(req, res, next);
       } else if (req.headers['content-type']?.includes('text/plain')) {
-        // Handle plain text payloads as JSON (retro-compability)
+        // Handle plain text payloads as JSON (retro-compatibility)
         const textParser = bodyParser.text({ type: 'text/plain' });
 
         return textParser(req, res, () => {
