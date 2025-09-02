@@ -128,8 +128,7 @@
     "weight_required_error": "Weight is required or invalid",
     "weight_positive_number_error": "Weight must be a strictly positive number",
     "failed_to_load_blocks": "Failed to load blocks search results.",
-    "no_matching_results": "No matching results found. Try other keywords.",
-    "results": "results"
+    "no_matching_results": "No matching results found. Try other keywords."
   },
   "menu": {
     "terms": "Terms of Use",
