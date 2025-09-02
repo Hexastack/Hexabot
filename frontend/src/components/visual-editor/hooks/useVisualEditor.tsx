@@ -34,10 +34,8 @@ import { BLOCK_HEIGHT, BLOCK_WIDTH } from "../v2/CustomDiagramNodes/NodeWidget";
 const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
 
-// Focus behavior tuning and timing
+// Focus behavior tuning
 const FOCUS_CONFIG = {
-  MAX_RETRIES: 10,
-  RETRY_INTERVAL_MS: 200,
   ZOOM_MARGIN: 320,
   HIGHLIGHT_DURATION_MS: 3000,
 };
@@ -88,6 +86,7 @@ const buildDiagram = ({
   onRemoveNode,
   onDbClickNode,
   targetPortChanged,
+  highlightedBlockId,
 }: IVisualEditor) => {
   window["customEvents"] = {};
   model = new DiagramModel();
@@ -214,6 +213,22 @@ const buildDiagram = ({
         selectionChanged: selectionHandler,
       });
     });
+
+    // If there's an initial block to select, perform selection & zoom now
+    if (highlightedBlockId) {
+      const targetNode = model.getNode(highlightedBlockId);
+
+      if (targetNode) {
+        model.getSelectedEntities().forEach((e) => e.setSelected(false));
+        targetNode.setSelected(true);
+        setter?.(highlightedBlockId);
+        try {
+          engine.zoomToFitSelectedNodes({ margin: FOCUS_CONFIG.ZOOM_MARGIN });
+        } catch (_) {
+          // ignore
+        }
+      }
+    }
   }
   model.registerListener({
     linksUpdated(e: any) {
@@ -262,8 +277,6 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
 }) => {
   const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
-  // Token to cancel/ignore previous focus attempts (latest-wins)
-  const focusRequestIdRef = React.useRef(0);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
@@ -282,57 +295,16 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     blockId,
     categoryId,
   ) => {
-    // Generate a new focus request id; newer calls cancel older ones
-    const requestId = ++focusRequestIdRef.current;
-    const switchFlowIfNeeded = async () => {
-      // Ensure the blockId is valid
-      if (categoryId && categoryId !== selectedCategoryId) {
-        // If a newer request started, abort this one
-        if (requestId !== focusRequestIdRef.current) return;
-        setSelectedCategoryId(categoryId);
-        await router.push(`/${RouterType.VISUAL_EDITOR}/flows/${categoryId}`);
-      }
-    };
-    // If the blockId is not provided, we do not switch flow
-
-    await switchFlowIfNeeded();
-
-    // Wait for the node to be rendered
-    const waitForNode = async (retries = FOCUS_CONFIG.MAX_RETRIES) => {
-      return new Promise<void>((resolve) => {
-        const tick = (n: number) => {
-          // Abort if a newer focus request has been issued
-          if (requestId !== focusRequestIdRef.current) return resolve();
-          const node = model?.getNode(blockId);
-
-          if (node) {
-            // Deselect others and select this node
-            model.getSelectedEntities().forEach((e) => e.setSelected(false));
-            node.setSelected(true);
-
-            // Zoom to fit the selected node
-            try {
-              if (requestId !== focusRequestIdRef.current) return resolve();
-              engine.zoomToFitSelectedNodes({
-                margin: FOCUS_CONFIG.ZOOM_MARGIN,
-              });
-            } catch (_) {
-              // no-op
-            }
-
-            resolve();
-          } else if (n > 0) {
-            setTimeout(() => tick(n - 1), FOCUS_CONFIG.RETRY_INTERVAL_MS);
-          } else {
-            resolve();
-          }
-        };
-
-        tick(retries);
-      });
-    };
-
-    await waitForNode();
+    // If a category switch is requested update internal state
+    if (categoryId && categoryId !== selectedCategoryId) {
+      setSelectedCategoryId(categoryId);
+    }
+    // Navigate to route embedding block id (or only flow if block missing)
+    if (categoryId && blockId) {
+      await router.push(
+        `/${RouterType.VISUAL_EDITOR}/flows/${categoryId}/${blockId}`,
+      );
+    }
   };
 
   return (
