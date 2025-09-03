@@ -865,7 +865,10 @@ const Diagrams = () => {
                     <Button
                       sx={{ p: "6px 2px 8px 2px" }}
                       onClick={() => {
-                        engine?.zoomToFitSelectedNodes({ margin: 0 });
+                        engine?.zoomToFitSelectedNodes({
+                          maxZoom: 1,
+                          margin: 0,
+                        });
                       }}
                     >
                       <FitScreenIcon />
