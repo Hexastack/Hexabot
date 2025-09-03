@@ -40,7 +40,7 @@ In production, use a third-party SMTP service by configuring the environment var
 EMAIL_SMTP_ENABLED=true
 EMAIL_SMTP_HOST=sandbox.smtp.mailtrap.io
 EMAIL_SMTP_PORT=2525
-EMAIL_SMTP_SECURE=false
+EMAIL_SMTP_SECURE=false  # Set to true if you are using a secure SMTP server that uses SSL/TLS
 EMAIL_SMTP_USER=***************
 EMAIL_SMTP_PASS=***************
 EMAIL_SMTP_FROM=from@example.com
