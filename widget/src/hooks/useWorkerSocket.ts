@@ -88,6 +88,7 @@ export function useWorkerSocket({
       bc.close();
       URL.revokeObjectURL(blobURL);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, JSON.stringify(options)]);
 
   const emit = (event: string, data: unknown) => {
