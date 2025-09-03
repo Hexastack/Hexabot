@@ -122,18 +122,8 @@ export class SocketIoClient {
    * Waits for disconnecttion of the socket client.
    */
   public waitForDisconnect() {
-    return new Promise<void>((resolve, reject) => {
-      const onClose = () => {
-        this.socket.io.off("error", onError);
-        resolve();
-      };
-      const onError = () => {
-        this.socket.io.off("close", onClose);
-        reject(new Error("Error while disconnecting"));
-      };
-
-      this.socket.io.once("close", onClose);
-      this.socket.io.once("error", onError);
+    return new Promise<void>((resolve) => {
+      this.socket.once("disconnect", () => resolve());
 
       this.socket.disconnect();
     });
@@ -168,12 +158,12 @@ export class SocketIoClient {
             reject(e);
           };
 
-          socket.io.once("open", onConnect);
-          socket.io.once("error", onErr);
+          socket.once("connect", onConnect);
+          socket.once("connect_error", onErr);
 
           off.push(
-            () => socket.io.off("open", onConnect),
-            () => socket.io.off("error", onErr),
+            () => socket.off("connect", onConnect),
+            () => socket.off("connect_error", onErr),
           );
 
           // Force a fresh handshake if we were connected or mid-attempt
