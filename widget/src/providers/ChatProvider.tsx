@@ -460,8 +460,7 @@ const ChatProvider: React.FC<{
   });
 
   useSubscribeBroadcastChannel("subscribed", () => {
-    socket.disconnect();
-    socket.connect();
+    socket.forceReconnect();
   });
 
   useSubscribe("error", ({ message, statusCode }: SocketErrorResponse) => {
@@ -473,9 +472,7 @@ const ChatProvider: React.FC<{
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
 
-    if (config.channel === "web-channel" && profile && messages.length === 0) {
-      sendGetStarted(profile.foreign_id);
-    } else if (config.channel === "console-channel" && !profile) {
+    if (config.channel === "console-channel" && !profile) {
       handleSubscription();
     }
 

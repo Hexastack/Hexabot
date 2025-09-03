@@ -119,6 +119,72 @@ export class SocketIoClient {
   }
 
   /**
+   * Reconnects the socket client using mutex across tabs.
+   */
+  public async forceReconnect(timeoutMs = 10_000) {
+    const run = async () => {
+      const socket = this.socket;
+
+      if (!socket) {
+        throw new Error("socket not initialized");
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let timer: any;
+      const off: Array<() => void> = [];
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onConnect = () => {
+            setTimeout(() => {
+              resolve();
+            }, timeoutMs * 0.2);
+          };
+          const onErr = (e: unknown) => {
+            reject(e);
+          };
+
+          socket.io.once("open", onConnect);
+          socket.io.once("close", onErr);
+          socket.io.once("error", onErr);
+
+          off.push(
+            () => socket.io.off("open", onConnect),
+            () => socket.io.off("close", onErr),
+            () => socket.io.off("error", onErr),
+          );
+
+          // Force a fresh handshake if we were connected or mid-attempt
+          if (socket.connected /* or s.io.engine?.connecting */) {
+            socket.disconnect();
+          }
+          socket.connect();
+
+          timer = setTimeout(
+            () => reject(new Error("reconnect timeout")),
+            timeoutMs,
+          );
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(err);
+      } finally {
+        clearTimeout(timer);
+        off.forEach((fn) => fn());
+      }
+    };
+    const locks = navigator.locks;
+
+    if (locks?.request) {
+      // Keep it exclusive but guaranteed to release via timeout/error handling
+      await locks.request("ws_connection", { mode: "exclusive" }, run);
+    } else {
+      // Fallback when Web Locks isn’t supported
+      await run();
+    }
+  }
+
+  /**
    * Registers an event handler for the specified event.
    * @param event The event name
    * @param callback The callback function to handle the event

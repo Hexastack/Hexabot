@@ -83,7 +83,7 @@ export const useSocketLifecycle = () => {
   const { socket } = useSocket();
 
   useEffect(() => {
-    socket.connect();
+    socket.forceReconnect();
 
     return () => {
       socket.disconnect();
