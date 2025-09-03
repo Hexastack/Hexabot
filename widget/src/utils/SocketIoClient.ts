@@ -162,9 +162,7 @@ export class SocketIoClient {
           );
 
           const onConnect = () => {
-            setTimeout(() => {
-              resolve();
-            }, timeoutMs * 0.05);
+            resolve();
           };
           const onErr = (e: unknown) => {
             reject(e);
