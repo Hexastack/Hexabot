@@ -35,10 +35,7 @@ const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
 
 // Focus behavior tuning
-const FOCUS_CONFIG = {
-  ZOOM_MARGIN: 320,
-  HIGHLIGHT_DURATION_MS: 3000,
-};
+
 const addNode = (block: IBlock) => {
   const node = new NodeModel({
     id: block.id,
@@ -97,8 +94,11 @@ const buildDiagram = ({
   engine
     .getActionEventBus()
     .registerAction(new CustomDeleteItemsAction({ callback: onRemoveNode }));
-  if (offset) setViewerOffset(offset);
-  if (zoom) setViewerZoom(zoom);
+  // Set initial zoom & offset if provided (prevent override if focusing a block)
+  if (!highlightedBlockId) {
+    if (offset) setViewerOffset(offset);
+    if (zoom) setViewerZoom(zoom);
+  }
 
   if (data?.length) {
     const nodes = data
@@ -219,14 +219,22 @@ const buildDiagram = ({
       const targetNode = model.getNode(highlightedBlockId);
 
       if (targetNode) {
+        // Clear any other selection first
         model.getSelectedEntities().forEach((e) => e.setSelected(false));
         targetNode.setSelected(true);
         setter?.(highlightedBlockId);
-        try {
-          engine.zoomToFitSelectedNodes({ margin: FOCUS_CONFIG.ZOOM_MARGIN });
-        } catch (_) {
-          // ignore
-        }
+
+        // Use timeout to ensure DOM is fully rendered before centering
+        setTimeout(() => {
+          try {
+            engine.zoomToFitSelectedNodes({
+              maxZoom: 1,
+              margin: 0,
+            });
+          } catch (_) {
+            // ignore
+          }
+        }, 100);
       }
     }
   }
