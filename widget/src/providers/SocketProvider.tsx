@@ -14,6 +14,7 @@ import {
   useRef,
 } from "react";
 
+import { useWorkerSocket } from "../hooks/useWorkerSocket";
 import { SocketErrorHandlers } from "../types/message.types";
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
@@ -37,6 +38,23 @@ export const SocketProvider = ({
   socketErrorHandlers,
 }: SocketProviderProps) => {
   const config = useConfig();
+  const { emit } = useWorkerSocket({
+    url: config.apiUrl, // Replace with your WS server
+    options: {
+      query: {
+        channel: config.channel,
+        EIO: "4",
+        transport: "websocket",
+      },
+    },
+  });
+
+  setTimeout(() => {
+    emit("get", {
+      method: "get",
+      url: "/webhook/web-channel/?first_name=sqd&last_name=qsd",
+    });
+  }, 500);
   const socketRef = useRef(
     getSocketIoClient(config, {
       onConnect: () => {
