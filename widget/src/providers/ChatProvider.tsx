@@ -40,6 +40,7 @@ import {
 } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
 
+import { useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
@@ -261,6 +262,7 @@ const ChatProvider: React.FC<{
   children: ReactNode;
   socketErrorHandlers?: SocketErrorHandlers;
 }> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  const { postMessage } = useBroadcastChannel();
   const config = useConfig();
   const settings = useSettings();
   const { setScreen } = useWidget();
@@ -434,6 +436,11 @@ const ChatProvider: React.FC<{
         author: foreign_id,
       },
     });
+
+    // Notify other tabs that we've subscribed and sent the 1st msg (so they reload)
+    setTimeout(() => {
+      postMessage({ event: "subscribed" });
+    }, 500);
   };
 
   useSubscribe<TMessage>(StdEventType.message, handleNewIOMessage);

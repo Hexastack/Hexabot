@@ -119,6 +119,27 @@ export class SocketIoClient {
   }
 
   /**
+   * Waits for disconnecttion of the socket client.
+   */
+  public waitForDisconnect() {
+    return new Promise<void>((resolve, reject) => {
+      const onClose = () => {
+        this.socket.io.off("error", onError);
+        resolve();
+      };
+      const onError = () => {
+        this.socket.io.off("close", onClose);
+        reject(new Error("Error while disconnecting"));
+      };
+
+      this.socket.io.once("close", onClose);
+      this.socket.io.once("error", onError);
+
+      this.socket.disconnect();
+    });
+  }
+
+  /**
    * Reconnects the socket client using mutex across tabs.
    */
   public async forceReconnect(timeoutMs = 10_000) {
@@ -135,35 +156,38 @@ export class SocketIoClient {
 
       try {
         await new Promise<void>((resolve, reject) => {
+          timer = setTimeout(
+            () => reject(new Error("reconnect timeout")),
+            timeoutMs,
+          );
+
           const onConnect = () => {
             setTimeout(() => {
               resolve();
-            }, timeoutMs * 0.2);
+            }, timeoutMs * 0.05);
           };
           const onErr = (e: unknown) => {
             reject(e);
           };
 
           socket.io.once("open", onConnect);
-          socket.io.once("close", onErr);
           socket.io.once("error", onErr);
 
           off.push(
             () => socket.io.off("open", onConnect),
-            () => socket.io.off("close", onErr),
             () => socket.io.off("error", onErr),
           );
 
           // Force a fresh handshake if we were connected or mid-attempt
-          if (socket.connected /* or s.io.engine?.connecting */) {
-            socket.disconnect();
+          if (socket.connected) {
+            this.waitForDisconnect()
+              .then(() => {
+                socket.connect();
+              })
+              .catch(reject);
+          } else {
+            socket.connect();
           }
-          socket.connect();
-
-          timer = setTimeout(
-            () => reject(new Error("reconnect timeout")),
-            timeoutMs,
-          );
         });
       } catch (err) {
         // eslint-disable-next-line no-console
