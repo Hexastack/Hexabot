@@ -9,7 +9,6 @@
 import React, { useCallback, useState } from "react";
 
 import { useTranslation } from "../hooks/useTranslation";
-import { useBroadcastChannel } from "../providers/BroadcastChannelProvider";
 import { preprocessMessages, useChat } from "../providers/ChatProvider";
 import { useColors } from "../providers/ColorProvider";
 import { useSettings } from "../providers/SettingsProvider";
@@ -33,8 +32,8 @@ const UserSubscription: React.FC = () => {
     setSuggestions,
     subscribe,
     sendGetStarted,
+    broadcastEventToTabs,
   } = useChat();
-  const { postMessage } = useBroadcastChannel();
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
   const handleSubmit = useCallback(
@@ -63,7 +62,9 @@ const UserSubscription: React.FC = () => {
         if (messages.length === 0) {
           await sendGetStarted(profile.foreign_id);
         }
-        postMessage({ event: "subscribed" });
+
+        broadcastEventToTabs("profileCreated", true);
+
         setConnectionState(ConnectionState.connected);
       } catch (error) {
         if (

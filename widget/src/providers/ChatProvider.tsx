@@ -40,6 +40,7 @@ import {
 } from "../types/state.types";
 import { SocketIoClientError } from "../utils/SocketIoClientError";
 
+import { EBCEvent, useBroadcastChannel } from "./BroadcastChannelProvider";
 import { useConfig } from "./ConfigProvider";
 import { ChannelSettings, useSettings } from "./SettingsProvider";
 import { useSocket, useSubscribe } from "./SocketProvider";
@@ -210,6 +211,10 @@ interface ChatContextType {
     last_name?: string,
   ) => Promise<SubscribeResponse>;
   sendGetStarted: (foreign_id: string) => Promise<void>;
+  broadcastEventToTabs: (
+    event: `${EBCEvent}`,
+    skipEventsChecks?: boolean,
+  ) => void;
 }
 
 const defaultCtx: ChatContextType = {
@@ -253,6 +258,7 @@ const defaultCtx: ChatContextType = {
   sendGetStarted: async () => {
     return new Promise(() => {});
   },
+  broadcastEventToTabs: () => {},
 };
 const ChatContext = createContext<ChatContextType>(defaultCtx);
 const ChatProvider: React.FC<{
@@ -260,13 +266,15 @@ const ChatProvider: React.FC<{
   defaultConnectionState?: ConnectionState;
   children: ReactNode;
   socketErrorHandlers?: SocketErrorHandlers;
-}> = ({ wantToConnect, defaultConnectionState = 0, children }) => {
+  setEvents?: React.Dispatch<React.SetStateAction<string[]>>;
+}> = ({ wantToConnect, defaultConnectionState = 0, children, setEvents }) => {
   const config = useConfig();
   const settings = useSettings();
   const { setScreen } = useWidget();
   const { setScroll, syncState, isOpen } = useWidget();
   const { socket, socketErrorHandlers } = useSocket();
   const { t } = useTranslation();
+  const { postMessage } = useBroadcastChannel();
   const [participants, setParticipants] = useState<Participant[]>(
     defaultCtx.participants,
   );
@@ -416,6 +424,24 @@ const ChatProvider: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [participants, setConnectionState, setMessages, setParticipants, socket],
   );
+  const broadcastEventToTabs = useCallback(
+    (
+      event: `${EBCEvent}`,
+      skipEventsChecks?: boolean,
+      errorName: string = "unauthorized",
+    ) => {
+      setEvents?.((events) => {
+        if (skipEventsChecks || events?.includes(errorName)) {
+          postMessage({ event });
+
+          return events.filter((e) => e !== errorName);
+        } else {
+          return events;
+        }
+      });
+    },
+    [postMessage, setEvents],
+  );
   const subscribe = async (first_name: string = "", last_name: string = "") => {
     const { body } = await socket.get<SubscribeResponse>(
       `/webhook/${config.channel}/?first_name=${first_name}&last_name=${last_name}`,
@@ -459,7 +485,12 @@ const ChatProvider: React.FC<{
     socket.disconnect();
   });
 
-  useSubscribeBroadcastChannel("subscribed", () => {
+  useSubscribeBroadcastChannel("profileExpired", () => {
+    socket.disconnect();
+    socket.connect();
+  });
+
+  useSubscribeBroadcastChannel("profileCreated", () => {
     socket.disconnect();
     socket.connect();
   });
@@ -472,6 +503,7 @@ const ChatProvider: React.FC<{
 
   useSubscribe("settings", ({ profile, messages = [] }: ChannelSettings) => {
     setProfile(profile);
+    broadcastEventToTabs("profileExpired");
 
     if (config.channel === "web-channel" && profile && messages.length === 0) {
       sendGetStarted(profile.foreign_id);
@@ -555,6 +587,7 @@ const ChatProvider: React.FC<{
     profile,
     subscribe,
     sendGetStarted,
+    broadcastEventToTabs,
   };
 
   return (

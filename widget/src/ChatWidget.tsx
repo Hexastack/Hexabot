@@ -7,7 +7,9 @@
  */
 
 import "normalize.css";
+import { useState } from "react";
 import "./ChatWidget.css";
+
 import Launcher from "./components/Launcher";
 import UserSubscription from "./components/UserSubscription";
 import BroadcastChannelProvider from "./providers/BroadcastChannelProvider";
@@ -21,14 +23,21 @@ import WidgetProvider from "./providers/WidgetProvider";
 import { Config } from "./types/config.types";
 
 function ChatWidget(props: Partial<Config>) {
+  const [, setEvents] = useState<string[]>([]);
+
   return (
     <ConfigProvider {...props}>
       <TranslationProvider>
         <SocketProvider
           socketErrorHandlers={{
             "401": (err) => {
-              err.socket.disconnect();
-              err.socket.connect();
+              const isReceiver = err.message === "Unauthorized";
+
+              if (!isReceiver) {
+                setEvents((setEvents) => [...setEvents, "unauthorized"]);
+                err.socket.disconnect();
+                err.socket.connect();
+              }
             },
           }}
         >
@@ -36,7 +45,7 @@ function ChatWidget(props: Partial<Config>) {
             <ColorProvider>
               <WidgetProvider>
                 <BroadcastChannelProvider channelName="main-channel">
-                  <ChatProvider>
+                  <ChatProvider setEvents={setEvents}>
                     <Launcher PreChat={UserSubscription} />
                   </ChatProvider>
                 </BroadcastChannelProvider>
