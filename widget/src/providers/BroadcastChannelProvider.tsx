@@ -35,6 +35,10 @@ interface IBroadcastChannelContext {
     event: `${EBCEvent}`,
     callback: (message: BroadcastChannelMessage) => void,
   ) => void;
+  unsubscribe: (
+    event: `${EBCEvent}`,
+    callback: (message: BroadcastChannelMessage) => void,
+  ) => void;
   postMessage: (message: BroadcastChannelMessage) => void;
 }
 
@@ -67,7 +71,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
 
     return () => {
       channel.removeEventListener("message", handleMessage);
-      
+
       if (channelRef.current === channel) {
         channelRef.current = undefined;
       }
@@ -91,6 +95,16 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       }
     };
   };
+  const unsubscribe: IBroadcastChannelContext["unsubscribe"] = (
+    event,
+    callback,
+  ) => {
+    subscribersRef.current[event] = (
+      subscribersRef.current?.[event] || []
+    ).filter((cb) => {
+      return cb !== callback;
+    });
+  };
   const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
     channelRef.current?.postMessage(message);
   };
@@ -99,6 +113,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     <BroadcastChannelContext.Provider
       value={{
         subscribe,
+        unsubscribe,
         postMessage,
       }}
     >

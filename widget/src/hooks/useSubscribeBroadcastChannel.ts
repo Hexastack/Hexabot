@@ -13,10 +13,14 @@ import { useBroadcastChannel } from "../providers/BroadcastChannelProvider";
 export const useSubscribeBroadcastChannel: ReturnType<
   typeof useBroadcastChannel
 >["subscribe"] = (...props) => {
-  const { subscribe } = useBroadcastChannel();
+  const { subscribe, unsubscribe } = useBroadcastChannel();
 
   useEffect(() => {
     subscribe(...props);
+
+    return () => {
+      unsubscribe(...props);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 };

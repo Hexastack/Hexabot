@@ -27,8 +27,7 @@ const Template: React.FC<{ name: string; Icon: React.FC }> = ({
   const handleClick = () => {
     setConnectionState(ConnectionState.tryingToConnect);
 
-    socket.disconnect();
-    socket.connect();
+    socket.forceReconnect();
   };
   const loading = connectionState === ConnectionState.tryingToConnect;
 
