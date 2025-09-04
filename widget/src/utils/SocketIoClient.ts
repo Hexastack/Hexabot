@@ -119,7 +119,7 @@ export class SocketIoClient {
   }
 
   /**
-   * Waits for disconnecttion of the socket client.
+   * Waits for disconnection of the socket client.
    */
   public waitForDisconnect() {
     return new Promise<void>((resolve) => {
