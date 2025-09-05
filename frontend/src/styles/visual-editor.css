@@ -12,7 +12,7 @@
 }
 
 .canvas-container {
-  flex: auto;
+  height: 100%;
 }
 
 .diagram-container {

@@ -96,7 +96,6 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
       <div
         className="canvas-container"
         tabIndex={0}
-        style={{ width: "100%", height: "100%", position: "relative" }}
       >
         <S.Canvas
           className={this.props.className}

@@ -29,7 +29,7 @@ export const VisualEditor = () => {
           container
           height="100%"
           margin="auto"
-          sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}
+          sx={{ flex: 1, overflow: "hidden" }}
         >
           <Aside />
           <Grid
@@ -40,7 +40,6 @@ export const VisualEditor = () => {
               display: "flex",
               flexDirection: "column",
               height: "100%",
-              minHeight: 0,
             }}
           >
             <Diagrams />
