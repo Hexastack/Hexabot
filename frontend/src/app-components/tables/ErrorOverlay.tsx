@@ -6,25 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Alert, Box } from "@mui/material";
+import { OverlayTemplate } from "./OverlayTemplate";
 
-import NoDataIcon from "@/app-components/svg/NoDataIcon";
-import { useTranslate } from "@/hooks/useTranslate";
-
-export const ErrorOverlay = () => {
-  const { t } = useTranslate();
-
-  return (
-    <>
-      <Alert
-        iconMapping={{
-          success: <NoDataIcon style={{ fill: "red" }} />,
-        }}
-      >
-        <Box textAlign="center" color="red">
-          {t("message.internal_server_error")}
-        </Box>
-      </Alert>
-    </>
-  );
-};
+export const ErrorOverlay = () => (
+  <OverlayTemplate color="error" i18nKey="message.internal_server_error" />
+);

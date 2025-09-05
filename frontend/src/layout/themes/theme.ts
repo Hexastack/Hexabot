@@ -40,6 +40,7 @@ declare module "@mui/material/Chip" {
   }
 }
 
+const defaultTheme = createTheme({});
 const COLOR_PALETTE = {
   black: "#000",
   oceanGreen: "#1AA089",
@@ -58,9 +59,22 @@ const COLOR_PALETTE = {
   buttonOutlinedBorder: "#dcdfe6",
   buttonOutlinedHover: "#eaf4f3",
 };
+const COLORS = {
+  primary: {
+    main: "#1AA089",
+  },
+  secondary: {
+    main: "#B23A49",
+  },
+  error: {
+    main: "#cc0000",
+  },
+  warning: {
+    main: "#deb100",
+  },
+};
 
 export const borderLine = `1.5px solid ${COLOR_PALETTE.borderGray}`;
-const defaultTheme = createTheme({});
 
 export const theme = createTheme({
   typography: {
@@ -68,23 +82,11 @@ export const theme = createTheme({
     fontSize: 14,
   },
   palette: {
+    ...COLORS,
     mode: "light",
-    primary: {
-      main: "#1AA089",
-    },
     neutral: defaultTheme.palette.augmentColor({
       color: { main: "#838383" },
     }),
-
-    secondary: {
-      main: "#B23A49",
-    },
-    error: {
-      main: "#cc0000",
-    },
-    warning: {
-      main: "#deb100",
-    },
     background: {
       default: "#F5F6FA",
     },
@@ -97,7 +99,6 @@ export const theme = createTheme({
   shape: {
     borderRadius: 9,
   },
-
   components: {
     MuiCard: {
       styleOverrides: {
@@ -235,14 +236,28 @@ export const theme = createTheme({
     },
     MuiAlert: {
       styleOverrides: {
+        standardError: {
+          "&.custom-alert": {
+            color: COLORS.error.main,
+            svg: {
+              fill: COLORS.error.main,
+            },
+          },
+        },
         root: {
-          background: "transparent",
-          justifyContent: "center",
-          flexDirection: "column",
-          alignItems: "center",
-          minHeight: "300px",
-          position: "relative",
-          bottom: "42px",
+          "&.custom-alert": {
+            background: "transparent",
+            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+            minHeight: "300px",
+            position: "relative",
+            bottom: "42px",
+            color: COLOR_PALETTE.buttonOutlinedColor,
+            svg: {
+              fill: COLOR_PALETTE.buttonOutlinedColor,
+            },
+          },
         },
       },
     },
