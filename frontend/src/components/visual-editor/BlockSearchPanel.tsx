@@ -36,21 +36,10 @@ import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { BlockType, IBlockSearchResult } from "@/types/block.types";
-import { getBlockType, getIconForType } from "@/utils/block.utils";
+import { BlockType } from "@/types/block.types";
+import { getBlockExcerpt, getIconForType } from "@/utils/block.utils";
 
 import { useVisualEditor } from "./hooks/useVisualEditor";
-
-type BlockSearchItem = {
-  id: string;
-  name: string;
-  categoryId: string;
-  categoryLabel: string;
-  blockTextContent: string;
-  fallbackTextContent?: string;
-  score: number;
-  type: BlockType;
-};
 
 export type SearchScope = "current" | "all";
 export interface BlockSearchPanelProps {
@@ -118,7 +107,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const [shownCount, setShownCount] = useState(MAX_ITEMS_PER_PAGE);
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   // Backend block search
-  const { data: backendResults = [], isLoading: isLoadingSearch } = useFind(
+  const {
+    data: backendResults = [],
+    isLoading,
+    isFetching,
+  } = useFind(
     { entity: EntityType.BLOCK_SEARCH },
     {
       hasCount: false,
@@ -140,48 +133,17 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   );
   // Get category from cache for quick lookup
   const getCategoryFromCache = useGetFromCache(EntityType.CATEGORY);
-  // Loading and error states
-  const loading = isLoadingSearch;
+  // Loading state
+  const loading = isLoading || isFetching;
   // Map backend results into UI items
-  const items: BlockSearchItem[] = useMemo(() => {
-    return backendResults.map((blockEntry: IBlockSearchResult) => {
-      const type = getBlockType(blockEntry.message);
-
-      return {
-        id: blockEntry.id,
-        name: blockEntry.name,
-        categoryId: String(blockEntry.category ?? ""),
-        categoryLabel:
-          getCategoryFromCache(String(blockEntry.category))?.label ??
-          String(blockEntry.category ?? ""),
-        blockTextContent:
-          typeof blockEntry.message === "string"
-            ? blockEntry.message
-            : Array.isArray(blockEntry.message)
-            ? blockEntry.message.join(" ")
-            : typeof blockEntry.message === "object" &&
-              blockEntry.message &&
-              "text" in blockEntry.message
-            ? String(blockEntry.message.text ?? "")
-            : "",
-        fallbackTextContent: Array.isArray(
-          blockEntry.options?.fallback?.message,
-        )
-          ? blockEntry.options?.fallback?.message.join(" ")
-          : "",
-        type,
-        score: blockEntry.score,
-      };
-    });
-  }, [backendResults, getCategoryFromCache]);
   const visibleSearchItems = useMemo(() => {
     if (!searchText) return [];
 
-    return items.map((item, idx) => ({
+    return backendResults.map((item, idx) => ({
       item,
       refIndex: idx,
     }));
-  }, [searchText, items]);
+  }, [searchText, backendResults]);
   const visibleCount = Math.min(visibleSearchItems.length, shownCount);
   // Navigation in the search results handlers
   const goTo = (idx: number) => {
@@ -195,7 +157,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 
     if (!item) return;
     setSelectedIndex(idx);
-    await focusBlock(item.id, item.categoryId);
+    await focusBlock(item.id, item.category);
   };
   // Keyboard navigation handlers
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -296,7 +258,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                 {/* Text content skeleton */}
                 <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
                   <Skeleton variant="text" width="90%" height={20} />
-                  <Skeleton variant="text" width="60%" height={16} />
                 </Box>
               </Box>
             ))}
@@ -335,20 +296,15 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               <Box>
                 {visibleSearchItems.slice(0, visibleCount).map((res, idx) => {
                   const item = res.item;
-                  const primary = item?.name || "";
-                  const secondaryParts: string[] = [];
-
-                  if (item?.blockTextContent)
-                    secondaryParts.push(item.blockTextContent);
-                  if (item?.fallbackTextContent)
-                    secondaryParts.push(
-                      `(fallback: ${item.fallbackTextContent})`,
-                    );
-                  const secondary = secondaryParts.length
-                    ? secondaryParts.join(" • ")
-                    : undefined;
+                  const blockEntryName = item?.name || "";
+                  const blockEntryTextContent = getBlockExcerpt(
+                    item.message,
+                    item.options,
+                  );
                   const isActive = idx === selectedIndex;
                   const Icon = getIconForType(item?.type || BlockType.PLUGIN);
+                  const categoryLabel =
+                    getCategoryFromCache(String(item.category))?.label ?? "";
 
                   return (
                     <div key={item?.id ?? idx}>
@@ -375,10 +331,9 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                           </Box>
                         </ListItemAvatar>
                         <ListItemText
-                          primary={primary}
-                          secondary={`${item?.categoryLabel || ""}${
-                            secondary ? " • " + secondary : ""
-                          }`}
+                          title={blockEntryTextContent}
+                          primary={blockEntryName}
+                          secondary={categoryLabel}
                           primaryTypographyProps={{ noWrap: true }}
                           secondaryTypographyProps={{ noWrap: true }}
                           sx={{ minWidth: 0 }}
