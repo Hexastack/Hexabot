@@ -18,9 +18,6 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
   Skeleton,
   Tab,
   Tabs,
@@ -31,14 +28,12 @@ import React, { useMemo, useState } from "react";
 
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
-import { BlockType } from "@/types/block.types";
-import { getBlockExcerpt, getIconForType } from "@/utils/block.utils";
 
+import BlockSearchResultItem from "./BlockSearchResultItem";
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
@@ -131,8 +126,6 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       },
     },
   );
-  // Get category from cache for quick lookup
-  const getCategoryFromCache = useGetFromCache(EntityType.CATEGORY);
   // Loading state
   const loading = isLoading || isFetching;
   // Map backend results into UI items
@@ -296,50 +289,15 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               <Box>
                 {visibleSearchItems.slice(0, visibleCount).map((res, idx) => {
                   const item = res.item;
-                  const blockEntryName = item?.name || "";
-                  const blockEntryTextContent = getBlockExcerpt(
-                    item.message,
-                    item.options,
-                  );
                   const isActive = idx === selectedIndex;
-                  const Icon = getIconForType(item?.type || BlockType.PLUGIN);
-                  const categoryLabel =
-                    getCategoryFromCache(String(item.category))?.label ?? "";
 
                   return (
-                    <div key={item?.id ?? idx}>
-                      <ListItemButton
-                        selected={isActive}
-                        autoFocus={isActive}
-                        onClick={() => activate(idx)}
-                        sx={{
-                          height: 56,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <ListItemAvatar sx={{ minWidth: 44, flexShrink: 0 }}>
-                          <Box
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Icon width={24} height={24} />
-                          </Box>
-                        </ListItemAvatar>
-                        <ListItemText
-                          title={blockEntryTextContent}
-                          primary={blockEntryName}
-                          secondary={categoryLabel}
-                          primaryTypographyProps={{ noWrap: true }}
-                          secondaryTypographyProps={{ noWrap: true }}
-                          sx={{ minWidth: 0 }}
-                        />
-                      </ListItemButton>
-                    </div>
+                    <BlockSearchResultItem
+                      key={item?.id ?? idx}
+                      item={item}
+                      isActive={isActive}
+                      onClick={() => activate(idx)}
+                    />
                   );
                 })}
               </Box>
