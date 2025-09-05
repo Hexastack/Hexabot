@@ -73,6 +73,11 @@ export class BlockController extends BaseController<
    * Text search for blocks using MongoDB text index.
    *
    * Example: GET /block/search?q=UserSearchPhrase&limit=50
+   *
+   * @param {string} q - The search term.
+   * @param {number} [limit] - The maximum number of results to return.
+   * @param {string} [category] - The category to filter the search results.
+   * @returns {Promise<SearchRankedBlock[]>} A promise that resolves to an array of ranked block search results.
    */
   @Get('search')
   async search(
@@ -81,7 +86,6 @@ export class BlockController extends BaseController<
   ): Promise<SearchRankedBlock[]> {
     if (!q) return [];
 
-    // retrieve and return transformed search results from the service
     return await this.blockService.search(q, limit, category);
   }
 
