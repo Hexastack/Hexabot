@@ -12,7 +12,11 @@ import ListIcon from "@/app-components/svg/toolbar/ListIcon";
 import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
 import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
-import { BlockMessage, BlockType } from "@/types/block.types";
+import {
+  BlockMessage,
+  BlockType,
+  IBlockSearchResult,
+} from "@/types/block.types";
 
 /**
  * Determines the type of a block message by inspecting its structure and properties.
@@ -31,6 +35,107 @@ export const getBlockType = (message: BlockMessage): BlockType => {
   }
 
   return BlockType.PLUGIN;
+};
+
+/**
+ * Extracts text content from a block message.
+ *
+ * @param message - The block message to extract text from.
+ * @returns The extracted text content as an array of strings.
+ */
+export const getBlockTextContent = (
+  message: IBlockSearchResult["message"],
+): string[] => {
+  if (typeof message === "string") return [message];
+  if (Array.isArray(message)) return message;
+
+  if (typeof message === "object" && message) {
+    // Handle standard message types with text property
+    if ("text" in message) {
+      const text = String(message.text ?? "");
+
+      return text ? [text] : [];
+    }
+
+    // Handle plugin messages with args containing text content
+    if (
+      "plugin" in message &&
+      "args" in message &&
+      message.args &&
+      typeof message.args === "object"
+    ) {
+      const pluginTextFields: string[] = [];
+
+      // Extract text content from args object
+      Object.values(message.args).forEach((value) => {
+        if (typeof value === "string" && value) {
+          pluginTextFields.push(value);
+        } else if (Array.isArray(value)) {
+          // Handle arrays of strings
+          value.forEach((item) => {
+            if (typeof item === "string" && item) {
+              pluginTextFields.push(item);
+            }
+          });
+        }
+      });
+
+      return pluginTextFields;
+    }
+  }
+
+  return [];
+};
+
+/**
+ * Extracts fallback text content from block options.
+ *
+ * @param options - The block options to extract fallback text from.
+ * @returns The extracted fallback text content as an array of strings.
+ */
+export const getFallbackTextContent = (
+  options: IBlockSearchResult["options"],
+): string[] => {
+  if (Array.isArray(options?.fallback?.message)) {
+    return options.fallback.message;
+  }
+
+  return [];
+};
+
+/**
+ * Creates a block excerpt combining main text message and fallback message content.
+ *
+ * @param message - The block message.
+ * @param options - The block options.
+ * @returns An string containing the block excerpt.
+ */
+export const getBlockExcerpt = (
+  message: IBlockSearchResult["message"],
+  options: IBlockSearchResult["options"],
+): string => {
+  const excerpt: string[] = [];
+  const blockTextContent = getBlockTextContent(message);
+  const fallbackTextContent = getFallbackTextContent(options);
+
+  if (blockTextContent.length > 0) {
+    const formattedBlockContent = blockTextContent
+      .map((item) => `\n - ${item}`)
+      .join("");
+
+    excerpt.push(`• Block Messages:${formattedBlockContent}`);
+  }
+  if (fallbackTextContent.length > 0) {
+    const formattedFallbackContent = fallbackTextContent
+      .map((item) => `\n - ${item}`)
+      .join("");
+
+    excerpt.push(`• Fallback Messages:${formattedFallbackContent}`);
+  }
+
+  const formattedExcerpt = excerpt.join("\n\n");
+
+  return formattedExcerpt;
 };
 
 /**
