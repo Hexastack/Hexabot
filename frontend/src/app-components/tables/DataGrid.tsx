@@ -11,12 +11,14 @@ import {
   DataGridProps,
   gridClasses,
   GridColDef,
+  GridSlotsComponent,
   GridValidRowModel,
   DataGrid as MuiDataGrid,
 } from "@mui/x-data-grid";
 
 import { renderHeader } from "./columns/renderHeader";
 import { styledPaginationSlots } from "./DataGridStyledPagination";
+import { ErrorOverlay } from "./ErrorOverlay";
 import { NoDataOverlay } from "./NoDataOverlay";
 
 export const StyledDataGrid = <T extends GridValidRowModel = any>(
@@ -51,15 +53,13 @@ export const DataGrid = <T extends GridValidRowModel = any>({
   rows = [],
   autoHeight = true,
   disableRowSelectionOnClick = true,
-  slots = {
-    noRowsOverlay: NoDataOverlay,
-    ...styledPaginationSlots,
-  },
+  slots,
   showCellVerticalBorder = false,
   showColumnVerticalBorder = false,
   sx = { border: "none" },
+  error,
   ...rest
-}: DataGridProps<T>) => {
+}: DataGridProps<T> & { error?: boolean }) => {
   const styledColumns: GridColDef<T>[] = columns.map((col) => ({
     disableColumnMenu: true,
     renderHeader,
@@ -67,12 +67,19 @@ export const DataGrid = <T extends GridValidRowModel = any>({
     flex: 1,
     ...col,
   }));
+  const normalizedSlots =
+    slots ||
+    ({
+      noRowsOverlay: error ? ErrorOverlay : NoDataOverlay,
+      noResultsOverlay: error ? ErrorOverlay : NoDataOverlay,
+      ...styledPaginationSlots,
+    } as Partial<GridSlotsComponent> | undefined);
 
   return (
     <StyledDataGrid<T>
       autoHeight={autoHeight}
       disableRowSelectionOnClick={disableRowSelectionOnClick}
-      slots={slots}
+      slots={normalizedSlots}
       slotProps={{
         loadingOverlay: {
           variant: "skeleton",
