@@ -26,8 +26,8 @@ import {
 } from 'class-validator';
 import { z } from 'zod';
 
-import { SanitizeQueryPipe } from '@/common/pipes/sanitize-query.pipe';
 import { Validate } from '@/utils/decorators/validate.decorator';
+import { SanitizeQueryPipe } from '@/utils/pipes/sanitize-query.pipe';
 import { DtoConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
