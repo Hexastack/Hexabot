@@ -6,8 +6,9 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Alert, AlertProps, Box } from "@mui/material";
-import { FC, SVGProps } from "react";
+import { Theme } from "@emotion/react";
+import { Alert, AlertProps, Box, SxProps } from "@mui/material";
+import { FC } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
@@ -16,13 +17,14 @@ import NoDataIcon from "../svg/NoDataIcon";
 
 export const OverlayTemplate = ({
   i18nKey,
-  icon: Icon = NoDataIcon,
+  icon,
   color,
 }: {
   i18nKey: TTranslationKeys;
-  icon?: FC<SVGProps<SVGSVGElement>>;
+  icon?: FC<{ sx?: SxProps<Theme> }>;
   color?: AlertProps["color"];
 }) => {
+  const Icon = icon || NoDataIcon;
   const { t } = useTranslate();
 
   return (
@@ -30,7 +32,7 @@ export const OverlayTemplate = ({
       color={color}
       className="custom-alert"
       iconMapping={{
-        success: <Icon />,
+        success: <Icon sx={{ fontSize: "50px" }} />,
       }}
     >
       <Box>{t(i18nKey)}</Box>

@@ -6,8 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import ErrorIcon from "@mui/icons-material/ErrorOutline";
+
 import { OverlayTemplate } from "./OverlayTemplate";
 
 export const ErrorOverlay = () => (
-  <OverlayTemplate color="error" i18nKey="message.internal_server_error" />
+  <OverlayTemplate
+    icon={ErrorIcon}
+    color="error"
+    i18nKey="message.internal_server_error"
+  />
 );

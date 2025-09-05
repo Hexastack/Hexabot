@@ -246,6 +246,7 @@ export const theme = createTheme({
         },
         root: {
           "&.custom-alert": {
+            textAlign: "center",
             background: "transparent",
             justifyContent: "center",
             flexDirection: "column",
