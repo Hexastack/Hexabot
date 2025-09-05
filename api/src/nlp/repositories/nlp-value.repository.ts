@@ -90,12 +90,6 @@ export class NlpValueRepository extends BaseRepository<
         },
       },
       {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-      {
         $lookup: {
           from: 'nlpsampleentities',
           localField: '_id',
@@ -124,11 +118,6 @@ export class NlpValueRepository extends BaseRepository<
         },
       },
       {
-        $match: {
-          '_samples.type': 'train',
-        },
-      },
-      {
         $group: {
           _id: '$_id',
           _originalDoc: {
@@ -137,7 +126,18 @@ export class NlpValueRepository extends BaseRepository<
             },
           },
           nlpSamplesCount: {
-            $sum: { $cond: [{ $ifNull: ['$_sampleEntities', false] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ['$_sampleEntities', false] },
+                    { $eq: ['$_samples.type', 'train'] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
         },
       },
@@ -169,6 +169,12 @@ export class NlpValueRepository extends BaseRepository<
           [sort[0]]: this.getSortDirection(sort[1]),
           _id: this.getSortDirection(sort[1]),
         },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
     ];
 
