@@ -23,7 +23,7 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const { pathname } = useRouter();
+  const { pathname, reload } = useRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);
@@ -56,6 +56,11 @@ export const ChatWidget = () => {
             }
           />
         )}
+        socketErrorHandlers={{
+          "401": () => {
+            reload();
+          },
+        }}
       />
     </Box>
   ) : null;

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2024 Hexastack. All rights reserved.
+ * Copyright © 2025 Hexastack. All rights reserved.
  *
  * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
  * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
@@ -14,19 +14,28 @@ import {
   useRef,
 } from "react";
 
+import { SocketErrorHandlers } from "../types/message.types";
 import { getSocketIoClient, SocketIoClient } from "../utils/SocketIoClient";
 
 import { useConfig } from "./ConfigProvider";
 
-interface socketContext {
+export interface socketContext {
   socket: SocketIoClient;
+  socketErrorHandlers?: SocketErrorHandlers;
+}
+
+interface SocketProviderProps extends PropsWithChildren {
+  socketErrorHandlers?: SocketErrorHandlers;
 }
 
 const socketContext = createContext<socketContext>({
   socket: {} as SocketIoClient,
 });
 
-export const SocketProvider = (props: PropsWithChildren) => {
+export const SocketProvider = ({
+  children,
+  socketErrorHandlers,
+}: SocketProviderProps) => {
   const config = useConfig();
   const socketRef = useRef(
     getSocketIoClient(config, {
@@ -48,8 +57,10 @@ export const SocketProvider = (props: PropsWithChildren) => {
   );
 
   return (
-    <socketContext.Provider value={{ socket: socketRef.current }}>
-      {props.children}
+    <socketContext.Provider
+      value={{ socket: socketRef.current, socketErrorHandlers }}
+    >
+      {children}
     </socketContext.Provider>
   );
 };

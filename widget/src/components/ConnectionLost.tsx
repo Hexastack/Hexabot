@@ -8,57 +8,12 @@
 
 import React from "react";
 
-import { useTranslation } from "../hooks/useTranslation";
-import { useChat } from "../providers/ChatProvider";
-import { useColors } from "../providers/ColorProvider";
-import { ConnectionState } from "../types/state.types";
-
 import "./ConnectionLost.scss";
 import ConnectionIcon from "./icons/ConnectionIcon";
-import { LoadingComponent } from "./LoadingComponent";
+import Template from "./ScreenTemplate";
 
 const ConnectionLost: React.FC = () => {
-  const { t } = useTranslation();
-  const { connectionState, setConnectionState } = useChat();
-  const { colors } = useColors();
-  const handleClick = () => {
-    if (connectionState === ConnectionState.disconnected) {
-      setConnectionState(ConnectionState.tryingToConnect);
-    }
-  };
-  const loading = connectionState > ConnectionState.notConnectedYet;
-
-  return (
-    <div
-      className="sc-chat--disconnected-icon-wrapper"
-      style={{ backgroundColor: colors.messageList.bg }}
-    >
-      {loading ? (
-        <LoadingComponent />
-      ) : (
-        <div className="sc-chat--disconnected-icon">
-          <ConnectionIcon />
-          <h3
-            className="sc-chat--disconnected-text"
-            style={{ color: colors.button.text }}
-          >
-            {t("settings.connection_lost")}
-          </h3>
-          <button
-            className="sc-chat--disconnected-button"
-            style={{
-              color: colors.button.text,
-              backgroundColor: colors.button.bg,
-              borderColor: colors.button.border,
-            }}
-            onClick={handleClick}
-          >
-            {t("user_subscription.refresh")}
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  return <Template name="disconnected" Icon={ConnectionIcon} />;
 };
 
 export default ConnectionLost;

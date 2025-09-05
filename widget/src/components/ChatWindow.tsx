@@ -10,10 +10,11 @@ import React, { PropsWithChildren, useEffect, useMemo } from "react";
 
 import { useChat } from "../providers/ChatProvider";
 import { useWidget } from "../providers/WidgetProvider";
-import { ConnectionState } from "../types/state.types";
+import { ChatScreen, ConnectionState } from "../types/state.types";
 
 import ChatHeader from "./ChatHeader";
 import ConnectionLost from "./ConnectionLost";
+import ErrorScreen from "./ErrorScreen";
 import { LoadingComponent } from "./LoadingComponent";
 import Messages from "./Messages";
 import UserInput from "./UserInput";
@@ -34,7 +35,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   PreChat,
   PostChat,
 }) => {
-  const { connectionState, messages } = useChat();
+  const { connectionState, messages, profile } = useChat();
   const { screen, isOpen, setScreen } = useWidget();
   const ChatView = useMemo(
     () => (
@@ -48,33 +49,38 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   useEffect(() => {
     if (
+      !profile &&
       messages.length === 0 &&
       connectionState === ConnectionState.notConnectedYet
     ) {
-      setScreen("prechat");
+      setScreen(ChatScreen.PRE_CHAT);
     } else if (connectionState === ConnectionState.tryingToConnect) {
-      setScreen("loading");
-    } else if (connectionState !== ConnectionState.disconnected) {
-      setScreen("chat");
+      setScreen(ChatScreen.LOADING);
+    } else if (connectionState === ConnectionState.disconnected) {
+      setScreen(ChatScreen.DISCONNECT);
+    } else if (connectionState === ConnectionState.error) {
+      setScreen(ChatScreen.ERROR);
     } else {
-      setScreen("disconnect");
+      setScreen(ChatScreen.CHAT);
     }
-  }, [messages.length, connectionState, setScreen]);
+  }, [messages.length, connectionState, setScreen, profile]);
 
   const getCurrentScreen = () => {
     switch (screen) {
-      case "prechat":
+      case ChatScreen.PRE_CHAT:
         return PreChat && <PreChat />;
-      case "chat":
+      case ChatScreen.CHAT:
         return ChatView;
-      case "postchat":
+      case ChatScreen.POST_CHAT:
         return PostChat && <PostChat />;
-      case "webview":
+      case ChatScreen.WEBVIEW:
         return <Webview />;
-      case "loading":
+      case ChatScreen.LOADING:
         return <LoadingComponent />;
-      case "disconnect":
+      case ChatScreen.DISCONNECT:
         return <ConnectionLost />;
+      case ChatScreen.ERROR:
+        return <ErrorScreen />;
       default:
         return PreChat && <PreChat />;
     }

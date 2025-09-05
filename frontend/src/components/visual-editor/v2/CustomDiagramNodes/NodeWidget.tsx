@@ -291,8 +291,7 @@ class NodeWidget extends React.Component<
         </div>
         <div className="node-block-field-container">
           <div className="node-block-field">
-            <TriggerIcon color={this.config.color} />
-
+            <TriggerIcon color={this.config.color} style={{ flexShrink: 0 }} />
             {this.props.node.patterns.length > 0 ? (
               this.props.node.patterns
                 .map((pattern: Pattern) => {

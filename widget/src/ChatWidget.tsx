@@ -24,7 +24,14 @@ function ChatWidget(props: Partial<Config>) {
   return (
     <ConfigProvider {...props}>
       <TranslationProvider>
-        <SocketProvider>
+        <SocketProvider
+          socketErrorHandlers={{
+            "401": (err) => {
+              err.socket.disconnect();
+              err.socket.connect();
+            },
+          }}
+        >
           <SettingsProvider>
             <ColorProvider>
               <WidgetProvider>

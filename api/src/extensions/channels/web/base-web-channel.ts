@@ -6,7 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import bodyParser from 'body-parser';
 import { NextFunction, Request, Response } from 'express';
@@ -155,6 +160,28 @@ export default abstract class BaseWebChannelHandler<
       this.logger.error('Unable to initiate websocket connection', err);
       client.disconnect();
     }
+  }
+
+  @OnEvent('hook:websocket:error')
+  broadcastError(socket: Socket, error: HttpException): void {
+    const response = (
+      error instanceof HttpException
+        ? error.getResponse()
+        : {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: 'Internal Server Error',
+          }
+    ) as SocketResponse;
+
+    const subscriber = socket.request.session.web?.profile as
+      | Subscriber
+      | undefined;
+
+    if (socket.handshake.query.channel !== this.getName() || !subscriber) {
+      return;
+    }
+
+    this.broadcast(subscriber, StdEventType.error, response, [socket.id]);
   }
 
   /**
@@ -618,7 +645,11 @@ export default abstract class BaseWebChannelHandler<
       }
 
       // Check if any file is provided
-      if (type !== 'file' || !('file' in data) || !data.file) {
+      if (
+        type !== Web.IncomingMessageType.file ||
+        !('file' in data) ||
+        !data.file
+      ) {
         this.logger.debug('No files provided');
         return null;
       }
@@ -631,12 +662,12 @@ export default abstract class BaseWebChannelHandler<
 
       return await this.attachmentService.store(data.file, {
         name: data.name,
-        size: Buffer.byteLength(data.file),
+        size,
         type: data.type,
         resourceRef: AttachmentResourceRef.MessageAttachment,
         access: AttachmentAccess.Private,
         createdByRef: AttachmentCreatedByRef.Subscriber,
-        createdBy: req.session.web?.profile?.id,
+        createdBy: req.session.web.profile.id,
       });
     } catch (err) {
       this.logger.error('Unable to store uploaded file', err);
@@ -790,7 +821,7 @@ export default abstract class BaseWebChannelHandler<
           }
         }
 
-        // Handler sync message sent by chabbot
+        // Handler sync message sent by chatbot
         if (body.sync && body.author === 'chatbot') {
           const sentMessage: MessageCreateDto = {
             mid: event.getId(),
@@ -1088,8 +1119,8 @@ export default abstract class BaseWebChannelHandler<
 
     // Items count min check
     if (!data.length) {
-      this.logger.error('Unsufficient content count (must be >= 0 for list)');
-      throw new Error('Unsufficient content count (list >= 0)');
+      this.logger.error('Insufficient content count (must be >= 0 for list)');
+      throw new Error('Insufficient content count (list >= 0)');
     }
 
     // Toggle "View More" button (check if there's more items to display)
@@ -1136,9 +1167,9 @@ export default abstract class BaseWebChannelHandler<
     // Items count min check
     if (data.length === 0) {
       this.logger.error(
-        'Unsufficient content count (must be > 0 for carousel)',
+        'Insufficient content count (must be > 0 for carousel)',
       );
-      throw new Error('Unsufficient content count (carousel > 0)');
+      throw new Error('Insufficient content count (carousel > 0)');
     }
 
     // Populate items (elements/cards) with content
@@ -1193,11 +1224,12 @@ export default abstract class BaseWebChannelHandler<
     subscriber: Subscriber,
     type: StdEventType,
     content: any,
+    excludedRooms: string[] = [],
   ): void {
     const channelData =
       Subscriber.getChannelData<typeof WEB_CHANNEL_NAME>(subscriber);
     if (channelData.isSocket) {
-      this.websocketGateway.broadcast(subscriber, type, content);
+      this.websocketGateway.broadcast(subscriber, type, content, excludedRooms);
     } else {
       // Do nothing, messages will be retrieved via polling
     }
@@ -1355,7 +1387,7 @@ export default abstract class BaseWebChannelHandler<
         // Handle multipart uploads (Long Pooling only)
         return upload(req, res, next);
       } else if (req.headers['content-type']?.includes('text/plain')) {
-        // Handle plain text payloads as JSON (retro-compability)
+        // Handle plain text payloads as JSON (retro-compatibility)
         const textParser = bodyParser.text({ type: 'text/plain' });
 
         return textParser(req, res, () => {

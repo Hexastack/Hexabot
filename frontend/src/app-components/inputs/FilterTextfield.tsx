@@ -14,7 +14,7 @@ import {
   InputAdornment,
   TextFieldProps,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -22,14 +22,15 @@ import { Adornment } from "./Adornment";
 import { Input } from "./Input";
 
 export interface FilterTextFieldProps
-  extends Omit<TextFieldProps, "value" | "onChange"> {
+  extends Omit<Partial<TextFieldProps>, "value" | "onChange"> {
   onChange: (value: string) => void;
   delay?: number;
-  clearable: boolean;
+  clearable?: boolean;
   defaultValue?: string;
+  autoFocus?: boolean;
 }
 
-export const FilterTextfield = ({
+export const FilterTextfield: FC<FilterTextFieldProps> = ({
   onChange: onSearch,
   defaultValue = "",
   delay = 500,

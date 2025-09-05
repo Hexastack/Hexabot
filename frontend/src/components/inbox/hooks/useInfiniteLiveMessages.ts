@@ -24,11 +24,14 @@ export const useInfinitedLiveMessages = () => {
   const { subscriber: activeChat } = useChat();
   const queryClient = useQueryClient();
   const normalizeAndCache = useNormalizeAndCache(EntityType.MESSAGE);
-  const params: SearchPayload<IMessage> = {
-    where: {
-      or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
-    },
-  };
+  const params = useMemo<SearchPayload<IMessage>>(
+    () => ({
+      where: {
+        or: [{ recipient: activeChat?.id }, { sender: activeChat?.id }],
+      },
+    }),
+    [activeChat?.id],
+  );
   const {
     data,
     hasNextPage,
@@ -73,18 +76,32 @@ export const useInfinitedLiveMessages = () => {
         );
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [queryClient, activeChat?.id],
   );
 
   useSubscribe<SocketMessageEvents>("message", addMessage);
 
-  const messages = useMemo(
-    () =>
-      (data?.pages.reverse().map((p) => p.reverse()) || [])
-        .flat()
-        .filter((m, idx, self) => self.indexOf(m) === idx),
-    [data],
-  );
+  const messages = useMemo(() => {
+    const seen = new Set<string>();
+
+    return (data?.pages || [])
+      .flat()
+      .reduce<IMessage[]>((acc, m) => {
+        if (!seen.has(m.id)) {
+          seen.add(m.id);
+          acc.push(m);
+        }
+
+        return acc;
+      }, [])
+      .sort((a, b) => {
+        return (
+          new Date(a.createdAt ?? 0).getTime() -
+          new Date(b.createdAt ?? 0).getTime()
+        );
+      });
+  }, [data]);
 
   return {
     replyTo:

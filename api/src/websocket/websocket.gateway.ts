@@ -106,8 +106,13 @@ export class WebsocketGateway
     });
   }
 
-  broadcast(subscriber: Subscriber, type: StdEventType, content: any) {
-    this.io.to(subscriber.foreign_id).emit(type, content);
+  broadcast(
+    subscriber: Subscriber,
+    type: StdEventType,
+    content: any,
+    excludedRooms: string[] = [],
+  ) {
+    this.io.to(subscriber.foreign_id).except(excludedRooms).emit(type, content);
   }
 
   async createAndStoreSession(client: Socket): Promise<void> {
@@ -162,34 +167,6 @@ export class WebsocketGateway
     });
   }
 
-  saveSession(client: Socket): void {
-    const { session } = client.request;
-    if (!session) {
-      this.logger.warn('No socket session found ...');
-      return;
-    }
-
-    // On disconnect we may want to update the session, but
-    // it shouldn't save it if the user logged out (session destroyed)
-    this.loadSession(session.id, (err, oldSession) => {
-      if (err || !oldSession) {
-        this.logger.debug(
-          'Unable to save websocket session, probably the user logged out ...',
-        );
-        return;
-      }
-      getSessionStore().set(session.id, session, (err) => {
-        if (err) {
-          this.logger.error(
-            'Error saving session in `config.sockets.afterDisconnect`:',
-            err,
-          );
-          throw err;
-        }
-      });
-    });
-  }
-
   loadSession(
     sessionID: string,
     next: (err: Error, session: any) => void,
@@ -218,8 +195,7 @@ export class WebsocketGateway
             path: cookie.path,
             httpOnly: cookie.httpOnly,
             secure: cookie.secure,
-            // @ts-expect-error type mismatch Cookie vs CookieOptions
-            expires: cookie._expires,
+            expires: cookie.expires,
           });
 
           headers['Set-Cookie'] = cookies;
@@ -294,8 +270,6 @@ export class WebsocketGateway
     try {
       // Check if the afterDisconnect logic is an asynchronous function
       await config.sockets.afterDisconnect(client);
-
-      this.saveSession(client);
     } catch (e) {
       // Catch synchronous errors
       this.logger.error(

@@ -11,6 +11,7 @@ import {
   HttpStatus,
   Injectable,
   OnModuleInit,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ModulesContainer } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
@@ -74,25 +75,32 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
       const [_, handler] = foundHandler;
 
-      await new Promise<void>(async (resolve, reject) => {
-        req.session.reload((_err) => {
-          if (_err) reject();
-          resolve();
+      await new Promise<Error | void>(async (resolve, reject) => {
+        req.session.reload((error) => {
+          if (error) {
+            reject(new UnauthorizedException());
+          } else {
+            resolve();
+          }
         });
       });
 
       const response = await handler(req, res);
 
       // Update session object (similar to what is done in express-session)
-      req.session.save((err) => {
-        if (err) {
-          this.logger.error('WS : Unable to update session!', err);
-        }
+      await new Promise<void>((resolve) => {
+        req.session.save((err) => {
+          if (err) {
+            this.logger.error('WS : Unable to update session!', err);
+          }
+          resolve();
+        });
       });
 
       return response;
     } catch (error) {
-      return this.handleException(error, res);
+      this.logger.error('Error while handling Web-socket event', error);
+      return this.handleException(error, req, res);
     } finally {
       release();
     }
@@ -100,10 +108,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
 
   onModuleInit() {
     const allProviders = Array.from(this.modulesContainer.values())
-      .map((module) => module.providers.values())
+      .map(
+        (module) =>
+          module.providers.values() as MapIterator<InstanceWrapper<object>>,
+      )
       .reduce(
         (prev, curr) => prev.concat(Array.from(curr)),
-        [] as InstanceWrapper<unknown>[],
+        [] as InstanceWrapper<object>[],
       )
       .filter((provider) => !!provider.instance);
 
@@ -132,7 +143,13 @@ export class SocketEventDispatcherService implements OnModuleInit {
     }
   }
 
-  private handleException(error: Error, res: SocketResponse) {
+  private handleException(
+    error: Error,
+    { socket }: SocketRequest,
+    res: SocketResponse,
+  ) {
+    this.eventEmitter.emit('hook:websocket:error', socket, error);
+
     if (error instanceof HttpException) {
       // Handle known HTTP exceptions
       return res.status(error.getStatus()).send(error.getResponse());
