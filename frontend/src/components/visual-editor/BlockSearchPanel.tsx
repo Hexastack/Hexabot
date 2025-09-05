@@ -14,7 +14,6 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
-  Button,
   Divider,
   IconButton,
   InputAdornment,
@@ -24,7 +23,8 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
+import { FixedSizeList as List } from "react-window";
 
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { useFind } from "@/hooks/crud/useFind";
@@ -33,7 +33,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
-import BlockSearchResultItem from "./BlockSearchResultItem";
+import { VirtualizedBlockSearchItem } from "./BlockSearchResultItem";
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
@@ -93,17 +93,16 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   open,
   onClose,
 }) => {
-  const MAX_ITEMS_PER_PAGE = 10;
+  const ITEM_HEIGHT = 56; // Fixed height for each list item
   const { t } = useTranslate();
   const { toast } = useToast();
   const { selectedCategoryId, focusBlock } = useVisualEditor();
   const [scope, setScope] = useState<SearchScope>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [shownCount, setShownCount] = useState(MAX_ITEMS_PER_PAGE);
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   // Backend block search
   const {
-    data: backendResults = [],
+    data: blockSearchResults = [],
     isLoading,
     isFetching,
   } = useFind(
@@ -113,12 +112,12 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       params: {
         q: searchText,
         category: scope === "current" ? selectedCategoryId : undefined,
+        limit: 200,
       },
     },
     {
       enabled: open && Boolean(searchText && searchText.trim().length > 0),
       onSuccess() {
-        setShownCount(MAX_ITEMS_PER_PAGE);
         setSelectedIndex(0);
       },
       onError() {
@@ -128,35 +127,28 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   );
   // Loading state
   const loading = isLoading || isFetching;
-  // Map backend results into UI items
-  const visibleSearchItems = useMemo(() => {
-    if (!searchText) return [];
-
-    return backendResults.map((item, idx) => ({
-      item,
-      refIndex: idx,
-    }));
-  }, [searchText, backendResults]);
-  const visibleCount = Math.min(visibleSearchItems.length, shownCount);
   // Navigation in the search results handlers
   const goTo = (idx: number) => {
-    if (idx < 0 || idx >= visibleCount) return;
+    if (idx < 0 || idx >= blockSearchResults.length) return;
 
     setSelectedIndex(idx);
   };
   // Focus the selected block
-  const activate = async (idx: number) => {
-    const item = visibleSearchItems[idx]?.item;
+  const activate = useCallback(
+    async (idx: number) => {
+      const item = blockSearchResults[idx];
 
-    if (!item) return;
-    setSelectedIndex(idx);
-    await focusBlock(item.id, item.category);
-  };
+      if (!item) return;
+      setSelectedIndex(idx);
+      await focusBlock(item.id, item.category);
+    },
+    [blockSearchResults, focusBlock],
+  );
   // Keyboard navigation handlers
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      goTo(Math.min(selectedIndex + 1, visibleCount - 1));
+      goTo(Math.min(selectedIndex + 1, blockSearchResults.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       goTo(Math.max(selectedIndex - 1, 0));
@@ -255,7 +247,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               </Box>
             ))}
           </Box>
-        ) : visibleSearchItems.length === 0 && searchText ? (
+        ) : blockSearchResults.length === 0 && searchText ? (
           <Box
             p={2}
             display="flex"
@@ -275,7 +267,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           <>
             <ResultCount>
               <Typography variant="caption">
-                {visibleCount} / {searchText ? backendResults.length : 0}{" "}
+                {searchText ? blockSearchResults.length : 0}{" "}
                 {t("label.results_count")}
               </Typography>
             </ResultCount>
@@ -286,38 +278,28 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                 overflow: "auto",
               }}
             >
-              <Box>
-                {visibleSearchItems.slice(0, visibleCount).map((res, idx) => {
-                  const item = res.item;
-                  const isActive = idx === selectedIndex;
-
-                  return (
-                    <BlockSearchResultItem
-                      key={item?.id ?? idx}
-                      item={item}
-                      isActive={isActive}
-                      onClick={() => activate(idx)}
-                    />
-                  );
-                })}
-              </Box>
+              {blockSearchResults.length > 0 && searchText && (
+                <List
+                  height={Math.max(
+                    120,
+                    blockSearchResults.length * ITEM_HEIGHT,
+                  )}
+                  itemCount={blockSearchResults.length}
+                  itemSize={ITEM_HEIGHT}
+                  itemData={{
+                    items: blockSearchResults,
+                    selectedIndex,
+                    onActivate: activate,
+                  }}
+                  width="100%"
+                >
+                  {VirtualizedBlockSearchItem}
+                </List>
+              )}
             </Box>
           </>
         )}
       </PanelBody>
-      {(visibleSearchItems.length || 0) > shownCount ? (
-        <Box p={1} display="flex" justifyContent="center">
-          <Button
-            size="small"
-            onClick={() => {
-              setShownCount((prev) => prev + MAX_ITEMS_PER_PAGE);
-              setSelectedIndex(shownCount);
-            }}
-          >
-            {t("button.show_more")}
-          </Button>
-        </Box>
-      ) : null}
     </Panel>
   );
 };

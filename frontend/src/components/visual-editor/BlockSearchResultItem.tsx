@@ -25,6 +25,18 @@ export interface BlockSearchResultItemProps {
   onClick: () => void;
 }
 
+export interface VirtualizedItemData {
+  items: IBlockSearchResult[];
+  selectedIndex: number;
+  onActivate: (index: number) => void;
+}
+
+export interface VirtualizedItemProps {
+  index: number;
+  style: React.CSSProperties;
+  data: VirtualizedItemData;
+}
+
 export const BlockSearchResultItem: React.FC<BlockSearchResultItemProps> = ({
   item,
   isActive,
@@ -72,6 +84,27 @@ export const BlockSearchResultItem: React.FC<BlockSearchResultItemProps> = ({
           sx={{ minWidth: 0 }}
         />
       </ListItemButton>
+    </div>
+  );
+};
+
+// Virtualized item component for react-window
+export const VirtualizedBlockSearchItem: React.FC<VirtualizedItemProps> = ({
+  index,
+  style,
+  data,
+}) => {
+  const { items, selectedIndex, onActivate } = data;
+  const item = items[index];
+  const isActive = index === selectedIndex;
+
+  return (
+    <div style={style}>
+      <BlockSearchResultItem
+        item={item}
+        isActive={isActive}
+        onClick={() => onActivate(index)}
+      />
     </div>
   );
 };
