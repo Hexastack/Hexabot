@@ -214,19 +214,19 @@ const buildDiagram = ({
       });
     });
 
-    // If there's an initial block to select, perform selection & zoom now
+    // If there's a target block to highlight, perform selection & zoom
     if (highlightedBlockId) {
       const targetNode = model.getNode(highlightedBlockId);
 
       if (targetNode) {
         // Clear any other selection first
         model.getSelectedEntities().forEach((e) => e.setSelected(false));
-        targetNode.setSelected(true);
-        setter?.(highlightedBlockId);
 
-        // Use timeout to ensure DOM is fully rendered before centering
+        // Use timeout to ensure DOM is fully rendered before selection and centering
         setTimeout(() => {
           try {
+            targetNode.setSelected(true);
+            setter?.(highlightedBlockId);
             engine.zoomToFitSelectedNodes({
               maxZoom: 1,
               margin: 0,
