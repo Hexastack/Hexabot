@@ -24,7 +24,10 @@ import { BaseService } from '@/utils/generics/base-service';
 import { getRandomElement } from '@/utils/helpers/safeRandom';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { getDefaultFallbackOptions } from '../constants/block';
+import {
+  DEFAULT_BLOCK_SEARCH_LIMIT,
+  getDefaultFallbackOptions,
+} from '../constants/block';
 import { BlockDto } from '../dto/block.dto';
 import { EnvelopeFactory } from '../helpers/envelope-factory';
 import { BlockRepository } from '../repositories/block.repository';
@@ -64,6 +67,22 @@ export class BlockService extends BaseService<
     protected readonly nlpService: NlpService,
   ) {
     super(repository);
+  }
+
+  /**
+   * Full-text search for blocks. Searches for blocks matching the given query string.
+   *
+   * @param query - The search query to filter blocks.
+   * @param limit - The maximum number of results to return. Defaults to 50.
+   * @param category - (Optional) The category to filter the search results.
+   * @returns A promise that resolves to the search results.
+   */
+  async search(
+    query: string,
+    limit = DEFAULT_BLOCK_SEARCH_LIMIT,
+    category?: string,
+  ) {
+    return await this.repository.search(query, limit, category);
   }
 
   /**

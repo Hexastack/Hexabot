@@ -15,3 +15,6 @@ export function getDefaultFallbackOptions(): FallbackOptions {
     message: [],
   };
 }
+
+// Default maximum number of blocks returned by full-text search
+export const DEFAULT_BLOCK_SEARCH_LIMIT = 500;
