@@ -31,6 +31,7 @@ import React, { useMemo, useState } from "react";
 
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { useFind } from "@/hooks/crud/useFind";
+import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -137,31 +138,10 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       },
     },
   );
-  // Fetch categories to resolve category labels locally
-  // TODO: Remove this fetch when the backend search query response includes category labels directly.
-  const { data: categories = [], isLoading: isLoadingCategories } = useFind(
-    { entity: EntityType.CATEGORY },
-    {
-      hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-    {
-      enabled: open,
-      onError() {
-        toast.error(t("message.failed_to_load_blocks"));
-      },
-    },
-  );
-  // Create a map of category labels by ID for quick lookup
-  const categoryLabelById = useMemo(() => {
-    const map = new Map<string, string>();
-
-    categories.forEach((c) => map.set(c.id, c.label));
-
-    return map;
-  }, [categories]);
+  // Get category from cache for quick lookup
+  const getCategoryFromCache = useGetFromCache(EntityType.CATEGORY);
   // Loading and error states
-  const loading = isLoadingSearch || isLoadingCategories;
+  const loading = isLoadingSearch;
   // Map backend results into UI items
   const items: BlockSearchItem[] = useMemo(() => {
     return backendResults.map((blockEntry: IBlockSearchResult) => {
@@ -172,7 +152,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
         name: blockEntry.name,
         categoryId: String(blockEntry.category ?? ""),
         categoryLabel:
-          categoryLabelById.get(String(blockEntry.category)) ??
+          getCategoryFromCache(String(blockEntry.category))?.label ??
           String(blockEntry.category ?? ""),
         blockTextContent:
           typeof blockEntry.message === "string"
@@ -193,7 +173,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
         score: blockEntry.score,
       };
     });
-  }, [backendResults, categoryLabelById]);
+  }, [backendResults, getCategoryFromCache]);
   const visibleSearchItems = useMemo(() => {
     if (!searchText) return [];
 
