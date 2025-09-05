@@ -35,6 +35,7 @@ export interface IVisualEditor {
   onRemoveNode?: CustomDeleteItemsActionOptions["callback"];
   linkChangeHandler?: (event: any) => void;
   targetPortChanged?: (event: any) => void;
+  highlightedBlockId?: string;
 }
 export interface IVisualEditorContext {
   addNode: (payload: any) => NodeModel;
@@ -48,6 +49,9 @@ export interface IVisualEditorContext {
   setViewerOffset: ([x, y]: [number, number]) => void;
   setSelectedCategoryId: (id: string) => void;
   selectedCategoryId: string;
+
+  // Focus a block by id. If categoryId is provided and differs from current, switch flow first.
+  focusBlock: (blockId: string, categoryId?: string) => Promise<void> | void;
 }
 
 export interface VisualEditorContextProps {

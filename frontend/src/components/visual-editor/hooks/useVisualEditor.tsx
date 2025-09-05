@@ -6,13 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
+import debounce from "@mui/material/utils/debounce";
 import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
+import { useRouter } from "next/router";
 import * as React from "react";
 import { createContext, useContext } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 import {
   BlockPorts,
@@ -32,6 +33,8 @@ import { BLOCK_HEIGHT, BLOCK_WIDTH } from "../v2/CustomDiagramNodes/NodeWidget";
 
 const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
+
+// Focus behavior tuning
 
 const addNode = (block: IBlock) => {
   const node = new NodeModel({
@@ -80,6 +83,7 @@ const buildDiagram = ({
   onRemoveNode,
   onDbClickNode,
   targetPortChanged,
+  highlightedBlockId,
 }: IVisualEditor) => {
   window["customEvents"] = {};
   model = new DiagramModel();
@@ -90,8 +94,11 @@ const buildDiagram = ({
   engine
     .getActionEventBus()
     .registerAction(new CustomDeleteItemsAction({ callback: onRemoveNode }));
-  if (offset) setViewerOffset(offset);
-  if (zoom) setViewerZoom(zoom);
+  // Set initial zoom & offset if provided (prevent override if focusing a block)
+  if (!highlightedBlockId) {
+    if (offset) setViewerOffset(offset);
+    if (zoom) setViewerZoom(zoom);
+  }
 
   if (data?.length) {
     const nodes = data
@@ -206,6 +213,30 @@ const buildDiagram = ({
         selectionChanged: selectionHandler,
       });
     });
+
+    // If there's a target block to highlight, perform selection & zoom
+    if (highlightedBlockId) {
+      const targetNode = model.getNode(highlightedBlockId);
+
+      if (targetNode) {
+        // Clear any other selection first
+        model.getSelectedEntities().forEach((e) => e.setSelected(false));
+
+        // Use timeout to ensure DOM is fully rendered before selection and centering
+        setTimeout(() => {
+          try {
+            targetNode.setSelected(true);
+            setter?.(highlightedBlockId);
+            engine.zoomToFitSelectedNodes({
+              maxZoom: 1,
+              margin: 0,
+            });
+          } catch (_) {
+            // ignore
+          }
+        }, 100);
+      }
+    }
   }
   model.registerListener({
     linksUpdated(e: any) {
@@ -247,10 +278,12 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   createNode: async (): Promise<IBlock> => ({} as IBlock),
   selectedCategoryId: "",
   setSelectedCategoryId: () => {},
+  focusBlock: async () => {},
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
+  const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
@@ -266,6 +299,21 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       },
     });
   };
+  const focusBlock: IVisualEditorContext["focusBlock"] = async (
+    blockId,
+    categoryId,
+  ) => {
+    // If a category switch is requested update internal state
+    if (categoryId && categoryId !== selectedCategoryId) {
+      setSelectedCategoryId(categoryId);
+    }
+    // Navigate to route embedding block id (or only flow if block missing)
+    if (categoryId && blockId) {
+      await router.push(
+        `/${RouterType.VISUAL_EDITOR}/flows/${categoryId}/${blockId}`,
+      );
+    }
+  };
 
   return (
     <VisualEditorContext.Provider
@@ -277,6 +325,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         setViewerOffset,
         setSelectedCategoryId,
         selectedCategoryId,
+        focusBlock,
       }}
     >
       {children}

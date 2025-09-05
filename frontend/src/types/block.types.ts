@@ -123,6 +123,8 @@ export interface IBlock extends IBlockStub, IFormat<Format.BASIC> {
   //to be able to read previousBlocks field from cache
   previousBlocks?: string[];
   attachedToBlock?: string | null;
+  // Computed field added by the processStrategy
+  type: BlockType;
 }
 
 export interface IBlockFull extends IBlockStub, IFormat<Format.FULL> {
@@ -133,6 +135,8 @@ export interface IBlockFull extends IBlockStub, IFormat<Format.FULL> {
   previousBlocks?: IBlock[];
   attachedBlock?: IBlock;
   attachedToBlock?: IBlock;
+  // Computed field added by the processStrategy
+  type: BlockType;
 }
 
 export interface ICustomBlockTemplateAttributes {
@@ -149,4 +153,17 @@ export interface ICustomBlockTemplate
 
 export interface ICustomBlockSettingFilters {
   plugin?: string;
+}
+
+export enum BlockType {
+  TEXT = "text",
+  ATTACHMENT = "attachment",
+  QUICK_REPLIES = "quickReplies",
+  BUTTONS = "buttons",
+  LIST = "list",
+  PLUGIN = "plugin",
+}
+
+export interface IBlockSearchResult extends IBlock {
+  score: number;
 }
