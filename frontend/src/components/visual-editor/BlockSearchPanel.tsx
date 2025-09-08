@@ -10,7 +10,6 @@ import BackspaceIcon from "@mui/icons-material/Backspace";
 import ClearIcon from "@mui/icons-material/Clear";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import SearchIcon from "@mui/icons-material/Search";
-import SearchOffIcon from "@mui/icons-material/SearchOff";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import {
   Box,
@@ -27,6 +26,7 @@ import React, { useCallback, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
+import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
 import { useFind } from "@/hooks/crud/useFind";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -248,21 +248,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             ))}
           </Box>
         ) : blockSearchResults.length === 0 && searchText ? (
-          <Box
-            p={2}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            sx={{ height: "100%" }}
-            flex={1}
-            gap={2}
-          >
-            <SearchOffIcon sx={{ fontSize: 48 }} />
-            <Typography align="center">
-              {t("message.no_matching_results")}
-            </Typography>
-          </Box>
+          <NoDataOverlay />
         ) : (
           <>
             <ResultCount>
