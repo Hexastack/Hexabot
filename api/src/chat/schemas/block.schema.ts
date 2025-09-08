@@ -7,7 +7,7 @@
  */
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Transform, Type } from 'class-transformer';
+import { Exclude, Expose, Transform, Type } from 'class-transformer';
 import { Schema as MongooseSchema } from 'mongoose';
 import { z } from 'zod';
 
@@ -182,6 +182,13 @@ export class BlockFull extends BlockStub {
   attachedToBlock?: Block;
 }
 
+// Full block document with text search score attached
+export class SearchRankedBlock extends Block {
+  @Expose()
+  @Transform(({ value }) => (typeof value === 'number' ? value : 0))
+  score!: number;
+}
+
 export type BlockDocument = THydratedDocument<Block>;
 
 export const BlockModel: ModelDefinition = LifecycleHookManager.attach({
@@ -202,6 +209,27 @@ BlockModel.schema.virtual('attachedToBlock', {
   foreignField: 'attachedBlock',
   justOne: true,
 });
+
+BlockModel.schema.index(
+  {
+    name: 'text',
+    message: 'text',
+    'message.text': 'text',
+    'options.fallback.message': 'text',
+    'message.args': 'text',
+  },
+  {
+    weights: {
+      name: 5,
+      message: 2,
+      'message.text': 2,
+      'message.args': 2,
+      'options.fallback.message': 1,
+    },
+    name: 'block_search_index',
+    default_language: 'none',
+  },
+);
 
 export default BlockModel.schema;
 

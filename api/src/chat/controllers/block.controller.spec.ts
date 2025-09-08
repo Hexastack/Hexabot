@@ -7,6 +7,7 @@
  */
 
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { SettingService } from '@/setting/services/setting.service';
@@ -22,7 +23,11 @@ import {
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BlockCreateDto, BlockUpdateDto } from '../dto/block.dto';
+import {
+  BlockCreateDto,
+  BlockSearchQueryDto,
+  BlockUpdateDto,
+} from '../dto/block.dto';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { Block } from '../schemas/block.schema';
 import { PayloadType } from '../schemas/types/button';
@@ -31,6 +36,17 @@ import { CategoryService } from '../services/category.service';
 
 import { Category } from './../schemas/category.schema';
 import { BlockController } from './block.controller';
+
+// Helper function to instantiate BlockSearchQueryDto
+function createSearchQuery(
+  data: Partial<BlockSearchQueryDto>,
+): BlockSearchQueryDto {
+  return plainToInstance(BlockSearchQueryDto, data, {
+    enableImplicitConversion: true,
+    excludeExtraneousValues: false,
+    exposeDefaultValues: true,
+  });
+}
 
 describe('BlockController', () => {
   let blockController: BlockController;
@@ -157,6 +173,73 @@ describe('BlockController', () => {
 
       expect(blockService.findAndPopulate).toHaveBeenCalledWith({}, undefined);
       expect(result).toEqualPayload(blocksWithCategory);
+    });
+  });
+
+  describe('search', () => {
+    it('should return empty array when query is empty', async () => {
+      const query = createSearchQuery({ q: '' });
+      const result = await blockController.search(query);
+      expect(result).toEqual([]);
+    });
+
+    it('should delegate search to service with correct parameters', async () => {
+      // Test with real data from fixtures
+      const query = createSearchQuery({
+        q: 'hasNextBlocks',
+        limit: 10,
+        category: category.id,
+      });
+      const result = await blockController.search(query);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].name).toBe('hasNextBlocks');
+    });
+
+    it('should handle service errors gracefully', async () => {
+      // This test can still mock the service to test error handling
+      const error = new Error('Block search failed');
+      jest.spyOn(blockService, 'search').mockRejectedValueOnce(error);
+
+      const query = createSearchQuery({ q: 'error' });
+      await expect(blockController.search(query)).rejects.toThrow(
+        'Block search failed',
+      );
+    });
+
+    it('should use default limit when not specified', async () => {
+      const blockServiceSearchSpy = jest.spyOn(blockService, 'search');
+
+      const query = createSearchQuery({ q: 'hasNextBlocks' });
+      const result = await blockController.search(query);
+
+      // Verify the service was called with the default limit (500)
+      expect(blockServiceSearchSpy).toHaveBeenCalledWith(
+        'hasNextBlocks',
+        500,
+        undefined,
+      );
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+
+      blockServiceSearchSpy.mockRestore();
+    });
+
+    it('should filter by category when provided', async () => {
+      const query = createSearchQuery({
+        q: 'hasNextBlocks',
+        category: category.id,
+      });
+      const result = await blockController.search(query);
+
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+      // Verify all results belong to the specified category
+      result.forEach((block) => {
+        expect(block.category?.toString()).toBe(category.id);
+      });
     });
   });
 

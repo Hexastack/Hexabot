@@ -8,6 +8,7 @@
 
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { plainToInstance } from 'class-transformer';
 import {
   Document,
   Model,
@@ -21,6 +22,7 @@ import { SettingService } from '@/setting/services/setting.service';
 import { BaseRepository, DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
+import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
 import { BlockCreateDto, BlockDto, BlockUpdateDto } from '../dto/block.dto';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import {
@@ -28,6 +30,7 @@ import {
   BLOCK_POPULATE,
   BlockFull,
   BlockPopulate,
+  SearchRankedBlock,
 } from '../schemas/block.schema';
 
 @Injectable()
@@ -43,6 +46,58 @@ export class BlockRepository extends BaseRepository<
     private readonly settingService: SettingService,
   ) {
     super(model, Block, BLOCK_POPULATE, BlockFull);
+  }
+
+  /**
+   * Performs a full-text search on blocks using MongoDB text index with pagination.
+   *
+   * @param query - The text to search for. Supports MongoDB text operators.
+   * @param limit - Maximum number of results returned (default and maximum: 500).
+   * @param category - Optional category filter.
+   * @returns An array of blocks with search text score for sorting.
+   */
+  async search(
+    query: string,
+    limit = DEFAULT_BLOCK_SEARCH_LIMIT,
+    category?: string,
+  ): Promise<SearchRankedBlock[]> {
+    // Return early if query is empty
+    if (!query) return [];
+
+    // Use quotes for exact phrase match
+    const phrase = `"${query}"`;
+    this.logger?.debug(`Searching blocks with phrase: ${phrase}`);
+
+    // Guard against excessive or invalid limit values
+    const MAX_LIMIT = DEFAULT_BLOCK_SEARCH_LIMIT;
+    limit = Math.min(Math.max(1, limit ?? MAX_LIMIT), MAX_LIMIT);
+
+    try {
+      const docs = await this.model
+        .find(
+          {
+            $text: {
+              $search: phrase,
+              $diacriticSensitive: false,
+              $caseSensitive: false,
+            },
+            ...(category && Types.ObjectId.isValid(category)
+              ? { category }
+              : {}),
+          },
+          { score: { $meta: 'textScore' } },
+        )
+        .sort({ score: { $meta: 'textScore' }, createdAt: -1 })
+        .limit(limit)
+        .lean<SearchRankedBlock[]>()
+        .exec();
+      return plainToInstance(SearchRankedBlock, docs, {
+        excludePrefixes: ['_'],
+      }) as SearchRankedBlock[];
+    } catch (error) {
+      this.logger?.error('Block search failed:', error);
+      throw error;
+    }
   }
 
   /**
