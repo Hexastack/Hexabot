@@ -34,8 +34,6 @@ import { BLOCK_HEIGHT, BLOCK_WIDTH } from "../v2/CustomDiagramNodes/NodeWidget";
 const engine = createEngine({ registerDefaultDeleteItemsAction: false });
 let model: DiagramModel;
 
-// Focus behavior tuning
-
 const addNode = (block: IBlock) => {
   const node = new NodeModel({
     id: block.id,
