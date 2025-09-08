@@ -145,7 +145,7 @@ export const getBlockExcerpt = (
  * @returns The React component representing the icon for the specified block type.
  *          If the type is not found in the icon map, the PluginIcon is returned as a default.
  */
-export const getIconForType = (type: BlockType) => {
+export const getBlockIconByType = (type: BlockType) => {
   const iconMap: Record<BlockType, React.ComponentType<any>> = {
     [BlockType.TEXT]: SimpleTextIcon,
     [BlockType.ATTACHMENT]: AttachmentIcon,

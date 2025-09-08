@@ -17,7 +17,7 @@ import React from "react";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 import { IBlockSearchResult } from "@/types/block.types";
-import { getBlockExcerpt, getIconForType } from "@/utils/block.utils";
+import { getBlockExcerpt, getBlockIconByType } from "@/utils/block.utils";
 
 export interface BlockSearchResultItemProps {
   item: IBlockSearchResult;
@@ -49,42 +49,40 @@ export const BlockSearchResultItem: React.FC<BlockSearchResultItemProps> = ({
   // Get Block name and excerpt
   const blockEntryName = item?.name;
   const blockEntryTextContent = getBlockExcerpt(item.message, item.options);
-  const Icon = getIconForType(item?.type);
+  const Icon = getBlockIconByType(item?.type);
 
   return (
-    <div>
-      <ListItemButton
-        selected={isActive}
-        autoFocus={isActive}
-        onClick={onClick}
-        sx={{
-          height: 56,
-          overflow: "hidden",
-        }}
-      >
-        <ListItemAvatar sx={{ minWidth: 44, flexShrink: 0 }}>
-          <Box
-            sx={{
-              width: 28,
-              height: 28,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon width={24} height={24} />
-          </Box>
-        </ListItemAvatar>
-        <ListItemText
-          title={blockEntryTextContent}
-          primary={blockEntryName}
-          secondary={categoryLabel}
-          primaryTypographyProps={{ noWrap: true }}
-          secondaryTypographyProps={{ noWrap: true }}
-          sx={{ minWidth: 0 }}
-        />
-      </ListItemButton>
-    </div>
+    <ListItemButton
+      selected={isActive}
+      autoFocus={isActive}
+      onClick={onClick}
+      sx={{
+        height: 56,
+        overflow: "hidden",
+      }}
+    >
+      <ListItemAvatar sx={{ minWidth: 44, flexShrink: 0 }}>
+        <Box
+          sx={{
+            width: 28,
+            height: 28,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon width={24} height={24} />
+        </Box>
+      </ListItemAvatar>
+      <ListItemText
+        title={blockEntryTextContent}
+        primary={blockEntryName}
+        secondary={categoryLabel}
+        primaryTypographyProps={{ noWrap: true }}
+        secondaryTypographyProps={{ noWrap: true }}
+        sx={{ minWidth: 0 }}
+      />
+    </ListItemButton>
   );
 };
 
