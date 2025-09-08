@@ -50,7 +50,6 @@ export class BlockRepository extends BaseRepository<
 
   /**
    * Performs a full-text search on blocks using MongoDB text index with pagination.
-   * Returns paginated search results and total count.
    *
    * @param query - The text to search for. Supports MongoDB text operators.
    * @param limit - Maximum number of results returned (default and maximum: 500).
