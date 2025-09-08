@@ -27,8 +27,7 @@ function ChatWidget(props: Partial<Config>) {
         <SocketProvider
           socketErrorHandlers={{
             "401": (err) => {
-              err.socket.disconnect();
-              err.socket.connect();
+              err.socket.forceReconnect();
             },
           }}
         >

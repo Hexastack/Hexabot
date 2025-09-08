@@ -119,6 +119,84 @@ export class SocketIoClient {
   }
 
   /**
+   * Waits for disconnection of the socket client.
+   */
+  public waitForDisconnect() {
+    return new Promise<void>((resolve) => {
+      this.socket.once("disconnect", () => resolve());
+
+      this.socket.disconnect();
+    });
+  }
+
+  /**
+   * Reconnects the socket client using mutex across tabs.
+   */
+  public async forceReconnect(timeoutMs = 10_000) {
+    const run = async () => {
+      const socket = this.socket;
+
+      if (!socket) {
+        throw new Error("socket not initialized");
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let timer: any;
+      const off: Array<() => void> = [];
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          timer = setTimeout(
+            () => reject(new Error("reconnect timeout")),
+            timeoutMs,
+          );
+
+          const onConnect = () => {
+            resolve();
+          };
+          const onErr = (e: unknown) => {
+            reject(e);
+          };
+
+          socket.once("connect", onConnect);
+          socket.once("connect_error", onErr);
+
+          off.push(
+            () => socket.off("connect", onConnect),
+            () => socket.off("connect_error", onErr),
+          );
+
+          // Force a fresh handshake if we were connected or mid-attempt
+          if (socket.connected) {
+            this.waitForDisconnect()
+              .then(() => {
+                socket.connect();
+              })
+              .catch(reject);
+          } else {
+            socket.connect();
+          }
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(err);
+      } finally {
+        clearTimeout(timer);
+        off.forEach((fn) => fn());
+      }
+    };
+    const locks = navigator.locks;
+
+    if (locks?.request) {
+      // Keep it exclusive but guaranteed to release via timeout/error handling
+      await locks.request("ws_connection", { mode: "exclusive" }, run);
+    } else {
+      // Fallback when Web Locks isn’t supported
+      await run();
+    }
+  }
+
+  /**
    * Registers an event handler for the specified event.
    * @param event The event name
    * @param callback The callback function to handle the event
