@@ -28,7 +28,6 @@
     "@mui/x-data-grid": "^7.3.2",
     "@projectstorm/react-canvas-core": "^7.0.3",
     "@projectstorm/react-diagrams": "^7.0.4",
-    "@types/react-window": "^1.8.5",
     "autolinker": "^4.1.5",
     "axios": "^1.11.0",
     "dayjs": "^1.11.13",
@@ -62,7 +61,8 @@
     "eslint-import-resolver-typescript": "^3.10.0",
     "eslint-plugin-header": "^3.1.1",
     "lint-staged": "^15.3.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@types/react-window": "^1.8.5"
   },
   "engines": {
     "node": "^18.17.0"
