@@ -29,11 +29,9 @@ export const OverlayTemplate = ({
 
   return (
     <Alert
+      icon={<Icon sx={{ fontSize: "50px" }} />}
       color={color}
       className="custom-alert"
-      iconMapping={{
-        success: <Icon sx={{ fontSize: "50px" }} />,
-      }}
     >
       <Box>{t(i18nKey)}</Box>
     </Alert>
