@@ -254,7 +254,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             <ResultCount>
               <Typography variant="caption">
                 {searchText ? blockSearchResults.length : 0}{" "}
-                {t("label.results_count")}
+                {t("message.results")}
               </Typography>
             </ResultCount>
             <Box
