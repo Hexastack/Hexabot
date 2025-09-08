@@ -97,6 +97,7 @@ export const useFind = <
         normalizedQuery.isFetching ||
         countQuery.isLoading ||
         countQuery.isFetching,
+      error: Boolean(normalizedQuery.error || countQuery.error),
     },
   };
 };
