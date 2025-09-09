@@ -7,7 +7,7 @@
  */
 
 import { ButtonProps, DialogProps as MuiDialogProps } from "@mui/material";
-import { BaseSyntheticEvent } from "react";
+import { BaseSyntheticEvent, ComponentType } from "react";
 
 interface DialogExtraOptions {
   mode?: "click" | "selection";
@@ -56,7 +56,7 @@ export interface DialogProps<P = undefined, R = void> {
   onSubmit?: (e: BaseSyntheticEvent) => void;
 }
 
-export type DialogComponent<P, R> = React.ComponentType<DialogProps<P, R>>;
+export type DialogComponent<P, R> = ComponentType<DialogProps<P, R>>;
 
 export interface OpenDialog {
   /**
@@ -121,7 +121,7 @@ export interface OpenConfirmDialog {
    * @param options Additional options for the dialog.
    * @returns A promise that resolves to true if the user confirms, false if the user cancels.
    */
-  (msg: React.ComponentType, options?: ConfirmOptions): Promise<boolean>;
+  (msg: ComponentType, options?: ConfirmOptions): Promise<boolean>;
 }
 
 export interface DialogHook {

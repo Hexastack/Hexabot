@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { ComponentType } from "react";
+
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
 import ButtonsIcon from "@/app-components/svg/toolbar/ButtonsIcon";
 import ListIcon from "@/app-components/svg/toolbar/ListIcon";
@@ -13,9 +15,9 @@ import PluginIcon from "@/app-components/svg/toolbar/PluginIcon";
 import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import {
-    BlockMessage,
-    BlockType,
-    IBlockSearchResult,
+  BlockMessage,
+  BlockType,
+  IBlockSearchResult,
 } from "@/types/block.types";
 
 /**
@@ -146,7 +148,7 @@ export const getBlockExcerpt = (
  *          If the type is not found in the icon map, the PluginIcon is returned as a default.
  */
 export const getBlockIconByType = (type: BlockType) => {
-  const iconMap: Record<BlockType, React.ComponentType<any>> = {
+  const iconMap: Record<BlockType, ComponentType<any>> = {
     [BlockType.TEXT]: SimpleTextIcon,
     [BlockType.ATTACHMENT]: AttachmentIcon,
     [BlockType.QUICK_REPLIES]: QuickRepliesIcon,

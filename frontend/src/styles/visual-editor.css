@@ -14,7 +14,7 @@
 .canvas-container {
   flex: auto;
   height: 100%;
-  outline: 0
+  outline: none;
 }
 
 .diagram-container {
