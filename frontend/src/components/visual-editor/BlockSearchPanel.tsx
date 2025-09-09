@@ -70,7 +70,8 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const { t } = useTranslate();
   const { toast } = useToast();
   const [scope, setScope] = useState<SearchScope>("all");
-  const [selected, setSelected] = useState<string | null>(null);
+  const blockId = router.query.blockId?.toString();
+  const [selected, setSelected] = useState<string | undefined>(blockId);
   const { selectedCategoryId } = useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
@@ -90,7 +91,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     {
       enabled: open && Boolean(searchText && searchText.trim().length > 0),
       onSuccess() {
-        setSelected(null);
+        setSelected(undefined);
       },
       onError() {
         toast.error(t("message.failed_to_load_blocks"));
@@ -98,27 +99,26 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     },
   );
   const loading = isLoading || isFetching;
-  const focusBlock = useCallback(async (blockId: string, categoryId: string) => {
-    // If a category switch is requested update internal state
-    // if (categoryId && categoryId !== selectedCategoryId) {
-    //   setSelectedCategoryId(categoryId);
-    // }
-    // Navigate to route embedding block id (or only flow if block missing)
-    if (categoryId && blockId) {
-      await router.push(
-        `/${RouterType.VISUAL_EDITOR}/flows/${categoryId}/${blockId}`,
-      );
-    }
-  }, [router]);
+  const navigateToBlock = useCallback(
+    async (blockId: string, categoryId: string) => {
+      // Navigate to route embedding block id (or only flow if block missing)
+      if (categoryId && blockId) {
+        await router.push(
+          `/${RouterType.VISUAL_EDITOR}/flows/${categoryId}/${blockId}`,
+        );
+      }
+    },
+    [router],
+  );
   const selectSearchResult = useCallback(
     async (item: IBlockSearchResult) => {
       if (!item) return;
 
       setSelected(item.id);
-      await focusBlock(item.id, item.category);
+      await navigateToBlock(item.id, item.category);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [focusBlock],
+    [navigateToBlock],
   );
 
   return (
@@ -178,26 +178,30 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             ) : undefined,
           }}
         />
-        <ScopeToggle
-          value={scope}
-          onChange={(_, v) => setScope(v as SearchScope)}
-          aria-label="search-scope"
-          variant="fullWidth"
-        >
-          <Tab
-            value="current"
-            icon={<ManageSearchIcon />}
-            iconPosition="start"
-            label={t("label.current_flow")}
-          />
-          <Tab
-            value="all"
-            icon={<TravelExploreIcon />}
-            iconPosition="start"
-            label={t("label.all_flows")}
-          />
-        </ScopeToggle>
-        <Divider />
+        {searchText ? (
+          <>
+            <ScopeToggle
+              value={scope}
+              onChange={(_, v) => setScope(v as SearchScope)}
+              aria-label="search-scope"
+              variant="fullWidth"
+            >
+              <Tab
+                value="current"
+                icon={<ManageSearchIcon />}
+                iconPosition="start"
+                label={t("label.current_flow")}
+              />
+              <Tab
+                value="all"
+                icon={<TravelExploreIcon />}
+                iconPosition="start"
+                label={t("label.all_flows")}
+              />
+            </ScopeToggle>
+            <Divider />
+          </>
+        ) : null}
 
         {loading ? (
           <Box p={2} display="grid" gap={1}>

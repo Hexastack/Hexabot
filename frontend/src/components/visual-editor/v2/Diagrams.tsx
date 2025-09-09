@@ -76,6 +76,7 @@ const Diagrams = () => {
   const { t } = useTranslate();
   const router = useRouter();
   const flowId = router.query.id?.toString();
+  const blockId = router.query.blockId?.toString();
   const [model, setModel] = useState<
     DiagramModel<DiagramModelGenerics> | undefined
   >();
@@ -84,7 +85,7 @@ const Diagrams = () => {
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
   const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>(
-    router.query.blockId?.toString(),
+    blockId,
   );
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
@@ -127,10 +128,6 @@ const Diagrams = () => {
             if (!selectedBlockId) {
               setViewerOffset(offset || [0, 0]);
               setViewerZoom(zoom || 100);
-            } else {
-              setTimeout(() => {
-                engine.zoomToFitSelectedNodes({ maxZoom: 1, margin: 0 });
-              }, 100);
             }
           }
         }
@@ -246,11 +243,19 @@ const Diagrams = () => {
   }, []);
 
   useEffect(() => {
-    if (flowId) setSelectedCategoryId(flowId);
-    else if (categories?.length) setSelectedCategoryId(categories[0].id);
+    // Update state on router update
+    if (flowId) {
+      setSelectedCategoryId(flowId);
+    } else if (categories?.length) {
+      setSelectedCategoryId(categories[0].id);
+    }
+
+    if (blockId !== selectedBlockId) {
+      setSelectedBlockId(blockId);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowId]);
+  }, [router.query]);
 
   useEffect(() => {
     const { canvas, model, engine } = buildDiagram({
@@ -366,7 +371,7 @@ const Diagrams = () => {
           });
         }
       },
-      selectedBlockId,
+      selectedBlockId: blockId,
     });
 
     setModel(model);
@@ -377,8 +382,10 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedCategoryId,
+    blockId,
     JSON.stringify(
       blocks.map((b) => {
         return { ...b, position: undefined, updatedAt: undefined };

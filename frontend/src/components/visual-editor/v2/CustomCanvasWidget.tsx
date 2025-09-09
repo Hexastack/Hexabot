@@ -8,7 +8,8 @@
 
 import styled from "@emotion/styled";
 import {
-  CanvasEngine,
+  DiagramEngine,
+  NodeModel,
   SmartLayerWidget,
   TransformLayerWidget,
 } from "@projectstorm/react-diagrams";
@@ -17,7 +18,9 @@ import * as React from "react";
 import { BackgroundLayerWidget } from "./BackgroundLayerWidget";
 
 export interface DiagramProps {
-  engine: CanvasEngine;
+  engine: DiagramEngine;
+  shouldFitSelection: boolean;
+  defaultSelection: string | undefined; // Selected node ID
   className?: string;
 }
 
@@ -31,6 +34,7 @@ namespace S {
 
 export class CustomCanvasWidget extends React.Component<DiagramProps> {
   ref: React.RefObject<HTMLDivElement>;
+  currentSelection: string | undefined;
   keyUp: any;
   keyDown: any;
   canvasListener: any;
@@ -39,6 +43,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     super(props);
 
     this.ref = React.createRef();
+    this.currentSelection = undefined;
     this.state = {
       action: null,
       diagramEngineListener: null,
@@ -67,10 +72,93 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     this.registerCanvas();
   }
 
+  zoomToFitSelection() {
+    let margin = 0;
+    let maxZoom: number | null = 1;
+
+    const engine = this.props.engine;
+    const model = engine.getModel();
+    // no node selected
+    const [selectedNode]: NodeModel[] = model
+      .getSelectedEntities()
+      .filter((entity) => entity instanceof NodeModel) as NodeModel[];
+
+    if (!selectedNode) {
+      return false;
+    }
+
+    const nodesRect = engine.getBoundingNodesRect([selectedNode]);
+
+    if (nodesRect) {
+      // there is something we should zoom on
+      const canvas = engine.getCanvas();
+      let canvasRect = canvas.getBoundingClientRect();
+
+      const calculate = (margin: number = 0) => {
+        // work out zoom
+        const xFactor =
+          canvas.clientWidth / (nodesRect.getWidth() + margin * 2);
+        const yFactor =
+          canvas.clientHeight / (nodesRect.getHeight() + margin * 2);
+
+        let zoomFactor = xFactor < yFactor ? xFactor : yFactor;
+
+        if (maxZoom && zoomFactor > maxZoom) {
+          zoomFactor = maxZoom;
+        }
+
+        return {
+          zoom: zoomFactor,
+          x:
+            canvasRect.width / 2 -
+            ((nodesRect.getWidth() + margin * 2) / 2 +
+              nodesRect.getTopLeft().x) *
+              zoomFactor +
+            margin,
+          y:
+            canvasRect.height / 2 -
+            ((nodesRect.getHeight() + margin * 2) / 2 +
+              nodesRect.getTopLeft().y) *
+              zoomFactor +
+            margin,
+        };
+      };
+
+      let params = calculate(0);
+
+      if (margin) {
+        if (params.x < margin || params.y < margin) {
+          params = calculate(margin);
+        }
+      }
+
+      // apply
+      model.setZoomLevel(params.zoom * 100);
+      model.setOffset(params.x, params.y);
+
+      return true;
+    }
+
+    return false;
+  }
+
   componentDidMount() {
+    const self = this;
+
     this.canvasListener = this.props.engine.registerListener({
       repaintCanvas: () => {
         this.forceUpdate();
+      },
+      rendered: () => {
+        if (
+          this.props.shouldFitSelection &&
+          self.props.defaultSelection &&
+          self.props.defaultSelection !== this.currentSelection
+        ) {
+          if (this.zoomToFitSelection()) {
+            this.currentSelection = self.props.defaultSelection;
+          }
+        }
       },
     });
 
@@ -83,6 +171,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
 
     this.ref.current?.parentElement?.addEventListener("keyup", this.keyUp);
     this.ref.current?.parentElement?.addEventListener("keydown", this.keyDown);
+
     this.registerCanvas();
   }
 

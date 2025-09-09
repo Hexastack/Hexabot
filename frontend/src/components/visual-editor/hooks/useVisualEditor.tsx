@@ -99,10 +99,6 @@ const buildDiagram = ({
     if (zoom) {
       setViewerZoom(zoom);
     }
-  } else {
-    setTimeout(() => {
-      engine.zoomToFitSelectedNodes({ maxZoom: 1, margin: 0 });
-    }, 100);
   }
 
   if (data?.length) {
@@ -119,6 +115,7 @@ const buildDiagram = ({
         }
 
         node.setPosition(datum.position.x, datum.position.y);
+
         if (selectedBlockId === datum.id) {
           node.setSelected(true);
         }
@@ -237,7 +234,12 @@ const buildDiagram = ({
     model,
     engine,
     canvas: (
-      <CustomCanvasWidget className="diagram-container" engine={engine} />
+      <CustomCanvasWidget
+        className="diagram-container"
+        engine={engine}
+        shouldFitSelection={!!selectedBlockId}
+        defaultSelection={selectedBlockId}
+      />
     ),
   };
 };

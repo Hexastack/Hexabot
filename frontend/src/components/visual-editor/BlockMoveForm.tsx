@@ -17,7 +17,7 @@ export type BlockMoveFormData = {
   row?: never;
   ids: string[];
   onMove: (ids: string[], targetCategoryId: string) => void;
-  category: string;
+  category: string | undefined;
   categories: ICategory[];
 };
 

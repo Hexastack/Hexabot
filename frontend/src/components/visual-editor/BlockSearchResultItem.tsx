@@ -21,7 +21,7 @@ import { getBlockExcerpt, getBlockIconByType } from "@/utils/block";
 type BlockSearchResultsData = {
   items: IBlockSearchResult[];
   onClick?: (item: IBlockSearchResult) => void;
-  selected: string | null; // Selected block id
+  selected: string | undefined; // Selected block id
 };
 
 export const BlockSearchResultItem: React.FC<
@@ -44,6 +44,7 @@ export const BlockSearchResultItem: React.FC<
       <ListItemButton
         selected={isSelected}
         autoFocus={isSelected}
+        disabled={isSelected}
         onClick={() => data.onClick?.(item)}
         sx={{
           height: 56,
