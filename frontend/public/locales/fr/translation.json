@@ -126,7 +126,10 @@
     "video_error": "Vidéo introuvable",
     "missing_fields_error": "Veuillez vous assurer que tous les champs sont remplis correctement",
     "weight_positive_number_error": "Le poids doit être un nombre strictement positif",
-    "weight_required_error": "Le poids est requis ou bien invalide"
+    "weight_required_error": "Le poids est requis ou bien invalide",
+    "failed_to_load_blocks": "Échec du chargement des résultats de recherche de blocs",
+    "no_matching_results": "Aucun résultat correspondant trouvé. Essayez d'autres mots-clés.",
+    "results": "résultats"
   },
   "menu": {
     "terms": "Conditions d'utilisation",
@@ -498,7 +501,10 @@
     "outputs": "Ports de sortie",
     "any": "Toutes",
     "full_name": "Nom et Prénom",
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "search_blocks_panel_header": "Recherche par blocs",
+    "current_flow": "Flux actuel",
+    "all_flows": "Tous les flux"
   },
   "placeholder": {
     "your_username": "Votre nom d'utilisateur",
@@ -536,7 +542,8 @@
     "type_message_here": "Ecrivez quelque chose ici ....",
     "mark_as_default": "Par Défaut",
     "pattern": "Motif",
-    "full_name": "Nom et Prénom"
+    "full_name": "Nom et Prénom",
+    "search_blocks": "Rechercher des blocs par nom, contenu du message"
   },
   "button": {
     "login": "Se connecter",

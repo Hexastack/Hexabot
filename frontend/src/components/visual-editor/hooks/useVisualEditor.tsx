@@ -80,6 +80,7 @@ const buildDiagram = ({
   onRemoveNode,
   onDbClickNode,
   targetPortChanged,
+  selectedBlockId,
 }: IVisualEditor) => {
   window["customEvents"] = {};
   model = new DiagramModel();
@@ -90,8 +91,19 @@ const buildDiagram = ({
   engine
     .getActionEventBus()
     .registerAction(new CustomDeleteItemsAction({ callback: onRemoveNode }));
-  if (offset) setViewerOffset(offset);
-  if (zoom) setViewerZoom(zoom);
+
+  if (!selectedBlockId) {
+    if (offset) {
+      setViewerOffset(offset);
+    }
+    if (zoom) {
+      setViewerZoom(zoom);
+    }
+  } else {
+    setTimeout(() => {
+      engine.zoomToFitSelectedNodes({ maxZoom: 1, margin: 0 });
+    }, 100);
+  }
 
   if (data?.length) {
     const nodes = data
@@ -107,6 +119,9 @@ const buildDiagram = ({
         }
 
         node.setPosition(datum.position.x, datum.position.y);
+        if (selectedBlockId === datum.id) {
+          node.setSelected(true);
+        }
 
         return node;
       });
@@ -245,7 +260,7 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   setViewerZoom,
   setViewerOffset,
   createNode: async (): Promise<IBlock> => ({} as IBlock),
-  selectedCategoryId: "",
+  selectedCategoryId: undefined,
   setSelectedCategoryId: () => {},
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({

@@ -9,7 +9,9 @@
 import { schema } from "normalizr";
 
 import { IBaseSchema } from "@/types/base.types";
+import { IBlock } from "@/types/block.types";
 import { ISubscriberStub } from "@/types/subscriber.types";
+import { getBlockType } from "@/utils/block";
 
 import { EntityType } from "./types";
 
@@ -263,7 +265,10 @@ export const BlockEntity = new schema.Entity(
   },
   {
     idAttribute: ({ id }) => id,
-    processStrategy: processCommonStrategy,
+    processStrategy: <T extends IBlock>(entity: T) => ({
+      ...processCommonStrategy(entity),
+      type: getBlockType(entity.message),
+    }),
   },
 );
 
@@ -355,6 +360,7 @@ export const ENTITY_MAP = {
   [EntityType.ATTACHMENT]: AttachmentEntity,
   [EntityType.BLOCK]: BlockEntity,
   [EntityType.CUSTOM_BLOCK]: CustomBlockEntity,
+  [EntityType.BLOCK_SEARCH]: BlockEntity,
   [EntityType.CUSTOM_BLOCK_SETTINGS]: CustomBlockSettingEntity,
   [EntityType.CHANNEL]: ChannelEntity,
   [EntityType.HELPER]: HelperEntity,
