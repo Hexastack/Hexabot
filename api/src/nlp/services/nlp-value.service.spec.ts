@@ -17,6 +17,7 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
@@ -207,7 +208,7 @@ describe('NlpValueService', () => {
         sort: ['value', 'asc'],
       };
 
-      const filters = {};
+      const filters: TFilterQuery<NlpValue> = {};
 
       const results = await nlpValueService.findWithCount(
         Format.STUB,

@@ -188,7 +188,7 @@ export class NlpValueRepository extends BaseRepository<
    * @param format - Specifies whether the result should be in FULL or STUB format.
    * @param pageQuery - Pagination parameters (limit, skip, sort).
    * @param filterQuery - Filtering criteria for NLP values and entities.
-   * @returns A list of NLP value results with their training sample counts,
+   * @returns A promise that resolves to a list of NLP value results with their training sample counts,
    *          typed according to the requested format.
    * @throws Logs and rethrows any errors that occur during aggregation or transformation.
    */

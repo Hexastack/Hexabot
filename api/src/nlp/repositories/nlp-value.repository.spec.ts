@@ -21,6 +21,7 @@ import {
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { TFilterQuery } from '@/utils/types/filter.types';
 import { Format } from '@/utils/types/format.types';
 
 import { NlpValue, NlpValueFull } from '../schemas/nlp-value.schema';
@@ -242,7 +243,7 @@ describe('NlpValueRepository', () => {
         sort: ['value', 'asc'],
       };
 
-      const filters = {};
+      const filters: TFilterQuery<NlpValue> = {};
 
       const results = await nlpValueService.findWithCount(
         Format.STUB,

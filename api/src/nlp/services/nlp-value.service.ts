@@ -244,7 +244,7 @@ export class NlpValueService extends BaseService<
    * @param format - Desired result format: FULL or STUB.
    * @param pageQuery - Pagination parameters (limit, skip, sort).
    * @param filters - Filtering criteria for NLP values.
-   * @returns A list of NLP values with their training sample counts,
+   * @returns A promise that resolves to a list of NLP values with their training sample counts,
    *          typed according to the requested format.
    */
   async findWithCount<F extends Format>(
