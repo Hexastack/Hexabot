@@ -238,6 +238,15 @@ export class NlpValueService extends BaseService<
     return Promise.all(promises);
   }
 
+  /**
+   * Retrieves NLP values with their training sample counts from the repository,
+   * applying pagination, filters, and formatting.
+   * @param format - Desired result format: FULL or STUB.
+   * @param pageQuery - Pagination parameters (limit, skip, sort).
+   * @param filters - Filtering criteria for NLP values.
+   * @returns A promise that resolves to a list of NLP values with their training sample counts,
+   *          typed according to the requested format.
+   */
   async findWithCount<F extends Format>(
     format: F,
     pageQuery: PageQueryDto<NlpValue>,

@@ -8,6 +8,7 @@
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
   installNlpValueFixtures,
@@ -18,6 +19,8 @@ import {
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValueCreateDto } from '../dto/nlp-value.dto';
 import { NlpValue } from '../schemas/nlp-value.schema';
@@ -189,6 +192,26 @@ describe('NlpValueController', () => {
       await expect(
         nlpValueController.deleteMany(nonExistentIds),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+  describe('findWithCount', () => {
+    it('should call service with correct format based on populate', async () => {
+      jest.spyOn(nlpValueService, 'findWithCount');
+
+      const filters: TFilterQuery<NlpValue> = {};
+      const pageQuery: PageQueryDto<NlpValue> = {
+        limit: 10,
+        skip: 0,
+        sort: ['value', 'asc'],
+      };
+
+      await nlpValueController.findWithCount(pageQuery, ['entity'], filters);
+
+      expect(nlpValueService.findWithCount).toHaveBeenCalledWith(
+        Format.FULL,
+        pageQuery,
+        filters,
+      );
     });
   });
 });

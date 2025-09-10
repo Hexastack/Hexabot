@@ -7,17 +7,18 @@
  */
 
 import { BaseSchema } from '@/utils/generics/base-schema';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
-import {
-  installNlpValueFixtures,
-  nlpValueFixtures,
-} from '@/utils/test/fixtures/nlpvalue';
+import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
+import { nlpValueFixtures } from '@/utils/test/fixtures/nlpvalue';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpEntityRepository } from '../repositories/nlp-entity.repository';
 import { NlpValueRepository } from '../repositories/nlp-value.repository';
@@ -37,7 +38,7 @@ describe('NlpValueService', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installNlpValueFixtures)],
+      imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [NlpValueService, NlpEntityService],
     });
     [
@@ -195,6 +196,33 @@ describe('NlpValueService', () => {
       await expect(
         nlpValueService.storeValues(sampleText, sampleEntities),
       ).rejects.toThrow('Unable to find the stored entity unknownEntity');
+    });
+  });
+  describe('findWithCount', () => {
+    it('should return NLP values with counts from repository', async () => {
+      jest.spyOn(nlpValueRepository, 'findWithCount');
+
+      const pageQuery: PageQueryDto<NlpValue> = {
+        limit: 10,
+        skip: 0,
+        sort: ['value', 'asc'],
+      };
+
+      const filters: TFilterQuery<NlpValue> = {};
+
+      const results = await nlpValueService.findWithCount(
+        Format.STUB,
+        pageQuery,
+        filters,
+      );
+
+      expect(results.length).toBeGreaterThan(0);
+      expect(results[0]).toHaveProperty('nlpSamplesCount');
+      expect(nlpValueRepository.findWithCount).toHaveBeenLastCalledWith(
+        Format.STUB,
+        pageQuery,
+        filters,
+      );
     });
   });
 });

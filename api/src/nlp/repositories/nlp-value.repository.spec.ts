@@ -9,6 +9,7 @@
 import LlmNluHelper from '@/extensions/helpers/llm-nlu/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { SettingService } from '@/setting/services/setting.service';
+import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import { nlpEntityFixtures } from '@/utils/test/fixtures/nlpentity';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
@@ -20,6 +21,8 @@ import {
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
 import { buildTestingMocks } from '@/utils/test/utils';
+import { TFilterQuery } from '@/utils/types/filter.types';
+import { Format } from '@/utils/types/format.types';
 
 import { NlpValue, NlpValueFull } from '../schemas/nlp-value.schema';
 import { NlpValueService } from '../services/nlp-value.service';
@@ -230,6 +233,34 @@ describe('NlpValueRepository', () => {
       const result = await nlpValueRepository.findOne(updatedNlpValue.id);
 
       expect(result).toEqualPayload(updatedNlpValue);
+    });
+  });
+  describe('findWithCount', () => {
+    it('should return NLP values with counts of training samples', async () => {
+      const pageQuery: PageQueryDto<NlpValue> = {
+        limit: 10,
+        skip: 0,
+        sort: ['value', 'asc'],
+      };
+
+      const filters: TFilterQuery<NlpValue> = {};
+
+      const results = await nlpValueService.findWithCount(
+        Format.STUB,
+        pageQuery,
+        filters,
+      );
+
+      expect(results.length).toBeGreaterThan(0);
+
+      results.forEach((r) => {
+        expect(r).toHaveProperty('nlpSamplesCount');
+        expect(typeof r.nlpSamplesCount).toBe('number');
+      });
+
+      // Check a specific value count
+      const positive = results.find((r) => r.value === 'positive');
+      expect(positive!.nlpSamplesCount).toBeGreaterThan(0);
     });
   });
 });

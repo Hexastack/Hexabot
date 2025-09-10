@@ -48,6 +48,16 @@ export class NlpValueRepository extends BaseRepository<
 
   /**
    * Performs an aggregation to retrieve NLP values with their sample counts.
+   * * The aggregation:
+   * - Applies filter criteria on NLP values.
+   * - Optionally applies `$and` conditions, including entity-based filters.
+   * - Joins with the `nlpsampleentities` collection to link values to samples.
+   * - Joins with the `nlpsamples` collection and restricts results to samples
+   *   where `type = "train"`.
+   * - Counts the number of associated training samples per NLP value.
+   * - Optionally enriches the result with the linked `entity` document if
+   *   the format is set to FULL.
+   * - Applies pagination (skip, limit) and sorting.
    *
    * @param format - The format can be full or stub
    * @param pageQuery - The pagination parameters
@@ -80,12 +90,6 @@ export class NlpValueRepository extends BaseRepository<
         },
       },
       {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-      {
         $lookup: {
           from: 'nlpsampleentities',
           localField: '_id',
@@ -100,6 +104,20 @@ export class NlpValueRepository extends BaseRepository<
         },
       },
       {
+        $lookup: {
+          from: 'nlpsamples',
+          localField: '_sampleEntities.sample',
+          foreignField: '_id',
+          as: '_samples',
+        },
+      },
+      {
+        $unwind: {
+          path: '$_samples',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $group: {
           _id: '$_id',
           _originalDoc: {
@@ -108,7 +126,18 @@ export class NlpValueRepository extends BaseRepository<
             },
           },
           nlpSamplesCount: {
-            $sum: { $cond: [{ $ifNull: ['$_sampleEntities', false] }, 1, 0] },
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ['$_sampleEntities', false] },
+                    { $eq: ['$_samples.type', 'train'] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
           },
         },
       },
@@ -141,11 +170,28 @@ export class NlpValueRepository extends BaseRepository<
           _id: this.getSortDirection(sort[1]),
         },
       },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
     ];
 
     return await this.model.aggregate<TNlpValueCount<F>>(pipeline).exec();
   }
 
+  /**
+   * Retrieves NLP values along with their sample counts, applying pagination,
+   * filtering, and formatting.
+   *
+   * @param format - Specifies whether the result should be in FULL or STUB format.
+   * @param pageQuery - Pagination parameters (limit, skip, sort).
+   * @param filterQuery - Filtering criteria for NLP values and entities.
+   * @returns A promise that resolves to a list of NLP value results with their training sample counts,
+   *          typed according to the requested format.
+   * @throws Logs and rethrows any errors that occur during aggregation or transformation.
+   */
   async findWithCount<F extends Format>(
     format: F,
     pageQuery: PageQueryDto<NlpValue>,
@@ -168,7 +214,7 @@ export class NlpValueRepository extends BaseRepository<
         excludePrefixes: ['_'],
       }) as TNlpValueCount<F>[];
     } catch (error) {
-      this.logger.error(`Error in findWithCount: ${error.message}`, error);
+      this.logger.error(`Error in : ${error.message}`, error);
       throw error;
     }
   }
