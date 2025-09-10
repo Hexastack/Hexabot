@@ -27,9 +27,9 @@ export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
   WrapperProps,
   ...rest
 }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-    props?.category || "",
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    string | undefined
+  >(props?.category || undefined);
   const handleMove = () => {
     if (selectedCategoryId) {
       props?.onMove(props.ids, selectedCategoryId);

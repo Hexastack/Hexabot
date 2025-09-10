@@ -72,10 +72,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     this.registerCanvas();
   }
 
-  zoomToFitSelection() {
-    let margin = 0;
-    let maxZoom: number | null = 1;
-
+  zoomToFitSelection(margin = 0, maxZoom = 1) {
     const engine = this.props.engine;
     const model = engine.getModel();
     // no node selected
@@ -92,8 +89,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
     if (nodesRect) {
       // there is something we should zoom on
       const canvas = engine.getCanvas();
-      let canvasRect = canvas.getBoundingClientRect();
-
+      const canvasRect = canvas.getBoundingClientRect();
       const calculate = (margin: number = 0) => {
         // work out zoom
         const xFactor =

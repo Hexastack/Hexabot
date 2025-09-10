@@ -9,7 +9,7 @@
 import { debounce } from "@mui/material";
 import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
 import * as React from "react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { EntityType } from "@/services/types";
@@ -268,7 +268,9 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    string | undefined
+  >(undefined);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();
