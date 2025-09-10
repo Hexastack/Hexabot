@@ -46,9 +46,11 @@
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
     "react-query": "^3.39.3",
+    "react-window": "^1.8.5",
     "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@types/react-window": "^1.8.5",
     "@types/node": "20.12.12",
     "@types/qs": "^6.9.15",
     "@types/random-seed": "^0.3.5",

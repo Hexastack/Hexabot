@@ -93,6 +93,15 @@ export enum PatternType {
   text = "text",
 }
 
+export enum BlockType {
+  TEXT = "text",
+  ATTACHMENT = "attachment",
+  QUICK_REPLIES = "quickReplies",
+  BUTTONS = "buttons",
+  LIST = "list",
+  PLUGIN = "plugin",
+}
+
 export interface IBlockAttributes {
   name: string;
   patterns?: Pattern[];
@@ -108,6 +117,7 @@ export interface IBlockAttributes {
   starts_conversation?: boolean;
   capture_vars?: CaptureVar[];
   position: Position;
+  type: BlockType; // Computed field added by the processStrategy
 }
 
 export interface IBlockStub
@@ -133,6 +143,10 @@ export interface IBlockFull extends IBlockStub, IFormat<Format.FULL> {
   previousBlocks?: IBlock[];
   attachedBlock?: IBlock;
   attachedToBlock?: IBlock;
+}
+
+export interface IBlockSearchResult extends IBlock {
+  score: number;
 }
 
 export interface ICustomBlockTemplateAttributes {

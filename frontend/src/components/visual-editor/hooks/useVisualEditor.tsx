@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { debounce } from "@mui/material";
+import debounce from "@mui/utils/debounce";
 import createEngine, { DiagramModel } from "@projectstorm/react-diagrams";
 import * as React from "react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 import { useCreate } from "@/hooks/crud/useCreate";
 import { EntityType } from "@/services/types";
@@ -80,6 +80,7 @@ const buildDiagram = ({
   onRemoveNode,
   onDbClickNode,
   targetPortChanged,
+  selectedBlockId,
 }: IVisualEditor) => {
   window["customEvents"] = {};
   model = new DiagramModel();
@@ -90,8 +91,15 @@ const buildDiagram = ({
   engine
     .getActionEventBus()
     .registerAction(new CustomDeleteItemsAction({ callback: onRemoveNode }));
-  if (offset) setViewerOffset(offset);
-  if (zoom) setViewerZoom(zoom);
+
+  if (!selectedBlockId) {
+    if (offset) {
+      setViewerOffset(offset);
+    }
+    if (zoom) {
+      setViewerZoom(zoom);
+    }
+  }
 
   if (data?.length) {
     const nodes = data
@@ -107,6 +115,10 @@ const buildDiagram = ({
         }
 
         node.setPosition(datum.position.x, datum.position.y);
+
+        if (selectedBlockId === datum.id) {
+          node.setSelected(true);
+        }
 
         return node;
       });
@@ -222,7 +234,12 @@ const buildDiagram = ({
     model,
     engine,
     canvas: (
-      <CustomCanvasWidget className="diagram-container" engine={engine} />
+      <CustomCanvasWidget
+        className="diagram-container"
+        engine={engine}
+        shouldFitSelection={!!selectedBlockId}
+        defaultSelection={selectedBlockId}
+      />
     ),
   };
 };
@@ -245,13 +262,15 @@ const VisualEditorContext = createContext<IVisualEditorContext>({
   setViewerZoom,
   setViewerOffset,
   createNode: async (): Promise<IBlock> => ({} as IBlock),
-  selectedCategoryId: "",
+  selectedCategoryId: undefined,
   setSelectedCategoryId: () => {},
 });
 const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = React.useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    string | undefined
+  >(undefined);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (payload: any) => {
     payload.position = payload.position || getCentroid();

@@ -24,6 +24,7 @@ export enum EntityType {
   SETTING = "Setting",
   BOTSTATS = "BotStats",
   BLOCK = "Block",
+  BLOCK_SEARCH = "Block/Search",
   CUSTOM_BLOCK = "CustomBlock",
   CUSTOM_BLOCK_SETTINGS = "CustomBlockSetting",
   NLP_SAMPLE = "NlpSample",

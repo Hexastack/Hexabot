@@ -35,6 +35,7 @@ export interface IVisualEditor {
   onRemoveNode?: CustomDeleteItemsActionOptions["callback"];
   linkChangeHandler?: (event: any) => void;
   targetPortChanged?: (event: any) => void;
+  selectedBlockId: string | undefined;
 }
 export interface IVisualEditorContext {
   addNode: (payload: any) => NodeModel;
@@ -47,7 +48,7 @@ export interface IVisualEditorContext {
   setViewerZoom: (zoom: number) => void;
   setViewerOffset: ([x, y]: [number, number]) => void;
   setSelectedCategoryId: (id: string) => void;
-  selectedCategoryId: string;
+  selectedCategoryId: string | undefined;
 }
 
 export interface VisualEditorContextProps {

@@ -6,11 +6,14 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Add, ContentCopyRounded, MoveUp } from "@mui/icons-material";
+import Add from "@mui/icons-material/Add";
+import ContentCopyRounded from "@mui/icons-material/ContentCopyRounded";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import FitScreenIcon from "@mui/icons-material/FitScreen";
+import MoveUp from "@mui/icons-material/MoveUp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import SearchIcon from "@mui/icons-material/Search";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import {
@@ -30,7 +33,14 @@ import {
   DiagramModelGenerics,
 } from "@projectstorm/react-diagrams";
 import { useRouter } from "next/router";
-import { SyntheticEvent, useCallback, useEffect, useState } from "react";
+import {
+  KeyboardEventHandler,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -56,6 +66,7 @@ import { PermissionAction } from "@/types/permission.types";
 import { BlockPorts } from "@/types/visual-editor.types";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
+import { BlockSearchPanel } from "../BlockSearchPanel";
 import { ZOOM_LEVEL } from "../constants";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 
@@ -65,12 +76,17 @@ const Diagrams = () => {
   const { t } = useTranslate();
   const router = useRouter();
   const flowId = router.query.id?.toString();
+  const blockId = router.query.blockId?.toString();
   const [model, setModel] = useState<
     DiagramModel<DiagramModelGenerics> | undefined
   >();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [isSearchOpen, setSearchOpen] = useState(false);
   const [engine, setEngine] = useState<DiagramEngine | undefined>();
   const [canvas, setCanvas] = useState<JSX.Element | undefined>();
-  const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>();
+  const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>(
+    blockId,
+  );
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
@@ -109,8 +125,10 @@ const Diagrams = () => {
         } else if (id) {
           setSelectedCategoryId?.(id);
           if (engine?.getModel()) {
-            setViewerOffset(offset || [0, 0]);
-            setViewerZoom(zoom || 100);
+            if (!selectedBlockId) {
+              setViewerOffset(offset || [0, 0]);
+              setViewerZoom(zoom || 100);
+            }
           }
         }
       },
@@ -225,11 +243,19 @@ const Diagrams = () => {
   }, []);
 
   useEffect(() => {
-    if (flowId) setSelectedCategoryId(flowId);
-    else if (categories?.length) setSelectedCategoryId(categories[0].id);
+    // Update state on router update
+    if (flowId) {
+      setSelectedCategoryId(flowId);
+    } else if (categories?.length) {
+      setSelectedCategoryId(categories[0].id);
+    }
+
+    if (blockId !== selectedBlockId) {
+      setSelectedBlockId(blockId);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flowId]);
+  }, [router.query]);
 
   useEffect(() => {
     const { canvas, model, engine } = buildDiagram({
@@ -345,6 +371,7 @@ const Diagrams = () => {
           });
         }
       },
+      selectedBlockId: blockId,
     });
 
     setModel(model);
@@ -355,8 +382,10 @@ const Diagrams = () => {
       zoomUpdated: debouncedZoomEvent,
       offsetUpdated: debouncedOffsetEvent,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedCategoryId,
+    blockId,
     JSON.stringify(
       blocks.map((b) => {
         return { ...b, position: undefined, updatedAt: undefined };
@@ -578,6 +607,14 @@ const Diagrams = () => {
       );
     }
   };
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
+
+    if (isCmdF) {
+      e.preventDefault();
+      setSearchOpen(true);
+    }
+  };
   const selectedEntities = getSelectedIds();
   const shouldDisableDuplicateButton =
     selectedEntities.length !== 1 ||
@@ -708,6 +745,27 @@ const Diagrams = () => {
                 <Add />
               </Button>
             ) : null}
+            <Button
+              title={t("label.search_blocks_panel_header")}
+              sx={{
+                mt: "7px",
+                ml: "auto",
+                mr: "5px",
+                borderRadius: "0",
+                minHeight: "30px",
+                border: "1px solid #DDDDDD",
+                backgroundColor: "#F8F8F8",
+                borderBottom: "none",
+                width: "42px",
+                minWidth: "42px",
+              }}
+              onClick={(e) => {
+                setSearchOpen((prev) => !prev);
+                e.preventDefault();
+              }}
+            >
+              <SearchIcon />
+            </Button>
           </Grid>
           <Grid container>
             <ButtonGroup
@@ -880,7 +938,19 @@ const Diagrams = () => {
           </Grid>
         </Grid>
       </Box>
-      {canvas}
+      <Box
+        position="relative"
+        height="100%"
+        ref={canvasRef}
+        onKeyDown={handleKeyDown}
+      >
+        {canvas}
+        <BlockSearchPanel
+          canvasRef={canvasRef}
+          open={isSearchOpen}
+          onClose={() => setSearchOpen(false)}
+        />
+      </Box>
     </div>
   );
 };
