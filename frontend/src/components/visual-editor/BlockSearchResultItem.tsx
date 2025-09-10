@@ -46,7 +46,6 @@ export const BlockSearchResultItem: React.FC<
       <ListItemButton
         selected={isSelected}
         autoFocus={isSelected}
-        disabled={isSelected}
         onClick={() => data.onClick?.(item)}
         sx={{
           height: BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
