@@ -253,7 +253,6 @@ export const theme = createTheme({
             alignItems: "center",
             minHeight: "300px",
             position: "relative",
-            bottom: "42px",
             color: COLOR_PALETTE.buttonOutlinedColor,
             svg: {
               fill: COLOR_PALETTE.buttonOutlinedColor,
