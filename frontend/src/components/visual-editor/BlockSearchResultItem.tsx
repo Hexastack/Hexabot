@@ -24,6 +24,8 @@ type BlockSearchResultsData = {
   selected: string | undefined; // Selected block id
 };
 
+export const BLOCK_SEARCH_RESULT_ITEM_HEIGHT = 56;
+
 export const BlockSearchResultItem: React.FC<
   ListChildComponentProps<BlockSearchResultsData>
 > = (props) => {
@@ -47,7 +49,7 @@ export const BlockSearchResultItem: React.FC<
         disabled={isSelected}
         onClick={() => data.onClick?.(item)}
         sx={{
-          height: 56,
+          height: BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
           overflow: "hidden",
         }}
       >

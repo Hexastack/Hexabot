@@ -22,6 +22,7 @@ import Skeleton from "@mui/material/Skeleton";
 import { styled } from "@mui/material/styles";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import Typography from "@mui/material/Typography";
 import { useRouter } from "next/router";
 import { RefObject, useCallback, useState } from "react";
 import { FixedSizeList } from "react-window";
@@ -35,7 +36,10 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, RouterType } from "@/services/types";
 import { IBlockSearchResult } from "@/types/block.types";
 
-import { BlockSearchResultItem } from "./BlockSearchResultItem";
+import {
+  BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
+  BlockSearchResultItem,
+} from "./BlockSearchResultItem";
 import { useVisualEditor } from "./hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
@@ -54,6 +58,8 @@ const ScopeToggle = styled(Tabs)(() => ({
     minHeight: 36,
   },
 }));
+const ResultCount = styled(Box)(() => ({ padding: "4px 16px", color: "#555" }));
+const VISIBLE_BLOCK_SEARCH_RESULTS = 7;
 
 export interface BlockSearchPanelProps {
   open: boolean;
@@ -98,7 +104,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       },
     },
   );
-  const loading = isLoading || isFetching;
+  const isLoadingResults = isLoading || isFetching;
   const navigateToBlock = useCallback(
     async (blockId: string, categoryId: string) => {
       // Navigate to route embedding block id (or only flow if block missing)
@@ -203,45 +209,56 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           </>
         ) : null}
 
-        {loading ? (
+        {isLoadingResults ? (
           <Box p={2} display="grid" gap={1}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Box
-                key={i}
-                display="flex"
-                alignItems="center"
-                gap={2}
-                height={56}
-              >
-                {/* Avatar skeleton */}
-                <Skeleton variant="circular" width={32} height={32} />
-                {/* Text content skeleton */}
-                <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
-                  <Skeleton variant="text" width="90%" height={20} />
+            {Array.from({ length: VISIBLE_BLOCK_SEARCH_RESULTS }).map(
+              (_, i) => (
+                <Box
+                  key={i}
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  height={BLOCK_SEARCH_RESULT_ITEM_HEIGHT}
+                >
+                  {/* Avatar skeleton */}
+                  <Skeleton variant="circular" width={32} height={32} />
+                  {/* Text content skeleton */}
+                  <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
+                    <Skeleton variant="text" width="90%" height={20} />
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              ),
+            )}
           </Box>
         ) : null}
 
-        {blockSearchResults.length === 0 && searchText ? (
+        {!isLoadingResults && blockSearchResults.length === 0 && searchText ? (
           <NoDataOverlay i18nKey="message.no_matching_results" />
         ) : null}
 
         {blockSearchResults.length > 0 && searchText ? (
-          <FixedSizeList
-            height={56 * 7} // display 5 results at once
-            width="100%"
-            itemCount={blockSearchResults.length}
-            itemSize={56}
-            itemData={{
-              items: blockSearchResults,
-              selected,
-              onClick: selectSearchResult,
-            }}
-          >
-            {BlockSearchResultItem}
-          </FixedSizeList>
+          <>
+            <ResultCount>
+              <Typography variant="caption">
+                {blockSearchResults.length} {t("message.results")}
+              </Typography>
+            </ResultCount>
+            <FixedSizeList
+              height={
+                BLOCK_SEARCH_RESULT_ITEM_HEIGHT * VISIBLE_BLOCK_SEARCH_RESULTS
+              }
+              width="100%"
+              itemCount={blockSearchResults.length}
+              itemSize={BLOCK_SEARCH_RESULT_ITEM_HEIGHT}
+              itemData={{
+                items: blockSearchResults,
+                selected,
+                onClick: selectSearchResult,
+              }}
+            >
+              {BlockSearchResultItem}
+            </FixedSizeList>
+          </>
         ) : null}
       </DialogContent>
     </Panel>
