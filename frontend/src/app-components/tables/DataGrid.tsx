@@ -42,6 +42,7 @@ export const StyledDataGrid = <T extends GridValidRowModel = any>(
             },
           },
         },
+        minHeight: 400,
         ...sx,
       }}
     />
