@@ -225,6 +225,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                   {/* Text content skeleton */}
                   <Box flex={1} display="flex" flexDirection="column" gap={0.5}>
                     <Skeleton variant="text" width="90%" height={20} />
+                    <Skeleton variant="text" width="60%" height={16} />
                   </Box>
                 </Box>
               ),
