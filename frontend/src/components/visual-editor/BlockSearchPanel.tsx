@@ -236,7 +236,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           <NoDataOverlay i18nKey="message.no_matching_results" />
         ) : null}
 
-        {blockSearchResults.length > 0 && searchText ? (
+        {!isLoadingResults && blockSearchResults.length > 0 && searchText ? (
           <>
             <ResultCount>
               <Typography variant="caption">
