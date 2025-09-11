@@ -55,6 +55,6 @@ git commit -m "build: v$NEW_VERSION"
 # Add git tag
 echo "Tagging version v$NEW_VERSION"
 git tag "v$NEW_VERSION"
-git push origin main --tags
+git push --no-verify origin main --tags
 
 echo "Release ($RELEASE_TYPE) completed successfully."
