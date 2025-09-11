@@ -82,7 +82,6 @@ const buildDiagram = ({
   targetPortChanged,
   selectedBlockId,
 }: IVisualEditor) => {
-  window["customEvents"] = {};
   model = new DiagramModel();
 
   engine.getNodeFactories().registerFactory(new NodeFactory());
@@ -126,21 +125,13 @@ const buildDiagram = ({
       const { entity, isSelected } = event;
       const eventType = entity.parent.options.type;
       const nodeId = entity.options.id;
-      const selector = document?.querySelector(`[data-nodeid='${nodeId}']`);
 
       if (eventType === "diagram-nodes") {
         if (isSelected === true) {
           setter?.(nodeId);
           model.getNode(nodeId).setSelected(true);
-
-          if (!window["customEvents"][`dblclickEventNode${nodeId}Added`])
-            selector?.addEventListener("dblclick", (e) => {
-              onDbClickNode?.(e, nodeId);
-              window["customEvents"][`dblclickEventNode${nodeId}Added`] = true;
-            });
         } else {
           setter?.(undefined);
-          selector?.removeEventListener("dblclick", () => {}, true);
           model.getNode(nodeId).setSelected(false);
         }
       } else if (eventType === "diagram-links") {
@@ -230,6 +221,19 @@ const buildDiagram = ({
   });
   engine.setModel(model);
 
+  // Double click handler to detect node double click
+  const handleCanvasDoubleClick: React.MouseEventHandler<HTMLDivElement> = (
+    e,
+  ) => {
+    const target = e.target as HTMLElement | null;
+    const nodeEl = target?.closest?.("[data-nodeid]") as HTMLElement | null;
+    const nodeId = nodeEl?.getAttribute("data-nodeid");
+
+    if (nodeId) {
+      onDbClickNode?.(e, nodeId);
+    }
+  };
+
   return {
     model,
     engine,
@@ -239,6 +243,7 @@ const buildDiagram = ({
         engine={engine}
         shouldFitSelection={!!selectedBlockId}
         defaultSelection={selectedBlockId}
+        onDoubleClick={handleCanvasDoubleClick}
       />
     ),
   };

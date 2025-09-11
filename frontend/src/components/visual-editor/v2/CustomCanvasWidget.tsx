@@ -22,6 +22,7 @@ export interface DiagramProps {
   shouldFitSelection: boolean;
   defaultSelection: string | undefined; // Selected node ID
   className?: string;
+  onDoubleClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 namespace S {
@@ -180,6 +181,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
         <S.Canvas
           className={this.props.className}
           ref={this.ref}
+          onDoubleClick={this.props.onDoubleClick}
           onWheel={(event) => {
             this.props.engine.getActionEventBus().fireAction({ event });
           }}
