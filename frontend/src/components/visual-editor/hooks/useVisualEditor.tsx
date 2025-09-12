@@ -222,12 +222,21 @@ const buildDiagram = ({
   engine.setModel(model);
 
   // Double click handler to detect node double click
-  const handleCanvasDoubleClick = () => {
-    const [firstNode, secondNode] = engine?.getModel().getSelectedEntities();
-    const { id } = firstNode?.getOptions() || {};
+  const handleCanvasDoubleClick: React.MouseEventHandler<HTMLDivElement> = (
+    e,
+  ) => {
+    // Avoid bubbling to any outer handlers
+    e.stopPropagation();
+    // Only consider NodeModel selections (exclude links/layers)
+    const selectedNodes = engine
+      .getModel()
+      .getSelectedEntities()
+      .filter((entity): entity is NodeModel => entity instanceof NodeModel);
 
-    if (id && !secondNode) {
-      onDbClickNode?.(id);
+    if (selectedNodes.length === 1) {
+      const id = selectedNodes[0].getOptions().id as string | undefined;
+
+      if (id) onDbClickNode?.(id);
     }
   };
 
