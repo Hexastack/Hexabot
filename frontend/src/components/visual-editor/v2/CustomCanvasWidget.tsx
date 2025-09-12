@@ -13,7 +13,7 @@ import {
   SmartLayerWidget,
   TransformLayerWidget,
 } from "@projectstorm/react-diagrams";
-import * as React from "react";
+import { Component, createRef, MouseEventHandler } from "react";
 
 import { BackgroundLayerWidget } from "./BackgroundLayerWidget";
 
@@ -22,7 +22,7 @@ export interface DiagramProps {
   shouldFitSelection: boolean;
   defaultSelection: string | undefined; // Selected node ID
   className?: string;
-  onDoubleClick?: React.MouseEventHandler<HTMLDivElement>;
+  onDoubleClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 namespace S {
@@ -33,7 +33,7 @@ namespace S {
   `;
 }
 
-export class CustomCanvasWidget extends React.Component<DiagramProps> {
+export class CustomCanvasWidget extends Component<DiagramProps> {
   ref: React.RefObject<HTMLDivElement>;
   currentSelection: string | undefined;
   keyUp: any;
@@ -43,7 +43,7 @@ export class CustomCanvasWidget extends React.Component<DiagramProps> {
   constructor(props: DiagramProps) {
     super(props);
 
-    this.ref = React.createRef();
+    this.ref = createRef();
     this.currentSelection = undefined;
     this.state = {
       action: null,
