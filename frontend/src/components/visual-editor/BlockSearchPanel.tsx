@@ -7,14 +7,12 @@
  */
 
 import BackspaceIcon from "@mui/icons-material/Backspace";
-import CloseIcon from "@mui/icons-material/Close";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import SearchIcon from "@mui/icons-material/Search";
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -27,6 +25,7 @@ import { useRouter } from "next/router";
 import { RefObject, useCallback, useState } from "react";
 import { FixedSizeList } from "react-window";
 
+import { DialogTitle } from "@/app-components/dialogs";
 import { FilterTextfield } from "@/app-components/inputs/FilterTextfield";
 import { NoDataOverlay } from "@/app-components/tables/NoDataOverlay";
 import { useFind } from "@/hooks/crud/useFind";
@@ -144,19 +143,9 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
         },
       }}
     >
-      <DialogTitle>{t("label.search_blocks_panel_header")}</DialogTitle>
-      <IconButton
-        aria-label={t("button.close")}
-        onClick={onClose}
-        sx={(theme) => ({
-          position: "absolute",
-          right: 5,
-          top: 5,
-          color: theme.palette.grey[500],
-        })}
-      >
-        <CloseIcon />
-      </IconButton>
+      <DialogTitle onClose={onClose}>
+        {t("label.search_blocks_panel_header")}
+      </DialogTitle>
       <DialogContent dividers>
         <FilterTextfield
           sx={{ p: 1 }}
