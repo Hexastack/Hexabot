@@ -82,7 +82,6 @@ const buildDiagram = ({
   targetPortChanged,
   selectedBlockId,
 }: IVisualEditor) => {
-  window["customEvents"] = {};
   model = new DiagramModel();
 
   engine.getNodeFactories().registerFactory(new NodeFactory());
@@ -126,21 +125,13 @@ const buildDiagram = ({
       const { entity, isSelected } = event;
       const eventType = entity.parent.options.type;
       const nodeId = entity.options.id;
-      const selector = document?.querySelector(`[data-nodeid='${nodeId}']`);
 
       if (eventType === "diagram-nodes") {
         if (isSelected === true) {
           setter?.(nodeId);
           model.getNode(nodeId).setSelected(true);
-
-          if (!window["customEvents"][`dblclickEventNode${nodeId}Added`])
-            selector?.addEventListener("dblclick", (e) => {
-              onDbClickNode?.(e, nodeId);
-              window["customEvents"][`dblclickEventNode${nodeId}Added`] = true;
-            });
         } else {
           setter?.(undefined);
-          selector?.removeEventListener("dblclick", () => {}, true);
           model.getNode(nodeId).setSelected(false);
         }
       } else if (eventType === "diagram-links") {
@@ -230,6 +221,25 @@ const buildDiagram = ({
   });
   engine.setModel(model);
 
+  // Double click handler to detect node double click
+  const handleCanvasDoubleClick: React.MouseEventHandler<HTMLDivElement> = (
+    e,
+  ) => {
+    // Avoid bubbling to any outer handlers
+    e.stopPropagation();
+    // Only consider NodeModel selections (exclude links/layers)
+    const selectedNodes = engine
+      .getModel()
+      .getSelectedEntities()
+      .filter((entity): entity is NodeModel => entity instanceof NodeModel);
+
+    if (selectedNodes.length === 1) {
+      const id = selectedNodes[0].getOptions().id as string | undefined;
+
+      if (id) onDbClickNode?.(id);
+    }
+  };
+
   return {
     model,
     engine,
@@ -239,6 +249,7 @@ const buildDiagram = ({
         engine={engine}
         shouldFitSelection={!!selectedBlockId}
         defaultSelection={selectedBlockId}
+        onDoubleClick={handleCanvasDoubleClick}
       />
     ),
   };

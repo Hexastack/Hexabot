@@ -265,7 +265,7 @@ const Diagrams = () => {
       setter: setSelectedBlockId,
       updateFn: updateBlock,
       onRemoveNode: openDeleteDialog,
-      onDbClickNode: (event, id) => {
+      onDbClickNode: (id) => {
         if (id) {
           openEditDialog(id);
         }
