@@ -222,15 +222,12 @@ const buildDiagram = ({
   engine.setModel(model);
 
   // Double click handler to detect node double click
-  const handleCanvasDoubleClick: React.MouseEventHandler<HTMLDivElement> = (
-    e,
-  ) => {
-    const target = e.target as HTMLElement | null;
-    const nodeEl = target?.closest?.("[data-nodeid]") as HTMLElement | null;
-    const nodeId = nodeEl?.getAttribute("data-nodeid");
+  const handleCanvasDoubleClick = () => {
+    const [firstNode, secondNode] = engine?.getModel().getSelectedEntities();
+    const { id } = firstNode?.getOptions() || {};
 
-    if (nodeId) {
-      onDbClickNode?.(e, nodeId);
+    if (id && !secondNode) {
+      onDbClickNode?.(id);
     }
   };
 

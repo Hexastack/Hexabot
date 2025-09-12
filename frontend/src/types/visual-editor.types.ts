@@ -31,7 +31,7 @@ export interface IVisualEditor {
   setter?: React.Dispatch<React.SetStateAction<string | undefined>>;
   //TODO: type need to be updated
   updateFn?: any;
-  onDbClickNode?: (event?: any, id?: string) => void;
+  onDbClickNode?: (id?: string) => void;
   onRemoveNode?: CustomDeleteItemsActionOptions["callback"];
   linkChangeHandler?: (event: any) => void;
   targetPortChanged?: (event: any) => void;
