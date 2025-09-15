@@ -309,11 +309,11 @@ export default abstract class BaseWebChannelHandler<
 
   /**
    * Fetches the messaging history from the DB.
-   * @param req Either a HTTP request or a WS Request (Synthetic object)
+   * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
    * @param until - Date before which to fetch
    * @param n - Number of messages to fetch
-   * @returns Promise to an array of message, rejects into error.
-   * Promise to fetch the 'n' last message since a giving date the session profile.
+   * @returns Promise resolving to an array of messages.
+   * Fetches the last 'n' messages for the session profile up to the given date.
    */
   protected async fetchHistory(
     req: Request | SocketRequest,
@@ -333,12 +333,12 @@ export default abstract class BaseWebChannelHandler<
   }
 
   /**
-   * Poll new messages by a giving start datetime
+   * Poll new messages by a given start datetime
    * @param req - HTTP Express Request
    * @param since - Date after which to fetch
    * @param n - Number of messages to fetch
-   * @returns Promise to an array of message, rejects into error.
-   * Promise to fetch the 'n' new messages since a giving date for the session profile.
+   * @returns Promise resolving to an array of messages.
+   * Fetches the last 'n' new messages for the session profile since the given date.
    */
   private async pollMessages(
     req: Request,
@@ -636,6 +636,8 @@ export default abstract class BaseWebChannelHandler<
    * @param req - The WebSocket request containing the session and the file data.
    * @returns A Promise that resolves to the stored `Attachment`, or `null` if
    *          the session is invalid or no file is provided.
+   * @throws Error if the max upload size is exceeded.
+   * @throws Error when storing the uploaded file fails.
    */
   async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
     try {
@@ -684,6 +686,7 @@ export default abstract class BaseWebChannelHandler<
    * @param _res - The Express HTTP response.
    * @returns A Promise that resolves to the stored `Attachment`, or `null`/`undefined`
    *          if the session is invalid or no file is provided.
+   * @throws Error when storing the uploaded file fails.
    */
   async handleWebUpload(
     req: Request,
@@ -722,6 +725,7 @@ export default abstract class BaseWebChannelHandler<
    * @param req Either a HTTP Express request or a WS request (Synthetic Object)
    * @param res Either a HTTP Express response or a WS response (Synthetic Object)
    * @returns A Promise that resolves to the uploaded Attachment, or `null`/`undefined` if no file is uploaded.
+   * @throws Error Propagated from underlying upload handlers.
    */
   async handleUpload(
     req: Request | SocketRequest,
