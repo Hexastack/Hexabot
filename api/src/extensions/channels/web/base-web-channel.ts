@@ -310,8 +310,8 @@ export default abstract class BaseWebChannelHandler<
   /**
    * Fetches the messaging history from the DB.
    * @param req - Either an HTTP Express request or a WS SocketRequest (synthetic)
-   * @param until - Date before which to fetch
-   * @param n - Number of messages to fetch
+   * @param [until=new Date()] - Date before which to fetch
+   * @param [n=30] - Number of messages to fetch
    * @returns Promise resolving to an array of messages.
    * Fetches the last 'n' messages for the session profile up to the given date.
    */
@@ -1228,7 +1228,7 @@ export default abstract class BaseWebChannelHandler<
    * @param subscriber - End-user toward which message will be sent
    * @param type - The message to be sent (message, typing, ...)
    * @param content - The message payload contain additional settings
-   * @param excludedRooms - Array of room names to exclude from receiving the message.
+   * @param [excludedRooms=[]] - Array of room names to exclude from receiving the message.
    */
   private broadcast(
     subscriber: Subscriber,
