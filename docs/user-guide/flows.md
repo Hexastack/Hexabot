@@ -35,4 +35,4 @@ Hexabot will prevent you from deleting a flow if there are still blocks associat
 
 When you open the Visual Editor, you'll see a tab for each flow you've created. Select the flow tab where you want to design your conversation flow. You can easily switch between the flow tabs to organize your conversation flows.
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption><p>Browse Flows in the Visual Editor</p></figcaption></figure>
+{% include "../.gitbook/includes/visual-editor-screenshot.md" %}

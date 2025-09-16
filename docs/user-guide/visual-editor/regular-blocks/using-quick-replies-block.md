@@ -1,6 +1,6 @@
 # Using Quick Replies Block
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/quick-replies-block.md" %}
 
 The Quick Replies block enhances chatbot interactions by offering users a quick and pratical way to the user to provide a standard input. Instead of typing a response, users can select from a predefined set of buttons, each representing a specific option or action.&#x20;
 

@@ -1,8 +1,6 @@
 # Using Simple Text Block
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-
-
+{% include "../../../.gitbook/includes/simle-text-block.md" %}
 
 **1. Add the Simple Text Block:**
 

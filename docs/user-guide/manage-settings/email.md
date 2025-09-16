@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Email
 
 Hexabot uses email for various functions, including sending user invitations, confirmations, and automated responses in certain situations, such as consecutive fallbacks. This guide explains how to manage your email settings to enable these functionalities.

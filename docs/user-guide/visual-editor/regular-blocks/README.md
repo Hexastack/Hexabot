@@ -4,7 +4,7 @@ Regular blocks are the most common building blocks that a user might need when c
 
 {% tabs %}
 {% tab title="Simple Text" %}
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/simle-text-block.md" %}
 
 Chatbots receive and react to a significant volume of textual data. Text messages are the primary form of communication between a chatbot and its users. For this purpose, Hexabot provides the **Simple Text block**, prominently featured in the block palette, to facilitate the addition and configuration of straightforward textual conversational paths.
 
@@ -24,7 +24,7 @@ For this reason, Hexabot offers a variety of interaction possibilities and provi
 {% endtab %}
 
 {% tab title="Quick Replies" %}
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/quick-replies-block.md" %}
 
 The Quick Replies block in Hexabot allows you to present users with a predefined set of responses in the form of clickable buttons, eliminating the need for them to manually type their answers. Quick Reply blocks can be configured with conditional triggers, ensuring they are displayed only when certain conditions within the conversation are met. This adds more dynamic control over how Quick Replies are used in your chatbot.
 
@@ -40,7 +40,7 @@ The Quick Replies block in Hexabot allows you to present users with a predefined
 {% endtab %}
 
 {% tab title="Buttons" %}
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/buttons-block.md" %}
 
 The **Buttons block** in Hexabot provides a structured and versatile way to present users with interactive choices within your chatbot conversations. It allows you to display a set of clickable buttons, each representing a distinct action or navigation path. Buttons differ from Quick Replies in their visual layout; while Quick Replies typically appear horizontally, Buttons are usually arranged vertically, making them suitable for presenting a more defined list of options.
 
@@ -54,7 +54,7 @@ Buttons blocks, like Quick Replies, can be configured with conditional triggers,
 {% endtab %}
 
 {% tab title="Attachment" %}
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/attachement-block.md" %}
 
 The **Attachment block** in Hexabot enables you to share files directly within your chatbot conversations, enhancing the user experience with rich media content. Go beyond text-only interactions by sending documents, images, videos, or other relevant files to provide more comprehensive information or a more engaging chatbot experience.
 

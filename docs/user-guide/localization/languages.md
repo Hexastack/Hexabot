@@ -6,7 +6,7 @@ icon: globe
 
 Once you have added multiple languages, your chatbot will dynamically respond to users based on their language preference. If the end-user’s language is detected, the chatbot will automatically switch to that language. Otherwise, the default language will be used.
 
-<figure><img src="../../.gitbook/assets/image (4) (1).png" alt=""><figcaption><p>Manage Languages</p></figcaption></figure>
+<figure><img src="../../.gitbook/assets/a3dfdaf5-5e9f-4d1d-894a-a08d2dbed9c0 (1).png" alt=""><figcaption><p>Manage Languages</p></figcaption></figure>
 
 ### Adding a Language
 

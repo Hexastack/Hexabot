@@ -1,6 +1,6 @@
 # Using Attachment Block
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+{% include "../../../.gitbook/includes/attachement-block.md" %}
 
 The Attachment block in Hexabot allows you to share files with your chatbot users, making your conversations more engaging and informative. You can send PDF documents and image, enhancing the chatbot's ability to provide richer and more comprehensive responses.
 

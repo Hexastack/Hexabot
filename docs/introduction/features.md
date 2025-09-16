@@ -6,11 +6,11 @@ icon: list-ul
 
 Hexabot comes equipped with a comprehensive suite of features to empower your chatbot development:
 
-<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="files"></th></tr></thead><tbody><tr><td>Visual Editor</td><td></td><td><a href="features.md#visual-editor">#visual-editor</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>AI-Powered Interactions</td><td></td><td><a href="features.md#ai-powered-interactions">#ai-powered-interactions</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr><tr><td>Multichannel Communication</td><td></td><td><a href="features.md#multi-channel-communication">#multi-channel-communication</a></td><td><a href="../.gitbook/assets/3.png">3.png</a></td></tr><tr><td>User Segmentation &#x26; Targeting</td><td></td><td><a href="features.md#user-segmentation-and-targeting">#user-segmentation-and-targeting</a></td><td><a href="../.gitbook/assets/4.png">4.png</a></td></tr><tr><td>Knowledge Base</td><td></td><td><a href="../user-guide/knowledge-base/">knowledge-base</a></td><td><a href="../.gitbook/assets/WorkWithPassionBg.7161134c.png">WorkWithPassionBg.7161134c.png</a></td></tr><tr><td>Multi-language Support</td><td></td><td><a href="features.md#multilingual-support-and-translation-management">#multilingual-support-and-translation-management</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>Live Chat &#x26; Agent Takeover</td><td></td><td><a href="features.md#live-chat-and-agent-takeover">#live-chat-and-agent-takeover</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>Extensive Customization using Plugins</td><td></td><td><a href="features.md#extensive-customization-using-plugins">#extensive-customization-using-plugins</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr><tr><td>Analytics and Reporting</td><td></td><td><a href="features.md#analytics-and-reporting-dashboard">#analytics-and-reporting-dashboard</a></td><td><a href="../.gitbook/assets/3.png">3.png</a></td></tr><tr><td>User and Role Management</td><td></td><td><a href="features.md#user-and-role-management">#user-and-role-management</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr></tbody></table>
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="image">Cover image</th></tr></thead><tbody><tr><td>Visual Editor</td><td></td><td><a href="features.md#visual-editor">#visual-editor</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>AI-Powered Interactions</td><td></td><td><a href="features.md#ai-powered-interactions">#ai-powered-interactions</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr><tr><td>Multichannel Communication</td><td></td><td><a href="features.md#multi-channel-communication">#multi-channel-communication</a></td><td><a href="../.gitbook/assets/3.png">3.png</a></td></tr><tr><td>User Segmentation &#x26; Targeting</td><td></td><td><a href="features.md#user-segmentation-and-targeting">#user-segmentation-and-targeting</a></td><td><a href="../.gitbook/assets/4.png">4.png</a></td></tr><tr><td>Knowledge Base</td><td></td><td><a href="../user-guide/knowledge-base/">knowledge-base</a></td><td><a href="../.gitbook/assets/3.png">3.png</a></td></tr><tr><td>Multi-language Support</td><td></td><td><a href="features.md#multilingual-support-and-translation-management">#multilingual-support-and-translation-management</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>Live Chat &#x26; Agent Takeover</td><td></td><td><a href="features.md#live-chat-and-agent-takeover">#live-chat-and-agent-takeover</a></td><td><a href="../.gitbook/assets/1.png">1.png</a></td></tr><tr><td>Extensive Customization using Plugins</td><td></td><td><a href="features.md#extensive-customization-using-plugins">#extensive-customization-using-plugins</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr><tr><td>Analytics and Reporting</td><td></td><td><a href="features.md#analytics-and-reporting-dashboard">#analytics-and-reporting-dashboard</a></td><td><a href="../.gitbook/assets/3.png">3.png</a></td></tr><tr><td>User and Role Management</td><td></td><td><a href="features.md#user-and-role-management">#user-and-role-management</a></td><td><a href="../.gitbook/assets/2.png">2.png</a></td></tr></tbody></table>
 
 ## **Visual Editor**
 
-<figure><img src="../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+{% include "../.gitbook/includes/visuel-editor-with-simple-text-block.md" %}
 
 Construct complex conversation flows effortlessly with our drag-and-drop interface. Choose from a library of pre-built blocks and customize them to meet your specific needs, all without writing a single line of code.
 
@@ -87,7 +87,7 @@ When your chatbot encounters a complex or sensitive issue, Hexabot's Agent Takeo
 
 ## User and Role Management
 
-<figure><img src="../.gitbook/assets/image (20).png" alt=""><figcaption><p>Manage Users</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/a3395a9f-7dba-4f4b-8dd8-46dbc331717f.png" alt=""><figcaption><p>Manage Users</p></figcaption></figure>
 
 Hexabot offers robust user management features that streamline collaboration and enhance security within your chatbot projects. You can effortlessly invite new users to join your workspace, making it easy to bring team members, stakeholders, or clients on board. Invitations are sent directly through the platform, allowing for a smooth onboarding process and immediate engagement with your project.
 
@@ -95,15 +95,11 @@ In addition to inviting users, Hexabot enables you to create custom roles with s
 
 ## **Extensive Customization using Plugins**
 
-<div align="center" data-full-width="false">
-
-<figure><img src="../.gitbook/assets/image (7).png" alt=""><figcaption><p>Use Custom Blocks</p></figcaption></figure>
-
-</div>
+<div align="center" data-full-width="false"><figure><img src="../.gitbook/assets/Screenshot 2025-09-15 at 16-39-05 Hexabot.png" alt=""><figcaption><p>Use Custom Blocks</p></figcaption></figure></div>
 
 Hexabot extends beyond its core features. Developers can leverage our open plugin system to create custom integrations and add new custom blocks to the visual editor's palette. Whether you need to connect with a third-party service, access external data sources, or build entirely unique features, Hexabot's plugin system provides the flexibility to tailor the platform to your specific needs.
 
-Join a growing community of developers and contribute to the Hexabot ecosystem by building and sharing your plugins. We encourages collaboration and innovation, enabling developers to enhance the platform's capabilities and create a rich library of integrations for all Hexabot users to benefit from.
+Join a growing community of developers and contribute to the Hexabot ecosystem by building and sharing your plugins. We encourage collaboration and innovation, enabling developers to enhance the platform's capabilities and create a rich library of integrations for all Hexabot users to benefit from.
 
 {% hint style="info" %}
 Check the [Broken link](broken-reference "mention") to learn more about Hexabot's API and how to develop plugins.

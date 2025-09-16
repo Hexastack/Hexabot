@@ -1,6 +1,6 @@
 # Using Advanced Blocks
 
-<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+{% include "../../.gitbook/includes/list-block.md" %}
 
 The List block in Hexabot provides a dynamic way to showcase a collection of items, options, or information to your users in an organized and engaging manner. You have the flexibility to display your content in either a traditional list format or as a visually appealing carousel.
 

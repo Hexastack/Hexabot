@@ -5,7 +5,11 @@ Hexabot's Global Fallback settings allow you to define a default response that y
 **1. Access Global Fallback Settings:**
 
 * Navigate to the "Settings" section.
-* Select the "Chatbot" view.
+*   Select the "Chatbot" view.\
+    \
+
+
+    <figure><img src="../../.gitbook/assets/image (34).png" alt=""><figcaption></figcaption></figure>
 
 **2. Configure the Global Fallback Message:**
 

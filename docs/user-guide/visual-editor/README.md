@@ -4,7 +4,7 @@ icon: table-columns
 
 # Visual Editor
 
-<figure><img src="../../.gitbook/assets/mediamodifier_image.png" alt=""><figcaption></figcaption></figure>
+{% include "../../.gitbook/includes/visual-editor-ui.md" %}
 
 The visual editor in Hexabot simplifies chatbot creation and optimization through its core feature: the **block palette**. This palette acts as an essential menu, granting control over and configuration of the chatbot's conversational flow. In essence, it provides users with a set of tools in the form of blocks, each designed to perform specific tasks in building the dialogue between the chatbot and its users.
 

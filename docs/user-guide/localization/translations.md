@@ -14,7 +14,12 @@ Expanding your audience and reaching global users is essential for chatbot succe
    * Log in to your Hexabot account.
    * Click on the "Localization" section in the sidebar and navigate to "Translations" page.
 2. **Hit the "Refresh" button :** This will scan the database for all the strings that are being used in blocks (text messages, buttons, quick replies, ...). This action will also remove strings that are not present anymore.
-3. **Choose the Content to Translate:** Click on the "Edit" button of a specific content entry you want to translate.
+3.  **Choose the Content to Translate:** Click on the "Edit" button of a specific content entry you want to translate.\
+
+
+    <figure><img src="../../.gitbook/assets/Screenshot 2025-09-15 at 16-55-40 Hexabot.png" alt=""><figcaption></figcaption></figure>
+
+
 4. **Translate:**
    * You'll see the original text in the source language, alongside fields for entering the translated text for each target language.
    * Enter the accurate translations for each field in your chosen languages.
