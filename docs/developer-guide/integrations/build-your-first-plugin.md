@@ -122,7 +122,7 @@ export default [
 
 Later, the block configuration menu will display these settings, as illustrated below&#x20;
 
-<figure><img src="../../.gitbook/assets/image (30).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/time-Plugin-settings.jpg" alt=""><figcaption></figcaption></figure>
 
 ### Create i18n Folder
 
