@@ -7,7 +7,7 @@
  */
 
 import { faTags } from "@fortawesome/free-solid-svg-icons";
-import { Grid, Paper } from "@mui/material";
+import { Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -216,17 +216,13 @@ export const Labels = () => {
           />
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <Grid>
-            <DataGrid
-              columns={columns}
-              {...dataGridProps}
-              checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
-            />
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid
+          columns={columns}
+          {...dataGridProps}
+          checkboxSelection
+          onRowSelectionModelChange={handleSelectionChange}
+        />
       </Grid>
     </Grid>
   );

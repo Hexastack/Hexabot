@@ -8,7 +8,7 @@
 
 import { faLanguage } from "@fortawesome/free-solid-svg-icons";
 import AutorenewIcon from "@mui/icons-material/Autorenew";
-import { Button, Chip, Grid, Paper, Stack } from "@mui/material";
+import { Button, Chip, Grid, Stack } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -172,14 +172,8 @@ export const Translations = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper>
-          <Grid padding={2} container>
-            <Grid item width="100%">
-              <DataGrid {...dataGridProps} columns={columns} />
-            </Grid>
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid {...dataGridProps} columns={columns} />
       </Grid>
     </Grid>
   );

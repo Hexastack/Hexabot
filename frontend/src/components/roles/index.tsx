@@ -8,7 +8,7 @@
 
 import { faUniversalAccess } from "@fortawesome/free-solid-svg-icons";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -161,10 +161,8 @@ export const Roles = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <DataGrid columns={columns} {...dataGridProps} />
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid columns={columns} {...dataGridProps} />
       </Grid>
     </Grid>
   );

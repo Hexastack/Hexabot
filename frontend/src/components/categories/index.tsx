@@ -7,7 +7,7 @@
  */
 
 import FolderIcon from "@mui/icons-material/Folder";
-import { Grid, Paper } from "@mui/material";
+import { Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -175,17 +175,13 @@ export const Categories = () => {
           </Grid>
         </PageHeader>
       </Grid>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <Grid>
-            <DataGrid
-              columns={columns}
-              {...dataGridProps}
-              checkboxSelection
-              onRowSelectionModelChange={handleSelectionChange}
-            />
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid
+          columns={columns}
+          {...dataGridProps}
+          checkboxSelection
+          onRowSelectionModelChange={handleSelectionChange}
+        />
       </Grid>
     </Grid>
   );

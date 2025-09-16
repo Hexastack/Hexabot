@@ -8,7 +8,7 @@
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DeleteIcon from "@mui/icons-material/Close";
-import { Grid, IconButton, MenuItem, Paper } from "@mui/material";
+import { Grid, IconButton, MenuItem } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 
@@ -222,12 +222,8 @@ export const Subscribers = () => {
           </Input>
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid columns={columns} {...dataGridProps} />
       </Grid>
     </Grid>
   );
