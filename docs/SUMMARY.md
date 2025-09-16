@@ -29,6 +29,7 @@
     * [LLM NLU Engine](user-guide/nlu/nlu-engines/llm-nlu-engine.md)
     * [Ludwig NLU Engine](user-guide/nlu/nlu-engines/ludwig-nlu-engine.md)
     * [Tensorflow NLU Engine](user-guide/nlu/nlu-engines/tensorflow-nlu-engine.md)
+  * [NLU Match Scoring](user-guide/nlu/nlu-match-scoring.md)
 * [NLU Training](user-guide/nlu-training.md)
 * [Knowledge Base](user-guide/knowledge-base/README.md)
   * [Content Types](user-guide/knowledge-base/content-types.md)
