@@ -58,7 +58,6 @@ export const Categories = () => {
       toast.error(error);
     },
     onSuccess: () => {
-      setSelectedCategories([]);
       toast.success(t("message.item_delete_success"));
     },
   };
