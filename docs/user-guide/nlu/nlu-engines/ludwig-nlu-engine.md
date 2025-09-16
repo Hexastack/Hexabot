@@ -30,10 +30,14 @@ hexabot init
 npm i
 ```
 
+{% hint style="info" %}
+Update the `HF_AUTH_TOKEN` in the `.env` file within the `docker` folder to use models from Hugging Face. For guidance on generating a personal token, refer to the [Hugging Face documentation](https://huggingface.co/docs/hub/security) &#x20;
+{% endhint %}
+
 * Kickstart your newly created chatbot by running:&#x20;
 
 ```bash
-hexabot dev --services ludwig-nlu,ollama
+hexabot dev --services ludwig-nlu
 ```
 
 ## Configuring the Ludwig NLU Engine
