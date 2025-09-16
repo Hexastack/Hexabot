@@ -6,28 +6,24 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Avatar,
-  Conversation,
-  ConversationList,
-} from "@chatscope/chat-ui-kit-react";
+import { Conversation, ConversationList } from "@chatscope/chat-ui-kit-react";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import { useConfig } from "@/hooks/useConfig";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
-import { EntityType, RouterType } from "@/services/types";
+import { RouterType } from "@/services/types";
 import { SearchPayload } from "@/types/search.types";
 import { ISubscriber } from "@/types/subscriber.types";
 import { normalizeDate } from "@/utils/date";
 
-import { getAvatarSrc } from "../helpers/mapMessages";
 import { useChat } from "../hooks/ChatContext";
 import { useInfiniteLiveSubscribers } from "../hooks/useInfiniteLiveSubscribers";
 import { AssignedTo } from "../types";
+
+import { Avatars } from "./Avatars";
 
 export const SubscribersList = (props: {
   channels: string[];
@@ -36,7 +32,6 @@ export const SubscribersList = (props: {
 }) => {
   const router = useRouter();
   const subscriber = router.query.subscriber?.toString() || null;
-  const { apiUrl } = useConfig();
   const { t, i18n } = useTranslate();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
@@ -92,9 +87,7 @@ export const SubscribersList = (props: {
               key={subscriber.id}
               active={chat.subscriber?.id === subscriber.id}
             >
-              <Avatar
-                src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
-              />
+              {Avatars({ subscriber })}
               <Conversation.Content>
                 <div>
                   {subscriber.first_name} {subscriber.last_name}
