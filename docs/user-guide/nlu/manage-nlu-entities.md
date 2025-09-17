@@ -67,3 +67,47 @@ Once you click the “**Values**” icon, a new data grid will display the possi
 * Use the Delete icon to remove a value permanently.
 
 This flexible management system ensures Hexabot’s NLU remains robust, adaptable, and capable of handling a wide range of conversational scenarios.
+
+### Bulk Import of NLU Entities and Values
+
+Hexabot provides a bulk import feature that allows you to import NLU training data from CSV files, automatically creating entities and values as needed. This feature streamlines the process of populating your NLU system with large datasets.
+
+#### To access the bulk Import feature navigate to the NLU management view:
+
+1. Open the main side menu and select the "NLU" Page.
+2. Go to the "NLP Samples" tab.
+3. Look for the "Import" button in the action buttons area.
+
+{% include "../../.gitbook/includes/nlu-samples-tab.md" %}
+
+#### CSV File Format
+
+The CSV file must follow a specific format with the following columns:
+
+* **text** (required): The training text or user input sample
+* **intent** (required): The primary intent or entity name
+* **language** (required): The language code (e.g., "en", "fr", "es")
+
+Additional columns can be added for other entities, where the column header becomes the entity name and the cell values become the entity values.
+
+#### Example CSV Format
+
+```csv
+text,intent,language,destination,time
+"Hello, I want to book a flight tomorrow to Paris.",book_flight,en,Paris,tomorrow
+"I need a taxi to downtown now",book_taxi,en,downtown,now,
+```
+
+#### How the Import Process Works
+
+1. **NLU Entity Creation**: If an entity mentioned in the CSV doesn't exist, Hexabot automatically creates it with the "trait" lookup strategy.
+2. **NLU Value Creation**: For each unique value in an entity column, Hexabot creates the corresponding entity value if it doesn't already exist.
+3. **NLU Sample Creation**: Each row becomes a new NLU sample.  If a NLU sample with identical text already exists, it will be skipped to avoid duplicates.
+
+#### Sample Dataset
+
+For quick setup and testing, you can use our published small talk dataset available on HuggingFace. This dataset contains basic small talk intents in both French and English languages, providing a ready-to-use starting point for your chatbot's conversational capabilities.
+
+**Dataset:** [Hexastack/hexabot-smalltalk](https://huggingface.co/datasets/Hexastack/hexabot-smalltalk)
+
+The dataset includes common conversational intents such as greetings, farewells, expressions of gratitude, and general inquiries. You can download the CSV files directly from HuggingFace and import them using the bulk import feature described above.\
