@@ -10,7 +10,27 @@ This interactive tutorial will guide you through the process of building your fi
 
 This is just a basic example to get you started. Hexabot offers a wide range of features and blocks to create more complex and engaging chatbot flows. Explore the different block types, experiment with NLU features, and integrate with your content sources to build a chatbot that truly meets your needs.
 
-#### 0. Enter your login credentials.
+{% hint style="warning" %}
+## **Prerequisites**
+
+Before you begin creating conversation flows with NLU triggers, ensure you have the following prerequisites in place:
+
+#### 1. Configured NLU Engine
+
+You need a fully configured and running NLU (Natural Language Understanding) engine to use intent-based triggers in your conversation flows. The NLU engine is responsible for understanding user intents from natural language input. For detailed instructions on configuring your NLU engine refer to our [NLU Engines](../user-guide/nlu/nlu-engines/) documentation page.
+
+#### 2. Populated NLU Entities Database
+
+Your NLU entities database should be populated with the necessary entities and values that your chatbot will use to extract information from user messages. This includes defining entity types (Trait, Keyword, or Pattern entities) and their associated values.
+
+For detailed instructions managing NLU entities, refer to our [Manage NLU Entities](../user-guide/nlu/manage-nlu-entities.md) documentation page.
+
+
+
+**Without a properly configured NLU engine and populated entities database, NLU-based triggers (like "Intent Match") will not function correctly in your conversation flows.**
+{% endhint %}
+
+#### **0. Ent**er your login credentials.
 
 {% hint style="info" %}
 Default admin account credentials are&#x20;
