@@ -57,7 +57,7 @@ function DialogsProvider(props: DialogProviderProps) {
       payload: P,
       options: OpenDialogOptions<R> = {},
     ) {
-      const { onClose = async () => {}, ...rest } = options;
+      const { onClose = async () => {}, isSingleton, ...rest } = options;
       let resolve: ((result: R) => void) | undefined;
       const promise = new Promise<R>((resolveImpl) => {
         resolve = resolveImpl;
@@ -82,7 +82,7 @@ function DialogsProvider(props: DialogProviderProps) {
         msgProps: rest,
       };
 
-      if (selectComponent !== Component || !rest.isSingleton) {
+      if (selectComponent !== Component || !isSingleton) {
         selectComponent = Component;
         setStack((prevStack) => [...prevStack, newEntry]);
       }
