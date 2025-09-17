@@ -1,3 +1,7 @@
+---
+noIndex: true
+---
+
 # NLU
 
 {% hint style="info" %}

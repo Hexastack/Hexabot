@@ -1,6 +1,7 @@
 ---
-icon: message
 hidden: true
+noIndex: true
+icon: message
 ---
 
 # Hexabot Live Chat Widget
