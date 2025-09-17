@@ -5,8 +5,6 @@ icon: server
 
 # Hexabot API
 
-## Hexabot API
-
 [Hexabot](https://hexabot.ai/)'s API is a RESTful API built with NestJS, designed to handle requests from both the UI admin panel and various communication channels. The API powers core functionalities such as chatbot management, message flow, NLU (Natural Language Understanding), and plugin integrations.
 
 ### Key Features

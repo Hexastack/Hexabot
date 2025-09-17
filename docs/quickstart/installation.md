@@ -71,6 +71,10 @@ hexabot init
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
+{% hint style="info" %}
+You can find more about the Hexabot CLI command [here](../developer-guide/cli-command-reference.md).
+{% endhint %}
+
 6. **Run in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
 ```
@@ -105,6 +109,6 @@ adminadmin
 ```
 {% endcode %}
 
-{% hint style="info" %}
-You can find more about the Hexabot CLI command [here](../developer-guide/cli-command-reference.md).
+{% hint style="danger" %}
+&#x20;**Security**: The default credentials are for local development only. If you expose the app outside localhost or run in production, create an admin user and change the password immediately. Do not keep default credentials enabled.
 {% endhint %}

@@ -40,7 +40,7 @@ This command will download and install the Gemini plugin and all related depende
 ### **Important Notes:**
 
 * **Dependency Management:** During the installation process, npm will automatically handle any plugin dependencies (other packages that the plugin relies on), making setup seamless.
-* **Plugin Activation**: No additional activation step is needed, once you install the plugin, the related custom block will automatically be added to the Visual Editor.
+* **Plugin Activation**: No additional activation step is needed, once you install the plugin, the related custom block will automatically be added to the Visual Editor. Refer to each plugin’s README for any post-install steps.
 * **Reporting Issues:** If you encounter any problems during installation, please report it to the plugin's repository or the Hexabot community. This is important to improve the plugin's stability and availability for all users.
 
 ### **Using the Installed Plugin**

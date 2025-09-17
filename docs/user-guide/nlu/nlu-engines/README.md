@@ -30,7 +30,7 @@ Uses [Ludwig](https://ludwig.ai/latest/), a low-code AI framework, to help you b
 
 * Requires some understanding of AI concepts to configure effectively.
 
-### Tensorflow NLU Engine
+### TensorFlow NLU Engine
 
 A Python boilerplate that we built ourselves is provided to facilitate the development of TensorFlow-based models. This could be suitable for experienced data scientists who want full control over their AI pipeline.
 

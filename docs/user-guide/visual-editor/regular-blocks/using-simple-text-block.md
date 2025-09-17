@@ -9,9 +9,9 @@
 
 **2. Connect the Block:**
 
-* **Start of a Flow:** If the "Simple Text "block is the beginning of your conversation, it doesn't need to be connected to another block. It will be the first message the user receives when they interact with the chatbot. You just need to toggle on the ![](<../../../.gitbook/assets/image (17).png>) "**Entrypoint**" option.
+* **Start of a Flow:** If a "Simple Text" block is the first step in your flow, enable the ![](<../../../.gitbook/assets/image (17).png>)  "**Entrypoint**" option to mark it as the starting point in your conversation flow. You just need to toggle on the "**Entrypoint**" option in the block edit form to designate it as the starting point in your conversation flow.
 * **Continuing a Flow:** If the block is part of a longer conversation, connect it to the preceding block to define when the text message should be sent. This connection could be from any type of block, like a Quick Replies block, a User Input block, or another Simple Text block. Each block has a single input port and two types of output ports :&#x20;
-  * ![](<../../../.gitbook/assets/image (15).png>) **Next/Previous Block(s) Port:** Defines which block(s) should be triggered next depending on the user input/reply.
+  * ![](<../../../.gitbook/assets/image (15).png>) **Next/Previous Block(s) Port:** Defines which block(s) should be triggered next, depending on the user input/reply.
   * ![](<../../../.gitbook/assets/image (16).png>) **Attached Block Port:** This should be used if you would like to send subsequent messages.
 
 **3. Configure the Text Message:**
@@ -23,10 +23,10 @@
   * You can use triggers based on the user's previous message, the presence of specific data, or other contextual factors.
   * You can also choose to target users by a specific label or limit the block scope to a given channel.
 * **Message Tab:**
-  * Enter the text message you want to send to the user in the "Message" field.
-  * You can define one or multiple text message and the chatbot will send randomly one of them.
+  * Enter the text you want to send to the user in the "Message" field.
+  * You can define one or multiple text message, the chatbot will randomly send one of them.
 * **Options Tab (Optional):**
-  * **Typing Indicator:** Choose whether to show a typing indicator before sending the message, making the interaction feel more human-like.
+  * **Typing Indicator:** Show a typing indicator before sending the message.
   * **Assign Labels:** Associate the block with specific user labels. This enables you to send different messages to users based on their categories or characteristics.
   * **Fallback Responses:** Define messages to send if the user's input doesn't meet any defined triggers, preventing dead ends in the conversation.
 

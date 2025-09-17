@@ -22,7 +22,7 @@ The Knowledge Base allows you to organize your chatbot's content into different 
 
 * **Locate the Content Type:** Find the content type you just created in the list of available content types within the Knowledge Base.
 * **Access Field Management:** Look for the "Manage Content" option
-* **Add New Field:** In addition to the default "Title" and "Status" fields, click +ADD button to create a new field and configure the following: Click a button to create a new field and configure the following:
+* **Add New Field:** In addition to the default "Title" and "Status" fields, click +ADD button to create a new field and configure the following:&#x20;
   * **Field Label:** This is the display name for the field, the name that will be visible to users. Choose a clear and descriptive label, e.g., "Product Name," "Description," "Price."
   * **Field Name:** This is a unique identifier for the field. It is **auto-generated** from the Field Label and does not need to be manually entered.
   * **Field Type:** Select the appropriate data type for the field from the following options:
@@ -34,6 +34,8 @@ The Knowledge Base allows you to organize your chatbot's content into different 
     * **File:** For uploading files (documents, images, etc.).
     * **HTML:** For adding content with HTML formatting.
   * **Save Field Changes:** After configuring the field, click the "Submit" button to confirm your changes.
+
+{% include "../../.gitbook/includes/add-new-content-type-form.md" %}
 
 **4. Manage Existing Fields:**
 

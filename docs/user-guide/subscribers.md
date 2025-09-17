@@ -8,7 +8,7 @@ In Hexabot, we define a subscriber as then end-user who will ultimately interact
 
 **1. Access Subscriber Management:**
 
-* Find the "Manage Subscribers" section within dashboard.
+* Open the "Manage Subscribers" page from sidebar menu.
 
 **2. Viewing Your Subscriber List:**
 

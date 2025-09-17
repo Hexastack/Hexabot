@@ -13,16 +13,16 @@ The List block is ideal when you need to:
 
 
 
-**2. Add the List Block:**
+**1. Add the List Block:**
 
-* Find the "List" block in the block palette within the Visual Editor. It may be located in a section categorized as "Advanced" or "Specialized" blocks.
+* Find the "List" block in the block palette within the Visual Editor.&#x20;
 * Drag and drop the List block onto the canvas, placing it at the desired point in the conversation flow where you want the list to be displayed.
 
-**3. Connect the Block:**
+**2. Connect the Block:**
 
 * **Preceding Connection:** Connect the List block to the block that precedes it in the conversation flow. This connection determines when the list will be shown to the user. It can be linked to any block that prompts user interaction or provides information, such as a Simple Text block or a Quick Replies block.
 
-**4. Configure the List:**
+**3. Configure the List:**
 
 * **Select the Block:** Click on the List block on the canvas.
 * **Click "Edit":** The configuration panel for the List block will open, allowing you to customize the list's appearance and content.
@@ -41,7 +41,7 @@ The List block is ideal when you need to:
   * **Pagination:** If you have a large number of items, enable pagination to break the list into manageable chunks.
   * **Other Options:** Configure typing indicator delay, label targeting, and fallback responses as needed.
 
-**5. Save and Test:**
+**4. Save and Test:**
 
 * Click "Save" to store your changes to the List block.
 * Test the conversation flow in the "Live Chat Tester" or through your connected messaging channels to ensure the List block is working correctly.

@@ -16,7 +16,7 @@ Hexabot's Global Fallback settings allow you to define a default response that y
 * **Enter Fallback Message:** Type the message you want your chatbot to send when it encounters a fallback situation. This message should be polite, informative, and helpful.
 * **Example:**
   * "I'm not sure if I understand your request. Could you please rephrase it?"
-  * "Sorry but i didn't understand your request. Maybe you can check the menu"
+  * "Sorry, but I didn't understand your request. Maybe you can check the menu"
 
 **3. (Optional) Configure Fallback Triggers:**
 

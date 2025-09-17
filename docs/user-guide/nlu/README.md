@@ -4,7 +4,7 @@ icon: brain-circuit
 
 # NLU
 
-### What is NLU?
+## What is NLU?
 
 Natural Language Understanding (NLU) is a subfield of Artificial Intelligence (AI) focused on enabling machines to comprehend and interpret human language in a meaningful way. In Hexabot, the NLU engine can be used for example to:
 
@@ -14,7 +14,7 @@ Natural Language Understanding (NLU) is a subfield of Artificial Intelligence (A
 * **Sentiment Analysis:** Assess the emotional tone behind user inputs, which can guide responses or trigger appropriate actions.
 * **Entity Recognition:** Identify named entities such as dates, numbers, and other contextual markers using libraries like Duckling.
 
-### The Role of NLU in AI Safety
+## The Role of NLU in AI Safety
 
 Hexabot embraces a safety-first approach to AI, advocating for responsible AI usage that prioritizes user protection over convenience. By leveraging NLU as the first step in the conversational pipeline, Hexabot ensures:
 
@@ -22,7 +22,7 @@ Hexabot embraces a safety-first approach to AI, advocating for responsible AI us
 * **Context Awareness:** The bot maintains contextual understanding through structured NLU processing, enhancing conversational accuracy.
 * **Accountability:** NLU provides a traceable layer of logic that helps audit decisions, making Hexabot’s operation transparent and trustworthy.
 
-### Why is NLU is Important?
+## Why is NLU is Important?
 
 Hexabot prioritizes AI safety and precision in understanding user interactions. The role of the NLU engine is critical for several reasons:
 

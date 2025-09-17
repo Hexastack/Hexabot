@@ -60,16 +60,16 @@ Once you have built the widget, embedding it on any webpage is straightforward. 
 If you want to use the official widget and receive updates automatically, you can use the following CDN URL:
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2.0.4/dist/"></script>
+<script src="https://cdn.jsdelivr.net/npm/hexabot-chat-widget@latest/dist/"></script>
 ```
 
-Or the latest version:
+Or, you can indicate a specific version by replacing the latest tag with the widget version tag:
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2/dist/"></script>
+<script src="https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2.2.10/dist/"></script>
 ```
 
-These scripts will load the Hexabot widget directly from the JsDelivr CDN, which pulls from the package published on the [NPM registry](https://www.npmjs.com/package/hexabot-widget).
+These scripts will load the Hexabot widget directly from the JsDelivr CDN, which pulls from the package published on the [NPM registry](https://www.npmjs.com/package/hexabot-chat-widget).
 
 ### Widget Settings
 

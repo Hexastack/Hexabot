@@ -62,5 +62,5 @@ Once the block gets triggered, the value will be stored within the context varia
 {% hint style="info" %}
 **Additional Notes**
 
-Context variables are temporary and are specific to a single conversation. They are not shared between different conversations.
+**Non‑permanent** context variables are specific to a single conversation. **Permanent context** variables persist across conversations for the same subscriber.
 {% endhint %}

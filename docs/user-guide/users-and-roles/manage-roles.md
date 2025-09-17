@@ -8,12 +8,12 @@ Roles in Hexabot define specific sets of permissions that determine what actions
 * Go to "Users" or "User Management" section.
 * Look for "Roles" or "Role Management" within the user management settings.
 
-**2. Creating New Roles:**
+**2. Creating New Role:**
 
 * **Click  "+ Add "** This will open a form where you can define the new role.
 * **Enter Role Name:** Provide a clear and descriptive name for the role, like "Developer," "Content Manager," "Project Manager," etc.
 
-Step 3 - **Grant Permissions**
+**3. Grant Permissions**
 
 Newly created roles will initially have no granted permissions. Click the "Permissions" button to grant access to your new role or update the permissions for an existing role.
 

@@ -72,7 +72,7 @@ Here’s a brief overview of how you might use Ludwig in conjunction with Hexabo
 * **Training Models:** Ludwig uses your training data and the configuration you provide to train the model, generating a model that you can then host and use for inference in Hexabot, locally or using a cloud based model.
 * **HuggingFace Integration:** You can also directly utilize models from HuggingFace by referencing their names in the Ludwig configuration. This makes using the state-of-the-art models very simple for experimentation.
 
-For in-depth understanding on how to use Ludwig, please refer to its official documentation: [https://ludwig.ai](https://www.google.com/url?sa=E\&q=https%3A%2F%2Fludwig.ai%2Flatest%2F).
+For in-depth understanding on how to use Ludwig, please refer to its official documentation: [https://ludwig.ai](https://ludwig.ai/).
 
 {% hint style="info" %}
 The Ludwig NLU Engine supports inference using both Hugging Face models and locally trained models. Each prediction logs a confidence score to provide insight into its reliability. **The Ludwig NLU engine in the Hexabot starter template is pre-configured to use two Hugging Face models developed by the Hexabot team that demonstrates** [intent detection](https://huggingface.co/Hexastack/intent-classifier-lstm) and [language classification](https://huggingface.co/Hexastack/language-classifier-cnn)**. These models serve as an example to help you get started. Keep in mind that for real use cases, you may need to define and train your own models based on your dataset to better suit your needs**.\

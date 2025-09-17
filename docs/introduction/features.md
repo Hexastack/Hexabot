@@ -32,7 +32,7 @@ Construct complex conversation flows effortlessly with our drag-and-drop interfa
 Hexabot leverages cutting-edge NLU technology, to understand user intent, extract key information from messages, and tailor personalized responses. This allows for more natural and engaging conversations.
 
 {% hint style="info" %}
-**What is NLU ?** In simple terms, NLU is a branch of AI that focuses on enabling computers to understand, interpret, and respond to human language in a way that is both meaningful and useful. You can read more about NLU in the [Broken link](broken-reference "mention") section.
+**What is NLU ?** In simple terms, NLU enables computers to understand, interpret, and respond to human natural language. You can read more about NLU in the [nlu](../user-guide/nlu/ "mention") section.
 {% endhint %}
 
 * **Intent Recognition:** Hexabot's NLU engine analyzes user messages to identify the underlying intent. This understanding drives the chatbot's ability to provide relevant responses and trigger specific actions.
@@ -102,7 +102,7 @@ Hexabot extends beyond its core features. Developers can leverage our open plugi
 Join a growing community of developers and contribute to the Hexabot ecosystem by building and sharing your plugins. We encourage collaboration and innovation, enabling developers to enhance the platform's capabilities and create a rich library of integrations for all Hexabot users to benefit from.
 
 {% hint style="info" %}
-Check the [Broken link](broken-reference "mention") to learn more about Hexabot's API and how to develop plugins.
+Check the [extensions.md](../developer-guide/extensions.md "mention") page and [hexabot-plugin-development.md](../developer-guide/integrations/hexabot-plugin-development.md "mention") guide to learn more about how to develop Hexabot plugins.
 {% endhint %}
 
 ## **Analytics and Reporting Dashboard**

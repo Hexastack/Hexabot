@@ -2,7 +2,7 @@
 icon: handshake-angle
 ---
 
-# Contributers Installation Guide
+# Contributors Installation Guide
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ To ensure Hexabot runs smoothly, you'll need the following:
 
 1. **Clone the Repository:**
 
-```
+```bash
 $ git clone https://github.com/hexastack/hexabot.git
 ```
 
@@ -23,25 +23,25 @@ $ git clone https://github.com/hexastack/hexabot.git
 
 Install Hexabot CLI and node dependencies:
 
-```
+```bash
 $ npm i -g hexabot-cli
 $ cd hexabot/
 $ npm i
 ```
 
-2. **Environment Setup:**&#x20;
+3. **Environment Setup:**&#x20;
 
 To configure the environment variables, use the Makefile at the root folder for initialization:
 
-```
+```bash
 $ hexabot init
 ```
 
 This will copy the `.env.example` file to `.env` in the `./docker` directory if the file does not already exist.
 
-3. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use the following command:
+4. **Running the Application in development mode:** Once your environment is set up, you can start the app. Use the following command:
 
-```
+```bash
 $ hexabot dev
 ```
 

@@ -61,7 +61,7 @@ Extensions published on [hexabot.ai/extensions](https://hexabot.ai/extensions) a
 
 ### Types of Extensions
 
-#### ![](../.gitbook/assets/image.png)Channels&#x20;
+#### ![](<../.gitbook/assets/image (1).png>)Channels&#x20;
 
 A **channel** enables your AI bot to be accessible through various mediums, making it available to interact with users via different platforms or devices. Channels extend the reach of your bot to:
 
@@ -73,7 +73,7 @@ A **channel** enables your AI bot to be accessible through various mediums, maki
 
 Essentially, channels allow your agent to communicate in diverse environments, ensuring seamless accessibility for end-users.
 
-#### ![](<../.gitbook/assets/image (1).png>)Plugins
+#### ![](<../.gitbook/assets/image (1) (1).png>)Plugins
 
 **Plugins** add new features and capabilities directly to the conversational AI system. The primary type of plugin currently available is the "**Block Plugin**", which allows you to introduce custom blocks in the visual editor. These blocks:
 
