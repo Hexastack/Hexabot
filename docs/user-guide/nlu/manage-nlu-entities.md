@@ -1,6 +1,6 @@
 # Manage NLU Entities
 
-In Hexabot’s NLU engine, entities play a crucial role in extracting meaningful information from user inputs. Entities can be categorized into two types: **Trait Entities** and **Keyword Entities**. These entity types provide flexibility and depth in understanding user inputs, enabling Hexabot to process both high-level intentions and granular details.
+In Hexabot’s NLU engine, entities play a crucial role in extracting meaningful information from user inputs. Entities can be categorized into three types: [**Trait Entities**](manage-nlu-entities.md#trait-entities)**,** [**Keyword Entities**](manage-nlu-entities.md#keyword-entities) and [**Pattern Entities**](manage-nlu-entities.md#pattern-entities). These entity types provide flexibility and depth in understanding user inputs, enabling Hexabot to process both high-level intentions and granular details.
 
 ### Trait Entities
 
@@ -42,7 +42,6 @@ Pattern entities support several preprocessing options to handle common text var
 * **Phone Numbers**: `(\+?\d{1,3}[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})` - Captures various phone number formats like +1-555-123-4567, (555) 123-4567, or 555.123.4567
 * **Email Addresses**: `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` - Matches standard email formats
 * **Dates**: `\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b` - Captures dates in MM/DD/YYYY or DD-MM-YYYY format
-* **Credit Card Numbers**: `\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b` - Matches credit card numbers with optional separators
 
 ### Manage NLU Entities
 

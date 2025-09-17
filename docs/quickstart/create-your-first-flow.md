@@ -128,7 +128,7 @@ Pa**ssword :** adminadmin
 
 ![](<../.gitbook/assets/Screenshot from 2024-12-16 08-28-53.png>)
 
-#### 23. We've previously created a new intent in our NLU provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to train Hexabot's NLU engine. Learn more about this feature in the [nlu-training.md](../user-guide/nlu-training.md "mention") guide:
+#### 23. We've previously created a new intent in our NLU provider, specifically designed to identify when a user inquires about our return policy. If you want to use this intent or define a new one in your own chatbot, you'll need to configure Hexabot's NLU engine first. Learn more about this feature in the [nlu](../user-guide/nlu/ "mention") user guide:
 
 ![](<../.gitbook/assets/Screenshot from 2024-12-16 09-41-35.png>)
 

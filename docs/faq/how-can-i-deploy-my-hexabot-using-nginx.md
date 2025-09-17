@@ -11,7 +11,7 @@ This documentation outlines two methods for deploying your Hexabot project in a 
 1. [**Method 1: Using Nginx as a service and Certbot for SSL**](how-can-i-deploy-my-hexabot-using-nginx.md#method-1-using-nginx-as-a-service-and-certbot-for-ssl)
 2. [**Method 2: Using Dockerized Nginx and Certbot services**](how-can-i-deploy-my-hexabot-using-nginx.md#method-2-using-dockerized-nginx-and-certbot-services)
 
-### Pre-requisites
+### Prerequisites
 
 Before starting, ensure you have the following:
 
