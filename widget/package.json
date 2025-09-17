@@ -44,5 +44,8 @@
   "optionalDependencies": {
     "@esbuild/darwin-arm64": "^0.24.0",
     "@rollup/rollup-darwin-arm64": "^4.24.0"
+  },
+  "engines": {
+    "node": "^20.18.1"
   }
 }
