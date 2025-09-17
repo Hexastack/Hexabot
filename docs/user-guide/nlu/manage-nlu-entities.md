@@ -4,6 +4,8 @@ In Hexabot’s NLU engine, entities play a crucial role in extracting meaningful
 
 ### Trait Entities
 
+{% include "../../.gitbook/includes/add-edit-nlu-trait-value-form.md" %}
+
 Trait entities are inferred by analyzing the entire sentence or the overall context of the input. These entities represent high-level attributes or characteristics of the input and are not tied to specific words or phrases. Below some examples:
 
 <table><thead><tr><th width="129">Entity</th><th width="185">Description</th><th width="192">Text</th><th>Value</th></tr></thead><tbody><tr><td>Intent</td><td>The purpose of the user’s input.</td><td>"<em>Hello</em>"</td><td>greeting</td></tr><tr><td>Intent</td><td>The purpose of the user’s input.</td><td>"<em>I want to book a flight</em>"</td><td>book_flight</td></tr><tr><td>Sentiment</td><td>The emotional tone behind the input.</td><td>"<em>I’m really frustrated with my current plan.</em>"</td><td>negative</td></tr><tr><td>Urgency</td><td>An attribute that determines the priority of the input.</td><td>"<em>I need help right away!</em>"</td><td>high</td></tr></tbody></table>
@@ -11,6 +13,8 @@ Trait entities are inferred by analyzing the entire sentence or the overall cont
 Trait entities allow Hexabot to grasp the overarching context of the input, providing a deeper understanding that informs appropriate responses and actions.
 
 ### Keyword Entities
+
+{% include "../../.gitbook/includes/add-edit-keyword-entity-form.md" %}
 
 Keyword entities are specific words or phrases extracted from the input to identify important attributes and convert unstructured data into structured information. These entities are tied to identifiable patterns or specific terms within the user input. Below some examples:
 
@@ -20,9 +24,31 @@ Keyword entities are specific words or phrases extracted from the input to ident
 | Product  | Recognizing product names or types.                                       | "_I’m interested in buying the **iPhone 15**."_ | iPhone 15 |
 | Topic    | Detecting specific keywords that activate certain workflows or responses. | "_Show me the latest **offers**."_              | offers    |
 
+### Pattern Entities
+
+{% include "../../.gitbook/includes/add-edit-pattern-entity-form.md" %}
+
+Pattern entities use regular expressions (regex) to extract structured information from user inputs through flexible pattern matching. Unlike keyword entities that require exact matches, pattern entities can capture variations in format and structure, making them ideal for extracting things like phone numbers, email addresses, dates, or any text that follows a predictable pattern.
+
+Pattern entities support several preprocessing options to handle common text variations:
+
+* **Word Boundary Matching**: Ensures patterns match complete words rather than partial substrings
+* **Space Removal**: Strips whitespace from matched text for cleaner extraction
+* **Case Normalization**: Converts matched text to lowercase for consistent processing
+* **Diacritic Stripping**: Removes accent marks and special characters for language-agnostic matching
+
+#### Examples of Pattern Entities:
+
+* **Phone Numbers**: `(\+?\d{1,3}[-.\s]?)?\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})` - Captures various phone number formats like +1-555-123-4567, (555) 123-4567, or 555.123.4567
+* **Email Addresses**: `[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}` - Matches standard email formats
+* **Dates**: `\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b` - Captures dates in MM/DD/YYYY or DD-MM-YYYY format
+* **Credit Card Numbers**: `\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b` - Matches credit card numbers with optional separators
+
 ### Manage NLU Entities
 
 Hexabot provides an intuitive interface to manage NLU entities efficiently, allowing you to create, update, and administer both Trait and Keyword entities. Follow these steps to manage NLU entities:
+
+
 
 1. **Navigate to the NLU Section**
 
@@ -32,11 +58,11 @@ Hexabot provides an intuitive interface to manage NLU entities efficiently, allo
 2. **View the Entities List**
 
 * A data grid will display all the existing entities, including both Trait and Keyword entities.
-* Use the search bar to find specific entities or navigate through the list using pagination.
+* Use the search bar to find specific entities, or navigate through the list using pagination.
 
 3. **Add New Entities**
 
-* Click on the ”**+ Add**” button to create a new entity.
+* Click on the "**+ Add**" button to create a new entity.
 * Choose the type of entity by selecting the **Lookup Strategy**: **Trait** or **Keyword**.
 * Fill in the required fields:
   * **Name**: The unique identifier for the entity.
@@ -46,7 +72,7 @@ Hexabot provides an intuitive interface to manage NLU entities efficiently, allo
 4. **Update or Delete Entities**
 
 * Locate the entity you want to modify.
-* Click on the Edit icon to update its details or the Delete icon to remove the entity permanently.
+* Click on the Edit icon to update its details, or the Delete icon to remove the entity permanently.
 
 5. **Administer Entity Values**
 
