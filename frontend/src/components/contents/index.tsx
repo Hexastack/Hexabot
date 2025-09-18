@@ -8,7 +8,7 @@
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Button, Chip, Grid, Paper, Switch, Typography } from "@mui/material";
+import { Button, Chip, Grid, Switch, Typography } from "@mui/material";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
@@ -180,85 +180,75 @@ export const Contents = () => {
           </Grid>
         </PageHeader>
       </Grid>
-      <Grid item>
-        <Paper>
-          <Grid padding={2} container>
-            <Grid item width="100%">
-              <DataGrid<IContent>
-                {...dataGridProps}
-                disableColumnFilter
-                showCellVerticalBorder={false}
-                showColumnVerticalBorder={false}
-                sx={{ border: "none" }}
-                columns={[
-                  { field: "title", headerName: t("label.title"), flex: 1 },
-                  {
-                    field: "entity",
-                    headerName: t("label.entity"),
-                    flex: 1,
-                    valueGetter: (entityId) => {
-                      const contentType = getEntityFromCache(entityId);
+      <Grid xs={12}>
+        <DataGrid<IContent>
+          {...dataGridProps}
+          disableColumnFilter
+          showCellVerticalBorder={false}
+          showColumnVerticalBorder={false}
+          columns={[
+            { field: "title", headerName: t("label.title"), flex: 1 },
+            {
+              field: "entity",
+              headerName: t("label.entity"),
+              flex: 1,
+              valueGetter: (entityId) => {
+                const contentType = getEntityFromCache(entityId);
 
-                      return contentType?.name;
-                    },
-                  },
-                  {
-                    maxWidth: 120,
-                    field: "status",
-                    headerName: t("label.status"),
-                    disableColumnMenu: true,
-                    renderHeader,
-                    headerAlign: "left",
-                    renderCell: (params) => (
-                      <Switch
-                        checked={params.value}
-                        color="primary"
-                        inputProps={{ "aria-label": "primary checkbox" }}
-                        disabled={
-                          !hasPermission(
-                            EntityType.CONTENT,
-                            PermissionAction.UPDATE,
-                          )
-                        }
-                        onChange={() => {
-                          updateContent({
-                            id: params.row.id,
-                            params: {
-                              status: !params.row.status,
-                            },
-                          });
-                        }}
-                      />
-                    ),
-                  },
-                  {
-                    maxWidth: 140,
-                    field: "createdAt",
-                    headerName: t("label.createdAt"),
-                    disableColumnMenu: true,
-                    renderHeader,
-                    resizable: false,
-                    headerAlign: "left",
-                    valueGetter: (params) =>
-                      t("datetime.created_at", getDateTimeFormatter(params)),
-                  },
-                  {
-                    maxWidth: 140,
-                    field: "updatedAt",
-                    headerName: t("label.updatedAt"),
-                    disableColumnMenu: true,
-                    renderHeader,
-                    resizable: false,
-                    headerAlign: "left",
-                    valueGetter: (params) =>
-                      t("datetime.updated_at", getDateTimeFormatter(params)),
-                  },
-                  actionColumns,
-                ]}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+                return contentType?.name;
+              },
+            },
+            {
+              maxWidth: 120,
+              field: "status",
+              headerName: t("label.status"),
+              disableColumnMenu: true,
+              renderHeader,
+              headerAlign: "left",
+              renderCell: (params) => (
+                <Switch
+                  checked={params.value}
+                  color="primary"
+                  inputProps={{ "aria-label": "primary checkbox" }}
+                  disabled={
+                    !hasPermission(EntityType.CONTENT, PermissionAction.UPDATE)
+                  }
+                  onChange={() => {
+                    updateContent({
+                      id: params.row.id,
+                      params: {
+                        status: !params.row.status,
+                      },
+                    });
+                  }}
+                />
+              ),
+            },
+            {
+              maxWidth: 140,
+              field: "createdAt",
+              headerName: t("label.createdAt"),
+              disableColumnMenu: true,
+              renderHeader,
+              resizable: false,
+              headerAlign: "left",
+              valueGetter: (params) =>
+                t("datetime.created_at", getDateTimeFormatter(params)),
+            },
+            {
+              maxWidth: 140,
+              field: "updatedAt",
+              headerName: t("label.updatedAt"),
+              disableColumnMenu: true,
+              renderHeader,
+              resizable: false,
+              headerAlign: "left",
+              valueGetter: (params) =>
+                t("datetime.updated_at", getDateTimeFormatter(params)),
+            },
+            actionColumns,
+          ]}
+        />
       </Grid>
     </Grid>
   );

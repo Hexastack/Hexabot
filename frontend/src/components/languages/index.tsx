@@ -8,7 +8,7 @@
 
 import { Flag } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Grid, Paper, Switch } from "@mui/material";
+import { Button, Grid, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { useQueryClient } from "react-query";
 
@@ -216,12 +216,8 @@ export const Languages = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid columns={columns} {...dataGridProps} />
       </Grid>
     </Grid>
   );

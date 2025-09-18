@@ -8,7 +8,7 @@
 
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { Button, Grid, Paper, Switch } from "@mui/material";
+import { Button, Grid, Switch } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 
 import { ChipEntity } from "@/app-components/displays/ChipEntity";
@@ -222,12 +222,8 @@ export const Users = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 3 }}>
-          <Grid>
-            <DataGrid columns={columns} {...dataGridProps} />
-          </Grid>
-        </Paper>
+      <Grid xs={12}>
+        <DataGrid columns={columns} {...dataGridProps} />
       </Grid>
     </Grid>
   );

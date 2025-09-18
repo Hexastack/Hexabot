@@ -16,6 +16,8 @@ import {
   DataGrid as MuiDataGrid,
 } from "@mui/x-data-grid";
 
+import { borderLine } from "@/layout/themes/theme";
+
 import { renderHeader } from "./columns/renderHeader";
 import { styledPaginationSlots } from "./DataGridStyledPagination";
 import { ErrorOverlay } from "./ErrorOverlay";
@@ -43,6 +45,8 @@ export const StyledDataGrid = <T extends GridValidRowModel = any>(
           },
         },
         minHeight: 400,
+        backgroundColor: theme.palette.background.paper,
+        border: borderLine,
         ...sx,
       }}
     />
@@ -57,7 +61,7 @@ export const DataGrid = <T extends GridValidRowModel = any>({
   slots,
   showCellVerticalBorder = false,
   showColumnVerticalBorder = false,
-  sx = { border: "none" },
+  sx = {},
   error,
   ...rest
 }: DataGridProps<T> & { error?: boolean }) => {
