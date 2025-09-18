@@ -60,6 +60,7 @@ const StyledGrid = styled(Grid)<{ disabled: boolean }>(({ disabled }) =>
   SXStyleOptions({
     opacity: disabled ? "0.5" : "0.9",
     borderRadius: 1,
+    wordBreak: "break-word",
   }),
 );
 
