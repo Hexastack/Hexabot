@@ -64,7 +64,11 @@ const ButtonsMessageForm = () => {
           control={control}
           defaultValue={block?.message.buttons || []}
           render={({ field }) => (
-            <ButtonsInput {...field} fieldPath="message.buttons" />
+            <ButtonsInput
+              value={field.value}
+              onChange={field.onChange}
+              fieldPath="message.buttons"
+            />
           )}
         />
       </ContentItem>

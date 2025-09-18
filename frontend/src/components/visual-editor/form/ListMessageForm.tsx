@@ -298,7 +298,8 @@ const ListMessageForm = () => {
           defaultValue={content?.buttons || []}
           render={({ field }) => (
             <ButtonsInput
-              {...field}
+              value={field.value}
+              onChange={field.onChange}
               fieldPath="options.content.buttons"
               disablePayload={true}
               maxInput={displayMode === "list" ? 1 : 2}
