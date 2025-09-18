@@ -74,9 +74,7 @@ const ListMessageForm = () => {
                     <FormControlLabel
                       key={display}
                       value={display}
-                      control={
-                        <Radio defaultChecked={display === content?.display} />
-                      }
+                      control={<Radio />}
                       label={t(`label.${display}`)}
                     />
                   ))}
