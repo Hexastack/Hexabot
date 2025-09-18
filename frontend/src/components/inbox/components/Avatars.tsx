@@ -31,6 +31,7 @@ export const Avatars = ({ subscriber }: { subscriber: ISubscriber }) => {
           EntityType.USER,
           subscriber.assignedTo || "",
         )}?color=${color}`}
+        title={subscriber.assignedTo ? "Assigned Human Agent" : "Bot"}
       />
     </AvatarGroup>
   );
