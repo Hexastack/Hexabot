@@ -7,32 +7,52 @@
  */
 
 import { Avatar, AvatarGroup } from "@chatscope/chat-ui-kit-react";
+import { styled } from "@mui/material";
+import { FC } from "react";
 
 import { useConfig } from "@/hooks/useConfig";
-import { useSetting } from "@/hooks/useSetting";
 import { EntityType } from "@/services/types";
 import { ISubscriber } from "@/types/subscriber.types";
 
 import { getAvatarSrc } from "../helpers/mapMessages";
 
-export const Avatars = ({ subscriber }: { subscriber: ISubscriber }) => {
+const StyledAvatar = styled(Avatar)(() => ({
+  transform: "scale(0.8)",
+  opacity: 0.7,
+  transition: ".2s",
+  "&.firstAvatar": { transform: "scale(1)", opacity: 1 },
+  "&.secondAvatar:hover ~ .firstAvatar": {
+    transform: "scale(0.8)",
+    opacity: 0.7,
+  },
+  "&.secondAvatar:hover": {
+    transform: "scale(1)",
+    opacity: 1,
+  },
+}));
+
+export type TAvatarGroupProps = { subscriber: ISubscriber };
+
+export const Avatars: FC<TAvatarGroupProps> = ({ subscriber }) => {
   const { apiUrl } = useConfig();
-  const color = useSetting("console_channel", "theme_color");
 
   return (
-    <AvatarGroup hoverToFront style={{ width: "70px" }}>
-      <Avatar
+    <AvatarGroup
+      hoverToFront
+      style={{ width: "70px", marginRight: "10px", justifyContent: "center" }}
+    >
+      <StyledAvatar
         src={getAvatarSrc(apiUrl, EntityType.SUBSCRIBER, subscriber.id)}
         title={`${subscriber.first_name} ${subscriber.last_name}`}
+        className="firstAvatar"
       />
-      <Avatar
-        src={`${getAvatarSrc(
-          apiUrl,
-          EntityType.USER,
-          subscriber.assignedTo || "",
-        )}?color=${color}`}
-        title={subscriber.assignedTo ? "Assigned Human Agent" : "Bot"}
-      />
+      {subscriber.assignedTo ? (
+        <StyledAvatar
+          src={getAvatarSrc(apiUrl, EntityType.USER, subscriber.assignedTo)}
+          title="Assigned Human Agent"
+          className="secondAvatar"
+        />
+      ) : null}
     </AvatarGroup>
   );
 };
