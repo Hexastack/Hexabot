@@ -17,12 +17,12 @@ import { ISubscriber } from "@/types/subscriber.types";
 import { getAvatarSrc } from "../helpers/mapMessages";
 
 const StyledAvatar = styled(Avatar)(() => ({
-  transform: "scale(0.8)",
+  transform: "scale(0.5)",
   opacity: 0.7,
   transition: ".2s",
   "&.firstAvatar": { transform: "scale(1)", opacity: 1 },
   "&.secondAvatar:hover ~ .firstAvatar": {
-    transform: "scale(0.8)",
+    transform: "scale(0.5)",
     opacity: 0.7,
   },
   "&.secondAvatar:hover": {
