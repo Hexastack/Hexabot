@@ -207,14 +207,12 @@ export const ContextVars = () => {
           />
         </Grid>
       </PageHeader>
-      <Grid xs={12}>
-        <DataGrid
-          columns={columns}
-          {...dataGridProps}
-          checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
-        />
-      </Grid>
+      <DataGrid
+        columns={columns}
+        {...dataGridProps}
+        checkboxSelection
+        onRowSelectionModelChange={handleSelectionChange}
+      />
     </Grid>
   );
 };

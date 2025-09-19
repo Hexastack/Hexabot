@@ -7,7 +7,7 @@
  */
 
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
-import { Box, Grid, Paper } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { GridColDef, GridEventListener } from "@mui/x-data-grid";
 
 import AttachmentThumbnail from "@/app-components/attachment/AttachmentThumbnail";
@@ -152,19 +152,13 @@ export const MediaLibrary = ({ onSelect, accept }: MediaLibraryProps) => {
           </Grid>
         </Grid>
       </PageHeader>
-      <Grid item xs={12}>
-        <Paper sx={{ padding: 2 }}>
-          <Grid>
-            <DataGrid
-              columns={columns}
-              {...dataGridProps}
-              disableRowSelectionOnClick={!onSelect}
-              onRowClick={onSelect}
-              rowHeight={86}
-            />
-          </Grid>
-        </Paper>
-      </Grid>
+      <DataGrid
+        columns={columns}
+        {...dataGridProps}
+        disableRowSelectionOnClick={!onSelect}
+        onRowClick={onSelect}
+        rowHeight={86}
+      />
     </Grid>
   );
 };

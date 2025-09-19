@@ -172,9 +172,7 @@ export const Translations = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid xs={12}>
-        <DataGrid {...dataGridProps} columns={columns} />
-      </Grid>
+      <DataGrid {...dataGridProps} columns={columns} />
     </Grid>
   );
 };

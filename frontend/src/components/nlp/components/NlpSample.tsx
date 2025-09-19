@@ -442,15 +442,13 @@ export default function NlpSample() {
           />
         </Grid>
       </Grid>
-
-      <Grid mt={3}>
-        <DataGrid
-          columns={columns}
-          {...dataGridProps}
-          checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
-        />
-      </Grid>
+      <DataGrid
+        sx={{ mt: 3 }}
+        columns={columns}
+        {...dataGridProps}
+        checkboxSelection
+        onRowSelectionModelChange={handleSelectionChange}
+      />
     </Grid>
   );
 }

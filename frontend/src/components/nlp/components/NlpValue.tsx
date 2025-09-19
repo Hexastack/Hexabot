@@ -255,14 +255,13 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
                 />
               </Grid>
             </PageHeader>
-            <Grid padding={1} marginTop={2} container>
-              <DataGrid
-                columns={columns}
-                {...dataGridProps}
-                checkboxSelection
-                onRowSelectionModelChange={handleSelectionChange}
-              />
-            </Grid>
+            <DataGrid
+              sx={{ mt: 3 }}
+              columns={columns}
+              {...dataGridProps}
+              checkboxSelection
+              onRowSelectionModelChange={handleSelectionChange}
+            />
           </Box>
         </Grid>
       </Slide>
