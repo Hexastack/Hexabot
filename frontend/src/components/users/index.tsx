@@ -222,9 +222,7 @@ export const Users = () => {
           ) : null}
         </Grid>
       </PageHeader>
-      <Grid xs={12}>
-        <DataGrid columns={columns} {...dataGridProps} />
-      </Grid>
+      <DataGrid columns={columns} {...dataGridProps} />
     </Grid>
   );
 };

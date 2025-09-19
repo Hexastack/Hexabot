@@ -252,16 +252,14 @@ const NlpEntity = () => {
           ]}
         />
       </Grid>
-
-      <Grid mt={3}>
-        <DataGrid
-          columns={nlpEntityColumns}
-          {...nlpEntityGrid}
-          isRowSelectable={({ row }) => !row.builtin}
-          checkboxSelection
-          onRowSelectionModelChange={handleSelectionChange}
-        />
-      </Grid>
+      <DataGrid
+        sx={{ mt: 3 }}
+        columns={nlpEntityColumns}
+        {...nlpEntityGrid}
+        isRowSelectable={({ row }) => !row.builtin}
+        checkboxSelection
+        onRowSelectionModelChange={handleSelectionChange}
+      />
     </Grid>
   );
 };

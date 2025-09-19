@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useTheme } from "@mui/material";
+import { Grid, useTheme } from "@mui/material";
 import {
   DataGridProps,
   gridClasses,
@@ -81,22 +81,24 @@ export const DataGrid = <T extends GridValidRowModel = any>({
     } as Partial<GridSlotsComponent> | undefined);
 
   return (
-    <StyledDataGrid<T>
-      autoHeight={autoHeight}
-      disableRowSelectionOnClick={disableRowSelectionOnClick}
-      slots={normalizedSlots}
-      slotProps={{
-        loadingOverlay: {
-          variant: "skeleton",
-          noRowsVariant: "skeleton",
-        },
-      }}
-      showCellVerticalBorder={showCellVerticalBorder}
-      showColumnVerticalBorder={showColumnVerticalBorder}
-      sx={sx}
-      columns={styledColumns}
-      rows={rows}
-      {...rest}
-    />
+    <Grid xs={12} item>
+      <StyledDataGrid<T>
+        autoHeight={autoHeight}
+        disableRowSelectionOnClick={disableRowSelectionOnClick}
+        slots={normalizedSlots}
+        slotProps={{
+          loadingOverlay: {
+            variant: "skeleton",
+            noRowsVariant: "skeleton",
+          },
+        }}
+        showCellVerticalBorder={showCellVerticalBorder}
+        showColumnVerticalBorder={showColumnVerticalBorder}
+        sx={sx}
+        columns={styledColumns}
+        rows={rows}
+        {...rest}
+      />
+    </Grid>
   );
 };

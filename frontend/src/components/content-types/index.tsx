@@ -117,39 +117,37 @@ export const ContentTypes = () => {
           />
         </Grid>
       </PageHeader>
-      <Grid xs={12}>
-        <DataGrid
-          {...dataGridProps}
-          disableColumnFilter
-          columns={[
-            { flex: 1, field: "name", headerName: t("label.name") },
-            {
-              maxWidth: 140,
-              field: "createdAt",
-              headerName: t("label.createdAt"),
-              disableColumnMenu: true,
-              renderHeader,
-              resizable: false,
-              headerAlign: "left",
-              valueGetter: (params) =>
-                t("datetime.created_at", getDateTimeFormatter(params)),
-            },
-            {
-              maxWidth: 140,
-              field: "updatedAt",
-              headerName: t("label.updatedAt"),
-              disableColumnMenu: true,
-              renderHeader,
-              resizable: false,
-              headerAlign: "left",
-              valueGetter: (params) =>
-                t("datetime.updated_at", getDateTimeFormatter(params)),
-            },
+      <DataGrid
+        {...dataGridProps}
+        disableColumnFilter
+        columns={[
+          { flex: 1, field: "name", headerName: t("label.name") },
+          {
+            maxWidth: 140,
+            field: "createdAt",
+            headerName: t("label.createdAt"),
+            disableColumnMenu: true,
+            renderHeader,
+            resizable: false,
+            headerAlign: "left",
+            valueGetter: (params) =>
+              t("datetime.created_at", getDateTimeFormatter(params)),
+          },
+          {
+            maxWidth: 140,
+            field: "updatedAt",
+            headerName: t("label.updatedAt"),
+            disableColumnMenu: true,
+            renderHeader,
+            resizable: false,
+            headerAlign: "left",
+            valueGetter: (params) =>
+              t("datetime.updated_at", getDateTimeFormatter(params)),
+          },
 
-            actionColumns,
-          ]}
-        />
-      </Grid>
+          actionColumns,
+        ]}
+      />
     </Grid>
   );
 };
