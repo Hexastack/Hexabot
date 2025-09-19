@@ -63,7 +63,7 @@
     "@socket.io/redis-adapter": "^8.3.0",
     "@tekuconcept/nestjs-csrf": "^1.1.0",
     "async-mutex": "^0.5.0",
-    "axios": "1.10.0",
+    "axios": "1.12.2",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^5.3.2",
     "cache-manager-redis-yet": "^4.1.2",
@@ -159,7 +159,8 @@
     "mjml": "5.0.0-alpha.6",
     "multer": "2.0.2",
     "on-headers": "^1.1.0",
-    "prismjs": "1.30.0"
+    "prismjs": "1.30.0",
+    "tmp": "0.2.5"
   },
   "jest": {
     "globalSetup": "<rootDir>/../test/global-setup.ts",
