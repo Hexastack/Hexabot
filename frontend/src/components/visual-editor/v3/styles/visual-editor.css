@@ -24,10 +24,10 @@
 }
 
 .start-point-container {
-  top: -33px;
+  top: -11px;
   left: -11px;
-  width: 35px;
-  height: 35px;
+  width: 20px;
+  height: 20px;
   transform: scale(140%);
   border: 1px solid #fff;
   position: absolute;
@@ -36,12 +36,12 @@
 }
 
 .start-point {
-  color: #fff;
+  color: #FFF;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 25px;
+  font-size: 18px;
 }
 
 .node {
@@ -186,7 +186,7 @@
   margin-top: 5px;
   border-radius: 100%;
   box-shadow: 0 0 8px #0003;
-  transition: all 0.4s ease 0s;
+  transition: all .4s ease 0s;
 }
 .circle-out-porters {
   position: absolute;
@@ -197,11 +197,11 @@
 .circle-porter-in {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%) scale(0.75);
+  transform: translateY(-50%) scale(.75);
   left: -12px;
 }
 .circle-porter-out {
-  transform: scale(0.75);
+  transform: scale(.75);
   right: -12px;
 }
 
