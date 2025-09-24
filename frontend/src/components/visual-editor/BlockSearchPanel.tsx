@@ -109,7 +109,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
       // Navigate to route embedding block id (or only flow if block missing)
       if (categoryId && blockId) {
         await router.push(
-          `/${RouterType.VISUAL_EDITOR}/flows/${categoryId}/${blockId}`,
+          `/${RouterType.VISUAL_EDITOR}3/flows/${categoryId}/${blockId}`,
         );
       }
     },

@@ -105,7 +105,7 @@ export const Block = ({
               category: selectedCategoryId,
             } as IBlockAttributes;
 
-            createNode("new", payload);
+            createNode(undefined, payload);
           }
         }}
         disabled={disabled}

@@ -13,7 +13,9 @@ import { EntityType } from "@/services/types";
 
 import { getBlockConfig } from "../../utils/block.utils";
 
-export const NodeTitle = ({ blockId }: { blockId: string }) => {
+import { NodeControls } from "./NodeControls";
+
+export const NodeHeader = ({ blockId }: { blockId: string }) => {
   const { data: block } = useGet(blockId, { entity: EntityType.BLOCK });
   const config = getBlockConfig(block?.message as any);
 
@@ -24,6 +26,8 @@ export const NodeTitle = ({ blockId }: { blockId: string }) => {
         backgroundColor: config.color,
       }}
     >
+      <NodeControls blockId={blockId} />
+
       {block?.starts_conversation ? (
         <div
           className="start-point-container"

@@ -10,15 +10,11 @@ import { Grid } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
 import dynamic from "next/dynamic";
 
+import VisualEditorProvider3 from "./hooks/useVisualEditorV3";
+
 const Diagrams3 = dynamic(async () => await import("./Diagrams3"), {
   ssr: false,
 });
-const VisualEditorProvider3 = dynamic(
-  () => import("./hooks/useVisualEditorV3"),
-  {
-    ssr: false,
-  },
-);
 const Aside = dynamic(() => import("./components/Aside"), { ssr: false });
 
 export const VisualEditor3 = () => {

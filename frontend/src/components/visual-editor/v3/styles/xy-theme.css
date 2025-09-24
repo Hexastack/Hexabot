@@ -14,7 +14,7 @@
   --xy-node-boxshadow-default: 0px 3.54px 4.55px 0px #00000005,
     0px 3.54px 4.55px 0px #0000000d, 0px 0.51px 1.01px 0px #0000001a;
 
-  --xy-node-border-radius-default: 12px;
+  --xy-node-border-radius-default: 14px;
 
   --xy-handle-background-color-default: #ffffff;
   --xy-handle-border-color-default: #aaaaaa;
@@ -41,7 +41,6 @@
   padding: 0;
   margin: 0;
   font-size: 12px;
-  min-width: 360px;
   flex-direction: column;
   border: var(--xy-node-border-default);
   color: var(--xy-node-color, var(--xy-node-color-default));
@@ -75,10 +74,10 @@
   border-color: #9e86ed;
 }
 
-.react-flow__edge.selectable:hover .react-flow__edge-path,
+/* .react-flow__edge.selectable:hover .react-flow__edge-path,
 .react-flow__edge.selectable.selected .react-flow__edge-path {
   stroke: var(--xy-theme-edge-hover);
-}
+} */
 
 .react-flow__handle {
   background-color: var(--xy-handle-background-color-default);

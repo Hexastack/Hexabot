@@ -19,22 +19,28 @@ import {
   ReactFlow,
   useKeyPress,
   useOnViewportChange,
+  useReactFlow,
   Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect } from "react";
 
 import "@xyflow/react/dist/style.css";
+
 // import DarkModeControl from "./components/DarkModeControl";
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
+import { IBlock, IBlockAttributes } from "@/types/block.types";
 
+import ButtonEdge from "./edges/buttonEdge/ButtonEdge";
 import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
 import CustomNode from "./nodes/CustomNode";
+import "./styles/index.css";
+import { EdgeLink } from "./types/visual-editor.types";
 
 const NODE_TYPES = {
   block: CustomNode,
 } as const;
-const EDGE_TYPES = {};
+const EDGE_TYPES = { buttonedge: ButtonEdge };
 const CanvasV3 = ({
   defaultEdges,
   defaultNodes,
@@ -46,23 +52,15 @@ const CanvasV3 = ({
 }: {
   defaultNodes: Node[];
   defaultViewport: Viewport;
-  defaultEdges: any;
-  onMoveNode: any;
-  onViewport: any;
+  defaultEdges: EdgeLink[];
+  onMoveNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
+  onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes: (ids: string[], cb?: () => void) => void;
   onNodeDoubleClick: (selectedBlockId: string) => void;
 }) => {
   useOnViewportChange({ onEnd: onViewport });
-  const {
-    setEdges,
-    setNodes,
-    nodes,
-    deleteElements,
-    selectedNodes,
-    setSelectedNodes,
-    selectedEdges,
-    setSelectedEdges,
-  } = useVisualEditorV3();
+  const { setEdges, setNodes, deleteElements } = useReactFlow();
+  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditorV3();
   const deleteKeyPressed = useKeyPress("Delete");
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   // const [colorMode, setColorMode] = useState<ColorMode>("light");
@@ -70,29 +68,37 @@ const CanvasV3 = ({
   //   setColorMode(evt.target.value as ColorMode);
   // };
   const onConnect: OnConnect = (params) => {
-    const { source: sourceNodeId, target: targetNodeId } = params;
+    const { source: sourceNodeId, target: targetNodeId, sourceHandle } = params;
     const sourceNode = getBlockFromCache(sourceNodeId);
+    const payload: Partial<IBlockAttributes> =
+      sourceHandle === "nextBlocks"
+        ? {
+            nextBlocks: [
+              ...(sourceNode?.nextBlocks || []).filter(
+                (id) => id !== targetNodeId,
+              ),
+              targetNodeId,
+            ],
+          }
+        : { attachedBlock: targetNodeId };
 
     onMoveNode({
       id: sourceNodeId,
-      nextBlocks: [
-        ...(sourceNode?.nextBlocks || []).filter((id) => id !== targetNodeId),
-        targetNodeId,
-      ],
+      ...payload,
     });
     setEdges((eds) => [...eds, params as Edge]);
   };
   const onNodesChange: OnNodesChange<Node> = useCallback(
     (changes) => {
-      const selectedNode = changes[0];
+      // const selectedNode = changes[0];
 
-      setNodes(() => {
-        if (selectedNode["id"] && selectedNode["position"]) {
-          onMoveNode({
-            id: selectedNode["id"],
-            position: selectedNode["position"],
-          });
-        }
+      setNodes((nodes) => {
+        // if (selectedNode["id"] && selectedNode["position"]) {
+        //   onMoveNode({
+        //     id: selectedNode["id"],
+        //     position: selectedNode["position"],
+        //   });
+        // }
 
         return applyNodeChanges(changes, nodes);
       });
@@ -101,36 +107,20 @@ const CanvasV3 = ({
   );
   const handleNodeDoubleClick: NodeMouseHandler<Node> = useCallback(
     (_, { id }) => {
-      if (selectedNodes.length === 1 && !selectedEdges.length)
-        onNodeDoubleClick(id);
+      if (selectedNodeIds.length === 1) onNodeDoubleClick(id);
     },
-    [selectedNodes.length, selectedEdges.length, onNodeDoubleClick],
+    [selectedNodeIds.length, onNodeDoubleClick],
   );
 
   useEffect(() => {
     if (deleteKeyPressed) {
-      if (selectedNodes.length) {
-        const ids = selectedNodes.map(({ id }) => id);
-
-        onDeleteNodes(ids, () => {
-          deleteElements({ nodes: selectedNodes });
+      if (selectedNodeIds.length) {
+        onDeleteNodes(selectedNodeIds, () => {
+          // deleteElements({ nodes: selectedNodes });
         });
       }
-      if (selectedEdges.length) {
-        deleteElements({ edges: selectedEdges });
-      }
     }
-  }, [
-    onDeleteNodes,
-    selectedNodes,
-    deleteKeyPressed,
-    selectedEdges,
-    deleteElements,
-  ]);
-
-  // useEffect(() => {
-  //   setEdges(defaultEdges);
-  // }, [defaultEdges]);
+  }, [onDeleteNodes, selectedNodeIds, deleteKeyPressed, deleteElements]);
 
   return (
     <ReactFlow
@@ -147,14 +137,19 @@ const CanvasV3 = ({
       onNodesChange={onNodesChange}
       // colorMode={colorMode}
       onNodeDoubleClick={handleNodeDoubleClick}
-      onSelectionChange={({ edges, nodes }) => {
-        setSelectedNodes(nodes);
-        setSelectedEdges(edges);
-      }}
-      onEdgesChange={(changes) => {
-        setSelectedEdges(changes as any);
+      onSelectionChange={({ nodes }) => {
+        setSelectedNodeIds(nodes.map(({ id }) => id));
       }}
       onlyRenderVisibleElements
+      onNodeDragStop={(_, node, nodes) => {
+        if (nodes.length === 1) {
+          onMoveNode({
+            id: node.id,
+            position: node.position,
+          });
+        } else {
+        }
+      }}
     >
       <MiniMap />
       <Controls />

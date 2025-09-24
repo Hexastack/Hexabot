@@ -6,14 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import {
-  Edge,
-  Node,
-  useEdgesState,
-  useNodesState,
-  useReactFlow,
-  XYPosition,
-} from "@xyflow/react";
+import { useReactFlow, XYPosition } from "@xyflow/react";
 import * as React from "react";
 import { createContext, useContext, useState } from "react";
 
@@ -35,10 +28,7 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
   const ReactFlowInstance = useReactFlow();
-  const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
-  const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
-  const [nodes, setNodes] = useNodesState<Node>([]);
-  const [edges, setEdges] = useEdgesState<Edge>([]);
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     string | undefined
   >();
@@ -56,9 +46,9 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   };
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
-  const createNode = (role: "new" | "duplicate", props?: IBlockAttributes) => {
-    if (role === "duplicate") {
-      const block = getBlockFromCache(selectedNodes[0].id);
+  const createNode = (id: string | undefined, props?: IBlockAttributes) => {
+    if (id) {
+      const block = getBlockFromCache(id);
 
       if (!block) {
         return;
@@ -95,17 +85,10 @@ const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       value={{
         setSelectedCategoryId,
         selectedCategoryId,
-        nodes,
-        edges,
-        ...ReactFlowInstance,
-        setNodes,
-        setEdges,
-        selectedNodes,
-        setSelectedNodes,
-        selectedEdges,
-        setSelectedEdges,
         createNode,
         getCentroid,
+        selectedNodeIds,
+        setSelectedNodeIds,
       }}
     >
       {children}

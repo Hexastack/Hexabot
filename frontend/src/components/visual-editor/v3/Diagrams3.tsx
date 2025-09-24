@@ -7,22 +7,20 @@
  */
 
 import Add from "@mui/icons-material/Add";
-import ContentCopyRounded from "@mui/icons-material/ContentCopyRounded";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import MoveUp from "@mui/icons-material/MoveUp";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   ButtonGroup,
+  debounce,
   Grid,
   Tab,
   Tabs,
-  debounce,
   tabsClasses,
 } from "@mui/material";
-import { Node } from "@xyflow/react";
+import { MarkerType, Node, useReactFlow, Viewport } from "@xyflow/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import {
@@ -33,28 +31,32 @@ import {
   useRef,
   useState,
 } from "react";
+import { useQueryClient } from "react-query";
 
 import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
-import { useDeleteFromCache } from "@/hooks/crud/useDelete";
+import { isSameEntity } from "@/hooks/crud/helpers";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGetFromCache } from "@/hooks/crud/useGet";
-import { useUpdate, useUpdateCache } from "@/hooks/crud/useUpdate";
+import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format, RouterType } from "@/services/types";
+import { EntityType, Format, QueryType, RouterType } from "@/services/types";
 import { IBlock, Pattern } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
 import { generateId } from "@/utils/generateId";
 
 import { BlockEditFormDialog } from "../BlockEditFormDialog";
+import { BlockMoveFormDialog } from "../BlockMoveFormDialog";
 import { BlockSearchPanel } from "../BlockSearchPanel";
 
 import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
+import { EdgeLink } from "./types/visual-editor.types";
 import { getNodesFromBlocks } from "./utils/block.utils";
 
 export type NodeBlockData = {
@@ -81,12 +83,14 @@ const Diagrams3 = () => {
   );
   const dialogs = useDialogs();
   const hasPermission = useHasPermission();
+  const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
+  const { screenToFlowPosition } = useReactFlow();
   const {
     setSelectedCategoryId,
     selectedCategoryId,
-    selectedNodes,
+    selectedNodeIds,
     createNode,
-    screenToFlowPosition,
+    setSelectedNodeIds,
   } = useVisualEditorV3();
   const { searchPayload } = useSearch<EntityType.BLOCK>({
     $eq: [{ category: selectedCategoryId }],
@@ -127,9 +131,8 @@ const Diagrams3 = () => {
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
+  const queryClient = useQueryClient();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
-  const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
-  const deleteCachedBlock = useDeleteFromCache(EntityType.BLOCK);
   //useMemo
   // const [nodes, setNodes] = useState<Node<NodeBlockData>[]>([]);
   const onCategoryChange = (targetCategory: number) => {
@@ -140,7 +143,7 @@ const Diagrams3 = () => {
         setSelectedCategoryId?.(id);
         setSelectedBlockId(undefined); // Reset selected block when switching categories, resetting edit & remove buttons
 
-        router.push(`/${RouterType.VISUAL_EDITOR}/flows/${id}`);
+        router.push(`/${RouterType.VISUAL_EDITOR}3/flows/${id}`);
       }
     }
   };
@@ -154,18 +157,64 @@ const Diagrams3 = () => {
       enabled: !!selectedCategoryId,
     },
   );
-  const links = useMemo(() => {
-    return blocks.flatMap((b) =>
-      b.nextBlocks?.map((nb) => ({
-        id: generateId(),
-        source: b.id,
-        target: nb,
-      })),
-    );
-  }, [JSON.stringify(blocks)]);
+  const nextBlocksLinks = useMemo(
+    () =>
+      blocks.flatMap((b) =>
+        b.nextBlocks?.map(
+          (nb) =>
+            ({
+              id: generateId(),
+              source: b.id,
+              target: nb,
+              markerEnd: { type: MarkerType.ArrowClosed },
+              style: { strokeWidth: "3px" },
+              type: "buttonedge",
+              sourceHandle: "nextBlocks",
+            } as EdgeLink),
+        ),
+      ) as EdgeLink[],
+    [
+      JSON.stringify(
+        blocks.map((b) => {
+          return { ...b, position: undefined, updatedAt: undefined };
+        }),
+      ),
+    ],
+  );
+  const attachedLinks = useMemo(
+    () =>
+      blocks
+        .filter((b) => b.attachedBlock)
+        .map(
+          (b) =>
+            ({
+              id: generateId(),
+              source: b.id,
+              target: b.attachedBlock,
+              markerEnd: { type: MarkerType.ArrowClosed, color: "#019185" },
+              style: { stroke: "#019185", strokeWidth: "3px" },
+              type: "buttonedge",
+              sourceHandle: "attached",
+              domAttributes: { fill: "red" },
+            } as EdgeLink),
+        ),
+    [
+      JSON.stringify(
+        blocks.map((b) => {
+          return { ...b, position: undefined, updatedAt: undefined };
+        }),
+      ),
+    ],
+  );
   const nodes = useMemo(() => {
     return getNodesFromBlocks(blocks);
-  }, [JSON.stringify(blocks)]);
+  }, [
+    JSON.stringify(
+      blocks.map((b) => {
+        return { ...b, position: undefined, updatedAt: undefined };
+      }),
+    ),
+  ]);
 
   useEffect(() => {
     // Case when categories are already cached
@@ -191,55 +240,7 @@ const Diagrams3 = () => {
   }, [router.query]);
 
   const handleBlocksDeletion = (blockIds: string[]) => {
-    deleteBlocks(blockIds, {
-      onSuccess: () => {
-        blockIds.forEach((blockId) => {
-          const block = getBlockFromCache(blockId);
-
-          if (block) {
-            updateLinkedBlocks(block, blockIds);
-            deleteCachedBlock(blockId);
-          }
-        });
-      },
-    });
-  };
-  const getLinkedBlockIds = (block: IBlock): string[] => [
-    ...(block?.nextBlocks || []),
-    ...(block?.previousBlocks || []),
-    ...(block?.attachedBlock ? [block.attachedBlock] : []),
-    ...(block?.attachedToBlock ? [block.attachedToBlock] : []),
-  ];
-  const updateLinkedBlocks = (block: IBlock, deletedIds: string[]) => {
-    const linkedBlockIds = getLinkedBlockIds(block);
-
-    linkedBlockIds.forEach((linkedBlockId) => {
-      const linkedBlock = getBlockFromCache(linkedBlockId);
-
-      if (linkedBlock) {
-        updateCachedBlock({
-          id: linkedBlock.id,
-          payload: {
-            ...linkedBlock,
-            nextBlocks: linkedBlock.nextBlocks?.filter(
-              (nextBlockId) => !deletedIds.includes(nextBlockId),
-            ),
-            previousBlocks: linkedBlock.previousBlocks?.filter(
-              (previousBlockId) => !deletedIds.includes(previousBlockId),
-            ),
-            attachedBlock: deletedIds.includes(linkedBlock.attachedBlock || "")
-              ? undefined
-              : linkedBlock.attachedBlock,
-            attachedToBlock: deletedIds.includes(
-              linkedBlock.attachedToBlock || "",
-            )
-              ? undefined
-              : linkedBlock.attachedToBlock,
-          },
-          strategy: "overwrite",
-        });
-      }
-    });
+    deleteBlocks(blockIds);
   };
   const openDeleteDialog = async (ids: string[], cb?: () => void) => {
     if (ids.length) {
@@ -268,18 +269,16 @@ const Diagrams3 = () => {
     );
   };
   const handleMoveButton = () => {
-    // const ids = getSelectedIds();
-    // const { blockIds } = getGroupedIds(ids);
-    // if (ids.length) {
-    //   dialogs.open(BlockMoveFormDialog, {
-    //     defaultValues: {
-    //       ids: blockIds,
-    //       onMove,
-    //       category: selectedCategoryId,
-    //       categories,
-    //     },
-    //   });
-    // }
+    if (selectedNodeIds.length) {
+      dialogs.open(BlockMoveFormDialog, {
+        defaultValues: {
+          ids: selectedNodeIds,
+          onMove,
+          category: selectedCategoryId,
+          categories,
+        },
+      });
+    }
   };
   const onDelete = (ids: string[]) => {
     if (!ids || ids?.length === 0) {
@@ -287,6 +286,36 @@ const Diagrams3 = () => {
     }
 
     handleBlocksDeletion(ids);
+  };
+  const onMove = (ids: string[], targetCategoryId: string) => {
+    if (ids.length) {
+      updateBlocks(
+        { ids, payload: { category: targetCategoryId } },
+        {
+          onSuccess() {
+            queryClient.invalidateQueries({
+              predicate: ({ queryKey }) => {
+                const [qType, qEntity] = queryKey;
+
+                return (
+                  qType === QueryType.collection &&
+                  isSameEntity(qEntity, EntityType.BLOCK)
+                );
+              },
+            });
+
+            const targetCategoryIndex = categories.findIndex(
+              ({ id }) => id === targetCategoryId,
+            );
+
+            onCategoryChange(targetCategoryIndex);
+          },
+          onError: () => {
+            toast.error(t("message.move_block_error"));
+          },
+        },
+      );
+    }
   };
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
@@ -296,15 +325,25 @@ const Diagrams3 = () => {
       setSearchOpen(true);
     }
   };
-  const debouncedUpdateBlock = debounce(({ id, ...rest }) => {
-    updateBlock({
-      id,
-      params: {
-        ...rest,
-      },
-    });
-  }, 400);
-  const debouncedUpdateCategory = debounce(({ zoom, x, y }) => {
+  const debouncedUpdateBlock = debounce(
+    ({ id, ...rest }: Partial<IBlock> & { id: string }) => {
+      updateBlock(
+        {
+          id,
+          params: {
+            ...rest,
+          },
+        },
+        {
+          onSuccess(data) {
+            setSelectedNodeIds([data.id]);
+          },
+        },
+      );
+    },
+    400,
+  );
+  const debouncedUpdateCategory = debounce(({ zoom, x, y }: Viewport) => {
     if (selectedCategoryId) {
       updateCategory({
         id: selectedCategoryId,
@@ -315,9 +354,6 @@ const Diagrams3 = () => {
       });
     }
   }, 400);
-  // const selectedEntities = getSelectedIds();
-  const shouldDisableDuplicateButton = selectedNodes.length !== 1;
-  // selectedEntities[0]?.length !== 24 ||
 
   return (
     <div
@@ -348,7 +384,7 @@ const Diagrams3 = () => {
           position,
         };
 
-        createNode("new", payload);
+        createNode(undefined, payload);
       }}
       onDragOver={(event) => {
         event.preventDefault();
@@ -485,35 +521,11 @@ const Diagrams3 = () => {
               {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
                 <Button
                   variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={() => {
-                    if (selectedBlockId) {
-                      openEditDialog(selectedBlockId);
-                    }
-                  }}
-                  disabled={selectedNodes.length !== 1}
-                >
-                  {t("button.edit")}
-                </Button>
-              ) : null}
-              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
-                <Button
-                  variant="contained"
                   startIcon={<MoveUp />}
                   onClick={handleMoveButton}
-                  disabled={!selectedNodes.length}
+                  disabled={!selectedNodeIds.length}
                 >
                   {t("button.move")}
-                </Button>
-              ) : null}
-              {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
-                <Button
-                  variant="contained"
-                  startIcon={<ContentCopyRounded />}
-                  onClick={() => createNode("duplicate")}
-                  disabled={shouldDisableDuplicateButton}
-                >
-                  {t("button.duplicate")}
                 </Button>
               ) : null}
               {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
@@ -521,10 +533,8 @@ const Diagrams3 = () => {
                   variant="contained"
                   color="secondary"
                   startIcon={<DeleteIcon />}
-                  onClick={() =>
-                    openDeleteDialog(selectedNodes.map(({ id }) => id))
-                  }
-                  disabled={!selectedNodes.length}
+                  onClick={() => openDeleteDialog(selectedNodeIds)}
+                  disabled={!selectedNodeIds.length}
                 >
                   {t("button.remove")}
                 </Button>
@@ -541,7 +551,7 @@ const Diagrams3 = () => {
       >
         {currentCategory ? (
           <ReactFlowWrapper
-            defaultEdges={links}
+            defaultEdges={[...nextBlocksLinks, ...attachedLinks]}
             defaultNodes={nodes}
             defaultViewport={{
               x: currentCategory?.offset?.[0] || 0,

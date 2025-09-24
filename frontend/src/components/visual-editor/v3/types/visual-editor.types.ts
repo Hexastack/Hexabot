@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Edge, Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
+import { Edge, Node, XYPosition } from "@xyflow/react";
 import { ReactNode } from "react";
 
 import { IBlock, IBlockAttributes } from "@/types/block.types";
@@ -30,19 +30,16 @@ export interface IVisualEditor {
   targetPortChanged?: (event: any) => void;
   selectedBlockId: string | undefined;
 }
-export interface IVisualEditorContext extends ReactFlowInstance<Node, Edge> {
+
+export interface IVisualEditorContext {
   setSelectedCategoryId: (id: string) => void;
   selectedCategoryId: string | undefined;
-  nodes: Node[];
-  edges: Edge[];
 
-  selectedNodes: Node[];
-  setSelectedNodes: React.Dispatch<React.SetStateAction<Node[]>>;
-  selectedEdges: Edge[];
-  setSelectedEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
-
-  createNode: (role: "new" | "duplicate", props?: IBlockAttributes) => void;
+  createNode: (id: string | undefined, props?: IBlockAttributes) => void;
   getCentroid: () => XYPosition;
+
+  selectedNodeIds: string[];
+  setSelectedNodeIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export interface VisualEditorContextProps {
@@ -60,3 +57,5 @@ export enum BlockTypes {
 }
 
 export type TBlock = keyof typeof BlockTypes;
+
+export type EdgeLink = Edge & { id: string; source: string; target: string };

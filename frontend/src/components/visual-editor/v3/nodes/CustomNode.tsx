@@ -6,29 +6,68 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Node, Position } from "@xyflow/react";
+import { Node, Position, useReactFlow } from "@xyflow/react";
 import { memo } from "react";
 
 import { CustomContainer } from "../components/node/CustomContainer";
 import { NodeBody } from "../components/node/NodeBody";
-import { NodeTitle } from "../components/node/NodeTitle";
+import { NodeHeader } from "../components/node/NodeHeader";
 import { NodeBlockData } from "../Diagrams3";
 import CustomHandle from "../handlers/CustomHandle";
 
 const CustomNode = ({ id: blockId }: Node<NodeBlockData>) => {
+  const { getNodeConnections } = useReactFlow();
+  const connections = getNodeConnections({ nodeId: blockId });
+  const disableNextBlocks = !!connections.find(
+    (c) => c.sourceHandle === "attached",
+  );
+  const disableAttached = !!connections.find(
+    (c) => c.sourceHandle === "nextBlocks",
+  );
+
   return (
     <CustomContainer blockId={blockId}>
       <CustomHandle
         type="target"
         position={Position.Left}
-        connectionCount={10}
+        connectionCount={2}
+        style={{
+          left: "-2px",
+          background: "#eee",
+          width: "28px",
+          height: "28px",
+          borderRadius: "11px",
+        }}
       />
-      <NodeTitle blockId={blockId} />
+      <NodeHeader blockId={blockId} />
       <NodeBody blockId={blockId} />
       <CustomHandle
         type="source"
         position={Position.Right}
-        connectionCount={10}
+        connectionCount={2}
+        id="nextBlocks"
+        style={{
+          top: "80px",
+          background: "#eee",
+          width: "28px",
+          height: "28px",
+          borderRadius: "11px",
+        }}
+        isValidConnection={disableNextBlocks}
+      />
+      <CustomHandle
+        type="source"
+        position={Position.Right}
+        connectionCount={2}
+        id="attached"
+        style={{
+          top: "120px",
+          background: "#eee",
+          width: "28px",
+          height: "28px",
+          borderRadius: "11px",
+        }}
+        isValidConnection={disableAttached}
       />
     </CustomContainer>
   );
