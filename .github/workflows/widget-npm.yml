@@ -3,7 +3,7 @@ name: Publish Hexabot Widget NPM Package
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -16,8 +16,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18' # Ensure it matches your project requirements
-          cache: 'npm'
+          node-version: "20" # Ensure it matches your project requirements
+          cache: "npm"
 
       - name: Install dependencies
         working-directory: widget
@@ -47,8 +47,8 @@ jobs:
         if: env.release != 'none'
         uses: actions/setup-node@v3
         with:
-          registry-url: 'https://registry.npmjs.org/'
-          node-version: '18'
+          registry-url: "https://registry.npmjs.org/"
+          node-version: "20"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
