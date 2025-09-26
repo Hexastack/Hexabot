@@ -6,6 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { MarkerType } from "@xyflow/react";
 import { FC } from "react";
 
 import AttachmentIcon from "@/app-components/svg/toolbar/AttachmentIcon";
@@ -16,8 +17,11 @@ import QuickRepliesIcon from "@/app-components/svg/toolbar/QuickRepliesIcon";
 import SimpleTextIcon from "@/app-components/svg/toolbar/SimpleTextIcon";
 import { IBlock, IBlockFull } from "@/types/block.types";
 import { TBlock } from "@/types/visual-editor.types";
+import { getBlockType } from "@/utils/block";
+import { generateId } from "@/utils/generateId";
 
 import { NodeData } from "../Diagrams3";
+import { EdgeLink } from "../types/visual-editor.types";
 
 export const determineCase = (blockMessage: IBlockFull["message"]) => {
   if (typeof blockMessage === "string" || Array.isArray(blockMessage))
@@ -29,6 +33,7 @@ export const determineCase = (blockMessage: IBlockFull["message"]) => {
 
   return "plugin";
 };
+//TODO can be removed
 export const getBlockConfig = (
   blockMessage: IBlockFull["message"],
 ): { type: TBlock; color: string; Icon: FC<React.SVGProps<SVGSVGElement>> } => {
@@ -50,12 +55,34 @@ export const getBlockConfig = (
   }
 };
 
+export const getBlockConfigByType = (
+  type: TBlock,
+): { color: string; Icon: FC<React.SVGProps<SVGSVGElement>> } => {
+  switch (type) {
+    case "text":
+      return { color: "#009185", Icon: SimpleTextIcon };
+    case "attachment":
+      return { color: "#e6a23c", Icon: AttachmentIcon };
+    case "quickReplies":
+      return { color: "#a80551", Icon: QuickRepliesIcon };
+    case "buttons":
+      return { color: "#570063", Icon: ButtonsIcon };
+    case "list":
+      return { color: "#108aa8", Icon: ListIcon };
+    case "plugin":
+      return { color: "#a8ba33", Icon: PluginIcon };
+    default:
+      throw new Error("Unexpected case");
+  }
+};
+
 export const getNodesFromBlocks = (blocks: IBlock[]): NodeData[] => {
   return blocks.map((block) => {
     return {
       id: block.id,
       position: block.position,
       data: {
+        type: getBlockType(block.message),
         title: block.name,
         message: block.message as any,
         starts_conversation: block.starts_conversation,
@@ -64,4 +91,38 @@ export const getNodesFromBlocks = (blocks: IBlock[]): NodeData[] => {
       type: "block",
     };
   });
+};
+
+export const getNextBlocksLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
+  return blocks
+    .filter((b) => b.nextBlocks?.length)
+    .flatMap(
+      (b) =>
+        b.nextBlocks?.map((id) => ({
+          id: generateId(),
+          source: b.id,
+          target: id,
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#555" },
+          style: { stroke: "#555", strokeWidth: "3px" },
+          type: "buttonedge",
+          sourceHandle: "nextBlocks",
+        })) as EdgeLink[],
+    );
+};
+
+export const getAttachedLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
+  return blocks
+    .filter((b) => b.attachedBlock)
+    .map(
+      (b) =>
+        ({
+          id: generateId(),
+          source: b.id,
+          target: b.attachedBlock,
+          markerEnd: { type: MarkerType.ArrowClosed, color: "#019185" },
+          style: { stroke: "#019185", strokeWidth: "3px" },
+          type: "buttonedge",
+          sourceHandle: "attached",
+        } as EdgeLink),
+    );
 };

@@ -7,7 +7,6 @@
  */
 
 import {
-  applyNodeChanges,
   Background,
   Controls,
   Edge,
@@ -15,11 +14,9 @@ import {
   Node,
   NodeMouseHandler,
   OnConnect,
-  OnNodesChange,
   ReactFlow,
   useKeyPress,
   useOnViewportChange,
-  useReactFlow,
   Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect } from "react";
@@ -27,15 +24,17 @@ import { useCallback, useEffect } from "react";
 import "@xyflow/react/dist/style.css";
 
 // import DarkModeControl from "./components/DarkModeControl";
-import { useGetFromCache } from "@/hooks/crud/useGet";
-import { EntityType } from "@/services/types";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { TBlock } from "@/types/visual-editor.types";
 
+import CustomNode from "./components/node/CustomNode";
 import ButtonEdge from "./edges/buttonEdge/ButtonEdge";
+import { useDeleteManyBlocksDialog } from "./hooks/useDeleteManyBlocksDialog";
+import { useEditBlockDialog } from "./hooks/useEditBlockDialog";
 import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
-import CustomNode from "./nodes/CustomNode";
 import "./styles/index.css";
 import { EdgeLink } from "./types/visual-editor.types";
+import { getBlockConfigByType } from "./utils/block.utils";
 
 const NODE_TYPES = {
   block: CustomNode,
@@ -55,14 +54,19 @@ const CanvasV3 = ({
   defaultEdges: EdgeLink[];
   onMoveNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
   onViewport: ({ zoom, x, y }: Viewport) => void;
-  onDeleteNodes: (ids: string[], cb?: () => void) => void;
-  onNodeDoubleClick: (selectedBlockId: string) => void;
+  onDeleteNodes?: (ids: string[]) => void;
+  onNodeDoubleClick?: (selectedBlockId: string) => void;
 }) => {
-  useOnViewportChange({ onEnd: onViewport });
-  const { setEdges, setNodes, deleteElements } = useReactFlow();
-  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditorV3();
+  const {
+    setSelectedNodeIds,
+    selectedNodeIds,
+    setEdges,
+    setViewport,
+    getBlockFromCache,
+  } = useVisualEditorV3();
   const deleteKeyPressed = useKeyPress("Delete");
-  const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
+  const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
+  const { openEditDialog } = useEditBlockDialog();
   // const [colorMode, setColorMode] = useState<ColorMode>("light");
   // const onColorChange: ChangeEventHandler<HTMLSelectElement> = (evt) => {
   //   setColorMode(evt.target.value as ColorMode);
@@ -82,50 +86,44 @@ const CanvasV3 = ({
           }
         : { attachedBlock: targetNodeId };
 
+    setEdges((eds) => [...eds, params as Edge]);
+
     onMoveNode({
       id: sourceNodeId,
       ...payload,
     });
-    setEdges((eds) => [...eds, params as Edge]);
   };
-  const onNodesChange: OnNodesChange<Node> = useCallback(
-    (changes) => {
-      // const selectedNode = changes[0];
-
-      setNodes((nodes) => {
-        // if (selectedNode["id"] && selectedNode["position"]) {
-        //   onMoveNode({
-        //     id: selectedNode["id"],
-        //     position: selectedNode["position"],
-        //   });
-        // }
-
-        return applyNodeChanges(changes, nodes);
-      });
-    },
-    [setNodes],
-  );
   const handleNodeDoubleClick: NodeMouseHandler<Node> = useCallback(
     (_, { id }) => {
-      if (selectedNodeIds.length === 1) onNodeDoubleClick(id);
+      if (selectedNodeIds.length === 1) {
+        onNodeDoubleClick?.(id) || openEditDialog(id);
+      }
     },
     [selectedNodeIds.length, onNodeDoubleClick],
   );
 
+  useOnViewportChange({
+    onEnd: onViewport,
+  });
+
   useEffect(() => {
     if (deleteKeyPressed) {
       if (selectedNodeIds.length) {
-        onDeleteNodes(selectedNodeIds, () => {
-          // deleteElements({ nodes: selectedNodes });
-        });
+        openDeleteManyDialog(selectedNodeIds);
       }
     }
-  }, [onDeleteNodes, selectedNodeIds, deleteKeyPressed, deleteElements]);
+  }, [onDeleteNodes, selectedNodeIds, deleteKeyPressed]);
+
+  useEffect(() => {
+    setViewport(defaultViewport);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultViewport]);
 
   return (
     <ReactFlow
-      edges={defaultEdges}
       defaultEdges={defaultEdges}
+      edges={defaultEdges}
       defaultNodes={defaultNodes}
       nodes={defaultNodes}
       defaultViewport={defaultViewport}
@@ -134,14 +132,23 @@ const CanvasV3 = ({
       nodeTypes={NODE_TYPES as any}
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
-      onNodesChange={onNodesChange}
+      // onNodesChange={onNodesChange}
       // colorMode={colorMode}
+      onNodeClick={(_e, node) => {
+        if (!selectedNodeIds.includes(node.id)) {
+          setSelectedNodeIds((nodes) => [...nodes, node.id]);
+        }
+      }}
       onNodeDoubleClick={handleNodeDoubleClick}
       onSelectionChange={({ nodes }) => {
-        setSelectedNodeIds(nodes.map(({ id }) => id));
+        const selectedNodes = nodes.map(({ id }) => id);
+
+        if (selectedNodes.length !== selectedNodeIds.length) {
+          setSelectedNodeIds(selectedNodes);
+        }
       }}
       onlyRenderVisibleElements
-      onNodeDragStop={(_, node, nodes) => {
+      onNodeDragStop={(_e, node, nodes) => {
         if (nodes.length === 1) {
           onMoveNode({
             id: node.id,
@@ -151,7 +158,21 @@ const CanvasV3 = ({
         }
       }}
     >
-      <MiniMap />
+      <MiniMap
+        nodeStrokeColor={(n) => {
+          const { type } = n.data;
+          const config = getBlockConfigByType(type as TBlock);
+
+          return config.color;
+        }}
+        nodeColor={(n) => {
+          const { type } = n.data;
+          const config = getBlockConfigByType(type as TBlock);
+
+          return `${config.color}11`;
+        }}
+        nodeBorderRadius={18}
+      />
       <Controls />
       <Background />
       {/* <DarkModeControl onChange={onColorChange} /> */}

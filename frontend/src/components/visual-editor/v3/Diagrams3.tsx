@@ -7,6 +7,7 @@
  */
 
 import Add from "@mui/icons-material/Add";
+import ContentCopyRounded from "@mui/icons-material/ContentCopyRounded";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoveUp from "@mui/icons-material/MoveUp";
 import SearchIcon from "@mui/icons-material/Search";
@@ -14,13 +15,15 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Chip,
   debounce,
   Grid,
+  styled,
   Tab,
   Tabs,
   tabsClasses,
 } from "@mui/material";
-import { MarkerType, Node, useReactFlow, Viewport } from "@xyflow/react";
+import { Node, useNodesInitialized, Viewport } from "@xyflow/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import {
@@ -31,35 +34,45 @@ import {
   useRef,
   useState,
 } from "react";
-import { useQueryClient } from "react-query";
 
-import { ConfirmDialogBody } from "@/app-components/dialogs";
 import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
-import { isSameEntity } from "@/hooks/crud/helpers";
-import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
-import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
-import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, Format, QueryType, RouterType } from "@/services/types";
-import { IBlock, Pattern } from "@/types/block.types";
+import { EntityType, Format } from "@/services/types";
+import { BlockType, IBlock, Pattern } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
-import { generateId } from "@/utils/generateId";
 
-import { BlockEditFormDialog } from "../BlockEditFormDialog";
-import { BlockMoveFormDialog } from "../BlockMoveFormDialog";
 import { BlockSearchPanel } from "../BlockSearchPanel";
 
+import { useCreateBlock } from "./hooks/useCreateBlocks";
+import { useDeleteManyBlocksDialog } from "./hooks/useDeleteManyBlocksDialog";
+import { useMoveBlocksDialog } from "./hooks/useMoveBlocksDialog";
 import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
-import { EdgeLink } from "./types/visual-editor.types";
-import { getNodesFromBlocks } from "./utils/block.utils";
+import {
+  getAttachedLinksFromBlocks,
+  getNextBlocksLinksFromBlocks,
+  getNodesFromBlocks,
+} from "./utils/block.utils";
+
+const StyledButton = styled(Button)(() => ({
+  marginTop: "7px",
+  marginLeft: "5px",
+  marginRight: "5px",
+  borderRadius: "0",
+  minHeight: "30px",
+  border: "1px solid #DDDDDD",
+  backgroundColor: "#F8F8F8",
+  borderBottom: "none",
+  width: "42px",
+  minWidth: "42px",
+}));
 
 export type NodeBlockData = {
+  type: BlockType;
   title: string;
   message: string | string[];
   starts_conversation?: boolean;
@@ -72,30 +85,27 @@ const ReactFlowWrapper = dynamic(() => import("./ReactFlowWrapper"), {
   ssr: false,
 });
 const Diagrams3 = () => {
+  const nodesInitialized = useNodesInitialized();
   const { t } = useTranslate();
   const router = useRouter();
-  const flowId = router.query.id?.toString();
-  const blockId = router.query.blockId?.toString();
+  const dialogs = useDialogs();
+  const {
+    selectNodes,
+    selectedNodeIds,
+    setSelectedNodeIds,
+    selectedCategoryId,
+    screenToFlowPosition,
+    setSelectedCategoryId,
+  } = useVisualEditorV3();
+  const { createNode, createNodes } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setSearchOpen] = useState(false);
-  const [selectedBlockId, setSelectedBlockId] = useState<string | undefined>(
-    blockId,
-  );
-  const dialogs = useDialogs();
   const hasPermission = useHasPermission();
-  const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
-  const { screenToFlowPosition } = useReactFlow();
-  const {
-    setSelectedCategoryId,
-    selectedCategoryId,
-    selectedNodeIds,
-    createNode,
-    setSelectedNodeIds,
-  } = useVisualEditorV3();
+  const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
+  const { openMoveDialog, onCategoryChange } = useMoveBlocksDialog();
   const { searchPayload } = useSearch<EntityType.BLOCK>({
     $eq: [{ category: selectedCategoryId }],
   });
-  const { toast } = useToast();
   const { data: categories } = useFind(
     { entity: EntityType.CATEGORY },
     {
@@ -103,53 +113,19 @@ const Diagrams3 = () => {
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
     {
-      onSuccess(categories) {
-        const { id } = categories[0] || {};
-
-        if (flowId) {
-          setSelectedCategoryId?.(flowId);
-        } else if (id) {
-          setSelectedCategoryId?.(id);
+      onSuccess([category]) {
+        if (!selectedCategoryId) {
+          setSelectedCategoryId(category?.id);
         }
       },
     },
   );
-  const currentCategory = categories.find(
-    ({ id }) => id === selectedCategoryId,
-  );
   const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
     invalidate: false,
-  });
-  const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
-    onSuccess: () => {
-      setSelectedBlockId(undefined);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
-  const queryClient = useQueryClient();
-  const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
-  //useMemo
-  // const [nodes, setNodes] = useState<Node<NodeBlockData>[]>([]);
-  const onCategoryChange = (targetCategory: number) => {
-    if (categories) {
-      const { id } = categories[targetCategory];
-
-      if (id) {
-        setSelectedCategoryId?.(id);
-        setSelectedBlockId(undefined); // Reset selected block when switching categories, resetting edit & remove buttons
-
-        router.push(`/${RouterType.VISUAL_EDITOR}3/flows/${id}`);
-      }
-    }
-  };
-  const handleChange = (_event: SyntheticEvent, newValue: number) => {
-    onCategoryChange(newValue);
-  };
   const { data: blocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
     { hasCount: false, params: searchPayload },
@@ -157,22 +133,11 @@ const Diagrams3 = () => {
       enabled: !!selectedCategoryId,
     },
   );
+  const changeHandler = (_event: SyntheticEvent, categoryIndex: number) => {
+    onCategoryChange(categoryIndex);
+  };
   const nextBlocksLinks = useMemo(
-    () =>
-      blocks.flatMap((b) =>
-        b.nextBlocks?.map(
-          (nb) =>
-            ({
-              id: generateId(),
-              source: b.id,
-              target: nb,
-              markerEnd: { type: MarkerType.ArrowClosed },
-              style: { strokeWidth: "3px" },
-              type: "buttonedge",
-              sourceHandle: "nextBlocks",
-            } as EdgeLink),
-        ),
-      ) as EdgeLink[],
+    () => getNextBlocksLinksFromBlocks(blocks),
     [
       JSON.stringify(
         blocks.map((b) => {
@@ -182,22 +147,7 @@ const Diagrams3 = () => {
     ],
   );
   const attachedLinks = useMemo(
-    () =>
-      blocks
-        .filter((b) => b.attachedBlock)
-        .map(
-          (b) =>
-            ({
-              id: generateId(),
-              source: b.id,
-              target: b.attachedBlock,
-              markerEnd: { type: MarkerType.ArrowClosed, color: "#019185" },
-              style: { stroke: "#019185", strokeWidth: "3px" },
-              type: "buttonedge",
-              sourceHandle: "attached",
-              domAttributes: { fill: "red" },
-            } as EdgeLink),
-        ),
+    () => getAttachedLinksFromBlocks(blocks),
     [
       JSON.stringify(
         blocks.map((b) => {
@@ -215,109 +165,32 @@ const Diagrams3 = () => {
       }),
     ),
   ]);
+  const currentCategory = useMemo(() => {
+    return categories.find(({ id }) => id === selectedCategoryId);
+  }, [categories, selectedCategoryId]);
+  const tabIndex = useMemo(() => {
+    return currentCategory
+      ? categories?.findIndex(({ id }) => id === selectedCategoryId)
+      : 0;
+  }, [categories, currentCategory, selectedCategoryId]);
+  const defaultViewport = useMemo(() => {
+    if (currentCategory) {
+      const { offset = [0, 0], zoom = 1 } = currentCategory;
 
-  useEffect(() => {
-    // Case when categories are already cached
-    if (categories?.length > 0 && !selectedCategoryId) {
-      setSelectedCategoryId(categories[0].id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    // Update state on router update
-    if (flowId) {
-      setSelectedCategoryId(flowId);
-    } else if (categories?.length) {
-      setSelectedCategoryId(categories[0].id);
-    }
-
-    if (blockId !== selectedBlockId) {
-      setSelectedBlockId(blockId);
+      return {
+        x: offset?.[0],
+        y: offset?.[1],
+        zoom: zoom > 1 ? zoom / 100 : zoom,
+      };
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query]);
-
-  const handleBlocksDeletion = (blockIds: string[]) => {
-    deleteBlocks(blockIds);
-  };
-  const openDeleteDialog = async (ids: string[], cb?: () => void) => {
-    if (ids.length) {
-      const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
-        mode: "selection",
-        count: ids.length,
-        isSingleton: true,
-      });
-
-      if (isConfirmed) {
-        onDelete(ids);
-        cb?.();
-      }
-    }
-  };
-  const openEditDialog = (selectedBlockId: string) => {
-    const block = getBlockFromCache(selectedBlockId);
-
-    dialogs.open(
-      BlockEditFormDialog,
-      { defaultValues: block },
-      {
-        maxWidth: "md",
-        isSingleton: true,
-      },
-    );
-  };
-  const handleMoveButton = () => {
-    if (selectedNodeIds.length) {
-      dialogs.open(BlockMoveFormDialog, {
-        defaultValues: {
-          ids: selectedNodeIds,
-          onMove,
-          category: selectedCategoryId,
-          categories,
-        },
-      });
-    }
-  };
-  const onDelete = (ids: string[]) => {
-    if (!ids || ids?.length === 0) {
-      return;
-    }
-
-    handleBlocksDeletion(ids);
-  };
-  const onMove = (ids: string[], targetCategoryId: string) => {
-    if (ids.length) {
-      updateBlocks(
-        { ids, payload: { category: targetCategoryId } },
-        {
-          onSuccess() {
-            queryClient.invalidateQueries({
-              predicate: ({ queryKey }) => {
-                const [qType, qEntity] = queryKey;
-
-                return (
-                  qType === QueryType.collection &&
-                  isSameEntity(qEntity, EntityType.BLOCK)
-                );
-              },
-            });
-
-            const targetCategoryIndex = categories.findIndex(
-              ({ id }) => id === targetCategoryId,
-            );
-
-            onCategoryChange(targetCategoryIndex);
-          },
-          onError: () => {
-            toast.error(t("message.move_block_error"));
-          },
-        },
-      );
-    }
-  };
-  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    return {
+      x: 0,
+      y: 0,
+      zoom: 1,
+    };
+  }, [currentCategory]);
+  const keyDownHandler: KeyboardEventHandler<HTMLDivElement> = (e) => {
     const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
 
     if (isCmdF) {
@@ -348,12 +221,36 @@ const Diagrams3 = () => {
       updateCategory({
         id: selectedCategoryId,
         params: {
-          zoom,
+          zoom: zoom < 1 ? zoom * 100 : zoom,
           offset: [x, y],
         },
       });
     }
   }, 400);
+
+  useEffect(() => {
+    const { id: flowId } = router.query;
+
+    if (flowId) {
+      if (typeof flowId === "string") {
+        setSelectedCategoryId(flowId);
+      }
+    } else if (categories[0]?.id) {
+      setSelectedCategoryId(categories[0].id);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.id]);
+
+  useEffect(() => {
+    const { blockId } = router.query;
+
+    if (nodesInitialized && typeof blockId === "string" && blockId) {
+      selectNodes([blockId]);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodesInitialized, router.query]);
 
   return (
     <div
@@ -401,12 +298,8 @@ const Diagrams3 = () => {
             }}
           >
             <Tabs
-              value={
-                currentCategory
-                  ? categories?.findIndex(({ id }) => id === selectedCategoryId)
-                  : 0
-              }
-              onChange={handleChange}
+              value={tabIndex}
+              onChange={changeHandler}
               sx={{
                 backgroundColor: "#fff",
                 [`& .${tabsClasses.indicator}`]: {
@@ -464,51 +357,31 @@ const Diagrams3 = () => {
               ))}
             </Tabs>
             {hasPermission(EntityType.CATEGORY, PermissionAction.CREATE) ? (
-              <Button
-                sx={{
-                  mt: "7px",
-                  ml: "5px",
-                  borderRadius: "0",
-                  minHeight: "30px",
-                  border: "1px solid #DDDDDD",
-                  backgroundColor: "#F8F8F8",
-                  borderBottom: "none",
-                  width: "42px",
-                  minWidth: "42px",
-                }}
+              <StyledButton
                 onClick={(e) => {
                   dialogs.open(CategoryFormDialog, { defaultValues: null });
                   e.preventDefault();
                 }}
               >
                 <Add />
-              </Button>
+              </StyledButton>
             ) : null}
-            <Button
-              title={t("label.search_blocks_panel_header")}
+            <StyledButton
               sx={{
-                mt: "7px",
                 ml: "auto",
-                mr: "5px",
-                borderRadius: "0",
-                minHeight: "30px",
-                border: "1px solid #DDDDDD",
-                backgroundColor: "#F8F8F8",
-                borderBottom: "none",
-                width: "42px",
-                minWidth: "42px",
               }}
+              title={t("label.search_blocks_panel_header")}
               onClick={(e) => {
                 setSearchOpen((prev) => !prev);
                 e.preventDefault();
               }}
             >
               <SearchIcon />
-            </Button>
+            </StyledButton>
           </Grid>
-          <Grid container>
-            <ButtonGroup
-              size="small"
+          <Grid item>
+            <Grid
+              item
               sx={{
                 left: 240,
                 top: 140,
@@ -517,51 +390,73 @@ const Diagrams3 = () => {
                 display: "flex",
                 flexDirection: "row",
               }}
+              gap="10px"
             >
-              {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
-                <Button
-                  variant="contained"
-                  startIcon={<MoveUp />}
-                  onClick={handleMoveButton}
-                  disabled={!selectedNodeIds.length}
-                >
-                  {t("button.move")}
-                </Button>
+              <Grid item>
+                <ButtonGroup size="small">
+                  {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                    <Button
+                      variant="contained"
+                      startIcon={<MoveUp />}
+                      onClick={() => openMoveDialog()}
+                      disabled={selectedNodeIds.length <= 1}
+                    >
+                      {t("button.move")}
+                    </Button>
+                  ) : null}
+                  {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
+                    <Button
+                      variant="contained"
+                      startIcon={<ContentCopyRounded />}
+                      onClick={() => createNodes(selectedNodeIds)}
+                      disabled={selectedNodeIds.length <= 1}
+                    >
+                      {t("button.duplicate")}
+                    </Button>
+                  ) : null}
+                  {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => {
+                        openDeleteManyDialog();
+                      }}
+                      disabled={selectedNodeIds.length <= 1}
+                    >
+                      {t("button.remove")}
+                    </Button>
+                  ) : null}
+                </ButtonGroup>
+              </Grid>
+              {selectedNodeIds.length ? (
+                <Grid item alignContent="center">
+                  <Chip
+                    component="a"
+                    size="small"
+                    label={`${selectedNodeIds.length} selected nodes`}
+                    color="info"
+                    variant="outlined"
+                  />
+                </Grid>
               ) : null}
-              {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<DeleteIcon />}
-                  onClick={() => openDeleteDialog(selectedNodeIds)}
-                  disabled={!selectedNodeIds.length}
-                >
-                  {t("button.remove")}
-                </Button>
-              ) : null}
-            </ButtonGroup>
+            </Grid>
           </Grid>
         </Grid>
       </Box>
       <Box
-        position="relative"
-        height="100%"
         ref={canvasRef}
-        onKeyDown={handleKeyDown}
+        height="100%"
+        position="relative"
+        onKeyDown={keyDownHandler}
       >
         {currentCategory ? (
           <ReactFlowWrapper
             defaultEdges={[...nextBlocksLinks, ...attachedLinks]}
             defaultNodes={nodes}
-            defaultViewport={{
-              x: currentCategory?.offset?.[0] || 0,
-              y: currentCategory?.offset?.[1] || 0,
-              zoom: currentCategory?.zoom || 1,
-            }}
+            defaultViewport={defaultViewport}
             onMoveNode={debouncedUpdateBlock}
             onViewport={debouncedUpdateCategory}
-            onDeleteNodes={openDeleteDialog}
-            onNodeDoubleClick={openEditDialog}
           />
         ) : null}
         <BlockSearchPanel

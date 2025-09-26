@@ -6,20 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Handle, HandleProps } from "@xyflow/react";
+import { useContext } from "react";
 
-const CustomHandle = (props: HandleProps) => {
-  return (
-    <Handle
-      {...props}
-      style={{
-        background: "#555",
-        width: "10px",
-        height: "15px",
-        ...props.style,
-      }}
-    />
-  );
+import { VisualEditorContext } from "../contexts/VisualEditorContext";
+import { IVisualEditorContext } from "../types/visual-editor.types";
+
+export const useVisualEditorV3 = (): IVisualEditorContext => {
+  const context = useContext(VisualEditorContext);
+
+  if (!context) {
+    throw new Error(
+      "useVisualEditorV3 must be used within an VisualEditorContext",
+    );
+  }
+
+  return context;
 };
-
-export default CustomHandle;

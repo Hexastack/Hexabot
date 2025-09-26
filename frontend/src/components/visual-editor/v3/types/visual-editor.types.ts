@@ -6,10 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Edge, Node, XYPosition } from "@xyflow/react";
+import { Edge, Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
 import { ReactNode } from "react";
 
-import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { IBlock } from "@/types/block.types";
 
 export enum BlockPorts {
   inPort = "In",
@@ -31,15 +31,14 @@ export interface IVisualEditor {
   selectedBlockId: string | undefined;
 }
 
-export interface IVisualEditorContext {
-  setSelectedCategoryId: (id: string) => void;
-  selectedCategoryId: string | undefined;
-
-  createNode: (id: string | undefined, props?: IBlockAttributes) => void;
+export interface IVisualEditorContext extends ReactFlowInstance<Node, Edge> {
   getCentroid: () => XYPosition;
-
+  selectNodes: (nodeIds: string[]) => void;
   selectedNodeIds: string[];
+  getBlockFromCache: (id: string) => IBlock | undefined;
+  selectedCategoryId: string | undefined;
   setSelectedNodeIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedCategoryId: (id: string) => void;
 }
 
 export interface VisualEditorContextProps {

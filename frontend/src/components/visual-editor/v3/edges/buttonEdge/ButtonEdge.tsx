@@ -10,15 +10,15 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
-  useReactFlow,
   type EdgeProps,
 } from "@xyflow/react";
 import { useMemo } from "react";
 
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
+
+import { useVisualEditorV3 } from "../../hooks/useVisualEditorV3";
 
 export default function CustomEdge({
   id,
@@ -42,11 +42,11 @@ export default function CustomEdge({
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
-  const { setEdges, getEdges } = useReactFlow();
-  const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
-  const edge = useMemo(() => {
-    return getEdges().find((e) => e.id === id);
-  }, [getEdges, id]);
+  const { setEdges, getEdges, getBlockFromCache } = useVisualEditorV3();
+  const edge = useMemo(
+    () => getEdges().find((e) => e.id === id),
+    [getEdges, id],
+  );
   const onEdgeClick = () => {
     if (edge?.source) {
       const block = getBlockFromCache(edge.source);
@@ -57,12 +57,13 @@ export default function CustomEdge({
             }
           : { attachedBlock: null };
 
+      setEdges((edges) => edges.filter((edge) => edge.id !== id));
+
       updateBlock({
         id: edge.source,
         params: payload,
       });
     }
-    setEdges((edges) => edges.filter((edge) => edge.id !== id));
   };
 
   return (

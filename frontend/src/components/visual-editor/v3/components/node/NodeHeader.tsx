@@ -21,13 +21,12 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
 
   return (
     <div
-      className="node-title"
       style={{
-        backgroundColor: config.color,
+        backgroundImage: `linear-gradient(to top, ${config.color}ff, ${config.color}dd)`,
       }}
+      className="node-title"
     >
       <NodeControls blockId={blockId} />
-
       {block?.starts_conversation ? (
         <div
           className="start-point-container"

@@ -69,6 +69,38 @@
   box-shadow: var(--xy-node-boxshadow-default);
 }
 
+.react-flow .selected {
+  border-radius: 12px 0 12px 12px !important;
+}
+
+.react-flow__node #node-controls {
+  display: none;
+}
+
+.react-flow__node.selectable.selected #node-controls {
+  position: absolute;
+  border-radius: 12px 12px 0 0;
+  padding: 0px 6px;
+  top: -42px;
+  right: -2px;
+  border: 3px solid #1dc7fc;
+  border-bottom: 3px solid transparent;
+  display: flex;
+  background-color: #fefefecc;
+}
+
+.react-flow__node.selectable.selected .custom-node {
+  border-radius: 12px 0 12px 12px !important;
+  transform: scale(1.06);
+  transition: 0.2s;
+  border-color: var(--xy-theme-selected) !important;
+  border-width: 3px !important;
+}
+
+.react-flow__node.selectable.selected .node-title {
+  border-radius: 12px 0 0 0 !important;
+}
+
 .react-flow__node-group {
   background-color: rgba(207, 182, 255, 0.4);
   border-color: #9e86ed;
@@ -83,10 +115,25 @@
   background-color: var(--xy-handle-background-color-default);
 }
 
+.react-flow__handle[aria-disabled="true"] {
+  border: 1px solid #ccc;
+  background-color: #eee !important;
+}
+
 .react-flow__handle.connectionindicator:hover {
   pointer-events: all;
   border-color: var(--xy-theme-edge-hover);
   background-color: white;
+  transition: 0.2s;
+  transform-origin: 0 !important;
+}
+
+.react-flow__handle.connectionindicator[data-handlepos="left"]:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.react-flow__handle.connectionindicator[data-handlepos="right"]:hover {
+  transform: translate(50%, -50%) scale(1.2);
 }
 
 .react-flow__handle.connectionindicator:focus,

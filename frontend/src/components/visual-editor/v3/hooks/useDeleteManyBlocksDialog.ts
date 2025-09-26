@@ -1,0 +1,46 @@
+/*
+ * Copyright © 2025 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
+import { ConfirmDialogBody } from "@/app-components/dialogs";
+import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
+import { useDialogs } from "@/hooks/useDialogs";
+import { useToast } from "@/hooks/useToast";
+import { EntityType } from "@/services/types";
+
+import { useVisualEditorV3 } from "./useVisualEditorV3";
+
+export const useDeleteManyBlocksDialog = () => {
+  const dialogs = useDialogs();
+  const { toast } = useToast();
+  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditorV3();
+  const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
+    onSuccess: () => {
+      setSelectedNodeIds([]);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+  const openDeleteManyDialog = async (ids: string[] = selectedNodeIds) => {
+    if (ids.length) {
+      const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
+        mode: "selection",
+        count: ids.length,
+        isSingleton: true,
+      });
+
+      if (isConfirmed) {
+        deleteBlocks(ids);
+      }
+    }
+  };
+
+  return {
+    openDeleteManyDialog,
+  };
+};

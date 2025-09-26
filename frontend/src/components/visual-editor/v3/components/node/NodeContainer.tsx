@@ -14,7 +14,7 @@ import { EntityType } from "@/services/types";
 
 import { getBlockConfig } from "../../utils/block.utils";
 
-export const CustomContainer = ({
+export const NodeContainer = ({
   blockId,
   children,
 }: { blockId: string } & PropsWithChildren) => {
