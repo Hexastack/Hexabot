@@ -10,11 +10,10 @@ import { ContentCopyRounded } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import MoveUp from "@mui/icons-material/MoveUp";
-import { ButtonGroup, Divider, Grid, IconButton, Tooltip } from "@mui/material";
+import { ButtonGroup, Divider, Grid, IconButton, styled } from "@mui/material";
 import { useMemo } from "react";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
-import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
@@ -23,9 +22,15 @@ import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
 import { useVisualEditorV3 } from "../../hooks/useVisualEditorV3";
+import { TooltipIcon } from "../TooltipIcon";
+
+export const StyledIconButton = styled(IconButton)(() => ({
+  color: "#444",
+  backgroundColor: "transparent",
+  "&:hover": { borderRadius: "0px" },
+}));
 
 export const NodeControls = ({ blockId }: { blockId: string }) => {
-  const { t } = useTranslate();
   const hasPermission = useHasPermission();
   const { selectedNodeIds } = useVisualEditorV3();
   const { createNode } = useCreateBlock();
@@ -41,51 +46,42 @@ export const NodeControls = ({ blockId }: { blockId: string }) => {
     <Grid id="node-controls">
       <ButtonGroup size="small">
         {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
-          <IconButton
-            sx={{ color: "#444" }}
+          <StyledIconButton
             onClick={() => openEditDialog(blockId)}
             disabled={shouldDisableControlButton}
           >
-            <Tooltip title={t("button.edit")} placement="top" arrow>
-              <EditIcon sx={{ fontSize: "20px" }} />
-            </Tooltip>
-          </IconButton>
+            <TooltipIcon translationKey="button.edit" icon={EditIcon} />
+          </StyledIconButton>
         ) : null}
         <Divider orientation="vertical" />
         {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
-          <IconButton
-            sx={{ color: "#444" }}
+          <StyledIconButton
             onClick={() => openMoveDialog()}
             disabled={shouldDisableControlButton}
           >
-            <Tooltip title={t("button.move")} placement="top" arrow>
-              <MoveUp sx={{ fontSize: "20px" }} />
-            </Tooltip>
-          </IconButton>
+            <TooltipIcon translationKey="button.move" icon={MoveUp} />
+          </StyledIconButton>
         ) : null}
         <Divider orientation="vertical" />
         {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
-          <IconButton
-            sx={{ color: "#444" }}
+          <StyledIconButton
             onClick={() => createNode(blockId)}
             disabled={shouldDisableControlButton}
           >
-            <Tooltip title={t("button.duplicate")} placement="top" arrow>
-              <ContentCopyRounded sx={{ fontSize: "20px" }} />
-            </Tooltip>
-          </IconButton>
+            <TooltipIcon
+              translationKey="button.duplicate"
+              icon={ContentCopyRounded}
+            />
+          </StyledIconButton>
         ) : null}
         <Divider orientation="vertical" />
         {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
-          <IconButton
-            sx={{ color: "#444" }}
+          <StyledIconButton
             onClick={() => openDeleteManyDialog(selectedNodeIds)}
             disabled={shouldDisableControlButton}
           >
-            <Tooltip title={t("button.remove")} placement="top" arrow>
-              <DeleteIcon sx={{ fontSize: "20px" }} />
-            </Tooltip>
-          </IconButton>
+            <TooltipIcon translationKey="button.remove" icon={DeleteIcon} />
+          </StyledIconButton>
         ) : null}
       </ButtonGroup>
     </Grid>

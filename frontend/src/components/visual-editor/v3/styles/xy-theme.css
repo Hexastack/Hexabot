@@ -37,7 +37,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
   padding: 0;
   margin: 0;
   font-size: 12px;
@@ -74,19 +73,29 @@
 }
 
 .react-flow__node #node-controls {
-  display: none;
+  visibility: hidden;
+  position: absolute;
+  transition: opacity 0.4s, transform 0.1s;
+  width: auto;
+  transform: translateY(40px);
+  opacity: 0;
 }
 
 .react-flow__node.selectable.selected #node-controls {
+  opacity: 1;
   position: absolute;
-  border-radius: 12px 12px 0 0;
+  visibility: visible;
+  transform: translateY(0px);
+  border-radius: 9px 9px 0 0;
   padding: 0px 6px;
   top: -42px;
-  right: -2px;
+  right: -3px;
   border: 3px solid #1dc7fc;
-  border-bottom: 3px solid transparent;
+  border-bottom: 3px solid #fff;
   display: flex;
   background-color: #fefefecc;
+  box-shadow: 0 -2px 4px #c4c4c4;
+  padding: 0;
 }
 
 .react-flow__node.selectable.selected .custom-node {
@@ -98,7 +107,7 @@
 }
 
 .react-flow__node.selectable.selected .node-title {
-  border-radius: 12px 0 0 0 !important;
+  border-radius: 9px 0 0 0 !important;
 }
 
 .react-flow__node-group {
@@ -308,4 +317,20 @@
   margin-top: 10px;
   margin-bottom: 3px;
   display: inline-block;
+}
+
+.visual-editor:has(.react-flow__node.dragging)
+  #visual-editor-horizontal-controls,
+.visual-editor:has(.react-flow__node.dragging) [data-testid="rf__controls"] {
+  opacity: 0.6;
+  transition: 0.2s;
+  z-index: 1;
+}
+
+.visual-editor:has(.react-flow__node.dragging) [data-testid="rf__minimap"] {
+  z-index: 1;
+}
+.visual-editor:has(.react-flow__node.dragging) [data-testid="rf__background"] {
+  z-index: 1;
+  background: transparent;
 }

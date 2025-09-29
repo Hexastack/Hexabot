@@ -125,10 +125,9 @@
   justify-items: flex-start;
   align-items: center;
   gap: 8px;
-  border-radius: 12px 12px 0 0;
+  border-radius: 9px 9px 0 0;
   width: auto;
-  margin-top: -1px;
-  margin-left: -1px;
+  margin: 0;
   padding: 12px 20px;
   color: #ffffff;
   font-weight: bolder;

@@ -129,7 +129,9 @@
     "weight_positive_number_error": "Weight must be a strictly positive number",
     "failed_to_load_blocks": "Failed to load blocks search results.",
     "no_matching_results": "No matching results found. Try other keywords.",
-    "results": "results"
+    "results": "results",
+    "item_selected": "{{0}} selected item",
+    "items_selected": "{{0}} selected items"
   },
   "menu": {
     "terms": "Terms of Use",

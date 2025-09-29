@@ -16,6 +16,7 @@ import {
   OnConnect,
   ReactFlow,
   useKeyPress,
+  useNodesInitialized,
   useOnViewportChange,
   Viewport,
 } from "@xyflow/react";
@@ -61,9 +62,10 @@ const CanvasV3 = ({
     setSelectedNodeIds,
     selectedNodeIds,
     setEdges,
-    setViewport,
     getBlockFromCache,
+    setViewport,
   } = useVisualEditorV3();
+  const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
@@ -118,7 +120,7 @@ const CanvasV3 = ({
     setViewport(defaultViewport);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultViewport]);
+  }, [nodesInitialized]);
 
   return (
     <ReactFlow

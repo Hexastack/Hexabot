@@ -90,12 +90,14 @@ const Diagrams3 = () => {
   const router = useRouter();
   const dialogs = useDialogs();
   const {
+    getNode,
     selectNodes,
     selectedNodeIds,
     setSelectedNodeIds,
     selectedCategoryId,
     screenToFlowPosition,
     setSelectedCategoryId,
+    fitView,
   } = useVisualEditorV3();
   const { createNode, createNodes } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -136,6 +138,12 @@ const Diagrams3 = () => {
   const changeHandler = (_event: SyntheticEvent, categoryIndex: number) => {
     onCategoryChange(categoryIndex);
   };
+  const selectedItemsTranslation = t(
+    selectedNodeIds.length > 1
+      ? "message.items_selected"
+      : "message.item_selected",
+    { "0": selectedNodeIds.length.toString() },
+  );
   const nextBlocksLinks = useMemo(
     () => getNextBlocksLinksFromBlocks(blocks),
     [
@@ -180,7 +188,8 @@ const Diagrams3 = () => {
       return {
         x: offset?.[0],
         y: offset?.[1],
-        zoom: zoom > 1 ? zoom / 100 : zoom,
+        zoom,
+        // zoom: zoom > 1 ? zoom / 100 : zoom,
       };
     }
 
@@ -221,7 +230,8 @@ const Diagrams3 = () => {
       updateCategory({
         id: selectedCategoryId,
         params: {
-          zoom: zoom < 1 ? zoom * 100 : zoom,
+          zoom,
+          // zoom: zoom < 1 ? zoom * 100 : zoom,
           offset: [x, y],
         },
       });
@@ -247,6 +257,11 @@ const Diagrams3 = () => {
 
     if (nodesInitialized && typeof blockId === "string" && blockId) {
       selectNodes([blockId]);
+      const node = getNode(blockId);
+
+      if (node) {
+        fitView({ nodes: [node], padding: "150px", duration: 200 });
+      }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -379,68 +394,68 @@ const Diagrams3 = () => {
               <SearchIcon />
             </StyledButton>
           </Grid>
-          <Grid item>
-            <Grid
-              item
-              sx={{
-                left: 240,
-                top: 140,
-                zIndex: 6,
-                position: "absolute",
-                display: "flex",
-                flexDirection: "row",
-              }}
-              gap="10px"
-            >
-              <Grid item>
-                <ButtonGroup size="small">
-                  {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
-                    <Button
-                      variant="contained"
-                      startIcon={<MoveUp />}
-                      onClick={() => openMoveDialog()}
-                      disabled={selectedNodeIds.length <= 1}
-                    >
-                      {t("button.move")}
-                    </Button>
-                  ) : null}
-                  {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
-                    <Button
-                      variant="contained"
-                      startIcon={<ContentCopyRounded />}
-                      onClick={() => createNodes(selectedNodeIds)}
-                      disabled={selectedNodeIds.length <= 1}
-                    >
-                      {t("button.duplicate")}
-                    </Button>
-                  ) : null}
-                  {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => {
-                        openDeleteManyDialog();
-                      }}
-                      disabled={selectedNodeIds.length <= 1}
-                    >
-                      {t("button.remove")}
-                    </Button>
-                  ) : null}
-                </ButtonGroup>
-              </Grid>
-              {selectedNodeIds.length ? (
-                <Grid item alignContent="center">
-                  <Chip
-                    component="a"
-                    size="small"
-                    label={`${selectedNodeIds.length} selected nodes`}
-                    color="info"
-                    variant="outlined"
-                  />
-                </Grid>
-              ) : null}
+          <Grid
+            item
+            id="visual-editor-horizontal-controls"
+            sx={{
+              left: 240,
+              top: 140,
+              zIndex: 1,
+              position: "absolute",
+              display: "flex",
+              flexDirection: "row",
+            }}
+            gap="10px"
+          >
+            <Grid item>
+              <ButtonGroup size="small">
+                {hasPermission(EntityType.BLOCK, PermissionAction.UPDATE) ? (
+                  <Button
+                    variant="contained"
+                    startIcon={<MoveUp />}
+                    onClick={() => openMoveDialog()}
+                    disabled={selectedNodeIds.length <= 1}
+                  >
+                    {t("button.move")}
+                  </Button>
+                ) : null}
+                {hasPermission(EntityType.BLOCK, PermissionAction.CREATE) ? (
+                  <Button
+                    variant="contained"
+                    startIcon={<ContentCopyRounded />}
+                    onClick={() => createNodes(selectedNodeIds)}
+                    disabled={selectedNodeIds.length <= 1}
+                  >
+                    {t("button.duplicate")}
+                  </Button>
+                ) : null}
+                {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => {
+                      openDeleteManyDialog();
+                    }}
+                    disabled={selectedNodeIds.length <= 1}
+                  >
+                    {t("button.remove")}
+                  </Button>
+                ) : null}
+              </ButtonGroup>
             </Grid>
+            {selectedNodeIds.length ? (
+              <Grid item alignContent="center">
+                <Chip
+                  sx={{ backgroundColor: "#fffc" }}
+                  component="a"
+                  size="small"
+                  label={selectedItemsTranslation}
+                  color="info"
+                  variant="outlined"
+                />
+              </Grid>
+            ) : null}
           </Grid>
         </Grid>
       </Box>
