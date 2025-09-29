@@ -6,7 +6,7 @@
   "author": "Hexastack",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "next dev -p 8081 --turbopack",
+    "dev": "next dev -p 8081",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
