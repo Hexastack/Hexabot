@@ -29,7 +29,7 @@ export class Category extends BaseSchema {
 
   @Prop({
     type: Number,
-    default: 100,
+    default: 1,
   })
   zoom: number;
 
