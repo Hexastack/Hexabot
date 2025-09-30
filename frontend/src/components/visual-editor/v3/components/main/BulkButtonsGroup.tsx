@@ -39,7 +39,7 @@ const ControlButton = ({
   </Button>
 );
 
-export const HorizontalBulkButtonsGroup = () => {
+export const BulkButtonsGroup = () => {
   const hasPermission = useHasPermission();
   const { t } = useTranslate();
   const { selectedNodeIds } = useVisualEditor();

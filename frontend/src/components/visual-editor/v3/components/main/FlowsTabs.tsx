@@ -77,7 +77,7 @@ const StyledTab = styled(Tab)(() => ({
   },
 }));
 
-export const FlowHorizontalTabs = ({
+export const FlowsTabs = ({
   onSearchClick,
 }: {
   onSearchClick: (e: MouseEvent) => void;

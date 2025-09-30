@@ -10,13 +10,13 @@ import { Position, useNodeConnections } from "@xyflow/react";
 import { memo, useMemo } from "react";
 
 import { NodeData } from "../../types/visual-editor.types";
-import CustomHandle from "../handlers/CustomHandle";
+import { PortHandle } from "../handlers/PortHandle";
 
 import { NodeBody } from "./NodeBody";
 import { NodeContainer } from "./NodeContainer";
 import { NodeHeader } from "./NodeHeader";
 
-const CustomNode = ({ id: blockId }: NodeData) => {
+const NodeBlock = ({ id: blockId }: NodeData) => {
   const connections = useNodeConnections();
   const disableNextBlocks = useMemo(() => {
     return (
@@ -35,7 +35,7 @@ const CustomNode = ({ id: blockId }: NodeData) => {
 
   return (
     <NodeContainer blockId={blockId}>
-      <CustomHandle
+      <PortHandle
         type="target"
         position={Position.Left}
         style={{
@@ -46,7 +46,7 @@ const CustomNode = ({ id: blockId }: NodeData) => {
       />
       <NodeHeader blockId={blockId} />
       <NodeBody blockId={blockId} />
-      <CustomHandle
+      <PortHandle
         type="source"
         position={Position.Right}
         id="nextBlocks"
@@ -59,7 +59,7 @@ const CustomNode = ({ id: blockId }: NodeData) => {
         aria-disabled={!disableNextBlocks}
         isConnectable={disableNextBlocks}
       />
-      <CustomHandle
+      <PortHandle
         type="source"
         position={Position.Right}
         id="attached"
@@ -76,4 +76,4 @@ const CustomNode = ({ id: blockId }: NodeData) => {
   );
 };
 
-export default memo(CustomNode);
+export default memo(NodeBlock);

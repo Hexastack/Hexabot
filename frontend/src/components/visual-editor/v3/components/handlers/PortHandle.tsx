@@ -8,7 +8,7 @@
 
 import { Handle, HandleProps } from "@xyflow/react";
 
-const CustomHandle = (props: HandleProps) => {
+export const PortHandle = (props: HandleProps) => {
   return (
     <Handle
       {...props}
@@ -21,5 +21,3 @@ const CustomHandle = (props: HandleProps) => {
     />
   );
 };
-
-export default CustomHandle;

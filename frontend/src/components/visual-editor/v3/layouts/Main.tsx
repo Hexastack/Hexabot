@@ -25,8 +25,8 @@ import { EntityType, Format } from "@/services/types";
 import { IBlock } from "@/types/block.types";
 
 import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
-import { HorizontalBulkButtonsGroup } from "../components/main/ButtonHorizontalGroup";
-import { FlowHorizontalTabs } from "../components/main/FlowHorizontalTabs";
+import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
+import { FlowsTabs } from "../components/main/FlowsTabs";
 import ReactFlowWrapper from "../components/ReactFlowWrapper";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditor } from "../hooks/useVisualEditor";
@@ -205,13 +205,13 @@ export const Main = () => {
       className="visual-editor"
     >
       <Box sx={{ width: "100%", bgcolor: "#fff" }}>
-        <FlowHorizontalTabs
+        <FlowsTabs
           onSearchClick={(e) => {
             setSearchOpen((prev) => !prev);
             e.preventDefault();
           }}
         />
-        <HorizontalBulkButtonsGroup />
+        <BulkButtonsGroup />
       </Box>
       <Box
         ref={canvasRef}

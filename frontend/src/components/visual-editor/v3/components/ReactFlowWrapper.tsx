@@ -38,7 +38,7 @@ import { EdgeLink, TBlock } from "../types/visual-editor.types";
 import { getBlockConfigByType } from "../utils/block.utils";
 
 import ButtonEdge from "./edges/ButtonEdge";
-import CustomNode from "./nodes/CustomNode";
+import CustomNode from "./nodes/NodeBlock";
 
 const NODE_TYPES = {
   block: CustomNode,
