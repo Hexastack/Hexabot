@@ -24,10 +24,10 @@ import { IBlock, IBlockAttributes } from "@/types/block.types";
 import { ComponentFormProps } from "@/types/common/dialogs.types";
 import { OutgoingMessageFormat } from "@/types/message.types";
 
-import BlockFormProvider from "./form/BlockFormProvider";
-import { MessageForm } from "./form/MessageForm";
-import { OptionsForm } from "./form/OptionsForm";
-import { TriggersForm } from "./form/TriggersForm";
+import BlockFormProvider from "../../form/BlockFormProvider";
+import { MessageForm } from "../../form/MessageForm";
+import { OptionsForm } from "../../form/OptionsForm";
+import { TriggersForm } from "../../form/TriggersForm";
 
 type TSelectedTab = "triggers" | "options" | "messages";
 

@@ -22,7 +22,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
 import { useRouter } from "next/router";
-import { RefObject, useCallback, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DialogTitle } from "@/app-components/dialogs";
@@ -32,14 +32,14 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, RouterType } from "@/services/types";
-import { IBlockSearchResult } from "@/types/block.types";
+import { EntityType } from "@/services/types";
 
+import { useFocusBlock } from "../../v3/hooks/useFocusBlock";
+import { useVisualEditorV3 } from "../../v3/hooks/useVisualEditorV3";
 import {
   BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
   BlockSearchResultItem,
 } from "./BlockSearchResultItem";
-import { useVisualEditor } from "./hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
 
@@ -74,10 +74,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const router = useRouter();
   const { t } = useTranslate();
   const { toast } = useToast();
+  const { updateVisualEditorURL, setOpenSearchPanel } = useFocusBlock();
   const [scope, setScope] = useState<SearchScope>("all");
   const blockId = router.query.blockId?.toString();
   const [selected, setSelected] = useState<string | undefined>(blockId);
-  const { selectedCategoryId } = useVisualEditor();
+  const { selectedCategoryId } = useVisualEditorV3();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
     data: blockSearchResults = [],
@@ -104,36 +105,17 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     },
   );
   const isLoadingResults = isLoading || isFetching;
-  const navigateToBlock = useCallback(
-    async (blockId: string, categoryId: string) => {
-      // Navigate to route embedding block id (or only flow if block missing)
-      if (categoryId && blockId) {
-        await router.push(
-          `/${RouterType.VISUAL_EDITOR}3/flows/${categoryId}/${blockId}`,
-        );
-      }
-    },
-    [router],
-  );
-  const selectSearchResult = useCallback(
-    async (item: IBlockSearchResult) => {
-      if (!item) return;
 
-      setSelected(item.id);
-      await navigateToBlock(item.id, item.category);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [navigateToBlock],
-  );
+  useEffect(() => {
+    setOpenSearchPanel(open);
+  }, [open]);
 
   return (
     <Panel
       open={open}
-      onClose={(_event, reason) => {
-        if (reason === "backdropClick") return; // ignore outside clicks
+      onClose={() => {
         onClose();
       }}
-      hideBackdrop
       container={canvasRef?.current}
       PaperProps={{
         sx: {
@@ -243,7 +225,9 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               itemData={{
                 items: blockSearchResults,
                 selected,
-                onClick: selectSearchResult,
+                onClick: (item) => {
+                  updateVisualEditorURL(item.category, item.id);
+                },
               }}
             >
               {BlockSearchResultItem}

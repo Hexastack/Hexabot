@@ -8,15 +8,11 @@
 
 import { ReactElement } from "react";
 
-import { VisualEditor } from "@/components/visual-editor";
+import { VisualEditor3 } from "@/components/visual-editor/v3";
 import { Layout } from "@/layout";
 
 const VisualEditorPage = () => {
-  return (
-    <>
-      <VisualEditor />
-    </>
-  );
+  return <VisualEditor3 />;
 };
 
 VisualEditorPage.getLayout = function getLayout(page: ReactElement) {
