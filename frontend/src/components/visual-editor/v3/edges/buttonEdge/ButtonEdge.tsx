@@ -20,6 +20,11 @@ import { IBlockAttributes } from "@/types/block.types";
 
 import { useVisualEditorV3 } from "../../hooks/useVisualEditorV3";
 
+export const EDGE_HOVER_CLASSNAME = "hovered" as const;
+
+const getEdgeClasslist = (edgeId: string) =>
+  document.querySelector(`[data-id="${edgeId}"]`)?.classList;
+
 export default function CustomEdge({
   id,
   sourceX,
@@ -76,7 +81,28 @@ export default function CustomEdge({
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
           }}
         >
-          <button className="button-edge__button" onClick={onEdgeClick}>
+          <button
+            className="button-edge__button"
+            onClick={onEdgeClick}
+            onMouseEnter={() => {
+              if (edge) {
+                const edgeClasslist = getEdgeClasslist(edge.id);
+
+                if (edgeClasslist && !edgeClasslist.contains("hovered")) {
+                  edgeClasslist.add("hovered");
+                }
+              }
+            }}
+            onMouseLeave={() => {
+              if (edge) {
+                const edgeClasslist = getEdgeClasslist(edge.id);
+
+                if (edgeClasslist?.contains("hovered")) {
+                  edgeClasslist.remove("hovered");
+                }
+              }
+            }}
+          >
             ×
           </button>
         </div>

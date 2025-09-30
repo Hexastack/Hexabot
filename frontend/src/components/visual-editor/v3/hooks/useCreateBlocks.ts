@@ -11,9 +11,11 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
+import { useFocusBlock } from "./useFocusBlock";
 import { useVisualEditorV3 } from "./useVisualEditorV3";
 
 export const useCreateBlock = () => {
+  const { updateVisualEditorURL } = useFocusBlock();
   const { getCentroid, setSelectedNodeIds } = useVisualEditorV3();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
@@ -57,8 +59,9 @@ export const useCreateBlock = () => {
       createBlock(
         { position, ...rest },
         {
-          onSuccess: (data) => {
+          onSuccess: async (data, { category }) => {
             setSelectedNodeIds([data.id]);
+            await updateVisualEditorURL(category, data.id);
           },
         },
       );

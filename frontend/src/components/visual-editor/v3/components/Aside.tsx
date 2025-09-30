@@ -25,9 +25,9 @@ import {
   QUICK_REPLIES_BLOCK_TEMPLATE,
   SIMPLE_TEXT_BLOCK_TEMPLATE,
 } from "../../constants";
-import { CustomBlocks } from "../../CustomBlocks";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditorV3 } from "../hooks/useVisualEditorV3";
+import { CustomBlocks } from "./CustomBlocks";
 
 const StyledIconButton = styled(IconButton)(
   SXStyleOptions({

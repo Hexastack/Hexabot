@@ -17,7 +17,12 @@ import { NodeControls } from "./NodeControls";
 
 export const NodeHeader = ({ blockId }: { blockId: string }) => {
   const { data: block } = useGet(blockId, { entity: EntityType.BLOCK });
-  const config = getBlockConfig(block?.message as any);
+
+  if (!block?.message) {
+    return null;
+  }
+
+  const config = getBlockConfig(block.message);
 
   return (
     <div

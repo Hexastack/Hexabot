@@ -20,22 +20,24 @@ import {
   useOnViewportChange,
   Viewport,
 } from "@xyflow/react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import "@xyflow/react/dist/style.css";
 
 // import DarkModeControl from "./components/DarkModeControl";
-import { IBlock, IBlockAttributes } from "@/types/block.types";
-import { TBlock } from "@/types/visual-editor.types";
 
-import CustomNode from "./components/node/CustomNode";
-import ButtonEdge from "./edges/buttonEdge/ButtonEdge";
-import { useDeleteManyBlocksDialog } from "./hooks/useDeleteManyBlocksDialog";
-import { useEditBlockDialog } from "./hooks/useEditBlockDialog";
-import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
-import "./styles/index.css";
-import { EdgeLink } from "./types/visual-editor.types";
-import { getBlockConfigByType } from "./utils/block.utils";
+import { IBlock, IBlockAttributes } from "@/types/block.types";
+
+import "../../v3/styles/index.css";
+import ButtonEdge from "../edges/buttonEdge/ButtonEdge";
+import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
+import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
+import { useFocusBlock } from "../hooks/useFocusBlock";
+import { useVisualEditorV3 } from "../hooks/useVisualEditorV3";
+import { EdgeLink, TBlock } from "../types/visual-editor.types";
+import { getBlockConfigByType } from "../utils/block.utils";
+
+import CustomNode from "./node/CustomNode";
 
 const NODE_TYPES = {
   block: CustomNode,
@@ -59,16 +61,25 @@ const CanvasV3 = ({
   onNodeDoubleClick?: (selectedBlockId: string) => void;
 }) => {
   const {
+    removeBlockIdParam,
+    updateVisualEditorURL,
+    getQuery,
+    openSearchPanel,
+    animateFocus,
+  } = useFocusBlock();
+  const {
     setSelectedNodeIds,
     selectedNodeIds,
     setEdges,
     getBlockFromCache,
     setViewport,
+    selectedCategoryId,
   } = useVisualEditorV3();
   const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
+  const blockId = useMemo(() => getQuery("blockId"), [getQuery]);
   // const [colorMode, setColorMode] = useState<ColorMode>("light");
   // const onColorChange: ChangeEventHandler<HTMLSelectElement> = (evt) => {
   //   setColorMode(evt.target.value as ColorMode);
@@ -109,10 +120,12 @@ const CanvasV3 = ({
   });
 
   useEffect(() => {
-    if (deleteKeyPressed) {
-      if (selectedNodeIds.length) {
-        openDeleteManyDialog(selectedNodeIds);
-      }
+    if (deleteKeyPressed && selectedNodeIds.length) {
+      openDeleteManyDialog(selectedNodeIds).then((confirm) => {
+        if (confirm) {
+          removeBlockIdParam();
+        }
+      });
     }
   }, [onDeleteNodes, selectedNodeIds, deleteKeyPressed]);
 
@@ -134,19 +147,37 @@ const CanvasV3 = ({
       nodeTypes={NODE_TYPES as any}
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
-      // onNodesChange={onNodesChange}
       // colorMode={colorMode}
-      onNodeClick={(_e, node) => {
+      onNodeClick={(e, node) => {
         if (!selectedNodeIds.includes(node.id)) {
-          setSelectedNodeIds((nodes) => [...nodes, node.id]);
+          if (selectedCategoryId && !e.ctrlKey) {
+            updateVisualEditorURL(selectedCategoryId, node.id);
+            setSelectedNodeIds([node.id]);
+          } else {
+            setSelectedNodeIds((nodes) => [...nodes, node.id]);
+          }
         }
       }}
       onNodeDoubleClick={handleNodeDoubleClick}
       onSelectionChange={({ nodes }) => {
         const selectedNodes = nodes.map(({ id }) => id);
 
+        if (blockId && nodes.length > 1) {
+          removeBlockIdParam();
+        } else if (!blockId && nodes.length === 1 && selectedCategoryId) {
+          updateVisualEditorURL(selectedCategoryId, nodes[0].id);
+        }
+
         if (selectedNodes.length !== selectedNodeIds.length) {
           setSelectedNodeIds(selectedNodes);
+
+          if (
+            !selectedNodes.includes(blockId) &&
+            !selectedNodes.length &&
+            !openSearchPanel
+          ) {
+            removeBlockIdParam();
+          }
         }
       }}
       onlyRenderVisibleElements
@@ -161,6 +192,7 @@ const CanvasV3 = ({
       }}
     >
       <MiniMap
+        className="rf-background"
         nodeStrokeColor={(n) => {
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
@@ -171,11 +203,15 @@ const CanvasV3 = ({
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
 
-          return `${config.color}11`;
+          return `${config.color}aa`;
         }}
         nodeBorderRadius={18}
       />
-      <Controls />
+      <Controls
+        className="rf-controls"
+        onFitView={animateFocus}
+        fitViewOptions={{ duration: 200 }}
+      />
       <Background />
       {/* <DarkModeControl onChange={onColorChange} /> */}
     </ReactFlow>

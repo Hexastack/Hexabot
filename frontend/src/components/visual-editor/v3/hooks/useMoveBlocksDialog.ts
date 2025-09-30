@@ -6,7 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
@@ -15,23 +14,24 @@ import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
-import { EntityType, QueryType, RouterType } from "@/services/types";
+import { EntityType, QueryType } from "@/services/types";
 
-import { BlockMoveFormDialog } from "../../BlockMoveFormDialog";
+import { BlockMoveFormDialog } from "../../components/block/BlockMoveFormDialog";
 
+import { useFocusBlock } from "./useFocusBlock";
 import { useVisualEditorV3 } from "./useVisualEditorV3";
 
 export const useMoveBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const router = useRouter();
   const {
     selectedNodeIds,
     selectedCategoryId,
     setSelectedCategoryId,
     setSelectedNodeIds,
   } = useVisualEditorV3();
+  const { updateVisualEditorURL } = useFocusBlock();
   const queryClient = useQueryClient();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const { data: categories } = useFind(
@@ -56,7 +56,7 @@ export const useMoveBlocksDialog = () => {
         setSelectedCategoryId?.(id);
         setSelectedNodeIds([]);
 
-        router.push(`/${RouterType.VISUAL_EDITOR}3/flows/${id}`);
+        updateVisualEditorURL(id);
       }
     }
   };

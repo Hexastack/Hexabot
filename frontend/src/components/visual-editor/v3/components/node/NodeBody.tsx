@@ -19,15 +19,20 @@ import { useGet } from "@/hooks/crud/useGet";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { Pattern } from "@/types/block.types";
-import { BlockTypes } from "@/types/visual-editor.types";
 import { truncate } from "@/utils/text";
 
+import { BlockTypes } from "../../types/visual-editor.types";
 import { getBlockConfig } from "../../utils/block.utils";
 
 export const NodeBody = ({ blockId }: { blockId: string }) => {
   const { t } = useTranslate();
   const { data: block } = useGet(blockId, { entity: EntityType.BLOCK });
-  const config = getBlockConfig(block?.message as any);
+
+  if (!block?.message) {
+    return null;
+  }
+
+  const config = getBlockConfig(block.message);
 
   return (
     <div className="node-block-field-container">

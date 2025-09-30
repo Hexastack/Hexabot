@@ -29,8 +29,7 @@
   --xy-theme-color-focus: #535353;
 }
 
-/* Customizing Default Theming */
-
+/* node */
 .react-flow__node {
   border-radius: var(--xy-node-border-radius-default);
   background-color: var(--xy-node-background-color-default);
@@ -72,32 +71,6 @@
   border-radius: 12px 0 12px 12px !important;
 }
 
-.react-flow__node #node-controls {
-  visibility: hidden;
-  position: absolute;
-  transition: opacity 0.4s, transform 0.1s;
-  width: auto;
-  transform: translateY(40px);
-  opacity: 0;
-}
-
-.react-flow__node.selectable.selected #node-controls {
-  opacity: 1;
-  position: absolute;
-  visibility: visible;
-  transform: translateY(0px);
-  border-radius: 9px 9px 0 0;
-  padding: 0px 6px;
-  top: -42px;
-  right: -3px;
-  border: 3px solid #1dc7fc;
-  border-bottom: 3px solid #fff;
-  display: flex;
-  background-color: #fefefecc;
-  box-shadow: 0 -2px 4px #c4c4c4;
-  padding: 0;
-}
-
 .react-flow__node.selectable.selected .custom-node {
   border-radius: 12px 0 12px 12px !important;
   transform: scale(1.06);
@@ -119,37 +92,6 @@
 .react-flow__edge.selectable.selected .react-flow__edge-path {
   stroke: var(--xy-theme-edge-hover);
 } */
-
-.react-flow__handle {
-  background-color: var(--xy-handle-background-color-default);
-}
-
-.react-flow__handle[aria-disabled="true"] {
-  border: 1px solid #ccc;
-  background-color: #eee !important;
-}
-
-.react-flow__handle.connectionindicator:hover {
-  pointer-events: all;
-  border-color: var(--xy-theme-edge-hover);
-  background-color: white;
-  transition: 0.2s;
-  transform-origin: 0 !important;
-}
-
-.react-flow__handle.connectionindicator[data-handlepos="left"]:hover {
-  transform: translate(-50%, -50%) scale(1.2);
-}
-
-.react-flow__handle.connectionindicator[data-handlepos="right"]:hover {
-  transform: translate(50%, -50%) scale(1.2);
-}
-
-.react-flow__handle.connectionindicator:focus,
-.react-flow__handle.connectingfrom,
-.react-flow__handle.connectingto {
-  border-color: var(--xy-theme-edge-hover);
-}
 
 .react-flow__node-resizer {
   border-radius: 0;
@@ -319,18 +261,125 @@
   display: inline-block;
 }
 
+/* controls */
+.react-flow__node #node-controls {
+  visibility: hidden;
+  position: absolute;
+  transition: opacity 0.4s, transform 0.1s;
+  width: auto;
+  transform: translateY(40px);
+  opacity: 0;
+}
+
+.react-flow__node.selectable.selected #node-controls {
+  opacity: 1;
+  position: absolute;
+  visibility: visible;
+  transform: translateY(0px);
+  border-radius: 9px 9px 0 0;
+  padding: 0px 6px;
+  top: -42px;
+  right: -3px;
+  border: 3px solid #1dc7fc;
+  border-bottom: 3px solid #fff;
+  display: flex;
+  background-color: #fefefecc;
+  box-shadow: 0 -2px 4px #c4c4c4;
+  padding: 0;
+}
+
+.rf-background {
+  box-shadow: 0 0 8px #c4c4c4;
+  background-color: #fffa;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: 0.2s;
+}
+
+.rf-background:hover {
+  background-color: #fff;
+}
+
+.rf-controls {
+  box-shadow: 0 0 8px #c4c4c4;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: 0.2s;
+}
+
+.rf-controls:not(:hover) button {
+  background-color: #fffa;
+}
+
+/* onDragging */
+.visual-editor:has(.react-flow__node.dragging) .rf-background {
+  z-index: 1;
+  background: transparent;
+}
+
 .visual-editor:has(.react-flow__node.dragging)
   #visual-editor-horizontal-controls,
-.visual-editor:has(.react-flow__node.dragging) [data-testid="rf__controls"] {
+.visual-editor:has(.react-flow__node.dragging) .rf-controls {
   opacity: 0.6;
-  transition: 0.2s;
   z-index: 1;
 }
 
 .visual-editor:has(.react-flow__node.dragging) [data-testid="rf__minimap"] {
   z-index: 1;
 }
-.visual-editor:has(.react-flow__node.dragging) [data-testid="rf__background"] {
-  z-index: 1;
-  background: transparent;
+
+/* react flow logo */
+.react-flow__attribution {
+  visibility: hidden;
+}
+
+/* edges */
+g.react-flow__edge path {
+  transition: stroke 0.2s;
+}
+g.react-flow__edge.hovered path,
+g.react-flow__edge:hover path {
+  stroke: #1dc7fc !important;
+}
+
+/* ports */
+
+.react-flow__handle:not([aria-disabled="true"]) {
+  background-color: var(--xy-handle-background-color-default);
+  cursor: pointer !important;
+  pointer-events: all;
+}
+
+.react-flow__handle:not([aria-disabled="true"]):active {
+  cursor: grabbing !important;
+  pointer-events: all;
+}
+
+.react-flow__handle[aria-disabled="true"] {
+  border: 1px solid #ccc;
+  background-color: #eee !important;
+  cursor: not-allowed;
+  pointer-events: all;
+}
+
+.react-flow__handle.connectionindicator:hover {
+  pointer-events: all;
+  border-color: var(--xy-theme-edge-hover);
+  background-color: white;
+  transition: 0.2s;
+  transform-origin: 0 !important;
+}
+
+.react-flow__handle.connectionindicator[data-handlepos="left"]:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+.react-flow__handle.connectionindicator[data-handlepos="right"]:hover {
+  transform: translate(50%, -50%) scale(1.2);
+}
+
+.react-flow__handle.connectionindicator:focus,
+.react-flow__handle.connectingfrom,
+.react-flow__handle.connectingto {
+  border-color: var(--xy-theme-edge-hover);
 }

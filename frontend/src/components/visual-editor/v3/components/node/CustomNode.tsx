@@ -9,8 +9,8 @@
 import { Node, Position, useNodeConnections } from "@xyflow/react";
 import { memo, useMemo } from "react";
 
-import { NodeBlockData } from "../../Diagrams3";
 import CustomHandle from "../../handlers/CustomHandle";
+import { NodeBlockData } from "../Diagram";
 
 import { NodeBody } from "./NodeBody";
 import { NodeContainer } from "./NodeContainer";

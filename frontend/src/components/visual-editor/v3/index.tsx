@@ -12,7 +12,7 @@ import dynamic from "next/dynamic";
 
 import { VisualEditorProvider3 } from "./providers/VisualEditorProvider";
 
-const Diagrams3 = dynamic(async () => await import("./Diagrams3"), {
+const Diagram = dynamic(async () => await import("./components/Diagram"), {
   ssr: false,
 });
 const Aside = dynamic(() => import("./components/Aside"), { ssr: false });
@@ -39,7 +39,7 @@ export const VisualEditor3 = () => {
                 flexDirection: "column",
               }}
             >
-              <Diagrams3 />
+              <Diagram />
             </Grid>
           </Grid>
         </Grid>

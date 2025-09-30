@@ -23,7 +23,7 @@ import {
   Tabs,
   tabsClasses,
 } from "@mui/material";
-import { Node, useNodesInitialized, Viewport } from "@xyflow/react";
+import { Node, Viewport } from "@xyflow/react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import {
@@ -46,17 +46,17 @@ import { EntityType, Format } from "@/services/types";
 import { BlockType, IBlock, Pattern } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
 
-import { BlockSearchPanel } from "../BlockSearchPanel";
-
-import { useCreateBlock } from "./hooks/useCreateBlocks";
-import { useDeleteManyBlocksDialog } from "./hooks/useDeleteManyBlocksDialog";
-import { useMoveBlocksDialog } from "./hooks/useMoveBlocksDialog";
-import { useVisualEditorV3 } from "./hooks/useVisualEditorV3";
+import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
+import { useCreateBlock } from "../hooks/useCreateBlocks";
+import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
+import { useFocusBlock } from "../hooks/useFocusBlock";
+import { useMoveBlocksDialog } from "../hooks/useMoveBlocksDialog";
+import { useVisualEditorV3 } from "../hooks/useVisualEditorV3";
 import {
   getAttachedLinksFromBlocks,
   getNextBlocksLinksFromBlocks,
   getNodesFromBlocks,
-} from "./utils/block.utils";
+} from "../utils/block.utils";
 
 const StyledButton = styled(Button)(() => ({
   marginTop: "7px",
@@ -84,20 +84,16 @@ export type NodeData = Node<NodeBlockData>;
 const ReactFlowWrapper = dynamic(() => import("./ReactFlowWrapper"), {
   ssr: false,
 });
-const Diagrams3 = () => {
-  const nodesInitialized = useNodesInitialized();
+const Diagram = () => {
   const { t } = useTranslate();
   const router = useRouter();
   const dialogs = useDialogs();
+  const { removeBlockIdParam } = useFocusBlock();
   const {
-    getNode,
-    selectNodes,
     selectedNodeIds,
-    setSelectedNodeIds,
     selectedCategoryId,
     screenToFlowPosition,
     setSelectedCategoryId,
-    fitView,
   } = useVisualEditorV3();
   const { createNode, createNodes } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -133,6 +129,7 @@ const Diagrams3 = () => {
     { hasCount: false, params: searchPayload },
     {
       enabled: !!selectedCategoryId,
+      keepPreviousData: true,
     },
   );
   const changeHandler = (_event: SyntheticEvent, categoryIndex: number) => {
@@ -209,19 +206,12 @@ const Diagrams3 = () => {
   };
   const debouncedUpdateBlock = debounce(
     ({ id, ...rest }: Partial<IBlock> & { id: string }) => {
-      updateBlock(
-        {
-          id,
-          params: {
-            ...rest,
-          },
+      updateBlock({
+        id,
+        params: {
+          ...rest,
         },
-        {
-          onSuccess(data) {
-            setSelectedNodeIds([data.id]);
-          },
-        },
-      );
+      });
     },
     400,
   );
@@ -251,21 +241,6 @@ const Diagrams3 = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.id]);
-
-  useEffect(() => {
-    const { blockId } = router.query;
-
-    if (nodesInitialized && typeof blockId === "string" && blockId) {
-      selectNodes([blockId]);
-      const node = getNode(blockId);
-
-      if (node) {
-        fitView({ nodes: [node], padding: "150px", duration: 200 });
-      }
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodesInitialized, router.query]);
 
   return (
     <div
@@ -434,8 +409,12 @@ const Diagrams3 = () => {
                     variant="contained"
                     color="secondary"
                     startIcon={<DeleteIcon />}
-                    onClick={() => {
-                      openDeleteManyDialog();
+                    onClick={async () => {
+                      const confirm = await openDeleteManyDialog();
+
+                      if (confirm) {
+                        removeBlockIdParam();
+                      }
                     }}
                     disabled={selectedNodeIds.length <= 1}
                   >
@@ -484,4 +463,4 @@ const Diagrams3 = () => {
   );
 };
 
-export default Diagrams3;
+export default Diagram;

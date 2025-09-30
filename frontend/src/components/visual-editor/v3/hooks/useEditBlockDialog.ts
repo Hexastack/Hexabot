@@ -8,7 +8,7 @@
 
 import { useDialogs } from "@/hooks/useDialogs";
 
-import { BlockEditFormDialog } from "../../BlockEditFormDialog";
+import { BlockEditFormDialog } from "../../components/block/BlockEditFormDialog";
 
 import { useVisualEditorV3 } from "./useVisualEditorV3";
 
