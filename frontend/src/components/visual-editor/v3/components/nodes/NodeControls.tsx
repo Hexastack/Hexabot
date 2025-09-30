@@ -22,7 +22,7 @@ import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
-import { useVisualEditorV3 } from "../../hooks/useVisualEditorV3";
+import { useVisualEditor } from "../../hooks/useVisualEditor";
 import { TooltipIcon } from "../TooltipIcon";
 
 export const StyledIconButton = styled(IconButton)(() => ({
@@ -34,7 +34,7 @@ export const StyledIconButton = styled(IconButton)(() => ({
 export const NodeControls = ({ blockId }: { blockId: string }) => {
   const hasPermission = useHasPermission();
   const { removeBlockIdParam } = useFocusBlock();
-  const { selectedNodeIds } = useVisualEditorV3();
+  const { selectedNodeIds } = useVisualEditor();
   const { createNode } = useCreateBlock();
   const { openEditDialog } = useEditBlockDialog();
   const { openMoveDialog } = useMoveBlocksDialog();

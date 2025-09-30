@@ -14,7 +14,8 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
-import { Block, StyledTitle } from "./Aside";
+import { RegularBlockItem } from "./RegularBlockItem";
+import { StyledTitle } from "./RegularBlocks";
 
 export const CustomBlocks = () => {
   const { t } = useTranslate();
@@ -34,7 +35,7 @@ export const CustomBlocks = () => {
       </Grid>
       <Grid container>
         {memoizedCustomBlocks.map((customBlock) => (
-          <Block
+          <RegularBlockItem
             key={customBlock.id}
             title={t(`title.${customBlock.namespace}`, {
               ns: customBlock.namespace,

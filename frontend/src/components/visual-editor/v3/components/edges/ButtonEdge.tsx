@@ -18,7 +18,7 @@ import { useUpdate } from "@/hooks/crud/useUpdate";
 import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
-import { useVisualEditorV3 } from "../../hooks/useVisualEditorV3";
+import { useVisualEditor } from "../../hooks/useVisualEditor";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
@@ -47,7 +47,7 @@ export default function CustomEdge({
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
-  const { setEdges, getEdges, getBlockFromCache } = useVisualEditorV3();
+  const { setEdges, getEdges, getBlockFromCache } = useVisualEditor();
   const edge = useMemo(
     () => getEdges().find((e) => e.id === id),
     [getEdges, id],

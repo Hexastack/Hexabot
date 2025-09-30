@@ -12,13 +12,13 @@ import { useEffect, useState } from "react";
 
 import { RouterType } from "@/services/types";
 
-import { useVisualEditorV3 } from "./useVisualEditorV3";
+import { useVisualEditor } from "./useVisualEditor";
 
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
   const router = useRouter();
   const { getNode, selectNodes, fitView, selectedCategoryId, selectedNodeIds } =
-    useVisualEditorV3();
+    useVisualEditor();
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
   const animateFocus = async (blockId?: string) => {
     if (blockId) {

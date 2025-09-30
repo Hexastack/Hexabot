@@ -14,6 +14,7 @@ import {
   Node,
   NodeMouseHandler,
   OnConnect,
+  OnNodeDrag,
   ReactFlow,
   useKeyPress,
   useNodesInitialized,
@@ -29,15 +30,15 @@ import "@xyflow/react/dist/style.css";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
 
 import "../../v3/styles/index.css";
-import ButtonEdge from "../edges/buttonEdge/ButtonEdge";
 import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../hooks/useFocusBlock";
-import { useVisualEditorV3 } from "../hooks/useVisualEditorV3";
+import { useVisualEditor } from "../hooks/useVisualEditor";
 import { EdgeLink, TBlock } from "../types/visual-editor.types";
 import { getBlockConfigByType } from "../utils/block.utils";
 
-import CustomNode from "./node/CustomNode";
+import ButtonEdge from "./edges/ButtonEdge";
+import CustomNode from "./nodes/CustomNode";
 
 const NODE_TYPES = {
   block: CustomNode,
@@ -74,7 +75,7 @@ const CanvasV3 = ({
     getBlockFromCache,
     setViewport,
     selectedCategoryId,
-  } = useVisualEditorV3();
+  } = useVisualEditor();
   const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
@@ -106,13 +107,51 @@ const CanvasV3 = ({
       ...payload,
     });
   };
+  const handleNodeClick: NodeMouseHandler<Node> = useCallback(
+    (e, { id }) => {
+      if (!selectedNodeIds.includes(id)) {
+        if (selectedCategoryId && !e.ctrlKey) {
+          updateVisualEditorURL(selectedCategoryId, id);
+          setSelectedNodeIds([id]);
+        } else {
+          setSelectedNodeIds((nodes) => [...nodes, id]);
+        }
+      }
+    },
+    [
+      selectedCategoryId,
+      selectedNodeIds,
+      setSelectedNodeIds,
+      updateVisualEditorURL,
+    ],
+  );
   const handleNodeDoubleClick: NodeMouseHandler<Node> = useCallback(
     (_, { id }) => {
       if (selectedNodeIds.length === 1) {
         onNodeDoubleClick?.(id) || openEditDialog(id);
       }
     },
-    [selectedNodeIds.length, onNodeDoubleClick],
+    [selectedNodeIds.length, onNodeDoubleClick, openEditDialog],
+  );
+  const handleNodeDragStart: OnNodeDrag<Node> = useCallback(
+    (_, { id }) => {
+      if (selectedCategoryId) {
+        setSelectedNodeIds([id]);
+        updateVisualEditorURL(selectedCategoryId, id);
+      }
+    },
+    [selectedCategoryId, setSelectedNodeIds, updateVisualEditorURL],
+  );
+  const handleNodeDragStop: OnNodeDrag<Node> = useCallback(
+    (_, { id, position }, nodes) => {
+      if (nodes.length === 1) {
+        onMoveNode({
+          id,
+          position,
+        });
+      }
+    },
+    [onMoveNode],
   );
 
   useOnViewportChange({
@@ -127,7 +166,13 @@ const CanvasV3 = ({
         }
       });
     }
-  }, [onDeleteNodes, selectedNodeIds, deleteKeyPressed]);
+  }, [
+    onDeleteNodes,
+    selectedNodeIds,
+    deleteKeyPressed,
+    openDeleteManyDialog,
+    removeBlockIdParam,
+  ]);
 
   useEffect(() => {
     setViewport(defaultViewport);
@@ -148,16 +193,7 @@ const CanvasV3 = ({
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
       // colorMode={colorMode}
-      onNodeClick={(e, node) => {
-        if (!selectedNodeIds.includes(node.id)) {
-          if (selectedCategoryId && !e.ctrlKey) {
-            updateVisualEditorURL(selectedCategoryId, node.id);
-            setSelectedNodeIds([node.id]);
-          } else {
-            setSelectedNodeIds((nodes) => [...nodes, node.id]);
-          }
-        }
-      }}
+      onNodeClick={handleNodeClick}
       onNodeDoubleClick={handleNodeDoubleClick}
       onSelectionChange={({ nodes }) => {
         const selectedNodes = nodes.map(({ id }) => id);
@@ -181,15 +217,8 @@ const CanvasV3 = ({
         }
       }}
       onlyRenderVisibleElements
-      onNodeDragStop={(_e, node, nodes) => {
-        if (nodes.length === 1) {
-          onMoveNode({
-            id: node.id,
-            position: node.position,
-          });
-        } else {
-        }
-      }}
+      onNodeDragStart={handleNodeDragStart}
+      onNodeDragStop={handleNodeDragStop}
     >
       <MiniMap
         className="rf-background"

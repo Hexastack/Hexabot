@@ -1,5 +1,5 @@
 @import url("./xy-theme.css");
-@import url("./../edges/buttonEdge/index.css");
+@import url("./button-edge.css");
 
 html,
 body {

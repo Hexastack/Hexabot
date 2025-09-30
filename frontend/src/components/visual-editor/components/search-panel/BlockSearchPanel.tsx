@@ -35,7 +35,8 @@ import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
 import { useFocusBlock } from "../../v3/hooks/useFocusBlock";
-import { useVisualEditorV3 } from "../../v3/hooks/useVisualEditorV3";
+import { useVisualEditor } from "../../v3/hooks/useVisualEditor";
+
 import {
   BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
   BlockSearchResultItem,
@@ -78,7 +79,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const [scope, setScope] = useState<SearchScope>("all");
   const blockId = router.query.blockId?.toString();
   const [selected, setSelected] = useState<string | undefined>(blockId);
-  const { selectedCategoryId } = useVisualEditorV3();
+  const { selectedCategoryId } = useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
     data: blockSearchResults = [],

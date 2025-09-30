@@ -19,7 +19,7 @@ import { EntityType, QueryType } from "@/services/types";
 import { BlockMoveFormDialog } from "../../components/block/BlockMoveFormDialog";
 
 import { useFocusBlock } from "./useFocusBlock";
-import { useVisualEditorV3 } from "./useVisualEditorV3";
+import { useVisualEditor } from "./useVisualEditor";
 
 export const useMoveBlocksDialog = () => {
   const dialogs = useDialogs();
@@ -30,7 +30,7 @@ export const useMoveBlocksDialog = () => {
     selectedCategoryId,
     setSelectedCategoryId,
     setSelectedNodeIds,
-  } = useVisualEditorV3();
+  } = useVisualEditor();
   const { updateVisualEditorURL } = useFocusBlock();
   const queryClient = useQueryClient();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);

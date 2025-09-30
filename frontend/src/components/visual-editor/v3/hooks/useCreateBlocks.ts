@@ -12,11 +12,11 @@ import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
 import { useFocusBlock } from "./useFocusBlock";
-import { useVisualEditorV3 } from "./useVisualEditorV3";
+import { useVisualEditor } from "./useVisualEditor";
 
 export const useCreateBlock = () => {
   const { updateVisualEditorURL } = useFocusBlock();
-  const { getCentroid, setSelectedNodeIds } = useVisualEditorV3();
+  const { getCentroid } = useVisualEditor();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (id: string | undefined, props?: IBlockAttributes) => {
@@ -48,8 +48,8 @@ export const useCreateBlock = () => {
           },
         },
         {
-          onSuccess: (data) => {
-            setSelectedNodeIds([data.id]);
+          onSuccess: async (data, { category }) => {
+            await updateVisualEditorURL(category, data.id);
           },
         },
       );
@@ -60,7 +60,6 @@ export const useCreateBlock = () => {
         { position, ...rest },
         {
           onSuccess: async (data, { category }) => {
-            setSelectedNodeIds([data.id]);
             await updateVisualEditorURL(category, data.id);
           },
         },

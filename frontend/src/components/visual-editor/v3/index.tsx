@@ -6,44 +6,36 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Grid } from "@mui/material";
+import { Grid, styled } from "@mui/material";
 import { ReactFlowProvider } from "@xyflow/react";
-import dynamic from "next/dynamic";
 
-import { VisualEditorProvider3 } from "./providers/VisualEditorProvider";
+import { Main } from "./layouts/Main";
+import { Nav } from "./layouts/Nav";
+import { VisualEditorProvider } from "./providers/VisualEditorProvider";
 
-const Diagram = dynamic(async () => await import("./components/Diagram"), {
-  ssr: false,
-});
-const Aside = dynamic(() => import("./components/Aside"), { ssr: false });
+const StyledContainerGrid = styled(Grid)(() => ({
+  gap: 2,
+  width: "100%",
+  height: "calc(100vh - 64px)",
+  flexDirection: "column",
+}));
+const StyledGrid = styled(Grid)(() => ({
+  display: "flex",
+  overflow: "hidden",
+  flexDirection: "column",
+}));
 
-export const VisualEditor3 = () => {
-  return (
-    <ReactFlowProvider>
-      <VisualEditorProvider3>
-        <Grid
-          container
-          gap={2}
-          flexDirection="column"
-          height="calc(100vh - 64px)"
-          width="100%"
-        >
-          <Grid container height="100%" margin="auto">
-            <Aside />
-            <Grid
-              item
-              xs
-              overflow="hidden"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Diagram />
-            </Grid>
-          </Grid>
+export const VisualEditor = () => (
+  <ReactFlowProvider>
+    <VisualEditorProvider>
+      <StyledContainerGrid container>
+        <Grid container height="100%" margin="auto">
+          <Nav />
+          <StyledGrid item xs>
+            <Main />
+          </StyledGrid>
         </Grid>
-      </VisualEditorProvider3>
-    </ReactFlowProvider>
-  );
-};
+      </StyledContainerGrid>
+    </VisualEditorProvider>
+  </ReactFlowProvider>
+);

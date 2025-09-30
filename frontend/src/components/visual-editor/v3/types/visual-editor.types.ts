@@ -9,27 +9,7 @@
 import { Edge, Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
 import { ReactNode } from "react";
 
-import { IBlock } from "@/types/block.types";
-
-export enum BlockPorts {
-  inPort = "In",
-  nextBlocksOutPort = "Out",
-  attachmentOutPort = "Out2",
-}
-
-export interface IVisualEditor {
-  zoom?: number;
-  offset?: [number, number];
-  data?: IBlock[];
-  setter?: React.Dispatch<React.SetStateAction<string | undefined>>;
-  //TODO: type need to be updated
-  updateFn?: any;
-  onDbClickNode?: (id?: string) => void;
-  // onRemoveNode?: CustomDeleteItemsActionOptions["callback"];
-  linkChangeHandler?: (event: any) => void;
-  targetPortChanged?: (event: any) => void;
-  selectedBlockId: string | undefined;
-}
+import { BlockType, IBlock, Pattern } from "@/types/block.types";
 
 export interface IVisualEditorContext extends ReactFlowInstance<Node, Edge> {
   getCentroid: () => XYPosition;
@@ -58,3 +38,13 @@ export enum BlockTypes {
 export type TBlock = keyof typeof BlockTypes;
 
 export type EdgeLink = Edge & { id: string; source: string; target: string };
+
+export type NodeBlockData = {
+  type: BlockType;
+  title: string;
+  message: string | string[];
+  starts_conversation?: boolean;
+  patterns?: Pattern[];
+};
+
+export type NodeData = Node<NodeBlockData>;

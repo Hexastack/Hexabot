@@ -22,7 +22,7 @@ import { VisualEditorContext } from "../contexts/VisualEditorContext";
 import { useFocusBlock } from "../hooks/useFocusBlock";
 import { VisualEditorContextProps } from "../types/visual-editor.types";
 
-export const VisualEditorProvider3: React.FC<VisualEditorContextProps> = ({
+export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
   const ReactFlowInstance = useReactFlow();
@@ -45,10 +45,10 @@ export const VisualEditorProvider3: React.FC<VisualEditorContextProps> = ({
     return position;
   };
   const selectNodes = (nodeIds: string[]) => {
-    const changes = ReactFlowInstance.getNodes().map((node) => ({
-      id: node.id,
+    const changes = ReactFlowInstance.getNodes().map(({ id }) => ({
+      id,
       type: "select",
-      selected: nodeIds.includes(node.id),
+      selected: nodeIds.includes(id),
     })) as NodeChange<Node>[];
 
     ReactFlowInstance.setNodes((nodes) => applyNodeChanges(changes, nodes));

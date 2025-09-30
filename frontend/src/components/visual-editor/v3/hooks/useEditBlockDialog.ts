@@ -10,11 +10,11 @@ import { useDialogs } from "@/hooks/useDialogs";
 
 import { BlockEditFormDialog } from "../../components/block/BlockEditFormDialog";
 
-import { useVisualEditorV3 } from "./useVisualEditorV3";
+import { useVisualEditor } from "./useVisualEditor";
 
 export const useEditBlockDialog = () => {
   const dialogs = useDialogs();
-  const { selectedNodeIds, getBlockFromCache } = useVisualEditorV3();
+  const { selectedNodeIds, getBlockFromCache } = useVisualEditor();
   const openEditDialog = (selectedBlockId: string = selectedNodeIds[0]) => {
     const block = getBlockFromCache(selectedBlockId);
 

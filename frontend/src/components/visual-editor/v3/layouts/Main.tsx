@@ -1,0 +1,239 @@
+/*
+ * Copyright © 2025 Hexastack. All rights reserved.
+ *
+ * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+ * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
+ * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ */
+
+import { Box, debounce } from "@mui/material";
+import { Viewport } from "@xyflow/react";
+import { useRouter } from "next/router";
+import {
+  DragEvent,
+  KeyboardEventHandler,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import { useFind } from "@/hooks/crud/useFind";
+import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useSearch } from "@/hooks/useSearch";
+import { EntityType, Format } from "@/services/types";
+import { IBlock } from "@/types/block.types";
+
+import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
+import { HorizontalBulkButtonsGroup } from "../components/main/ButtonHorizontalGroup";
+import { FlowHorizontalTabs } from "../components/main/FlowHorizontalTabs";
+import ReactFlowWrapper from "../components/ReactFlowWrapper";
+import { useCreateBlock } from "../hooks/useCreateBlocks";
+import { useVisualEditor } from "../hooks/useVisualEditor";
+import {
+  getAttachedLinksFromBlocks,
+  getNextBlocksLinksFromBlocks,
+  getNodesFromBlocks,
+} from "../utils/block.utils";
+
+export const Main = () => {
+  const router = useRouter();
+  const { selectedCategoryId, screenToFlowPosition, setSelectedCategoryId } =
+    useVisualEditor();
+  const { createNode } = useCreateBlock();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [isSearchOpen, setSearchOpen] = useState(false);
+  const { searchPayload } = useSearch<EntityType.BLOCK>({
+    $eq: [{ category: selectedCategoryId }],
+  });
+  const { data: categories } = useFind(
+    { entity: EntityType.CATEGORY },
+    {
+      hasCount: false,
+      initialSortState: [{ field: "createdAt", sort: "asc" }],
+    },
+    {
+      onSuccess([category]) {
+        if (!selectedCategoryId) {
+          setSelectedCategoryId(category?.id);
+        }
+      },
+    },
+  );
+  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
+    invalidate: false,
+  });
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
+    invalidate: false,
+  });
+  const { data: blocks } = useFind(
+    { entity: EntityType.BLOCK, format: Format.FULL },
+    { hasCount: false, params: searchPayload },
+    {
+      enabled: !!selectedCategoryId,
+      keepPreviousData: true,
+    },
+  );
+  const nextBlocksLinks = useMemo(
+    () => getNextBlocksLinksFromBlocks(blocks),
+    [
+      JSON.stringify(
+        blocks.map((b) => {
+          return { ...b, position: undefined, updatedAt: undefined };
+        }),
+      ),
+    ],
+  );
+  const attachedLinks = useMemo(
+    () => getAttachedLinksFromBlocks(blocks),
+    [
+      JSON.stringify(
+        blocks.map((b) => {
+          return { ...b, position: undefined, updatedAt: undefined };
+        }),
+      ),
+    ],
+  );
+  const nodes = useMemo(() => {
+    return getNodesFromBlocks(blocks);
+  }, [
+    JSON.stringify(
+      blocks.map((b) => {
+        return { ...b, position: undefined, updatedAt: undefined };
+      }),
+    ),
+  ]);
+  const currentCategory = useMemo(() => {
+    return categories.find(({ id }) => id === selectedCategoryId);
+  }, [categories, selectedCategoryId]);
+  const defaultViewport = useMemo(() => {
+    if (currentCategory) {
+      const { offset = [0, 0], zoom = 1 } = currentCategory;
+
+      return {
+        x: offset?.[0],
+        y: offset?.[1],
+        zoom,
+      };
+    }
+
+    return {
+      x: 0,
+      y: 0,
+      zoom: 1,
+    };
+  }, [currentCategory]);
+  const keyDownHandler: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
+
+    if (isCmdF) {
+      e.preventDefault();
+      setSearchOpen(true);
+    }
+  };
+  const debouncedUpdateBlock = debounce(
+    ({ id, ...rest }: Partial<IBlock> & { id: string }) => {
+      updateBlock({
+        id,
+        params: {
+          ...rest,
+        },
+      });
+    },
+    400,
+  );
+  const debouncedUpdateCategory = debounce(({ zoom, x, y }: Viewport) => {
+    if (selectedCategoryId) {
+      updateCategory({
+        id: selectedCategoryId,
+        params: {
+          zoom,
+          offset: [x, y],
+        },
+      });
+    }
+  }, 400);
+
+  useEffect(() => {
+    const { id: flowId } = router.query;
+
+    if (flowId) {
+      if (typeof flowId === "string") {
+        setSelectedCategoryId(flowId);
+      }
+    } else if (categories[0]?.id) {
+      setSelectedCategoryId(categories[0].id);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.id]);
+
+  const dropHandler = (event: DragEvent<HTMLDivElement>) => {
+    const stormDiagramNode = event.dataTransfer.getData(
+      "storm-diagram-node-v3",
+    );
+
+    if (!stormDiagramNode) return;
+    const data = JSON.parse(stormDiagramNode);
+
+    if (!data) {
+      // eslint-disable-next-line no-console
+      console.warn("Unable to handle the drop event");
+
+      return;
+    }
+
+    const position = screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+    const payload = {
+      ...data,
+      category: selectedCategoryId || "",
+      position,
+    };
+
+    createNode(undefined, payload);
+  };
+
+  return (
+    <div
+      onDrop={dropHandler}
+      onDragOver={(event) => {
+        event.preventDefault();
+      }}
+      className="visual-editor"
+    >
+      <Box sx={{ width: "100%", bgcolor: "#fff" }}>
+        <FlowHorizontalTabs
+          onSearchClick={(e) => {
+            setSearchOpen((prev) => !prev);
+            e.preventDefault();
+          }}
+        />
+        <HorizontalBulkButtonsGroup />
+      </Box>
+      <Box
+        ref={canvasRef}
+        height="100%"
+        position="relative"
+        onKeyDown={keyDownHandler}
+      >
+        {currentCategory ? (
+          <ReactFlowWrapper
+            onMoveNode={debouncedUpdateBlock}
+            onViewport={debouncedUpdateCategory}
+            defaultEdges={[...nextBlocksLinks, ...attachedLinks]}
+            defaultNodes={nodes}
+            defaultViewport={defaultViewport}
+          />
+        ) : null}
+        <BlockSearchPanel
+          canvasRef={canvasRef}
+          open={isSearchOpen}
+          onClose={() => setSearchOpen(false)}
+        />
+      </Box>
+    </div>
+  );
+};

@@ -12,12 +12,12 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { EntityType } from "@/services/types";
 
-import { useVisualEditorV3 } from "./useVisualEditorV3";
+import { useVisualEditor } from "./useVisualEditor";
 
 export const useDeleteManyBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
-  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditorV3();
+  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditor();
   const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
     onSuccess: () => {
       setSelectedNodeIds([]);

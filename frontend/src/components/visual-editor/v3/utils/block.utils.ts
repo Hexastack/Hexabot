@@ -19,8 +19,7 @@ import { IBlock, IBlockFull } from "@/types/block.types";
 import { getBlockType } from "@/utils/block";
 import { generateId } from "@/utils/generateId";
 
-import { NodeData } from "../components/Diagram";
-import { EdgeLink, TBlock } from "../types/visual-editor.types";
+import { EdgeLink, NodeData, TBlock } from "../types/visual-editor.types";
 
 export const determineCase = (blockMessage: IBlockFull["message"]) => {
   if (typeof blockMessage === "string" || Array.isArray(blockMessage))

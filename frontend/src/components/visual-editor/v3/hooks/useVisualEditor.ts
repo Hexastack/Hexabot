@@ -11,12 +11,12 @@ import { useContext } from "react";
 import { VisualEditorContext } from "../contexts/VisualEditorContext";
 import { IVisualEditorContext } from "../types/visual-editor.types";
 
-export const useVisualEditorV3 = (): IVisualEditorContext => {
+export const useVisualEditor = (): IVisualEditorContext => {
   const context = useContext(VisualEditorContext);
 
   if (!context) {
     throw new Error(
-      "useVisualEditorV3 must be used within an VisualEditorContext",
+      "useVisualEditor must be used within an VisualEditorContext",
     );
   }
 
