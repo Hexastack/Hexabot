@@ -28,6 +28,7 @@
     "@mui/x-data-grid": "^7.3.2",
     "@projectstorm/react-canvas-core": "^7.0.3",
     "@projectstorm/react-diagrams": "^7.0.4",
+    "@xyflow/react": "^12.8.5",
     "autolinker": "^4.1.5",
     "axios": "^1.11.0",
     "dayjs": "^1.11.13",
