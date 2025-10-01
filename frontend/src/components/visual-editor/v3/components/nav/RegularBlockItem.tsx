@@ -23,6 +23,10 @@ const StyledIconButton = styled(IconButton)(
     minHeight: "68px",
     width: "100%",
     margin: "auto",
+    cursor: "grab",
+    "& :active": {
+      cursor: "grabbing",
+    },
   }),
 );
 const StyledBlockTitle = styled(Typography)(
@@ -75,6 +79,7 @@ export const RegularBlockItem = ({
       }}
     >
       <StyledIconButton
+        disableTouchRipple
         onClick={() => {
           if (selectedCategoryId) {
             const payload = {

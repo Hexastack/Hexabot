@@ -38,7 +38,6 @@
 /* node */
 .react-flow__node {
   border-radius: var(--xy-node-border-radius-default);
-  background-color: var(--xy-node-background-color-default);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -275,6 +274,7 @@
   width: auto;
   transform: translateY(40px);
   opacity: 0;
+  border-radius: 0;
 }
 
 .react-flow__node.selectable.selected #node-controls {
@@ -286,9 +286,10 @@
   top: -42px;
   right: -3px;
   border: 3px solid #1dc7fc;
-  border-bottom: 3px solid #fff;
+  border-bottom: 3px solid #ddd;
   display: flex;
-  background-color: #fefefecc;
+  background-color: #fff;
+  background-image: linear-gradient(to top, #00000011, #00000000);
   box-shadow: 0 -2px 4px #c4c4c4;
   padding: 0;
 }
