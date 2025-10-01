@@ -293,18 +293,6 @@
   padding: 0;
 }
 
-.react-flow__minimap-mask {
-  fill: #0002 !important;
-}
-
-.rf-minimap {
-  box-shadow: 0 0 8px #c4c4c4;
-  background: #fffa !important;
-  border-radius: 6px;
-  overflow: hidden;
-  transition: 0.2s;
-}
-
 .rf-minimap:hover {
   background: #fff !important;
 }

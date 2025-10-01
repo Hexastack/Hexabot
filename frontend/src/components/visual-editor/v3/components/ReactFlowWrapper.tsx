@@ -238,7 +238,17 @@ const CanvasV3 = ({
 
           return `${config.color}99`;
         }}
+        maskColor="#0002"
+        maskStrokeColor="#999"
+        maskStrokeWidth={0.5}
         nodeBorderRadius={18}
+        bgColor="#fffa"
+        style={{
+          overflow: "hidden",
+          boxShadow: "0 0 8px #c4c4c4",
+          transition: "0.2s",
+          borderRadius: "6px",
+        }}
       />
       <Controls
         className="rf-controls"
