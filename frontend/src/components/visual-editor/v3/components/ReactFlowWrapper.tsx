@@ -81,10 +81,6 @@ export const ReactFlowWrapper = ({
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
   const blockId = useMemo(() => getQuery("blockId"), [getQuery]);
-  // const [colorMode, setColorMode] = useState<ColorMode>("light");
-  // const onColorChange: ChangeEventHandler<HTMLSelectElement> = (evt) => {
-  //   setColorMode(evt.target.value as ColorMode);
-  // };
   const onConnect: OnConnect = (params) => {
     const { source: sourceNodeId, target: targetNodeId, sourceHandle } = params;
     const sourceNode = getBlockFromCache(sourceNodeId);
@@ -202,7 +198,6 @@ export const ReactFlowWrapper = ({
       nodeTypes={NODE_TYPES as any}
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
-      // colorMode={colorMode}
       onNodeClick={handleNodeClick}
       onNodeDoubleClick={handleNodeDoubleClick}
       onSelectionChange={({ nodes }) => {
@@ -262,7 +257,6 @@ export const ReactFlowWrapper = ({
         fitViewOptions={{ duration: 200 }}
       />
       <Background />
-      {/* <DarkModeControl onChange={onColorChange} /> */}
     </ReactFlow>
   );
 };

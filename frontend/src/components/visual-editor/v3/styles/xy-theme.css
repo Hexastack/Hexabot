@@ -381,3 +381,13 @@ g.react-flow__edge:hover path {
 .react-flow__handle.connectingto {
   border-color: var(--xy-theme-edge-hover);
 }
+
+.startPointLine {
+  position: relative;
+  left: 17px;
+  top: 34px;
+  border-left: 1px solid #999;
+  border-bottom: 1px solid #999;
+  width: 30px;
+  height: 20px;
+}

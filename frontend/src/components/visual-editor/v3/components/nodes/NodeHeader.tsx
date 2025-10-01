@@ -41,17 +41,7 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
           }}
         >
           <PlayArrowRoundedIcon className="start-point" />
-          <div
-            style={{
-              position: "relative",
-              left: "17px",
-              top: "34px",
-              borderLeft: "1px solid #999",
-              borderBottom: "1px solid #999",
-              width: "30px",
-              height: "20px",
-            }}
-          />
+          <div className="startPointLine" />
         </div>
       ) : null}
       <div
