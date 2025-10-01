@@ -29,6 +29,7 @@ import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
 import "../components/inbox/inbox.css";
+import "../components/visual-editor/v3/styles/index.css";
 import "../i18n/config";
 import "../styles/globals.css";
 import "../styles/visual-editor.css";
