@@ -134,12 +134,17 @@ const CanvasV3 = ({
   );
   const handleNodeDragStart: OnNodeDrag<Node> = useCallback(
     (_, { id }) => {
-      if (selectedCategoryId) {
+      if (selectedCategoryId && selectedNodeIds.length === 1) {
         setSelectedNodeIds([id]);
         updateVisualEditorURL(selectedCategoryId, id);
       }
     },
-    [selectedCategoryId, setSelectedNodeIds, updateVisualEditorURL],
+    [
+      selectedNodeIds,
+      selectedCategoryId,
+      setSelectedNodeIds,
+      updateVisualEditorURL,
+    ],
   );
   const handleNodeDragStop: OnNodeDrag<Node> = useCallback(
     (_, { id, position }, nodes) => {
