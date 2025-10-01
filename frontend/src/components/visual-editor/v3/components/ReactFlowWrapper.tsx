@@ -225,7 +225,7 @@ const CanvasV3 = ({
       onNodeDragStop={handleNodeDragStop}
     >
       <MiniMap
-        className="rf-background"
+        className="rf-minimap"
         nodeStrokeColor={(n) => {
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
@@ -236,7 +236,7 @@ const CanvasV3 = ({
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
 
-          return `${config.color}aa`;
+          return `${config.color}99`;
         }}
         nodeBorderRadius={18}
       />

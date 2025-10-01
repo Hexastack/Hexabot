@@ -67,24 +67,24 @@ export const NodeBody = ({ blockId }: { blockId: string }) => {
           <span style={{ color: "#939393" }}>{t("label.no_patterns")}</span>
         )}
       </div>
-      {[BlockTypes.attachment].includes(BlockTypes[config.type]) ? (
+      {config.type === "attachment" && "attachment" in block.message ? (
         <div className="node-block-field">
           <UnifiedIcon
             Icon={BrokenImageOutlinedIcon}
             color={config.color}
             size="21px"
           />
-          {t("label.attachment")}: {(block?.message as any).attachment.type}
+          {t("label.attachment")}: {block.message.attachment.type}
         </div>
       ) : null}
-      {[BlockTypes.plugin].includes(BlockTypes[config.type]) ? (
+      {config.type === "plugin" && "plugin" in block.message ? (
         <div className="node-block-field ">
           <UnifiedIcon
             Icon={ExtensionOutlinedIcon}
             color={config.color}
             size="21px"
           />
-          <span>Plugin: {(block?.message as any).plugin}</span>
+          <span>Plugin: {block.message.plugin}</span>
         </div>
       ) : null}
       {[BlockTypes.list].includes(BlockTypes[config.type]) ? (
@@ -97,8 +97,9 @@ export const NodeBody = ({ blockId }: { blockId: string }) => {
           {t("label.list")}
         </div>
       ) : null}
-      {[BlockTypes.text].includes(BlockTypes[config.type]) &&
-      block?.message["length"] ? (
+      {config.type === "text" &&
+      Array.isArray(block.message) &&
+      block.message.length > 0 ? (
         <div className="node-block-field ">
           <UnifiedIcon
             Icon={ChatBubbleOutlineOutlinedIcon}

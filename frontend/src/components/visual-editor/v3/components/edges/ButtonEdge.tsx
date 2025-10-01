@@ -79,6 +79,7 @@ export default function CustomEdge({
           className="button-edge__label nodrag nopan"
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            pointerEvents: "all",
           }}
         >
           <button

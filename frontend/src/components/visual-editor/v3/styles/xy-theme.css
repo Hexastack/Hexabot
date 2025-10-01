@@ -283,7 +283,6 @@
   visibility: visible;
   transform: translateY(0px);
   border-radius: 9px 9px 0 0;
-  padding: 0px 6px;
   top: -42px;
   right: -3px;
   border: 3px solid #1dc7fc;
@@ -294,16 +293,20 @@
   padding: 0;
 }
 
-.rf-background {
+.react-flow__minimap-mask {
+  fill: #0002 !important;
+}
+
+.rf-minimap {
   box-shadow: 0 0 8px #c4c4c4;
-  background-color: #fffa;
+  background: #fffa !important;
   border-radius: 6px;
   overflow: hidden;
   transition: 0.2s;
 }
 
-.rf-background:hover {
-  background-color: #fff;
+.rf-minimap:hover {
+  background: #fff !important;
 }
 
 .rf-controls {

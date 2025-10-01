@@ -11,14 +11,17 @@ import { ChangeEventHandler, memo } from "react";
 
 const DarkModeControl = ({
   onChange,
+  value,
 }: {
   onChange?: ChangeEventHandler<HTMLSelectElement>;
+  value?: string;
 }) => {
   return (
     <Panel position="top-right">
       <select
         className="xy-theme__select"
         onChange={onChange}
+        value={value}
         data-testid="colormode-select"
         aria-label="Color mode"
       >
