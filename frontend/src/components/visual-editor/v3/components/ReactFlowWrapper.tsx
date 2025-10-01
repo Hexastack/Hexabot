@@ -44,7 +44,8 @@ const NODE_TYPES = {
   block: CustomNode,
 } as const;
 const EDGE_TYPES = { buttonedge: ButtonEdge };
-const CanvasV3 = ({
+
+export const ReactFlowWrapper = ({
   defaultEdges,
   defaultNodes,
   defaultViewport,
@@ -147,12 +148,17 @@ const CanvasV3 = ({
     ],
   );
   const handleNodeDragStop: OnNodeDrag<Node> = useCallback(
-    (_, { id, position }, nodes) => {
-      if (nodes.length === 1) {
-        onMoveNode({
-          id,
-          position,
-        });
+    async (_e, _node, nodes) => {
+      try {
+        for (const { id, position } of nodes) {
+          onMoveNode({
+            id,
+            position,
+          });
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("Unable to update node", e);
       }
     },
     [onMoveNode],
@@ -260,5 +266,3 @@ const CanvasV3 = ({
     </ReactFlow>
   );
 };
-
-export default CanvasV3;

@@ -28,7 +28,7 @@ import { IBlock, IBlockAttributes } from "@/types/block.types";
 import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
 import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
 import { FlowsTabs } from "../components/main/FlowsTabs";
-import ReactFlowWrapper from "../components/ReactFlowWrapper";
+import { ReactFlowWrapper } from "../components/ReactFlowWrapper";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 import {
