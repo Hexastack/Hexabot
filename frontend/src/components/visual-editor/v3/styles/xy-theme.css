@@ -29,6 +29,12 @@
   --xy-theme-color-focus: #535353;
 }
 
+.visual-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 /* node */
 .react-flow__node {
   border-radius: var(--xy-node-border-radius-default);
@@ -343,7 +349,6 @@ g.react-flow__edge:hover path {
 }
 
 /* ports */
-
 .react-flow__handle:not([aria-disabled="true"]) {
   background-color: var(--xy-handle-background-color-default);
   cursor: pointer !important;
