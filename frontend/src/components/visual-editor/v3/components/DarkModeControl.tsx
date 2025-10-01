@@ -20,6 +20,7 @@ const DarkModeControl = ({
         className="xy-theme__select"
         onChange={onChange}
         data-testid="colormode-select"
+        aria-label="Color mode"
       >
         <option value="light">light</option>
         <option value="dark">dark</option>

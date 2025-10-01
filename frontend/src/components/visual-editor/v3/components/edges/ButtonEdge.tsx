@@ -48,10 +48,8 @@ export default function CustomEdge({
     invalidate: false,
   });
   const { setEdges, getEdges, getBlockFromCache } = useVisualEditor();
-  const edge = useMemo(
-    () => getEdges().find((e) => e.id === id),
-    [getEdges, id],
-  );
+  const edges = getEdges();
+  const edge = useMemo(() => edges.find((e) => e.id === id), [edges, id]);
   const onEdgeClick = () => {
     if (edge?.source) {
       const block = getBlockFromCache(edge.source);

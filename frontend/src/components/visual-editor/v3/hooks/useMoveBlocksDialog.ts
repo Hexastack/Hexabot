@@ -81,7 +81,9 @@ export const useMoveBlocksDialog = () => {
               ({ id }) => id === targetCategoryId,
             );
 
-            onCategoryChange(targetCategoryIndex);
+            if (targetCategoryIndex !== -1) {
+              onCategoryChange(targetCategoryIndex);
+            }
           },
           onError: () => {
             toast.error(t("message.move_block_error"));

@@ -108,15 +108,17 @@ export const FlowsTabs = ({
     return categories.find(({ id }) => id === selectedCategoryId);
   }, [categories, selectedCategoryId]);
   const tabIndex = useMemo(() => {
+    if (!categories?.length) return false;
+
     return currentCategory
-      ? categories?.findIndex(({ id }) => id === selectedCategoryId)
+      ? categories.findIndex(({ id }) => id === selectedCategoryId)
       : 0;
   }, [categories, currentCategory, selectedCategoryId]);
 
   return (
     <StyledGrid>
       <StyledTabs
-        value={tabIndex}
+        value={tabIndex === false ? false : tabIndex}
         variant="scrollable"
         onChange={changeHandler}
         allowScrollButtonsMobile

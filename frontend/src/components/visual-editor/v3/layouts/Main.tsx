@@ -22,7 +22,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
-import { IBlock } from "@/types/block.types";
+import { IBlock, IBlockAttributes } from "@/types/block.types";
 
 import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
 import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
@@ -169,12 +169,20 @@ export const Main = () => {
   }, [router.query.id]);
 
   const dropHandler = (event: DragEvent<HTMLDivElement>) => {
-    const stormDiagramNode = event.dataTransfer.getData(
-      "storm-diagram-node-v3",
-    );
+    const diagramNode = event.dataTransfer.getData("diagram-node");
 
-    if (!stormDiagramNode) return;
-    const data = JSON.parse(stormDiagramNode);
+    if (!diagramNode) return;
+
+    let data: IBlockAttributes;
+
+    try {
+      data = JSON.parse(diagramNode);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn("Invalid JSON in drop event", error);
+
+      return;
+    }
 
     if (!data) {
       // eslint-disable-next-line no-console

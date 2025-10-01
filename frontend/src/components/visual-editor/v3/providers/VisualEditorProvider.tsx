@@ -33,7 +33,7 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     string | undefined
   >();
   const getCentroid = (): XYPosition => {
-    if (!window) return { x: 0, y: 0 };
+    if (typeof window === "undefined") return { x: 0, y: 0 };
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
     const screenCenter = {

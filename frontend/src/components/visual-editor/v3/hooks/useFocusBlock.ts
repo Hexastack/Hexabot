@@ -32,7 +32,9 @@ export const useFocusBlock = () => {
         });
       }
     } else {
-      const nodes = selectedNodeIds.map((s) => getNode(s)) as Node[];
+      const nodes = selectedNodeIds
+        .map((s) => getNode(s))
+        .filter((n): n is Node => !!n);
 
       if (nodes.length) {
         await fitView({

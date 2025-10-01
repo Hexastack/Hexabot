@@ -52,7 +52,6 @@ export const RegularBlockItem = ({
   title: string;
   Icon?: FC<SVGProps<SVGSVGElement>>;
   disabled?: boolean;
-  onClick?: () => void;
   blockTemplate: Partial<IBlockAttributes>;
   name: string;
 }) => {
@@ -67,7 +66,7 @@ export const RegularBlockItem = ({
       draggable
       onDragStart={(event) => {
         event.dataTransfer.setData(
-          "storm-diagram-node-v3",
+          "diagram-node",
           JSON.stringify({
             ...blockTemplate,
             name,

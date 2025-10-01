@@ -6,16 +6,10 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { createContext, SetStateAction } from "react";
+import { createContext } from "react";
 
 import { IVisualEditorContext } from "../types/visual-editor.types";
 
-export const VisualEditorContext = createContext<IVisualEditorContext>({
-  selectedCategoryId: undefined,
-  setSelectedCategoryId: () => {},
-  selectNodes(_nodeIds: string[]): void {},
-  selectedNodeIds: [],
-  setSelectedNodeIds(_value: SetStateAction<string[]>): void {},
-  viewportInitialized: false,
-  getNode: () => {},
-} as any);
+export const VisualEditorContext = createContext<IVisualEditorContext | null>(
+  null,
+);

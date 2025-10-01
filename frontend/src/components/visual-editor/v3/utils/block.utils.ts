@@ -31,26 +31,12 @@ export const determineCase = (blockMessage: IBlockFull["message"]) => {
 
   return "plugin";
 };
-//TODO can be removed
 export const getBlockConfig = (
   blockMessage: IBlockFull["message"],
 ): { type: TBlock; color: string; Icon: FC<React.SVGProps<SVGSVGElement>> } => {
-  switch (determineCase(blockMessage)) {
-    case "text":
-      return { type: "text", color: "#009185", Icon: SimpleTextIcon };
-    case "attachment":
-      return { type: "attachment", color: "#e6a23c", Icon: AttachmentIcon };
-    case "quickReplies":
-      return { type: "quickReplies", color: "#a80551", Icon: QuickRepliesIcon };
-    case "buttons":
-      return { type: "buttons", color: "#570063", Icon: ButtonsIcon };
-    case "list":
-      return { type: "list", color: "#108aa8", Icon: ListIcon };
-    case "plugin":
-      return { type: "plugin", color: "#a8ba33", Icon: PluginIcon };
-    default:
-      throw new Error("Unexpected case");
-  }
+  const type = determineCase(blockMessage) as TBlock;
+
+  return { type, ...getBlockConfigByType(type) };
 };
 
 export const getBlockConfigByType = (

@@ -24,14 +24,14 @@ const NodeBlock = ({ id: blockId }: NodeData) => {
         (c) => c.sourceHandle === "attached" && c.source === blockId,
       ) === -1
     );
-  }, [connections]);
+  }, [connections, blockId]);
   const disableAttached = useMemo(() => {
     return (
       connections.findIndex(
         (c) => c.sourceHandle === "nextBlocks" && c.source === blockId,
       ) === -1
     );
-  }, [connections]);
+  }, [connections, blockId]);
 
   return (
     <NodeContainer blockId={blockId}>
