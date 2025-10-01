@@ -369,6 +369,7 @@ g.react-flow__edge:hover path {
 
 .react-flow__handle.connectionindicator[data-handlepos="left"]:hover {
   transform: translate(-50%, -50%) scale(1.2);
+  left: -8px !important;
 }
 
 .react-flow__handle.connectionindicator[data-handlepos="right"]:hover {
