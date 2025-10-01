@@ -42,7 +42,7 @@ import CustomNode from "./nodes/NodeBlock";
 
 const NODE_TYPES = {
   block: CustomNode,
-} as const;
+};
 const EDGE_TYPES = { buttonedge: ButtonEdge };
 
 export const ReactFlowWrapper = ({
@@ -195,7 +195,7 @@ export const ReactFlowWrapper = ({
       defaultViewport={defaultViewport}
       maxZoom={4}
       minZoom={-2}
-      nodeTypes={NODE_TYPES as any}
+      nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
       onNodeClick={handleNodeClick}

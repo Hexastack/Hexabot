@@ -6,17 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Position, useNodeConnections } from "@xyflow/react";
-import { memo, useMemo } from "react";
+import { NodeProps, Position, useNodeConnections } from "@xyflow/react";
+import { FC, memo, useMemo } from "react";
 
-import { NodeData } from "../../types/visual-editor.types";
 import { PortHandle } from "../handlers/PortHandle";
 
 import { NodeBody } from "./NodeBody";
 import { NodeContainer } from "./NodeContainer";
 import { NodeHeader } from "./NodeHeader";
 
-const NodeBlock = ({ id: blockId }: NodeData) => {
+const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
   const connections = useNodeConnections();
   const disableNextBlocks = useMemo(() => {
     return (
