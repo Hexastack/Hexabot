@@ -37,6 +37,7 @@ const StyledButton = styled(Button)(() => ({
 const StyledGrid = styled(Grid)(() => ({
   display: "flex",
   position: "relative",
+  background: "#fff",
   flexDirection: "row",
   borderBottom: "1.5px solid #DDDDDD",
 }));

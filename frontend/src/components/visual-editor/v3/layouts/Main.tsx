@@ -240,15 +240,13 @@ export const Main = () => {
       }}
       className="visual-editor"
     >
-      <Box sx={{ width: "100%", bgcolor: "#fff" }}>
-        <FlowsTabs
-          onSearchClick={(e) => {
-            setSearchOpen((prev) => !prev);
-            e.preventDefault();
-          }}
-        />
-        <BulkButtonsGroup />
-      </Box>
+      <FlowsTabs
+        onSearchClick={(e) => {
+          setSearchOpen((prev) => !prev);
+          e.preventDefault();
+        }}
+      />
+      <BulkButtonsGroup />
       <Box
         ref={canvasRef}
         height="100%"
