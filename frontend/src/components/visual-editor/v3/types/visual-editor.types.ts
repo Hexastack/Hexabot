@@ -6,12 +6,12 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Edge, Node, ReactFlowInstance, XYPosition } from "@xyflow/react";
+import { Edge, Node, XYPosition } from "@xyflow/react";
 import { ReactNode } from "react";
 
 import { BlockType, IBlock, Pattern } from "@/types/block.types";
 
-export interface IVisualEditorContext extends ReactFlowInstance<Node, Edge> {
+export interface IVisualEditorContext {
   getCentroid: () => XYPosition;
   selectNodes: (nodeIds: string[]) => void;
   selectedNodeIds: string[];

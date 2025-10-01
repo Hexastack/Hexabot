@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Node, useNodesInitialized } from "@xyflow/react";
+import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -17,7 +17,8 @@ import { useVisualEditor } from "./useVisualEditor";
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
   const router = useRouter();
-  const { getNode, selectNodes, fitView, selectedCategoryId, selectedNodeIds } =
+  const { getNode, fitView } = useReactFlow();
+  const { selectNodes, selectedCategoryId, selectedNodeIds } =
     useVisualEditor();
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
   const animateFocus = async (blockId?: string) => {

@@ -7,7 +7,7 @@
  */
 
 import { Box, debounce } from "@mui/material";
-import { Viewport } from "@xyflow/react";
+import { useReactFlow, Viewport } from "@xyflow/react";
 import { useRouter } from "next/router";
 import {
   DragEvent,
@@ -38,8 +38,8 @@ import {
 
 export const Main = () => {
   const router = useRouter();
-  const { selectedCategoryId, screenToFlowPosition, setSelectedCategoryId } =
-    useVisualEditor();
+  const { screenToFlowPosition } = useReactFlow();
+  const { selectedCategoryId, setSelectedCategoryId } = useVisualEditor();
   const { createNode } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setSearchOpen] = useState(false);

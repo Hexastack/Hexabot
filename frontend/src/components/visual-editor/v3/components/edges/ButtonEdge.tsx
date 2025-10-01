@@ -10,6 +10,7 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  useReactFlow,
   type EdgeProps,
 } from "@xyflow/react";
 import { useMemo } from "react";
@@ -47,7 +48,8 @@ export default function CustomEdge({
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
     invalidate: false,
   });
-  const { setEdges, getEdges, getBlockFromCache } = useVisualEditor();
+  const { setEdges, getEdges } = useReactFlow();
+  const { getBlockFromCache } = useVisualEditor();
   const edges = getEdges();
   const edge = useMemo(() => edges.find((e) => e.id === id), [edges, id]);
   const onEdgeClick = () => {

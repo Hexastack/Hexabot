@@ -95,8 +95,8 @@ export const FlowsTabs = ({
     },
     {
       onSuccess([category]) {
-        if (!selectedCategoryId) {
-          setSelectedCategoryId(category?.id);
+        if (!selectedCategoryId && category?.id) {
+          setSelectedCategoryId(category.id);
         }
       },
     },

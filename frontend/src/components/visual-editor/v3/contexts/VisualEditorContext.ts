@@ -10,6 +10,12 @@ import { createContext } from "react";
 
 import { IVisualEditorContext } from "../types/visual-editor.types";
 
-export const VisualEditorContext = createContext<IVisualEditorContext | null>(
-  null,
-);
+export const VisualEditorContext = createContext<IVisualEditorContext>({
+  getCentroid: () => ({ x: 0, y: 0 }),
+  selectNodes: () => {},
+  selectedNodeIds: [],
+  getBlockFromCache: () => undefined,
+  selectedCategoryId: undefined,
+  setSelectedNodeIds: () => {},
+  setSelectedCategoryId: () => {},
+} as IVisualEditorContext);

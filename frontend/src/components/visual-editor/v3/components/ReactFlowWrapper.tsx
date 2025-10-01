@@ -7,9 +7,9 @@
  */
 
 import {
+  addEdge,
   Background,
   Controls,
-  Edge,
   MiniMap,
   Node,
   NodeMouseHandler,
@@ -19,6 +19,7 @@ import {
   useKeyPress,
   useNodesInitialized,
   useOnViewportChange,
+  useReactFlow,
   Viewport,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo } from "react";
@@ -67,12 +68,11 @@ const CanvasV3 = ({
     openSearchPanel,
     animateFocus,
   } = useFocusBlock();
+  const { setEdges, setViewport } = useReactFlow();
   const {
     setSelectedNodeIds,
     selectedNodeIds,
-    setEdges,
     getBlockFromCache,
-    setViewport,
     selectedCategoryId,
   } = useVisualEditor();
   const nodesInitialized = useNodesInitialized();
@@ -99,7 +99,7 @@ const CanvasV3 = ({
           }
         : { attachedBlock: targetNodeId };
 
-    setEdges((eds) => [...eds, params as Edge]);
+    setEdges((eds) => addEdge({ ...params, type: "buttonedge" }, eds));
 
     onMoveNode({
       id: sourceNodeId,
