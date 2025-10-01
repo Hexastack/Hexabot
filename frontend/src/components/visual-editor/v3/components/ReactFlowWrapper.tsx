@@ -29,7 +29,6 @@ import "@xyflow/react/dist/style.css";
 
 import { IBlock, IBlockAttributes } from "@/types/block.types";
 
-import "../../v3/styles/index.css";
 import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../hooks/useFocusBlock";
