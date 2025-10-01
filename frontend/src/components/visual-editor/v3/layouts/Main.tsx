@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import {
   DragEvent,
   KeyboardEventHandler,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -63,9 +64,7 @@ export const Main = () => {
   const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
     invalidate: false,
   });
-  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
-    invalidate: false,
-  });
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { data: blocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
     { hasCount: false, params: searchPayload },
@@ -79,7 +78,14 @@ export const Main = () => {
     [
       JSON.stringify(
         blocks.map((b) => {
-          return { ...b, position: undefined, updatedAt: undefined };
+          return {
+            ...b,
+            position: undefined,
+            updatedAt: undefined,
+            attachedToBlock: undefined,
+            attachedBlock: undefined,
+            previousBlocks: undefined,
+          };
         }),
       ),
     ],
@@ -89,7 +95,13 @@ export const Main = () => {
     [
       JSON.stringify(
         blocks.map((b) => {
-          return { ...b, position: undefined, updatedAt: undefined };
+          return {
+            ...b,
+            position: undefined,
+            updatedAt: undefined,
+            nextBlocks: undefined,
+            previousBlocks: undefined,
+          };
         }),
       ),
     ],
@@ -99,7 +111,15 @@ export const Main = () => {
   }, [
     JSON.stringify(
       blocks.map((b) => {
-        return { ...b, position: undefined, updatedAt: undefined };
+        return {
+          ...b,
+          position: undefined,
+          updatedAt: undefined,
+          previousBlocks: undefined,
+          attachedToBlock: undefined,
+          attachedBlock: undefined,
+          nextBlocks: undefined,
+        };
       }),
     ),
   ]);
@@ -131,28 +151,33 @@ export const Main = () => {
       setSearchOpen(true);
     }
   };
-  const debouncedUpdateBlock = debounce(
-    ({ id, ...rest }: Partial<IBlock> & { id: string }) => {
-      updateBlock({
-        id,
-        params: {
-          ...rest,
-        },
-      });
-    },
-    400,
+  const handleUpdateBlock = useCallback(
+    ({ id, ...rest }: Partial<IBlock> & { id: string }) =>
+      debounce(() => {
+        updateBlock({
+          id,
+          params: {
+            ...rest,
+          },
+        });
+      }, 400)(),
+    [updateBlock],
   );
-  const debouncedUpdateCategory = debounce(({ zoom, x, y }: Viewport) => {
-    if (selectedCategoryId) {
-      updateCategory({
-        id: selectedCategoryId,
-        params: {
-          zoom,
-          offset: [x, y],
-        },
-      });
-    }
-  }, 400);
+  const handleUpdateCategory = useCallback(
+    ({ zoom, x, y }: Viewport) =>
+      debounce(() => {
+        if (selectedCategoryId) {
+          updateCategory({
+            id: selectedCategoryId,
+            params: {
+              zoom,
+              offset: [x, y],
+            },
+          });
+        }
+      }, 400)(),
+    [updateCategory, selectedCategoryId],
+  );
 
   useEffect(() => {
     const { id: flowId } = router.query;
@@ -166,43 +191,46 @@ export const Main = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.id]);
+  }, [categories, router.query.id]);
 
-  const dropHandler = (event: DragEvent<HTMLDivElement>) => {
-    const diagramNode = event.dataTransfer.getData("diagram-node");
+  const dropHandler = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      const diagramNode = event.dataTransfer.getData("diagram-node");
 
-    if (!diagramNode) return;
+      if (!diagramNode) return;
 
-    let data: IBlockAttributes;
+      let data: IBlockAttributes;
 
-    try {
-      data = JSON.parse(diagramNode);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn("Invalid JSON in drop event", error);
+      try {
+        data = JSON.parse(diagramNode);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn("Invalid JSON in drop event", error);
 
-      return;
-    }
+        return;
+      }
 
-    if (!data) {
-      // eslint-disable-next-line no-console
-      console.warn("Unable to handle the drop event");
+      if (!data) {
+        // eslint-disable-next-line no-console
+        console.warn("Unable to handle the drop event");
 
-      return;
-    }
+        return;
+      }
 
-    const position = screenToFlowPosition({
-      x: event.clientX,
-      y: event.clientY,
-    });
-    const payload = {
-      ...data,
-      category: selectedCategoryId || "",
-      position,
-    };
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      const payload = {
+        ...data,
+        category: selectedCategoryId || "",
+        position,
+      };
 
-    createNode(undefined, payload);
-  };
+      createNode(undefined, payload);
+    },
+    [createNode, screenToFlowPosition, selectedCategoryId],
+  );
 
   return (
     <div
@@ -229,8 +257,8 @@ export const Main = () => {
       >
         {currentCategory ? (
           <ReactFlowWrapper
-            onMoveNode={debouncedUpdateBlock}
-            onViewport={debouncedUpdateCategory}
+            onMoveNode={handleUpdateBlock}
+            onViewport={handleUpdateCategory}
             defaultEdges={[...nextBlocksLinks, ...attachedLinks]}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
