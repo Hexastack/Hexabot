@@ -19,7 +19,6 @@ import { PermissionAction } from "@/types/permission.types";
 
 import { useCreateBlock } from "../../hooks/useCreateBlocks";
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
-import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
 import { useVisualEditor } from "../../hooks/useVisualEditor";
 
@@ -46,7 +45,6 @@ export const BulkButtonsGroup = () => {
   const { createNodes } = useCreateBlock();
   const { openMoveDialog } = useMoveBlocksDialog();
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
-  const { removeBlockIdParam } = useFocusBlock();
   const selectedItemsTranslation = useMemo(
     () =>
       t(
@@ -96,12 +94,8 @@ export const BulkButtonsGroup = () => {
             <ControlButton
               color="secondary"
               startIcon={<DeleteIcon />}
-              onClick={async () => {
-                const confirm = await openDeleteManyDialog();
-
-                if (confirm) {
-                  removeBlockIdParam();
-                }
+              onClick={() => {
+                openDeleteManyDialog();
               }}
               selectedNodeIds={selectedNodeIds}
             >

@@ -37,11 +37,7 @@ export const useDeleteManyBlocksDialog = () => {
       if (isConfirmed) {
         deleteBlocks(ids);
       }
-
-      return isConfirmed;
     }
-
-    return false;
   };
 
   return {

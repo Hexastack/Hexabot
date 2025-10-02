@@ -20,7 +20,6 @@ import { PermissionAction } from "@/types/permission.types";
 import { useCreateBlock } from "../../hooks/useCreateBlocks";
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
-import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
 import { useVisualEditor } from "../../hooks/useVisualEditor";
 import { TooltipIcon } from "../TooltipIcon";
@@ -33,7 +32,6 @@ export const StyledIconButton = styled(IconButton)(() => ({
 
 export const NodeControls = ({ blockId }: { blockId: string }) => {
   const hasPermission = useHasPermission();
-  const { removeBlockIdParam } = useFocusBlock();
   const { selectedNodeIds } = useVisualEditor();
   const { createNode } = useCreateBlock();
   const { openEditDialog } = useEditBlockDialog();
@@ -79,12 +77,8 @@ export const NodeControls = ({ blockId }: { blockId: string }) => {
         <Divider orientation="vertical" />
         {hasPermission(EntityType.BLOCK, PermissionAction.DELETE) ? (
           <StyledIconButton
-            onClick={async () => {
-              const confirm = await openDeleteManyDialog(selectedNodeIds);
-
-              if (confirm) {
-                removeBlockIdParam();
-              }
+            onClick={() => {
+              openDeleteManyDialog(selectedNodeIds);
             }}
             disabled={shouldDisableControlButton}
           >

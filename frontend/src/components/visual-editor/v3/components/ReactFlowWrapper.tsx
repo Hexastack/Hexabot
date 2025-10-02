@@ -166,11 +166,7 @@ export const ReactFlowWrapper = ({
 
   useEffect(() => {
     if (deleteKeyPressed && selectedNodeIds.length) {
-      openDeleteManyDialog(selectedNodeIds).then((confirm) => {
-        if (confirm) {
-          removeBlockIdParam();
-        }
-      });
+      openDeleteManyDialog(selectedNodeIds);
     }
   }, [
     onDeleteNodes,
