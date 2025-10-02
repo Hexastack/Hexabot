@@ -40,7 +40,8 @@ import {
 export const Main = () => {
   const router = useRouter();
   const { screenToFlowPosition } = useReactFlow();
-  const { selectedCategoryId, setSelectedCategoryId } = useVisualEditor();
+  const { selectedCategoryId, setSelectedCategoryId, setSelectedNodeIds } =
+    useVisualEditor();
   const { createNode } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setSearchOpen] = useState(false);
@@ -205,6 +206,16 @@ export const Main = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.id]);
+
+  useEffect(() => {
+    const { blockIds } = router.query;
+
+    if (!blockIds) {
+      setSelectedNodeIds([]);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.blockIds]);
 
   return (
     <div

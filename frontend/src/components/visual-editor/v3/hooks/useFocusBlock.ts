@@ -50,19 +50,13 @@ export const useFocusBlock = () => {
     typeof router.query[key] === "string" ? router.query[key] : "";
 
   useEffect(() => {
-    const { blockId } = router.query;
+    const { blockIds } = router.query;
 
     if (nodesInitialized) {
-      if (typeof blockId === "string" && blockId) {
-        const node = getNode(blockId);
-
-        if (!node) {
-          return;
-        }
-
-        selectNodes([blockId]);
+      if (typeof blockIds === "string" && blockIds?.length) {
+        selectNodes(blockIds.split(",").filter(getNode));
         if (openSearchPanel) {
-          animateFocus(blockId);
+          animateFocus(blockIds);
         }
       }
     }
@@ -70,8 +64,11 @@ export const useFocusBlock = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodesInitialized, router.query]);
 
-  const updateVisualEditorURL = async (category: string, blockId?: string) => {
-    const blockParam = blockId ? `/${blockId}` : "";
+  const updateVisualEditorURL = async (
+    category: string,
+    blockIds: string[] = [],
+  ) => {
+    const blockParam = blockIds.join ? `/${blockIds.join(",")}` : "";
 
     if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
       await router.push(

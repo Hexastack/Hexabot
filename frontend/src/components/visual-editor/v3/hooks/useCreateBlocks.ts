@@ -49,7 +49,7 @@ export const useCreateBlock = () => {
         },
         {
           onSuccess: async (data, { category }) => {
-            await updateVisualEditorURL(category, data.id);
+            await updateVisualEditorURL(category, [data.id]);
           },
         },
       );
@@ -60,7 +60,7 @@ export const useCreateBlock = () => {
         { position, ...rest },
         {
           onSuccess: async (data, { category }) => {
-            await updateVisualEditorURL(category, data.id);
+            await updateVisualEditorURL(category, [data.id]);
           },
         },
       );

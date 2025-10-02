@@ -77,8 +77,8 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   const { toast } = useToast();
   const { updateVisualEditorURL, setOpenSearchPanel } = useFocusBlock();
   const [scope, setScope] = useState<SearchScope>("all");
-  const blockId = router.query.blockId?.toString();
-  const [selected, setSelected] = useState<string | undefined>(blockId);
+  const blockIds = router.query.blockIds?.toString();
+  const [selected, setSelected] = useState<string | undefined>(blockIds?.[0]);
   const { selectedCategoryId } = useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
@@ -227,7 +227,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
                 items: blockSearchResults,
                 selected,
                 onClick: (item) => {
-                  updateVisualEditorURL(item.category, item.id);
+                  updateVisualEditorURL(item.category, [item.id]);
                 },
               }}
             >

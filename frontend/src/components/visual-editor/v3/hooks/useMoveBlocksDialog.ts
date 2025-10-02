@@ -64,13 +64,8 @@ export const useMoveBlocksDialog = () => {
       if (id) {
         setSelectedCategoryId(id);
 
-        if (blockIds.length === 1) {
-          await updateVisualEditorURL(id, blockIds[0]);
-          setToFocusIds(blockIds);
-        } else {
-          await updateVisualEditorURL(id);
-          setToFocusIds(blockIds);
-        }
+        await updateVisualEditorURL(id, blockIds);
+        setToFocusIds(blockIds);
       }
     }
   };

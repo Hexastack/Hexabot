@@ -110,7 +110,7 @@ export const ReactFlowWrapper = ({
     (_, { id }) => {
       if (selectedCategoryId && selectedNodeIds.length === 1) {
         setSelectedNodeIds([id]);
-        updateVisualEditorURL(selectedCategoryId, id);
+        updateVisualEditorURL(selectedCategoryId, [id]);
       }
     },
     [
@@ -152,12 +152,8 @@ export const ReactFlowWrapper = ({
           ...selected.filter((s) => !selectedNodeIds.includes(s)),
         ];
 
-        if (newSelectedNodeIds.length === 1) {
-          if (selectedCategoryId) {
-            updateVisualEditorURL(selectedCategoryId, newSelectedNodeIds[0]);
-          }
-        } else {
-          removeBlockIdParam();
+        if (selectedCategoryId) {
+          updateVisualEditorURL(selectedCategoryId, newSelectedNodeIds);
         }
 
         setSelectedNodeIds(newSelectedNodeIds);
