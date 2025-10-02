@@ -75,36 +75,11 @@ export const Main = () => {
   );
   const nextBlocksLinks = useMemo(
     () => getNextBlocksLinksFromBlocks(blocks),
-    [
-      JSON.stringify(
-        blocks.map((b) => {
-          return {
-            ...b,
-            position: undefined,
-            updatedAt: undefined,
-            attachedToBlock: undefined,
-            attachedBlock: undefined,
-            previousBlocks: undefined,
-          };
-        }),
-      ),
-    ],
+    [JSON.stringify(blocks.map((b) => b.nextBlocks))],
   );
   const attachedLinks = useMemo(
     () => getAttachedLinksFromBlocks(blocks),
-    [
-      JSON.stringify(
-        blocks.map((b) => {
-          return {
-            ...b,
-            position: undefined,
-            updatedAt: undefined,
-            nextBlocks: undefined,
-            previousBlocks: undefined,
-          };
-        }),
-      ),
-    ],
+    [JSON.stringify(blocks.map((b) => b.attachedBlock))],
   );
   const nodes = useMemo(() => {
     return getNodesFromBlocks(blocks);
