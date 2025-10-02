@@ -19,6 +19,8 @@ export interface IVisualEditorContext {
   selectedCategoryId: string | undefined;
   setSelectedNodeIds: React.Dispatch<React.SetStateAction<string[]>>;
   setSelectedCategoryId: (id: string) => void;
+  toFocusIds: string[];
+  setToFocusIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export interface VisualEditorContextProps {

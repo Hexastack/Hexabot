@@ -153,21 +153,6 @@ export const Main = () => {
       }, 400)(),
     [updateCategory, selectedCategoryId],
   );
-
-  useEffect(() => {
-    const { id: flowId } = router.query;
-
-    if (flowId) {
-      if (typeof flowId === "string") {
-        setSelectedCategoryId(flowId);
-      }
-    } else if (categories[0]?.id) {
-      setSelectedCategoryId(categories[0].id);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories, router.query.id]);
-
   const dropHandler = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       const diagramNode = event.dataTransfer.getData("diagram-node");
@@ -206,6 +191,20 @@ export const Main = () => {
     },
     [createNode, screenToFlowPosition, selectedCategoryId],
   );
+
+  useEffect(() => {
+    const { id: flowId } = router.query;
+
+    if (flowId) {
+      if (typeof flowId === "string") {
+        setSelectedCategoryId(flowId);
+      }
+    } else {
+      setSelectedCategoryId(categories[0].id);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.query.id]);
 
   return (
     <div

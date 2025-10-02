@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { useNodesInitialized } from "@xyflow/react";
+import { useEffect } from "react";
 import { useQueryClient } from "react-query";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
@@ -25,13 +27,17 @@ export const useMoveBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
   const { t } = useTranslate();
+  const nodesInitialized = useNodesInitialized();
+  // const [toFocusIds, setToFocusIds] = useState<string[]>([]);
   const {
     selectedNodeIds,
     selectedCategoryId,
     setSelectedCategoryId,
-    setSelectedNodeIds,
+    selectNodes,
+    setToFocusIds,
+    toFocusIds,
   } = useVisualEditor();
-  const { updateVisualEditorURL } = useFocusBlock();
+  const { updateVisualEditorURL, animateFocus } = useFocusBlock();
   const queryClient = useQueryClient();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
   const { data: categories } = useFind(
@@ -48,15 +54,23 @@ export const useMoveBlocksDialog = () => {
       },
     },
   );
-  const onCategoryChange = (targetCategory: number) => {
+  const onCategoryChange = async (
+    targetCategory: number,
+    blockIds: string[] = [],
+  ) => {
     if (categories) {
       const { id } = categories[targetCategory];
 
       if (id) {
-        setSelectedCategoryId?.(id);
-        setSelectedNodeIds([]);
+        setSelectedCategoryId(id);
 
-        updateVisualEditorURL(id);
+        if (blockIds.length === 1) {
+          await updateVisualEditorURL(id, blockIds[0]);
+          setToFocusIds(blockIds);
+        } else {
+          await updateVisualEditorURL(id);
+          setToFocusIds(blockIds);
+        }
       }
     }
   };
@@ -82,7 +96,7 @@ export const useMoveBlocksDialog = () => {
             );
 
             if (targetCategoryIndex !== -1) {
-              onCategoryChange(targetCategoryIndex);
+              onCategoryChange(targetCategoryIndex, ids);
             }
           },
           onError: () => {
@@ -107,6 +121,14 @@ export const useMoveBlocksDialog = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (nodesInitialized && toFocusIds.length) {
+      selectNodes(toFocusIds);
+      setToFocusIds([]);
+      animateFocus();
+    }
+  }, [nodesInitialized, categories]);
 
   return {
     openMoveDialog,

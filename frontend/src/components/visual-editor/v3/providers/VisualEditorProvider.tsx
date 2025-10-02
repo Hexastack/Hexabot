@@ -32,6 +32,7 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     string | undefined
   >();
+  const [toFocusIds, setToFocusIds] = useState<string[]>([]);
   const getCentroid = (): XYPosition => {
     if (typeof window === "undefined") return { x: 0, y: 0 };
     const screenWidth = window.innerWidth;
@@ -45,6 +46,7 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     return position;
   };
   const selectNodes = (nodeIds: string[]) => {
+    setSelectedNodeIds(nodeIds);
     const changes = ReactFlowInstance.getNodes().map(({ id }) => ({
       id,
       type: "select",
@@ -64,6 +66,8 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         setSelectedNodeIds,
         selectedCategoryId,
         setSelectedCategoryId,
+        toFocusIds,
+        setToFocusIds,
         ...ReactFlowInstance,
         ...FocusBlockInstance,
       }}

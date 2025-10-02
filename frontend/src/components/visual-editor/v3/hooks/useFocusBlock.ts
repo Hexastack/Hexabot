@@ -52,10 +52,18 @@ export const useFocusBlock = () => {
   useEffect(() => {
     const { blockId } = router.query;
 
-    if (nodesInitialized && typeof blockId === "string" && blockId) {
-      selectNodes([blockId]);
-      if (openSearchPanel) {
-        animateFocus(blockId);
+    if (nodesInitialized) {
+      if (typeof blockId === "string" && blockId) {
+        const node = getNode(blockId);
+
+        if (!node) {
+          return;
+        }
+
+        selectNodes([blockId]);
+        if (openSearchPanel) {
+          animateFocus(blockId);
+        }
       }
     }
 

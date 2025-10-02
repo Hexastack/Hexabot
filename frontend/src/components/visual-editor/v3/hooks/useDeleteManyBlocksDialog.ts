@@ -12,20 +12,15 @@ import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
 import { EntityType } from "@/services/types";
 
+import { useFocusBlock } from "./useFocusBlock";
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useDeleteManyBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
+  const { removeBlockIdParam } = useFocusBlock();
   const { setSelectedNodeIds, selectedNodeIds } = useVisualEditor();
-  const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK, {
-    onSuccess: () => {
-      setSelectedNodeIds([]);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK);
   const openDeleteManyDialog = async (ids: string[] = selectedNodeIds) => {
     if (ids.length) {
       const isConfirmed = await dialogs.confirm(ConfirmDialogBody, {
@@ -35,7 +30,15 @@ export const useDeleteManyBlocksDialog = () => {
       });
 
       if (isConfirmed) {
-        deleteBlocks(ids);
+        deleteBlocks(ids, {
+          onSuccess: () => {
+            setSelectedNodeIds([]);
+            removeBlockIdParam();
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        });
       }
     }
   };

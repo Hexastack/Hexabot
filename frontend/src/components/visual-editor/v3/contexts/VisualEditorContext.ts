@@ -18,4 +18,6 @@ export const VisualEditorContext = createContext<IVisualEditorContext>({
   selectedCategoryId: undefined,
   setSelectedNodeIds: () => {},
   setSelectedCategoryId: () => {},
+  toFocusIds: [],
+  setToFocusIds: () => {},
 } as IVisualEditorContext);

@@ -15,6 +15,7 @@ import {
   NodeMouseHandler,
   OnConnect,
   OnNodeDrag,
+  OnNodesChange,
   ReactFlow,
   useKeyPress,
   useNodesInitialized,
@@ -22,7 +23,7 @@ import {
   useReactFlow,
   Viewport,
 } from "@xyflow/react";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 
 import "@xyflow/react/dist/style.css";
 
@@ -62,13 +63,8 @@ export const ReactFlowWrapper = ({
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedBlockId: string) => void;
 }) => {
-  const {
-    removeBlockIdParam,
-    updateVisualEditorURL,
-    getQuery,
-    openSearchPanel,
-    animateFocus,
-  } = useFocusBlock();
+  const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
+    useFocusBlock();
   const { setEdges, setViewport } = useReactFlow();
   const {
     setSelectedNodeIds,
@@ -80,7 +76,6 @@ export const ReactFlowWrapper = ({
   const deleteKeyPressed = useKeyPress("Delete");
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
-  const blockId = useMemo(() => getQuery("blockId"), [getQuery]);
   const onConnect: OnConnect = (params) => {
     const { source: sourceNodeId, target: targetNodeId, sourceHandle } = params;
     const sourceNode = getBlockFromCache(sourceNodeId);
@@ -103,24 +98,6 @@ export const ReactFlowWrapper = ({
       ...payload,
     });
   };
-  const handleNodeClick: NodeMouseHandler<Node> = useCallback(
-    (e, { id }) => {
-      if (!selectedNodeIds.includes(id)) {
-        if (selectedCategoryId && !e.ctrlKey) {
-          updateVisualEditorURL(selectedCategoryId, id);
-          setSelectedNodeIds([id]);
-        } else {
-          setSelectedNodeIds((nodes) => [...nodes, id]);
-        }
-      }
-    },
-    [
-      selectedCategoryId,
-      selectedNodeIds,
-      setSelectedNodeIds,
-      updateVisualEditorURL,
-    ],
-  );
   const handleNodeDoubleClick: NodeMouseHandler<Node> = useCallback(
     (_, { id }) => {
       if (selectedNodeIds.length === 1) {
@@ -159,6 +136,41 @@ export const ReactFlowWrapper = ({
     },
     [onMoveNode],
   );
+  const handleNodesChange: OnNodesChange<Node> = useCallback(
+    (changes) => {
+      const selectionEvents = changes.filter((c) => c.type === "select");
+
+      if (selectionEvents.length) {
+        const selected = selectionEvents
+          .filter((s) => s.selected)
+          .map((s) => s.id);
+        const unselected = selectionEvents
+          .filter((s) => !s.selected)
+          .map((s) => s.id);
+        const newSelectedNodeIds = [
+          ...selectedNodeIds.filter((s) => !unselected.includes(s)),
+          ...selected.filter((s) => !selectedNodeIds.includes(s)),
+        ];
+
+        if (newSelectedNodeIds.length === 1) {
+          if (selectedCategoryId) {
+            updateVisualEditorURL(selectedCategoryId, newSelectedNodeIds[0]);
+          }
+        } else {
+          removeBlockIdParam();
+        }
+
+        setSelectedNodeIds(newSelectedNodeIds);
+      }
+    },
+    [
+      selectedNodeIds,
+      selectedCategoryId,
+      removeBlockIdParam,
+      setSelectedNodeIds,
+      updateVisualEditorURL,
+    ],
+  );
 
   useOnViewportChange({
     onEnd: onViewport,
@@ -177,7 +189,9 @@ export const ReactFlowWrapper = ({
   ]);
 
   useEffect(() => {
-    setViewport(defaultViewport);
+    if (nodesInitialized) {
+      setViewport(defaultViewport);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodesInitialized]);
@@ -194,32 +208,11 @@ export const ReactFlowWrapper = ({
       nodeTypes={NODE_TYPES}
       edgeTypes={EDGE_TYPES}
       onConnect={onConnect}
-      onNodeClick={handleNodeClick}
-      onNodeDoubleClick={handleNodeDoubleClick}
-      onSelectionChange={({ nodes }) => {
-        const selectedNodes = nodes.map(({ id }) => id);
-
-        if (blockId && nodes.length > 1) {
-          removeBlockIdParam();
-        } else if (!blockId && nodes.length === 1 && selectedCategoryId) {
-          updateVisualEditorURL(selectedCategoryId, nodes[0].id);
-        }
-
-        if (selectedNodes.length !== selectedNodeIds.length) {
-          setSelectedNodeIds(selectedNodes);
-
-          if (
-            !selectedNodes.includes(blockId) &&
-            !selectedNodes.length &&
-            !openSearchPanel
-          ) {
-            removeBlockIdParam();
-          }
-        }
-      }}
-      onlyRenderVisibleElements
+      onNodesChange={handleNodesChange}
       onNodeDragStart={handleNodeDragStart}
       onNodeDragStop={handleNodeDragStop}
+      onNodeDoubleClick={handleNodeDoubleClick}
+      onlyRenderVisibleElements
     >
       <MiniMap
         className="rf-minimap"
