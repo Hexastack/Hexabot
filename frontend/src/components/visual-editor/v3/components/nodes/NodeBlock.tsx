@@ -56,6 +56,7 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
           borderBottomLeftRadius: "0",
         }}
         aria-disabled={!disableNextBlocks}
+        isValidConnection={() => disableNextBlocks}
         isConnectable={disableNextBlocks}
       />
       <PortHandle
@@ -69,6 +70,7 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
           borderBottomLeftRadius: "0",
         }}
         aria-disabled={!disableAttached}
+        isValidConnection={() => disableAttached}
         isConnectable={disableAttached}
       />
     </NodeContainer>
