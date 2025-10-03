@@ -20,4 +20,6 @@ export const VisualEditorContext = createContext<IVisualEditorContext>({
   setSelectedCategoryId: () => {},
   toFocusIds: [],
   setToFocusIds: () => {},
+  openSearchPanel: false,
+  setOpenSearchPanel: () => {},
 } as IVisualEditorContext);

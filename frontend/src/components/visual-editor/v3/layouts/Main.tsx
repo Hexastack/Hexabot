@@ -35,6 +35,7 @@ import {
   getAttachedLinksFromBlocks,
   getNextBlocksLinksFromBlocks,
   getNodesFromBlocks,
+  getStartLinks,
 } from "../utils/block.utils";
 
 export const Main = () => {
@@ -74,6 +75,9 @@ export const Main = () => {
       keepPreviousData: true,
     },
   );
+  const startLinks = useMemo(() => {
+    return getStartLinks(blocks);
+  }, [JSON.stringify(blocks.map((b) => b.starts_conversation))]);
   const nextBlocksLinks = useMemo(
     () => getNextBlocksLinksFromBlocks(blocks),
     [JSON.stringify(blocks.map((b) => b.nextBlocks))],
@@ -85,6 +89,7 @@ export const Main = () => {
   const nodes = useMemo(() => {
     return getNodesFromBlocks(blocks);
   }, [
+    JSON.stringify(blocks.map((b) => b.starts_conversation)),
     JSON.stringify(
       blocks.map((b) => {
         return {
@@ -242,7 +247,7 @@ export const Main = () => {
           <ReactFlowWrapper
             onMoveNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
-            defaultEdges={[...nextBlocksLinks, ...attachedLinks]}
+            defaultEdges={[...startLinks, ...nextBlocksLinks, ...attachedLinks]}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
           />

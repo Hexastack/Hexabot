@@ -25,6 +25,7 @@ export default function CustomEdge({
   targetPosition,
   style = {},
   markerEnd,
+  source,
 }: EdgeProps) {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -38,18 +39,20 @@ export default function CustomEdge({
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
-      <EdgeLabelRenderer>
-        <div
-          data-link-id={id}
-          className="button-edge__label nodrag nopan"
-          style={{
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            pointerEvents: "all",
-          }}
-        >
-          <button className="button-edge__button">×</button>
-        </div>
-      </EdgeLabelRenderer>
+      {source.includes("-") ? null : (
+        <EdgeLabelRenderer>
+          <div
+            data-link-id={id}
+            className="button-edge__label nodrag nopan"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              pointerEvents: "all",
+            }}
+          >
+            <button className="button-edge__button">×</button>
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </>
   );
 }

@@ -339,7 +339,7 @@ g.react-flow__edge path {
 /* ports */
 .react-flow__handle:not([aria-disabled="true"]) {
   background-color: var(--xy-handle-background-color-default);
-  cursor: pointer !important;
+  cursor: grab !important;
   pointer-events: all;
 }
 
@@ -386,4 +386,8 @@ g.react-flow__edge path {
   border-bottom: 1px solid #999;
   width: 30px;
   height: 20px;
+}
+
+.react-flow__pane.connectStart {
+  cursor: grabbing !important;
 }

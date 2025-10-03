@@ -73,7 +73,8 @@ export const ReactFlowWrapper = ({
 }) => {
   const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
     useFocusBlock();
-  const { setEdges, setViewport, updateEdge } = useReactFlow();
+  const { setEdges, setViewport, updateEdge, updateNode, getNode } =
+    useReactFlow();
   const {
     setSelectedNodeIds,
     selectedNodeIds,
@@ -134,7 +135,17 @@ export const ReactFlowWrapper = ({
   const handleNodeDragStop: OnNodeDrag<Node> = useCallback(
     async (_e, _node, nodes) => {
       try {
-        for (const { id, position } of nodes) {
+        for (const { id, position, data } of nodes) {
+          if (data["starts_conversation"] === true) {
+            const hasReadOnlyBlock = getNode(`startPoint-${id}`);
+
+            if (hasReadOnlyBlock) {
+              updateNode(`startPoint-${id}`, {
+                position: { x: position.x - 250, y: position.y + 50 },
+              });
+            }
+          }
+
           onMoveNode({
             id,
             position,
@@ -247,6 +258,20 @@ export const ReactFlowWrapper = ({
     },
     [getBlockFromCache, setEdges, updateBlock],
   );
+  const handleConnectStart = useCallback(() => {
+    const flowPane = document.querySelector(".react-flow__pane");
+
+    if (flowPane && !flowPane.classList.contains("connectStart")) {
+      flowPane.classList.add("connectStart");
+    }
+  }, []);
+  const handleConnectEnd = useCallback(() => {
+    const flowPane = document.querySelector(".react-flow__pane");
+
+    if (flowPane && flowPane.classList.contains("connectStart")) {
+      flowPane.classList.remove("connectStart");
+    }
+  }, []);
 
   return (
     <ReactFlow
@@ -268,6 +293,8 @@ export const ReactFlowWrapper = ({
       onEdgeMouseEnter={handleEdgeMouseEnter}
       onEdgeMouseLeave={handleEdgeMouseLeave}
       onEdgeClick={handleEdgeClick}
+      onConnectStart={handleConnectStart}
+      onConnectEnd={handleConnectEnd}
     >
       <MiniMap
         className="rf-minimap"
@@ -275,11 +302,19 @@ export const ReactFlowWrapper = ({
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
 
+          if (n.id.includes("-")) {
+            return "transparent";
+          }
+
           return config.color;
         }}
         nodeColor={(n) => {
           const { type } = n.data;
           const config = getBlockConfigByType(type as TBlock);
+
+          if (n.id.includes("-")) {
+            return "transparent";
+          }
 
           return `${config.color}99`;
         }}

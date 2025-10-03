@@ -31,6 +31,8 @@ export interface IVisualEditorContext {
   setSelectedCategoryId: (id: string) => void;
   toFocusIds: string[];
   setToFocusIds: React.Dispatch<React.SetStateAction<string[]>>;
+  openSearchPanel: boolean;
+  setOpenSearchPanel: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface VisualEditorContextProps {
@@ -57,6 +59,7 @@ export type NodeBlockData = {
   message: string | string[];
   starts_conversation?: boolean;
   patterns?: Pattern[];
+  nodeType?: string;
 };
 
 export type NodeData = Node<NodeBlockData>;

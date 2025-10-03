@@ -131,7 +131,8 @@
     "no_matching_results": "No matching results found. Try other keywords.",
     "results": "results",
     "item_selected": "{{0}} selected item",
-    "items_selected": "{{0}} selected items"
+    "items_selected": "{{0}} selected items",
+    "start": "Start"
   },
   "menu": {
     "terms": "Terms of Use",

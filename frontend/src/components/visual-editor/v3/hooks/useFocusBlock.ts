@@ -8,7 +8,7 @@
 
 import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { RouterType } from "@/services/types";
 
@@ -18,9 +18,8 @@ export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
   const router = useRouter();
   const { getNode, fitView } = useReactFlow();
-  const { selectNodes, selectedCategoryId, selectedNodeIds } =
+  const { selectNodes, selectedCategoryId, selectedNodeIds, openSearchPanel } =
     useVisualEditor();
-  const [openSearchPanel, setOpenSearchPanel] = useState(false);
   const animateFocus = async (blockId?: string) => {
     if (blockId) {
       const node = getNode(blockId);
@@ -88,8 +87,6 @@ export const useFocusBlock = () => {
     updateVisualEditorURL,
     removeBlockIdParam,
     getQuery,
-    openSearchPanel,
-    setOpenSearchPanel,
     animateFocus,
   };
 };

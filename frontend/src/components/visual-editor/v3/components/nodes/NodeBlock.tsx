@@ -6,8 +6,11 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import { NodeProps, Position, useNodeConnections } from "@xyflow/react";
 import { FC, memo, useMemo } from "react";
+
+import { useTranslate } from "@/hooks/useTranslate";
 
 import { LinkType, PortType } from "../../types/visual-editor.types";
 import { PortHandle } from "../handlers/PortHandle";
@@ -18,6 +21,7 @@ import { NodeHeader } from "./NodeHeader";
 
 const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
   const connections = useNodeConnections();
+  const { t } = useTranslate();
   const sourceConnections = useMemo(
     () => connections.filter((c) => c.source === blockId),
     [blockId, connections],
@@ -36,6 +40,56 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
       ) === -1,
     [sourceConnections],
   );
+
+  if (blockId.startsWith("startPoint-")) {
+    return (
+      <div
+        style={{
+          width: "100px",
+          height: "100px",
+          backgroundColor: "#a6b846ee",
+          textAlign: "center",
+          borderRadius: "50%",
+          boxShadow: "0 0 13px #0003 inset",
+          outline: "none",
+          pointerEvents: "none",
+        }}
+      >
+        <PlayArrowRoundedIcon
+          style={{
+            color: "#fff",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "66px",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            top: "110px",
+            fontWeight: 600,
+            color: "#555",
+          }}
+        >
+          {t("message.start")}
+        </div>
+        <PortHandle
+          type={PortType.SOURCE}
+          position={Position.Right}
+          id={LinkType.NEXT_BLOCKS}
+          style={{
+            right: "-6px",
+            borderTopLeftRadius: "0",
+            borderBottomLeftRadius: "0",
+          }}
+          isConnectable={false}
+          isValidConnection={() => false}
+        />
+      </div>
+    );
+  }
 
   return (
     <NodeContainer blockId={blockId}>

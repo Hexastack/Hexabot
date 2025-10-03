@@ -131,7 +131,8 @@
     "no_matching_results": "Aucun résultat correspondant trouvé. Essayez d'autres mots-clés.",
     "results": "résultats",
     "item_selected": "{{0}} élément sélectionné",
-    "items_selected": "{{0}} éléments sélectionnés"
+    "items_selected": "{{0}} éléments sélectionnés",
+    "start": "Début"
   },
   "menu": {
     "terms": "Conditions d'utilisation",

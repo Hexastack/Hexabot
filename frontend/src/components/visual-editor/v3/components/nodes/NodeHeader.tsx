@@ -6,8 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
-
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 
@@ -32,18 +30,6 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
       className="node-title"
     >
       <NodeControls blockId={blockId} />
-      {block?.starts_conversation ? (
-        <div
-          className="start-point-container"
-          style={{
-            position: "absolute",
-            left: "-60px",
-          }}
-        >
-          <PlayArrowRoundedIcon className="start-point" />
-          <div className="startPointLine" />
-        </div>
-      ) : null}
       <div
         style={{
           display: "flex",

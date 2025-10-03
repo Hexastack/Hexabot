@@ -65,21 +65,62 @@ export const getBlockConfigByType = (
   }
 };
 
+export const getStartNode = (block: IBlock): NodeData => {
+  return {
+    id: `startPoint-${block.id}`,
+    position: { x: block.position.x - 250, y: block.position.y + 50 },
+    data: {
+      type: getBlockType(block.message),
+      title: block.name,
+      message: block.message as any,
+      starts_conversation: block.starts_conversation,
+      patterns: block.patterns,
+      nodeType: "virtualBlock",
+    },
+    type: "block",
+    draggable: false,
+    focusable: false,
+    selectable: false,
+  };
+};
+
+export const getStartLinks = (blocks: IBlock[]): EdgeLink[] => {
+  return blocks
+    .filter((b) => b.starts_conversation)
+    .map((b) => ({
+      id: generateId(),
+      source: `startPoint-${b.id}`,
+      target: b.id,
+      markerEnd: { type: MarkerType.ArrowClosed, color: "#555" },
+      style: { stroke: "#555", strokeWidth: "3px" },
+      type: "buttonedge",
+      sourceHandle: LinkType.NEXT_BLOCKS,
+    }));
+};
+
 export const getNodesFromBlocks = (blocks: IBlock[]): NodeData[] => {
-  return blocks.map((block) => {
-    return {
-      id: block.id,
-      position: block.position,
+  const nodes: NodeData[] = [];
+
+  blocks.forEach((b) => {
+    if (b.starts_conversation) {
+      nodes.push(getStartNode(b));
+    }
+
+    nodes.push({
+      id: b.id,
+      position: b.position,
       data: {
-        type: getBlockType(block.message),
-        title: block.name,
-        message: block.message as any,
-        starts_conversation: block.starts_conversation,
-        patterns: block.patterns,
+        type: getBlockType(b.message),
+        title: b.name,
+        message: b.message as any,
+        starts_conversation: b.starts_conversation,
+        patterns: b.patterns,
       },
       type: "block",
-    };
+    });
   });
+
+  return nodes;
 };
 
 export const getNextBlocksLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {

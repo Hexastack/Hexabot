@@ -27,6 +27,7 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   const ReactFlowInstance = useReactFlow();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
+  const [openSearchPanel, setOpenSearchPanel] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<
     string | undefined
   >();
@@ -61,8 +62,10 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         selectNodes,
         getCentroid,
         setToFocusIds,
+        openSearchPanel,
         selectedNodeIds,
         getBlockFromCache,
+        setOpenSearchPanel,
         setSelectedNodeIds,
         selectedCategoryId,
         setSelectedCategoryId,
