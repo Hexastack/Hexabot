@@ -45,8 +45,8 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
     return (
       <div
         style={{
-          width: "100px",
-          height: "100px",
+          width: "90px",
+          height: "90px",
           backgroundColor: "#a6b846ee",
           textAlign: "center",
           borderRadius: "50%",
@@ -68,9 +68,10 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
         <div
           style={{
             position: "relative",
-            top: "110px",
+            top: "100px",
             fontWeight: 600,
             color: "#555",
+            fontSize: "20px",
           }}
         >
           {t("message.start")}
@@ -97,6 +98,7 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
         type={PortType.TARGET}
         position={Position.Left}
         style={{
+          top: "96px",
           left: "-6px",
           borderTopRightRadius: "0",
           borderBottomRightRadius: "0",

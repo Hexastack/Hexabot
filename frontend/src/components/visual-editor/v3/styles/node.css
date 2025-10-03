@@ -75,6 +75,10 @@
   padding: 12px 20px;
   color: #ffffff;
   font-weight: bolder;
+  height: 35px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-block-field {

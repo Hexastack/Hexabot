@@ -6,6 +6,8 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Tooltip } from "@mui/material";
+
 import { useGet } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 
@@ -33,7 +35,23 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
       <div className="node-header-icon">
         <config.Icon width={32} height={32} />
       </div>
-      {block?.name}
+
+      <Tooltip
+        sx={{ minHeight: "135px" }}
+        arrow
+        title={block?.name}
+        placement="top"
+      >
+        <div
+          style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {block?.name}{" "}
+        </div>
+      </Tooltip>
     </div>
   );
 };
