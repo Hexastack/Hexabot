@@ -32,8 +32,10 @@ import "@xyflow/react/dist/style.css";
 // import DarkModeControl from "./components/DarkModeControl";
 
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { PermissionAction } from "@/types/permission.types";
 
 import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
@@ -71,6 +73,7 @@ export const ReactFlowWrapper = ({
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedBlockId: string) => void;
 }) => {
+  const hasPermission = useHasPermission();
   const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
     useFocusBlock();
   const { setEdges, setViewport, updateEdge, updateNode, getNode } =
@@ -83,9 +86,7 @@ export const ReactFlowWrapper = ({
   } = useVisualEditor();
   const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
-  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
-    invalidate: false,
-  });
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
   const onConnect: OnConnect = (params) => {
@@ -195,7 +196,11 @@ export const ReactFlowWrapper = ({
   });
 
   useEffect(() => {
-    if (deleteKeyPressed && selectedNodeIds.length) {
+    if (
+      hasPermission(EntityType.BLOCK, PermissionAction.DELETE) &&
+      deleteKeyPressed &&
+      selectedNodeIds.length
+    ) {
       openDeleteManyDialog(selectedNodeIds);
     }
   }, [
@@ -204,6 +209,7 @@ export const ReactFlowWrapper = ({
     deleteKeyPressed,
     openDeleteManyDialog,
     removeBlockIdParam,
+    hasPermission,
   ]);
 
   useEffect(() => {

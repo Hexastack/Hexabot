@@ -6,7 +6,7 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { Box, debounce } from "@mui/material";
+import { Box, debounce, styled } from "@mui/material";
 import { useReactFlow, Viewport } from "@xyflow/react";
 import { useRouter } from "next/router";
 import {
@@ -37,6 +37,11 @@ import {
   getNodesFromBlocks,
   getStartLinks,
 } from "../utils/block.utils";
+
+const StyledBox = styled(Box)(() => ({
+  position: "relative",
+  height: "100%",
+}));
 
 export const Main = () => {
   const router = useRouter();
@@ -114,7 +119,7 @@ export const Main = () => {
       return {
         x: offset?.[0],
         y: offset?.[1],
-        zoom,
+        zoom: zoom > 4 ? zoom / 100 : zoom,
       };
     }
 
@@ -124,39 +129,40 @@ export const Main = () => {
       zoom: 1,
     };
   }, [currentCategory]);
-  const keyDownHandler: KeyboardEventHandler<HTMLDivElement> = (e) => {
-    const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
 
-    if (isCmdF) {
-      e.preventDefault();
-      setSearchOpen(true);
-    }
-  };
+      if (isCmdF) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    },
+    [],
+  );
   const handleUpdateBlock = useCallback(
-    ({ id, ...rest }: Partial<IBlock> & { id: string }) =>
-      debounce(() => {
-        updateBlock({
-          id,
-          params: {
-            ...rest,
-          },
-        });
-      }, 400)(),
+    debounce(({ id, ...rest }: Partial<IBlock> & { id: string }) => {
+      updateBlock({
+        id,
+        params: {
+          ...rest,
+        },
+      });
+    }, 400),
     [updateBlock],
   );
   const handleUpdateCategory = useCallback(
-    ({ zoom, x, y }: Viewport) =>
-      debounce(() => {
-        if (selectedCategoryId) {
-          updateCategory({
-            id: selectedCategoryId,
-            params: {
-              zoom,
-              offset: [x, y],
-            },
-          });
-        }
-      }, 400)(),
+    debounce(({ zoom, x, y }: Viewport) => {
+      if (selectedCategoryId) {
+        updateCategory({
+          id: selectedCategoryId,
+          params: {
+            zoom: zoom < 4 ? zoom * 100 : zoom,
+            offset: [x, y],
+          },
+        });
+      }
+    }, 400),
     [updateCategory, selectedCategoryId],
   );
   const dropHandler = useCallback(
@@ -222,6 +228,18 @@ export const Main = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.blockIds]);
 
+  useEffect(() => {
+    return () => {
+      handleUpdateBlock.clear();
+    };
+  }, [handleUpdateBlock]);
+
+  useEffect(() => {
+    return () => {
+      handleUpdateCategory.clear();
+    };
+  }, [handleUpdateCategory]);
+
   return (
     <div
       onDrop={dropHandler}
@@ -237,12 +255,7 @@ export const Main = () => {
         }}
       />
       <BulkButtonsGroup />
-      <Box
-        ref={canvasRef}
-        height="100%"
-        position="relative"
-        onKeyDown={keyDownHandler}
-      >
+      <StyledBox ref={canvasRef} onKeyDown={handleKeyDown}>
         {currentCategory ? (
           <ReactFlowWrapper
             onMoveNode={handleUpdateBlock}
@@ -257,7 +270,7 @@ export const Main = () => {
           open={isSearchOpen}
           onClose={() => setSearchOpen(false)}
         />
-      </Box>
+      </StyledBox>
     </div>
   );
 };

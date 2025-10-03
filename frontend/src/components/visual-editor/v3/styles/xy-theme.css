@@ -391,3 +391,10 @@ g.react-flow__edge path {
 .react-flow__pane.connectStart {
   cursor: grabbing !important;
 }
+
+.node-header-icon {
+  display: flex;
+  background-color: white;
+  border-radius: 100%;
+  padding: 2px;
+}

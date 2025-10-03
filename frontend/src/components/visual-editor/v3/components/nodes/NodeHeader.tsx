@@ -30,14 +30,7 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
       className="node-title"
     >
       <NodeControls blockId={blockId} />
-      <div
-        style={{
-          display: "flex",
-          backgroundColor: "white",
-          borderRadius: "100%",
-          padding: "2px",
-        }}
-      >
+      <div className="node-header-icon">
         <config.Icon width={32} height={32} />
       </div>
       {block?.name}
