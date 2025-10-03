@@ -19,7 +19,12 @@ import { IBlock, IBlockFull } from "@/types/block.types";
 import { getBlockType } from "@/utils/block";
 import { generateId } from "@/utils/generateId";
 
-import { EdgeLink, NodeData, TBlock } from "../types/visual-editor.types";
+import {
+  EdgeLink,
+  LinkType,
+  NodeData,
+  TBlock,
+} from "../types/visual-editor.types";
 
 export const determineCase = (blockMessage: IBlockFull["message"]) => {
   if (typeof blockMessage === "string" || Array.isArray(blockMessage))
@@ -89,7 +94,7 @@ export const getNextBlocksLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
           markerEnd: { type: MarkerType.ArrowClosed, color: "#555" },
           style: { stroke: "#555", strokeWidth: "3px" },
           type: "buttonedge",
-          sourceHandle: "nextBlocks",
+          sourceHandle: LinkType.NEXT_BLOCKS,
         })) as EdgeLink[],
     );
 };
@@ -106,7 +111,33 @@ export const getAttachedLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
           markerEnd: { type: MarkerType.ArrowClosed, color: "#019185" },
           style: { stroke: "#019185", strokeWidth: "3px" },
           type: "buttonedge",
-          sourceHandle: "attached",
+          sourceHandle: LinkType.ATTACHED,
         } as EdgeLink),
     );
+};
+
+export const updateEdgeSvgStyle = (
+  target: EventTarget,
+  property: keyof CSSStyleDeclaration,
+  value: string,
+) => {
+  const svg = target?.["closest"]("svg");
+
+  if (svg) {
+    svg.style[property.toString()] = value;
+  }
+};
+
+export const updateEdgeButtonStyle = (
+  id: string,
+  property: keyof CSSStyleDeclaration,
+  value: string,
+) => {
+  const button = document.querySelector<HTMLDivElement>(
+    `[data-link-id='${id}']`,
+  );
+
+  if (button) {
+    button.style[property.toString()] = value;
+  }
 };

@@ -11,6 +11,16 @@ import { ReactNode } from "react";
 
 import { BlockType, IBlock, Pattern } from "@/types/block.types";
 
+export enum PortType {
+  TARGET = "target",
+  SOURCE = "source",
+}
+
+export enum LinkType {
+  ATTACHED = "attached",
+  NEXT_BLOCKS = "nextBlocks",
+}
+
 export interface IVisualEditorContext {
   getCentroid: () => XYPosition;
   selectNodes: (nodeIds: string[]) => void;

@@ -19,14 +19,12 @@ import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 
 import { VisualEditorContext } from "../contexts/VisualEditorContext";
-import { useFocusBlock } from "../hooks/useFocusBlock";
 import { VisualEditorContextProps } from "../types/visual-editor.types";
 
 export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
   const ReactFlowInstance = useReactFlow();
-  const FocusBlockInstance = useFocusBlock();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<
@@ -59,17 +57,15 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   return (
     <VisualEditorContext.Provider
       value={{
+        toFocusIds,
         selectNodes,
         getCentroid,
+        setToFocusIds,
         selectedNodeIds,
         getBlockFromCache,
         setSelectedNodeIds,
         selectedCategoryId,
         setSelectedCategoryId,
-        toFocusIds,
-        setToFocusIds,
-        ...ReactFlowInstance,
-        ...FocusBlockInstance,
       }}
     >
       {children}

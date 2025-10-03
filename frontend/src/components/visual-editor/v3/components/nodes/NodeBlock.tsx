@@ -9,6 +9,7 @@
 import { NodeProps, Position, useNodeConnections } from "@xyflow/react";
 import { FC, memo, useMemo } from "react";
 
+import { LinkType, PortType } from "../../types/visual-editor.types";
 import { PortHandle } from "../handlers/PortHandle";
 
 import { NodeBody } from "./NodeBody";
@@ -17,25 +18,29 @@ import { NodeHeader } from "./NodeHeader";
 
 const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
   const connections = useNodeConnections();
-  const disableNextBlocks = useMemo(() => {
-    return (
-      connections.findIndex(
-        (c) => c.sourceHandle === "attached" && c.source === blockId,
-      ) === -1
-    );
-  }, [connections, blockId]);
-  const disableAttached = useMemo(() => {
-    return (
-      connections.findIndex(
-        (c) => c.sourceHandle === "nextBlocks" && c.source === blockId,
-      ) === -1
-    );
-  }, [connections, blockId]);
+  const sourceConnections = useMemo(
+    () => connections.filter((c) => c.source === blockId),
+    [blockId, connections],
+  );
+  const disableNextBlocks = useMemo(
+    () =>
+      sourceConnections.findIndex(
+        (c) => c.sourceHandle === LinkType.ATTACHED,
+      ) === -1,
+    [sourceConnections],
+  );
+  const disableAttached = useMemo(
+    () =>
+      sourceConnections.findIndex(
+        (c) => c.sourceHandle === LinkType.NEXT_BLOCKS,
+      ) === -1,
+    [sourceConnections],
+  );
 
   return (
     <NodeContainer blockId={blockId}>
       <PortHandle
-        type="target"
+        type={PortType.TARGET}
         position={Position.Left}
         style={{
           left: "-6px",
@@ -46,9 +51,9 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
       <NodeHeader blockId={blockId} />
       <NodeBody blockId={blockId} />
       <PortHandle
-        type="source"
+        type={PortType.SOURCE}
         position={Position.Right}
-        id="nextBlocks"
+        id={LinkType.NEXT_BLOCKS}
         style={{
           right: "-6px",
           top: "80px",
@@ -56,13 +61,13 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
           borderBottomLeftRadius: "0",
         }}
         aria-disabled={!disableNextBlocks}
-        isValidConnection={() => disableNextBlocks}
         isConnectable={disableNextBlocks}
+        isValidConnection={() => disableNextBlocks}
       />
       <PortHandle
-        type="source"
+        type={PortType.SOURCE}
         position={Position.Right}
-        id="attached"
+        id={LinkType.ATTACHED}
         style={{
           right: "-6px",
           top: "120px",
@@ -70,8 +75,8 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
           borderBottomLeftRadius: "0",
         }}
         aria-disabled={!disableAttached}
-        isValidConnection={() => disableAttached}
         isConnectable={disableAttached}
+        isValidConnection={() => disableAttached}
       />
     </NodeContainer>
   );

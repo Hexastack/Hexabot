@@ -10,21 +10,10 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
-  useReactFlow,
   type EdgeProps,
 } from "@xyflow/react";
-import { useMemo } from "react";
-
-import { useUpdate } from "@/hooks/crud/useUpdate";
-import { EntityType } from "@/services/types";
-import { IBlockAttributes } from "@/types/block.types";
-
-import { useVisualEditor } from "../../hooks/useVisualEditor";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
-
-const getEdgeClasslist = (edgeId: string) =>
-  document.querySelector(`[data-id="${edgeId}"]`)?.classList;
 
 export default function CustomEdge({
   id,
@@ -45,67 +34,20 @@ export default function CustomEdge({
     targetY,
     targetPosition,
   });
-  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
-    invalidate: false,
-  });
-  const { setEdges, getEdges } = useReactFlow();
-  const { getBlockFromCache } = useVisualEditor();
-  const edges = getEdges();
-  const edge = useMemo(() => edges.find((e) => e.id === id), [edges, id]);
-  const onEdgeClick = () => {
-    if (edge?.source) {
-      const block = getBlockFromCache(edge.source);
-      const payload: Partial<IBlockAttributes> =
-        edge.sourceHandle === "nextBlocks"
-          ? {
-              nextBlocks: block?.nextBlocks?.filter((n) => n !== edge.target),
-            }
-          : { attachedBlock: null };
-
-      setEdges((edges) => edges.filter((edge) => edge.id !== id));
-
-      updateBlock({
-        id: edge.source,
-        params: payload,
-      });
-    }
-  };
 
   return (
     <>
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
         <div
+          data-link-id={id}
           className="button-edge__label nodrag nopan"
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: "all",
           }}
         >
-          <button
-            className="button-edge__button"
-            onClick={onEdgeClick}
-            onMouseEnter={() => {
-              if (edge) {
-                const edgeClasslist = getEdgeClasslist(edge.id);
-
-                if (edgeClasslist && !edgeClasslist.contains("hovered")) {
-                  edgeClasslist.add("hovered");
-                }
-              }
-            }}
-            onMouseLeave={() => {
-              if (edge) {
-                const edgeClasslist = getEdgeClasslist(edge.id);
-
-                if (edgeClasslist?.contains("hovered")) {
-                  edgeClasslist.remove("hovered");
-                }
-              }
-            }}
-          >
-            ×
-          </button>
+          <button className="button-edge__button">×</button>
         </div>
       </EdgeLabelRenderer>
     </>

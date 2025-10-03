@@ -285,7 +285,7 @@
   border-radius: 9px 9px 0 0;
   top: -42px;
   right: -3px;
-  border: 3px solid #1dc7fc;
+  border: 3px solid var(--xy-theme-selected);
   border-bottom: 3px solid #ddd;
   display: flex;
   background-color: #fff;
@@ -334,10 +334,6 @@
 /* edges */
 g.react-flow__edge path {
   transition: stroke 0.2s;
-}
-g.react-flow__edge.hovered path,
-g.react-flow__edge:hover path {
-  stroke: #1dc7fc !important;
 }
 
 /* ports */

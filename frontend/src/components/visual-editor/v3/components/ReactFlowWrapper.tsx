@@ -10,6 +10,8 @@ import {
   addEdge,
   Background,
   Controls,
+  Edge,
+  EdgeMouseHandler,
   MiniMap,
   Node,
   NodeMouseHandler,
@@ -29,14 +31,20 @@ import "@xyflow/react/dist/style.css";
 
 // import DarkModeControl from "./components/DarkModeControl";
 
+import { useUpdate } from "@/hooks/crud/useUpdate";
+import { EntityType } from "@/services/types";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
 
 import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../hooks/useFocusBlock";
 import { useVisualEditor } from "../hooks/useVisualEditor";
-import { EdgeLink, TBlock } from "../types/visual-editor.types";
-import { getBlockConfigByType } from "../utils/block.utils";
+import { EdgeLink, LinkType, TBlock } from "../types/visual-editor.types";
+import {
+  getBlockConfigByType,
+  updateEdgeButtonStyle,
+  updateEdgeSvgStyle,
+} from "../utils/block.utils";
 
 import ButtonEdge from "./edges/ButtonEdge";
 import CustomNode from "./nodes/NodeBlock";
@@ -65,7 +73,7 @@ export const ReactFlowWrapper = ({
 }) => {
   const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
     useFocusBlock();
-  const { setEdges, setViewport } = useReactFlow();
+  const { setEdges, setViewport, updateEdge } = useReactFlow();
   const {
     setSelectedNodeIds,
     selectedNodeIds,
@@ -74,13 +82,16 @@ export const ReactFlowWrapper = ({
   } = useVisualEditor();
   const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
+  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK, {
+    invalidate: false,
+  });
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
   const onConnect: OnConnect = (params) => {
     const { source: sourceNodeId, target: targetNodeId, sourceHandle } = params;
     const sourceNode = getBlockFromCache(sourceNodeId);
     const payload: Partial<IBlockAttributes> =
-      sourceHandle === "nextBlocks"
+      sourceHandle === LinkType.NEXT_BLOCKS
         ? {
             nextBlocks: [
               ...(sourceNode?.nextBlocks || []).filter(
@@ -192,6 +203,51 @@ export const ReactFlowWrapper = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodesInitialized]);
 
+  const handleEdgeMouseEnter: EdgeMouseHandler<Edge> = useCallback(
+    (e, { id, style }) => {
+      updateEdgeSvgStyle(e.target, "zIndex", "1001");
+      updateEdgeButtonStyle(id, "zIndex", "1001");
+      updateEdge(id, { style: { ...style, stroke: "#1dc7fc" } });
+    },
+    [updateEdge],
+  );
+  const handleEdgeMouseLeave: EdgeMouseHandler<Edge> = useCallback(
+    (e, { id, style, sourceHandle }) => {
+      updateEdgeSvgStyle(e.target, "zIndex", "0");
+      updateEdgeButtonStyle(id, "zIndex", "0");
+      updateEdge(id, {
+        style: {
+          ...style,
+          stroke: sourceHandle === LinkType.ATTACHED ? "#019185" : "#555",
+        },
+      });
+    },
+    [updateEdge],
+  );
+  const handleEdgeClick = useCallback(
+    (e: React.MouseEvent, { id, source, target, sourceHandle }: Edge) => {
+      const isEdgeButton = e.target?.["tagName"] === "BUTTON";
+
+      if (isEdgeButton && source) {
+        const block = getBlockFromCache(source);
+        const payload: Partial<IBlockAttributes> =
+          sourceHandle === LinkType.NEXT_BLOCKS
+            ? {
+                nextBlocks: block?.nextBlocks?.filter((n) => n !== target),
+              }
+            : { attachedBlock: null };
+
+        setEdges((edges) => edges.filter((edge) => edge.id !== id));
+
+        updateBlock({
+          id: source,
+          params: payload,
+        });
+      }
+    },
+    [getBlockFromCache, setEdges, updateBlock],
+  );
+
   return (
     <ReactFlow
       defaultEdges={defaultEdges}
@@ -209,6 +265,9 @@ export const ReactFlowWrapper = ({
       onNodeDragStop={handleNodeDragStop}
       onNodeDoubleClick={handleNodeDoubleClick}
       onlyRenderVisibleElements
+      onEdgeMouseEnter={handleEdgeMouseEnter}
+      onEdgeMouseLeave={handleEdgeMouseLeave}
+      onEdgeClick={handleEdgeClick}
     >
       <MiniMap
         className="rf-minimap"
