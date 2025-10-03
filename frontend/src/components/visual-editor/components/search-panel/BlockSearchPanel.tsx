@@ -21,8 +21,7 @@ import { styled } from "@mui/material/styles";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
-import { useRouter } from "next/router";
-import { RefObject, useEffect, useState } from "react";
+import { RefObject, useCallback, useEffect, useState } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DialogTitle } from "@/app-components/dialogs";
@@ -72,13 +71,11 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   onClose,
   canvasRef,
 }) => {
-  const router = useRouter();
   const { t } = useTranslate();
   const { toast } = useToast();
   const { updateVisualEditorURL } = useFocusBlock();
   const [scope, setScope] = useState<SearchScope>("all");
-  const blockIds = router.query.blockIds?.toString();
-  const [selected, setSelected] = useState<string | undefined>(blockIds?.[0]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const { selectedCategoryId, setOpenSearchPanel } = useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
@@ -98,7 +95,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
     {
       enabled: open && Boolean(searchText && searchText.trim().length > 0),
       onSuccess() {
-        setSelected(undefined);
+        setSelectedIndex(0);
       },
       onError() {
         toast.error(t("message.failed_to_load_blocks"));
@@ -110,6 +107,21 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
   useEffect(() => {
     setOpenSearchPanel(open);
   }, [open]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex(
+          Math.min(selectedIndex + 1, blockSearchResults.length - 1),
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex(Math.max(selectedIndex - 1, 0));
+      }
+    },
+    [blockSearchResults.length, selectedIndex],
+  );
 
   return (
     <Panel
@@ -125,6 +137,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
           margin: 0,
         },
       }}
+      onKeyDown={handleKeyDown}
     >
       <DialogTitle onClose={onClose}>
         {t("label.search_blocks_panel_header")}
@@ -225,7 +238,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
               itemSize={BLOCK_SEARCH_RESULT_ITEM_HEIGHT}
               itemData={{
                 items: blockSearchResults,
-                selected,
+                selected: blockSearchResults[selectedIndex].id,
                 onClick: (item) => {
                   updateVisualEditorURL(item.category, [item.id]);
                 },
