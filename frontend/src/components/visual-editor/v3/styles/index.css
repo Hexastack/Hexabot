@@ -1,0 +1,24 @@
+@import url("./xy-theme.css");
+@import url("./button-edge.css");
+@import url("./node.css");
+
+html,
+body {
+  margin: 0;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
+.react-flow__node-custom .react-flow__handle.connectable {
+  border-color: var(--xy-theme-selected);
+  background: var(--xy-theme-selected);
+
+  &:hover {
+    background: var(--xy-theme-selected);
+  }
+}

@@ -1,0 +1,23 @@
+.button-edge__label {
+  position: absolute;
+  pointer-events: all;
+  transform-origin: center;
+}
+
+.button-edge__button {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #2222;
+  color: var(--xy-edge-label-color-default);
+  background-color: #f3f3f4dd;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 15px;
+  padding-top: 0px;
+}
+
+.button-edge__button:hover {
+  background-color: var(--xy-theme-hover);
+  color: #ffffff;
+  text-shadow: 0 0 3px #000;
+}
