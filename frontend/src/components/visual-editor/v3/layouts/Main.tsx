@@ -211,7 +211,7 @@ export const Main = () => {
       if (typeof flowId === "string") {
         setSelectedCategoryId(flowId);
       }
-    } else {
+    } else if (categories.length) {
       setSelectedCategoryId(categories[0].id);
     }
 

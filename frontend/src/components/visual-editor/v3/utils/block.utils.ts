@@ -162,7 +162,11 @@ export const updateEdgeSvgStyle = (
   property: keyof CSSStyleDeclaration,
   value: string,
 ) => {
-  const svg = target?.["closest"]("svg");
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  const svg = target.closest("svg");
 
   if (svg) {
     svg.style[property.toString()] = value;

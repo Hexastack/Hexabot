@@ -7,7 +7,7 @@
  */
 
 import { Edge, Node, XYPosition } from "@xyflow/react";
-import { ReactNode } from "react";
+import { Dispatch, ReactNode, SetStateAction } from "react";
 
 import { BlockType, IBlock, Pattern } from "@/types/block.types";
 
@@ -27,12 +27,12 @@ export interface IVisualEditorContext {
   selectedNodeIds: string[];
   getBlockFromCache: (id: string) => IBlock | undefined;
   selectedCategoryId: string | undefined;
-  setSelectedNodeIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedNodeIds: Dispatch<SetStateAction<string[]>>;
   setSelectedCategoryId: (id: string) => void;
   toFocusIds: string[];
-  setToFocusIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setToFocusIds: Dispatch<SetStateAction<string[]>>;
   openSearchPanel: boolean;
-  setOpenSearchPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface VisualEditorContextProps {

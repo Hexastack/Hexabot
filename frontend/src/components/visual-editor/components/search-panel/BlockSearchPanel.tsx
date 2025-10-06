@@ -106,7 +106,7 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 
   useEffect(() => {
     setOpenSearchPanel(open);
-  }, [open]);
+  }, [open, setOpenSearchPanel]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
