@@ -12,6 +12,10 @@ import {
   getBezierPath,
   type EdgeProps,
 } from "@xyflow/react";
+import { useMemo } from "react";
+
+import { BACKWARD_EDGE_BEZIER_CURVATURE } from "../../constants";
+import { isBackwardLink } from "../../utils/edge.utils";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
@@ -27,18 +31,30 @@ export default function CustomEdge({
   markerEnd,
   source,
 }: EdgeProps) {
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  });
+  const [path, labelX, labelY] = useMemo(() => {
+    const isBackward = isBackwardLink({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+    });
+
+    return getBezierPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      sourcePosition,
+      targetPosition,
+      curvature: isBackward ? BACKWARD_EDGE_BEZIER_CURVATURE : 0,
+    });
+  }, [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition]);
 
   return (
     <>
-      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+      <BaseEdge path={path} markerEnd={markerEnd} style={style} />
       {source.includes("-") ? null : (
         <EdgeLabelRenderer>
           <div
