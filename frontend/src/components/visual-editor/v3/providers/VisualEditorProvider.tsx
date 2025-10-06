@@ -24,7 +24,7 @@ import { VisualEditorContextProps } from "../types/visual-editor.types";
 export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
-  const ReactFlowInstance = useReactFlow();
+  const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [openSearchPanel, setOpenSearchPanel] = useState(false);
@@ -40,19 +40,18 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       x: screenWidth / 2,
       y: screenHeight / 2,
     };
-    const position = ReactFlowInstance.screenToFlowPosition(screenCenter);
 
-    return position;
+    return screenToFlowPosition(screenCenter);
   };
-  const selectNodes = (nodeIds: string[]) => {
+  const selectNodes = (nodeIds: string[]): void => {
     setSelectedNodeIds(nodeIds);
-    const changes = ReactFlowInstance.getNodes().map(({ id }) => ({
+    const changes = getNodes().map(({ id }) => ({
       id,
       type: "select",
       selected: nodeIds.includes(id),
     })) as NodeChange<Node>[];
 
-    ReactFlowInstance.setNodes((nodes) => applyNodeChanges(changes, nodes));
+    setNodes((nodes) => applyNodeChanges(changes, nodes));
   };
 
   return (

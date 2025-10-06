@@ -83,6 +83,7 @@ export const ReactFlowWrapper = ({
     selectedNodeIds,
     getBlockFromCache,
     selectedCategoryId,
+    openSearchPanel,
   } = useVisualEditor();
   const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
@@ -213,12 +214,12 @@ export const ReactFlowWrapper = ({
   ]);
 
   useEffect(() => {
-    if (nodesInitialized) {
+    if (!openSearchPanel && (nodesInitialized || defaultNodes.length === 0)) {
       setViewport(defaultViewport);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodesInitialized]);
+  }, [nodesInitialized, defaultViewport]);
 
   const handleEdgeMouseEnter: EdgeMouseHandler<Edge> = useCallback(
     (e, { id, style }) => {
