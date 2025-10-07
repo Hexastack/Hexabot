@@ -33,7 +33,7 @@ export const NodeHeader = ({ blockId }: { blockId: string }) => {
     >
       <NodeControls blockId={blockId} />
       <div className="node-header-icon">
-        <config.Icon width={32} height={32} />
+        <config.Icon width={22} height={22} />
       </div>
 
       <Tooltip
