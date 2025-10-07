@@ -269,6 +269,7 @@
 /* controls */
 .react-flow__node #node-controls {
   visibility: hidden;
+  right: 0;
   position: absolute;
   transition: opacity 0.4s, transform 0.1s;
   width: auto;
