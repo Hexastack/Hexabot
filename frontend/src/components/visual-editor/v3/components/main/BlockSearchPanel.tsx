@@ -33,13 +33,12 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 
-import { useFocusBlock } from "../../v3/hooks/useFocusBlock";
-import { useVisualEditor } from "../../v3/hooks/useVisualEditor";
-
 import {
   BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
   BlockSearchResultItem,
-} from "./BlockSearchResultItem";
+} from "../../../components/BlockSearchResultItem";
+import { useFocusBlock } from "../../hooks/useFocusBlock";
+import { useVisualEditor } from "../../hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
 

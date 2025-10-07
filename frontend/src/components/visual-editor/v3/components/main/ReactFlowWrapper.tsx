@@ -36,19 +36,18 @@ import { EntityType } from "@/services/types";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
 
-import { useDeleteManyBlocksDialog } from "../hooks/useDeleteManyBlocksDialog";
-import { useEditBlockDialog } from "../hooks/useEditBlockDialog";
-import { useFocusBlock } from "../hooks/useFocusBlock";
-import { useVisualEditor } from "../hooks/useVisualEditor";
-import { EdgeLink, LinkType, TBlock } from "../types/visual-editor.types";
+import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
+import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
+import { useFocusBlock } from "../../hooks/useFocusBlock";
+import { useVisualEditor } from "../../hooks/useVisualEditor";
+import { EdgeLink, LinkType, TBlock } from "../../types/visual-editor.types";
 import {
   getBlockConfigByType,
   updateEdgeButtonStyle,
   updateEdgeSvgStyle,
-} from "../utils/block.utils";
-
-import ButtonEdge from "./edges/ButtonEdge";
-import CustomNode from "./nodes/NodeBlock";
+} from "../../utils/block.utils";
+import ButtonEdge from "../edges/ButtonEdge";
+import CustomNode from "../nodes/NodeBlock";
 
 const NODE_TYPES = {
   block: CustomNode,

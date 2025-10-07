@@ -20,13 +20,7 @@ const StyledPaper = styled(Paper)(() => ({
 }));
 
 export const Nav = () => (
-  <Grid
-    item
-    sx={{
-      position: "relative",
-      height: "100%",
-    }}
-  >
+  <Grid item height="100%">
     <StyledPaper>
       <Grid p={1}>
         <RegularBlocks />

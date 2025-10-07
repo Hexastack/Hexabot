@@ -25,10 +25,10 @@ import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
-import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
+import { BlockSearchPanel } from "../components/main/BlockSearchPanel";
 import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
 import { FlowsTabs } from "../components/main/FlowsTabs";
-import { ReactFlowWrapper } from "../components/ReactFlowWrapper";
+import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 import { INodeAttributes, TCb } from "../types/visual-editor.types";
@@ -46,7 +46,8 @@ const StyledBox = styled(Box)(() => ({
 
 export const Main = () => {
   const router = useRouter();
-  const { screenToFlowPosition, setViewport } = useReactFlow();
+  const { screenToFlowPosition, setViewport, setNodes, setEdges } =
+    useReactFlow();
   const { selectedCategoryId, setSelectedCategoryId, setSelectedNodeIds } =
     useVisualEditor();
   const { createNode } = useCreateBlock();
@@ -114,6 +115,9 @@ export const Main = () => {
         zoom: zoom > 4 ? zoom / 100 : zoom,
       };
     }
+
+    setNodes([]);
+    setEdges([]);
 
     return {
       x: 0,

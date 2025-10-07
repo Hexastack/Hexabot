@@ -22,7 +22,7 @@ import {
   LIST_BLOCK_TEMPLATE,
   QUICK_REPLIES_BLOCK_TEMPLATE,
   SIMPLE_TEXT_BLOCK_TEMPLATE,
-} from "../../../constants";
+} from "../../constants";
 
 import { RegularBlockItem } from "./RegularBlockItem";
 

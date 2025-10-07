@@ -31,7 +31,6 @@ export const useMoveBlocksDialog = () => {
   const {
     selectedNodeIds,
     selectedCategoryId,
-    setSelectedCategoryId,
     selectNodes,
     setToFocusIds,
     toFocusIds,
@@ -54,8 +53,6 @@ export const useMoveBlocksDialog = () => {
       const { id } = categories[targetCategory];
 
       if (id) {
-        setSelectedCategoryId(id);
-
         await updateVisualEditorURL(id, blockIds);
         setToFocusIds(blockIds);
       }
