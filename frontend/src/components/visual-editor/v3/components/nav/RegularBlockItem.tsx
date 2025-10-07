@@ -68,8 +68,8 @@ export const RegularBlockItem = ({
       item
       xs={6}
       draggable
-      onDragStart={(event) => {
-        event.dataTransfer.setData(
+      onDragStart={(e) => {
+        e.dataTransfer.setData(
           "diagram-node",
           JSON.stringify({
             ...blockTemplate,

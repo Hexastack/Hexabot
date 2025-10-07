@@ -7,7 +7,6 @@
  */
 
 import { useCreate } from "@/hooks/crud/useCreate";
-import { useGetFromCache } from "@/hooks/crud/useGet";
 import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
@@ -16,8 +15,7 @@ import { useVisualEditor } from "./useVisualEditor";
 
 export const useCreateBlock = () => {
   const { updateVisualEditorURL } = useFocusBlock();
-  const { getCentroid } = useVisualEditor();
-  const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
+  const { getCentroid, getBlockFromCache } = useVisualEditor();
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (id: string | undefined, props?: IBlockAttributes) => {
     if (id) {

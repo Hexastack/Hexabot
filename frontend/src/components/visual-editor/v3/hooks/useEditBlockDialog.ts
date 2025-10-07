@@ -16,11 +16,11 @@ export const useEditBlockDialog = () => {
   const dialogs = useDialogs();
   const { selectedNodeIds, getBlockFromCache } = useVisualEditor();
   const openEditDialog = (selectedBlockId: string = selectedNodeIds[0]) => {
-    const block = getBlockFromCache(selectedBlockId);
+    const defaultValues = getBlockFromCache(selectedBlockId);
 
     dialogs.open(
       BlockEditFormDialog,
-      { defaultValues: block },
+      { defaultValues },
       {
         maxWidth: "md",
         isSingleton: true,

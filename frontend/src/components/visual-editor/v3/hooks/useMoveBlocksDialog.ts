@@ -28,7 +28,6 @@ export const useMoveBlocksDialog = () => {
   const { toast } = useToast();
   const { t } = useTranslate();
   const nodesInitialized = useNodesInitialized();
-  // const [toFocusIds, setToFocusIds] = useState<string[]>([]);
   const {
     selectedNodeIds,
     selectedCategoryId,

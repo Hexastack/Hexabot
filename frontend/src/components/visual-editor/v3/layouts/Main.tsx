@@ -23,7 +23,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
-import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { IBlockAttributes } from "@/types/block.types";
 
 import { BlockSearchPanel } from "../../components/search-panel/BlockSearchPanel";
 import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
@@ -31,6 +31,7 @@ import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/ReactFlowWrapper";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditor } from "../hooks/useVisualEditor";
+import { INodeAttributes, TCb } from "../types/visual-editor.types";
 import {
   getAttachedLinksFromBlocks,
   getNextBlocksLinksFromBlocks,
@@ -68,9 +69,7 @@ export const Main = () => {
       },
     },
   );
-  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY, {
-    invalidate: false,
-  });
+  const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY);
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { data: blocks } = useFind(
     { entity: EntityType.BLOCK, format: Format.FULL },
@@ -140,8 +139,8 @@ export const Main = () => {
     },
     [],
   );
-  const handleUpdateBlock = useCallback(
-    debounce(({ id, ...rest }: Partial<IBlock> & { id: string }) => {
+  const handleUpdateBlock: TCb<INodeAttributes> = useCallback(
+    debounce(({ id, ...rest }) => {
       updateBlock({
         id,
         params: {
@@ -151,8 +150,8 @@ export const Main = () => {
     }, 400),
     [updateBlock],
   );
-  const handleUpdateCategory = useCallback(
-    debounce(({ zoom, x, y }: Viewport) => {
+  const handleUpdateCategory: TCb<Viewport> = useCallback(
+    debounce(({ zoom, x, y }) => {
       if (selectedCategoryId) {
         updateCategory({
           id: selectedCategoryId,
@@ -247,8 +246,8 @@ export const Main = () => {
   return (
     <div
       onDrop={dropHandler}
-      onDragOver={(event) => {
-        event.preventDefault();
+      onDragOver={(e) => {
+        e.preventDefault();
       }}
       className="visual-editor"
     >

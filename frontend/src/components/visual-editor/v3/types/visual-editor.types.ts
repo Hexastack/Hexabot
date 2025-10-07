@@ -6,10 +6,16 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
+import { Cancelable } from "@mui/utils/debounce";
 import { Edge, Node, XYPosition } from "@xyflow/react";
 import { Dispatch, ReactNode, SetStateAction } from "react";
 
-import { BlockType, IBlock, Pattern } from "@/types/block.types";
+import {
+  BlockType,
+  IBlock,
+  IBlockAttributes,
+  Pattern,
+} from "@/types/block.types";
 
 export enum PortType {
   TARGET = "target",
@@ -63,3 +69,8 @@ export type NodeBlockData = {
 };
 
 export type NodeData = Node<NodeBlockData>;
+export interface INodeAttributes extends Partial<IBlockAttributes> {
+  id: string;
+}
+
+export type TCb<T> = ((props: T) => void | undefined) & Cancelable;
