@@ -10,7 +10,6 @@ import { ReactElement } from "react";
 
 import { VisualEditor } from "@/components/visual-editor/v3";
 import { Layout } from "@/layout";
-import "../../components/visual-editor/v3/styles/index.css";
 
 const VisualEditorPage = () => {
   return <VisualEditor />;
