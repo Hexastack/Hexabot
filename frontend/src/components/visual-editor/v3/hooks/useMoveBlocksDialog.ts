@@ -45,13 +45,6 @@ export const useMoveBlocksDialog = () => {
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
-    {
-      onSuccess([category]) {
-        if (!selectedCategoryId) {
-          setSelectedCategoryId(category?.id);
-        }
-      },
-    },
   );
   const onCategoryChange = async (
     targetCategory: number,

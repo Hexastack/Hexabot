@@ -61,13 +61,6 @@ export const Main = () => {
       hasCount: false,
       initialSortState: [{ field: "createdAt", sort: "asc" }],
     },
-    {
-      onSuccess([category]) {
-        if (!selectedCategoryId) {
-          setSelectedCategoryId(category?.id);
-        }
-      },
-    },
   );
   const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY);
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
