@@ -10,10 +10,6 @@ a {
   text-decoration: none;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 /* custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
