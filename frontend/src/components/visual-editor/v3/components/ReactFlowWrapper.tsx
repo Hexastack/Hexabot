@@ -20,7 +20,6 @@ import {
   OnNodesChange,
   ReactFlow,
   useKeyPress,
-  useNodesInitialized,
   useOnViewportChange,
   useReactFlow,
   Viewport,
@@ -76,16 +75,13 @@ export const ReactFlowWrapper = ({
   const hasPermission = useHasPermission();
   const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
     useFocusBlock();
-  const { setEdges, setViewport, updateEdge, updateNode, getNode } =
-    useReactFlow();
+  const { setEdges, updateEdge, updateNode, getNode } = useReactFlow();
   const {
     setSelectedNodeIds,
     selectedNodeIds,
     getBlockFromCache,
     selectedCategoryId,
-    openSearchPanel,
   } = useVisualEditor();
-  const nodesInitialized = useNodesInitialized();
   const deleteKeyPressed = useKeyPress("Delete");
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
@@ -212,14 +208,6 @@ export const ReactFlowWrapper = ({
     removeBlockIdParam,
     hasPermission,
   ]);
-
-  useEffect(() => {
-    if (!openSearchPanel && (nodesInitialized || defaultNodes.length === 0)) {
-      setViewport(defaultViewport);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodesInitialized, defaultViewport]);
 
   const handleEdgeMouseEnter: EdgeMouseHandler<Edge> = useCallback(
     (e, { id, style }) => {

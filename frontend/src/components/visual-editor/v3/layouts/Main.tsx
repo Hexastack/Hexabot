@@ -45,7 +45,7 @@ const StyledBox = styled(Box)(() => ({
 
 export const Main = () => {
   const router = useRouter();
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, setViewport } = useReactFlow();
   const { selectedCategoryId, setSelectedCategoryId, setSelectedNodeIds } =
     useVisualEditor();
   const { createNode } = useCreateBlock();
@@ -217,6 +217,10 @@ export const Main = () => {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.query.id]);
+
+  useEffect(() => {
+    setViewport(defaultViewport);
+  }, [currentCategory?.id]);
 
   useEffect(() => {
     const { blockIds } = router.query;
