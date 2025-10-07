@@ -231,8 +231,9 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
             </ResultCount>
             <FixedSizeList
               height={
-                BLOCK_SEARCH_RESULT_ITEM_HEIGHT * VISIBLE_BLOCK_SEARCH_RESULTS
+                BLOCK_SEARCH_RESULT_ITEM_HEIGHT * blockSearchResults.length
               }
+              style={{ maxHeight: "calc(100vh - 442px)" }}
               width="100%"
               itemCount={blockSearchResults.length}
               itemSize={BLOCK_SEARCH_RESULT_ITEM_HEIGHT}
