@@ -52,10 +52,8 @@ export const useCreateBlock = () => {
         },
       );
     } else if (props) {
-      const { position = getCentroid(), ...rest } = props;
-
       createBlock(
-        { position, ...rest },
+        { ...props, position: props.position || getCentroid() },
         {
           onSuccess: async (data, { category }) => {
             await updateVisualEditorURL(category, [data.id]);

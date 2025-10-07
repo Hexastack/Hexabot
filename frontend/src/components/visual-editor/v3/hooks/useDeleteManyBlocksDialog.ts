@@ -19,7 +19,7 @@ export const useDeleteManyBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
   const { removeBlockIdParam } = useFocusBlock();
-  const { setSelectedNodeIds, selectedNodeIds } = useVisualEditor();
+  const { selectedNodeIds } = useVisualEditor();
   const { mutate: deleteBlocks } = useDeleteMany(EntityType.BLOCK);
   const openDeleteManyDialog = async (ids: string[] = selectedNodeIds) => {
     if (ids.length) {
@@ -32,7 +32,6 @@ export const useDeleteManyBlocksDialog = () => {
       if (isConfirmed) {
         deleteBlocks(ids, {
           onSuccess: () => {
-            setSelectedNodeIds([]);
             removeBlockIdParam();
           },
           onError: (error) => {
