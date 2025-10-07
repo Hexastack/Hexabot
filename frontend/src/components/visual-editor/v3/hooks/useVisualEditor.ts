@@ -6,17 +6,19 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ReactElement } from "react";
+import { useContext } from "react";
 
-import { VisualEditor } from "@/components/visual-editor/v3";
-import { Layout } from "@/layout";
+import { VisualEditorContext } from "../contexts/VisualEditorContext";
+import { IVisualEditorContext } from "../types/visual-editor.types";
 
-const VisualEditorPage = () => {
-  return <VisualEditor />;
+export const useVisualEditor = (): IVisualEditorContext => {
+  const context = useContext(VisualEditorContext);
+
+  if (!context) {
+    throw new Error(
+      "useVisualEditor must be used within an VisualEditorContext",
+    );
+  }
+
+  return context;
 };
-
-VisualEditorPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout hasNoPadding>{page}</Layout>;
-};
-
-export default VisualEditorPage;

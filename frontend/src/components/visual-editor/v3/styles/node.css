@@ -1,0 +1,107 @@
+.start-point-container {
+  top: -33px;
+  left: -11px;
+  width: 35px;
+  height: 35px;
+  transform: scale(140%);
+  border: 1px solid #fff;
+  position: absolute;
+  border-radius: 50%;
+  background: #a6b846;
+}
+
+.start-point {
+  color: #fff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 25px;
+}
+
+.node {
+  border-radius: 18px;
+  outline: 6px solid transparent;
+  transition: transform 0.2s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+.node:not(:has(.selected)) {
+  outline-color: transparent;
+  z-index: -1;
+}
+.node:has(.selected) {
+  outline: 2px solid #1dc7fc;
+  z-index: 0;
+  cursor: grab;
+  transform: scale(1.02);
+  border-radius: 12px;
+}
+
+.node:has(.selected):active {
+  transform: scale(1.04);
+  z-index: 0;
+  cursor: grabbing;
+  opacity: 0.9;
+}
+.custom-node {
+  box-sizing: content-box;
+  width: 350px;
+  min-height: 130px;
+  background-color: #fff;
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #c4c4c4;
+}
+
+.node-block-field-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  padding: 16px 28px;
+  position: relative;
+}
+
+.node-title {
+  font-size: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-items: flex-start;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9px 9px 0 0;
+  width: auto;
+  margin: 0;
+  padding: 4px 16px;
+  color: #ffffff;
+  font-weight: bolder;
+  height: 35px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.node-block-field {
+  background-color: #f9fbfc;
+  border-radius: 8px;
+  border: 1px solid #d1d1d1;
+  width: 100%;
+  font-weight: 400;
+  padding: 8px 11px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  overflow-x: hidden;
+}
+.node-block-field svg {
+  margin-top: 3px;
+}
+.node-block-chips {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  overflow-x: hidden;
+}

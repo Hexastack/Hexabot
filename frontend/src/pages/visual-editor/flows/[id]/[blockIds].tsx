@@ -6,17 +6,6 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ReactElement } from "react";
-
-import { VisualEditor } from "@/components/visual-editor/v3";
-import { Layout } from "@/layout";
-
-const VisualEditorPage = () => {
-  return <VisualEditor />;
-};
-
-VisualEditorPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout hasNoPadding>{page}</Layout>;
-};
+import VisualEditorPage from "../..";
 
 export default VisualEditorPage;

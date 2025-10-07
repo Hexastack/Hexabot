@@ -6,17 +6,18 @@
  * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
  */
 
-import { ReactElement } from "react";
+import { Handle, HandleProps } from "@xyflow/react";
 
-import { VisualEditor } from "@/components/visual-editor/v3";
-import { Layout } from "@/layout";
-
-const VisualEditorPage = () => {
-  return <VisualEditor />;
+export const PortHandle = (props: HandleProps) => {
+  return (
+    <Handle
+      {...props}
+      style={{
+        background: "#555",
+        width: "10px",
+        height: "15px",
+        ...props.style,
+      }}
+    />
+  );
 };
-
-VisualEditorPage.getLayout = function getLayout(page: ReactElement) {
-  return <Layout hasNoPadding>{page}</Layout>;
-};
-
-export default VisualEditorPage;
