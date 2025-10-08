@@ -260,7 +260,7 @@ export const Main = () => {
       <StyledBox ref={canvasRef} onKeyDown={handleKeyDown}>
         {currentCategory ? (
           <ReactFlowWrapper
-            onMoveNode={handleUpdateBlock}
+            onUpdateNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
             defaultEdges={[...startEdges, ...nextBlocksEdges, ...attachedEdges]}
             defaultNodes={nodes}
