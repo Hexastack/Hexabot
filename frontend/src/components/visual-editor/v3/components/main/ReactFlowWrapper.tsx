@@ -33,26 +33,31 @@ import "@xyflow/react/dist/style.css";
 import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { IBlockAttributes } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useVisualEditor } from "../../hooks/useVisualEditor";
-import { EdgeLink, LinkType, TBlock } from "../../types/visual-editor.types";
+import {
+  EdgeLink,
+  INodeAttributes,
+  LinkType,
+  TBlock,
+} from "../../types/visual-editor.types";
 import {
   getBlockConfigByType,
   updateEdgeButtonStyle,
   updateEdgeSvgStyle,
 } from "../../utils/block.utils";
-import ButtonEdge from "../edges/ButtonEdge";
-import CustomNode from "../nodes/NodeBlock";
+import { EdgeWithButton } from "../edges/ButtonEdge";
+import { NodeBlock } from "../nodes/NodeBlock";
 
 const NODE_TYPES = {
-  block: CustomNode,
+  block: NodeBlock,
 };
-const EDGE_TYPES = { buttonedge: ButtonEdge };
+const EDGE_TYPES = { edgeWithButton: EdgeWithButton };
 
 export const ReactFlowWrapper = ({
   defaultEdges,
@@ -66,7 +71,7 @@ export const ReactFlowWrapper = ({
   defaultNodes: Node[];
   defaultViewport: Viewport;
   defaultEdges: EdgeLink[];
-  onMoveNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
+  onMoveNode: ({ id, ...rest }: INodeAttributes) => void;
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedBlockId: string) => void;

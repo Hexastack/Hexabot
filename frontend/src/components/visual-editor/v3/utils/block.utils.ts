@@ -84,7 +84,7 @@ export const getStartNode = (block: IBlock): NodeData => {
   };
 };
 
-export const getStartLinks = (blocks: IBlock[]): EdgeLink[] => {
+export const getStartEdges = (blocks: IBlock[]): EdgeLink[] => {
   return blocks
     .filter((b) => b.starts_conversation)
     .map((b) => ({
@@ -93,7 +93,7 @@ export const getStartLinks = (blocks: IBlock[]): EdgeLink[] => {
       target: b.id,
       markerEnd: { type: MarkerType.ArrowClosed, color: "#555" },
       style: { stroke: "#555", strokeWidth: "3px" },
-      type: "buttonedge",
+      type: "edgeWithButton",
       sourceHandle: LinkType.NEXT_BLOCKS,
     }));
 };
@@ -123,7 +123,7 @@ export const getNodesFromBlocks = (blocks: IBlock[]): NodeData[] => {
   return nodes;
 };
 
-export const getNextBlocksLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
+export const getNextBlocksEdges = (blocks: IBlock[]): EdgeLink[] => {
   return blocks
     .filter((b) => b.nextBlocks?.length)
     .flatMap(
@@ -134,13 +134,13 @@ export const getNextBlocksLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
           target: id,
           markerEnd: { type: MarkerType.ArrowClosed, color: "#555" },
           style: { stroke: "#555", strokeWidth: "3px" },
-          type: "buttonedge",
+          type: "edgeWithButton",
           sourceHandle: LinkType.NEXT_BLOCKS,
         })) as EdgeLink[],
     );
 };
 
-export const getAttachedLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
+export const getAttachedEdges = (blocks: IBlock[]): EdgeLink[] => {
   return blocks
     .filter((b) => b.attachedBlock)
     .map(
@@ -151,7 +151,7 @@ export const getAttachedLinksFromBlocks = (blocks: IBlock[]): EdgeLink[] => {
           target: b.attachedBlock,
           markerEnd: { type: MarkerType.ArrowClosed, color: "#019185" },
           style: { stroke: "#019185", strokeWidth: "3px" },
-          type: "buttonedge",
+          type: "edgeWithButton",
           sourceHandle: LinkType.ATTACHED,
         } as EdgeLink),
     );

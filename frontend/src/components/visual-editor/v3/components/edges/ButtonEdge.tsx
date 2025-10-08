@@ -20,7 +20,7 @@ import { getEdgeType } from "../../utils/edge.utils";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
-export default function CustomEdge({
+export const EdgeWithButton = ({
   id,
   sourceX,
   sourceY,
@@ -32,7 +32,7 @@ export default function CustomEdge({
   markerEnd,
   source,
   target,
-}: EdgeProps) {
+}: EdgeProps) => {
   const [path, labelX, labelY] = useMemo(() => {
     const edgeType = getEdgeType({
       source,
@@ -108,4 +108,4 @@ export default function CustomEdge({
       )}
     </>
   );
-}
+};
