@@ -33,7 +33,7 @@ export const getCurvedBezierEdge = (
   return getBezierPath({ ...props, curvature });
 };
 
-export const isBackwardLink = ({
+export const isBackwardEdge = ({
   sourceX,
   sourceY,
   targetX,
@@ -52,4 +52,24 @@ export const isBackwardLink = ({
   const isBackward = startPoint.x - endPoint.x > BACKWARD_LINK_THRESHOLD;
 
   return isBackward;
+};
+
+export const getEdgeType = ({
+  source,
+  sourceX,
+  sourceY,
+  target,
+  targetX,
+  targetY,
+}: GetBezierPathParams & {
+  source: string;
+  target: string;
+}): "selfConnectingEdge" | "backwardEdge" | "defaultEdge" => {
+  if (source && target && source === target) {
+    return "selfConnectingEdge";
+  } else if (isBackwardEdge({ sourceX, sourceY, targetX, targetY })) {
+    return "backwardEdge";
+  } else {
+    return "defaultEdge";
+  }
 };

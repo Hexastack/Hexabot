@@ -10,12 +10,13 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getBezierPath,
+  getEdgeCenter,
   type EdgeProps,
 } from "@xyflow/react";
 import { useMemo } from "react";
 
 import { BACKWARD_EDGE_BEZIER_CURVATURE } from "../../constants";
-import { isBackwardLink } from "../../utils/edge.utils";
+import { getEdgeType } from "../../utils/edge.utils";
 
 export const EDGE_HOVER_CLASSNAME = "hovered" as const;
 
@@ -30,27 +31,63 @@ export default function CustomEdge({
   style = {},
   markerEnd,
   source,
+  target,
 }: EdgeProps) {
   const [path, labelX, labelY] = useMemo(() => {
-    const isBackward = isBackwardLink({
+    const edgeType = getEdgeType({
+      source,
       sourceX,
       sourceY,
+      target,
       targetX,
       targetY,
-      sourcePosition,
-      targetPosition,
     });
 
-    return getBezierPath({
-      sourceX,
-      sourceY,
-      targetX,
-      targetY,
-      sourcePosition,
-      targetPosition,
-      curvature: isBackward ? BACKWARD_EDGE_BEZIER_CURVATURE : 0,
-    });
-  }, [sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition]);
+    switch (edgeType) {
+      case "selfConnectingEdge": {
+        const radiusX = (sourceX - targetX) * 0.6;
+        const radiusY = 100;
+        const path = `M ${sourceX} ${sourceY} A ${radiusX} ${radiusY} -2 1 0 ${targetX} ${targetY}`;
+        const [labelX, labelY] = getEdgeCenter({
+          sourceX,
+          sourceY,
+          targetX,
+          targetY,
+        });
+
+        return [path, labelX, labelY - 155];
+      }
+      case "backwardEdge":
+        return getBezierPath({
+          sourceX,
+          sourceY,
+          targetX,
+          targetY,
+          sourcePosition,
+          targetPosition,
+          curvature: BACKWARD_EDGE_BEZIER_CURVATURE,
+        });
+
+      case "defaultEdge":
+        return getBezierPath({
+          sourceX,
+          sourceY,
+          targetX,
+          targetY,
+          sourcePosition,
+          targetPosition,
+        });
+    }
+  }, [
+    source,
+    sourceX,
+    sourceY,
+    target,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  ]);
 
   return (
     <>
