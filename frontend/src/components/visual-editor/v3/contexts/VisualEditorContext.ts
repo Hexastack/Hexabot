@@ -22,4 +22,5 @@ export const VisualEditorContext = createContext<IVisualEditorContext>({
   setToFocusIds: () => {},
   openSearchPanel: false,
   setOpenSearchPanel: () => {},
+  updateCachePreviousBlocks() {},
 } as IVisualEditorContext);

@@ -80,6 +80,7 @@ export const ReactFlowWrapper = ({
     selectedNodeIds,
     getBlockFromCache,
     selectedCategoryId,
+    updateCachePreviousBlocks,
   } = useVisualEditor();
   const deleteKeyPressed = useKeyPress("Delete");
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
@@ -106,6 +107,8 @@ export const ReactFlowWrapper = ({
       id: sourceNodeId,
       ...payload,
     });
+
+    updateCachePreviousBlocks("add", sourceNodeId, targetNodeId);
   };
   const handleNodeDoubleClick: NodeMouseHandler<Node> = useCallback(
     (_, { id }) => {
@@ -248,9 +251,11 @@ export const ReactFlowWrapper = ({
           id: source,
           params: payload,
         });
+
+        updateCachePreviousBlocks("del", source, target);
       }
     },
-    [getBlockFromCache, setEdges, updateBlock],
+    [getBlockFromCache, setEdges, updateBlock, updateCachePreviousBlocks],
   );
   const handleConnectStart = useCallback(() => {
     const flowPane = document.querySelector(".react-flow__pane");

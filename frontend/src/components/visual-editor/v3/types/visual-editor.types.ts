@@ -39,6 +39,11 @@ export interface IVisualEditorContext {
   setToFocusIds: Dispatch<SetStateAction<string[]>>;
   openSearchPanel: boolean;
   setOpenSearchPanel: Dispatch<SetStateAction<boolean>>;
+  updateCachePreviousBlocks: (
+    operation: "add" | "del",
+    source: string,
+    target: string,
+  ) => void;
 }
 
 export interface VisualEditorContextProps {
