@@ -8,7 +8,7 @@
 
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import { NodeProps, Position, useNodeConnections } from "@xyflow/react";
-import { FC, memo, useMemo } from "react";
+import { FC, useMemo } from "react";
 
 import { useTranslate } from "@/hooks/useTranslate";
 
@@ -19,7 +19,7 @@ import { NodeBody } from "./NodeBody";
 import { NodeContainer } from "./NodeContainer";
 import { NodeHeader } from "./NodeHeader";
 
-const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
+export const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
   const connections = useNodeConnections();
   const { t } = useTranslate();
   const sourceConnections = useMemo(
@@ -137,5 +137,3 @@ const NodeBlock: FC<NodeProps> = ({ id: blockId }) => {
     </NodeContainer>
   );
 };
-
-export default memo(NodeBlock);
