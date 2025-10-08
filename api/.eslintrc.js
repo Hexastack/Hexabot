@@ -76,15 +76,12 @@ module.exports = {
       'block',
       [
         '',
+        ' * Hexabot — Fair Core License (FCL-1.0-ALv2)',
         {
-          pattern:
-            '^ \\* Copyright © 20\\d{2} Hexastack. All rights reserved.$',
-          template: ' * Copyright © 2025 Hexastack. All rights reserved.',
+          pattern: '^ \\* Copyright \\(c\\) 20\\d{2} Hexastack\\.$',
+          template: ' * Copyright (c) 2025 Hexastack.',
         },
-        ' *',
-        ' * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:',
-        ' * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.',
-        ' * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software\'s "About" section, documentation, and README file).',
+        ' * Full terms: see LICENSE.md and LICENSE-FCL.txt.',
         ' ',
       ],
       2,
