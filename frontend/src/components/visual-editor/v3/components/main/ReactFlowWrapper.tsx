@@ -30,7 +30,6 @@ import "@xyflow/react/dist/style.css";
 
 // import DarkModeControl from "./components/DarkModeControl";
 
-import { useUpdate } from "@/hooks/crud/useUpdate";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
 import { IBlock, IBlockAttributes } from "@/types/block.types";
@@ -58,7 +57,7 @@ export const ReactFlowWrapper = ({
   defaultEdges,
   defaultNodes,
   defaultViewport,
-  onMoveNode,
+  onUpdateNode,
   onViewport,
   onDeleteNodes,
   onNodeDoubleClick,
@@ -66,7 +65,7 @@ export const ReactFlowWrapper = ({
   defaultNodes: Node[];
   defaultViewport: Viewport;
   defaultEdges: EdgeLink[];
-  onMoveNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
+  onUpdateNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedBlockId: string) => void;
@@ -82,7 +81,6 @@ export const ReactFlowWrapper = ({
     selectedCategoryId,
   } = useVisualEditor();
   const deleteKeyPressed = useKeyPress("Delete");
-  const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();
   const { openEditDialog } = useEditBlockDialog();
   const onConnect: OnConnect = (params) => {
@@ -102,7 +100,7 @@ export const ReactFlowWrapper = ({
 
     setEdges((eds) => addEdge({ ...params, type: "buttonedge" }, eds));
 
-    onMoveNode({
+    onUpdateNode({
       id: sourceNodeId,
       ...payload,
     });
@@ -143,7 +141,7 @@ export const ReactFlowWrapper = ({
             }
           }
 
-          onMoveNode({
+          onUpdateNode({
             id,
             position,
           });
@@ -153,7 +151,7 @@ export const ReactFlowWrapper = ({
         console.error("Unable to update node", e);
       }
     },
-    [onMoveNode],
+    [onUpdateNode],
   );
   const handleNodesChange: OnNodesChange<Node> = useCallback(
     (changes) => {
@@ -244,13 +242,13 @@ export const ReactFlowWrapper = ({
 
         setEdges((edges) => edges.filter((edge) => edge.id !== id));
 
-        updateBlock({
+        onUpdateNode({
           id: source,
-          params: payload,
+          ...payload,
         });
       }
     },
-    [getBlockFromCache, setEdges, updateBlock],
+    [getBlockFromCache, setEdges, onUpdateNode],
   );
   const handleConnectStart = useCallback(() => {
     const flowPane = document.querySelector(".react-flow__pane");
