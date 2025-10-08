@@ -33,10 +33,10 @@ import { useCreateBlock } from "../hooks/useCreateBlocks";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 import { INodeAttributes, TCb } from "../types/visual-editor.types";
 import {
-  getAttachedLinksFromBlocks,
-  getNextBlocksLinksFromBlocks,
+  getAttachedEdges,
+  getNextBlocksEdges,
   getNodesFromBlocks,
-  getStartLinks,
+  getStartEdges,
 } from "../utils/block.utils";
 
 const StyledBox = styled(Box)(() => ({
@@ -73,35 +73,37 @@ export const Main = () => {
       keepPreviousData: true,
     },
   );
-  const startLinks = useMemo(() => {
-    return getStartLinks(blocks);
-  }, [JSON.stringify(blocks.map((b) => b.starts_conversation))]);
-  const nextBlocksLinks = useMemo(
-    () => getNextBlocksLinksFromBlocks(blocks),
+  const startEdges = useMemo(
+    () => getStartEdges(blocks),
+    [JSON.stringify(blocks.map((b) => b.starts_conversation))],
+  );
+  const nextBlocksEdges = useMemo(
+    () => getNextBlocksEdges(blocks),
     [JSON.stringify(blocks.map((b) => b.nextBlocks))],
   );
-  const attachedLinks = useMemo(
-    () => getAttachedLinksFromBlocks(blocks),
+  const attachedEdges = useMemo(
+    () => getAttachedEdges(blocks),
     [JSON.stringify(blocks.map((b) => b.attachedBlock))],
   );
-  const nodes = useMemo(() => {
-    return getNodesFromBlocks(blocks);
-  }, [
-    JSON.stringify(blocks.map((b) => b.starts_conversation)),
-    JSON.stringify(
-      blocks.map((b) => {
-        return {
-          ...b,
-          position: undefined,
-          updatedAt: undefined,
-          previousBlocks: undefined,
-          attachedToBlock: undefined,
-          attachedBlock: undefined,
-          nextBlocks: undefined,
-        };
-      }),
-    ),
-  ]);
+  const nodes = useMemo(
+    () => getNodesFromBlocks(blocks),
+    [
+      JSON.stringify(blocks.map((b) => b.starts_conversation)),
+      JSON.stringify(
+        blocks.map((b) => {
+          return {
+            ...b,
+            position: undefined,
+            updatedAt: undefined,
+            previousBlocks: undefined,
+            attachedToBlock: undefined,
+            attachedBlock: undefined,
+            nextBlocks: undefined,
+          };
+        }),
+      ),
+    ],
+  );
   const currentCategory = useMemo(() => {
     return categories.find(({ id }) => id === selectedCategoryId);
   }, [categories, selectedCategoryId]);
@@ -260,7 +262,7 @@ export const Main = () => {
           <ReactFlowWrapper
             onUpdateNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
-            defaultEdges={[...startLinks, ...nextBlocksLinks, ...attachedLinks]}
+            defaultEdges={[...startEdges, ...nextBlocksEdges, ...attachedEdges]}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
           />

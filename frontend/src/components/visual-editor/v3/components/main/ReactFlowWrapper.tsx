@@ -32,26 +32,31 @@ import "@xyflow/react/dist/style.css";
 
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { EntityType } from "@/services/types";
-import { IBlock, IBlockAttributes } from "@/types/block.types";
+import { IBlockAttributes } from "@/types/block.types";
 import { PermissionAction } from "@/types/permission.types";
 
 import { useDeleteManyBlocksDialog } from "../../hooks/useDeleteManyBlocksDialog";
 import { useEditBlockDialog } from "../../hooks/useEditBlockDialog";
 import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useVisualEditor } from "../../hooks/useVisualEditor";
-import { EdgeLink, LinkType, TBlock } from "../../types/visual-editor.types";
+import {
+  EdgeLink,
+  INodeAttributes,
+  LinkType,
+  TBlock,
+} from "../../types/visual-editor.types";
 import {
   getBlockConfigByType,
   updateEdgeButtonStyle,
   updateEdgeSvgStyle,
 } from "../../utils/block.utils";
-import ButtonEdge from "../edges/ButtonEdge";
-import CustomNode from "../nodes/NodeBlock";
+import { EdgeWithButton } from "../edges/EdgeWithButton";
+import { NodeBlock } from "../nodes/NodeBlock";
 
 const NODE_TYPES = {
-  block: CustomNode,
+  block: NodeBlock,
 };
-const EDGE_TYPES = { buttonedge: ButtonEdge };
+const EDGE_TYPES = { edgeWithButton: EdgeWithButton };
 
 export const ReactFlowWrapper = ({
   defaultEdges,
@@ -65,7 +70,7 @@ export const ReactFlowWrapper = ({
   defaultNodes: Node[];
   defaultViewport: Viewport;
   defaultEdges: EdgeLink[];
-  onUpdateNode: ({ id, ...rest }: Partial<IBlock> & { id: string }) => void;
+  onUpdateNode: ({ id, ...rest }: INodeAttributes) => void;
   onViewport: ({ zoom, x, y }: Viewport) => void;
   onDeleteNodes?: (ids: string[]) => void;
   onNodeDoubleClick?: (selectedBlockId: string) => void;
@@ -99,7 +104,7 @@ export const ReactFlowWrapper = ({
           }
         : { attachedBlock: targetNodeId };
 
-    setEdges((eds) => addEdge({ ...params, type: "buttonedge" }, eds));
+    setEdges((eds) => addEdge({ ...params, type: "edgeWithButton" }, eds));
 
     onUpdateNode({
       id: sourceNodeId,
