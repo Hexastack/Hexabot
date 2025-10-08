@@ -51,7 +51,7 @@ import {
   updateEdgeButtonStyle,
   updateEdgeSvgStyle,
 } from "../../utils/block.utils";
-import { EdgeWithButton } from "../edges/ButtonEdge";
+import { EdgeWithButton } from "../edges/EdgeWithButton";
 import { NodeBlock } from "../nodes/NodeBlock";
 
 const NODE_TYPES = {
@@ -105,7 +105,7 @@ export const ReactFlowWrapper = ({
           }
         : { attachedBlock: targetNodeId };
 
-    setEdges((eds) => addEdge({ ...params, type: "buttonedge" }, eds));
+    setEdges((eds) => addEdge({ ...params, type: "edgeWithButton" }, eds));
 
     onMoveNode({
       id: sourceNodeId,
