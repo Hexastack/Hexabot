@@ -81,7 +81,7 @@ module.exports = {
           pattern: '^ \\* Copyright \\(c\\) 20\\d{2} Hexastack\\.$',
           template: ' * Copyright (c) 2025 Hexastack.',
         },
-        ' * Full terms: see LICENSE.md and LICENSE-FCL.txt.',
+        ' * Full terms: see LICENSE.md.',
         ' ',
       ],
       2,
