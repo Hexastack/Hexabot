@@ -127,6 +127,10 @@ export const Main = () => {
       zoom: 1,
     };
   }, [currentCategory]);
+  const edges = useMemo(
+    () => [...startEdges, ...nextBlocksEdges, ...attachedEdges],
+    [startEdges.length, nextBlocksEdges.length, attachedEdges.length],
+  );
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
@@ -262,7 +266,7 @@ export const Main = () => {
           <ReactFlowWrapper
             onUpdateNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
-            defaultEdges={[...startEdges, ...nextBlocksEdges, ...attachedEdges]}
+            defaultEdges={edges}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
           />
