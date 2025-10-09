@@ -102,7 +102,6 @@ export const Main = () => {
   const nodes = useMemo(
     () => getNodesFromBlocks(blocks),
     [
-      JSON.stringify(blocks.map((b) => b.starts_conversation)),
       JSON.stringify(
         blocks.map((b) => {
           return {
