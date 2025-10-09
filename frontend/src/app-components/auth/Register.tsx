@@ -17,11 +17,11 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { useAcceptInvite } from "@/hooks/entities/auth-hooks";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
@@ -49,7 +49,7 @@ type TRegisterExtendedPayload = IRegisterAttributes & { password2: string };
 
 export const Register = () => {
   const { t } = useTranslate();
-  const router = useRouter();
+  const router = useAppRouter();
   const { toast } = useToast();
   const { mutate: acceptInvite, isLoading } = useAcceptInvite({
     onError: () => {
@@ -114,7 +114,8 @@ export const Register = () => {
   };
 
   useEffect(() => {
-    const queryToken = router.query.token;
+    const rawToken = router.query.token;
+    const queryToken = Array.isArray(rawToken) ? rawToken.at(-1) : rawToken;
 
     if (queryToken) {
       const jwt = new JWT();
@@ -132,7 +133,7 @@ export const Register = () => {
         setReadonlyEmail(!!decodedToken?.email);
       }
     }
-  }, [router.query.token]);
+  }, [router.query.token, setValue, toast]);
 
   return (
     <PublicContentWrapper>

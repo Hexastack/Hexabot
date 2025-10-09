@@ -4,7 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useMemo } from "react";
+
+import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
 
 export const ConfigContext = createContext<IConfig | null>(null);
 
@@ -15,28 +17,22 @@ export interface IConfig {
 }
 
 export const ConfigProvider = ({ children }) => {
-  const [config, setConfig] = useState<IConfig | null>(null);
+  const config = useMemo<IConfig>(() => {
+    const MB = 1024 * 1024;
 
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const res = await fetch("/config");
-        const data = (await res.json()) as IConfig;
-
-        setConfig(data);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to fetch configuration:", error);
-      }
+    return {
+      apiUrl:
+        import.meta.env.VITE_API_ORIGIN?.toString() || "http://localhost:4000",
+      ssoEnabled: parseEnvBoolean(
+        import.meta.env.VITE_SSO_ENABLED?.toString(),
+        false,
+      ),
+      maxUploadSize: parseEnvNumber(
+        import.meta.env.VITE_UPLOAD_MAX_SIZE_IN_BYTES?.toString(),
+        20 * MB,
+      ),
     };
-
-    fetchConfig();
   }, []);
-
-  if (!config) {
-    // You can return a loader here if you want
-    return null;
-  }
 
   return (
     <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>

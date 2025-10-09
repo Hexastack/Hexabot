@@ -6,8 +6,27 @@
 
 module.exports = {
   root: true,
-  plugins: ["@typescript-eslint/eslint-plugin", "import", "header"],
-  extends: ["next/core-web-vitals"],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: "module",
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  plugins: [
+    "@typescript-eslint",
+    "import",
+    "header",
+    "react",
+    "react-hooks",
+  ],
+  extends: [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:@typescript-eslint/recommended",
+  ],
   rules: {
     "@typescript-eslint/no-unused-vars": [
       "error",
@@ -17,6 +36,15 @@ module.exports = {
         caughtErrorsIgnorePattern: "^_",
       },
     ],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "no-unsafe-optional-chaining": "off",
+    "no-extra-boolean-cast": "off",
+    "react-hooks/exhaustive-deps": "off",
     "import/newline-after-import": "error",
     "import/order": [
       "error",
@@ -44,6 +72,7 @@ module.exports = {
     "no-console": "error",
     "no-duplicate-imports": "error",
     "object-shorthand": "error",
+    "prefer-const": "off",
     "padding-line-between-statements": [
       "error",
       { blankLine: "never", prev: ["const"], next: "const" },

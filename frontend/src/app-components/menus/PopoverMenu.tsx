@@ -13,8 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import Link from "next/link";
 import { FC } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 import { IUser } from "@/types/user.types";
 import { SXStyleOptions } from "@/utils/SXStyleOptions";
@@ -131,9 +131,9 @@ export const PopoverMenu: FC<PopoverMenuProps> = ({
 
           <StyledStack>
             {links.map(({ href, text }) => (
-              <Link key={text} color="inherit" href={href}>
-                <StyledMenuItem onClick={handleClose}>{text}</StyledMenuItem>
-              </Link>
+              <RouterLink key={text} to={href} onClick={handleClose}>
+                <StyledMenuItem>{text}</StyledMenuItem>
+              </RouterLink>
             ))}
           </StyledStack>
         </>

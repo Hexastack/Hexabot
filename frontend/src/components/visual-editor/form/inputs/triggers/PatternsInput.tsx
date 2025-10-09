@@ -147,7 +147,7 @@ const PatternsInput: FC = () => {
                     name={field.name}
                     index={idx}
                     patternType={patternType}
-                    value={field.value}
+                    value={field.value!}
                     onChange={field.onChange}
                     onRemove={handleRemove}
                     ref={field.ref}

@@ -4,14 +4,14 @@
  * Full terms: see LICENSE.md.
  */
 
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 import { RouterType } from "@/services/types";
 
 export const HexabotLogo = () => {
   return (
     <Link
-      href={RouterType.HOME}
+      to={RouterType.HOME}
       style={{
         display: "flex",
         justifyContent: "center",

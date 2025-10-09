@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
+
+import { useAppRouter } from "@/hooks/useAppRouter";
 
 type QueryParamSerializer<T> = {
   parse: (raw: string | string[] | undefined) => T;
@@ -54,7 +55,7 @@ export const useUrlQueryParam = <T>(
   defaultValue: T,
   serializer: QueryParamSerializer<T> = defaultSerializer(),
 ): [T, (val: T) => void] => {
-  const router = useRouter();
+  const router = useAppRouter();
   const [value, setValue] = useState<T>(() => {
     // On initial load, use query or default
     const initial = router.query[key];
@@ -105,9 +106,7 @@ export const useUrlQueryParam = <T>(
       } else {
         newQuery[key] = serializer.stringify(val);
       }
-      router.push({ pathname: router.pathname, query: newQuery }, undefined, {
-        shallow: true,
-      });
+      router.push({ pathname: router.pathname, query: newQuery });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [router, key, defaultValue],

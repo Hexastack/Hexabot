@@ -6,11 +6,11 @@
 
 import KeyIcon from "@mui/icons-material/Key";
 import { Button, Grid, Paper, Typography } from "@mui/material";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
+import { Link as RouterLink } from "react-router-dom";
 
 import { useResetPassword } from "@/hooks/entities/reset-hooks";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { useValidationRules } from "@/hooks/useValidationRules";
@@ -41,9 +41,11 @@ export const ResetPassword = () => {
   } = useForm<{ password: string; password2: string }>({
     defaultValues: { password: "", password2: "" },
   });
-  const { query, replace } = useRouter();
-  // the following typecasting is due to the fact that the query object is not typed
-  const { mutate: resetPassword } = useResetPassword(query.token as string, {
+  const { query, replace } = useAppRouter();
+  const queryToken = Array.isArray(query.token)
+    ? query.token.at(-1)
+    : query.token;
+  const { mutate: resetPassword } = useResetPassword(queryToken || "", {
     onSuccess: () => {
       toast.success(t("message.reset_newpass_success"));
       replace("/login");
@@ -89,9 +91,9 @@ export const ResetPassword = () => {
             />
             <Grid container gap={1} justifyContent="flex-end">
               <Button type="submit">{t("button.submit")}</Button>
-              <Link href="/login">
-                <Button variant="outlined">{t("button.cancel")}</Button>
-              </Link>
+              <Button component={RouterLink} to="/login" variant="outlined">
+                {t("button.cancel")}
+              </Button>
             </Grid>
           </ContentContainer>
         </form>

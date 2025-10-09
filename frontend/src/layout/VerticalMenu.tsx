@@ -29,11 +29,11 @@ import SettingsAccessibilityRoundedIcon from "@mui/icons-material/SettingsAccess
 import { CSSObject, Grid, IconButton, styled, Theme } from "@mui/material";
 import MuiDrawer from "@mui/material/Drawer";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
-import { useRouter } from "next/router";
 import { FC } from "react";
 
 import { HexabotLogo } from "@/app-components/logos/HexabotLogo";
 import { Sidebar } from "@/app-components/menus/Sidebar";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import useAvailableMenuItems from "@/hooks/useAvailableMenuItems";
 import { useConfig } from "@/hooks/useConfig";
@@ -284,7 +284,7 @@ export const VerticalMenu: FC<VerticalMenuProps> = ({
 }) => {
   const { ssoEnabled } = useConfig();
   const { isAuthenticated } = useAuth();
-  const router = useRouter();
+  const router = useAppRouter();
   const menuItems = getMenuItems(ssoEnabled);
   const availableMenuItems = useAvailableMenuItems(menuItems);
   const hasTemporaryDrawer =

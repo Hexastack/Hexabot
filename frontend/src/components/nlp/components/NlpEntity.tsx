@@ -6,7 +6,6 @@
 
 import { Chip, Grid } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useRouter } from "next/router";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -23,6 +22,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useApiClient } from "@/hooks/useApiClient";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -38,7 +38,7 @@ const NlpEntity = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const router = useRouter();
+  const router = useAppRouter();
   const queryClient = useQueryClient();
   const { mutate: deleteNlpEntity } = useDelete(EntityType.NLP_ENTITY, {
     onError: () => {
@@ -97,17 +97,7 @@ const NlpEntity = () => {
       {
         label: ActionColumnLabel.Values,
         action: (row) =>
-          router.push(
-            {
-              pathname: "/nlp/nlp-entities/[id]/nlpValues",
-              query: { id: row.id },
-            },
-            undefined,
-            {
-              shallow: true,
-              scroll: false,
-            },
-          ),
+          router.push(`/nlp/nlp-entities/${row.id}/nlpValues`),
         requires: [PermissionAction.READ],
       },
       {

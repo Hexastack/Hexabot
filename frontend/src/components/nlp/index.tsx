@@ -6,12 +6,11 @@
 
 import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import { Grid, Paper, Tab, Tabs } from "@mui/material";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/router";
 import React from "react";
 
 import { TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
 import { EntityType, Format } from "@/services/types";
@@ -21,7 +20,7 @@ import NlpSample from "./components/NlpSample";
 import { NlpSampleForm } from "./components/NlpSampleForm";
 import { NlpValues } from "./components/NlpValue";
 
-const NlpEntity = dynamic(() => import("./components/NlpEntity"));
+const NlpEntity = React.lazy(() => import("./components/NlpEntity"));
 
 export const Nlp = ({
   entityId,
@@ -39,16 +38,9 @@ export const Nlp = ({
       hasCount: false,
     },
   );
-  const router = useRouter();
+  const router = useAppRouter();
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
-    router.push(
-      `/nlp/${newValue === "sample" ? "" : "nlp-entities"}`,
-      undefined,
-      {
-        shallow: true,
-        scroll: false,
-      },
-    );
+    router.push(newValue === "sample" ? "/nlp" : "/nlp/nlp-entities");
   };
   const { t } = useTranslate();
 

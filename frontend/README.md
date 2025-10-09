@@ -1,6 +1,6 @@
 # Hexabot UI Admin Panel
 
-The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React/Next.js application that serves as the admin interface for managing chatbot configurations, workflows, and interactions. The admin panel allows users to easily create and manage chat flows, monitor analytics, manage content, handle NLU (Natural Language Understanding) datasets, and configure system settings.
+The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React single-page application powered by Vite and React Router that serves as the admin interface for managing chatbot configurations, workflows, and interactions. The admin panel allows users to easily create and manage chat flows, monitor analytics, manage content, handle NLU (Natural Language Understanding) datasets, and configure system settings.
 
 
 ## Key Features
@@ -15,7 +15,8 @@ The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React/Next.js application
 - **app-components/:** Reusable components that are used across the admin panel.
 - **components/:** Components organized by the page where they are being used.
 - **hooks/:** Hooks defined.
-- **pages/:** The core of the Next.js application, defining different routes for the admin panel.
+- **pages/:** Screen-level components that are consumed by the router.
+- **routes/:** Centralised route configuration for the React Router SPA.
 - **services/:** API service calls to interact with the Hexabot API.
 - **types/:** Defines the typescript interfaces, types, and enums used.
 - **styles/:** Global and component-specific styles for the application.
@@ -36,7 +37,19 @@ To run the different UI components in development mode, execute the following co
 npm run dev:frontend
 ```
 
-The admin interface will be accessible at http://localhost:8081.
+The admin interface will be accessible at http://localhost:8080.
+
+- **Build the Admin Interface:**
+
+```bash
+npm run build --workspace=frontend
+```
+
+- **Preview the Production Build:**
+
+```bash
+npm run start --workspace=frontend
+```
 
 - **Run the Live Chat Widget:**
 
@@ -45,6 +58,19 @@ npm run dev:widget
 ```
 
 The live chat widget will be accessible at http://localhost:5173.
+
+### Environment variables
+
+Create a `.env.local` (or `.env`) file inside `frontend/` to override defaults that are read at build-time:
+
+```
+VITE_API_ORIGIN=http://localhost:4000
+VITE_SSO_ENABLED=false
+VITE_UPLOAD_MAX_SIZE_IN_BYTES=20971520
+VITE_DEFAULT_LANGUAGE=en
+```
+
+The `ConfigProvider` consumes these values on the client, so rebuilding is required after any change.
 
 ## Contributing 
 We welcome contributions from the community! Whether you want to report a bug, suggest new features, or submit a pull request, your input is valuable to us.

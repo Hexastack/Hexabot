@@ -4,6 +4,3 @@
  * Full terms: see LICENSE.md.
  */
 
-import VisualEditorPage from "../..";
-
-export default VisualEditorPage;

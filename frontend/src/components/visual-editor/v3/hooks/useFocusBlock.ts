@@ -5,16 +5,16 @@
  */
 
 import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { RouterType } from "@/services/types";
 
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
-  const router = useRouter();
+  const router = useAppRouter();
   const { getNode, fitView } = useReactFlow();
   const { selectNodes, selectedCategoryId, selectedNodeIds, openSearchPanel } =
     useVisualEditor();
@@ -43,14 +43,23 @@ export const useFocusBlock = () => {
       }
     }
   };
-  const getQuery = (key: string): string =>
-    typeof router.query[key] === "string" ? router.query[key] : "";
+  const getQuery = (key: string): string => {
+    const value = router.query[key];
+
+    return Array.isArray(value) ? value.at(-1) || "" : value || "";
+  };
 
   useEffect(() => {
-    const { blockIds } = router.query;
+    const blockIdsParam = router.query.blockIds;
+    const blockIds =
+      typeof blockIdsParam === "string"
+        ? blockIdsParam
+        : Array.isArray(blockIdsParam)
+          ? blockIdsParam.at(-1)
+          : undefined;
 
     if (nodesInitialized) {
-      if (typeof blockIds === "string" && blockIds?.length) {
+      if (blockIds?.length) {
         selectNodes(blockIds.split(",").filter(getNode));
         if (openSearchPanel) {
           animateFocus(blockIds);

@@ -8,7 +8,6 @@ import { faGraduationCap } from "@fortawesome/free-solid-svg-icons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Button, Chip, Grid, Slide } from "@mui/material";
 import { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
@@ -24,6 +23,7 @@ import { useDelete } from "@/hooks/crud/useDelete";
 import { useDeleteMany } from "@/hooks/crud/useDeleteMany";
 import { useFind } from "@/hooks/crud/useFind";
 import { useGet } from "@/hooks/crud/useGet";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -40,7 +40,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
   const dialogs = useDialogs();
-  const router = useRouter();
+  const router = useAppRouter();
   const [direction, setDirection] = useState<"up" | "down">("up");
   const { data: nlpEntity, refetch: refetchEntity } = useGet(entityId, {
     entity: EntityType.NLP_ENTITY,
@@ -203,10 +203,7 @@ export const NlpValues = ({ entityId }: { entityId: string }) => {
           <Box sx={{ padding: 1 }}>
             <Button
               onClick={() => {
-                router.push("/nlp/nlp-entities", undefined, {
-                  shallow: true,
-                  scroll: false,
-                });
+                router.push("/nlp/nlp-entities");
               }}
               sx={{ fontWeight: 500 }}
               variant="text"

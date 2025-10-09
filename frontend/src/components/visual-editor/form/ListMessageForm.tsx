@@ -118,16 +118,21 @@ const ListMessageForm = () => {
             {...register("options.content.limit", {
               validate: {
                 limitRange: (value) => {
-                  if (
-                    displayMode === OutgoingMessageFormat.list &&
-                    (value < 2 || value > 4)
-                  ) {
+                  if (typeof value === "number") {
+                    if (
+                      displayMode === OutgoingMessageFormat.list &&
+                      (value < 2 || value > 4)
+                    ) {
+                      return t("message.invalid_list_limit");
+                    } else if (
+                      displayMode === OutgoingMessageFormat.carousel &&
+                      (value < 1 || value > 10)
+                    ) {
+                      return t("message.invalid_carousel_limit");
+                    }
+                  } else {
+                    // @TODO: customize message
                     return t("message.invalid_list_limit");
-                  } else if (
-                    displayMode === OutgoingMessageFormat.carousel &&
-                    (value < 1 || value > 10)
-                  ) {
-                    return t("message.invalid_carousel_limit");
                   }
                 },
               },
@@ -294,7 +299,7 @@ const ListMessageForm = () => {
           defaultValue={content?.buttons || []}
           render={({ field }) => (
             <ButtonsInput
-              value={field.value}
+              value={field.value!}
               onChange={field.onChange}
               fieldPath="options.content.buttons"
               disablePayload={true}

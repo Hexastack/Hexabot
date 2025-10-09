@@ -8,8 +8,6 @@ import { Color, SimplePaletteColorOptions } from "@mui/material";
 import { grey, teal } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
-import { roboto } from "@/pages/_app";
-
 import { ChipStyles } from "./Chip";
 
 declare module "@mui/material/styles" {
@@ -76,7 +74,7 @@ export const borderLine = `1.5px solid ${COLOR_PALETTE.borderGray}`;
 
 export const theme = createTheme({
   typography: {
-    fontFamily: [roboto.style.fontFamily, "sans-serif"].join(","),
+    fontFamily: ["Roboto", "sans-serif"].join(","),
     fontSize: 14,
   },
   palette: {
