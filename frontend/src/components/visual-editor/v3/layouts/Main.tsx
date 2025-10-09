@@ -75,15 +75,29 @@ export const Main = () => {
   );
   const startEdges = useMemo(
     () => getStartEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.starts_conversation))],
+    [
+      JSON.stringify(
+        blocks
+          .filter((b) => b.starts_conversation)
+          .map((b) => b.starts_conversation),
+      ),
+    ],
   );
   const nextBlocksEdges = useMemo(
     () => getNextBlocksEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.nextBlocks))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.nextBlocks?.length).map((b) => b.nextBlocks),
+      ),
+    ],
   );
   const attachedEdges = useMemo(
     () => getAttachedEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.attachedBlock))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.attachedBlock).map((b) => b.attachedBlock),
+      ),
+    ],
   );
   const nodes = useMemo(
     () => getNodesFromBlocks(blocks),
