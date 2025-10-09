@@ -7,9 +7,9 @@
 import { Conversation, ConversationList } from "@chatscope/chat-ui-kit-react";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { Chip, debounce, Grid } from "@mui/material";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useTranslate } from "@/hooks/useTranslate";
 import { Title } from "@/layout/content/Title";
 import { RouterType } from "@/services/types";
@@ -28,8 +28,11 @@ export const SubscribersList = (props: {
   searchPayload: SearchPayload<ISubscriber>;
   assignedTo: AssignedTo;
 }) => {
-  const router = useRouter();
-  const subscriber = router.query.subscriber?.toString() || null;
+  const router = useAppRouter();
+  const rawSubscriber = router.query.subscriber;
+  const subscriber = Array.isArray(rawSubscriber)
+    ? rawSubscriber.at(-1) || null
+    : rawSubscriber || null;
   const { t, i18n } = useTranslate();
   const chat = useChat();
   const { fetchNextPage, isFetching, subscribers, hasNextPage } =
@@ -69,17 +72,15 @@ export const SubscribersList = (props: {
             <Conversation
               onClick={() => {
                 chat.setSubscriberId(subscriber.id);
-                router.push(
-                  {
-                    pathname: `/${RouterType.INBOX}/subscribers/[subscriber]`,
-                    query: {
-                      ...router.query,
-                      subscriber: subscriber.id,
-                    },
-                  },
-                  undefined,
-                  { shallow: true },
-                );
+                const nextQuery = {
+                  ...router.query,
+                  subscriber: subscriber.id,
+                };
+
+                router.push({
+                  pathname: `/${RouterType.INBOX}/subscribers/${subscriber.id}`,
+                  query: nextQuery,
+                });
               }}
               className="changeColor"
               key={subscriber.id}

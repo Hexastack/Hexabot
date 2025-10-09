@@ -65,7 +65,7 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
               {...register("options.fallback.max_attempts", {
                 validate: {
                   min: (value) =>
-                    value >= 0 ||
+                    (typeof value === "number" && value >= 0) ||
                     t("message.invalid_max_fallback_attempt_limit"),
                 },
                 valueAsNumber: true,
@@ -94,7 +94,9 @@ const LocalFallbackInput: FC<LocalFallbackProps> = ({ value, onChange }) => {
               minInput={1}
               minRows={3}
               error={!!errors.options?.fallback}
-              helperText={errors.options?.fallback?.message as string}
+              helperText={
+                errors.options?.fallback?.message as unknown as string
+              }
               onChange={(message) => {
                 setFallback({
                   ...fallback,

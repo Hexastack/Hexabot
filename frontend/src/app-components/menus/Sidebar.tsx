@@ -22,8 +22,8 @@ import {
 } from "@mui/material";
 // @icon
 import { OverridableComponent } from "@mui/material/OverridableComponent";
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 import { useTranslate } from "@/hooks/useTranslate";
 import { TTranslationKeys } from "@/i18n/i18n.types";
@@ -160,10 +160,15 @@ const VerticalMenuItem = ({
   isToggled?: boolean;
 }) => {
   const { t } = useTranslate();
-  const linkProps = {
-    href,
-    onClick,
-  };
+  const linkProps = href
+    ? {
+        component: RouterLink,
+        to: href,
+        onClick,
+      }
+    : {
+        onClick,
+      };
   const isMenuItemHead = typeof isSubmenuOpen === "boolean";
   const isSelected = selected || (!isMenuItemHead && pathname === href);
   const color =
@@ -180,7 +185,6 @@ const VerticalMenuItem = ({
       <StyledListItemButton
         selected={!!(!(isToggled && !href && isSubmenuOpen) && isSelected)}
         {...linkProps}
-        LinkComponent={Link}
         // isHovered={isSubmenuOpen}
       >
         {Icon && !("icon" in Icon) ? (

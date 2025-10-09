@@ -7,9 +7,8 @@
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, Chip, Grid, Switch, Typography } from "@mui/material";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { useQueryClient } from "react-query";
+import { Link as RouterLink } from "react-router-dom";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -27,6 +26,7 @@ import { useFind } from "@/hooks/crud/useFind";
 import { useGet, useGetFromCache } from "@/hooks/crud/useGet";
 import { useImport } from "@/hooks/crud/useImport";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useSearch } from "@/hooks/useSearch";
@@ -43,7 +43,7 @@ import { ContentFormDialog } from "./ContentFormDialog";
 export const Contents = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { query } = useRouter();
+  const { query } = useAppRouter();
   const queryClient = useQueryClient();
   const dialogs = useDialogs();
   // data fetching
@@ -135,11 +135,14 @@ export const Contents = () => {
   return (
     <Grid container flexDirection="column" gap={3}>
       <Grid item height="fit-content" container>
-        <Link href="/content/types">
-          <Button variant="text" startIcon={<ArrowBackIcon />}>
-            <Typography sx={{ fontWeight: 500 }}>{t("button.back")}</Typography>
-          </Button>
-        </Link>
+        <Button
+          component={RouterLink}
+          to="/content/types"
+          variant="text"
+          startIcon={<ArrowBackIcon />}
+        >
+          <Typography sx={{ fontWeight: 500 }}>{t("button.back")}</Typography>
+        </Button>
 
         <PageHeader
           icon={faAlignLeft}

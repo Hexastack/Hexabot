@@ -10,7 +10,7 @@ docker-compose*
 README.md
 LICENSE
 .vscode
-.next
+dist
 *.swp
 /scripts
 *.sh

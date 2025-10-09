@@ -4,8 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import getConfig from "next/config";
-import { useRouter } from "next/router";
 import { createContext, ReactNode } from "react";
 import {
   QueryObserverResult,
@@ -16,8 +14,10 @@ import {
 } from "react-query";
 
 import { Progress } from "@/app-components/displays/Progress";
+import { runtimeConfig } from "@/config/runtime";
 import { useLogout } from "@/hooks/entities/auth-hooks";
 import { useApiClient } from "@/hooks/useApiClient";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { CURRENT_USER_KEY } from "@/hooks/useAuth";
 import { useSubscribeBroadcastChannel } from "@/hooks/useSubscribeBroadcastChannel";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -45,10 +45,8 @@ export interface AuthProviderProps {
   children: ReactNode;
 }
 
-const { publicRuntimeConfig } = getConfig();
-
 export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
-  const router = useRouter();
+  const router = useAppRouter();
   const { i18n } = useTranslate();
   const queryClient = useQueryClient();
   const updateLanguage = (lang: string) => {
@@ -56,14 +54,15 @@ export const AuthProvider = ({ children }: AuthProviderProps): JSX.Element => {
   };
   const { mutate: logoutSession } = useLogout();
   const logout = async () => {
-    updateLanguage(publicRuntimeConfig.lang.default);
+    updateLanguage(runtimeConfig.lang.default);
     logoutSession();
   };
   const authRedirection = async (isAuthenticated: boolean) => {
     if (isAuthenticated && isLoginPath(router.pathname)) {
-      const redirectUrl = Array.isArray(router.query.redirect)
-        ? router.query.redirect.at(-1)
-        : router.query.redirect;
+      const rawRedirect = router.query.redirect;
+      const redirectUrl = Array.isArray(rawRedirect)
+        ? rawRedirect.at(-1)
+        : rawRedirect;
 
       if (redirectUrl?.startsWith("/") && !hasPublicPath(redirectUrl)) {
         await router.push(redirectUrl);

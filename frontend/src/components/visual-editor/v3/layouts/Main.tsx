@@ -6,7 +6,6 @@
 
 import { Box, debounce, styled } from "@mui/material";
 import { useReactFlow, Viewport } from "@xyflow/react";
-import { useRouter } from "next/router";
 import {
   DragEvent,
   KeyboardEventHandler,
@@ -19,6 +18,7 @@ import {
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
@@ -43,7 +43,7 @@ const StyledBox = styled(Box)(() => ({
 }));
 
 export const Main = () => {
-  const router = useRouter();
+  const router = useAppRouter();
   const { screenToFlowPosition, setViewport, setNodes, setEdges } =
     useReactFlow();
   const { selectedCategoryId, setSelectedCategoryId, setSelectedNodeIds } =
@@ -201,32 +201,37 @@ export const Main = () => {
   );
 
   useEffect(() => {
-    const { id: flowId } = router.query;
+    const rawFlowId = router.query.id;
+    const flowId = Array.isArray(rawFlowId) ? rawFlowId.at(-1) : rawFlowId;
 
     if (flowId) {
-      if (typeof flowId === "string") {
-        setSelectedCategoryId(flowId);
-      }
+      setSelectedCategoryId(flowId);
     } else if (categories.length) {
       setSelectedCategoryId(categories[0].id);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.id]);
+  }, [router.query.id, categories]);
 
   useEffect(() => {
     setViewport(defaultViewport);
   }, [currentCategory?.id]);
 
   useEffect(() => {
-    const { blockIds } = router.query;
+    const blockIdsParam = router.query.blockIds;
+    const blockIds =
+      typeof blockIdsParam === "string"
+        ? blockIdsParam
+        : Array.isArray(blockIdsParam)
+          ? blockIdsParam.at(-1)
+          : undefined;
 
     if (!blockIds) {
       setSelectedNodeIds([]);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.blockIds]);
+  }, [router.query.blockIds, setSelectedNodeIds]);
 
   useEffect(() => {
     return () => {

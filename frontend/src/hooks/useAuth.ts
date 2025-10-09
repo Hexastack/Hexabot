@@ -4,18 +4,20 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useRouter } from "next/router";
 import { useContext } from "react";
 
 import { AuthContext } from "@/contexts/auth.context";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { RouterType } from "@/services/types";
 import { hasPublicPath } from "@/utils/URL";
 
 export const CURRENT_USER_KEY = "current-user";
 export const PUBLIC_PATHS = [
-  "/login/[[...token]]",
-  "/register/[token]",
-  "/reset/[token]",
+  "/login",
+  "/login/:token",
+  "/register/:token",
+  "/reset",
+  "/reset/:token",
 ];
 
 export const useAuth = () => {
@@ -29,7 +31,7 @@ export const useAuth = () => {
 };
 
 export const useLogoutRedirection = () => {
-  const router = useRouter();
+  const router = useAppRouter();
   const logoutRedirection = async (fullReload: boolean = false) => {
     if (!hasPublicPath(router.pathname)) {
       const redirectUrl = `/${RouterType.LOGIN}?redirect=${encodeURIComponent(

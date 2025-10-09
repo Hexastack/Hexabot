@@ -23,7 +23,6 @@ export const AttachmentViewerForm: FC<
 }) => {
   return (
     <Wrapper {...WrapperProps}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         width="100%"
         style={{

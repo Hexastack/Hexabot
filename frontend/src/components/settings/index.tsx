@@ -14,13 +14,13 @@ import {
   Tab,
   Tabs,
 } from "@mui/material";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { a11yProps, TabPanel } from "@/app-components/tabs/TabPanel";
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { PageHeader } from "@/layout/content/PageHeader";
@@ -69,8 +69,9 @@ const DEFAULT_SETTINGS_GROUP = "chatbot_settings" as const;
 
 export const Settings = () => {
   const { t } = useTranslate();
-  const router = useRouter();
-  const group = router.query.group?.toString();
+  const router = useAppRouter();
+  const rawGroup = router.query.group;
+  const group = Array.isArray(rawGroup) ? rawGroup.at(-1) : rawGroup;
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState(
     group || DEFAULT_SETTINGS_GROUP,

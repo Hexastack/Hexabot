@@ -4,14 +4,15 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useRouter } from "next/router";
 import { FC, Fragment, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import { ContentContainer, ContentItem } from "@/app-components/dialogs";
 import { Input } from "@/app-components/inputs/Input";
 import { useCreate } from "@/hooks/crud/useCreate";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType, RouterType } from "@/services/types";
@@ -26,7 +27,8 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useAppRouter();
+  const navigate = useNavigate();
   const options = {
     onError: (error: Error) => {
       rest.onError?.();
@@ -36,7 +38,7 @@ export const CategoryForm: FC<ComponentFormProps<ICategory>> = ({
       rest.onSuccess?.();
       toast.success(t("message.success_save"));
       if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
-        router.push(`/${RouterType.VISUAL_EDITOR}/flows/${id}`);
+        navigate(`/${RouterType.VISUAL_EDITOR}/flows/${id}`);
       }
     },
   };
