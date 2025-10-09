@@ -129,7 +129,7 @@ export const Main = () => {
   }, [currentCategory]);
   const edges = useMemo(
     () => [...startEdges, ...nextBlocksEdges, ...attachedEdges],
-    [startEdges.length, nextBlocksEdges.length, attachedEdges.length],
+    [startEdges, nextBlocksEdges, attachedEdges],
   );
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
