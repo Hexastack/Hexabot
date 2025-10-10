@@ -80,7 +80,7 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     category: string,
     blockIds: string[] = [],
   ) => {
-    const blockParam = blockIds.join ? `/${blockIds.join(",")}` : "";
+    const blockParam = Array.isArray(blockIds) && blockIds.length ? `/${blockIds.join(",")}` : "";
 
     if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
       await router.push(
