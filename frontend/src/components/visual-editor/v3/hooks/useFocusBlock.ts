@@ -10,19 +10,18 @@ import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import { RouterType } from "@/services/types";
-
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
   const router = useRouter();
   const { getNode, fitView } = useReactFlow();
-  const { selectNodes, selectedCategoryId, selectedNodeIds, openSearchPanel } =
+  const { selectNodes, selectedNodeIds, openSearchPanel, setToFocusIds } =
     useVisualEditor();
-  const animateFocus = async (blockId?: string) => {
-    if (blockId) {
-      const node = getNode(blockId);
+  const animateFocus = async (blockIds: string[] = []) => {
+    selectNodes(blockIds);
+    if (blockIds.length === 1) {
+      const node = getNode(blockIds[0]);
 
       if (node) {
         await fitView({
@@ -30,6 +29,7 @@ export const useFocusBlock = () => {
           padding: "150px",
           duration: 200,
         });
+        setToFocusIds([]);
       }
     } else {
       const nodes = selectedNodeIds
@@ -42,51 +42,27 @@ export const useFocusBlock = () => {
           padding: "150px",
           duration: 200,
         });
+        setToFocusIds([]);
       }
     }
   };
-  const getQuery = (key: string): string =>
-    typeof router.query[key] === "string" ? router.query[key] : "";
 
   useEffect(() => {
     const { blockIds } = router.query;
 
-    if (nodesInitialized) {
-      if (typeof blockIds === "string" && blockIds?.length) {
-        selectNodes(blockIds.split(",").filter(getNode));
-        if (openSearchPanel) {
-          animateFocus(blockIds);
-        }
+    if (nodesInitialized && typeof blockIds === "string" && blockIds?.length) {
+      const nodesIds = blockIds.split(",").filter(getNode);
+
+      selectNodes(nodesIds);
+      if (openSearchPanel) {
+        animateFocus(nodesIds);
       }
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodesInitialized, router.query]);
 
-  const updateVisualEditorURL = async (
-    category: string,
-    blockIds: string[] = [],
-  ) => {
-    const blockParam = blockIds.join ? `/${blockIds.join(",")}` : "";
-
-    if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
-      await router.push(
-        `/${RouterType.VISUAL_EDITOR}/flows/${category}${blockParam}`,
-      );
-    }
-  };
-  const removeBlockIdParam = async () => {
-    if (selectedCategoryId) {
-      await router.replace(
-        `/${RouterType.VISUAL_EDITOR}/flows/${selectedCategoryId}`,
-      );
-    }
-  };
-
   return {
-    updateVisualEditorURL,
-    removeBlockIdParam,
-    getQuery,
     animateFocus,
   };
 };
