@@ -84,7 +84,9 @@ export class ApiClient {
   constructor(protected readonly request: AxiosInstance) {}
 
   async getCsrf() {
-    const { data } = await this.request.get<ICsrf>(ROUTES.CSRF);
+    const { data } = await this.request.get<ICsrf>(ROUTES.CSRF, {
+      withCredentials: true,
+    });
 
     return data;
   }

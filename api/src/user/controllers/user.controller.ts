@@ -24,7 +24,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
 
@@ -35,7 +34,6 @@ import {
   AttachmentResourceRef,
 } from '@/attachment/types';
 import { config } from '@/config';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar, getBotAvatar } from '@/utils/helpers/avatar';
@@ -61,7 +59,6 @@ import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 import { ValidateAccountService } from '../services/validate-account.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('user')
 export class ReadOnlyUserController extends BaseController<
   User,
@@ -227,7 +224,6 @@ export class ReadOnlyUserController extends BaseController<
   }
 }
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('user')
 export class ReadWriteUserController extends ReadOnlyUserController {
   /**
@@ -237,7 +233,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns A promise that resolves to the created user.
    */
-  @CsrfCheck(true)
+
   @Post()
   async create(@Body() user: UserCreateDto) {
     this.validate({
@@ -263,7 +259,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns A promise that resolves to the updated user.
    */
-  @CsrfCheck(true)
+
   @UseInterceptors(
     FileInterceptor('avatar', {
       limits: {
@@ -326,7 +322,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The updated user data.
    */
-  @CsrfCheck(true)
+
   @Patch(':id')
   async updateStateAndRoles(
     @Param('id') id: string,
@@ -368,7 +364,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns Nothing (HTTP 204 on success).
    */
-  @CsrfCheck(true)
+
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -390,7 +386,7 @@ export class ReadWriteUserController extends ReadOnlyUserController {
    *
    * @returns The created invitation record.
    */
-  @CsrfCheck(true)
+
   @Post('invite')
   async invite(@Body() invitationCreateDto: InvitationCreateDto) {
     return await this.invitationService.create(invitationCreateDto);

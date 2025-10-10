@@ -13,8 +13,6 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-// eslint-disable-next-line import/order
-import { CsrfGuard, CsrfModule } from '@tekuconcept/nestjs-csrf';
 import { redisStore } from 'cache-manager-redis-yet';
 import {
   AcceptLanguageResolver,
@@ -103,7 +101,6 @@ const i18nOptions: I18nOptions = {
       // disable throwing uncaughtException if an error event is emitted and it has no listeners
       ignoreErrors: false,
     }),
-    CsrfModule,
     I18nModule.forRoot(i18nOptions),
     config.cache.type === 'redis'
       ? CacheModule.register<RedisClientOptions>({
@@ -126,10 +123,6 @@ const i18nOptions: I18nOptions = {
     ...extraModules,
   ],
   controllers: [AppController],
-  providers: [
-    { provide: APP_GUARD, useClass: Ability },
-    { provide: APP_GUARD, useClass: CsrfGuard },
-    AppService,
-  ],
+  providers: [{ provide: APP_GUARD, useClass: Ability }, AppService],
 })
 export class HexabotModule {}

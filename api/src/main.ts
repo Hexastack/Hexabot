@@ -10,6 +10,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import moduleAlias from 'module-alias';
 import { resolveDynamicProviders } from 'nestjs-dynamic-providers';
 import passport from 'passport';
@@ -21,6 +22,7 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
+import { csrf } from './config/csrf';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
@@ -83,6 +85,12 @@ async function bootstrap() {
   app.use(getSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // CSRF protection
+  if (config.security.csrf) {
+    app.use(cookieParser()); // Needed for csrf
+    app.use(csrf.doubleCsrfProtection);
+  }
 
   if (config.cache.type === 'redis') {
     const redisIoAdapter = new RedisIoAdapter(app);

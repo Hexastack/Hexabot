@@ -49,6 +49,7 @@ export type Config = {
       allowCredentials: boolean;
     };
     csrf: boolean;
+    csrfExclude: RegExp[];
   };
   sockets: {
     path: string;
