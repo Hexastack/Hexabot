@@ -75,20 +75,33 @@ export const Main = () => {
   );
   const startEdges = useMemo(
     () => getStartEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.starts_conversation))],
+    [
+      JSON.stringify(
+        blocks
+          .filter((b) => b.starts_conversation)
+          .map((b) => b.starts_conversation),
+      ),
+    ],
   );
   const nextBlocksEdges = useMemo(
     () => getNextBlocksEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.nextBlocks))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.nextBlocks?.length).map((b) => b.nextBlocks),
+      ),
+    ],
   );
   const attachedEdges = useMemo(
     () => getAttachedEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.attachedBlock))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.attachedBlock).map((b) => b.attachedBlock),
+      ),
+    ],
   );
   const nodes = useMemo(
     () => getNodesFromBlocks(blocks),
     [
-      JSON.stringify(blocks.map((b) => b.starts_conversation)),
       JSON.stringify(
         blocks.map((b) => {
           return {
@@ -127,6 +140,10 @@ export const Main = () => {
       zoom: 1,
     };
   }, [currentCategory]);
+  const edges = useMemo(
+    () => [...startEdges, ...nextBlocksEdges, ...attachedEdges],
+    [startEdges, nextBlocksEdges, attachedEdges],
+  );
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
@@ -262,7 +279,7 @@ export const Main = () => {
           <ReactFlowWrapper
             onUpdateNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
-            defaultEdges={[...startEdges, ...nextBlocksEdges, ...attachedEdges]}
+            defaultEdges={edges}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
           />
