@@ -123,16 +123,14 @@ export class ApiClient {
       }
     }
 
-    // Append the CSRF token
-    formData.append("_csrf", _csrf);
-
     const { data } = await this.request.patch<
       IUserStub,
       AxiosResponse<IUserStub>,
       Partial<IProfileAttributes>
-    >(`${ROUTES.PROFILE}/${id}?_csrf=${_csrf}`, payload, {
+    >(`${ROUTES.PROFILE}/${id}`, payload, {
       headers: {
         "Content-Type": "multipart/form-data",
+        "x-csrf-token": _csrf,
       },
     });
 
@@ -326,19 +324,19 @@ export class EntityApiClient<TAttr, TBasic, TFull> extends ApiClient {
     const formData = new FormData();
 
     formData.append("file", file);
-
     const { data } = await this.request.post<
       TBasic[],
       AxiosResponse<TBasic[]>,
       FormData
     >(
-      `${ROUTES[this.type]}/upload?_csrf=${_csrf}${
-        resourceRef ? `&resourceRef=${resourceRef}` : ""
+      `${ROUTES[this.type]}/upload?${
+        resourceRef ? `resourceRef=${resourceRef}` : ""
       }`,
       formData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
+          "x-csrf-token": _csrf,
         },
       },
     );
