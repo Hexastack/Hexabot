@@ -19,8 +19,8 @@ export const csrf = doubleCsrf({
   },
   cookieName:
     config.env === 'production' && config.security.httpsEnabled
-      ? '__Secure-hexabot.x-csrf-token'
-      : '__Host-hexabot.x-csrf-token',
+      ? '__Host-hexabot.x-csrf-token'
+      : 'hexabot.x-csrf-token',
   cookieOptions: {
     httpOnly: true,
     secure: config.security.httpsEnabled,
