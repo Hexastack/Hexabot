@@ -9,18 +9,17 @@
 import Add from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import { Button, Grid, styled, Tab, Tabs, tabsClasses } from "@mui/material";
-import { MouseEvent, SyntheticEvent, useMemo } from "react";
+import { MouseEvent, SyntheticEvent } from "react";
 
 import { CategoryFormDialog } from "@/components/categories/CategoryFormDialog";
-import { useFind } from "@/hooks/crud/useFind";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useHasPermission } from "@/hooks/useHasPermission";
 import { useTranslate } from "@/hooks/useTranslate";
 import { EntityType } from "@/services/types";
 import { PermissionAction } from "@/types/permission.types";
 
+import { useCategories } from "../../hooks/useCategories";
 import { useMoveBlocksDialog } from "../../hooks/useMoveBlocksDialog";
-import { useVisualEditor } from "../../hooks/useVisualEditor";
 
 const StyledButton = styled(Button)(() => ({
   marginTop: "7px",
@@ -86,40 +85,16 @@ export const FlowsTabs = ({
   const hasPermission = useHasPermission();
   const dialogs = useDialogs();
   const { t } = useTranslate();
-  const { selectedCategoryId, setSelectedCategoryId } = useVisualEditor();
   const { onCategoryChange } = useMoveBlocksDialog();
-  const { data: categories } = useFind(
-    { entity: EntityType.CATEGORY },
-    {
-      hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-    {
-      onSuccess([category]) {
-        if (!selectedCategoryId && category) {
-          setSelectedCategoryId(category.id);
-        }
-      },
-    },
-  );
+  const { categories, selectedCategoryIndex } = useCategories();
   const changeHandler = (_event: SyntheticEvent, categoryIndex: number) => {
     onCategoryChange(categoryIndex);
   };
-  const currentCategory = useMemo(() => {
-    return categories.find(({ id }) => id === selectedCategoryId);
-  }, [categories, selectedCategoryId]);
-  const tabIndex = useMemo(() => {
-    if (!categories?.length) return false;
-
-    return currentCategory
-      ? categories.findIndex(({ id }) => id === selectedCategoryId)
-      : 0;
-  }, [categories, currentCategory, selectedCategoryId]);
 
   return (
     <StyledGrid>
       <StyledTabs
-        value={tabIndex === false ? false : tabIndex}
+        value={selectedCategoryIndex === false ? false : selectedCategoryIndex}
         variant="scrollable"
         onChange={changeHandler}
         allowScrollButtonsMobile

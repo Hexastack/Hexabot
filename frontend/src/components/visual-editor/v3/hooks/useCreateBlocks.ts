@@ -10,12 +10,11 @@ import { useCreate } from "@/hooks/crud/useCreate";
 import { EntityType } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
 
-import { useFocusBlock } from "./useFocusBlock";
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useCreateBlock = () => {
-  const { updateVisualEditorURL } = useFocusBlock();
-  const { getCentroid, getBlockFromCache } = useVisualEditor();
+  const { getCentroid, getBlockFromCache, updateVisualEditorURL } =
+    useVisualEditor();
   const { mutate: createBlock } = useCreate(EntityType.BLOCK);
   const createNode = (id: string | undefined, props?: IBlockAttributes) => {
     if (id) {

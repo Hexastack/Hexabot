@@ -76,8 +76,7 @@ export const ReactFlowWrapper = ({
   onNodeDoubleClick?: (selectedBlockId: string) => void;
 }) => {
   const hasPermission = useHasPermission();
-  const { removeBlockIdParam, updateVisualEditorURL, animateFocus } =
-    useFocusBlock();
+  const { animateFocus } = useFocusBlock();
   const { setEdges, updateEdge, updateNode, getNode } = useReactFlow();
   const {
     setSelectedNodeIds,
@@ -85,6 +84,8 @@ export const ReactFlowWrapper = ({
     getBlockFromCache,
     selectedCategoryId,
     updateCachePreviousBlocks,
+    removeBlockIdParam,
+    updateVisualEditorURL,
   } = useVisualEditor();
   const deleteKeyPressed = useKeyPress("Delete");
   const { openDeleteManyDialog } = useDeleteManyBlocksDialog();

@@ -13,11 +13,12 @@ import {
   useReactFlow,
   XYPosition,
 } from "@xyflow/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
-import { EntityType } from "@/services/types";
+import { EntityType, RouterType } from "@/services/types";
 
 import { VisualEditorContext } from "../contexts/VisualEditorContext";
 import { VisualEditorContextProps } from "../types/visual-editor.types";
@@ -25,6 +26,7 @@ import { VisualEditorContextProps } from "../types/visual-editor.types";
 export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
+  const router = useRouter();
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
@@ -72,10 +74,32 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
       }),
     });
   };
+  const getQuery = (key: string): string =>
+    typeof router.query[key] === "string" ? router.query[key] : "";
+  const updateVisualEditorURL = async (
+    category: string,
+    blockIds: string[] = [],
+  ) => {
+    const blockParam = Array.isArray(blockIds) && blockIds.length ? `/${blockIds.join(",")}` : "";
+
+    if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
+      await router.push(
+        `/${RouterType.VISUAL_EDITOR}/flows/${category}${blockParam}`,
+      );
+    }
+  };
+  const removeBlockIdParam = async () => {
+    if (selectedCategoryId) {
+      await router.replace(
+        `/${RouterType.VISUAL_EDITOR}/flows/${selectedCategoryId}`,
+      );
+    }
+  };
 
   return (
     <VisualEditorContext.Provider
       value={{
+        getQuery,
         toFocusIds,
         selectNodes,
         getCentroid,
@@ -85,7 +109,9 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
         getBlockFromCache,
         setOpenSearchPanel,
         setSelectedNodeIds,
+        removeBlockIdParam,
         selectedCategoryId,
+        updateVisualEditorURL,
         setSelectedCategoryId,
         updateCachePreviousBlocks,
       }}
