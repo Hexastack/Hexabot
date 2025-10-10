@@ -33,7 +33,7 @@
 
 ## Description
 
-[Hexabot](https://hexabot.ai/) is an open-source AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. Originally a closed-source project (version 1), we've now open-sourced version 2 to contribute to the community and enable developers to customize and extend the platform with [extensions](https://hexabot.ai/extensions).
+[Hexabot](https://hexabot.ai/) is an AI chatbot / agent solution. It  allows you to create and manage multi-channel, and multilingual chatbots / agents with ease. Hexabot is designed for flexibility and customization, offering powerful text-to-action capabilities. You can customize and extend the platform with [extensions](https://hexabot.ai/extensions).
 
 <a href="https://www.producthunt.com/posts/hexabot?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-hexabot" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=477532&theme=light" alt="Hexabot - Create&#0032;exceptional&#0032;chatbot&#0032;experiences&#0046;&#0032;100&#0037;&#0032;Open&#0032;Source&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 ## Features
@@ -183,7 +183,20 @@ $ hexabot dev --services ollama
 
 ## License
 
-This software is licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
+Copyright (c) 2025 Hexastack.
 
-1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
-2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+This project is licensed under the **Fair Core License, Version 1.0**, with **Apache License 2.0** as the future license (abbrev. **FCL-1.0-ALv2**).
+
+**Change date.** For each version of the software, the Fair Core License converts to Apache-2.0 on the **second anniversary** of the date that version is made available.
+
+**Commercial features & license keys.** Certain features of Hexabot are protected by license-key checks. You **must not** remove, modify, disable, or circumvent those checks, nor enable access to protected functionality without a valid license key.
+
+**Competing uses (non-compete).** Use that competes with Hexastack’s business—for example, offering Hexabot (or a substantially similar service) as a hosted or commercial product—is not permitted until the conversion to Apache-2.0 for the applicable version.
+
+**Redistribution.** If you distribute copies, modifications, or derivatives, you must include this license and not remove copyright or proprietary notices.
+
+**Patents.** A limited patent license is granted for permitted uses and terminates on patent aggression.
+
+**Trademarks.** “Hexabot” and “Hexastack” are trademarks. Except to identify Hexastack as the origin of the software, no trademark rights are granted.
+
+**Disclaimer.** The software is provided “AS IS,” without warranties or conditions of any kind, and Hexastack will not be liable for any damages arising from its use.
