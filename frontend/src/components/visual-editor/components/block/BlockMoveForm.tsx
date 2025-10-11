@@ -49,7 +49,7 @@ export const BlockMoveForm: FC<ComponentFormProps<BlockMoveFormData>> = ({
       <ContentContainer>
         <Select
           value={selectedCategoryId}
-          onChange={(e) => setSelectedCategoryId(e.target.value as string)}
+          onChange={(e) => setSelectedCategoryId(e.target.value)}
           fullWidth
           displayEmpty
         >
