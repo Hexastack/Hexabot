@@ -7,12 +7,13 @@
  */
 
 import { csrfSync } from 'csrf-sync';
+import { Request } from 'express';
 
 import { config } from '.';
 
 export const csrf = csrfSync({
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-  getTokenFromRequest: (req: any) =>
+  getTokenFromRequest: (req: Request) =>
     (req.headers['x-csrf-token'] as string) ??
     (req.body?._csrf as string) ??
     (req.query?._csrf as string) ??
