@@ -18,11 +18,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseBlockPlugin } from '@/plugins/base-block-plugin';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginName, PluginType } from '@/plugins/types';
@@ -51,7 +48,6 @@ import { BlockService } from '../services/block.service';
 import { CategoryService } from '../services/category.service';
 import { LabelService } from '../services/label.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('Block')
 export class BlockController extends BaseController<
   Block,
@@ -240,8 +236,6 @@ export class BlockController extends BaseController<
    * @param block - The data of the block to be created.
    * @returns A Promise that resolves to the created block.
    */
-
-  @CsrfCheck(true)
   @Post()
   async create(@Body() block: BlockCreateDto): Promise<Block> {
     this.validate({
@@ -295,7 +289,6 @@ export class BlockController extends BaseController<
    * @param payload - The data to update blocks with.
    * @returns A Promise that resolves to the updates if successful.
    */
-  @CsrfCheck(true)
   @Patch('bulk')
   async updateMany(@Body() body: { ids: string[]; payload: BlockUpdateDto }) {
     if (!body.ids || body.ids.length === 0) {
@@ -318,7 +311,6 @@ export class BlockController extends BaseController<
    * @param blockUpdate - The data to update the block with.
    * @returns A Promise that resolves to the updated block if successful.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -333,7 +325,6 @@ export class BlockController extends BaseController<
    * @param id - The ID of the block to delete.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
@@ -350,7 +341,6 @@ export class BlockController extends BaseController<
    * @param ids - IDs of blocks to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete('')
   @HttpCode(204)
   async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {

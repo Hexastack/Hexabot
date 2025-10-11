@@ -21,6 +21,7 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
+import { csrf } from './config/csrf';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
@@ -83,6 +84,11 @@ async function bootstrap() {
   app.use(getSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // CSRF protection
+  if (config.security.csrf) {
+    app.use(csrf.csrfSynchronisedProtection);
+  }
 
   if (config.cache.type === 'redis') {
     const redisIoAdapter = new RedisIoAdapter(app);
