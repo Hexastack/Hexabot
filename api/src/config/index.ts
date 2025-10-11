@@ -36,6 +36,11 @@ export const config: Config = {
       allowCredentials: true,
     },
     csrf: true,
+    csrfExclude: [
+      /^\/auth\/local$/, // login
+      /^\/auth\/logout$/, // logout
+      /^\/webhook\//, // Any webhook channel
+    ],
   },
   sockets: {
     path: '/socket.io',

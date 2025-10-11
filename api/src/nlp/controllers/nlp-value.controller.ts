@@ -18,11 +18,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -42,7 +39,6 @@ import {
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpValueService } from '../services/nlp-value.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('nlpvalue')
 export class NlpValueController extends BaseController<
   NlpValue,
@@ -66,7 +62,7 @@ export class NlpValueController extends BaseController<
    *
    * @returns A promise resolving to the created NLP value.
    */
-  @CsrfCheck(true)
+
   @Post()
   async create(
     @Body() createNlpValueDto: NlpValueCreateDto,
@@ -168,7 +164,7 @@ export class NlpValueController extends BaseController<
    *
    * @returns A promise resolving to the updated NLP value.
    */
-  @CsrfCheck(true)
+
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -197,7 +193,7 @@ export class NlpValueController extends BaseController<
    *
    * @returns A promise resolving to the result of the deletion operation.
    */
-  @CsrfCheck(true)
+
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -214,7 +210,7 @@ export class NlpValueController extends BaseController<
    * @param ids - IDs of NLP values to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
+
   @Delete('')
   @HttpCode(204)
   async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {

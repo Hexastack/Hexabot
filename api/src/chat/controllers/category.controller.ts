@@ -18,11 +18,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -34,7 +31,6 @@ import { CategoryCreateDto, CategoryUpdateDto } from '../dto/category.dto';
 import { Category } from '../schemas/category.schema';
 import { CategoryService } from '../services/category.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('category')
 export class CategoryController extends BaseController<Category> {
   constructor(private readonly categoryService: CategoryService) {
@@ -92,7 +88,6 @@ export class CategoryController extends BaseController<Category> {
    * @param category - The data of the category to be created.
    * @returns A Promise that resolves to the created category.
    */
-  @CsrfCheck(true)
   @Post()
   async create(@Body() category: CategoryCreateDto): Promise<Category> {
     return await this.categoryService.create(category);
@@ -104,7 +99,6 @@ export class CategoryController extends BaseController<Category> {
    * @param categoryUpdate - The updated data for the category.
    * @returns A Promise that resolves to the updated category.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -118,7 +112,6 @@ export class CategoryController extends BaseController<Category> {
    * @param id - The ID of the category to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
@@ -135,7 +128,6 @@ export class CategoryController extends BaseController<Category> {
    * @param ids - IDs of categories to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete('')
   @HttpCode(204)
   async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {

@@ -25,12 +25,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { config } from '@/config';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { Roles } from '@/utils/decorators/roles.decorator';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -47,7 +45,6 @@ import { Attachment } from '../schemas/attachment.schema';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('attachment')
 @UseGuards(AttachmentGuard)
 export class AttachmentController extends BaseController<Attachment> {
@@ -108,7 +105,6 @@ export class AttachmentController extends BaseController<Attachment> {
    * @param files - An array of files to upload.
    * @returns A promise that resolves to an array of uploaded attachments.
    */
-  @CsrfCheck(true)
   @Post('upload')
   @UseInterceptors(
     FileFieldsInterceptor([{ name: 'file' }], {
@@ -192,7 +188,6 @@ export class AttachmentController extends BaseController<Attachment> {
    * @param id - The ID of the attachment (not used since deletion is not allowed).
    * @throws MethodNotAllowedException - Always thrown to indicate deletion is not permitted.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(405)
   async deleteOne(@Param('id') id: string): Promise<void> {

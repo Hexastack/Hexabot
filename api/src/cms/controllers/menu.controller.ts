@@ -17,11 +17,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -32,7 +29,6 @@ import { MenuCreateDto, MenuQueryDto } from '../dto/menu.dto';
 import { Menu, MenuFull, MenuPopulate, MenuStub } from '../schemas/menu.schema';
 import { MenuService } from '../services/menu.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('menu')
 export class MenuController extends BaseController<
   Menu,
@@ -84,7 +80,6 @@ export class MenuController extends BaseController<
    *
    * @returns A promise that resolves to the created menu item.
    */
-  @CsrfCheck(true)
   @Post()
   async create(@Body() body: MenuCreateDto) {
     this.validate({
@@ -159,7 +154,6 @@ export class MenuController extends BaseController<
    *
    * @returns A promise that resolves to the updated or newly created menu item.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Body() body: MenuCreateDto,
@@ -178,7 +172,6 @@ export class MenuController extends BaseController<
    *
    * @returns A promise that resolves to an empty string upon successful deletion.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     try {
