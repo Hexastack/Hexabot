@@ -14,7 +14,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Request } from 'express';
 
 import { TRole } from '../schemas/role.schema';
@@ -28,7 +27,6 @@ export class Ability implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly permissionService: PermissionService,
-    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

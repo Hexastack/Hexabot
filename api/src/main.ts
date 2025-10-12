@@ -35,6 +35,11 @@ async function bootstrap() {
     bodyParser: false,
   });
 
+  // In Express v5, query parameters are no longer parsed using the qs library by default.
+  // As a result, query strings like these: ?filter[where][name]=John&filter[where][age]=30
+  // That's why we need to use the extended parser (the default in Express v4) by setting the query parser option to extended
+  app.set('query parser', 'extended');
+
   // Set the global app instance
   AppInstance.setApp(app);
 

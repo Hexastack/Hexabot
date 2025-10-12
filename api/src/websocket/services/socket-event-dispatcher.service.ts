@@ -116,8 +116,8 @@ export class SocketEventDispatcherService implements OnModuleInit {
       )
       .filter((provider) => !!provider.instance)
       .filter((provider, idx, self) => {
-        const uniqueIdx = self.findIndex((p) => p.name === provider.name);
-        return uniqueIdx === idx;
+        const matchIdx = self.findIndex((p) => p.name === provider.name);
+        return matchIdx === idx;
       });
 
     for (const provider of allProviders) {

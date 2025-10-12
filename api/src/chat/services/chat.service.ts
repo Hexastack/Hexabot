@@ -101,7 +101,7 @@ export class ChatService {
   @OnEvent('hook:chatbot:received')
   async handleReceivedMessage(event: EventWrapper<any, any>) {
     let messageId = '';
-    this.logger.debug('Received message', event);
+    this.logger.debug('Received message');
     try {
       messageId = event.getId();
     } catch (err) {
