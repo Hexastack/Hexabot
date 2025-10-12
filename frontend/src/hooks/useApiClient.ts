@@ -59,6 +59,7 @@ export const useAxiosInstance = () => {
     );
 
     return instance;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logoutRedirection, toast]);
 
   return axiosInstance;
