@@ -124,7 +124,7 @@ export class ReadOnlyUserController extends BaseController<
    * @returns A promise that resolves to the user's roles and associated permissions.
    */
   @Roles('public')
-  @Get('permissions/:id?')
+  @Get('permissions{/:id}')
   async permissions(@Req() req: Request) {
     if (!req.user || !('id' in req.user && req.user.id)) {
       throw new UnauthorizedException();

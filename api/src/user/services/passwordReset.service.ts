@@ -12,7 +12,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { compareSync } from 'bcryptjs';
 
 import { config } from '@/config';
@@ -134,6 +134,9 @@ export class PasswordResetService {
    * @returns The decoded payload of the token.
    */
   async verify(token: string): Promise<UserRequestResetDto> {
-    return await this.jwtService.verifyAsync(token, this.jwtSignOptions);
+    return await this.jwtService.verifyAsync(
+      token,
+      this.jwtSignOptions as JwtVerifyOptions,
+    );
   }
 }

@@ -13,7 +13,7 @@ import {
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 import { plainToClass } from 'class-transformer';
 import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
@@ -291,9 +291,13 @@ export default abstract class ChannelHandler<
    * @param res
    * @param next
    */
-  async middleware(_req: Request, _res: Response, next: NextFunction) {
+  async middleware(
+    _req: Request,
+    _res: Response,
+    next: NextFunction,
+  ): Promise<unknown> {
     // Do nothing, override in channel
-    next();
+    return next();
   }
 
   /**
@@ -367,7 +371,10 @@ export default abstract class ChannelHandler<
         exp: _exp,
         iat: _iat,
         ...result
-      } = this.jwtService.verify(token, this.jwtSignOptions);
+      } = this.jwtService.verify(
+        token,
+        this.jwtSignOptions as JwtVerifyOptions,
+      );
       const attachment = plainToClass(Attachment, result);
 
       // Check access
