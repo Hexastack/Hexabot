@@ -1,9 +1,7 @@
 /*
- * Copyright © 2025 Hexastack. All rights reserved.
- *
- * Licensed under the GNU Affero General Public License v3.0 (AGPLv3) with the following additional terms:
- * 1. The name "Hexabot" is a trademark of Hexastack. You may not use this name in derivative works without express written permission.
- * 2. All derivative works must include clear attribution to the original creator and software, Hexastack and Hexabot, in a prominent location (e.g., in the software's "About" section, documentation, and README file).
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
  */
 
 import { CssBaseline } from "@mui/material";
@@ -27,16 +25,16 @@ import { ToastProvider } from "@/hooks/useToast";
 import { theme } from "@/layout/themes/theme";
 import { SocketProvider } from "@/websocket/socket-hooks";
 
+import "@/components/inbox/inbox.css";
+import "@/components/visual-editor/v3/styles/index.css";
+import "@/i18n/config";
+import "@/styles/globals.css";
 import "@fontsource/roboto/100.css";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "@fontsource/roboto/900.css";
-import "@/components/inbox/inbox.css";
-import "@/components/visual-editor/v3/styles/index.css";
-import "@/i18n/config";
-import "@/styles/globals.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
