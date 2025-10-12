@@ -38,7 +38,7 @@ export abstract class Extension implements OnModuleInit {
       // Load and merge translations
       const i18nLoader = new I18nJsonLoader({ path: i18nPath });
       this.translations = await i18nLoader.load();
-    } catch (error) {
+    } catch (_error) {
       // If the i18n folder does not exist or error in reading, skip this folder
     }
   }

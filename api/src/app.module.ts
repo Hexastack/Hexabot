@@ -63,11 +63,14 @@ const i18nOptions: I18nOptions = {
       autoIndex: config.env !== 'production', // Disable in production
       connectionFactory: (connection) => {
         connection.plugin(idPlugin);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-virtuals'));
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-getters'));
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-defaults').default);
         return connection;
       },

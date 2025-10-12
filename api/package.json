@@ -43,7 +43,7 @@
     "cli": "HEXABOT_CLI=1 ts-node --files --log-error --compiler-options '{\"diagnostics\": true}' src/cli.ts"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix -c \".eslintrc-staged.js\""
+    "*.{js,ts}": "eslint --fix --config eslint.config-staged.cjs"
   },
   "dependencies": {
     "@keyv/redis": "^5.1.3",

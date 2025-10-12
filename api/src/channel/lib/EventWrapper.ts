@@ -21,7 +21,6 @@ import ChannelHandler from './Handler';
 
 export interface ChannelEvent {}
 
-// eslint-disable-next-line prettier/prettier
 export default abstract class EventWrapper<
   A extends {
     eventType: StdEventType;

@@ -45,7 +45,7 @@ export const stringRegexPatternSchema = z.string().refine(
       try {
         new RegExp(value.slice(1, -1), 'gi');
         return true;
-      } catch (err) {
+      } catch (_err) {
         return false;
       }
     }

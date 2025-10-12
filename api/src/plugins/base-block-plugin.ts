@@ -32,7 +32,7 @@ export abstract class BaseBlockPlugin<
 
   constructor(name: PluginName, pluginService: PluginService<BasePlugin>) {
     super(name, pluginService);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 

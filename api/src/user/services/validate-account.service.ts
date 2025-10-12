@@ -121,7 +121,7 @@ export class ValidateAccountService {
       { state: true },
     );
     try {
-    } catch (e) {
+    } catch (_e) {
       throw new InternalServerErrorException('Could confirm email');
     }
     return {};

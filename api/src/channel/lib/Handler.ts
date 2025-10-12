@@ -78,7 +78,7 @@ export default abstract class ChannelHandler<
     protected readonly logger: LoggerService,
   ) {
     super(name);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 

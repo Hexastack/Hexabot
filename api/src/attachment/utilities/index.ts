@@ -40,7 +40,7 @@ export const fileExists = (filePath: string): boolean => {
   }
   try {
     return existsSync(filePath);
-  } catch (e) {
+  } catch (_e) {
     new Logger(`Attachment Model : Unable to locate file: ${filePath}`);
     return false;
   }
