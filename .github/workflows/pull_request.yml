@@ -18,8 +18,11 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: ⏳ Enable pnpm ...
-        run: corepack enable pnpm@9.12.0
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          run_install: false
 
       - name: ⏳ Install workspace dependencies ...
         run: pnpm install --frozen-lockfile
@@ -55,8 +58,11 @@ jobs:
           node-version: 20
           cache: pnpm
 
-      - name: ⏳ Enable pnpm ...
-        run: corepack enable pnpm@9.12.0
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          run_install: false
 
       - name: ⏳ Install workspace dependencies ...
         run: pnpm install --frozen-lockfile
