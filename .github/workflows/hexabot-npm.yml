@@ -14,18 +14,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "20" # Ensure it matches your project requirements
-          cache: "npm"
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Enable pnpm via Corepack
+        run: corepack enable pnpm@9.12.0
 
       - name: Install dependencies
-        working-directory: api
-        run: npm ci
+        run: pnpm install --filter @hexabot/api... --prod=false
 
       - name: Build the package
-        working-directory: api
-        run: npm run build
+        run: pnpm --filter @hexabot/api... run build
 
       - name: Determine release type
         id: determine-release
@@ -45,14 +46,14 @@ jobs:
 
       - name: Login to npm
         if: env.release != 'none'
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          registry-url: "https://registry.npmjs.org/"
           node-version: "20"
+          registry-url: "https://registry.npmjs.org/"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
-        working-directory: api
         if: env.release != 'none'
+        working-directory: packages/api
         run: npm publish
