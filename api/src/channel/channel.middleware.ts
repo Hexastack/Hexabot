@@ -26,7 +26,7 @@ export class ChannelMiddleware implements NestMiddleware {
         }
       }
       next();
-    } catch (err) {
+    } catch (_err) {
       next(new Error(`Unable to execute middleware on route ${req.path}`));
     }
   }

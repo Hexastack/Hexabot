@@ -165,7 +165,7 @@ export class AttachmentController extends BaseController<Attachment> {
    * @returns A promise that resolves to a StreamableFile representing the downloaded attachment.
    */
   @Roles('public')
-  @Get('download/:id/:filename?')
+  @Get('download/:id{/:filename}')
   async download(
     @Param() params: AttachmentDownloadDto,
   ): Promise<StreamableFile> {

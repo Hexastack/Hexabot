@@ -763,7 +763,7 @@ const migrateAndPopulateAttachmentMessages = async ({
         await updateAttachmentId(msg._id, null);
       } catch (err) {
         logger.error(
-          `Failed to update message ${msg._id}: ${error.message}, unable to default to null`,
+          `Failed to update message ${msg._id}: ${err.message}, unable to default to null`,
         );
       }
     }
@@ -798,7 +798,7 @@ const addDefaultStorageHelper = async ({ logger }: MigrationServices) => {
     );
     logger.log('Successfuly added the default local storage helper setting');
   } catch (err) {
-    logger.error('Unable to add the default local storage helper setting');
+    logger.error('Unable to add the default local storage helper setting', err);
   }
 };
 
@@ -811,7 +811,10 @@ const removeDefaultStorageHelper = async ({ logger }: MigrationServices) => {
     });
     logger.log('Successfuly removed the default local storage helper setting');
   } catch (err) {
-    logger.error('Unable to remove the default local storage helper setting');
+    logger.error(
+      'Unable to remove the default local storage helper setting',
+      err,
+    );
   }
 };
 

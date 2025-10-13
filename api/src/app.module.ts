@@ -6,18 +6,19 @@
 
 import path from 'path';
 
+import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { redisStore } from 'cache-manager-redis-yet';
+import { CacheableMemory } from 'cacheable';
+import { Keyv } from 'keyv';
 import {
   AcceptLanguageResolver,
   I18nOptions,
   QueryResolver,
 } from 'nestjs-i18n';
-import { RedisClientOptions } from 'redis';
 
 import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
@@ -62,11 +63,14 @@ const i18nOptions: I18nOptions = {
       autoIndex: config.env !== 'production', // Disable in production
       connectionFactory: (connection) => {
         connection.plugin(idPlugin);
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-virtuals'));
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-getters'));
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         connection.plugin(require('mongoose-lean-defaults').default);
         return connection;
       },
@@ -100,22 +104,22 @@ const i18nOptions: I18nOptions = {
       ignoreErrors: false,
     }),
     I18nModule.forRoot(i18nOptions),
-    config.cache.type === 'redis'
-      ? CacheModule.register<RedisClientOptions>({
-          isGlobal: true,
-          store: redisStore,
-          socket: {
-            host: config.cache.host,
-            port: config.cache.port,
-          },
-          ttl: config.cache.ttl,
-          max: config.cache.max,
-        })
-      : CacheModule.register({
-          isGlobal: true,
-          ttl: config.cache.ttl,
-          max: config.cache.max,
-        }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        // first store is primary, subsequent stores are secondary/fallback
+        stores: [
+          config.cache.type === 'redis'
+            ? new KeyvRedis(`${config.cache.host}:${config.cache.port}`)
+            : new Keyv({
+                store: new CacheableMemory({
+                  ttl: config.cache.ttl,
+                  lruSize: config.cache.max,
+                }),
+              }),
+        ],
+      }),
+    }),
     MigrationModule,
     ExtensionModule,
     ...extraModules,

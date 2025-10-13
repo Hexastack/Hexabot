@@ -71,7 +71,6 @@ type WebEventAdapter =
       attachment: Attachment | null;
     };
 
-// eslint-disable-next-line prettier/prettier
 export default class WebEventWrapper<
   N extends ChannelName,
 > extends EventWrapper<WebEventAdapter, Web.Event, N> {

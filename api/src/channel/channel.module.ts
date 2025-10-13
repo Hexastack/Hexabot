@@ -46,6 +46,6 @@ export class ChannelModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ChannelMiddleware)
-      .forRoutes({ path: 'webhook/*', method: RequestMethod.ALL });
+      .forRoutes({ path: 'webhook/*path', method: RequestMethod.ALL });
   }
 }

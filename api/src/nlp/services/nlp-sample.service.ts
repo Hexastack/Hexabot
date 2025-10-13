@@ -343,7 +343,7 @@ export class NlpSampleService extends BaseService<
               `Successfully annotate sample with ${updates.length} matches: ${sample.text}`,
             );
           } catch (err) {
-            this.logger.error(`Failed to annotate sample: ${sample.text}`);
+            this.logger.error(`Failed to annotate sample: ${sample.text}`, err);
           }
         }
       }

@@ -6,7 +6,6 @@
 
 import {
   DynamicModule,
-  forwardRef,
   Global,
   Inject,
   InternalServerErrorException,
@@ -62,7 +61,7 @@ export class I18nModule extends NativeI18nModule {
       module: I18nModule,
       imports: (imports || []).concat([
         MongooseModule.forFeature([LanguageModel, TranslationModel]),
-        forwardRef(() => ChatModule),
+        ChatModule,
       ]),
       controllers: (controllers || []).concat([
         LanguageController,

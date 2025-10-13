@@ -4,12 +4,10 @@
  * Full terms: see LICENSE.md.
  */
 
-import { forwardRef, Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { ChannelModule } from '@/channel/channel.module';
 import { CmsModule } from '@/cms/cms.module';
 import { NlpModule } from '@/nlp/nlp.module';
 import { UserModule } from '@/user/user.module';
@@ -63,10 +61,8 @@ import { SubscriberService } from './services/subscriber.service';
       ConversationModel,
       SubscriberModel,
     ]),
-    forwardRef(() => ChannelModule),
     CmsModule,
     AttachmentModule,
-    EventEmitter2,
     UserModule,
     NlpModule,
   ],

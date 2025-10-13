@@ -17,8 +17,6 @@ export enum PluginType {
   block = 'block',
 }
 
-export interface CustomBlocks {}
-
 type BlockAttrs = Partial<BlockCreateDto> & { name: string };
 
 export type PluginSetting = ExtensionSetting;
