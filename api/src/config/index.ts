@@ -13,6 +13,8 @@ const isProduction = (process.env.NODE_ENV || 'development')
   .includes('prod');
 
 export const config: Config = {
+  mode: process.env.VITE_APP_MODE === 'monolith' ? 'monolith' : 'api-only',
+  apiPrefix: process.env.VITE_APP_MODE === 'monolith' ? 'api' : '',
   i18n: {
     translationFilename: process.env.I18N_TRANSLATION_FILENAME || 'messages',
   },
@@ -60,7 +62,7 @@ export const config: Config = {
     maxHttpBufferSize: 10e7,
     allowUpgrades: true,
     cookie: {
-      name: process.env.SESSION_NAME || 'hex.sid',
+      name: process.env.SESSION_NAME || 's.sid',
       httpOnly: true,
       secure: process.env.HTTPS_ENABLED === 'true',
       path: '/',
@@ -92,7 +94,7 @@ export const config: Config = {
   },
   session: {
     secret: process.env.SESSION_SECRET || 'changeme',
-    name: process.env.SESSION_NAME || 'hex.sid',
+    name: process.env.SESSION_NAME || 's.sid',
     adapter: 'connect-mongo',
     url: 'mongodb://localhost:27017/hexabot',
     collection: 'sessions',

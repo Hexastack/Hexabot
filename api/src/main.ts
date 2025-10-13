@@ -43,6 +43,11 @@ async function bootstrap() {
   // Set the global app instance
   AppInstance.setApp(app);
 
+  // Prefix only when app mode is monolith
+  if (config.mode === 'monolith') {
+    app.setGlobalPrefix(config.apiPrefix);
+  }
+
   // Disable Express "X-Powered-By" header for all environments
   app.getHttpAdapter().getInstance().disable('x-powered-by');
 

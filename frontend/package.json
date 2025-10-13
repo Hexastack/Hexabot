@@ -7,6 +7,7 @@
   "license": "FCL-1.0-ALv2",
   "scripts": {
     "dev": "vite",
+    "dev:static": "vite build --watch --mode development",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
     "start": "npm run preview",
