@@ -188,11 +188,5 @@
   },
   "engines": {
     "node": "^20.18.1"
-  },
-  "config": {
-    "mongodbMemoryServer": {
-      "debug": "0",
-      "md5Check": false
-    }
   }
 }
