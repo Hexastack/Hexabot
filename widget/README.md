@@ -32,23 +32,31 @@ The Hexabot Live Chat Widget is organized into the following directory structure
 
 ### Dev Mode
 
-To run the widget in development mode, execute the following command at the project root level:
+Start the widget dev server from the repository root:
 
 ```bash
-npm run dev:widget
+pnpm --filter @hexabot/widget run dev
 ```
 
 The live chat widget will be accessible at http://localhost:5173.
 
 ### Build for Production
 
-To build the widget for production, execute the following command at the widget folder level:
+Compile the distributable bundle:
 
 ```bash
-npm run build
+pnpm --filter @hexabot/widget run build
 ```
 
 This will generate a production-ready build in the dist folder.
+
+### Preview the Bundle
+
+```bash
+pnpm --filter @hexabot/widget run preview
+```
+
+The preview server is helpful for validating the compiled assets before publishing.
 
 ## Embed Chat Widget
 
@@ -112,13 +120,13 @@ To prevent the website css from conflicting with the chat widget css, we can lev
 </script>
 ```
 
-If you would like to use the official widget and benefit from updates automatically, you can consider using the cdn url:
-`https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2.0.4/dist/`
+If you would like to use the official widget and benefit from updates automatically, you can consider using the CDN url:
+`https://cdn.jsdelivr.net/npm/@hexabot/widget@2.0.4/dist/`
 
-or lastest from major version:
-`https://cdn.jsdelivr.net/npm/hexabot-chat-widget@2/dist/`
+or latest from the major version:
+`https://cdn.jsdelivr.net/npm/@hexabot/widget@2/dist/`
 
-JsDelivr uses the package published in the NPM registry : https://www.npmjs.com/package/hexabot-chat-widget
+JsDelivr uses the package published in the npm registry: https://www.npmjs.com/package/@hexabot/widget
 
 ## Examples
 

@@ -82,7 +82,10 @@ export default class LocalStorageHelper
     const filePath = resolve(join(rootDir, sanitizeFilename(uniqueFilename)));
 
     if (Buffer.isBuffer(file)) {
-      await fs.promises.writeFile(filePath, file);
+      await fs.promises.writeFile(
+        filePath,
+        file as unknown as NodeJS.ArrayBufferView,
+      );
     } else if (file instanceof Readable || file instanceof Stream) {
       await new Promise<void>((resolve, reject) => {
         const writeStream = fs.createWriteStream(filePath);
@@ -106,7 +109,10 @@ export default class LocalStorageHelper
         await fs.promises.copyFile(srcFilePath, filePath);
         await fs.promises.unlink(srcFilePath);
       } else {
-        await fs.promises.writeFile(filePath, file.buffer);
+        await fs.promises.writeFile(
+          filePath,
+          file.buffer as unknown as NodeJS.ArrayBufferView,
+        );
       }
     }
 

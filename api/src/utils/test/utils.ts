@@ -4,6 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
+import { jest } from '@jest/globals';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ModuleMetadata, Provider } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';

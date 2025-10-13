@@ -34,33 +34,25 @@ The API is divided into several key modules, each responsible for specific funct
 ## Installation
 
 ```bash
-$ npm install
+$ pnpm install
 ```
 
-## Running the app in standalone
+## Development Commands
+
+Run all commands from the repository root so PNPM can resolve workspace dependencies:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+pnpm --filter @hexabot/api run dev          # start the API with watch mode
+pnpm --filter @hexabot/api run start:debug  # run with inspector attached
+pnpm --filter @hexabot/api run start:prod   # run the compiled build
 ```
 
-## Test
+### Testing
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+pnpm --filter @hexabot/api run test      # unit tests
+pnpm --filter @hexabot/api run test:e2e  # end-to-end tests
+pnpm --filter @hexabot/api run test:cov  # collect coverage
 ```
 
 ## Migrations
@@ -73,7 +65,7 @@ Check the Migration README file for more : [Migration Module](./src/migration/RE
 
 Access the Swagger API documentation by visiting the API url `/docs` once run it in development mode.
 
-It's also possible to access the API reference documentation by running `npm run doc`.
+It's also possible to access the API reference documentation by running `pnpm --filter @hexabot/api run doc`.
 
 For detailed information about the API routes and usage, refer to the API documentation or visit [https://docs.hexabot.ai](https://docs.hexabot.ai).
 

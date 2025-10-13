@@ -20,7 +20,7 @@ will apply migrations automatically but only if it's a dev environement and `con
 To create a new migration:
 
 ```bash
-npm run cli migration create <version>
+pnpm --filter @hexabot/api run cli migration create <version>
 ```
 
 Replace `<version>` with the next version for your migration, such as `v2.1.1`.
@@ -28,7 +28,7 @@ Replace `<version>` with the next version for your migration, such as `v2.1.1`.
 Example:
 
 ```bash
-npm run cli migration create v2.1.1
+pnpm --filter @hexabot/api run cli migration create v2.1.1
 ```
 
 This will generate a new file under `src/migration/migrations/` with a timestamped filename in kebab-case.
@@ -40,13 +40,13 @@ This will generate a new file under `src/migration/migrations/` with a timestamp
 To execute a specific migration, use:
 
 ```bash
-npm run cli migration migrate up <version>
+pnpm --filter @hexabot/api run cli migration migrate up <version>
 ```
 
 Example:
 
 ```bash
-npm run cli migration migrate up v2.1.1
+pnpm --filter @hexabot/api run cli migration migrate up v2.1.1
 ```
 
 #### Rolling Back a Specific Migration
@@ -54,13 +54,13 @@ npm run cli migration migrate up v2.1.1
 To roll back a specific migration, use:
 
 ```bash
-npm run cli migration migrate down <version>
+pnpm --filter @hexabot/api run cli migration migrate down <version>
 ```
 
 Example:
 
 ```bash
-npm run cli migration migrate down v2.1.1
+pnpm --filter @hexabot/api run cli migration migrate down v2.1.1
 ```
 
 #### Running All Migrations
@@ -68,7 +68,7 @@ npm run cli migration migrate down v2.1.1
 To execute all pending migrations:
 
 ```bash
-npm run cli migration migrate up
+pnpm --filter @hexabot/api run cli migration migrate up
 ```
 
 #### Rolling Back All Migrations
@@ -76,7 +76,7 @@ npm run cli migration migrate up
 To roll back all migrations:
 
 ```bash
-npm run cli migration migrate down
+pnpm --filter @hexabot/api run cli migration migrate down
 ```
 
 ### Tracking Migration Status

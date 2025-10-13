@@ -57,6 +57,7 @@ export class Ability implements CanActivate {
         config.mode === 'monolith'
           ? _parsedUrl.pathname?.replace(`/${config.apiPrefix}`, '')
           : _parsedUrl.pathname;
+
       if (
         pathname &&
         [

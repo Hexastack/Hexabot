@@ -18,6 +18,7 @@ export const rootMongooseTestModule = (
     useFactory: async () => {
       const dbName = 'test';
       mongod = await MongoMemoryServer.create({
+        binary: { checkMD5: false },
         instance: { dbName },
       });
       const uri = mongod.getUri();

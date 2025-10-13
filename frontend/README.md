@@ -22,42 +22,27 @@ The [Hexabot](https://hexabot.ai/) UI Admin Panel is a React single-page applica
 - **styles/:** Global and component-specific styles for the application.
 - **utils/:** Utility functions and helpers used throughout the frontend.
 
-## Run
-The Hexabot project is structured as a monorepo using npm workspaces to manage multiple packages. The packages in the monorepo include:
+## Development
 
-- **frontend:** The admin interface for managing the chatbot system.
-- **widget:** An embeddable live chat widget that can be integrated into any website.
-Note: The API is not part of the monorepo and is managed separately.
-
-To run the different UI components in development mode, execute the following commands at the project root level:
-
-- **Run the Admin Interface:**
+This package is part of the Hexabot PNPM workspace alongside the API and widget packages. Run commands from the repository root so Turborepo can orchestrate the tasks efficiently.
 
 ```bash
-npm run dev:frontend
+pnpm --filter @hexabot/frontend run dev       # start the admin interface with Vite
+pnpm --filter @hexabot/frontend run build     # type-check and compile production assets
+pnpm --filter @hexabot/frontend run preview   # serve the built bundle locally
 ```
 
-The admin interface will be accessible at http://localhost:8080.
+The admin interface is exposed on http://localhost:8080 by default.
 
-- **Build the Admin Interface:**
+Hexabot also provides a live chat widget package that can be launched in parallel when working on widget integrations:
 
 ```bash
-npm run build --workspace=frontend
+pnpm --filter @hexabot/widget run dev
 ```
 
-- **Preview the Production Build:**
+To spin up the dashboard and widget together, run `pnpm dev` from the repository root.
 
-```bash
-npm run start --workspace=frontend
-```
-
-- **Run the Live Chat Widget:**
-
-```bash
-npm run dev:widget
-```
-
-The live chat widget will be accessible at http://localhost:5173.
+The chat widget development server listens on http://localhost:5173.
 
 ### Environment variables
 

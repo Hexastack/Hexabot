@@ -1,5 +1,5 @@
 {
-  "name": "hexabot-chat-widget",
+  "name": "@hexabot/widget",
   "version": "2.3.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
@@ -13,8 +13,10 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "preview": "vite preview",
-    "serve": "npx http-server ./dist/",
-    "typecheck": "tsc --noEmit"
+    "serve": "pnpm exec http-server ./dist/",
+    "typecheck": "tsc --noEmit",
+    "format": "pnpm run lint:fix",
+    "clean": "rimraf dist"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix --config eslint.config-staged.cjs"
@@ -41,7 +43,9 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.0",
+    "http-server": "^14.1.1",
     "lint-staged": "^15.3.0",
+    "rimraf": "^6.0.1",
     "sass": "^1.77.8",
     "typescript": "^5.8.3",
     "vite": "^6.3.6",
@@ -50,6 +54,9 @@
   "optionalDependencies": {
     "@esbuild/darwin-arm64": "^0.24.0",
     "@rollup/rollup-darwin-arm64": "^4.24.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
     "node": "^20.18.1"

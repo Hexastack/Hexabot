@@ -1,5 +1,5 @@
 {
-  "name": "hexabot-ui",
+  "name": "@hexabot/frontend",
   "private": true,
   "version": "2.3.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
@@ -10,9 +10,11 @@
     "dev:static": "vite build --watch --mode development",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8080",
-    "start": "npm run preview",
+    "start": "pnpm run preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "format": "pnpm run lint:fix",
+    "clean": "rimraf dist",
     "typecheck": "tsc --noEmit --downlevelIteration"
   },
   "lint-staged": {
@@ -35,7 +37,7 @@
     "dayjs": "^1.11.13",
     "eazychart-css": "^0.2.1-alpha.0",
     "eazychart-react": "^0.8.0-alpha.0",
-    "hexabot-chat-widget": "*",
+    "@hexabot/widget": "workspace:*",
     "i18next-http-backend": "^2.6.2",
     "normalizr": "^3.6.2",
     "notistack": "^3.0.1",
@@ -66,6 +68,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.0",
+    "rimraf": "^6.0.1",
     "lint-staged": "^15.3.0",
     "typescript": "^5.8.3",
     "vite": "^5.0.11"

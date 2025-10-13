@@ -57,12 +57,27 @@
 - **widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
 - **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
 
+## Workspace Tooling
+
+This repository is managed with a PNPM workspace and Turborepo for task orchestration.
+
+```bash
+pnpm install          # install all workspace dependencies
+pnpm dev              # run package dev servers in parallel
+pnpm build            # build all packages
+pnpm lint             # lint across the workspace
+pnpm test             # execute test suites
+pnpm --filter @hexabot/api run dev        # run a package script
+```
+
+PNPM is bundled with Node.js via Corepack. Enable it with `corepack enable pnpm@9.12.0` if necessary.
+
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js >= 20.18.1
-- npm (Node Package Manager)
+- pnpm (via Corepack)
 - Docker installed
 
 ### Installation
@@ -92,7 +107,7 @@ npm install -g hexabot-cli
 3. **Install dependencies**:
 
    ```sh
-   npm install
+   pnpm install
    ```
 
 4. **Initialize environment**:
@@ -148,7 +163,7 @@ $ git clone https://github.com/hexastack/hexabot.git
 2. **Installation:**
 Install node dependencies:
 ```bash
-$ npm install
+$ pnpm install
 ```
 
 3. **Environment Setup:** To configure the environment variables, use the following command at the root folder for initialization:

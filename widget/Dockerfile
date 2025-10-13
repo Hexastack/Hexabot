@@ -1,36 +1,61 @@
-# Base stage: Base image for all stages
 FROM node:20-alpine AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH="${PNPM_HOME}:${PATH}"
+
+RUN corepack enable
+
 WORKDIR /app
-COPY package*.json ./
 
+FROM base AS deps
 
-# Set the environment variables
+COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
+COPY api/package.json api/package.json
+COPY frontend/package.json frontend/package.json
+COPY widget/package.json widget/package.json
+
+RUN pnpm install --filter @hexabot/widget... --prod=false
+
+FROM deps AS development
+
 ARG REACT_APP_WIDGET_API_URL
 ARG REACT_APP_WIDGET_CHANNEL
 
+ENV NODE_ENV=development
 ENV REACT_APP_WIDGET_API_URL=${REACT_APP_WIDGET_API_URL}
 ENV REACT_APP_WIDGET_CHANNEL=${REACT_APP_WIDGET_CHANNEL}
 
-# Installer stage: Installs dependencies
-FROM base AS installer
-COPY . .
-RUN npm install
+COPY widget ./widget
 
-# Development stage: Installs development dependencies and serves the app
-FROM installer AS development
-ENV NODE_ENV=development
+WORKDIR /app/widget
 EXPOSE 5173
-CMD ["npm", "run", "dev"]
 
-# Builder stage: Builds the app
-FROM installer AS builder
-ENV NODE_ENV=production
-RUN npm run build
+CMD ["pnpm", "--filter", "@hexabot/widget", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
 
-# Production stage: Serves the  app
-FROM base AS production
+FROM deps AS builder
+
+ARG REACT_APP_WIDGET_API_URL
+ARG REACT_APP_WIDGET_CHANNEL
+
 ENV NODE_ENV=production
-COPY  --from=builder /app/dist /app/dist
-RUN npm install -g serve
+ENV REACT_APP_WIDGET_API_URL=${REACT_APP_WIDGET_API_URL}
+ENV REACT_APP_WIDGET_CHANNEL=${REACT_APP_WIDGET_CHANNEL}
+
+COPY widget ./widget
+
+RUN pnpm --filter @hexabot/widget... run build
+
+FROM node:20-alpine AS production
+
+ENV PNPM_HOME=/pnpm
+ENV PATH="${PNPM_HOME}:${PATH}"
+
+RUN corepack enable && pnpm add -g http-server
+
+WORKDIR /app
+
+COPY --from=builder /app/widget/dist ./dist
+
 EXPOSE 5173
-CMD ["serve", "-s", "dist", "-l", "5173"]
+
+CMD ["http-server", "dist", "-p", "5173", "-a", "0.0.0.0"]

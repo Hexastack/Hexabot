@@ -3,7 +3,8 @@ version: "3.8"
 services:
   api:
     build:
-      context: ../api
+      context: ../
+      dockerfile: ./api/Dockerfile
       target: development
     pull_policy: build
     ports:

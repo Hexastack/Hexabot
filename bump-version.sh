@@ -20,11 +20,11 @@ fi
 
 echo "Executing release: $RELEASE_TYPE"
 
-# Execute the appropriate npm release command
+# Execute the appropriate PNPM release command
 if [[ "$RELEASE_TYPE" == "patch" ]]; then
-  npm run release:patch
+  pnpm run release:patch
 elif [[ "$RELEASE_TYPE" == "minor" ]]; then
-  npm run release:minor
+  pnpm run release:minor
 fi
 
 # Retrieve the new version from package.json
