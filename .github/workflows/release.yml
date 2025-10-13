@@ -12,17 +12,18 @@ jobs:
       - name: 🔎 Check out repository code ...
         uses: actions/checkout@v4
 
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
       - name: ⏳ Setting Up Node ...
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-
-      - name: ⏳ Setup pnpm ...
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
-          run_install: false
 
       - name: ⏳ Install workspace dependencies ...
         run: pnpm install --frozen-lockfile
@@ -53,17 +54,18 @@ jobs:
       - name: 🔎 Check out repository code ...
         uses: actions/checkout@v4
 
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
       - name: ⏳ Setting Up Node ...
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-
-      - name: ⏳ Setup pnpm ...
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.0
-          run_install: false
 
       - name: ⏳ Install workspace dependencies ...
         run: pnpm install --frozen-lockfile
