@@ -61,7 +61,7 @@
 
 ### Prerequisites
 
-- Node.js >= 18.17.0
+- Node.js >= 20.18.1
 - npm (Node Package Manager)
 - Docker installed
 
