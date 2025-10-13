@@ -10,7 +10,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -58,7 +58,10 @@ export class ValidateAccountService {
    * @returns A promise that resolves to an object containing the user's email.
    */
   async verify(token: string): Promise<{ email: string }> {
-    return await this.jwtService.verifyAsync(token, this.jwtSignOptions);
+    return await this.jwtService.verifyAsync(
+      token,
+      this.jwtSignOptions as JwtVerifyOptions,
+    );
   }
 
   /**
@@ -118,7 +121,7 @@ export class ValidateAccountService {
       { state: true },
     );
     try {
-    } catch (e) {
+    } catch (_e) {
       throw new InternalServerErrorException('Could confirm email');
     }
     return {};

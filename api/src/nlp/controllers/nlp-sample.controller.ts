@@ -25,7 +25,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Response } from 'express';
 import { z } from 'zod';
 
@@ -36,7 +35,6 @@ import {
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
 import { LanguageService } from '@/i18n/services/language.service';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -58,7 +56,6 @@ import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('nlpsample')
 export class NlpSampleController extends BaseController<
   NlpSample,
@@ -77,7 +74,6 @@ export class NlpSampleController extends BaseController<
     super(nlpSampleService);
   }
 
-  @CsrfCheck(true)
   @Post('annotate/:entityId')
   async annotateWithKeywordEntity(@Param('entityId') entityId: string) {
     const entity = await this.nlpEntityService.findOneAndPopulate(entityId);
@@ -137,7 +133,7 @@ export class NlpSampleController extends BaseController<
    *
    * @returns The newly created NLP sample with its entities.
    */
-  @CsrfCheck(true)
+
   @Post()
   async create(
     @Body()
@@ -323,7 +319,7 @@ export class NlpSampleController extends BaseController<
    *
    * @returns The updated NLP sample with its entities.
    */
-  @CsrfCheck(true)
+
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -359,7 +355,7 @@ export class NlpSampleController extends BaseController<
    *
    * @returns The result of the deletion operation.
    */
-  @CsrfCheck(true)
+
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -376,7 +372,7 @@ export class NlpSampleController extends BaseController<
    * @param ids - IDs of NLP samples to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
+
   @Delete('')
   @HttpCode(204)
   async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {
@@ -398,7 +394,6 @@ export class NlpSampleController extends BaseController<
     return deleteResult;
   }
 
-  @CsrfCheck(true)
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
   async importFile(@UploadedFile() file: Express.Multer.File) {

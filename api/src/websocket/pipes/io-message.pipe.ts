@@ -44,7 +44,7 @@ export class IOMessagePipe implements PipeTransform<string, IOIncomingMessage> {
         typeof value === 'string'
           ? JSON.parse(value)
           : (value as any as IOIncomingMessage);
-    } catch (error) {
+    } catch (_error) {
       throw new BadRequestException('Invalid JSON format');
     }
 

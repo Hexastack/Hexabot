@@ -19,6 +19,7 @@ moduleAlias.addAliases({
 import { AppInstance } from './app.instance';
 import { HexabotModule } from './app.module';
 import { config } from './config';
+import { csrf } from './config/csrf';
 import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
@@ -33,6 +34,11 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(HexabotModule, {
     bodyParser: false,
   });
+
+  // In Express v5, query parameters are no longer parsed using the qs library by default.
+  // As a result, query strings like these: ?filter[where][name]=John&filter[where][age]=30
+  // That's why we need to use the extended parser (the default in Express v4) by setting the query parser option to extended
+  app.set('query parser', 'extended');
 
   // Set the global app instance
   AppInstance.setApp(app);
@@ -81,6 +87,11 @@ async function bootstrap() {
   app.use(getSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // CSRF protection
+  if (config.security.csrf) {
+    app.use(csrf.csrfSynchronisedProtection);
+  }
 
   if (config.cache.type === 'redis') {
     const redisIoAdapter = new RedisIoAdapter(app);

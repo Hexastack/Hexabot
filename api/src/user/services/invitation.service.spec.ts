@@ -4,8 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ISendMailOptions } from '@nestjs-modules/mailer';
+// eslint-disable-next-line import/order
+import { JwtModule, JwtService, JwtVerifyOptions } from '@nestjs/jwt';
 import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -94,7 +95,10 @@ describe('InvitationService', () => {
       expect(jwt).toBeDefined();
       expect(decodedJwt).toEqualPayload(test, IGNORED_FIELDS);
       expect(
-        jwtService.verify(jwt, invitationService.jwtSignOptions),
+        jwtService.verify(
+          jwt,
+          invitationService.jwtSignOptions as JwtVerifyOptions,
+        ),
       ).toBeDefined();
     });
 

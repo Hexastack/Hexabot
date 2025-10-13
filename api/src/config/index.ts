@@ -34,6 +34,11 @@ export const config: Config = {
       allowCredentials: true,
     },
     csrf: true,
+    csrfExclude: [
+      /^\/auth\/local$/, // login
+      /^\/auth\/logout$/, // logout
+      /^\/webhook\//, // Any webhook channel
+    ],
   },
   sockets: {
     path: '/socket.io',
@@ -129,7 +134,7 @@ export const config: Config = {
     signedUrl: {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
       secret: process.env.SIGNED_URL_SECRET || 'DEFAULT_SIGNED_URL_SECRET',
-      expiresIn: process.env.SIGNED_URL_EXPIRES_IN || '24H',
+      expiresIn: (process.env.SIGNED_URL_EXPIRES_IN || '24H') as any,
     },
   },
   pagination: {
@@ -170,14 +175,14 @@ export const config: Config = {
     jwtOptions: {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
       secret: process.env.JWT_SECRET || 'DEFAULT_AUTH_SECRET',
-      expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+      expiresIn: (process.env.JWT_EXPIRES_IN || '24h') as any,
     },
   },
   invitation: {
     jwtOptions: {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
       secret: process.env.INVITATION_JWT_SECRET || 'DEFAULT_INVITATION_SECRET',
-      expiresIn: process.env.INVITATION_EXPIRES_IN || '24h',
+      expiresIn: (process.env.INVITATION_EXPIRES_IN || '24h') as any,
     },
   },
   password_reset: {
@@ -185,7 +190,7 @@ export const config: Config = {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
       secret:
         process.env.PASSWORD_RESET_SECRET || 'DEFAULT_PASSWORD_RESET_SECRET',
-      expiresIn: process.env.PASSWORD_RESET_EXPIRES_IN || '1H',
+      expiresIn: (process.env.PASSWORD_RESET_EXPIRES_IN || '1H') as any,
     },
   },
   confirm_account: {
@@ -193,7 +198,7 @@ export const config: Config = {
       salt: parseInt(process.env.SALT_LENGTH || '12'),
       secret:
         process.env.CONFIRM_ACCOUNT_SECRET || 'DEFAULT_CONFIRM_ACCOUNT_SECRET',
-      expiresIn: process.env.CONFIRM_ACCOUNT_EXPIRES_IN || '1H',
+      expiresIn: (process.env.CONFIRM_ACCOUNT_EXPIRES_IN || '1H') as any,
     },
   },
   analytics: {

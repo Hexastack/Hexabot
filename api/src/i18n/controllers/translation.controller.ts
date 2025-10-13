@@ -16,11 +16,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -33,7 +30,6 @@ import { Translation } from '../schemas/translation.schema';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('translation')
 export class TranslationController extends BaseController<Translation> {
   constructor(
@@ -78,7 +74,6 @@ export class TranslationController extends BaseController<Translation> {
     return doc;
   }
 
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -91,7 +86,6 @@ export class TranslationController extends BaseController<Translation> {
    * Refresh translations : Add new strings and remove old ones
    * @returns {Promise<any>}
    */
-  @CsrfCheck(true)
   @Post('refresh')
   async refresh(): Promise<any> {
     const defaultLanguage = await this.languageService.getDefaultLanguage();
@@ -133,7 +127,6 @@ export class TranslationController extends BaseController<Translation> {
    * @param id - The ID of the translation to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {

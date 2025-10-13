@@ -9,7 +9,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -103,7 +103,10 @@ export class InvitationService extends BaseService<
    * @returns The decoded invitation data.
    */
   async verify(token: string): Promise<InvitationCreateDto> {
-    return this.jwtService.verifyAsync(token, this.jwtSignOptions);
+    return this.jwtService.verifyAsync(
+      token,
+      this.jwtSignOptions as JwtVerifyOptions,
+    );
   }
 
   /**

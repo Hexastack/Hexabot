@@ -14,11 +14,8 @@ import {
   Param,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -35,7 +32,6 @@ import { ModelService } from '../services/model.service';
 import { PermissionService } from '../services/permission.service';
 import { RoleService } from '../services/role.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('permission')
 export class PermissionController extends BaseController<
   Permission,
@@ -85,7 +81,7 @@ export class PermissionController extends BaseController<
    *
    * @returns The created permission.
    */
-  @CsrfCheck(true)
+
   @Post()
   async create(@Body() permission: PermissionCreateDto) {
     const role = await this.roleService.findOne(permission.role);
@@ -111,7 +107,7 @@ export class PermissionController extends BaseController<
    *
    * @returns The result of the deletion operation.
    */
-  @CsrfCheck(true)
+
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {

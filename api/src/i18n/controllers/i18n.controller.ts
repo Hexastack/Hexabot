@@ -4,14 +4,12 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 import { ChannelService } from '@/channel/channel.service';
 import { HelperService } from '@/helper/helper.service';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { PluginService } from '@/plugins/plugins.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('i18n')
 export class I18nController {
   constructor(

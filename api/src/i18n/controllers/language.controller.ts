@@ -16,11 +16,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -32,7 +29,6 @@ import { LanguageCreateDto, LanguageUpdateDto } from '../dto/language.dto';
 import { Language } from '../schemas/language.schema';
 import { LanguageService } from '../services/language.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('language')
 export class LanguageController extends BaseController<Language> {
   constructor(private readonly languageService: LanguageService) {
@@ -90,7 +86,6 @@ export class LanguageController extends BaseController<Language> {
    * @param language - The data of the language to be created.
    * @returns A Promise that resolves to the created language.
    */
-  @CsrfCheck(true)
   @Post()
   async create(@Body() language: LanguageCreateDto): Promise<Language> {
     return await this.languageService.create(language);
@@ -102,7 +97,6 @@ export class LanguageController extends BaseController<Language> {
    * @param languageUpdate - The updated data for the language.
    * @returns A Promise that resolves to the updated language.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -125,7 +119,6 @@ export class LanguageController extends BaseController<Language> {
    * @param id - The ID of the language to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {

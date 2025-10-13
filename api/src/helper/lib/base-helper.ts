@@ -31,7 +31,7 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
     protected readonly logger: LoggerService,
   ) {
     super(name);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this.settings = require(path.join(this.getPath(), 'settings')).default;
   }
 

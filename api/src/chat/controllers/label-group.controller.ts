@@ -16,11 +16,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -35,7 +32,6 @@ import {
 import { LabelGroup } from '../schemas/label-group.schema';
 import { LabelGroupService } from '../services/label-group.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('labelgroup')
 export class LabelGroupController extends BaseController<
   LabelGroup,
@@ -94,7 +90,6 @@ export class LabelGroupController extends BaseController<
    * Creates a new label group
    * @returns A promise that resolves to the created label group.
    */
-  @CsrfCheck(true)
   @Post()
   async create(@Body() labelGroup: LabelGroupCreateDto) {
     return await this.labelGroupService.create(labelGroup);
@@ -104,7 +99,6 @@ export class LabelGroupController extends BaseController<
    * Updates a label group by ID
    * @returns A promise that resolves to the created label group.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,
@@ -117,7 +111,6 @@ export class LabelGroupController extends BaseController<
    * Deletes a label group by ID
    * @returns A promise that resolves to the label group deletion result.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -134,7 +127,6 @@ export class LabelGroupController extends BaseController<
    * @param ids - IDs of label groups to be deleted.
    * @returns A Promise that resolves to the deletion result.
    */
-  @CsrfCheck(true)
   @Delete('')
   @HttpCode(204)
   async deleteMany(@Body('ids') ids?: string[]): Promise<DeleteResult> {

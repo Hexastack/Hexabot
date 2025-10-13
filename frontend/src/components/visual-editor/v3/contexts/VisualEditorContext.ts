@@ -21,4 +21,7 @@ export const VisualEditorContext = createContext<IVisualEditorContext>({
   openSearchPanel: false,
   setOpenSearchPanel: () => {},
   updateCachePreviousBlocks() {},
+  getQuery: () => "",
+  removeBlockIdParam: async () => {},
+  updateVisualEditorURL: async () => {},
 } as IVisualEditorContext);

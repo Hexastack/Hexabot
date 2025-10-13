@@ -19,9 +19,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -40,7 +38,6 @@ import {
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('content')
 export class ContentController extends BaseController<
   Content,
@@ -63,7 +60,6 @@ export class ContentController extends BaseController<
    *
    * @returns The created content document.
    */
-  @CsrfCheck(true)
   @Post()
   async create(@Body() contentDto: ContentCreateDto): Promise<Content> {
     // Find the content type that corresponds to the given content
@@ -85,7 +81,6 @@ export class ContentController extends BaseController<
    * @param idTargetContentType - The content type to match the CSV data against.   *
    * @returns A promise that resolves to the newly created content documents.
    */
-  @CsrfCheck(true)
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
   async import(
@@ -187,7 +182,6 @@ export class ContentController extends BaseController<
    *
    * @returns The result of the delete operation.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -232,7 +226,6 @@ export class ContentController extends BaseController<
    *
    * @returns The updated content document.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Body() contentDto: ContentUpdateDto,

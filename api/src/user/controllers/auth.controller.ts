@@ -18,15 +18,12 @@ import {
   Session,
   UnauthorizedException,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CsrfCheck, CsrfGen, CsrfGenAuth } from '@tekuconcept/nestjs-csrf';
 import { Request, Response } from 'express';
 import { Session as ExpressSession } from 'express-session';
 
 import { config } from '@/config';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { LoggerService } from '@/logger/logger.service';
 import { Roles } from '@/utils/decorators/roles.decorator';
 
@@ -64,8 +61,6 @@ export class BaseAuthController {
    * @returns A status object indicating successful logout.
    */
   @Post('logout')
-  @CsrfCheck(false)
-  @CsrfGen(false)
   logout(
     @Session() session: ExpressSession,
     @Res({ passthrough: true }) res: Response,
@@ -84,7 +79,6 @@ export class BaseAuthController {
   }
 }
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('auth')
 export class LocalAuthController extends BaseAuthController {
   constructor(
@@ -106,8 +100,6 @@ export class LocalAuthController extends BaseAuthController {
   @UseGuards(LocalAuthGuard)
   @Roles('public')
   @Post('local')
-  @CsrfCheck(false)
-  @CsrfGenAuth(true)
   login(@Req() req: Request) {
     return req.user;
   }

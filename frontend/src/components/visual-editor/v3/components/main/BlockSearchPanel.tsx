@@ -35,7 +35,6 @@ import {
   BLOCK_SEARCH_RESULT_ITEM_HEIGHT,
   BlockSearchResultItem,
 } from "../../../components/BlockSearchResultItem";
-import { useFocusBlock } from "../../hooks/useFocusBlock";
 import { useVisualEditor } from "../../hooks/useVisualEditor";
 
 export type SearchScope = "current" | "all";
@@ -70,10 +69,10 @@ export const BlockSearchPanel: React.FC<BlockSearchPanelProps> = ({
 }) => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const { updateVisualEditorURL } = useFocusBlock();
   const [scope, setScope] = useState<SearchScope>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const { selectedCategoryId, setOpenSearchPanel } = useVisualEditor();
+  const { selectedCategoryId, setOpenSearchPanel, updateVisualEditorURL } =
+    useVisualEditor();
   const { onSearch, searchText } = useSearch<EntityType.BLOCK_SEARCH>({});
   const {
     data: blockSearchResults = [],

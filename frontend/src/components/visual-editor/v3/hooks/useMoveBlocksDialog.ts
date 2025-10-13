@@ -4,12 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { useNodesInitialized } from "@xyflow/react";
-import { useEffect } from "react";
 import { useQueryClient } from "react-query";
 
 import { isSameEntity } from "@/hooks/crud/helpers";
-import { useFind } from "@/hooks/crud/useFind";
 import { useUpdateMany } from "@/hooks/crud/useUpdateMany";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useToast } from "@/hooks/useToast";
@@ -18,42 +15,31 @@ import { EntityType, QueryType } from "@/services/types";
 
 import { BlockMoveFormDialog } from "../../components/block/BlockMoveFormDialog";
 
-import { useFocusBlock } from "./useFocusBlock";
+import { useCategories } from "./useCategories";
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useMoveBlocksDialog = () => {
   const dialogs = useDialogs();
   const { toast } = useToast();
   const { t } = useTranslate();
-  const nodesInitialized = useNodesInitialized();
   const {
+    setToFocusIds,
     selectedNodeIds,
     selectedCategoryId,
-    selectNodes,
-    setToFocusIds,
-    toFocusIds,
+    updateVisualEditorURL,
   } = useVisualEditor();
-  const { updateVisualEditorURL, animateFocus } = useFocusBlock();
   const queryClient = useQueryClient();
   const { mutate: updateBlocks } = useUpdateMany(EntityType.BLOCK);
-  const { data: categories } = useFind(
-    { entity: EntityType.CATEGORY },
-    {
-      hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-  );
+  const { categories, getCategory, getCategoryIndex } = useCategories();
   const onCategoryChange = async (
-    targetCategory: number,
+    categoryIndex: number,
     blockIds: string[] = [],
   ) => {
-    if (categories) {
-      const { id } = categories[targetCategory];
+    const category = getCategory(categoryIndex);
 
-      if (id) {
-        await updateVisualEditorURL(id, blockIds);
-        setToFocusIds(blockIds);
-      }
+    if (category?.id) {
+      await updateVisualEditorURL(category.id, blockIds);
+      setToFocusIds(blockIds);
     }
   };
   const onMove = (ids: string[], targetCategoryId: string) => {
@@ -73,12 +59,10 @@ export const useMoveBlocksDialog = () => {
               },
             });
 
-            const targetCategoryIndex = categories.findIndex(
-              ({ id }) => id === targetCategoryId,
-            );
+            const categoryIndex = getCategoryIndex(targetCategoryId);
 
-            if (targetCategoryIndex !== -1) {
-              onCategoryChange(targetCategoryIndex, ids);
+            if (categoryIndex !== -1) {
+              onCategoryChange(categoryIndex, ids);
             }
           },
           onError: () => {
@@ -103,14 +87,6 @@ export const useMoveBlocksDialog = () => {
       });
     }
   };
-
-  useEffect(() => {
-    if (nodesInitialized && toFocusIds.length) {
-      selectNodes(toFocusIds);
-      setToFocusIds([]);
-      animateFocus();
-    }
-  }, [nodesInitialized, categories]);
 
   return {
     openMoveDialog,

@@ -276,24 +276,27 @@ export const buildTestingMocks = async ({
     dynamicProviders.add(provider);
   });
 
-  const module = await Test.createTestingModule({
-    imports: [
-      ...(canInjectModels(imports)
-        ? [
-            MongooseModule.forFeature([
-              ...getModels(models),
-              ...(autoInjectFrom
-                ? getNestedModels([...dynamicProviders], 'Repository')
-                : []),
-            ]),
-          ]
-        : []),
-      ...imports,
-    ],
-    providers: [...dynamicProviders],
-    controllers,
-    ...rest,
-  }).compile();
+  const module = await Test.createTestingModule(
+    {
+      imports: [
+        ...(canInjectModels(imports)
+          ? [
+              MongooseModule.forFeature([
+                ...getModels(models),
+                ...(autoInjectFrom
+                  ? getNestedModels([...dynamicProviders], 'Repository')
+                  : []),
+              ]),
+            ]
+          : []),
+        ...imports,
+      ],
+      providers: [...dynamicProviders],
+      controllers,
+      ...rest,
+    },
+    { moduleIdGeneratorAlgorithm: 'deep-hash' },
+  ).compile();
 
   return {
     module,

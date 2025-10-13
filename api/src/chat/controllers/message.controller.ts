@@ -14,14 +14,11 @@ import {
   Post,
   Query,
   Req,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
-import { Request } from 'express'; // Import the Express request and response types
+import { Request } from 'express';
 
 import { ChannelService } from '@/channel/channel.service';
 import { GenericEventWrapper } from '@/channel/lib/EventWrapper';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -49,7 +46,6 @@ import {
 import { MessageService } from '../services/message.service';
 import { SubscriberService } from '../services/subscriber.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('message')
 export class MessageController extends BaseController<
   AnyMessage,
@@ -112,7 +108,6 @@ export class MessageController extends BaseController<
     return doc;
   }
 
-  @CsrfCheck(true)
   @Post()
   async create(@Body() messageDto: MessageCreateDto, @Req() req: Request) {
     //TODO : Investigate if recipient and inReplyTo should be updated to required in dto

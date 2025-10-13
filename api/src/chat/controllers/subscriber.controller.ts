@@ -13,12 +13,9 @@ import {
   Patch,
   Query,
   StreamableFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
 import { AttachmentService } from '@/attachment/services/attachment.service';
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { generateInitialsAvatar } from '@/utils/helpers/avatar';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -36,7 +33,6 @@ import {
 } from '../schemas/subscriber.schema';
 import { SubscriberService } from '../services/subscriber.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('subscriber')
 export class SubscriberController extends BaseController<
   Subscriber,
@@ -164,7 +160,6 @@ export class SubscriberController extends BaseController<
     }
   }
 
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,

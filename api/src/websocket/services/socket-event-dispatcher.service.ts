@@ -114,7 +114,11 @@ export class SocketEventDispatcherService implements OnModuleInit {
         (prev, curr) => prev.concat(Array.from(curr)),
         [] as InstanceWrapper<object>[],
       )
-      .filter((provider) => !!provider.instance);
+      .filter((provider) => !!provider.instance)
+      .filter((provider, idx, self) => {
+        const matchIdx = self.findIndex((p) => p.name === provider.name);
+        return matchIdx === idx;
+      });
 
     for (const provider of allProviders) {
       const instance = provider.instance;

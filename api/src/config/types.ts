@@ -4,14 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
+import { JwtSignOptions } from '@nestjs/jwt';
 import SMTPConnection from 'nodemailer/lib/smtp-connection';
 import type { ServerOptions, Socket } from 'socket.io';
 
-type TJwtOptions = {
+export interface JwtConfigOptions extends JwtSignOptions {
   salt: number;
-  secret: string;
-  expiresIn: string;
-};
+}
 type TMethods = 'GET' | 'PATCH' | 'POST' | 'DELETE' | 'OPTIONS' | 'HEAD';
 type TLogLevel = 'log' | 'fatal' | 'error' | 'warn' | 'debug' | 'verbose';
 type TCacheConfig = {
@@ -47,6 +46,7 @@ export type Config = {
       allowCredentials: boolean;
     };
     csrf: boolean;
+    csrfExclude: RegExp[];
   };
   sockets: {
     path: string;
@@ -88,7 +88,7 @@ export type Config = {
     storageMode: 'disk' | 'memory';
     maxUploadSize: number;
     appName: string;
-    signedUrl: TJwtOptions;
+    signedUrl: JwtConfigOptions;
   };
   pagination: {
     limit: number;
@@ -113,15 +113,15 @@ export type Config = {
   };
   env: string;
   authentication: {
-    jwtOptions: TJwtOptions;
+    jwtOptions: JwtConfigOptions;
   };
   invitation: {
-    jwtOptions: TJwtOptions;
+    jwtOptions: JwtConfigOptions;
   };
   password_reset: {
-    jwtOptions: TJwtOptions;
+    jwtOptions: JwtConfigOptions;
   };
-  confirm_account: { jwtOptions: TJwtOptions };
+  confirm_account: { jwtOptions: JwtConfigOptions };
   analytics: {
     thresholds: {
       loyalty: number;

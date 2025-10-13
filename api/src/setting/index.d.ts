@@ -45,6 +45,5 @@ declare global {
       [K in T[number] as K['label']]: SettingValue<K>;
     };
   };
-
   interface Settings extends SettingTree<typeof DEFAULT_SETTINGS> {}
 }

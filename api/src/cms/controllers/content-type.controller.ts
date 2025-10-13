@@ -15,11 +15,8 @@ import {
   Patch,
   Post,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -33,7 +30,6 @@ import {
 import { ContentType } from '../schemas/content-type.schema';
 import { ContentTypeService } from '../services/content-type.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('contenttype')
 export class ContentTypeController extends BaseController<ContentType> {
   constructor(private readonly contentTypeService: ContentTypeService) {
@@ -47,7 +43,6 @@ export class ContentTypeController extends BaseController<ContentType> {
    *
    * @returns The created content type.
    */
-  @CsrfCheck(true)
   @Post()
   async create(
     @Body() contentTypeDto: ContentTypeCreateDto,
@@ -113,7 +108,6 @@ export class ContentTypeController extends BaseController<ContentType> {
    *
    * @returns The result of the delete operation.
    */
-  @CsrfCheck(true)
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string) {
@@ -136,7 +130,6 @@ export class ContentTypeController extends BaseController<ContentType> {
    *
    * @returns The updated content type.
    */
-  @CsrfCheck(true)
   @Patch(':id')
   async updateOne(
     @Body() contentTypeDto: ContentTypeUpdateDto,

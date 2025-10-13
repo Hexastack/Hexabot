@@ -5,7 +5,7 @@
  */
 
 import { Box, debounce, styled } from "@mui/material";
-import { useReactFlow, Viewport } from "@xyflow/react";
+import { useNodesInitialized, useReactFlow, Viewport } from "@xyflow/react";
 import {
   DragEvent,
   KeyboardEventHandler,
@@ -27,7 +27,9 @@ import { BlockSearchPanel } from "../components/main/BlockSearchPanel";
 import { BulkButtonsGroup } from "../components/main/BulkButtonsGroup";
 import { FlowsTabs } from "../components/main/FlowsTabs";
 import { ReactFlowWrapper } from "../components/main/ReactFlowWrapper";
+import { useCategories } from "../hooks/useCategories";
 import { useCreateBlock } from "../hooks/useCreateBlocks";
+import { useFocusBlock } from "../hooks/useFocusBlock";
 import { useVisualEditor } from "../hooks/useVisualEditor";
 import { INodeAttributes, TCb } from "../types/visual-editor.types";
 import {
@@ -46,21 +48,17 @@ export const Main = () => {
   const router = useAppRouter();
   const { screenToFlowPosition, setViewport, setNodes, setEdges } =
     useReactFlow();
-  const { selectedCategoryId, setSelectedCategoryId, setSelectedNodeIds } =
+  const { selectedCategoryId, setSelectedCategoryId, toFocusIds } =
     useVisualEditor();
+  const nodesInitialized = useNodesInitialized();
+  const { animateFocus } = useFocusBlock();
   const { createNode } = useCreateBlock();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setSearchOpen] = useState(false);
   const { searchPayload } = useSearch<EntityType.BLOCK>({
     $eq: [{ category: selectedCategoryId }],
   });
-  const { data: categories } = useFind(
-    { entity: EntityType.CATEGORY },
-    {
-      hasCount: false,
-      initialSortState: [{ field: "createdAt", sort: "asc" }],
-    },
-  );
+  const { selectedCategory, setDefaultCategory } = useCategories();
   const { mutate: updateCategory } = useUpdate(EntityType.CATEGORY);
   const { mutate: updateBlock } = useUpdate(EntityType.BLOCK);
   const { data: blocks } = useFind(
@@ -73,20 +71,33 @@ export const Main = () => {
   );
   const startEdges = useMemo(
     () => getStartEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.starts_conversation))],
+    [
+      JSON.stringify(
+        blocks
+          .filter((b) => b.starts_conversation)
+          .map((b) => b.starts_conversation),
+      ),
+    ],
   );
   const nextBlocksEdges = useMemo(
     () => getNextBlocksEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.nextBlocks))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.nextBlocks?.length).map((b) => b.nextBlocks),
+      ),
+    ],
   );
   const attachedEdges = useMemo(
     () => getAttachedEdges(blocks),
-    [JSON.stringify(blocks.map((b) => b.attachedBlock))],
+    [
+      JSON.stringify(
+        blocks.filter((b) => b.attachedBlock).map((b) => b.attachedBlock),
+      ),
+    ],
   );
   const nodes = useMemo(
     () => getNodesFromBlocks(blocks),
     [
-      JSON.stringify(blocks.map((b) => b.starts_conversation)),
       JSON.stringify(
         blocks.map((b) => {
           return {
@@ -102,12 +113,9 @@ export const Main = () => {
       ),
     ],
   );
-  const currentCategory = useMemo(() => {
-    return categories.find(({ id }) => id === selectedCategoryId);
-  }, [categories, selectedCategoryId]);
   const defaultViewport = useMemo(() => {
-    if (currentCategory) {
-      const { offset = [0, 0], zoom = 1 } = currentCategory;
+    if (selectedCategory) {
+      const { offset = [0, 0], zoom = 1 } = selectedCategory;
 
       return {
         x: offset?.[0],
@@ -124,7 +132,11 @@ export const Main = () => {
       y: 0,
       zoom: 1,
     };
-  }, [currentCategory]);
+  }, [selectedCategory]);
+  const edges = useMemo(
+    () => [...startEdges, ...nextBlocksEdges, ...attachedEdges],
+    [startEdges, nextBlocksEdges, attachedEdges],
+  );
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       const isCmdF = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f";
@@ -201,37 +213,26 @@ export const Main = () => {
   );
 
   useEffect(() => {
-    const rawFlowId = router.query.id;
-    const flowId = Array.isArray(rawFlowId) ? rawFlowId.at(-1) : rawFlowId;
+    const { id: flowId } = router.query;
 
     if (flowId) {
-      setSelectedCategoryId(flowId);
-    } else if (categories.length) {
-      setSelectedCategoryId(categories[0].id);
+      if (typeof flowId === "string") {
+        setSelectedCategoryId(flowId);
+      }
+    } else {
+      setDefaultCategory();
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.id, categories]);
+  }, [router.query.id]);
 
   useEffect(() => {
     setViewport(defaultViewport);
-  }, [currentCategory?.id]);
 
-  useEffect(() => {
-    const blockIdsParam = router.query.blockIds;
-    const blockIds =
-      typeof blockIdsParam === "string"
-        ? blockIdsParam
-        : Array.isArray(blockIdsParam)
-          ? blockIdsParam.at(-1)
-          : undefined;
-
-    if (!blockIds) {
-      setSelectedNodeIds([]);
+    if (nodesInitialized && toFocusIds.length) {
+      animateFocus(toFocusIds);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.query.blockIds, setSelectedNodeIds]);
+  }, [selectedCategory?.id, nodesInitialized]);
 
   useEffect(() => {
     return () => {
@@ -261,11 +262,11 @@ export const Main = () => {
       />
       <BulkButtonsGroup />
       <StyledBox ref={canvasRef} onKeyDown={handleKeyDown}>
-        {currentCategory ? (
+        {selectedCategory ? (
           <ReactFlowWrapper
             onUpdateNode={handleUpdateBlock}
             onViewport={handleUpdateCategory}
-            defaultEdges={[...startEdges, ...nextBlocksEdges, ...attachedEdges]}
+            defaultEdges={edges}
             defaultNodes={nodes}
             defaultViewport={defaultViewport}
           />

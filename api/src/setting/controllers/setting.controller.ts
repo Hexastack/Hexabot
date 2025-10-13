@@ -4,18 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Query,
-  UseInterceptors,
-} from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -25,7 +15,6 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 import { Setting } from '../schemas/setting.schema';
 import { SettingService } from '../services/setting.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('setting')
 export class SettingController extends BaseController<Setting> {
   constructor(private readonly settingService: SettingService) {
@@ -61,7 +50,7 @@ export class SettingController extends BaseController<Setting> {
    *
    * @returns The updated setting.
    */
-  @CsrfCheck(true)
+
   @Patch(':id')
   async updateOne(
     @Param('id') id: string,

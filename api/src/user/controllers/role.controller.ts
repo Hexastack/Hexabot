@@ -17,12 +17,9 @@ import {
   Post,
   Query,
   Req,
-  UseInterceptors,
 } from '@nestjs/common';
-import { CsrfCheck } from '@tekuconcept/nestjs-csrf';
 import { Request } from 'express';
 
-import { CsrfInterceptor } from '@/interceptors/csrf.interceptor';
 import { BaseController } from '@/utils/generics/base-controller';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -36,7 +33,6 @@ import { User } from '../schemas/user.schema';
 import { RoleService } from '../services/role.service';
 import { UserService } from '../services/user.service';
 
-@UseInterceptors(CsrfInterceptor)
 @Controller('role')
 export class RoleController extends BaseController<
   Role,
@@ -113,7 +109,7 @@ export class RoleController extends BaseController<
    *
    * @returns A promise that resolves to the newly created role.
    */
-  @CsrfCheck(true)
+
   @Post()
   async create(@Body() role: RoleCreateDto) {
     return await this.roleService.create(role);
@@ -127,7 +123,7 @@ export class RoleController extends BaseController<
    *
    * @returns A promise that resolves to the updated role.
    */
-  @CsrfCheck(true)
+
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() roleUpdate: RoleUpdateDto) {
     return await this.roleService.updateOne(id, roleUpdate);
@@ -140,7 +136,7 @@ export class RoleController extends BaseController<
    *
    * @returns A promise that resolves to the result of the deletion.
    */
-  @CsrfCheck(true)
+
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string, @Req() req: Request) {

@@ -51,7 +51,7 @@ export class ChatService {
       await this.conversationService.end(convo);
       this.logger.debug('Conversation has ended successfully.', convo.id);
     } catch (err) {
-      this.logger.error('Unable to end conversation !', convo.id);
+      this.logger.error('Unable to end conversation !', convo.id, err);
     }
   }
 
@@ -101,11 +101,11 @@ export class ChatService {
   @OnEvent('hook:chatbot:received')
   async handleReceivedMessage(event: EventWrapper<any, any>) {
     let messageId = '';
-    this.logger.debug('Received message', event);
+    this.logger.debug('Received message');
     try {
       messageId = event.getId();
     } catch (err) {
-      this.logger.warn('Failed to get the event id', messageId);
+      this.logger.warn('Failed to get the event id', messageId, err);
     }
     const subscriber = event.getSender();
     const received: MessageCreateDto = {
