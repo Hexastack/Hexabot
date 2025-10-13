@@ -6,15 +6,20 @@
 
 import { useEffect } from "react";
 
-import { useBroadcastChannel } from "@/contexts/broadcast-channel.context";
+import {
+  BroadcastChannelMessage,
+  EBCEvent,
+  useBroadcastChannel,
+} from "@/contexts/broadcast-channel.context";
 
-export const useSubscribeBroadcastChannel: ReturnType<
-  typeof useBroadcastChannel
->["subscribe"] = (...props) => {
+export const useSubscribeBroadcastChannel = (
+  event: `${EBCEvent}`,
+  callback: (message: BroadcastChannelMessage) => void,
+) => {
   const { subscribe } = useBroadcastChannel();
 
   useEffect(() => {
-    subscribe(...props);
+    subscribe(event, callback);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscribe]);
 };
