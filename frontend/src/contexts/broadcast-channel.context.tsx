@@ -57,6 +57,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     }
 
     const ch = new BroadcastChannel(channelName);
+
     channelRef.current = ch;
 
     const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
@@ -82,9 +83,9 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       }
       channelRef.current = new BroadcastChannel(channelName);
     }
-    return channelRef.current;
+    
+return channelRef.current;
   };
-
   const subscribe: IBroadcastChannelContext["subscribe"] = (
     event,
     callback,
@@ -94,14 +95,16 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
 
     return () => {
       const list = subscribersRef.current[event];
+
       if (!list) return;
       const idx = list.indexOf(callback);
+
       if (idx !== -1) list.splice(idx, 1);
     };
   };
-
   const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
     const ch = ensureChannel();
+
     if (!ch) return;
 
     try {
@@ -110,6 +113,7 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
       // React dev/StrictMode or HMR can leave a closed instance around
       if (err?.name === "InvalidStateError") {
         const reopened = new BroadcastChannel(channelName);
+
         channelRef.current = reopened;
         reopened.postMessage(message);
       } else {
@@ -127,12 +131,14 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
 
 export const useBroadcastChannel = () => {
   const ctx = useContext(BroadcastChannelContext);
+
   if (!ctx) {
     throw new Error(
       "useBroadcastChannel must be used within a BroadcastChannelProvider",
     );
   }
-  return ctx;
+  
+return ctx;
 };
 
 export default BroadcastChannelProvider;
