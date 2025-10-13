@@ -1,0 +1,17 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import ErrorIcon from "@mui/icons-material/ErrorOutline";
+
+import { OverlayTemplate } from "./OverlayTemplate";
+
+export const ErrorOverlay = () => (
+  <OverlayTemplate
+    icon={ErrorIcon}
+    color="error"
+    i18nKey="message.internal_server_error"
+  />
+);

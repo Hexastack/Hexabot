@@ -13,19 +13,24 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: "20" # Ensure it matches your project requirements
-          cache: "npm"
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
       - name: Install dependencies
-        working-directory: widget
-        run: npm ci --ignore-scripts
+        run: pnpm install --filter @hexabot/widget... --prod=false
 
       - name: Build the package
-        working-directory: widget
-        run: npm run build
+        run: pnpm --filter @hexabot/widget... run build
 
       - name: Determine release type
         id: determine-release
@@ -45,14 +50,14 @@ jobs:
 
       - name: Login to npm
         if: env.release != 'none'
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          registry-url: "https://registry.npmjs.org/"
           node-version: "20"
+          registry-url: "https://registry.npmjs.org/"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
-        working-directory: widget
         if: env.release != 'none'
+        working-directory: packages/widget
         run: npm publish

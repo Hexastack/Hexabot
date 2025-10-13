@@ -42,9 +42,9 @@ jobs:
       - name: Build and push API Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ./api/
+          context: ./packages/api/
           target: production
-          file: ./api/Dockerfile
+          file: ./packages/api/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

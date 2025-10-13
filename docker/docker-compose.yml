@@ -16,7 +16,7 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: "wget --spider http://localhost:3000"
+      test: "wget --spider http://localhost:3000/health"
       interval: 10s
       timeout: 10s
       retries: 5

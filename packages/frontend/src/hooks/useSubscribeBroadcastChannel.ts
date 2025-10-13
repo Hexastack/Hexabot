@@ -1,0 +1,25 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { useEffect } from "react";
+
+import {
+  BroadcastChannelMessage,
+  EBCEvent,
+  useBroadcastChannel,
+} from "@/contexts/broadcast-channel.context";
+
+export const useSubscribeBroadcastChannel = (
+  event: `${EBCEvent}`,
+  callback: (message: BroadcastChannelMessage) => void,
+) => {
+  const { subscribe } = useBroadcastChannel();
+
+  useEffect(() => {
+    subscribe(event, callback);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subscribe]);
+};

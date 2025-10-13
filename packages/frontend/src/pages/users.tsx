@@ -1,0 +1,20 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { ReactElement } from "react";
+
+import { Users } from "@/components/users";
+import { Layout } from "@/layout";
+
+const UsersPage = () => {
+  return <Users />;
+};
+
+UsersPage.getLayout = function getLayout(page: ReactElement) {
+  return <Layout>{page}</Layout>;
+};
+
+export default UsersPage;

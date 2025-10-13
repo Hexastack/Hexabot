@@ -1,0 +1,81 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import React from "react";
+
+import { useChat } from "../../providers/ChatProvider";
+import { useColors } from "../../providers/ColorProvider";
+import { useSettings } from "../../providers/SettingsProvider";
+import {
+  TButton,
+  TMessage,
+  TOutgoingMessageType,
+} from "../../types/message.types";
+
+import "./ButtonMessage.scss";
+
+interface ButtonsMessageProps {
+  message: TMessage;
+}
+
+const ButtonsMessage: React.FC<ButtonsMessageProps> = ({ message }) => {
+  const { setPayload, send, setWebviewUrl } = useChat();
+  const settings = useSettings();
+  const { colors } = useColors();
+  const handleClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    button: TButton,
+  ) => {
+    if (button.type === "web_url" && button.url) {
+      if (button.messenger_extensions) {
+        setWebviewUrl(button.url);
+      } else {
+        window.open(button.url, "_blank");
+      }
+    } else if (button.type === "postback") {
+      setPayload({ text: button.title, payload: button.payload });
+      send({
+        event,
+        source: "post-back",
+        data: {
+          type: TOutgoingMessageType.postback,
+          data: {
+            text: button.title,
+            payload: button.payload,
+          },
+        },
+      });
+      if (settings.autoFlush) {
+        setPayload(null);
+      }
+    }
+  };
+
+  if (!("buttons" in message.data)) {
+    throw new Error("Unable to find buttons");
+  }
+
+  return (
+    <div className="sc-message--buttons">
+      {message.data.buttons.map((button, index) => (
+        <button
+          key={index}
+          className="sc-message--buttons-content"
+          onClick={(event) => handleClick(event, button)}
+          style={{
+            borderColor: colors.button.border,
+            color: colors.button.text,
+            backgroundColor: colors.button.bg,
+          }}
+        >
+          {button.title}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+export default ButtonsMessage;
