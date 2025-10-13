@@ -18,7 +18,7 @@ export enum EBCEvent {
   LOGOUT = "logout",
 }
 
-type BroadcastChannelMessage = {
+export type BroadcastChannelMessage = {
   event: `${EBCEvent}`;
   data?: string | number | boolean | Record<string, unknown> | undefined | null;
 };
@@ -32,7 +32,7 @@ interface IBroadcastChannelContext {
   subscribe: (
     event: `${EBCEvent}`,
     callback: (message: BroadcastChannelMessage) => void,
-  ) => void;
+  ) => () => void;
   postMessage: (message: BroadcastChannelMessage) => void;
 }
 
@@ -44,28 +44,46 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
   children,
   channelName,
 }) => {
-  const channelRef = useRef<BroadcastChannel>(
-    new BroadcastChannel(channelName),
-  );
+  // Hold a nullable ref; we’ll assign in the effect.
+  const channelRef = useRef<BroadcastChannel | null>(null);
   const subscribersRef = useRef<
-    Record<
-      string,
-      Array<Parameters<IBroadcastChannelContext["subscribe"]>["1"]>
-    >
+    Record<string, Array<Parameters<IBroadcastChannelContext["subscribe"]>[1]>>
   >({});
 
   useEffect(() => {
+    // Guard for SSR / unsupported browsers
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+      return;
+    }
+
+    const ch = new BroadcastChannel(channelName);
+    channelRef.current = ch;
+
     const handleMessage = ({ data }: MessageEvent<BroadcastChannelMessage>) => {
-      subscribersRef.current[data.event]?.forEach((callback) => callback(data));
+      subscribersRef.current[data.event]?.forEach((cb) => cb(data));
     };
 
-    channelRef.current.addEventListener("message", handleMessage);
+    ch.addEventListener("message", handleMessage);
 
     return () => {
-      channelRef.current.removeEventListener("message", handleMessage);
-      channelRef.current.close();
+      ch.removeEventListener("message", handleMessage);
+      ch.close();
+      // If nothing else replaced it, null it out
+      if (channelRef.current === ch) {
+        channelRef.current = null;
+      }
     };
-  }, []);
+  }, [channelName]);
+
+  const ensureChannel = () => {
+    if (!channelRef.current) {
+      if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+        return null;
+      }
+      channelRef.current = new BroadcastChannel(channelName);
+    }
+    return channelRef.current;
+  };
 
   const subscribe: IBroadcastChannelContext["subscribe"] = (
     event,
@@ -75,39 +93,46 @@ export const BroadcastChannelProvider: FC<IBroadcastChannelProps> = ({
     subscribersRef.current[event].push(callback);
 
     return () => {
-      const index = subscribersRef.current[event].indexOf(callback);
-
-      if (index !== -1) {
-        subscribersRef.current[event].splice(index, 1);
-      }
+      const list = subscribersRef.current[event];
+      if (!list) return;
+      const idx = list.indexOf(callback);
+      if (idx !== -1) list.splice(idx, 1);
     };
   };
+
   const postMessage: IBroadcastChannelContext["postMessage"] = (message) => {
-    channelRef.current.postMessage(message);
+    const ch = ensureChannel();
+    if (!ch) return;
+
+    try {
+      ch.postMessage(message);
+    } catch (err: any) {
+      // React dev/StrictMode or HMR can leave a closed instance around
+      if (err?.name === "InvalidStateError") {
+        const reopened = new BroadcastChannel(channelName);
+        channelRef.current = reopened;
+        reopened.postMessage(message);
+      } else {
+        throw err;
+      }
+    }
   };
 
   return (
-    <BroadcastChannelContext.Provider
-      value={{
-        subscribe,
-        postMessage,
-      }}
-    >
+    <BroadcastChannelContext.Provider value={{ subscribe, postMessage }}>
       {children}
     </BroadcastChannelContext.Provider>
   );
 };
 
 export const useBroadcastChannel = () => {
-  const context = useContext(BroadcastChannelContext);
-
-  if (context === undefined) {
+  const ctx = useContext(BroadcastChannelContext);
+  if (!ctx) {
     throw new Error(
       "useBroadcastChannel must be used within a BroadcastChannelProvider",
     );
   }
-
-  return context;
+  return ctx;
 };
 
 export default BroadcastChannelProvider;
