@@ -79,7 +79,7 @@ function formatMessageText(text: string): ReactNode {
         }}
       />
     );
-  } catch (error) {
+  } catch (_error) {
     return <div>{text}</div>;
   }
 }

@@ -84,7 +84,7 @@ export function extractFilenameFromUrl(url: string) {
 
     // If no valid filename, return the full URL
     return url;
-  } catch (error) {
+  } catch (_error) {
     // If the URL is invalid, return the input as-is
     return url;
   }

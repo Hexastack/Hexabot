@@ -36,7 +36,7 @@ export const isAbsoluteUrl = (value: string = ""): boolean => {
       hostnameParts.length > 1 &&
       hostnameParts[hostnameParts.length - 1].length > 1
     );
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 };
