@@ -8,7 +8,7 @@
   "version": "2.3.0",
   "description": "Hexabot is a solution for creating and managing chatbots across multiple channels, leveraging AI for advanced conversational capabilities. It provides a user-friendly interface for building, training, and deploying chatbots with integrated support for various messaging platforms.",
   "author": "Hexastack",
-  "license": "AGPL-3.0-only",
+  "license": "FCL-1.0-ALv2",
   "scripts": {
     "prepare": "husky",
     "dev:frontend": "npm run dev --workspace=frontend",
