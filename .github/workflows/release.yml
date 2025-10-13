@@ -12,31 +12,39 @@ jobs:
       - name: 🔎 Check out repository code ...
         uses: actions/checkout@v4
 
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
       - name: ⏳ Setting Up Node ...
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      - name: ⏳ setting environment ...
-        run: npm i
+      - name: ⏳ Install workspace dependencies ...
+        run: pnpm install --frozen-lockfile
 
       - name: 🖥 typecheck Widget ...
-        run: cd widget && npm run typecheck
+        run: pnpm --filter @hexabot/widget... run typecheck
 
       - name: 🖥 typecheck Frontend ...
-        run: cd frontend && npm run typecheck
+        run: pnpm --filter @hexabot/frontend... run typecheck
 
       - name: 🖋️ ESLint checks for widget ...
-        run: cd widget && npx lint-staged
+        run: pnpm --filter @hexabot/widget... run lint
 
       - name: 🖋️ ESLint checks for Frontend ...
-        run: cd frontend && npx lint-staged
+        run: pnpm --filter @hexabot/frontend... run lint
 
       - name: 🛠️ build Widget ...
-        run: cd widget && npm run build
+        run: pnpm --filter @hexabot/widget... run build
 
       - name: 🛠️ build Frontend ...
-        run: cd frontend && npm run build
+        run: pnpm --filter @hexabot/frontend... run build
 
   API-Tests:
     name: API Tests
@@ -46,22 +54,30 @@ jobs:
       - name: 🔎 Check out repository code ...
         uses: actions/checkout@v4
 
+      - name: ⏳ Setup pnpm ...
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+          standalone: true
+          run_install: false
+
       - name: ⏳ Setting Up Node ...
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
-      - name: ⏳ setting environment for API ...
-        run: cd api && npm i
+      - name: ⏳ Install workspace dependencies ...
+        run: pnpm install --frozen-lockfile
 
       - name: 🖥 typecheck API ...
-        run: cd api && npm run typecheck
+        run: pnpm --filter @hexabot/api... run typecheck
 
       - name: 🖋️ ESLint checks for API ...
-        run: cd api && npx lint-staged
+        run: pnpm --filter @hexabot/api... run lint
 
       - name: 🔬 running unit tests for API ...
-        run: cd api && npm run test
+        run: pnpm --filter @hexabot/api... run test
 
   build:
     name: Build (Release Branch)
@@ -70,7 +86,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@master

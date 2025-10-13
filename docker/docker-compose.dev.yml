@@ -3,16 +3,17 @@ version: "3.8"
 services:
   api:
     build:
-      context: ../api
+      context: ../
+      dockerfile: ./packages/api/Dockerfile
       target: development
     pull_policy: build
     ports:
       - ${API_PORT}:3000
       - 9229:9229 # vscode debug port
     volumes:
-      - ../api/src:/app/src
-      - ../api/migrations:/app/migrations
-      #- ../api/node_modules:/app/node_modules
+      - ../packages/api/src:/app/packages/api/src
+      - ../packages/api/migrations:/app/packages/api/migrations
+      #- ../packages/api/node_modules:/app/packages/api/node_modules
 
   mongo:
     ports:
@@ -35,8 +36,8 @@ services:
     container_name: frontend
     build:
       context: ../
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: ./packages/frontend/Dockerfile
       target: development
     pull_policy: build
     volumes:
-      - ../frontend/:/app/frontend/
+      - ../packages/frontend/:/app/packages/frontend/
