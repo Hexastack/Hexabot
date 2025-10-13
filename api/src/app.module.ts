@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import path from 'path';
+import path, { join } from 'path';
 
 import KeyvRedis from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -12,6 +12,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 import {
@@ -57,6 +58,16 @@ const i18nOptions: I18nOptions = {
 
 @Module({
   imports: [
+    ...(config.mode === 'monolith'
+      ? [
+          ServeStaticModule.forRoot({
+            rootPath:
+              config.env !== 'production'
+                ? join(__dirname, '..', '..', 'frontend', 'dist')
+                : join(__dirname, '..', '..', 'frontend', 'dist'),
+          }),
+        ]
+      : []),
     MailerModule,
     MongooseModule.forRoot(config.mongo.uri, {
       dbName: config.mongo.dbName,

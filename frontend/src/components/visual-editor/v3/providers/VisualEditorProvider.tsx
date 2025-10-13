@@ -11,11 +11,11 @@ import {
   useReactFlow,
   XYPosition,
 } from "@xyflow/react";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useGetFromCache } from "@/hooks/crud/useGet";
 import { useUpdateCache } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { EntityType, RouterType } from "@/services/types";
 
 import { VisualEditorContext } from "../contexts/VisualEditorContext";
@@ -24,7 +24,7 @@ import { VisualEditorContextProps } from "../types/visual-editor.types";
 export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
   children,
 }) => {
-  const router = useRouter();
+  const router = useAppRouter();
   const { screenToFlowPosition, getNodes, setNodes } = useReactFlow();
   const getBlockFromCache = useGetFromCache(EntityType.BLOCK);
   const updateCachedBlock = useUpdateCache(EntityType.BLOCK);
@@ -78,7 +78,10 @@ export const VisualEditorProvider: React.FC<VisualEditorContextProps> = ({
     category: string,
     blockIds: string[] = [],
   ) => {
-    const blockParam = Array.isArray(blockIds) && blockIds.length ? `/${blockIds.join(",")}` : "";
+    const blockParam =
+      Array.isArray(blockIds) && blockIds.length
+        ? `/${blockIds.join(",")}`
+        : "";
 
     if (router.pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`)) {
       await router.push(

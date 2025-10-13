@@ -36,7 +36,6 @@ const componentMap: { [key in FileType]: FC<AttachmentInterface> } = {
     }
     if (url)
       return (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           onError={() => setImageErrored(true)}
           width="auto"

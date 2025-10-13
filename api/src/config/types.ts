@@ -31,6 +31,8 @@ type SocketCookie =
   | boolean;
 
 export type Config = {
+  mode: 'api-only' | 'monolith';
+  apiPrefix: string;
   i18n: { translationFilename: string };
   appPath: string;
   apiBaseUrl: string;

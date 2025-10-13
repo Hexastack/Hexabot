@@ -6,7 +6,26 @@
 
 import { createContext, useEffect, useState } from "react";
 
-export const ConfigContext = createContext<IConfig | null>(null);
+import { Progress } from "@/app-components/displays/Progress";
+import { parseEnvBoolean, parseEnvNumber } from "@/utils/env";
+
+const mode =
+  import.meta.env.VITE_APP_MODE === "monolith" ? "monolith" : "api-only";
+const MB = 1024 * 1024;
+const defautConfig: IConfig = {
+  apiUrl:
+    import.meta.env.VITE_API_ORIGIN?.toString() || "http://localhost:4000",
+  ssoEnabled: parseEnvBoolean(
+    import.meta.env.VITE_SSO_ENABLED?.toString(),
+    false,
+  ),
+  maxUploadSize: parseEnvNumber(
+    import.meta.env.VITE_UPLOAD_MAX_SIZE_IN_BYTES?.toString(),
+    20 * MB,
+  ),
+};
+
+export const ConfigContext = createContext<IConfig | null>(defautConfig);
 
 export interface IConfig {
   apiUrl: string;
@@ -18,24 +37,27 @@ export const ConfigProvider = ({ children }) => {
   const [config, setConfig] = useState<IConfig | null>(null);
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const res = await fetch("/config");
-        const data = (await res.json()) as IConfig;
+    const loadConfig = async () => {
+      if (mode === "monolith") {
+        try {
+          const res = await fetch("/api/config");
+          const data = (await res.json()) as IConfig;
 
-        setConfig(data);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to fetch configuration:", error);
+          setConfig(data);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to fetch configuration:", error);
+        }
+      } else {
+        setConfig(defautConfig);
       }
     };
 
-    fetchConfig();
+    loadConfig();
   }, []);
 
   if (!config) {
-    // You can return a loader here if you want
-    return null;
+    return <Progress size={64} />;
   }
 
   return (

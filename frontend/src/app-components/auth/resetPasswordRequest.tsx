@@ -5,8 +5,8 @@
  */
 
 import { Button, Grid, Paper, Typography } from "@mui/material";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { Link as RouterLink } from "react-router-dom";
 
 import { useRequestResetPassword } from "@/hooks/entities/reset-hooks";
 import { useToast } from "@/hooks/useToast";
@@ -66,9 +66,9 @@ export const ResetPasswordRequest = () => {
               >
                 {t("button.submit")}
               </Button>
-              <Link href="/login">
-                <Button variant="outlined">{t("button.cancel")}</Button>
-              </Link>
+              <Button component={RouterLink} to="/login" variant="outlined">
+                {t("button.cancel")}
+              </Button>
             </Grid>
           </ContentContainer>
         </form>

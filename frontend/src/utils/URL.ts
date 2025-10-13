@@ -4,6 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
+import { matchPath } from "react-router-dom";
+
 import { PUBLIC_PATHS } from "@/hooks/useAuth";
 import { RouterType } from "@/services/types";
 
@@ -39,18 +41,31 @@ export const isAbsoluteUrl = (value: string = ""): boolean => {
   }
 };
 
-export const getStaticPath = (pathname: string) => {
-  return pathname.includes("[")
-    ? pathname.split("[")[0].slice(0, -1)
+const normalizePath = (pathname: string) => {
+  if (!pathname) {
+    return "/";
+  }
+
+  const normalized = pathname.endsWith("/") && pathname !== "/"
+    ? pathname.slice(0, -1)
     : pathname;
+
+  return normalized.startsWith("/") ? normalized : `/${normalized}`;
 };
 
 export const isLoginPath = (pathname: string) => {
-  return getStaticPath(pathname) === `/${RouterType.LOGIN}`;
+  return matchPath(
+    { path: normalizePath(`/${RouterType.LOGIN}`), end: false },
+    normalizePath(pathname),
+  )
+    ? true
+    : false;
 };
 
 export const hasPublicPath = (pathname: string) => {
-  return PUBLIC_PATHS.some(
-    (path) => getStaticPath(path) === getStaticPath(pathname),
+  const normalizedPath = normalizePath(pathname);
+
+  return PUBLIC_PATHS.some((path) =>
+    matchPath({ path: normalizePath(path), end: false }, normalizedPath),
   );
 };

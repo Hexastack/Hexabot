@@ -4,6 +4,4 @@
  * Full terms: see LICENSE.md.
  */
 
-import VisualEditorPage from "..";
-
-export default VisualEditorPage;
+export { routes } from "./routeConfig";

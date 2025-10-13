@@ -6,7 +6,6 @@
 
 import { faAlignLeft } from "@fortawesome/free-solid-svg-icons";
 import { Grid } from "@mui/material";
-import { useRouter } from "next/router";
 
 import { ButtonActionsGroup } from "@/app-components/buttons/ButtonActionsGroup";
 import { ConfirmDialogBody } from "@/app-components/dialogs";
@@ -19,6 +18,7 @@ import { renderHeader } from "@/app-components/tables/columns/renderHeader";
 import { DataGrid } from "@/app-components/tables/DataGrid";
 import { useDelete } from "@/hooks/crud/useDelete";
 import { useFind } from "@/hooks/crud/useFind";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useDialogs } from "@/hooks/useDialogs";
 import { useSearch } from "@/hooks/useSearch";
 import { useToast } from "@/hooks/useToast";
@@ -34,7 +34,7 @@ import { ContentTypeFormDialog } from "./ContentTypeFormDialog";
 export const ContentTypes = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useAppRouter();
   const dialogs = useDialogs();
   // data fetching
   const { onSearch, searchPayload, searchText } =

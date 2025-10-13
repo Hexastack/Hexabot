@@ -6,7 +6,6 @@
 
 import { Box, debounce, styled } from "@mui/material";
 import { useNodesInitialized, useReactFlow, Viewport } from "@xyflow/react";
-import { useRouter } from "next/router";
 import {
   DragEvent,
   KeyboardEventHandler,
@@ -19,6 +18,7 @@ import {
 
 import { useFind } from "@/hooks/crud/useFind";
 import { useUpdate } from "@/hooks/crud/useUpdate";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useSearch } from "@/hooks/useSearch";
 import { EntityType, Format } from "@/services/types";
 import { IBlockAttributes } from "@/types/block.types";
@@ -45,7 +45,7 @@ const StyledBox = styled(Box)(() => ({
 }));
 
 export const Main = () => {
-  const router = useRouter();
+  const router = useAppRouter();
   const { screenToFlowPosition, setViewport, setNodes, setEdges } =
     useReactFlow();
   const { selectedCategoryId, setSelectedCategoryId, toFocusIds } =

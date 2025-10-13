@@ -10,9 +10,12 @@
   "author": "Hexastack",
   "license": "FCL-1.0-ALv2",
   "scripts": {
+    "dev": "npm run build:frontend && concurrently -k -c cyan,magenta \"npm run dev:api\" \"npm run dev:frontend\"",
+    "dev:api": "npm --prefix api run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev:static",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:api": "npm --prefix api run build",
     "prepare": "husky",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:widget": "npm run dev --workspace=widget",
     "release:api:patch": "cd api/ && npm version --git-tag-version false --commit-hooks false patch",
     "release:api:minor": "cd api/ && npm version --git-tag-version false --commit-hooks false minor",
     "release:patch": "npm run release:api:patch && npm version --git-tag-version false --commit-hooks false --workspaces patch",
@@ -21,6 +24,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
+    "concurrently": "^9.2.1",
     "husky": "^9.0.11"
   },
   "engines": {

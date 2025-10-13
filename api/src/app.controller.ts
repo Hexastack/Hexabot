@@ -8,6 +8,7 @@ import { Controller, Get, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AppService } from './app.service';
+import { config } from './config';
 import { csrf } from './config/csrf';
 import { Roles } from './utils/decorators/roles.decorator';
 
@@ -16,9 +17,19 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Roles('public')
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Get('health')
+  healthCheck() {
+    return 'OK';
+  }
+
+  @Roles('public')
+  @Get('config')
+  getConfig() {
+    return {
+      apiUrl: `${config.apiBaseUrl}/api/`,
+      ssoEnabled: false, // @TODO: look into this
+      maxUploadSize: config.parameters.maxUploadSize,
+    };
   }
 
   @Roles('public')

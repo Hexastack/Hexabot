@@ -7,10 +7,10 @@
 import { Grid } from "@mui/material";
 import { useState } from "react";
 
-import { LayoutProps } from ".";
-
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
 import { useSocketGetQuery } from "@/websocket/socket-hooks";
+
+import { LayoutProps } from ".";
 
 import { Content } from "./content";
 import { Header } from "./Header";

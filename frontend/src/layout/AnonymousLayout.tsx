@@ -6,9 +6,9 @@
 
 import { Grid } from "@mui/material";
 
-import { LayoutProps } from ".";
-
 import { ChatWidget } from "@/app-components/widget/ChatWidget";
+
+import { LayoutProps } from ".";
 
 import { Content } from "./content";
 import { Header } from "./Header";

@@ -6,10 +6,10 @@
 
 import { Avatar, Box } from "@mui/material";
 import UiChatWidget from "hexabot-chat-widget/src/UiChatWidget";
-import { useRouter } from "next/router";
 import { useMemo } from "react";
 
 import { getAvatarSrc } from "@/components/inbox/helpers/mapMessages";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfig } from "@/hooks/useConfig";
 import { useSetting } from "@/hooks/useSetting";
@@ -21,7 +21,7 @@ import { ChatWidgetHeader } from "./ChatWidgetHeader";
 const SETTING_TYPE = "console_channel" as const;
 
 export const ChatWidget = () => {
-  const { pathname, reload } = useRouter();
+  const { pathname, reload } = useAppRouter();
   const { apiUrl } = useConfig();
   const { isAuthenticated } = useAuth();
   const isVisualEditor = pathname.startsWith(`/${RouterType.VISUAL_EDITOR}`);

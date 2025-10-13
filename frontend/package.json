@@ -6,11 +6,13 @@
   "author": "Hexastack",
   "license": "FCL-1.0-ALv2",
   "scripts": {
-    "dev": "next dev -p 8081",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
+    "dev": "vite",
+    "dev:static": "vite build --watch --mode development",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 8080",
+    "start": "npm run preview",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "typecheck": "tsc --noEmit --downlevelIteration"
   },
   "lint-staged": {
@@ -21,6 +23,7 @@
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@fontsource/roboto": "^5.1.0",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/icons-material": "^5.15.16",
@@ -34,8 +37,6 @@
     "eazychart-react": "^0.8.0-alpha.0",
     "hexabot-chat-widget": "*",
     "i18next-http-backend": "^2.6.2",
-    "next": "^15.5.3",
-    "next-transpile-modules": "^10.0.1",
     "normalizr": "^3.6.2",
     "notistack": "^3.0.1",
     "qs": "^6.12.1",
@@ -45,6 +46,7 @@
     "react-hook-form": "^7.51.5",
     "react-i18next": "^14.1.1",
     "react-query": "^3.39.3",
+    "react-router-dom": "^6.26.2",
     "react-window": "^1.8.5",
     "socket.io-client": "^4.7.5"
   },
@@ -56,12 +58,17 @@
     "@types/react": "18.3.2",
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react": "^4.4.0",
     "eslint": "^8.42.0",
-    "eslint-config-next": "^15.5.3",
     "eslint-import-resolver-typescript": "^3.10.0",
     "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "lint-staged": "^15.3.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^5.0.11"
   },
   "engines": {
     "node": "^20.18.1"

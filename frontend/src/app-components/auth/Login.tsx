@@ -8,12 +8,12 @@ import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import { Button, Grid, Paper, Typography } from "@mui/material";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Link as RouterLink } from "react-router-dom";
 
 import { useConfirmAccount, useLogin } from "@/hooks/entities/auth-hooks";
+import { useAppRouter } from "@/hooks/useAppRouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { useTranslate } from "@/hooks/useTranslate";
@@ -34,7 +34,7 @@ const DEFAULT_VALUES: ILoginAttributes = {
 export const Login = () => {
   const { t } = useTranslate();
   const { toast } = useToast();
-  const router = useRouter();
+  const router = useAppRouter();
   const { authenticate } = useAuth();
   const { mutate: login, isLoading } = useLogin({
     onSuccess: (data) => {
@@ -79,13 +79,15 @@ export const Login = () => {
   };
 
   useEffect(() => {
-    const queryToken = router.query.token;
+    const rawToken = router.query.token;
+    const queryToken = Array.isArray(rawToken) ? rawToken.at(-1) : rawToken;
 
-    if (queryToken)
+    if (queryToken) {
       confirmAccount({
         token: String(queryToken),
       });
-  }, [router.query.token]);
+    }
+  }, [confirmAccount, router.query.token]);
 
   return (
     <PublicContentWrapper>
@@ -119,11 +121,14 @@ export const Login = () => {
             />
             <Grid container gap={2} justifyContent="space-between">
               <Grid alignContent="center">
-                <Link href="/reset">
-                  <Button variant="text" sx={{ textDecoration: "underline" }}>
-                    {t("link.reset")}
-                  </Button>
-                </Link>
+                <Button
+                  component={RouterLink}
+                  to="/reset"
+                  variant="text"
+                  sx={{ textDecoration: "underline" }}
+                >
+                  {t("link.reset")}
+                </Button>
               </Grid>
               <Grid>
                 <Button

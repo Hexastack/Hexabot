@@ -7,10 +7,8 @@
 import { Config } from "../types/config.types";
 
 export const DEFAULT_CONFIG: Config = {
-  apiUrl: process.env.REACT_APP_WIDGET_API_URL || "http://localhost:4000",
-  channel: process.env.REACT_APP_WIDGET_CHANNEL || "console-channel",
+  apiUrl: "http://localhost:4000",
+  channel: "console-channel",
   language: "en",
-  maxUploadSize: process.env.UPLOAD_MAX_SIZE_IN_BYTES
-    ? Number(process.env.UPLOAD_MAX_SIZE_IN_BYTES)
-    : 20 * 1024 * 1024, // 20 MB in bytes
+  maxUploadSize: 20 * 1024 * 1024, // 20 MB in bytes
 };

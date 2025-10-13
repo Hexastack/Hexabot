@@ -5,14 +5,15 @@
  */
 
 import { Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
+
+import { useAppRouter } from "@/hooks/useAppRouter";
 
 import { useVisualEditor } from "./useVisualEditor";
 
 export const useFocusBlock = () => {
   const nodesInitialized = useNodesInitialized();
-  const router = useRouter();
+  const router = useAppRouter();
   const { getNode, fitView } = useReactFlow();
   const { selectNodes, selectedNodeIds, openSearchPanel, setToFocusIds } =
     useVisualEditor();

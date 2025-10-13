@@ -16,6 +16,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
+import { config } from '@/config';
+
 import { TRole } from '../schemas/role.schema';
 import { User } from '../schemas/user.schema';
 import { PermissionService } from '../services/permission.service';
@@ -51,8 +53,12 @@ export class Ability implements CanActivate {
     }
 
     if (user?.roles?.length) {
+      const pathname =
+        config.mode === 'monolith'
+          ? _parsedUrl.pathname?.replace(`/${config.apiPrefix}`, '')
+          : _parsedUrl.pathname;
       if (
-        _parsedUrl.pathname &&
+        pathname &&
         [
           // Allow access to all routes available for authenticated users
           '/auth/logout',
@@ -64,13 +70,13 @@ export class Ability implements CanActivate {
           `/user/edit/${user.id}`,
           // Allow access to own avatar
           `/user/${user.id}/profile_pic`,
-        ].includes(_parsedUrl.pathname)
+        ].includes(pathname)
       ) {
         return true;
       }
-      const modelFromPathname = _parsedUrl?.pathname
-        ?.split('/')[1]
-        .toLowerCase() as TModel | undefined;
+      const modelFromPathname = pathname?.split('/')[1].toLowerCase() as
+        | TModel
+        | undefined;
 
       const permissions = await this.permissionService.getPermissions();
 
