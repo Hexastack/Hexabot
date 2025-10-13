@@ -12,15 +12,15 @@ FROM base AS deps
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
-COPY api/package.json api/package.json
-COPY frontend/package.json frontend/package.json
-COPY widget/package.json widget/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/frontend/package.json packages/frontend/package.json
+COPY packages/widget/package.json packages/widget/package.json
 
 RUN pnpm install --filter @hexabot/api... --prod=false
 
 FROM deps AS build
 
-COPY api ./api
+COPY packages/api ./packages/api
 
 RUN pnpm --filter @hexabot/api run build
 
@@ -30,7 +30,7 @@ ENV NODE_ENV=development
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
 COPY --from=deps /app/node_modules ./node_modules
-COPY api ./api
+COPY packages/api ./packages/api
 
 EXPOSE 3000
 
@@ -41,9 +41,9 @@ FROM base AS production-deps
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
-COPY api/package.json api/package.json
-COPY frontend/package.json frontend/package.json
-COPY widget/package.json widget/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/frontend/package.json packages/frontend/package.json
+COPY packages/widget/package.json packages/widget/package.json
 
 RUN pnpm install --filter @hexabot/api... --prod
 
@@ -52,11 +52,11 @@ FROM base AS production
 ENV NODE_ENV=production
 
 COPY --from=production-deps /app/node_modules ./node_modules
-COPY --from=build /app/api/dist ./api/dist
-COPY api/package.json ./api/package.json
-COPY api/assets ./api/assets
-COPY api/documentation ./api/documentation
+COPY --from=build /app/packages/api/dist ./packages/api/dist
+COPY packages/api/package.json ./packages/api/package.json
+COPY packages/api/assets ./packages/api/assets
+COPY packages/api/documentation ./packages/api/documentation
 
 EXPOSE 3000
 
-CMD ["node", "api/dist/main"]
+CMD ["node", "packages/api/dist/main"]

@@ -46,7 +46,7 @@ The chat widget development server listens on http://localhost:5173.
 
 ### Environment variables
 
-Create a `.env.local` (or `.env`) file inside `frontend/` to override defaults that are read at build-time:
+Create a `.env.local` (or `.env`) file inside `packages/frontend/` to override defaults that are read at build-time:
 
 ```
 VITE_API_ORIGIN=http://localhost:4000

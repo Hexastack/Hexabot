@@ -28,10 +28,10 @@ elif [[ "$RELEASE_TYPE" == "minor" ]]; then
 fi
 
 # Retrieve the new version from package.json
-NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/api/package.json")
+NEW_VERSION=$(jq -r '.version' "$ROOT_DIR/packages/api/package.json")
 
 if [ -z "$NEW_VERSION" ]; then
-  echo "Failed to retrieve the version from api/package.json."
+  echo "Failed to retrieve the version from packages/api/package.json."
   exit 1
 fi
 

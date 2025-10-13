@@ -10,9 +10,9 @@ WORKDIR /app
 FROM base AS deps
 
 COPY package.json pnpm-workspace.yaml turbo.json pnpm-lock.yaml .npmrc ./
-COPY api/package.json api/package.json
-COPY frontend/package.json frontend/package.json
-COPY widget/package.json widget/package.json
+COPY packages/api/package.json packages/api/package.json
+COPY packages/frontend/package.json packages/frontend/package.json
+COPY packages/widget/package.json packages/widget/package.json
 
 RUN pnpm install --filter @hexabot/widget... --prod=false
 
@@ -25,9 +25,9 @@ ENV NODE_ENV=development
 ENV REACT_APP_WIDGET_API_URL=${REACT_APP_WIDGET_API_URL}
 ENV REACT_APP_WIDGET_CHANNEL=${REACT_APP_WIDGET_CHANNEL}
 
-COPY widget ./widget
+COPY packages/widget ./packages/widget
 
-WORKDIR /app/widget
+WORKDIR /app/packages/widget
 EXPOSE 5173
 
 CMD ["pnpm", "--filter", "@hexabot/widget", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
@@ -41,7 +41,7 @@ ENV NODE_ENV=production
 ENV REACT_APP_WIDGET_API_URL=${REACT_APP_WIDGET_API_URL}
 ENV REACT_APP_WIDGET_CHANNEL=${REACT_APP_WIDGET_CHANNEL}
 
-COPY widget ./widget
+COPY packages/widget ./packages/widget
 
 RUN pnpm --filter @hexabot/widget... run build
 
@@ -54,7 +54,7 @@ RUN corepack enable && pnpm add -g http-server
 
 WORKDIR /app
 
-COPY --from=builder /app/widget/dist ./dist
+COPY --from=builder /app/packages/widget/dist ./dist
 
 EXPOSE 5173
 

@@ -52,9 +52,11 @@
 
 ## Directory Structure
 
-- **frontend:** The admin panel built with React/Next.js for managing chatbot configurations and flows.
-- **api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
-- **widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
+All workspace packages live under the `packages/` directory.
+
+- **packages/frontend:** The admin panel built with React/Next.js for managing chatbot configurations and flows.
+- **packages/api:** The backend API built with NestJS and connected to MongoDB for data storage and management.
+- **packages/widget:** A React-based live chat widget that can be embedded into any website to provide real-time interaction.
 - **docker:** A set of Docker Compose files for deploying the entire solution, making it easy to run Hexabot in any environment.
 
 ## Workspace Tooling
@@ -139,9 +141,9 @@ For detailed information on how to get started, as well as in-depth user and dev
 You can also find specific documentation for different components of the project in the following locations:
 
 - [CLI Documentation](https://github.com/Hexastack/hexabot-cli/)
-- [API Documentation](api/README.md)
-- [UI Documentation](frontend/README.md)
-- [Live Chat Widget Documentation](widget/README.md)
+- [API Documentation](packages/api/README.md)
+- [UI Documentation](packages/frontend/README.md)
+- [Live Chat Widget Documentation](packages/widget/README.md)
 
 ## Contributing
 
