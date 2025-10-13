@@ -13,7 +13,7 @@ export class JWT<T extends TJwtPayload> {
       const base64 = base64Url?.replace("-", "+").replace("_", "/");
 
       return JSON.parse(window.atob(base64));
-    } catch (e) {
+    } catch (_e) {
       throw new Error("Invalid Token");
     }
   }
