@@ -20,25 +20,4 @@ export class MetadataRepository extends BaseOrmRepository<Metadata> {
   ) {
     super(repository);
   }
-
-  async upsert(
-    filter: Partial<Metadata>,
-    payload: Partial<Metadata>,
-  ): Promise<Metadata> {
-    const existing =
-      (await this.repository.findOne({
-        where: filter,
-      })) ?? null;
-
-    if (existing) {
-      Object.assign(existing, payload);
-      return await this.repository.save(existing);
-    }
-
-    const entity = this.repository.create({
-      ...filter,
-      ...payload,
-    });
-    return await this.repository.save(entity);
-  }
 }

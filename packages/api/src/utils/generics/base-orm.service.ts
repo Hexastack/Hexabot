@@ -9,7 +9,7 @@ import { DeepPartial } from 'typeorm';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { TFilterQuery } from '../types/filter.types';
 
-import { BaseOrmRepository } from './base-orm.repository';
+import { BaseOrmRepository, UpdateOneOptions } from './base-orm.repository';
 import { DeleteResult } from './base-repository';
 
 export abstract class BaseOrmService<
@@ -61,16 +61,25 @@ export abstract class BaseOrmService<
   async updateOne(
     criteria: string | TFilterQuery<Entity>,
     payload: DeepPartial<Entity>,
-  ): Promise<Entity | null> {
-    const existing = await this.findOne(criteria);
-    if (!existing) {
-      return null;
-    }
+    options?: UpdateOneOptions,
+  ): Promise<Entity> {
+    return await this.repository.updateOne(criteria, payload, options);
+  }
 
-    return await this.updateById(existing.id, payload);
+  async findOneOrCreate(
+    criteria: string | TFilterQuery<Entity>,
+    payload: DeepPartial<Entity>,
+  ): Promise<Entity> {
+    return await this.repository.findOneOrCreate(criteria, payload);
   }
 
   async deleteMany(filter: TFilterQuery<Entity>): Promise<DeleteResult> {
     return await this.repository.deleteMany(filter);
+  }
+
+  async deleteOne(
+    criteria: string | TFilterQuery<Entity>,
+  ): Promise<DeleteResult> {
+    return await this.repository.deleteOne(criteria);
   }
 }

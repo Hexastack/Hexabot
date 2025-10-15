@@ -9,6 +9,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 
 import { SETTING_CACHE_KEY } from '@/utils/constants/cache';
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
 import { Setting } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
@@ -16,11 +17,13 @@ import { SettingRepository } from '../repositories/setting.repository';
 type SeedSetting = Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Injectable()
-export class SettingSeeder {
+export class SettingSeeder extends BaseOrmSeeder<Setting, SettingRepository> {
   constructor(
-    private readonly settingRepository: SettingRepository,
+    settingRepository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) {}
+  ) {
+    super(settingRepository);
+  }
 
   async seed(models: SeedSetting[]): Promise<boolean> {
     const grouped = models.reduce<Record<string, SeedSetting[]>>(
@@ -33,14 +36,11 @@ export class SettingSeeder {
     );
 
     for (const [group, settings] of Object.entries(grouped)) {
-      if ((await this.settingRepository.count({ group })) === 0) {
+      if (await this.isEmpty({ group })) {
         settings.forEach((setting) =>
-          this.settingRepository.validateSettingValue(
-            setting.type,
-            setting.value,
-          ),
+          this.repository.validateSettingValue(setting.type, setting.value),
         );
-        await this.settingRepository.createMany(settings);
+        await this.repository.createMany(settings);
       }
     }
 

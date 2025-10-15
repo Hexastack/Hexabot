@@ -11,29 +11,29 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
+import { LoggerService } from '@/logger/logger.service';
 import {
   DEFAULT_LANGUAGE_CACHE_KEY,
   LANGUAGES_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { LanguageDto } from '../dto/language.dto';
+import { Language } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
-import { Language } from '../schemas/language.schema';
 
 @Injectable()
-export class LanguageService extends BaseService<
+export class LanguageService extends BaseOrmService<
   Language,
-  never,
-  never,
-  LanguageDto
+  LanguageRepository
 > {
   constructor(
-    readonly repository: LanguageRepository,
+    repository: LanguageRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
   }
@@ -87,5 +87,17 @@ export class LanguageService extends BaseService<
     }
 
     return language;
+  }
+
+  async clearCache(): Promise<void> {
+    await this.cacheManager.del(LANGUAGES_CACHE_KEY);
+    await this.cacheManager.del(DEFAULT_LANGUAGE_CACHE_KEY);
+  }
+
+  @OnEvent('hook:language:postCreate')
+  @OnEvent('hook:language:postUpdate')
+  @OnEvent('hook:language:postDelete')
+  async handleLanguageMutated(): Promise<void> {
+    await this.clearCache();
   }
 }

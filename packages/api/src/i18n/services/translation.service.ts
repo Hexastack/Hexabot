@@ -8,25 +8,30 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 
 import { I18nService } from '@/i18n/services/i18n.service';
+import { LoggerService } from '@/logger/logger.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
 import { SettingService } from '@/setting/services/setting.service';
 import { SettingType } from '@/setting/types';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { Block } from '../../chat/schemas/block.schema';
 import { BlockService } from '../../chat/services/block.service';
+import { Translation } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
-import { Translation } from '../schemas/translation.schema';
 
 @Injectable()
-export class TranslationService extends BaseService<Translation> {
+export class TranslationService extends BaseOrmService<
+  Translation,
+  TranslationRepository
+> {
   constructor(
-    readonly repository: TranslationRepository,
+    repository: TranslationRepository,
     private readonly blockService: BlockService,
     private readonly settingService: SettingService,
     private readonly pluginService: PluginService,
     private readonly i18n: I18nService,
+    private readonly logger: LoggerService,
   ) {
     super(repository);
     this.resetI18nTranslations();

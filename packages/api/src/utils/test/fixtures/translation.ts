@@ -5,8 +5,10 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { TranslationUpdateDto } from '@/i18n/dto/translation.dto';
+import { Translation } from '@/i18n/entities/translation.entity';
 import { TranslationModel } from '@/i18n/schemas/translation.schema';
 
 export const translationFixtures: TranslationUpdateDto[] = [
@@ -26,4 +28,12 @@ export const installTranslationFixtures = async () => {
     TranslationModel.schema,
   );
   return await Translation.insertMany(translationFixtures);
+};
+
+export const installTranslationFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(Translation);
+  const entities = repository.create(translationFixtures);
+  await repository.save(entities);
 };

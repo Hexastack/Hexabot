@@ -4,23 +4,19 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { getUpdateOneError } from '@/utils/test/errors/messages';
 import {
-  installLanguageFixtures,
+  installLanguageFixturesTypeOrm,
   languageFixtures,
 } from '@/utils/test/fixtures/language';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { LanguageUpdateDto } from '../dto/language.dto';
-import { Language } from '../schemas/language.schema';
+import { Language } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 
 import { LanguageController } from './language.controller';
@@ -33,8 +29,11 @@ describe('LanguageController', () => {
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
-      imports: [rootMongooseTestModule(installLanguageFixtures)],
       controllers: [LanguageController],
+      typeorm: {
+        entities: [Language],
+        fixtures: installLanguageFixturesTypeOrm,
+      },
     });
     [languageService, languageController] = await getMocks([
       LanguageService,
@@ -44,7 +43,7 @@ describe('LanguageController', () => {
   });
 
   afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterAll(closeTypeOrmConnections);
 
   describe('count', () => {
     it('should count languages', async () => {
@@ -140,7 +139,7 @@ describe('LanguageController', () => {
       jest.spyOn(languageService, 'updateOne');
       await expect(
         languageController.updateOne(NOT_FOUND_ID, translationUpdateDto),
-      ).rejects.toThrow(getUpdateOneError(Language.name, NOT_FOUND_ID));
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

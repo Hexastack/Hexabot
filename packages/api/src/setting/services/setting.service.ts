@@ -26,10 +26,7 @@ import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeed, TextSetting } from '../types';
 
 @Injectable()
-export class SettingService extends BaseOrmService<
-  Setting,
-  SettingRepository
-> {
+export class SettingService extends BaseOrmService<Setting, SettingRepository> {
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -88,7 +85,7 @@ export class SettingService extends BaseOrmService<
       this.repository.validateSettingValue(existing.type, dto.value);
     }
 
-    const updated = await this.updateById(existing.id, dto);
+    const updated = await super.updateOne(criteria, dto);
     if (!updated) {
       throw new NotFoundException('Unable to update setting');
     }

@@ -23,8 +23,8 @@ import { type Subscriber } from '@/chat/schemas/subscriber.schema';
 import { type ContentType } from '@/cms/schemas/content-type.schema';
 import { type Content } from '@/cms/schemas/content.schema';
 import { type Menu } from '@/cms/schemas/menu.schema';
-import { type Language } from '@/i18n/schemas/language.schema';
-import { type Translation } from '@/i18n/schemas/translation.schema';
+import { type Language } from '@/i18n/entities/language.entity';
+import { type Translation } from '@/i18n/entities/translation.entity';
 import type { NlpEntity } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
@@ -159,22 +159,34 @@ declare module '@nestjs/event-emitter' {
   type EventNamespaces = keyof IHookEntityOperationMap;
 
   /* pre hooks */
+  type TOrmPreCreate<T> = T;
+  type TOrmPreUpdate<T> = {
+    entity: T;
+    changes: Partial<T>;
+  };
+  type TOrmPreDelete<T> = {
+    entities: T[];
+    filter: TFilterQuery<T>;
+  };
+
   type TPreCreateValidate<T> = THydratedDocument<T>;
 
-  type TPreCreate<T> = THydratedDocument<T>;
+  type TPreCreate<T> = THydratedDocument<T> | TOrmPreCreate<T>;
 
   type TPreUpdateValidate<T> = FilterQuery<T>;
 
-  type TPreUpdate<T> = TFilterQuery<T>;
+  type TPreUpdate<T> = TFilterQuery<T> | TOrmPreUpdate<T>;
 
-  type TPreDelete<T> = Query<
-    DeleteResult,
-    Document<T>,
-    unknown,
-    T,
-    'deleteOne',
-    Record<string, never>
-  >;
+  type TPreDelete<T> =
+    | Query<
+        DeleteResult,
+        Document<T>,
+        unknown,
+        T,
+        'deleteOne',
+        Record<string, never>
+      >
+    | TOrmPreDelete<T>;
 
   type TPreUnion<T> =
     | TPreCreateValidate<T>
@@ -184,23 +196,33 @@ declare module '@nestjs/event-emitter' {
     | TPreDelete<T>;
 
   /* post hooks */
+  type TOrmPostCreate<T> = T;
+  type TOrmPostUpdate<T> = {
+    entity: T;
+    previous?: T;
+  };
+  type TOrmPostDelete<T> = {
+    entities: T[];
+    result: DeleteResult;
+  };
+
   type TPostCreateValidate<T> = THydratedDocument<T>;
 
-  type TPostCreate<T> = THydratedDocument<T>;
+  type TPostCreate<T> = THydratedDocument<T> | TOrmPostCreate<T>;
 
   type TPostUpdateValidate<T> = FilterQuery<T>;
 
   // TODO this type will be optimized soon in a separated PR
-  type TPostUpdate<T> = T & any;
+  type TPostUpdate<T> = (T & any) | TOrmPostUpdate<T>;
 
-  type TPostDelete = DeleteResult;
+  type TPostDelete<T> = DeleteResult | TOrmPostDelete<T>;
 
   type TPostUnion<T> =
     | TPostCreateValidate<T>
     | TPostCreate<T>
     | TPostUpdateValidate<T>
     | TPostUpdate<T>
-    | TPostDelete;
+    | TPostDelete<T>;
 
   type TCustomOperations<E extends keyof IHookEntityOperationMap> =
     IHookEntityOperationMap[E]['operations'][keyof IHookEntityOperationMap[E]['operations']];
@@ -261,7 +283,7 @@ declare module '@nestjs/event-emitter' {
         [EHook.postUpdate]: TPostUpdate<T>;
       }
     | {
-        [EHook.postDelete]: TPostDelete;
+        [EHook.postDelete]: TPostDelete<T>;
       };
 
   type TNormalizedHook<E extends keyof IHookEntityOperationMap, O> = Extract<

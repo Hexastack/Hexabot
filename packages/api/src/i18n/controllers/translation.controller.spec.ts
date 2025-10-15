@@ -4,22 +4,35 @@
  * Full terms: see LICENSE.md.
  */
 
+import { NotFoundException } from '@nestjs/common';
+
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
-import { getUpdateOneError } from '@/utils/test/errors/messages';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import {
-  installTranslationFixtures,
+  installTranslationFixturesTypeOrm,
   translationFixtures,
 } from '@/utils/test/fixtures/translation';
 import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { getModelToken } from '@nestjs/mongoose';
+
+import { BlockRepository } from '@/chat/repositories/block.repository';
+import { ConversationRepository } from '@/chat/repositories/conversation.repository';
+import { Block } from '@/chat/schemas/block.schema';
+import { Conversation } from '@/chat/schemas/conversation.schema';
+import { BlockService } from '@/chat/services/block.service';
+import { PluginService } from '@/plugins/plugins.service';
+import { SettingService } from '@/setting/services/setting.service';
+
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { Translation } from '../schemas/translation.schema';
+import { Language } from '../entities/language.entity';
+import { Translation } from '../entities/translation.entity';
 import { I18nService } from '../services/i18n.service';
+import { LanguageRepository } from '../repositories/language.repository';
+import { TranslationRepository } from '../repositories/translation.repository';
+import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 import { TranslationController } from './translation.controller';
@@ -31,16 +44,68 @@ describe('TranslationController', () => {
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['controllers'],
       controllers: [TranslationController],
-      imports: [rootMongooseTestModule(installTranslationFixtures)],
       providers: [
+        TranslationService,
+        TranslationRepository,
+        LanguageService,
+        LanguageRepository,
         {
           provide: I18nService,
           useValue: {
             t: jest.fn().mockImplementation((t) => t),
             refreshDynamicTranslations: jest.fn(),
           },
+        },
+        {
+          provide: BlockService,
+          useValue: {
+            find: jest.fn().mockResolvedValue([]),
+          },
+        },
+        {
+          provide: BlockRepository,
+          useValue: {
+            find: jest.fn(),
+            findAll: jest.fn(),
+          },
+        },
+        {
+          provide: ConversationRepository,
+          useValue: {
+            find: jest.fn(),
+          },
+        },
+        {
+          provide: SettingService,
+          useValue: {
+            find: jest.fn().mockResolvedValue([]),
+            getSettings: jest.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: PluginService,
+          useValue: {
+            getPlugin: jest.fn(),
+          },
+        },
+        {
+          provide: getModelToken(Block.name),
+          useValue: {},
+        },
+        {
+          provide: getModelToken(Conversation.name),
+          useValue: {},
+        },
+      ],
+      typeorm: [
+        {
+          entities: [Translation],
+          fixtures: installTranslationFixturesTypeOrm,
+        },
+        {
+          entities: [Language],
+          fixtures: installLanguageFixturesTypeOrm,
         },
       ],
     });
@@ -54,7 +119,7 @@ describe('TranslationController', () => {
   });
 
   afterEach(jest.clearAllMocks);
-  afterAll(closeInMongodConnection);
+  afterAll(closeTypeOrmConnections);
 
   describe('count', () => {
     it('should count translations', async () => {
@@ -116,7 +181,7 @@ describe('TranslationController', () => {
       jest.spyOn(translationService, 'updateOne');
       await expect(
         translationController.updateOne(NOT_FOUND_ID, translationUpdateDto),
-      ).rejects.toThrow(getUpdateOneError(Translation.name, NOT_FOUND_ID));
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

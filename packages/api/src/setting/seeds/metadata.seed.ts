@@ -6,18 +6,27 @@
 
 import { Injectable } from '@nestjs/common';
 
+import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
+
 import { MetadataCreateDto } from '../dto/metadata.dto';
+import { Metadata } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 
 @Injectable()
-export class MetadataSeeder {
-  constructor(private readonly metadataRepository: MetadataRepository) {}
+export class MetadataSeeder extends BaseOrmSeeder<
+  Metadata,
+  MetadataRepository
+> {
+  constructor(repository: MetadataRepository) {
+    super(repository);
+  }
 
   async seed(models: MetadataCreateDto[]): Promise<boolean> {
     for (const model of models) {
-      await this.metadataRepository.upsert(
+      await this.repository.updateOne(
         { name: model.name },
         { value: model.value },
+        { upsert: true },
       );
     }
 

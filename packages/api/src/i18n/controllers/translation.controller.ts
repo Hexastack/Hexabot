@@ -18,7 +18,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { LoggerService } from '@/logger/logger.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -26,18 +26,17 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { Translation } from '../schemas/translation.schema';
+import { Translation } from '../entities/translation.entity';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
 @Controller('translation')
-export class TranslationController extends BaseController<Translation> {
+export class TranslationController {
   constructor(
     private readonly languageService: LanguageService,
     private readonly translationService: TranslationService,
-  ) {
-    super(translationService);
-  }
+    private readonly logger: LoggerService,
+  ) {}
 
   @Get()
   async findPage(
@@ -61,17 +60,17 @@ export class TranslationController extends BaseController<Translation> {
     )
     filters?: TFilterQuery<Translation>,
   ) {
-    return await this.count(filters);
+    return { count: await this.translationService.count(filters) };
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const doc = await this.translationService.findOne(id);
-    if (!doc) {
+    const translation = await this.translationService.findOne(id);
+    if (!translation) {
       this.logger.warn(`Unable to find Translation by id ${id}`);
       throw new NotFoundException(`Translation with ID ${id} not found`);
     }
-    return doc;
+    return translation;
   }
 
   @Patch(':id')

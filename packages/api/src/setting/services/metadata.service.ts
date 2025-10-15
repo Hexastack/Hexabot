@@ -21,14 +21,23 @@ export class MetadataService extends BaseOrmService<
     super(repository);
   }
 
-  async findOne(filter: Partial<Metadata>): Promise<Metadata | null> {
-    return await super.findOne(filter as TFilterQuery<Metadata>);
-  }
-
   async updateOne(
     filter: Partial<Metadata>,
     payload: Partial<Metadata>,
   ): Promise<Metadata> {
-    return await this.repository.upsert(filter, payload);
+    const updated = await super.updateOne(
+      filter as TFilterQuery<Metadata>,
+      payload,
+      { upsert: true },
+    );
+
+    if (updated) {
+      return updated;
+    }
+
+    return await this.findOneOrCreate(
+      filter as TFilterQuery<Metadata>,
+      payload,
+    );
   }
 }

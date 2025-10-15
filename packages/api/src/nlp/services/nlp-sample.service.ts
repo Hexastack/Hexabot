@@ -10,14 +10,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Document, Query } from 'mongoose';
 import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
-import { Language } from '@/i18n/schemas/language.schema';
+import { Language } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
-import { DeleteResult } from '@/utils/generics/base-repository';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import {
@@ -357,23 +355,21 @@ export class NlpSampleService extends BaseService<
    */
   @OnEvent('hook:language:preDelete')
   async handleLanguageDelete(
-    _query: Query<
-      DeleteResult,
-      Document<Language, any, any>,
-      unknown,
-      Language,
-      'deleteOne' | 'deleteMany'
-    >,
-    criteria: TFilterQuery<Language>,
+    payload:
+      | {
+          entities: Language[];
+          filter: TFilterQuery<Language>;
+        }
+      | unknown,
   ) {
-    const deletedLanguages = await this.languageService.find(
-      criteria,
-      undefined,
-      {
-        id: 1,
-      },
-    );
-    const deletedLanguagesIds = deletedLanguages.map(
+    if (!payload || typeof payload !== 'object' || !('entities' in payload)) {
+      return;
+    }
+
+    const { entities } = payload as {
+      entities: Language[];
+    };
+    const deletedLanguagesIds = entities.map(
       (deletedLanguage) => deletedLanguage.id,
     );
 

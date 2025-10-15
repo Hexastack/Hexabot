@@ -18,7 +18,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { LoggerService } from '@/logger/logger.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
@@ -26,14 +26,15 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { LanguageCreateDto, LanguageUpdateDto } from '../dto/language.dto';
-import { Language } from '../schemas/language.schema';
+import { Language } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 
 @Controller('language')
-export class LanguageController extends BaseController<Language> {
-  constructor(private readonly languageService: LanguageService) {
-    super(languageService);
-  }
+export class LanguageController {
+  constructor(
+    private readonly languageService: LanguageService,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * Retrieves a paginated list of languages based on provided filters and pagination settings.
@@ -63,7 +64,7 @@ export class LanguageController extends BaseController<Language> {
     )
     filters?: TFilterQuery<Language>,
   ) {
-    return await this.count(filters);
+    return { count: await this.languageService.count(filters) };
   }
 
   /**
@@ -73,12 +74,12 @@ export class LanguageController extends BaseController<Language> {
    */
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Language> {
-    const doc = await this.languageService.findOne(id);
-    if (!doc) {
+    const language = await this.languageService.findOne(id);
+    if (!language) {
       this.logger.warn(`Unable to find Language by id ${id}`);
       throw new NotFoundException(`Language with ID ${id} not found`);
     }
-    return doc;
+    return language;
   }
 
   /**
@@ -102,13 +103,8 @@ export class LanguageController extends BaseController<Language> {
     @Param('id') id: string,
     @Body() languageUpdate: LanguageUpdateDto,
   ): Promise<Language> {
-    if ('isDefault' in languageUpdate) {
-      if (languageUpdate.isDefault) {
-        // A new default language is define, make sure that only one is marked as default
-        await this.languageService.updateMany({}, { isDefault: false });
-      } else {
-        throw new BadRequestException('Should not be able to disable default');
-      }
+    if ('isDefault' in languageUpdate && !languageUpdate.isDefault) {
+      throw new BadRequestException('Should not be able to disable default');
     }
 
     return await this.languageService.updateOne(id, languageUpdate);
@@ -122,10 +118,7 @@ export class LanguageController extends BaseController<Language> {
   @Delete(':id')
   @HttpCode(204)
   async deleteOne(@Param('id') id: string): Promise<DeleteResult> {
-    const result = await this.languageService.deleteOne({
-      isDefault: false, // Prevent deleting the default language
-      _id: id,
-    });
+    const result = await this.languageService.deleteOne(id);
     if (result.deletedCount === 0) {
       this.logger.warn(`Unable to delete Language by id ${id}`);
       throw new BadRequestException(`Unable to delete Language with ID ${id}`);
