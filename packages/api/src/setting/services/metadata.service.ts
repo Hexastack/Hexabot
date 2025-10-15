@@ -6,15 +6,23 @@
 
 import { Injectable } from '@nestjs/common';
 
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { TFilterQuery } from '@/utils/types/filter.types';
+
 import { Metadata } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 
 @Injectable()
-export class MetadataService {
-  constructor(private readonly repository: MetadataRepository) {}
+export class MetadataService extends BaseOrmService<
+  Metadata,
+  MetadataRepository
+> {
+  constructor(repository: MetadataRepository) {
+    super(repository);
+  }
 
   async findOne(filter: Partial<Metadata>): Promise<Metadata | null> {
-    return await this.repository.findOne(filter);
+    return await super.findOne(filter as TFilterQuery<Metadata>);
   }
 
   async updateOne(

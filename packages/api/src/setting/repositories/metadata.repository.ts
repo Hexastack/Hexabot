@@ -8,28 +8,28 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
+
 import { Metadata } from '../entities/metadata.entity';
 
 @Injectable()
-export class MetadataRepository {
+export class MetadataRepository extends BaseOrmRepository<Metadata> {
   constructor(
     @InjectRepository(Metadata)
-    private readonly repository: Repository<Metadata>,
-  ) {}
-
-  async findOne(filter: Partial<Metadata>): Promise<Metadata | null> {
-    return (
-      (await this.repository.findOne({
-        where: filter,
-      })) ?? null
-    );
+    repository: Repository<Metadata>,
+  ) {
+    super(repository);
   }
 
   async upsert(
     filter: Partial<Metadata>,
     payload: Partial<Metadata>,
   ): Promise<Metadata> {
-    const existing = await this.findOne(filter);
+    const existing =
+      (await this.repository.findOne({
+        where: filter,
+      })) ?? null;
+
     if (existing) {
       Object.assign(existing, payload);
       return await this.repository.save(existing);

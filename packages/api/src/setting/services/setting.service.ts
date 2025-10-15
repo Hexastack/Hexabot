@@ -16,11 +16,8 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
-import {
-  PageQueryDto,
-  QuerySortDto,
-} from '@/utils/pagination/pagination-query.dto';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { SettingCreateDto, SettingUpdateDto } from '../dto/setting.dto';
@@ -29,12 +26,17 @@ import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeed, TextSetting } from '../types';
 
 @Injectable()
-export class SettingService {
+export class SettingService extends BaseOrmService<
+  Setting,
+  SettingRepository
+> {
   constructor(
-    private readonly repository: SettingRepository,
+    repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super(repository);
+  }
 
   async seedIfNotExist(
     group: string,
@@ -57,30 +59,9 @@ export class SettingService {
     return this.group(settings);
   }
 
-  async find(
-    filter: TFilterQuery<Setting> = {},
-    pageQuery?: PageQueryDto<Setting>,
-  ): Promise<Setting[]> {
-    return await this.repository.find(filter, pageQuery);
-  }
-
-  async findAll(sort?: QuerySortDto<Setting>): Promise<Setting[]> {
-    return await this.repository.findAll(sort);
-  }
-
-  async count(filter: TFilterQuery<Setting> = {}): Promise<number> {
-    return await this.repository.count(filter);
-  }
-
-  async findOne(
-    criteria: string | TFilterQuery<Setting>,
-  ): Promise<Setting | null> {
-    return await this.repository.findOne(criteria);
-  }
-
   async create(dto: SettingCreateDto): Promise<Setting> {
     this.repository.validateSettingValue(dto.type, dto.value);
-    const created = await this.repository.create(dto);
+    const created = await super.create(dto);
     await this.clearCache();
     return created;
   }
@@ -89,7 +70,7 @@ export class SettingService {
     dtos.forEach((dto) =>
       this.repository.validateSettingValue(dto.type, dto.value),
     );
-    const created = await this.repository.createMany(dtos);
+    const created = await super.createMany(dtos);
     await this.clearCache();
     return created;
   }
@@ -107,7 +88,7 @@ export class SettingService {
       this.repository.validateSettingValue(existing.type, dto.value);
     }
 
-    const updated = await this.repository.update(existing.id, dto);
+    const updated = await this.updateById(existing.id, dto);
     if (!updated) {
       throw new NotFoundException('Unable to update setting');
     }
@@ -123,7 +104,7 @@ export class SettingService {
   }
 
   async deleteMany(filter: TFilterQuery<Setting>): Promise<DeleteResult> {
-    const result = await this.repository.deleteMany(filter);
+    const result = await super.deleteMany(filter);
     if (result.deletedCount > 0) {
       await this.clearCache();
     }
