@@ -5,7 +5,7 @@
  */
 
 import { HelperSetting } from '@/helper/types';
-import { SettingType } from '@/setting/schemas/types';
+import { SettingType } from '@/setting/types';
 
 export const LLM_NLU_HELPER_NAME = 'llm-nlu-helper';
 

@@ -42,13 +42,7 @@ export default abstract class BaseHelper<N extends HelperName = HelperName>
   }
 
   async setup() {
-    await this.settingService.seedIfNotExist(
-      this.getName(),
-      this.settings.map((s, i) => ({
-        ...s,
-        weight: i + 1,
-      })),
-    );
+    await this.settingService.seedIfNotExist(this.getName(), this.settings);
   }
 
   /**

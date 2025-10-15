@@ -1,0 +1,19 @@
+/*
+ * Hexabot — Fair Core License (FCL-1.0-ALv2)
+ * Copyright (c) 2025 Hexastack.
+ * Full terms: see LICENSE.md.
+ */
+
+import { Column, Entity, Index } from 'typeorm';
+
+import { BaseOrmEntity } from '@/database/entities/base.entity';
+
+@Entity({ name: 'metadata' })
+@Index(['name'], { unique: true })
+export class Metadata extends BaseOrmEntity {
+  @Column()
+  name!: string;
+
+  @Column({ type: 'simple-json' })
+  value!: any;
+}

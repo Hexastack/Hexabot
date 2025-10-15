@@ -7,8 +7,10 @@
 import { MongooseModule, MongooseModuleOptions } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 let mongod: MongoMemoryServer;
+const typeOrmDataSources: DataSource[] = [];
 
 export const rootMongooseTestModule = (
   fixturesFn: (...args: any) => Promise<any>,
@@ -40,3 +42,21 @@ export const closeInMongodConnection = async () => {
     console.warn('Unable to close MongoDB connection', err);
   }
 };
+
+export const registerTypeOrmDataSource = (dataSource: DataSource) => {
+  typeOrmDataSources.push(dataSource);
+};
+
+export const closeTypeOrmConnections = async () => {
+  await Promise.all(
+    typeOrmDataSources.map(async (dataSource) => {
+      if (dataSource.isInitialized) {
+        await dataSource.destroy();
+      }
+    }),
+  );
+  typeOrmDataSources.length = 0;
+};
+
+export const getLastTypeOrmDataSource = () =>
+  typeOrmDataSources[typeOrmDataSources.length - 1];

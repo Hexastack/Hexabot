@@ -8,13 +8,14 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
+  IsDefined,
   IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
 
-import { SettingType } from '../schemas/types';
+import { SettingType } from '../types';
 
 export class SettingCreateDto {
   @ApiProperty({ description: 'Setting group', type: String })
@@ -82,5 +83,6 @@ export class SettingCreateDto {
 
 export class SettingUpdateDto {
   @ApiProperty({ description: 'value of the setting' })
+  @IsDefined()
   value: null | string | number | boolean | string[] | Record<string, any>;
 }

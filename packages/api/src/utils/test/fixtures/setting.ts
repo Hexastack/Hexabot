@@ -5,10 +5,12 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
+import { Setting } from '@/setting/entities/setting.entity';
 import { SettingModel } from '@/setting/schemas/setting.schema';
-import { SettingType } from '@/setting/schemas/types';
+import { SettingType } from '@/setting/types';
 import { getRandom } from '@/utils/helpers/safeRandom';
 
 export const settingFixtures: SettingCreateDto[] = [
@@ -129,4 +131,10 @@ export const settingFixtures: SettingCreateDto[] = [
 export const installSettingFixtures = async () => {
   const Setting = mongoose.model(SettingModel.name, SettingModel.schema);
   return await Setting.insertMany(settingFixtures);
+};
+
+export const installSettingFixturesTypeOrm = async (dataSource: DataSource) => {
+  const repository = dataSource.getRepository(Setting);
+  const entities = repository.create(settingFixtures);
+  await repository.save(entities);
 };

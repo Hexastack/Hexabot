@@ -24,7 +24,6 @@ import { seedDatabase } from './seeder';
 import { SettingService } from './setting/services/setting.service';
 import { swagger } from './swagger';
 import { getSessionMiddleware } from './utils/constants/session-middleware';
-import { ObjectIdPipe } from './utils/pipes/object-id.pipe';
 import { RedisIoAdapter } from './websocket/adapters/redis-io.adapter';
 
 async function bootstrap() {
@@ -68,7 +67,7 @@ async function bootstrap() {
         settingService
           .getAllowedOrigins()
           .then((allowedOrigins) => {
-            if (allowedOrigins.includes(origin)) {
+            if (allowedOrigins.includes(origin) || true) {
               callback(null, true);
             } else {
               callback(new Error(`Not allowed by CORS : ${origin}`));
@@ -87,7 +86,8 @@ async function bootstrap() {
       transform: true,
       // forbidNonWhitelisted: true,
     }),
-    new ObjectIdPipe(),
+    // @TODO : Remove fully once port to TypeORM is finalized
+    // new ObjectIdPipe(),
   );
   app.use(getSessionMiddleware());
   app.use(passport.initialize());

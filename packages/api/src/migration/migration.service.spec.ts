@@ -11,7 +11,7 @@ import { ModuleRef } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
-import { Metadata } from '@/setting/schemas/metadata.schema';
+import { Metadata } from '@/setting/entities/metadata.entity';
 import { MetadataService } from '@/setting/services/metadata.service';
 import {
   closeInMongodConnection,

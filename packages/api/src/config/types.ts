@@ -20,6 +20,20 @@ type TCacheConfig = {
   port: number;
   type: 'memory' | 'redis';
 };
+type TDatabaseType = 'sqlite' | 'postgres' | 'mongodb';
+type TDatabaseConfig = {
+  type: TDatabaseType;
+  url?: string;
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  database?: string;
+  sqlitePath?: string;
+  synchronize: boolean;
+  logging: boolean;
+  schema?: string;
+};
 type SocketCookie =
   | {
       maxAge?: number | undefined;
@@ -106,6 +120,7 @@ export type Config = {
     level: TLogLevel;
   };
   cache: TCacheConfig;
+  database: TDatabaseConfig;
   mongo: {
     user: string;
     password: string;

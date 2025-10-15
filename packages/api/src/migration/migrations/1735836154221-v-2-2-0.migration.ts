@@ -25,7 +25,7 @@ import { StdOutgoingAttachmentMessage } from '@/chat/schemas/types/message';
 import contentSchema, { Content } from '@/cms/schemas/content.schema';
 import { config } from '@/config';
 import settingSchema, { Setting } from '@/setting/schemas/setting.schema';
-import { SettingType } from '@/setting/schemas/types';
+import { SettingType } from '@/setting/types';
 import roleSchema, { Role } from '@/user/schemas/role.schema';
 import userSchema, { User } from '@/user/schemas/user.schema';
 import { moveFile, moveFiles } from '@/utils/helpers/fs';

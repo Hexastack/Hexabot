@@ -5,7 +5,7 @@
  */
 
 import { SettingCreateDto } from '../dto/setting.dto';
-import { SettingType } from '../schemas/types';
+import { SettingType } from '../types';
 
 export const DEFAULT_SETTINGS = [
   {

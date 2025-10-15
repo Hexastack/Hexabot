@@ -4,11 +4,16 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ExtensionSetting } from '@/setting/schemas/types';
+import { AnySetting, ExtensionSetting } from '@/setting/types';
 import { HyphenToUnderscore } from '@/utils/types/extension';
 
 export type ChannelName = `${string}-channel`;
 
-export type ChannelSetting<N extends string = string> = ExtensionSetting<{
-  group: HyphenToUnderscore<N>;
-}>;
+export type ChannelSetting<N extends string = string> = ExtensionSetting<
+  {
+    group: HyphenToUnderscore<N>;
+    weight?: number;
+  },
+  AnySetting,
+  'id' | 'createdAt' | 'updatedAt' | 'group' | 'weight'
+>;

@@ -530,11 +530,6 @@ module.exports = {
       {
         value: version,
       },
-      {
-        // Create or update
-        upsert: true,
-        new: true,
-      },
     );
     this.logger.log(`db-version metadata "${version}"`);
   }

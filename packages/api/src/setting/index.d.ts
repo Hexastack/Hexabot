@@ -4,10 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { SettingType } from '@/setting/schemas/types';
-
-import { SettingByType } from './schemas/types';
+import type { Setting } from './entities/setting.entity';
 import { DEFAULT_SETTINGS } from './seeds/setting.seed-model';
+import { SettingByType, SettingSeed, SettingType } from './types';
 
 declare global {
   type TNativeType<T> = T extends string
@@ -26,21 +25,15 @@ declare global {
     ? K['options'][number]
     : TNativeType<K['value']>;
 
-  type SettingObject<
-    T extends Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>[],
-  > = {
+  type SettingObject<T extends SettingSeed[]> = {
     [K in T[number] as K['label']]: SettingValue<K>;
   };
 
-  type SettingMapByType<
-    T extends Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>[],
-  > = {
+  type SettingMapByType<T extends SettingSeed[]> = {
     [K in T[number] as K['label']]: SettingByType<K['type']>;
   };
 
-  type SettingTree<
-    T extends Omit<Setting, 'id' | 'createdAt' | 'updatedAt'>[],
-  > = {
+  type SettingTree<T extends SettingSeed[]> = {
     [G in T[number] as G['group']]: {
       [K in T[number] as K['label']]: SettingValue<K>;
     };

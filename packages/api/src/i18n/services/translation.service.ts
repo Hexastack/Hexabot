@@ -10,8 +10,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { PluginService } from '@/plugins/plugins.service';
 import { PluginType } from '@/plugins/types';
-import { SettingType } from '@/setting/schemas/types';
 import { SettingService } from '@/setting/services/setting.service';
+import { SettingType } from '@/setting/types';
 import { BaseService } from '@/utils/generics/base-service';
 
 import { Block } from '../../chat/schemas/block.schema';

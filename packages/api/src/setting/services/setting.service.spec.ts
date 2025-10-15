@@ -4,37 +4,44 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
 import { I18nService } from '@/i18n/services/i18n.service';
 import {
-  installSettingFixtures,
+  installSettingFixturesTypeOrm,
   settingFixtures,
 } from '@/utils/test/fixtures/setting';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Setting } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
-import { Setting } from '../schemas/setting.schema';
-import { SettingType } from '../schemas/types';
+import { SettingType } from '../types';
 
 import { SettingService } from './setting.service';
 
 describe('SettingService', () => {
   let settingService: SettingService;
   let settingRepository: SettingRepository;
-  const commonAttributes = {
-    type: SettingType.text,
-    id: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+  let module: TestingModule;
+  const makeSetting = (overrides: Partial<Setting>): Setting => {
+    const setting = new Setting();
+    Object.assign(setting, {
+      id: '',
+      group: 'group',
+      label: 'label',
+      value: '',
+      type: SettingType.text,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...overrides,
+    });
+    return setting;
   };
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installSettingFixtures)],
       providers: [
         SettingService,
         {
@@ -44,16 +51,28 @@ describe('SettingService', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installSettingFixturesTypeOrm,
+      },
     });
+    module = testingModule;
     [settingService, settingRepository] = await getMocks([
       SettingService,
       SettingRepository,
     ]);
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    await settingService.clearCache();
+  });
 
   describe('load', () => {
     it('Should return loaded settings', async () => {
@@ -63,7 +82,15 @@ describe('SettingService', () => {
       expect(settingRepository.findAll).toHaveBeenCalled();
       expect(result).toEqualPayload(
         settingService.group(settingFixtures as Setting[]),
-        ['id', 'createdAt', 'updatedAt', 'subgroup', 'translatable'],
+        [
+          'id',
+          'createdAt',
+          'updatedAt',
+          'subgroup',
+          'translatable',
+          'options',
+          'config',
+        ],
       );
     });
   });
@@ -74,11 +101,11 @@ describe('SettingService', () => {
     });
 
     it('should categorize settings by group and map labels to values', () => {
-      const settings: Setting[] = [
+      const settings = [
         { group: 'group1', label: 'setting1', value: 'value1' },
         { group: 'group1', label: 'setting2', value: 'value2' },
         { group: 'group2', label: 'setting1', value: 'value3' },
-      ].map((s) => ({ ...commonAttributes, ...s }));
+      ].map((s) => makeSetting(s));
       expect(settingService.buildTree(settings)).toEqualPayload({
         group1: { setting1: 'value1', setting2: 'value2' },
         group2: { setting1: 'value3' },
@@ -86,13 +113,8 @@ describe('SettingService', () => {
     });
 
     it('should handle undefined group as "undefinedGroup"', () => {
-      const settings: Setting[] = [
-        {
-          ...commonAttributes,
-          label: 'setting1',
-          value: 'value1',
-          group: '',
-        },
+      const settings = [
+        makeSetting({ label: 'setting1', value: 'value1', group: '' }),
       ];
       expect(settingService.buildTree(settings)).toEqualPayload({
         undefinedGroup: { setting1: 'value1' },
@@ -110,7 +132,7 @@ describe('SettingService', () => {
         { group: 'group1', label: 'setting1', value: 'value1' },
         { group: 'group1', label: 'setting2', value: 'value2' },
         { group: 'group2', label: 'setting1', value: 'value3' },
-      ].map((s) => ({ ...commonAttributes, ...s }));
+      ].map((s) => makeSetting(s));
       expect(settingService.group(settings)).toEqualPayload({
         group1: [
           { group: 'group1', label: 'setting1', type: 'text', value: 'value1' },
@@ -126,15 +148,15 @@ describe('SettingService', () => {
   describe('getAllowedOrigins', () => {
     it('should return a set of unique origins from allowed_domains settings', async () => {
       const mockSettings = [
-        {
+        makeSetting({
           label: 'allowed_domains',
           value: 'https://example.com,https://test.com',
-        },
-        {
+        }),
+        makeSetting({
           label: 'allowed_domains',
           value: 'https://example.com,https://another.com',
-        },
-      ] as Setting[];
+        }),
+      ];
 
       jest.spyOn(settingService, 'find').mockResolvedValue(mockSettings);
 
@@ -164,9 +186,12 @@ describe('SettingService', () => {
 
     it('should handle settings with empty values', async () => {
       const mockSettings = [
-        { label: 'allowed_domains', value: '' },
-        { label: 'allowed_domains', value: 'https://example.com' },
-      ] as Setting[];
+        makeSetting({ label: 'allowed_domains', value: '' }),
+        makeSetting({
+          label: 'allowed_domains',
+          value: 'https://example.com',
+        }),
+      ];
 
       jest.spyOn(settingService, 'find').mockResolvedValue(mockSettings);
 

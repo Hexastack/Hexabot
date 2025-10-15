@@ -159,6 +159,24 @@ export const config: Config = {
     host: process.env.REDIS_HOST || 'redis',
     port: parseInt(process.env.REDIS_PORT || '6379'),
   },
+  database: {
+    type: (process.env.DB_TYPE as Config['database']['type']) || 'sqlite',
+    url: process.env.DB_URL,
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : undefined,
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'hexabot',
+    sqlitePath: process.env.DB_SQLITE_PATH
+      ? join(process.cwd(), process.env.DB_SQLITE_PATH)
+      : join(process.cwd(), 'hexabot.sqlite'),
+    synchronize:
+      process.env.DB_SYNCHRONIZE !== undefined
+        ? process.env.DB_SYNCHRONIZE === 'true'
+        : !isProduction,
+    logging: process.env.DB_LOGGING === 'true',
+    schema: process.env.DB_SCHEMA,
+  },
   mongo: {
     user: process.env.MONGO_USER || 'dev_only',
     password: process.env.MONGO_PASSWORD || 'dev_only',

@@ -4,18 +4,17 @@
  * Full terms: see LICENSE.md.
  */
 
+import { TestingModule } from '@nestjs/testing';
+
 import { I18nService } from '@/i18n/services/i18n.service';
 import {
-  installSettingFixtures,
+  installSettingFixturesTypeOrm,
   settingFixtures,
 } from '@/utils/test/fixtures/setting';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../schemas/setting.schema';
+import { Setting } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
 import { SettingController } from './setting.controller';
@@ -23,12 +22,12 @@ import { SettingController } from './setting.controller';
 describe('SettingController', () => {
   let settingController: SettingController;
   let settingService: SettingService;
+  let module: TestingModule;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [SettingController],
-      imports: [rootMongooseTestModule(installSettingFixtures)],
       providers: [
         {
           provide: I18nService,
@@ -37,14 +36,23 @@ describe('SettingController', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installSettingFixturesTypeOrm,
+      },
     });
+    module = testingModule;
     [settingController, settingService] = await getMocks([
       SettingController,
       SettingService,
     ]);
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 
@@ -67,6 +75,8 @@ describe('SettingController', () => {
         'updatedAt',
         'subgroup',
         'translatable',
+        'options',
+        'config',
       ]);
     });
   });
@@ -90,7 +100,15 @@ describe('SettingController', () => {
           ),
           value: payload.value,
         },
-        ['id', 'createdAt', 'updatedAt', 'subgroup', 'translatable'],
+        [
+          'id',
+          'createdAt',
+          'updatedAt',
+          'subgroup',
+          'translatable',
+          'options',
+          'config',
+        ],
       );
     });
   });

@@ -5,8 +5,8 @@
  */
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 
 import { config } from '@/config';
@@ -16,122 +16,157 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { DeleteResult } from '@/utils/generics/base-repository';
+import {
+  PageQueryDto,
+  QuerySortDto,
+} from '@/utils/pagination/pagination-query.dto';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { SettingCreateDto } from '../dto/setting.dto';
+import { SettingCreateDto, SettingUpdateDto } from '../dto/setting.dto';
+import { Setting } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
-import { Setting } from '../schemas/setting.schema';
-import { TextSetting } from '../schemas/types';
-import { SettingSeeder } from '../seeds/setting.seed';
+import { SettingSeed, TextSetting } from '../types';
 
 @Injectable()
-export class SettingService extends BaseService<Setting> {
+export class SettingService {
   constructor(
-    readonly repository: SettingRepository,
+    private readonly repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-    private readonly seeder: SettingSeeder,
-  ) {
-    super(repository);
-  }
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
-  /**
-   * Seeds the settings if they don't already exist for the provided group.
-   *
-   * @param group - The group of settings to check.
-   * @param data - The array of settings to seed if none exist.
-   */
-  async seedIfNotExist(group: string, data: SettingCreateDto[]) {
+  async seedIfNotExist(
+    group: string,
+    data: readonly SettingSeed[],
+  ): Promise<void> {
     const count = await this.count({ group });
     if (count === 0) {
-      await this.seeder.seed(data);
+      const prepared = data.map(
+        (item, index): SettingCreateDto => ({
+          ...item,
+          weight: item.weight ?? index + 1,
+        }),
+      );
+      await this.createMany(prepared);
     }
   }
 
-  /**
-   * Loads all settings and returns them grouped in ascending order by weight.
-   *
-   * @returns A grouped object of settings.
-   */
-  async load() {
+  async load(): Promise<Record<string, Setting[]>> {
     const settings = await this.findAll(['weight', 'asc']);
     return this.group(settings);
   }
 
-  /**
-   * Builds a tree structure from the settings array.
-   *
-   * Each setting is grouped by its `group` and returned as a structured object.
-   *
-   * @param settings - An array of settings to build into a tree structure.
-   *
-   * @returns A `Settings` object organized by group.
-   */
+  async find(
+    filter: TFilterQuery<Setting> = {},
+    pageQuery?: PageQueryDto<Setting>,
+  ): Promise<Setting[]> {
+    return await this.repository.find(filter, pageQuery);
+  }
+
+  async findAll(sort?: QuerySortDto<Setting>): Promise<Setting[]> {
+    return await this.repository.findAll(sort);
+  }
+
+  async count(filter: TFilterQuery<Setting> = {}): Promise<number> {
+    return await this.repository.count(filter);
+  }
+
+  async findOne(
+    criteria: string | TFilterQuery<Setting>,
+  ): Promise<Setting | null> {
+    return await this.repository.findOne(criteria);
+  }
+
+  async create(dto: SettingCreateDto): Promise<Setting> {
+    this.repository.validateSettingValue(dto.type, dto.value);
+    const created = await this.repository.create(dto);
+    await this.clearCache();
+    return created;
+  }
+
+  async createMany(dtos: SettingCreateDto[]): Promise<Setting[]> {
+    dtos.forEach((dto) =>
+      this.repository.validateSettingValue(dto.type, dto.value),
+    );
+    const created = await this.repository.createMany(dtos);
+    await this.clearCache();
+    return created;
+  }
+
+  async updateOne(
+    criteria: string | TFilterQuery<Setting>,
+    dto: SettingUpdateDto | Partial<Setting>,
+  ): Promise<Setting> {
+    const existing = await this.findOne(criteria);
+    if (!existing) {
+      throw new NotFoundException('Setting not found');
+    }
+
+    if ('value' in dto) {
+      this.repository.validateSettingValue(existing.type, dto.value);
+    }
+
+    const updated = await this.repository.update(existing.id, dto);
+    if (!updated) {
+      throw new NotFoundException('Unable to update setting');
+    }
+
+    await this.clearCache();
+
+    const group = updated.group;
+    const label = updated.label;
+    const eventName = `hook:${group}:${label}`;
+    (this.eventEmitter as any).emit(eventName, updated);
+
+    return updated;
+  }
+
+  async deleteMany(filter: TFilterQuery<Setting>): Promise<DeleteResult> {
+    const result = await this.repository.deleteMany(filter);
+    if (result.deletedCount > 0) {
+      await this.clearCache();
+    }
+    return result;
+  }
+
   public buildTree(settings: Setting[]): Settings {
-    return settings.reduce((acc: Settings, s: Setting) => {
-      const groupKey = s.group || 'undefinedGroup';
+    return settings.reduce((acc: Settings, setting: Setting) => {
+      const groupKey = setting.group || 'undefinedGroup';
 
       acc[groupKey] = acc[groupKey] || {};
-      acc[groupKey][s.label] = s.value;
+      acc[groupKey][setting.label] = setting.value;
 
       return acc;
     }, {} as Settings);
   }
 
-  /**
-   * Groups the settings into a record where the key is the setting group and
-   * the value is an array of settings in that group.
-   *
-   * @param settings - An array of settings to group.
-   *
-   * @returns A record where each key is a group and each value is an array of settings.
-   */
   public group(settings: Setting[]): Record<string, Setting[]> {
-    return (
-      settings?.reduce((acc, curr) => {
+    return settings.reduce(
+      (acc, curr) => {
         const group = acc[curr.group] || [];
         group.push(curr);
         acc[curr.group] = group;
         return acc;
-      }, {}) || {}
+      },
+      {} as Record<string, Setting[]>,
     );
   }
 
-  /**
-   * Retrieves the application configuration object.
-   *
-   * @returns The global configuration object.
-   */
   getConfig(): Config {
     return config;
   }
 
-  /**
-   * Clears the settings cache
-   */
-  async clearCache() {
-    this.cacheManager.del(SETTING_CACHE_KEY);
-    this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
+  async clearCache(): Promise<void> {
+    await this.cacheManager.del(SETTING_CACHE_KEY);
+    await this.cacheManager.del(ALLOWED_ORIGINS_CACHE_KEY);
   }
 
-  /**
-   * Event handler for setting updates. Listens to 'hook:setting:*' events
-   * and invalidates the cache for settings when triggered.
-   */
   @OnEvent('hook:setting:*')
-  async handleSettingUpdateEvent() {
-    this.clearCache();
+  async handleSettingUpdateEvent(): Promise<void> {
+    await this.clearCache();
   }
 
-  /**
-   * Retrieves a set of unique allowed origins for CORS configuration.
-   *
-   * This method combines all `allowed_domains` settings,
-   * splits their values (comma-separated), and removes duplicates to produce a
-   * whitelist of origins. The result is cached for better performance using the
-   * `Cacheable` decorator with the key `ALLOWED_ORIGINS_CACHE_KEY`.
-   *
-   * @returns A promise that resolves to a set of allowed origins
-   */
   @Cacheable(ALLOWED_ORIGINS_CACHE_KEY)
   async getAllowedOrigins(): Promise<string[]> {
     const settings = (await this.find({
@@ -139,7 +174,9 @@ export class SettingService extends BaseService<Setting> {
     })) as TextSetting[];
 
     const allowedDomains = settings.flatMap((setting) =>
-      setting.value.split(',').filter((o) => !!o),
+      (typeof setting.value === 'string' ? setting.value : '')
+        .split(',')
+        .filter((origin) => origin),
     );
 
     const uniqueOrigins = new Set([
@@ -151,12 +188,6 @@ export class SettingService extends BaseService<Setting> {
     return Array.from(uniqueOrigins);
   }
 
-  /**
-   * Retrieves settings from the cache if available, or loads them from the
-   * repository and caches the result.
-   *
-   * @returns A promise that resolves to a `Settings` object.
-   */
   @Cacheable(SETTING_CACHE_KEY)
   async getSettings(): Promise<Settings> {
     const settings = await this.findAll();

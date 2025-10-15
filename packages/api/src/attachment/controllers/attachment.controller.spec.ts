@@ -25,7 +25,10 @@ import {
   attachmentFixtures,
   installAttachmentFixtures,
 } from '@/utils/test/fixtures/attachment';
-import { installSettingFixtures } from '@/utils/test/fixtures/setting';
+import {
+  installSettingFixtures,
+  installSettingFixturesTypeOrm,
+} from '@/utils/test/fixtures/setting';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -61,6 +64,9 @@ describe('AttachmentController', () => {
         }),
       ],
       providers: [PermissionService, ModelService],
+      typeorm: {
+        fixtures: installSettingFixturesTypeOrm,
+      },
     });
     [attachmentController, attachmentService, helperService, settingService] =
       await getMocks([

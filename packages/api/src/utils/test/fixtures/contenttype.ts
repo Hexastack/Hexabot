@@ -11,7 +11,7 @@ import {
   ContentType,
   ContentTypeModel,
 } from '@/cms/schemas/content-type.schema';
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';

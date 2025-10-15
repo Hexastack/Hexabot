@@ -6,14 +6,21 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
-
+import { Metadata } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
-import { Metadata } from '../schemas/metadata.schema';
 
 @Injectable()
-export class MetadataService extends BaseService<Metadata> {
-  constructor(readonly repository: MetadataRepository) {
-    super(repository);
+export class MetadataService {
+  constructor(private readonly repository: MetadataRepository) {}
+
+  async findOne(filter: Partial<Metadata>): Promise<Metadata | null> {
+    return await this.repository.findOne(filter);
+  }
+
+  async updateOne(
+    filter: Partial<Metadata>,
+    payload: Partial<Metadata>,
+  ): Promise<Metadata> {
+    return await this.repository.upsert(filter, payload);
   }
 }

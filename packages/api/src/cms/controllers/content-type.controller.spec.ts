@@ -8,7 +8,7 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 
 import { BlockService } from '@/chat/services/block.service';
 import { I18nService } from '@/i18n/services/i18n.service';
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installContentFixtures } from '@/utils/test/fixtures/content';

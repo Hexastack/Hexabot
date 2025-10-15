@@ -6,7 +6,7 @@
 
 import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 import { BaseSchema } from '@/utils/generics/base-schema';
 import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
 

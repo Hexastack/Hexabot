@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 import { DtoConfig } from '@/utils/types/dto.types';
 
 import { UniqueFieldNames } from '../decorators/unique-field-names.decorator';

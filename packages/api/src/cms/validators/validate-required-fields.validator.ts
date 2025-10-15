@@ -10,7 +10,7 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 
-import { FieldType } from '@/setting/schemas/types';
+import { FieldType } from '@/setting/types';
 
 import { ContentField } from '../dto/contentType.dto';
 

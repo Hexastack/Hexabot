@@ -5,7 +5,7 @@
  */
 
 import { HelperSetting } from '@/helper/types';
-import { SettingType } from '@/setting/schemas/types';
+import { SettingType } from '@/setting/types';
 
 export const TEST_HELPER_NAME = 'test-helper';
 

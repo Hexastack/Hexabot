@@ -4,16 +4,22 @@
  * Full terms: see LICENSE.md.
  */
 
-import { jest } from '@jest/globals';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata, Provider } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ModelDefinition, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
+import { Metadata } from '@/setting/entities/metadata.entity';
+import { Setting } from '@/setting/entities/setting.entity';
+import { SettingModule } from '@/setting/setting.module';
 
 import { LifecycleHookManager } from '../generics/lifecycle-hook-manager';
+
+import { registerTypeOrmDataSource } from './test';
 
 type TTypeOrToken = [
   new (...args: any[]) => any,
@@ -26,11 +32,21 @@ type TModel = ModelDefinition | `${string}Model`;
 
 type ToUnionArray<T> = (NonNullable<T> extends (infer U)[] ? U : never)[];
 
+type TypeOrmFixture = (dataSource: DataSource) => Promise<void> | void;
+
+type TypeOrmTestingConfig = {
+  entities?: EntityTarget<any>[];
+  fixtures?: TypeOrmFixture | TypeOrmFixture[];
+  dataSourceOptions?: Partial<DataSourceOptions>;
+};
+
 type buildTestingMocksProps<
   P extends ModuleMetadata['providers'] = ModuleMetadata['providers'],
   C extends ModuleMetadata['controllers'] = ModuleMetadata['controllers'],
 > = ModuleMetadata & {
   models?: TModel[];
+  typeorm?: TypeOrmTestingConfig | TypeOrmTestingConfig[];
+  includeSettingModule?: boolean;
 } & (
     | {
         providers: NonNullable<P>;
@@ -120,13 +136,9 @@ const getClassDependencies = (parentClass: Provider): Provider[] => {
  * @returns The model definition.
  * @throws If the model cannot be found.
  */
-const getModel = (name: string, suffix = ''): ModelDefinition => {
+const getModel = (name: string, suffix = ''): ModelDefinition | undefined => {
   const modelName = name.replace(suffix, '');
   const model = LifecycleHookManager.getModel(modelName);
-
-  if (!model) {
-    throw new Error(`Unable to find model for name '${modelName}!'`);
-  }
 
   return model;
 };
@@ -146,7 +158,9 @@ const getNestedModels = (
   extendedProviders.reduce((acc, extendedProvider) => {
     if ('name' in extendedProvider && extendedProvider.name.endsWith(suffix)) {
       const model = getModel(extendedProvider.name, suffix);
-      acc.push(model);
+      if (model) {
+        acc.push(model);
+      }
     }
 
     return acc;
@@ -203,22 +217,13 @@ const canInjectModels = (imports: buildTestingMocksProps['imports']): boolean =>
  * @returns Array of resolved model definitions.
  */
 const getModels = (models: TModel[]): ModelDefinition[] =>
-  models.map((model) =>
-    typeof model === 'string' ? getModel(model, 'Model') : model,
-  );
+  models
+    .map((model) =>
+      typeof model === 'string' ? getModel(model, 'Model') : model,
+    )
+    .filter((model): model is ModelDefinition => Boolean(model));
 
-const defaultProviders = [
-  LoggerService,
-  EventEmitter2,
-  {
-    provide: CACHE_MANAGER,
-    useValue: {
-      del: jest.fn(),
-      set: jest.fn(),
-      get: jest.fn(),
-    },
-  },
-];
+const defaultProviders: Provider[] = [LoggerService];
 
 /**
  * Dynamically builds a NestJS TestingModule for unit tests with automated dependency resolution.
@@ -254,6 +259,8 @@ export const buildTestingMocks = async ({
   providers = [],
   controllers = [],
   autoInjectFrom,
+  typeorm,
+  includeSettingModule,
   ...rest
 }: buildTestingMocksProps) => {
   const extendedProviders = new Set<Provider>();
@@ -277,27 +284,132 @@ export const buildTestingMocks = async ({
     dynamicProviders.add(provider);
   });
 
-  const module = await Test.createTestingModule(
-    {
-      imports: [
-        ...(canInjectModels(imports)
-          ? [
-              MongooseModule.forFeature([
-                ...getModels(models),
-                ...(autoInjectFrom
-                  ? getNestedModels([...dynamicProviders], 'Repository')
-                  : []),
-              ]),
-            ]
-          : []),
-        ...imports,
-      ],
-      providers: [...dynamicProviders],
-      controllers,
-      ...rest,
-    },
-    { moduleIdGeneratorAlgorithm: 'deep-hash' },
-  ).compile();
+  const providersList = [...dynamicProviders];
+  const overrideTokens = new Set<Provider>(
+    providersList
+      .filter(
+        (provider) =>
+          typeof provider === 'object' &&
+          provider !== null &&
+          'provide' in provider,
+      )
+      .map((provider) => (provider as { provide: Provider }).provide),
+  );
+
+  const resolvedProviders = providersList.filter(
+    (provider) =>
+      !(
+        typeof provider === 'function' &&
+        overrideTokens.has(provider as unknown as Provider)
+      ),
+  );
+
+  const defaultTypeOrmEntities: EntityTarget<any>[] = [Setting, Metadata];
+  const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
+  let typeOrmOptions: Partial<DataSourceOptions> | undefined;
+  const typeOrmFixtures: TypeOrmFixture[] = [];
+
+  const typeOrmConfigs = Array.isArray(typeorm)
+    ? typeorm.filter(Boolean)
+    : typeorm
+      ? [typeorm]
+      : [];
+
+  typeOrmConfigs.forEach((config) => {
+    config.entities?.forEach((entity) => typeOrmEntities.add(entity));
+    const fixtures = config.fixtures
+      ? Array.isArray(config.fixtures)
+        ? config.fixtures
+        : [config.fixtures]
+      : [];
+    fixtures.forEach((fixture) => typeOrmFixtures.push(fixture));
+    if (config.dataSourceOptions) {
+      typeOrmOptions = {
+        ...(typeOrmOptions ?? {}),
+        ...config.dataSourceOptions,
+      } as Partial<DataSourceOptions>;
+    }
+  });
+
+  const typeOrmFixtureRunner =
+    typeOrmFixtures.length > 0
+      ? async (dataSource: DataSource) => {
+          for (const fixture of typeOrmFixtures) {
+            await fixture(dataSource);
+          }
+        }
+      : undefined;
+
+  let dataSource: DataSource | undefined;
+  const typeOrmProviders: Provider[] = [];
+
+  if (typeOrmEntities.size > 0) {
+    const entitiesArray = Array.from(typeOrmEntities);
+
+    const baseOptions: DataSourceOptions = {
+      type: 'sqlite',
+      database: ':memory:',
+      synchronize: true,
+      dropSchema: true,
+      logging: false,
+      entities: entitiesArray,
+      ...(typeOrmOptions ?? {}),
+    } as DataSourceOptions;
+
+    dataSource = new DataSource(baseOptions);
+    await dataSource.initialize();
+    if (typeOrmFixtureRunner) {
+      await typeOrmFixtureRunner(dataSource);
+    }
+    registerTypeOrmDataSource(dataSource);
+
+    const dataSourceToken = getDataSourceToken(
+      baseOptions as DataSourceOptions,
+    );
+    typeOrmProviders.push(
+      { provide: DataSource, useValue: dataSource },
+      { provide: dataSourceToken, useValue: dataSource },
+    );
+
+    const currentDataSource = dataSource;
+    if (!currentDataSource) {
+      throw new Error('TypeORM data source failed to initialize');
+    }
+
+    entitiesArray.forEach((entity) => {
+      typeOrmProviders.push({
+        provide: getRepositoryToken(entity as any),
+        useValue: currentDataSource.getRepository(entity),
+      });
+    });
+  }
+
+  const shouldIncludeSettingModule =
+    includeSettingModule ?? typeOrmEntities.size === 0;
+
+  const testingModuleBuilder = Test.createTestingModule({
+    imports: [
+      EventEmitterModule.forRoot({ global: true }),
+      CacheModule.register({ isGlobal: true }),
+      ...(shouldIncludeSettingModule ? [SettingModule] : []),
+      ...(canInjectModels(imports)
+        ? [
+            MongooseModule.forFeature([
+              ...getModels(models),
+              ...(autoInjectFrom
+                ? getNestedModels([...dynamicProviders], 'Repository')
+                : []),
+            ]),
+          ]
+        : []),
+      ...imports,
+    ],
+    providers: [...resolvedProviders, ...typeOrmProviders],
+    controllers,
+    ...rest,
+  });
+
+  const module = await testingModuleBuilder.compile();
 
   return {
     module,
