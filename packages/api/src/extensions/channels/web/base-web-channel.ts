@@ -17,7 +17,7 @@ import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,

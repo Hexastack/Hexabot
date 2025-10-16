@@ -23,20 +23,14 @@ import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
 import {
   attachmentFixtures,
-  installAttachmentFixtures,
+  installAttachmentFixturesTypeOrm,
 } from '@/utils/test/fixtures/attachment';
-import {
-  installSettingFixtures,
-  installSettingFixturesTypeOrm,
-} from '@/utils/test/fixtures/setting';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
-import { Attachment } from '../schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import {
   AttachmentAccess,
@@ -57,15 +51,22 @@ describe('AttachmentController', () => {
     const { getMocks, resolveMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers', 'providers'],
       controllers: [AttachmentController],
-      imports: [
-        rootMongooseTestModule(async () => {
-          await installSettingFixtures();
-          await installAttachmentFixtures();
-        }),
+      providers: [
+        {
+          provide: PermissionService,
+          useValue: { findOne: jest.fn() },
+        },
+        {
+          provide: ModelService,
+          useValue: { findOne: jest.fn() },
+        },
       ],
-      providers: [PermissionService, ModelService],
       typeorm: {
-        fixtures: installSettingFixturesTypeOrm,
+        entities: [Attachment],
+        fixtures: [
+          installSettingFixturesTypeOrm,
+          installAttachmentFixturesTypeOrm,
+        ],
       },
     });
     [attachmentController, attachmentService, helperService, settingService] =
@@ -86,7 +87,9 @@ describe('AttachmentController', () => {
     );
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeTypeOrmConnections();
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -150,7 +153,7 @@ describe('AttachmentController', () => {
             createdBy: '9'.repeat(24),
           },
         ],
-        [...IGNORED_TEST_FIELDS, 'location', 'url'],
+        [...IGNORED_TEST_FIELDS, 'location', 'url', 'channel'],
       );
     });
   });

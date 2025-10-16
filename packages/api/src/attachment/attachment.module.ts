@@ -7,19 +7,19 @@
 import { existsSync, mkdirSync } from 'fs';
 
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AppInstance } from '@/app.instance';
 import { config } from '@/config';
 import { UserModule } from '@/user/user.module';
 
 import { AttachmentController } from './controllers/attachment.controller';
+import { Attachment } from './entities/attachment.entity';
 import { AttachmentRepository } from './repositories/attachment.repository';
-import { AttachmentModel } from './schemas/attachment.schema';
 import { AttachmentService } from './services/attachment.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([AttachmentModel]), UserModule],
+  imports: [TypeOrmModule.forFeature([Attachment]), UserModule],
   providers: [AttachmentRepository, AttachmentService],
   controllers: [AttachmentController],
   exports: [AttachmentService],

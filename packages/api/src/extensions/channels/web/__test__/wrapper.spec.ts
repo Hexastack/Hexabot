@@ -6,7 +6,7 @@
 
 import { JwtService } from '@nestjs/jwt';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import {
   IncomingMessageType,
   StdEventType,

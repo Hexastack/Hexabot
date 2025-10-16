@@ -5,16 +5,19 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Attachment } from '../schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 
 @Injectable()
-export class AttachmentRepository extends BaseRepository<Attachment, never> {
-  constructor(@InjectModel(Attachment.name) readonly model: Model<Attachment>) {
-    super(model, Attachment);
+export class AttachmentRepository extends BaseOrmRepository<Attachment> {
+  constructor(
+    @InjectRepository(Attachment)
+    repository: Repository<Attachment>,
+  ) {
+    super(repository);
   }
 }

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import { PayloadType } from '@/chat/schemas/types/button';

@@ -21,7 +21,7 @@ import {
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentResourceRef } from '@/attachment/types';
 import {
   fileExists,

@@ -8,16 +8,22 @@ import { Readable, Stream } from 'stream';
 
 import { Injectable, StreamableFile } from '@nestjs/common';
 
+import { Attachment as AttachmentEntity } from '@/attachment/entities/attachment.entity';
+import { Attachment as AttachmentSchema } from '@/attachment/schemas/attachment.schema';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
-import { BaseService } from '@/utils/generics/base-service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { AttachmentMetadataDto } from '../dto/attachment.dto';
 import { AttachmentRepository } from '../repositories/attachment.repository';
-import { Attachment } from '../schemas/attachment.schema';
+
+type AttachmentLike = AttachmentEntity | AttachmentSchema;
 
 @Injectable()
-export class AttachmentService extends BaseService<Attachment> {
+export class AttachmentService extends BaseOrmService<
+  AttachmentEntity,
+  AttachmentRepository
+> {
   constructor(
     readonly repository: AttachmentRepository,
     private readonly helperService: HelperService,
@@ -39,7 +45,7 @@ export class AttachmentService extends BaseService<Attachment> {
   async store(
     file: Buffer | Stream | Readable | Express.Multer.File,
     metadata: AttachmentMetadataDto,
-  ): Promise<Attachment> {
+  ): Promise<AttachmentEntity> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
@@ -50,14 +56,14 @@ export class AttachmentService extends BaseService<Attachment> {
   /**
    * Downloads the specified attachment using the default storage helper.
    *
-   * @param The attachment object containing the metadata required for the download.
+   * @param attachment - The attachment object containing the metadata required for the download.
    * @returns A promise resolving to a `StreamableFile` instance of the downloaded attachment.
    */
-  async download(attachment: Attachment): Promise<StreamableFile> {
+  async download(attachment: AttachmentLike): Promise<StreamableFile> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
-    return await storageHelper.download(attachment);
+    return await storageHelper.download(this.toEntity(attachment));
   }
 
   /**
@@ -66,11 +72,13 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param attachment - The attachment object containing the metadata required to locate the file.
    * @returns A promise resolving to the file content as a `Buffer`, or `undefined` if the file cannot be read.
    */
-  async readAsBuffer(attachment: Attachment): Promise<Buffer | undefined> {
+  async readAsBuffer(
+    attachment: AttachmentLike,
+  ): Promise<Buffer | undefined> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
-    return await storageHelper.readAsBuffer(attachment);
+    return await storageHelper.readAsBuffer(this.toEntity(attachment));
   }
 
   /**
@@ -79,10 +87,37 @@ export class AttachmentService extends BaseService<Attachment> {
    * @param attachment - The attachment object containing the metadata required to locate the file.
    * @returns A promise resolving to the file content as a `Stream`, or `undefined` if the file cannot be read.
    */
-  async readAsStream(attachment: Attachment): Promise<Stream | undefined> {
+  async readAsStream(
+    attachment: AttachmentLike,
+  ): Promise<Stream | undefined> {
     const storageHelper = await this.helperService.getDefaultHelper(
       HelperType.STORAGE,
     );
-    return await storageHelper.readAsStream(attachment);
+    return await storageHelper.readAsStream(this.toEntity(attachment));
+  }
+
+  private toEntity(attachment: AttachmentLike): AttachmentEntity {
+    if (attachment instanceof AttachmentEntity) {
+      return attachment;
+    }
+
+    const entity = new AttachmentEntity();
+    Object.assign(entity, {
+      id: (attachment as AttachmentSchema & { id?: string }).id ??
+        (attachment as any)?._id?.toString(),
+      name: attachment.name,
+      type: attachment.type,
+      size: attachment.size,
+      location: attachment.location,
+      channel: attachment.channel,
+      createdBy: (attachment as any).createdBy ?? null,
+      createdByRef: attachment.createdByRef,
+      resourceRef: attachment.resourceRef,
+      access: attachment.access,
+      createdAt: attachment.createdAt,
+      updatedAt: attachment.updatedAt,
+    });
+
+    return entity;
   }
 }

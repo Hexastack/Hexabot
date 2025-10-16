@@ -12,7 +12,7 @@ import {
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 

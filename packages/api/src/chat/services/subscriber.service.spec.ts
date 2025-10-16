@@ -6,7 +6,7 @@
 
 import mime from 'mime';
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment as AttachmentEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -187,7 +187,9 @@ describe('SubscriberService', () => {
       };
       jest.spyOn(mime, 'extension').mockReturnValue('png');
 
-      const fakeAttachment = { id: '9'.repeat(24) } as Attachment;
+      const fakeAttachment = Object.assign(new AttachmentEntity(), {
+        id: '9'.repeat(24),
+      });
       jest.spyOn(attachmentService, 'store').mockResolvedValue(fakeAttachment);
 
       const result = await subscriberService.storeAvatar(

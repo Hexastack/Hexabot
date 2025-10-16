@@ -6,14 +6,14 @@
 
 import { Stream } from 'node:stream';
 
-import { Attachment } from '../schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '../types';
 
-export const attachment: Attachment = {
+const baseAttachment = {
   name: 'Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
   type: 'image/png',
   size: 343370,
@@ -26,7 +26,12 @@ export const attachment: Attachment = {
   updatedAt: new Date(),
   createdBy: '1',
   createdByRef: AttachmentCreatedByRef.User,
-};
+} satisfies Partial<Attachment>;
+
+export const attachment: Attachment = Object.assign(
+  new Attachment(),
+  baseAttachment,
+);
 
 export const attachmentFile: Express.Multer.File = {
   filename: attachment.name,
@@ -43,7 +48,7 @@ export const attachmentFile: Express.Multer.File = {
 
 export const attachments: Attachment[] = [
   attachment,
-  {
+  Object.assign(new Attachment(), {
     name: 'Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
     type: 'image/png',
     size: 343370,
@@ -57,8 +62,8 @@ export const attachments: Attachment[] = [
     updatedAt: new Date(),
     createdBy: '1',
     createdByRef: AttachmentCreatedByRef.User,
-  },
-  {
+  }),
+  Object.assign(new Attachment(), {
     name: 'Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
     type: 'image/png',
     size: 33829,
@@ -72,5 +77,5 @@ export const attachments: Attachment[] = [
     updatedAt: new Date(),
     createdBy: '1',
     createdByRef: AttachmentCreatedByRef.User,
-  },
+  }),
 ];

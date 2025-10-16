@@ -5,9 +5,11 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -53,4 +55,12 @@ export const installAttachmentFixtures = async () => {
     AttachmentModel.schema,
   );
   return await Attachment.insertMany(attachmentFixtures);
+};
+
+export const installAttachmentFixturesTypeOrm = async (
+  dataSource: DataSource,
+) => {
+  const repository = dataSource.getRepository(Attachment);
+  const entities = repository.create(attachmentFixtures);
+  await repository.save(entities);
 };

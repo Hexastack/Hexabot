@@ -10,7 +10,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { InjectDynamicProviders } from 'nestjs-dynamic-providers';
 
 import { AttachmentModule } from '@/attachment/attachment.module';
-import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
 import { ChatModule } from '@/chat/chat.module';
 import { BlockModel } from '@/chat/schemas/block.schema';
 import { CmsModule } from '@/cms/cms.module';
@@ -31,12 +30,7 @@ import { PluginService } from './plugins.service';
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      BlockModel,
-      AttachmentModel,
-      ContentModel,
-      ContentTypeModel,
-    ]),
+    MongooseModule.forFeature([BlockModel, ContentModel, ContentTypeModel]),
     CmsModule,
     AttachmentModule,
     ChatModule,

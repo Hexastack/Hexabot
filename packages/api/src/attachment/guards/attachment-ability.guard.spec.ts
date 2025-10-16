@@ -14,7 +14,7 @@ import { Action } from '@/user/types/action.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment } from '../mocks/attachment.mock';
-import { Attachment } from '../schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
 

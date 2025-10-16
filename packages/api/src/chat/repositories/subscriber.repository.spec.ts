@@ -7,8 +7,8 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { Attachment as AttachmentEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
-import { Attachment } from '@/attachment/schemas/attachment.schema';
 import { UserRepository } from '@/user/repositories/user.repository';
 import { User } from '@/user/schemas/user.schema';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
@@ -39,7 +39,7 @@ describe('SubscriberRepository', () => {
   let allLabels: Label[];
   let allUsers: User[];
   let allSubscribers: Subscriber[];
-  let allAttachments: Attachment[];
+  let allAttachments: AttachmentEntity[];
   let subscribersWithPopulatedFields: SubscriberFull[];
 
   beforeAll(async () => {
@@ -50,7 +50,12 @@ describe('SubscriberRepository', () => {
         SubscriberRepository,
         LabelRepository,
         UserRepository,
-        AttachmentRepository,
+        {
+          provide: AttachmentRepository,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+          },
+        },
       ],
     });
     [
@@ -76,7 +81,7 @@ describe('SubscriberRepository', () => {
       labels: allLabels.filter((label) => subscriber.labels.includes(label.id)),
       assignedTo:
         allUsers.find(({ id }) => subscriber.assignedTo === id) || null,
-      avatar: allAttachments.find(({ id }) => subscriber.avatar === id) || null,
+      avatar: null,
     }));
   });
 

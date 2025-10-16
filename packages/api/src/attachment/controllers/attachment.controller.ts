@@ -28,7 +28,7 @@ import { diskStorage, memoryStorage } from 'multer';
 
 import { config } from '@/config';
 import { Roles } from '@/utils/decorators/roles.decorator';
-import { BaseController } from '@/utils/generics/base-controller';
+import { LoggerService } from '@/logger/logger.service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
@@ -39,16 +39,17 @@ import {
   AttachmentDownloadDto,
 } from '../dto/attachment.dto';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
-import { Attachment } from '../schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
 @Controller('attachment')
 @UseGuards(AttachmentGuard)
-export class AttachmentController extends BaseController<Attachment> {
-  constructor(private readonly attachmentService: AttachmentService) {
-    super(attachmentService);
-  }
+export class AttachmentController {
+  constructor(
+    private readonly attachmentService: AttachmentService,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * Counts the filtered number of attachments.
@@ -64,7 +65,8 @@ export class AttachmentController extends BaseController<Attachment> {
     )
     filters?: TFilterQuery<Attachment>,
   ) {
-    return await this.count(filters);
+    const count = await this.attachmentService.count(filters);
+    return { count };
   }
 
   @Get(':id')

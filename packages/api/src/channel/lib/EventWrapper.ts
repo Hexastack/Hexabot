@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {

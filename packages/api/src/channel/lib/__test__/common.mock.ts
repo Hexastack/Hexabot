@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/schemas/attachment.schema';
+import { Attachment } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -80,7 +80,7 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
   ],
 };
 
-const attachment: Attachment = {
+const attachment: Attachment = Object.assign(new Attachment(), {
   id: '1'.repeat(24),
   name: 'attachment.jpg',
   type: 'image/jpeg',
@@ -97,7 +97,7 @@ const attachment: Attachment = {
   createdBy: null,
   createdAt: new Date(),
   updatedAt: new Date(),
-};
+});
 
 export const contentMessage: StdOutgoingListMessage = {
   options: {

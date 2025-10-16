@@ -10,7 +10,7 @@ import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
-import { type Attachment } from '@/attachment/schemas/attachment.schema';
+import { type Attachment } from '@/attachment/entities/attachment.entity';
 import type EventWrapper from '@/channel/lib/EventWrapper';
 import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import type { Block, BlockFull } from '@/chat/schemas/block.schema';

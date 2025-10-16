@@ -13,8 +13,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { isUUID } from 'class-validator';
 import { Request } from 'express';
-import { Types } from 'mongoose';
 import qs from 'qs';
 
 import { User } from '@/user/schemas/user.schema';
@@ -193,6 +193,26 @@ export class AttachmentGuard implements CanActivate {
   }
 
   /**
+   * Checks whether a value is a valid attachment identifier.
+   *
+   * @param value - The value to validate.
+   * @returns `true` if the value is a non-empty string, otherwise `false`.
+   */
+  private isValidId(value: unknown): value is string {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return false;
+    }
+
+    const objectIdRegex = /^[a-fA-F0-9]{24}$/;
+    return objectIdRegex.test(trimmed) || isUUID(trimmed);
+  }
+
+  /**
    * Determines if the user is authorized to perform the requested action.
    *
    * @param ctx - The execution context, providing details of the
@@ -208,7 +228,7 @@ export class AttachmentGuard implements CanActivate {
     switch (method) {
       // count(), find() and findOne() endpoints
       case 'GET': {
-        if (params && 'id' in params && Types.ObjectId.isValid(params.id)) {
+        if (params && 'id' in params && this.isValidId(params.id)) {
           const attachment = await this.attachmentService.findOne(params.id);
 
           if (!attachment) {
@@ -247,7 +267,7 @@ export class AttachmentGuard implements CanActivate {
       }
       // deleteOne() endpoint
       case 'DELETE': {
-        if (params && 'id' in params && Types.ObjectId.isValid(params.id)) {
+        if (params && 'id' in params && this.isValidId(params.id)) {
           const attachment = await this.attachmentService.findOne(params.id);
 
           if (!attachment) {
