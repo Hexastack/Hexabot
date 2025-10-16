@@ -14,7 +14,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { BotStatsType } from '../schemas/bot-stats.schema';
+import { BotStatsType } from '../entities/bot-stats.entity';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
 
 export class BotStatsCreateDto {

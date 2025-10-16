@@ -7,7 +7,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
+import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { HelperService } from '@/helper/helper.service';
 import { FlowEscape, HelperType } from '@/helper/types';

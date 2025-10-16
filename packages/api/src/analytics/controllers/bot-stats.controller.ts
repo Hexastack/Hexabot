@@ -7,11 +7,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
 
 import { BotStatsFindDatumDto, BotStatsFindDto } from '../dto/bot-stats.dto';
-import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
+import {
+  BotStats,
+  BotStatsType,
+  ToLinesType,
+} from '../entities/bot-stats.entity';
 import { BotStatsService } from '../services/bot-stats.service';
 import { aMonthAgo } from '../utilities';
-
-import { ToLinesType } from './../schemas/bot-stats.schema';
 
 @Controller('botstats')
 export class BotStatsController {

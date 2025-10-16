@@ -5,17 +5,20 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Between, In, Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
+import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
 
 @Injectable()
-export class BotStatsRepository extends BaseRepository<BotStats> {
-  constructor(@InjectModel(BotStats.name) readonly model: Model<BotStats>) {
-    super(model, BotStats);
+export class BotStatsRepository extends BaseOrmRepository<BotStats> {
+  constructor(
+    @InjectRepository(BotStats)
+    repository: Repository<BotStats>,
+  ) {
+    super(repository);
   }
 
   /**
@@ -31,13 +34,21 @@ export class BotStatsRepository extends BaseRepository<BotStats> {
     to: Date,
     types: BotStatsType[],
   ): Promise<BotStats[]> {
-    const query = this.model
-      .find({
-        type: { $in: types },
-        day: { $gte: from, $lte: to },
-      })
-      .sort({ $natural: 1 });
-    return await this.execute(query, BotStats);
+    if (!types.length) {
+      return [];
+    }
+
+    return await this.repository.find({
+      where: {
+        type: In(types),
+        day: Between(from, to),
+      },
+      order: {
+        day: 'ASC',
+        createdAt: 'ASC',
+        id: 'ASC',
+      },
+    });
   }
 
   /**
@@ -53,34 +64,24 @@ export class BotStatsRepository extends BaseRepository<BotStats> {
     to: Date,
     limit: number = 5,
   ): Promise<{ id: string; value: number }[]> {
-    return await this.model.aggregate([
-      {
-        $match: {
-          day: { $gte: from, $lte: to },
-          type: BotStatsType.popular,
-        },
-      },
-      {
-        $group: {
-          _id: '$name',
-          id: { $sum: 1 },
-          value: { $sum: '$value' },
-        },
-      },
-      {
-        $sort: {
-          value: -1,
-        },
-      },
-      {
-        $limit: limit,
-      },
-      {
-        $addFields: { id: '$_id' },
-      },
-      {
-        $project: { _id: 0 },
-      },
-    ]);
+    if (from > to) {
+      return [];
+    }
+
+    const results = await this.repository
+      .createQueryBuilder('stats')
+      .select('stats.name', 'id')
+      .addSelect('SUM(stats.value)', 'value')
+      .where('stats.type = :type', { type: BotStatsType.popular })
+      .andWhere('stats.day BETWEEN :from AND :to', { from, to })
+      .groupBy('stats.name')
+      .orderBy('value', 'DESC')
+      .limit(limit)
+      .getRawMany<{ id: string; value: string | number }>();
+
+    return results.map(({ id, value }) => ({
+      id,
+      value: typeof value === 'number' ? value : Number(value ?? 0),
+    }));
   }
 }

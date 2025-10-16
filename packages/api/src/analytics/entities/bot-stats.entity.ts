@@ -4,11 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ModelDefinition, Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Column, Entity, Index } from 'typeorm';
 
-import { BaseSchema } from '@/utils/generics/base-schema';
-import { LifecycleHookManager } from '@/utils/generics/lifecycle-hook-manager';
-import { THydratedDocument } from '@/utils/types/filter.types';
+import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 export enum BotStatsType {
   outgoing = 'outgoing',
@@ -29,44 +27,38 @@ export type ToLinesType = {
   values: any[];
 };
 
-@Schema({ timestamps: true })
-export class BotStats extends BaseSchema {
+@Entity({ name: 'bot_stats' })
+@Index(['day', 'type', 'name'], { unique: true })
+export class BotStats extends BaseOrmEntity {
   /**
-   *  Type of the captured insight.
+   * Type of the captured insight.
    */
-  @Prop({
-    type: String,
-    required: true,
-  })
-  type: BotStatsType;
+  @Column()
+  type!: BotStatsType;
 
   /**
    * Day based granularity for the captured insights.
    */
-  @Prop({
-    type: Date,
-    required: true,
-  })
-  day: Date;
+  @Column()
+  day!: Date;
 
   /**
-   *  Total value of the insight for the whole chosen granularity.
+   * Total value of the insight for the whole chosen granularity.
    */
-
-  @Prop({ type: Number, default: 0 })
-  value: number;
+  @Column({ default: 0 })
+  value!: number;
 
   /**
-   *  name of the insight (e.g: incoming messages).
+   * Name of the insight (e.g: incoming messages).
    */
-  @Prop({ type: String, required: true })
-  name: string;
+  @Column()
+  name!: string;
 
   /**
-   * Converts bot statistics data into an line chart data format.
+   * Converts bot statistics data into a line chart data format.
    *
    * @param stats - The array of bot statistics.
-   * @param  types - The array of bot statistics types.
+   * @param types - The array of bot statistics types.
    * @returns An array of data representing the bot statistics data.
    */
   static toLines(stats: BotStats[], types: BotStatsType[]): ToLinesType[] {
@@ -98,7 +90,7 @@ export class BotStats extends BaseSchema {
   /**
    * Converts fetched stats to a bar chart compatible data format
    *
-   * @param stats - Array of objects, each contaning at least an id and a value
+   * @param stats - Array of objects, each containing at least an id and a value
    * @returns BarChart compatible data
    */
   static toBars(
@@ -112,12 +104,3 @@ export class BotStats extends BaseSchema {
     });
   }
 }
-
-export type BotStatsDocument = THydratedDocument<BotStats>;
-
-export const BotStatsModel: ModelDefinition = LifecycleHookManager.attach({
-  name: BotStats.name,
-  schema: SchemaFactory.createForClass(BotStats).index({ day: 1, type: 1 }),
-});
-
-export default BotStatsModel.schema;

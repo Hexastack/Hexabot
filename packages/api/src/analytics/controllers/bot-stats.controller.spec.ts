@@ -4,35 +4,48 @@
  * Full terms: see LICENSE.md.
  */
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestingModule } from '@nestjs/testing';
+
 import {
   botstatsFixtures,
-  installBotStatsFixtures,
+  installBotStatsFixturesTypeOrm,
 } from '@/utils/test/fixtures/botstats';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
+import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStatsType } from '../schemas/bot-stats.schema';
+import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
 
 import { BotStatsController } from './bot-stats.controller';
 
 describe('BotStatsController', () => {
   let botStatsController: BotStatsController;
+  let module: TestingModule;
 
   beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
+    const { module: testingModule, getMocks } = await buildTestingMocks({
       autoInjectFrom: ['controllers'],
       controllers: [BotStatsController],
-      imports: [rootMongooseTestModule(installBotStatsFixtures)],
+      providers: [EventEmitter2],
+      typeorm: {
+        entities: [BotStats],
+        fixtures: installBotStatsFixturesTypeOrm,
+      },
     });
+    module = testingModule;
     [botStatsController] = await getMocks([BotStatsController]);
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('findMessages', () => {
     it('should return no messages in the given date range', async () => {

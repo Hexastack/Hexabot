@@ -14,7 +14,7 @@ import {
   UpdateWithAggregationPipeline,
 } from 'mongoose';
 
-import { BotStatsType } from '@/analytics/schemas/bot-stats.schema';
+import { BotStatsType } from '@/analytics/entities/bot-stats.entity';
 import { BaseRepository } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 

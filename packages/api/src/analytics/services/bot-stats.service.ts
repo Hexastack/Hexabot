@@ -6,17 +6,26 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
-import { BotStats, BotStatsType } from '../schemas/bot-stats.schema';
+import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
 
 @Injectable()
-export class BotStatsService extends BaseService<BotStats> {
-  constructor(readonly repository: BotStatsRepository) {
+export class BotStatsService extends BaseOrmService<
+  BotStats,
+  BotStatsRepository
+> {
+  constructor(
+    readonly repository: BotStatsRepository,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly logger: LoggerService,
+  ) {
     super(repository);
   }
 
@@ -113,7 +122,7 @@ export class BotStatsService extends BaseService<BotStats> {
 
     try {
       const insight = await this.findOneOrCreate(
-        { day: { $lte: day, $gte: day }, type, name },
+        { day, type, name },
         { day, type, name, value: 0 },
       );
 
