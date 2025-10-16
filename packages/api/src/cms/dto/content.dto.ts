@@ -5,16 +5,15 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 import { DtoConfig } from '@/utils/types/dto.types';
-import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class ContentCreateDto {
   @ApiProperty({ description: 'Content entity', type: String })
   @IsString()
   @IsNotEmpty()
-  @IsObjectId({ message: 'Entity must be a valid ObjectId' })
+  @IsUUID('4', { message: 'Entity must be a valid UUID' })
   entity: string;
 
   @ApiProperty({ description: 'Content title', type: String })
@@ -29,7 +28,7 @@ export class ContentCreateDto {
 
   @ApiPropertyOptional({ description: 'Content dynamic fields', type: Object })
   @IsOptional()
-  dynamicFields: Record<string, any>;
+  dynamicFields?: Record<string, any>;
 }
 
 export class ContentUpdateDto extends PartialType(ContentCreateDto) {}

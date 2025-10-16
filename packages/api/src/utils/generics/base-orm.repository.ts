@@ -17,6 +17,7 @@ import {
   FindOneOptions,
   FindOptionsOrder,
   FindOptionsWhere,
+  In,
   Repository,
 } from 'typeorm';
 
@@ -37,7 +38,10 @@ type SortTuple<T> = QuerySortDto<T>;
 type FindAllOptions<T> = Omit<FindManyOptions<T>, 'where'> & { where?: never };
 
 export abstract class BaseOrmRepository<T extends { id: string }> {
-  protected constructor(protected readonly repository: Repository<T>) {
+  protected constructor(
+    protected readonly repository: Repository<T>,
+    protected readonly populateRelations: string[] = [],
+  ) {
     this.legacyQueryConverter = new LegacyQueryConverter<T>((sort) =>
       this.normalizeSort(sort),
     );
@@ -73,6 +77,13 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     const order = this.normalizeSort(sort);
 
     return await this.repository.find(order ? { order } : undefined);
+  }
+
+  async findAllAndPopulate(
+    sortOrOptions?: SortTuple<T> | FindAllOptions<T>,
+  ): Promise<T[]> {
+    const entities = await this.findAll(sortOrOptions as any);
+    return await this.populateCollection(entities);
   }
 
   /**
@@ -117,6 +128,24 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     }
 
     return await this.repository.find(options);
+  }
+
+  /**
+   * @deprecated Use findOneAndPopulate(options) with TypeORM FindOneOptions instead.
+   */
+  async findAndPopulate(
+    criteria: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+  ): Promise<T[]>;
+
+  async findAndPopulate(options: FindManyOptions<T>): Promise<T[]>;
+
+  async findAndPopulate(
+    filterOrOptions: TFilterQuery<T> | FindManyOptions<T> = {},
+    pageQuery?: PageQueryDto<T>,
+  ): Promise<T[]> {
+    const entities = await (this.find as any)(filterOrOptions, pageQuery);
+    return await this.populateCollection(entities);
   }
 
   /**
@@ -189,6 +218,35 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
 
     const [first] = await this.repository.find({ take: 1 });
     return first ?? null;
+  }
+
+  /**
+   * @deprecated Use findOneAndPopulate(options) with TypeORM FindOneOptions instead.
+   */
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<T>,
+  ): Promise<T | null>;
+
+  async findOneAndPopulate(options: FindOneOptions<T>): Promise<T | null>;
+
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<T> | FindOneOptions<T>,
+  ): Promise<T | null> {
+    const entity = await this.findOne(criteria as any);
+    if (!entity) {
+      return null;
+    }
+
+    if (!this.populateRelations.length) {
+      return entity;
+    }
+
+    const populated = await this.repository.findOne({
+      where: { id: entity.id } as FindOptionsWhere<T>,
+      relations: this.populateRelations,
+    });
+
+    return populated ?? entity;
   }
 
   async create(payload: DeepPartial<T>): Promise<T> {
@@ -553,6 +611,21 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     _entities: T[],
     _result: DeleteResult,
   ): Promise<void> {}
+
+  protected async populateCollection(entities: T[]): Promise<T[]> {
+    if (!this.populateRelations.length || entities.length === 0) {
+      return entities;
+    }
+
+    const ids = entities.map((entity) => entity.id);
+    const populated = await this.repository.find({
+      where: { id: In(ids) } as FindOptionsWhere<T>,
+      relations: this.populateRelations,
+    });
+
+    const map = new Map(populated.map((entity) => [entity.id, entity]));
+    return entities.map((entity) => map.get(entity.id) ?? entity);
+  }
 
   protected extractCreationPayload(criteria: TFilterQuery<T>): DeepPartial<T> {
     if (!criteria || typeof criteria !== 'object' || Array.isArray(criteria)) {

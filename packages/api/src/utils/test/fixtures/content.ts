@@ -151,7 +151,12 @@ export const installContentFixtures = async () => {
       const attachment = attachments.find(
         ({ name }) => name === `${contentFixture.title.replace(' ', '')}.jpg`,
       );
-      if (attachment) {
+      if (
+        attachment &&
+        contentFixture.dynamicFields &&
+        contentFixture.dynamicFields.image &&
+        contentFixture.dynamicFields.image.payload
+      ) {
         contentFixture.dynamicFields.image.payload.id = attachment.id;
       }
       return {

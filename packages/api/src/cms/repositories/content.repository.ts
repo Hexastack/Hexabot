@@ -5,72 +5,62 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import {
-  Document,
-  HydratedDocument,
-  Model,
-  Query,
-  UpdateQuery,
-  UpdateWithAggregationPipeline,
-} from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 
-import { BaseRepository } from '@/utils/generics/base-repository';
-import { TFilterQuery } from '@/utils/types/filter.types';
+import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { ContentDto } from '../dto/content.dto';
-import {
-  Content,
-  CONTENT_POPULATE,
-  ContentFull,
-  ContentPopulate,
-} from '../schemas/content.schema';
+import { Content } from '../entities/content.entity';
 
 @Injectable()
-export class ContentRepository extends BaseRepository<
-  Content,
-  ContentPopulate,
-  ContentFull,
-  ContentDto
-> {
-  constructor(@InjectModel(Content.name) readonly model: Model<Content>) {
-    super(model, Content, CONTENT_POPULATE, ContentFull);
+export class ContentRepository extends BaseOrmRepository<Content> {
+  constructor(
+    @InjectRepository(Content)
+    repository: Repository<Content>,
+  ) {
+    super(repository, ['contentType']);
   }
 
-  /**
-   * A pre-create hook that processes the document before it is saved to the database.
-   * It sets the `rag` field by stringifying the `dynamicFields` property of the document.
-   *
-   * @param doc - The document that is about to be created.
-   */
-  async preCreate(_doc: HydratedDocument<Content>) {
-    _doc.set('rag', this.stringify(_doc.dynamicFields));
-  }
-
-  /**
-   * A pre-update hook that modifies the update query before applying it to the database.
-   * If the `dynamicFields` property is present in the update query, it sets the `rag` field accordingly.
-   *
-   * @param query - The Mongoose query for updating the document.
-   * @param criteria - The filter criteria used for finding the document to update.
-   * @param updates - The update operations to be applied to the document.
-   */
-  async preUpdate(
-    _query: Query<
-      Document<Content, any, any>,
-      Document<Content, any, any>,
-      unknown,
-      Content,
-      'findOneAndUpdate'
-    >,
-    _criteria: TFilterQuery<Content>,
-    _updates:
-      | UpdateWithAggregationPipeline
-      | UpdateQuery<Document<Content, any, any>>,
+  protected override async preCreate(
+    entity: DeepPartial<Content> | Content,
   ): Promise<void> {
-    if ('dynamicFields' in _updates['$set']) {
-      _query.set('rag', this.stringify(_updates['$set']['dynamicFields']));
+    const parsedEntity = entity as DeepPartial<Content>;
+    const dynamicFields =
+      (parsedEntity.dynamicFields as Record<string, any> | undefined) ?? {};
+
+    if (typeof dynamicFields === 'object') {
+      parsedEntity.dynamicFields = dynamicFields;
+      parsedEntity.rag = this.stringify(dynamicFields);
     }
+  }
+
+  protected override async preUpdate(
+    _current: Content,
+    changes: DeepPartial<Content>,
+  ): Promise<void> {
+    if ('dynamicFields' in changes) {
+      const dynamicFields =
+        (changes.dynamicFields as Record<string, any> | undefined) ?? {};
+      changes.dynamicFields = dynamicFields;
+      changes.rag = this.stringify(dynamicFields);
+    }
+  }
+
+  /**
+   * Performs a full-text search on the `Content` entity based on the provided query string.
+   * The search is case-insensitive.
+   *
+   * @param query - The text query string to search for.
+   * @returns A promise that resolves to the matching content entities.
+   */
+  async textSearch(query: string): Promise<Content[]> {
+    const pattern = `%${query}%`;
+
+    return await this.repository
+      .createQueryBuilder('content')
+      .where('LOWER(content.title) LIKE LOWER(:pattern)', { pattern })
+      .orWhere('LOWER(content.rag) LIKE LOWER(:pattern)', { pattern })
+      .getMany();
   }
 
   /**
@@ -86,22 +76,5 @@ export class ContentRepository extends BaseRepository<
       (prev, cur) => `${prev}\n${cur[0]} : ${cur[1]}`,
       '',
     );
-  }
-
-  /**
-   * Performs a full-text search on the `Content` model based on the provided query string.
-   * The search is case-insensitive and diacritic-insensitive.
-   *
-   * @param query - The text query string to search for.
-   * @returns A promise that resolves to the matching content documents.
-   */
-  async textSearch(query: string) {
-    return await this.find({
-      $text: {
-        $search: query,
-        $diacriticSensitive: false,
-        $caseSensitive: false,
-      },
-    });
   }
 }

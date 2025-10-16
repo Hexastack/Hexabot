@@ -6,166 +6,218 @@
 
 import { OutgoingMessageFormat } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import {
-  contentFixtures,
-  installContentFixtures,
-} from '@/utils/test/fixtures/content';
-import { getPageQuery } from '@/utils/test/pagination';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
+import { LoggerService } from '@/logger/logger.service';
+import { FieldType } from '@/setting/types';
 
+import { ContentCreateDto } from '../dto/content.dto';
+import { ContentType } from '../entities/content-type.entity';
+import { Content } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
-import { Content } from '../schemas/content.schema';
 
-import { ContentTypeService } from './content-type.service';
 import { ContentService } from './content.service';
 
-describe('ContentService', () => {
-  let contentService: ContentService;
-  let contentTypeService: ContentTypeService;
-  let contentRepository: ContentRepository;
-
-  beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installContentFixtures)],
-      providers: [
-        ContentTypeService,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-      ],
-    });
-    [contentService, contentTypeService, contentRepository] = await getMocks([
-      ContentService,
-      ContentTypeService,
-      ContentRepository,
-    ]);
+const createContent = (overrides: Partial<Content> = {}): Content =>
+  Object.assign(new Content(), {
+    id: 'content-id',
+    entity: 'content-type-id',
+    title: 'Sample content',
+    status: true,
+    dynamicFields: { subtitle: 'Subtitle' },
+    rag: 'subtitle : Subtitle',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
   });
 
-  afterAll(closeInMongodConnection);
+const createContentType = (overrides: Partial<ContentType> = {}): ContentType =>
+  Object.assign(new ContentType(), {
+    id: 'content-type-id',
+    name: 'Sample Type',
+    fields: [
+      {
+        name: 'title',
+        label: 'Title',
+        type: FieldType.text,
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        type: FieldType.checkbox,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  });
+
+describe('ContentService', () => {
+  let service: ContentService;
+  let repository: any;
+  let logger: jest.Mocked<LoggerService>;
+
+  beforeEach(() => {
+    repository = {
+      find: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      findOneOrCreate: jest.fn(),
+      create: jest.fn(),
+      createMany: jest.fn(),
+      count: jest.fn(),
+      deleteMany: jest.fn(),
+      deleteOne: jest.fn(),
+      update: jest.fn(),
+      updateOne: jest.fn(),
+      textSearch: jest.fn(),
+      findAndPopulate: jest.fn(),
+      findOneAndPopulate: jest.fn(),
+    };
+
+    logger = {
+      log: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      fatal: jest.fn(),
+    } as unknown as jest.Mocked<LoggerService>;
+
+    service = new ContentService(
+      repository as unknown as ContentRepository,
+      logger,
+    );
+  });
 
   afterEach(jest.clearAllMocks);
 
   describe('findOneAndPopulate', () => {
-    it('should return a content and populate its corresponding content type', async () => {
-      const findSpy = jest.spyOn(contentRepository, 'findOneAndPopulate');
-      const content = await contentService.findOne({ title: 'Jean' });
-
-      const contentType = await contentTypeService.findOne(content!.entity);
-      const result = await contentService.findOneAndPopulate(content!.id);
-      expect(findSpy).toHaveBeenCalledWith(content!.id, undefined);
-      expect(result).toEqualPayload({
-        ...contentFixtures.find(({ title }) => title === 'Jean'),
-        entity: contentType,
+    it('returns a content with populated content type', async () => {
+      const content = createContent();
+      const contentType = createContentType();
+      repository.findOneAndPopulate.mockResolvedValue({
+        ...content,
+        contentType,
       });
+
+      const result = await service.findOneAndPopulate(content.id);
+
+      expect(result).toEqual({
+        ...content,
+        contentType,
+      });
+    });
+
+    it('returns null when content is not found', async () => {
+      repository.findOneAndPopulate.mockResolvedValue(null);
+
+      const result = await service.findOneAndPopulate('missing-id');
+
+      expect(result).toBeNull();
     });
   });
 
-  describe('find', () => {
-    const pageQuery = getPageQuery<Content>({ limit: 1, sort: ['_id', 'asc'] });
-    it('should return contents and populate their corresponding content types', async () => {
-      const findSpy = jest.spyOn(contentRepository, 'findAndPopulate');
-      const results = await contentService.findAndPopulate({}, pageQuery);
-      const contentType = await contentTypeService.findOne(
-        results[0].entity.id,
-      );
-      expect(findSpy).toHaveBeenCalledWith({}, pageQuery, undefined);
-      expect(results).toEqualPayload([
-        {
-          ...contentFixtures.find(({ title }) => title === 'Jean'),
-          entity: contentType,
-        },
+  describe('findAndPopulate', () => {
+    it('returns contents with populated content types', async () => {
+      const content = createContent();
+      const secondContent = createContent({ id: 'other-content', entity: 'other-type' });
+      const contentType = createContentType();
+      const otherType = createContentType({
+        id: 'other-type',
+        name: 'Other type',
+      });
+
+      repository.findAndPopulate.mockResolvedValue([
+        { ...content, contentType },
+        { ...secondContent, contentType: otherType },
       ]);
+
+      const result = await service.findAndPopulate({}, { skip: 0, limit: 10 });
+
+      expect(result).toEqual([
+        { ...content, contentType },
+        { ...secondContent, contentType: otherType },
+      ]);
+    });
+  });
+
+  describe('textSearch', () => {
+    it('delegates to the repository', async () => {
+      const results = [createContent()];
+      repository.textSearch.mockResolvedValue(results);
+
+      await service.textSearch('query');
+
+      expect(repository.textSearch).toHaveBeenCalledWith('query');
     });
   });
 
   describe('getContent', () => {
-    const contentOptions: ContentOptions = {
+    const options: ContentOptions = {
       display: OutgoingMessageFormat.list,
+      buttons: [],
       fields: {
         title: 'title',
-        subtitle: 'description',
-        image_url: 'image',
+        subtitle: null,
+        image_url: null,
       },
-      buttons: [],
       limit: 10,
     };
 
-    it('should get content that is published', async () => {
-      const actualData = await contentService.find(
+    it('returns paginated content', async () => {
+    const content = createContent();
+    repository.count.mockResolvedValue(1 as any);
+    repository.find.mockResolvedValue([content]);
+
+    const result = await service.getContent(options, 0);
+
+      expect(repository.count).toHaveBeenCalledWith({ status: true });
+      expect(repository.find).toHaveBeenCalledWith(
         { status: true },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
+        expect.any(Object),
       );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(contentOptions, 0);
-      expect(content?.elements).toEqualPayload(flattenedElements, [
-        ...IGNORED_TEST_FIELDS,
-        'payload',
-      ]);
+      expect(result.elements).toEqual([Content.toElement(content)]);
+      expect(result.pagination).toEqual({
+        total: 1,
+        skip: 0,
+        limit: 10,
+      });
     });
 
-    it('should get content for a specific entity', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.find(
-        { status: true, entity: contentType!.id },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          entity: contentType!.id,
-        },
-        0,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements);
-    });
+    it('throws when no content is found', async () => {
+    repository.count.mockResolvedValue(0 as any);
 
-    it('should get content using query', async () => {
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
-      const actualData = await contentService.find(
-        { status: true, entity: contentType!.id, title: /^Jean/ },
-        { skip: 0, limit: 10, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          query: { title: /^Jean/ },
-        },
-        0,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements);
+      await expect(service.getContent(options, 0)).rejects.toThrow('No content found');
+      expect(logger.warn).toHaveBeenCalledWith('No content found', { status: true });
     });
+  });
 
-    it('should get content skiping 2 elements', async () => {
-      const actualData = await contentService.find(
-        { status: true },
-        { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
-      );
-      const flattenedElements = actualData.map(Content.toElement);
-      const content = await contentService.getContent(
-        {
-          ...contentOptions,
-          query: {},
-          entity: undefined,
-          limit: 2,
+  describe('parseAndSaveDataset', () => {
+    it('parses CSV data and calls createMany', async () => {
+      const csv = 'title,status,description\nFoo,true,Bar';
+      const targetContentType = 'content-type-id';
+      const contentType = createContentType({
+        fields: [
+          {
+            name: 'description',
+            label: 'Description',
+            type: FieldType.text,
+          },
+        ],
+      });
+    repository.createMany.mockResolvedValue([]);
+
+      await service.parseAndSaveDataset(csv, targetContentType, contentType);
+
+      const expectedPayload: ContentCreateDto = {
+        title: 'Foo',
+        status: true,
+        entity: targetContentType,
+        dynamicFields: {
+          description: 'Bar',
         },
-        2,
-      );
-      expect(content?.elements).toEqualPayload(flattenedElements, [
-        ...IGNORED_TEST_FIELDS,
-        'payload',
-      ]);
+      };
+
+      expect(repository.createMany).toHaveBeenCalledWith([expectedPayload]);
     });
   });
 });

@@ -13,8 +13,6 @@ import { AttachmentModule } from '@/attachment/attachment.module';
 import { ChatModule } from '@/chat/chat.module';
 import { BlockModel } from '@/chat/schemas/block.schema';
 import { CmsModule } from '@/cms/cms.module';
-import { ContentTypeModel } from '@/cms/schemas/content-type.schema';
-import { ContentModel } from '@/cms/schemas/content.schema';
 import { NlpModule } from '@/nlp/nlp.module';
 
 import { PluginService } from './plugins.service';
@@ -30,7 +28,7 @@ import { PluginService } from './plugins.service';
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([BlockModel, ContentModel, ContentTypeModel]),
+    MongooseModule.forFeature([BlockModel]),
     CmsModule,
     AttachmentModule,
     ChatModule,

@@ -5,26 +5,26 @@
  */
 
 import { forwardRef, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChatModule } from '@/chat/chat.module';
 
 import { ContentTypeController } from './controllers/content-type.controller';
 import { ContentController } from './controllers/content.controller';
 import { MenuController } from './controllers/menu.controller';
+import { ContentType } from './entities/content-type.entity';
+import { Content } from './entities/content.entity';
+import { Menu } from './entities/menu.entity';
 import { ContentTypeRepository } from './repositories/content-type.repository';
 import { ContentRepository } from './repositories/content.repository';
 import { MenuRepository } from './repositories/menu.repository';
-import { ContentTypeModel } from './schemas/content-type.schema';
-import { ContentModel } from './schemas/content.schema';
-import { MenuModel } from './schemas/menu.schema';
 import { ContentTypeService } from './services/content-type.service';
 import { ContentService } from './services/content.service';
 import { MenuService } from './services/menu.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([ContentModel, ContentTypeModel, MenuModel]),
+    TypeOrmModule.forFeature([Content, ContentType, Menu]),
     forwardRef(() => ChatModule),
   ],
   controllers: [ContentController, ContentTypeController, MenuController],

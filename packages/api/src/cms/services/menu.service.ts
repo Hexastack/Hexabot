@@ -16,21 +16,18 @@ import { Cache } from 'cache-manager';
 
 import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
-import { BaseService } from '@/utils/generics/base-service';
+import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { MenuCreateDto, MenuDto } from '../dto/menu.dto';
+import { MenuCreateDto } from '../dto/menu.dto';
+import { Menu } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
-import { Menu, MenuFull, MenuPopulate } from '../schemas/menu.schema';
-import { AnyMenu, MenuTree, MenuType } from '../schemas/types/menu';
+import { AnyMenu, MenuTree, MenuType } from '../types/menu';
 
 @Injectable()
-export class MenuService extends BaseService<
-  Menu,
-  MenuPopulate,
-  MenuFull,
-  MenuDto
-> {
-  private RootSymbol: symbol = Symbol('RootMenu');
+export class MenuService extends BaseOrmService<Menu, MenuRepository> {
+  private readonly RootSymbol: symbol = Symbol('RootMenu');
 
   constructor(
     readonly repository: MenuRepository,
@@ -51,13 +48,33 @@ export class MenuService extends BaseService<
     if (dto.parent) {
       // check if parent exists in database
       const parent = await this.findOne(dto.parent);
-      if (!parent)
+      if (!parent) {
         throw new NotFoundException('The parent of this object does not exist');
+      }
       // Check if that parent is nested
-      if (parent.type !== MenuType.nested)
+      if (parent.type !== MenuType.nested) {
         throw new ConflictException("Cant't nest non nested menu");
+      }
     }
-    return super.create(dto);
+    return await super.create(dto);
+  }
+
+  public async updateOne(
+    criteria: string | TFilterQuery<Menu>,
+    payload: Partial<MenuCreateDto>,
+    options?: UpdateOneOptions,
+  ): Promise<Menu> {
+    if (payload.parent) {
+      const parent = await this.findOne(payload.parent);
+      if (!parent) {
+        throw new NotFoundException('The parent of this object does not exist');
+      }
+      if (parent.type !== MenuType.nested) {
+        throw new ConflictException("Cant't nest non nested menu");
+      }
+    }
+
+    return await super.updateOne(criteria, payload, options);
   }
 
   /**

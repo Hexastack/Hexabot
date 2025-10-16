@@ -29,8 +29,19 @@ export abstract class BaseOrmService<
     return await this.repository.find(filter, pageQuery);
   }
 
+  async findAndPopulate(
+    filter: TFilterQuery<Entity> = {},
+    pageQuery?: PageQueryDto<Entity>,
+  ): Promise<Entity[]> {
+    return await this.repository.findAndPopulate(filter, pageQuery);
+  }
+
   async findAll(sort?: QuerySortDto<Entity>): Promise<Entity[]> {
     return await this.repository.findAll(sort);
+  }
+
+  async findAllAndPopulate(sort?: QuerySortDto<Entity>): Promise<Entity[]> {
+    return await this.repository.findAllAndPopulate(sort);
   }
 
   async count(filter: TFilterQuery<Entity> = {}): Promise<number> {
@@ -41,6 +52,12 @@ export abstract class BaseOrmService<
     criteria: string | TFilterQuery<Entity>,
   ): Promise<Entity | null> {
     return await this.repository.findOne(criteria);
+  }
+
+  async findOneAndPopulate(
+    criteria: string | TFilterQuery<Entity>,
+  ): Promise<Entity | null> {
+    return await this.repository.findOneAndPopulate(criteria);
   }
 
   async create(payload: DeepPartial<Entity>): Promise<Entity> {

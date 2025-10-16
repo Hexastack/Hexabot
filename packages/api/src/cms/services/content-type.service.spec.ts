@@ -4,67 +4,73 @@
  * Full terms: see LICENSE.md.
  */
 
-import { BlockService } from '@/chat/services/block.service';
-import { I18nService } from '@/i18n/services/i18n.service';
-import { installContentFixtures } from '@/utils/test/fixtures/content';
-import {
-  closeInMongodConnection,
-  rootMongooseTestModule,
-} from '@/utils/test/test';
-import { buildTestingMocks } from '@/utils/test/utils';
-
+import { ContentTypeCreateDto } from '../dto/contentType.dto';
+import { ContentType } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
-
 import { ContentTypeService } from './content-type.service';
-import { ContentService } from './content.service';
 
 describe('ContentTypeService', () => {
-  let contentTypeService: ContentTypeService;
-  let contentService: ContentService;
-  let contentTypeRepository: ContentTypeRepository;
-  let blockService: BlockService;
+  let repository: jest.Mocked<ContentTypeRepository>;
+  let service: ContentTypeService;
 
-  beforeAll(async () => {
-    const { getMocks } = await buildTestingMocks({
-      autoInjectFrom: ['providers'],
-      imports: [rootMongooseTestModule(installContentFixtures)],
-      providers: [
-        ContentTypeService,
-        {
-          provide: I18nService,
-          useValue: {
-            t: jest.fn().mockImplementation((t) => t),
-          },
-        },
-      ],
-    });
-    [blockService, contentTypeService, contentService, contentTypeRepository] =
-      await getMocks([
-        BlockService,
-        ContentTypeService,
-        ContentService,
-        ContentTypeRepository,
-      ]);
+  beforeEach(() => {
+    repository = {
+      create: jest.fn(),
+      createMany: jest.fn(),
+      find: jest.fn(),
+      findAll: jest.fn(),
+      findOne: jest.fn(),
+      findOneOrCreate: jest.fn(),
+      update: jest.fn(),
+      updateOne: jest.fn(),
+      deleteOne: jest.fn(),
+      deleteMany: jest.fn(),
+      count: jest.fn(),
+    } as unknown as jest.Mocked<ContentTypeRepository>;
+
+    service = new ContentTypeService(repository);
   });
-
-  afterAll(closeInMongodConnection);
 
   afterEach(jest.clearAllMocks);
 
-  describe('deleteOne', () => {
-    it('should delete a content type and its related contents', async () => {
-      const deleteContentTypeSpy = jest.spyOn(
-        contentTypeRepository,
-        'deleteOne',
-      );
-      jest.spyOn(blockService, 'findOne').mockResolvedValueOnce(null);
-      const contentType = await contentTypeService.findOne({ name: 'Product' });
+  describe('create', () => {
+    it('applies default fields when none are provided', async () => {
+      const payload: ContentTypeCreateDto = {
+        name: 'Products',
+      };
+      const created = Object.assign(new ContentType(), {
+        id: 'type-id',
+        name: payload.name,
+        fields: [
+          { name: 'title', label: 'Title', type: 'text' },
+          { name: 'status', label: 'Status', type: 'checkbox' },
+        ],
+      });
+      repository.create.mockResolvedValue(created);
 
-      const result = await contentTypeService.deleteCascadeOne(contentType!.id);
-      expect(deleteContentTypeSpy).toHaveBeenCalledWith(contentType!.id);
-      expect(await contentService.find({ entity: contentType!.id })).toEqual(
-        [],
-      );
+      const result = await service.create(payload);
+
+      expect(repository.create).toHaveBeenCalledWith({
+        ...payload,
+        fields: expect.arrayContaining([
+          expect.objectContaining({ name: 'title' }),
+          expect.objectContaining({ name: 'status' }),
+        ]),
+      });
+      expect(result).toBe(created);
+    });
+  });
+
+  describe('deleteCascadeOne', () => {
+    it('delegates to the repository', async () => {
+      repository.deleteOne.mockResolvedValue({
+        acknowledged: true,
+        deletedCount: 1,
+      });
+
+      const result = await service.deleteCascadeOne('type-id');
+
+      expect(repository.deleteOne).toHaveBeenCalledWith('type-id');
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
     });
   });

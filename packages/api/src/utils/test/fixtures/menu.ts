@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 
 import { MenuCreateDto } from '@/cms/dto/menu.dto';
 import { MenuModel } from '@/cms/schemas/menu.schema';
-import { MenuType } from '@/cms/schemas/types/menu';
+import { MenuType } from '@/cms/types/menu';
 
 export const websiteMenuFixture: MenuCreateDto = {
   type: MenuType.web_url,

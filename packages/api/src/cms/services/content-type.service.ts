@@ -6,21 +6,45 @@
 
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '@/utils/generics/base-service';
+import { FieldType } from '@/setting/types';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { ContentTypeDto } from '../dto/contentType.dto';
+import { ContentType } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
-import { ContentType } from '../schemas/content-type.schema';
+
+const DEFAULT_FIELDS: NonNullable<ContentType['fields']> = [
+  {
+    name: 'title',
+    label: 'Title',
+    type: FieldType.text,
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    type: FieldType.checkbox,
+  },
+];
 
 @Injectable()
-export class ContentTypeService extends BaseService<
+export class ContentTypeService extends BaseOrmService<
   ContentType,
-  never,
-  never,
-  ContentTypeDto
+  ContentTypeRepository
 > {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
+  }
+
+  async create(payload: ContentTypeDto['create']): Promise<ContentType> {
+    const fields =
+      payload.fields && payload.fields.length > 0
+        ? payload.fields
+        : DEFAULT_FIELDS;
+
+    return await super.create({
+      ...payload,
+      fields,
+    });
   }
 
   /**

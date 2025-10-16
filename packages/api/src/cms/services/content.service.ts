@@ -9,27 +9,31 @@ import Papa from 'papaparse';
 
 import { StdOutgoingListMessage } from '@/chat/schemas/types/message';
 import { ContentOptions } from '@/chat/schemas/types/options';
-import { BaseService } from '@/utils/generics/base-service';
+import { LoggerService } from '@/logger/logger.service';
+import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentDto } from '../dto/content.dto';
+import { ContentCreateDto } from '../dto/content.dto';
+import { ContentType } from '../entities/content-type.entity';
+import { Content } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
-import { ContentType } from '../schemas/content-type.schema';
-import {
-  Content,
-  ContentFull,
-  ContentPopulate,
-} from '../schemas/content.schema';
+import { CONTENT_POPULATE, ContentPopulate } from '../types/content';
 
 @Injectable()
-export class ContentService extends BaseService<
-  Content,
-  ContentPopulate,
-  ContentFull,
-  ContentDto
-> {
-  constructor(readonly repository: ContentRepository) {
+export class ContentService extends BaseOrmService<Content, ContentRepository> {
+  private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
+
+  constructor(
+    readonly repository: ContentRepository,
+    private readonly logger: LoggerService,
+  ) {
     super(repository);
+  }
+
+  canPopulate(populate: string[]): boolean {
+    return populate.every((field) =>
+      this.allowedPopulate.includes(field as ContentPopulate),
+    );
   }
 
   /**
@@ -39,7 +43,7 @@ export class ContentService extends BaseService<
    *
    * @return A list of content matching the search query.
    */
-  async textSearch(query: string) {
+  async textSearch(query: string): Promise<Content[]> {
     return await this.repository.textSearch(query);
   }
 
@@ -138,7 +142,7 @@ export class ContentService extends BaseService<
         },
       );
     }
-    const contentsDto = result.data.reduce(
+    const contentsDto: ContentCreateDto[] = result.data.reduce(
       (acc, { title, status, ...rest }) => [
         ...acc,
         {
@@ -149,10 +153,13 @@ export class ContentService extends BaseService<
             .filter((key) =>
               contentType.fields?.map((field) => field.name).includes(key),
             )
-            .reduce((filtered, key) => ({ ...filtered, [key]: rest[key] }), {}),
+            .reduce(
+              (filtered, key) => ({ ...filtered, [key]: rest[key] }),
+              {} as Record<string, string>,
+            ),
         },
       ],
-      [],
+      [] as ContentCreateDto[],
     );
     this.logger.log(`Parsed ${result.data.length} rows from CSV.`);
     try {

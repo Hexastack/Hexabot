@@ -17,26 +17,22 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { BaseController } from '@/utils/generics/base-controller';
+import { LoggerService } from '@/logger/logger.service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { MenuCreateDto, MenuQueryDto } from '../dto/menu.dto';
-import { Menu, MenuFull, MenuPopulate, MenuStub } from '../schemas/menu.schema';
+import { Menu } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 
 @Controller('menu')
-export class MenuController extends BaseController<
-  Menu,
-  MenuStub,
-  MenuPopulate,
-  MenuFull
-> {
-  constructor(private readonly menuService: MenuService) {
-    super(menuService);
-  }
+export class MenuController {
+  constructor(
+    private readonly menuService: MenuService,
+    private readonly logger: LoggerService,
+  ) {}
 
   /**
    * Counts the filtered number of menu items.
@@ -50,23 +46,34 @@ export class MenuController extends BaseController<
     @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
     filters: TFilterQuery<Menu>,
   ) {
-    return await this.count(filters);
+    return { count: await this.menuService.count(filters) };
   }
 
   /**
-   * Retrieves a paginated list of menu items.
+   * Retrieves menu items.
    *
-   * Fetches a paginated set of menus based on query parameters and search filters.
-   *
-   * @returns A promise that resolves to the paginated list of menu items.
+   * If pagination parameters are provided, returns a paginated list.
+   * Otherwise, applies filters when present or returns the whole collection.
    */
   @Get()
-  async findPage(
+  async find(
     @Query(PageQueryPipe) pageQuery: PageQueryDto<Menu>,
     @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
     filters: TFilterQuery<Menu>,
+    @Query() rawQuery?: MenuQueryDto,
   ) {
-    return await this.menuService.find(filters, pageQuery);
+    const hasPagination = typeof pageQuery.limit !== 'undefined';
+    const hasFilters = filters && Object.keys(filters).length > 0;
+
+    if (hasPagination || hasFilters) {
+      return await this.menuService.find(filters ?? {}, pageQuery);
+    }
+
+    if (rawQuery && Object.keys(rawQuery).length > 0) {
+      return await this.menuService.find(rawQuery as TFilterQuery<Menu>);
+    }
+
+    return await this.menuService.findAll();
   }
 
   /**
@@ -80,30 +87,7 @@ export class MenuController extends BaseController<
    */
   @Post()
   async create(@Body() body: MenuCreateDto) {
-    this.validate({
-      dto: body,
-      allowedIds: {
-        parent: body?.parent
-          ? (await this.menuService.findOne(body.parent))?.id
-          : undefined,
-      },
-    });
     return await this.menuService.create(body);
-  }
-
-  /**
-   * Retrieves all menu items or filters menus based on query parameters.
-   *
-   * If query parameters are provided, it applies filters and returns matching menus.
-   *
-   * @param query - Optional DTO for filtering menus.
-   *
-   * @returns A promise that resolves to an array of menu items.
-   */
-  @Get()
-  async findAll(@Query() query?: MenuQueryDto) {
-    if (!query) return await this.menuService.findAll();
-    return await this.menuService.find(query);
   }
 
   /**
@@ -157,7 +141,9 @@ export class MenuController extends BaseController<
     @Body() body: MenuCreateDto,
     @Param('id') id: string,
   ): Promise<Menu> {
-    if (!id) return await this.create(body);
+    if (!id) {
+      return await this.create(body);
+    }
     return await this.menuService.updateOne(id, body);
   }
 
@@ -174,7 +160,7 @@ export class MenuController extends BaseController<
   async delete(@Param('id') id: string) {
     try {
       const deletedCount = await this.menuService.deepDelete(id);
-      if (deletedCount == 0) {
+      if (deletedCount === 0) {
         this.logger.warn(`Unable to delete menu with id: ${id}`);
         throw new NotFoundException();
       }
