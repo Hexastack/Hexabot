@@ -16,7 +16,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { getRandom } from '@/utils/helpers/safeRandom';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
+import {
+  installLanguageFixtures,
+  installLanguageFixturesTypeOrm,
+} from '@/utils/test/fixtures/language';
 import { installUserFixtures } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -69,6 +72,9 @@ describe('AuthController', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installLanguageFixturesTypeOrm,
+      },
     });
     [authController, userService, invitationService, roleService, jwtService] =
       await getMocks([

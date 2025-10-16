@@ -16,7 +16,10 @@ import {
   installInvitationFixtures,
   invitationsFixtures,
 } from '@/utils/test/fixtures/invitation';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
+import {
+  installLanguageFixtures,
+  installLanguageFixturesTypeOrm,
+} from '@/utils/test/fixtures/language';
 import {
   closeInMongodConnection,
   rootMongooseTestModule,
@@ -67,6 +70,9 @@ describe('InvitationService', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installLanguageFixturesTypeOrm,
+      },
     });
     [
       roleRepository,

@@ -11,8 +11,14 @@ import {
   TNormalizedEvents,
 } from '@nestjs/event-emitter';
 import camelCase from 'lodash/camelCase';
-import get from 'lodash/get';
-import { DeepPartial, FindOptionsOrder, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsOrder,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 import { LoggerService } from '@/logger/logger.service';
 
@@ -20,6 +26,7 @@ import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
 import { TFilterQuery } from '../types/filter.types';
 
 import { DeleteResult, EHook } from './base-repository';
+import { LegacyQueryConverter } from './legacy-query.converter';
 
 export type UpdateOneOptions = {
   upsert?: boolean;
@@ -27,8 +34,14 @@ export type UpdateOneOptions = {
 
 type SortTuple<T> = QuerySortDto<T>;
 
+type FindAllOptions<T> = Omit<FindManyOptions<T>, 'where'> & { where?: never };
+
 export abstract class BaseOrmRepository<T extends { id: string }> {
-  protected constructor(protected readonly repository: Repository<T>) {}
+  protected constructor(protected readonly repository: Repository<T>) {
+    this.legacyQueryConverter = new LegacyQueryConverter<T>((sort) =>
+      this.normalizeSort(sort),
+    );
+  }
 
   @Inject(EventEmitter2)
   protected readonly eventEmitter: EventEmitter2;
@@ -36,37 +49,146 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
   @Inject(LoggerService)
   protected readonly logger: LoggerService;
 
-  async findAll(sort?: SortTuple<T>): Promise<T[]> {
-    return await this.repository.find({
-      order: this.normalizeSort(sort),
-    });
+  private readonly legacyQueryConverter: LegacyQueryConverter<T>;
+
+  /**
+   * @deprecated Use findAll(options) with TypeORM FindManyOptions (without `where`) instead.
+   */
+  async findAll(sort?: SortTuple<T>): Promise<T[]>;
+
+  async findAll(options?: FindAllOptions<T>): Promise<T[]>;
+
+  async findAll(
+    sortOrOptions?: SortTuple<T> | FindAllOptions<T>,
+  ): Promise<T[]> {
+    if (this.isFindManyOptions(sortOrOptions as any)) {
+      const { where: _ignored, ...options } = (sortOrOptions ??
+        {}) as FindManyOptions<T>;
+      return await this.repository.find(options);
+    }
+
+    const sort = Array.isArray(sortOrOptions)
+      ? (sortOrOptions as SortTuple<T>)
+      : undefined;
+    const order = this.normalizeSort(sort);
+
+    return await this.repository.find(order ? { order } : undefined);
   }
+
+  /**
+   * @deprecated Use find(options) with TypeORM FindManyOptions instead.
+   */
+  async find(
+    filter: TFilterQuery<T>,
+    pageQuery?: PageQueryDto<T>,
+  ): Promise<T[]>;
+
+  async find(options?: FindManyOptions<T>): Promise<T[]>;
 
   async find(
-    filter: TFilterQuery<T> = {},
+    filterOrOptions: TFilterQuery<T> | FindManyOptions<T> = {},
     pageQuery?: PageQueryDto<T>,
   ): Promise<T[]> {
-    const all = await this.repository.find();
-    const filtered = this.applyFilter(all, filter);
-    return this.applyPagination(filtered, pageQuery);
+    const hasPageQuery = typeof pageQuery !== 'undefined';
+    const isFindOptions = this.isFindManyOptions(filterOrOptions);
+
+    if (isFindOptions && !hasPageQuery) {
+      return await this.repository.find(filterOrOptions);
+    }
+
+    const baseOptions: FindManyOptions<T> = isFindOptions
+      ? { ...filterOrOptions }
+      : {};
+    const legacyFilter = isFindOptions
+      ? ((filterOrOptions.where ?? {}) as TFilterQuery<T>)
+      : (filterOrOptions as TFilterQuery<T>);
+
+    const { options, fullyHandled } =
+      this.legacyQueryConverter.buildFindOptionsFromLegacyArgs(
+        legacyFilter,
+        pageQuery,
+        baseOptions,
+      );
+
+    if (!fullyHandled) {
+      throw new Error(
+        'Unsupported legacy filter. Please use TypeORM FindManyOptions instead.',
+      );
+    }
+
+    return await this.repository.find(options);
   }
 
-  async count(filter: TFilterQuery<T> = {}): Promise<number> {
-    const all = await this.repository.find();
-    return this.applyFilter(all, filter).length;
+  /**
+   * @deprecated Use count(options) with TypeORM FindManyOptions instead.
+   */
+  async count(filter: TFilterQuery<T>): Promise<number>;
+
+  async count(options?: FindManyOptions<T>): Promise<number>;
+
+  async count(
+    filterOrOptions: TFilterQuery<T> | FindManyOptions<T> = {},
+  ): Promise<number> {
+    if (this.isFindManyOptions(filterOrOptions)) {
+      return await this.repository.count(filterOrOptions);
+    }
+
+    const filter = filterOrOptions as TFilterQuery<T>;
+    const { where, fullyHandled } =
+      this.legacyQueryConverter.convertFilter(filter);
+
+    if (fullyHandled && where) {
+      return await this.repository.count({ where });
+    }
+
+    if (fullyHandled) {
+      return await this.repository.count();
+    }
+
+    throw new Error(
+      'Unsupported legacy filter. Please use TypeORM FindManyOptions instead.',
+    );
   }
 
-  async findOne(criteria: string | TFilterQuery<T>): Promise<T | null> {
-    if (typeof criteria === 'string') {
+  /**
+   * @deprecated Use findOne(options) with TypeORM FindOneOptions instead.
+   */
+  async findOne(criteria: string | TFilterQuery<T>): Promise<T | null>;
+
+  async findOne(options: FindOneOptions<T>): Promise<T | null>;
+
+  async findOne(
+    criteriaOrOptions: string | TFilterQuery<T> | FindOneOptions<T>,
+  ): Promise<T | null> {
+    if (typeof criteriaOrOptions === 'string') {
       return (
         (await this.repository.findOne({
-          where: { id: criteria } as any,
+          where: { id: criteriaOrOptions } as any,
         })) ?? null
       );
     }
 
-    const filtered = this.applyFilter(await this.repository.find(), criteria);
-    return filtered[0] ?? null;
+    if (this.isFindManyOptions(criteriaOrOptions)) {
+      const options = criteriaOrOptions as FindOneOptions<T>;
+      return (await this.repository.findOne(options)) ?? null;
+    }
+
+    const filter = criteriaOrOptions as TFilterQuery<T>;
+    const { where, fullyHandled } =
+      this.legacyQueryConverter.convertFilter(filter);
+
+    if (!fullyHandled) {
+      throw new Error(
+        'Unsupported legacy filter. Please use TypeORM FindOneOptions instead.',
+      );
+    }
+
+    if (where) {
+      return (await this.repository.findOne({ where })) ?? null;
+    }
+
+    const [first] = await this.repository.find({ take: 1 });
+    return first ?? null;
   }
 
   async create(payload: DeepPartial<T>): Promise<T> {
@@ -95,7 +217,7 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
 
   async update(id: string, payload: DeepPartial<T>): Promise<T | null> {
     const entity = await this.repository.findOne({
-      where: { id } as any,
+      where: { id } as FindOptionsWhere<T>,
     });
     if (!entity) {
       return null;
@@ -148,19 +270,58 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     }
   }
 
+  /**
+   * @deprecated Use findOneOrCreate(options, payload) with TypeORM FindOneOptions instead.
+   */
   async findOneOrCreate(
     criteria: string | TFilterQuery<T>,
     payload: DeepPartial<T>,
+  ): Promise<T>;
+
+  async findOneOrCreate(
+    options: FindOneOptions<T>,
+    payload: DeepPartial<T>,
+  ): Promise<T>;
+
+  async findOneOrCreate(
+    criteriaOrOptions: string | TFilterQuery<T> | FindOneOptions<T>,
+    payload: DeepPartial<T>,
   ): Promise<T> {
+    if (typeof criteriaOrOptions === 'string') {
+      const existing = await this.findOne(criteriaOrOptions);
+      if (existing) {
+        return existing;
+      }
+
+      return await this.create({
+        id: criteriaOrOptions,
+        ...payload,
+      } as DeepPartial<T>);
+    }
+
+    if (this.isFindManyOptions(criteriaOrOptions)) {
+      const options = criteriaOrOptions as FindOneOptions<T>;
+      const existing = await this.repository.findOne(options);
+      if (existing) {
+        return existing;
+      }
+
+      const basePayload = this.extractCreationPayload(
+        (options.where ?? {}) as TFilterQuery<T>,
+      );
+      return await this.create({
+        ...basePayload,
+        ...payload,
+      });
+    }
+
+    const criteria = criteriaOrOptions as TFilterQuery<T>;
     const existing = await this.findOne(criteria);
     if (existing) {
       return existing;
     }
 
-    const basePayload =
-      typeof criteria === 'string'
-        ? ({ id: criteria } as DeepPartial<T>)
-        : this.extractCreationPayload(criteria);
+    const basePayload = this.extractCreationPayload(criteria);
 
     return await this.create({
       ...basePayload,
@@ -168,8 +329,50 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     });
   }
 
-  async deleteMany(filter: TFilterQuery<T>): Promise<DeleteResult> {
-    const matches = this.applyFilter(await this.repository.find(), filter);
+  /**
+   * @deprecated Use deleteMany(options) with TypeORM FindManyOptions instead.
+   */
+  async deleteMany(filter: TFilterQuery<T>): Promise<DeleteResult>;
+
+  async deleteMany(options?: FindManyOptions<T>): Promise<DeleteResult>;
+
+  async deleteMany(
+    filterOrOptions: TFilterQuery<T> | FindManyOptions<T> = {},
+  ): Promise<DeleteResult> {
+    if (this.isFindManyOptions(filterOrOptions)) {
+      const options = filterOrOptions as FindManyOptions<T>;
+      const matches = await this.repository.find(options);
+      if (matches.length === 0) {
+        return { acknowledged: true, deletedCount: 0 };
+      }
+
+      const filter = (options.where ?? {}) as TFilterQuery<T>;
+      await this.preDelete(matches, filter);
+      await this.emitHook(EHook.preDelete, { entities: matches, filter });
+      await this.repository.delete(matches.map((entity) => entity.id));
+      const result: DeleteResult = {
+        acknowledged: true,
+        deletedCount: matches.length,
+      };
+      await this.postDelete(matches, result);
+      await this.emitHook(EHook.postDelete, { entities: matches, result });
+      return result;
+    }
+
+    const filter = filterOrOptions as TFilterQuery<T>;
+    const { where, fullyHandled } =
+      this.legacyQueryConverter.convertFilter(filter);
+
+    if (!fullyHandled) {
+      throw new Error(
+        'Unsupported legacy filter. Please use TypeORM FindManyOptions instead.',
+      );
+    }
+
+    const matches = await this.repository.find(
+      where ? ({ where } as FindManyOptions<T>) : undefined,
+    );
+
     if (matches.length === 0) {
       return { acknowledged: true, deletedCount: 0 };
     }
@@ -186,18 +389,82 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     return result;
   }
 
-  async deleteOne(criteria: string | TFilterQuery<T>): Promise<DeleteResult> {
-    const filter =
-      typeof criteria === 'string'
-        ? ({ id: criteria } as TFilterQuery<T>)
-        : criteria;
+  /**
+   * @deprecated Use deleteOne(options) with TypeORM FindOneOptions instead.
+   */
+  async deleteOne(criteria: string | TFilterQuery<T>): Promise<DeleteResult>;
 
-    const matches = this.applyFilter(await this.repository.find(), filter);
-    if (matches.length === 0) {
+  async deleteOne(options: FindOneOptions<T>): Promise<DeleteResult>;
+
+  async deleteOne(
+    criteriaOrOptions: string | TFilterQuery<T> | FindOneOptions<T>,
+  ): Promise<DeleteResult> {
+    if (typeof criteriaOrOptions === 'string') {
+      const filter = { id: criteriaOrOptions } as TFilterQuery<T>;
+      const entity =
+        (await this.repository.findOne({
+          where: { id: criteriaOrOptions } as any,
+        })) ?? null;
+
+      if (!entity) {
+        return { acknowledged: true, deletedCount: 0 };
+      }
+
+      await this.preDelete([entity], filter);
+      await this.emitHook(EHook.preDelete, { entities: [entity], filter });
+      await this.repository.delete(entity.id);
+      const result: DeleteResult = {
+        acknowledged: true,
+        deletedCount: 1,
+      };
+      await this.postDelete([entity], result);
+      await this.emitHook(EHook.postDelete, { entities: [entity], result });
+      return result;
+    }
+
+    if (this.isFindManyOptions(criteriaOrOptions)) {
+      const options = criteriaOrOptions as FindOneOptions<T>;
+      const entity = (await this.repository.findOne(options)) ?? null;
+      if (!entity) {
+        return { acknowledged: true, deletedCount: 0 };
+      }
+
+      const filter = (options.where ?? {}) as TFilterQuery<T>;
+      await this.preDelete([entity], filter);
+      await this.emitHook(EHook.preDelete, { entities: [entity], filter });
+      await this.repository.delete(entity.id);
+      const result: DeleteResult = {
+        acknowledged: true,
+        deletedCount: 1,
+      };
+      await this.postDelete([entity], result);
+      await this.emitHook(EHook.postDelete, { entities: [entity], result });
+      return result;
+    }
+
+    const filter = criteriaOrOptions as TFilterQuery<T>;
+    const { where, fullyHandled } =
+      this.legacyQueryConverter.convertFilter(filter);
+
+    if (!fullyHandled) {
+      throw new Error(
+        'Unsupported legacy filter. Please use TypeORM FindOneOptions instead.',
+      );
+    }
+
+    let entity: T | null = null;
+
+    if (where) {
+      entity = (await this.repository.findOne({ where })) ?? null;
+    } else {
+      const [first] = await this.repository.find({ take: 1 });
+      entity = first ?? null;
+    }
+
+    if (!entity) {
       return { acknowledged: true, deletedCount: 0 };
     }
 
-    const [entity] = matches;
     await this.preDelete([entity], filter);
     await this.emitHook(EHook.preDelete, { entities: [entity], filter });
     await this.repository.delete(entity.id);
@@ -220,101 +487,30 @@ export abstract class BaseOrmRepository<T extends { id: string }> {
     return { [property as keyof T]: direction } as FindOptionsOrder<T>;
   }
 
-  protected applyPagination(entities: T[], pageQuery?: PageQueryDto<T>): T[] {
-    if (!pageQuery) return entities;
-    const { skip, limit, sort } = pageQuery;
-    const ordered = sort
-      ? [...entities].sort((a, b) => this.sortComparator(a, b, sort))
-      : entities;
-    const start = skip ?? 0;
-    const end = limit ? start + limit : undefined;
-    return ordered.slice(start, end);
-  }
-
-  protected sortComparator(entityA: T, entityB: T, sort: SortTuple<T>) {
-    const [property, order] = sort;
-    const direction =
-      order === 'asc' || order === 'ascending' || order === 1 ? 1 : -1;
-    const aValue = get(entityA, property as string);
-    const bValue = get(entityB, property as string);
-
-    if (aValue === bValue) return 0;
-    return aValue > bValue ? direction : -direction;
-  }
-
-  protected applyFilter(entities: T[], filter: TFilterQuery<T> = {}): T[] {
-    if (!filter || Object.keys(filter as object).length === 0) {
-      return entities;
+  protected isFindManyOptions(
+    input: TFilterQuery<T> | FindManyOptions<T> | FindOneOptions<T>,
+  ): input is FindManyOptions<T> | FindOneOptions<T> {
+    if (!input || typeof input !== 'object') {
+      return false;
     }
 
-    return entities.filter((entity) => this.matchesFilter(entity, filter));
-  }
+    const optionKeys = [
+      'where',
+      'relations',
+      'select',
+      'order',
+      'withDeleted',
+      'loadEagerRelations',
+      'loadRelationIds',
+      'take',
+      'skip',
+      'lock',
+      'cache',
+    ];
 
-  protected matchesFilter(entity: T, filter: any): boolean {
-    if (!filter) return true;
-
-    if (Array.isArray(filter)) {
-      return filter.every((partial) => this.matchesFilter(entity, partial));
-    }
-
-    if (filter.$and) {
-      return filter.$and.every((rule: any) => this.matchesFilter(entity, rule));
-    }
-
-    if (filter.$or) {
-      return filter.$or.some((rule: any) => this.matchesFilter(entity, rule));
-    }
-
-    if (filter.$nor) {
-      return filter.$nor.every(
-        (rule: any) => !this.matchesFilter(entity, rule),
-      );
-    }
-
-    return Object.entries(filter).every(([key, value]) => {
-      if (key.startsWith('$')) {
-        return true;
-      }
-
-      const actualValue = get(entity, key);
-
-      if (value instanceof RegExp) {
-        return typeof actualValue === 'string'
-          ? value.test(actualValue)
-          : false;
-      }
-
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        if ('$regex' in value) {
-          const regex = value.$regex as RegExp;
-          return typeof actualValue === 'string'
-            ? regex.test(actualValue)
-            : false;
-        }
-
-        if ('$in' in value) {
-          const values = Array.isArray(value.$in) ? value.$in : [value.$in];
-          return values.includes(actualValue);
-        }
-
-        if ('$nin' in value) {
-          const values = Array.isArray(value.$nin) ? value.$nin : [value.$nin];
-          return !values.includes(actualValue);
-        }
-
-        if ('$eq' in value) {
-          return this.matchesFilter(entity, { [key]: value.$eq });
-        }
-      }
-
-      if (Array.isArray(value)) {
-        return Array.isArray(actualValue)
-          ? value.every((v) => (actualValue as any[]).includes(v))
-          : false;
-      }
-
-      return actualValue === value;
-    });
+    return optionKeys.some((key) =>
+      Object.prototype.hasOwnProperty.call(input, key),
+    );
   }
 
   protected getEventName(

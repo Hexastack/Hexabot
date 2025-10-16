@@ -6,14 +6,16 @@
 
 import { Types } from 'mongoose';
 
+import { Language as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language } from '@/i18n/schemas/language.schema';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
+  closeTypeOrmConnections,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
@@ -34,7 +36,7 @@ describe('NlpSampleRepository', () => {
   let languageRepository: LanguageRepository;
   let nlpSampleEntity: NlpSampleEntity | null;
   let noNlpSample: NlpSample | null;
-  let languages: Language[];
+  let languages: LanguageEntity[];
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -45,6 +47,12 @@ describe('NlpSampleRepository', () => {
         NlpValueRepository,
         LanguageRepository,
         NlpSampleEntityRepository,
+      ],
+      typeorm: [
+        {
+          entities: [LanguageEntity],
+          fixtures: installLanguageFixturesTypeOrm,
+        },
       ],
     });
     [
@@ -65,7 +73,10 @@ describe('NlpSampleRepository', () => {
     languages = await languageRepository.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeInMongodConnection();
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 

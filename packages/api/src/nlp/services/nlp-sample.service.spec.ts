@@ -7,15 +7,17 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
+import { Language } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
-import { Language } from '@/i18n/schemas/language.schema';
 import { LanguageService } from '@/i18n/services/language.service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
+  closeTypeOrmConnections,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
@@ -50,6 +52,12 @@ describe('NlpSampleService', () => {
       autoInjectFrom: ['providers'],
       imports: [rootMongooseTestModule(installNlpSampleEntityFixtures)],
       providers: [NlpSampleService],
+      typeorm: [
+        {
+          entities: [Language],
+          fixtures: installLanguageFixturesTypeOrm,
+        },
+      ],
     });
     [
       nlpEntityService,
@@ -79,7 +87,10 @@ describe('NlpSampleService', () => {
     languages = await languageRepository.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeInMongodConnection();
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 
@@ -159,7 +170,9 @@ describe('NlpSampleService', () => {
       jest
         .spyOn(nlpEntityService, 'findAll')
         .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
-      jest.spyOn(languageService, 'getLanguages').mockResolvedValue({});
+      jest
+        .spyOn(languageService, 'getLanguages')
+        .mockResolvedValue({} as Record<string, Language>);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
         .mockResolvedValue({ code: 'en' } as Language);

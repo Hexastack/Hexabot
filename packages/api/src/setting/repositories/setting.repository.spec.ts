@@ -4,11 +4,11 @@
  * Full terms: see LICENSE.md.
  */
 
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
 
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import { getRandom } from '@/utils/helpers/safeRandom';
 import {
@@ -40,9 +40,7 @@ describe('SettingRepository (TypeORM)', () => {
 
     module = testing.module;
     settingRepository = module.get(SettingRepository);
-    repository = module.get<Repository<Setting>>(
-      getRepositoryToken(Setting),
-    );
+    repository = module.get<Repository<Setting>>(getRepositoryToken(Setting));
   });
 
   afterEach(async () => {
@@ -73,7 +71,14 @@ describe('SettingRepository (TypeORM)', () => {
 
   describe('find', () => {
     it('filters settings by group', async () => {
-      const result = await settingRepository.find({ group: 'contact' });
+      const result = await settingRepository.find(
+        { group: 'contact' },
+        {
+          sort: ['weight', 'asc'],
+          skip: undefined,
+          limit: undefined,
+        },
+      );
       const expected = settingFixtures.filter(
         (fixture) => fixture.group === 'contact',
       );
@@ -204,9 +209,10 @@ describe('SettingRepository (TypeORM)', () => {
         settingRepository.validateSettingValue(SettingType.attachment, null),
       ).not.toThrow();
       expect(() =>
-        settingRepository.validateSettingValue(SettingType.multiple_attachment, [
-          randomUUID(),
-        ]),
+        settingRepository.validateSettingValue(
+          SettingType.multiple_attachment,
+          [randomUUID()],
+        ),
       ).not.toThrow();
     });
 
@@ -255,9 +261,9 @@ describe('SettingRepository (TypeORM)', () => {
 
     failingCases.forEach(({ type, value, error }) => {
       it(`rejects invalid values for ${type}`, () => {
-        expect(() => settingRepository.validateSettingValue(type, value)).toThrow(
-          error,
-        );
+        expect(() =>
+          settingRepository.validateSettingValue(type, value),
+        ).toThrow(error);
       });
     });
   });

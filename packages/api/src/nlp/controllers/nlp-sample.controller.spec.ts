@@ -7,15 +7,17 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
-import { Language } from '@/i18n/schemas/language.schema';
+import { Language as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
 import { getUpdateOneError } from '@/utils/test/errors/messages';
 import { installAttachmentFixtures } from '@/utils/test/fixtures/attachment';
+import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';
 import { installNlpSampleEntityFixtures } from '@/utils/test/fixtures/nlpsampleentity';
 import { getPageQuery } from '@/utils/test/pagination';
 import {
   closeInMongodConnection,
+  closeTypeOrmConnections,
   rootMongooseTestModule,
 } from '@/utils/test/test';
 import { TFixtures } from '@/utils/test/types';
@@ -39,7 +41,7 @@ describe('NlpSampleController', () => {
   let nlpValueService: NlpValueService;
   let languageService: LanguageService;
   let byeJhonSampleId: string | null;
-  let languages: Language[];
+  let languages: LanguageEntity[];
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -50,6 +52,12 @@ describe('NlpSampleController', () => {
           await installNlpSampleEntityFixtures();
           await installAttachmentFixtures();
         }),
+      ],
+      typeorm: [
+        {
+          entities: [LanguageEntity],
+          fixtures: installLanguageFixturesTypeOrm,
+        },
       ],
     });
     [
@@ -76,7 +84,10 @@ describe('NlpSampleController', () => {
     languages = await languageService.findAll();
   });
 
-  afterAll(closeInMongodConnection);
+  afterAll(async () => {
+    await closeInMongodConnection();
+    await closeTypeOrmConnections();
+  });
 
   afterEach(jest.clearAllMocks);
 

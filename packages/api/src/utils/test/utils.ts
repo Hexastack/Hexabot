@@ -12,6 +12,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
+import { Language } from '@/i18n/entities/language.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { Metadata } from '@/setting/entities/metadata.entity';
 import { Setting } from '@/setting/entities/setting.entity';
@@ -304,7 +305,11 @@ export const buildTestingMocks = async ({
       ),
   );
 
-  const defaultTypeOrmEntities: EntityTarget<any>[] = [Setting, Metadata];
+  const defaultTypeOrmEntities: EntityTarget<any>[] = [
+    Setting,
+    Metadata,
+    Language,
+  ];
   const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
   let typeOrmOptions: Partial<DataSourceOptions> | undefined;
   const typeOrmFixtures: TypeOrmFixture[] = [];

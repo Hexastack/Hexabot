@@ -14,7 +14,10 @@ import { SentMessageInfo } from 'nodemailer';
 
 import { I18nService } from '@/i18n/services/i18n.service';
 import { MailerService } from '@/mailer/mailer.service';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
+import {
+  installLanguageFixtures,
+  installLanguageFixturesTypeOrm,
+} from '@/utils/test/fixtures/language';
 import { installUserFixtures, users } from '@/utils/test/fixtures/user';
 import {
   closeInMongodConnection,
@@ -58,6 +61,9 @@ describe('PasswordResetService', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installLanguageFixturesTypeOrm,
+      },
     });
     [passwordResetService, mailerService, jwtService, userModel] =
       await getMocks([

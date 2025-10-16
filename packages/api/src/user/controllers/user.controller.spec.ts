@@ -14,7 +14,10 @@ import { SentMessageInfo } from 'nodemailer';
 import { I18nService } from '@/i18n/services/i18n.service';
 import { MailerService } from '@/mailer/mailer.service';
 import { IGNORED_TEST_FIELDS } from '@/utils/test/constants';
-import { installLanguageFixtures } from '@/utils/test/fixtures/language';
+import {
+  installLanguageFixtures,
+  installLanguageFixturesTypeOrm,
+} from '@/utils/test/fixtures/language';
 import { installPermissionFixtures } from '@/utils/test/fixtures/permission';
 import { getUserFixtures, userFixtures } from '@/utils/test/fixtures/user';
 import { getPageQuery } from '@/utils/test/pagination';
@@ -76,6 +79,9 @@ describe('UserController', () => {
           },
         },
       ],
+      typeorm: {
+        fixtures: installLanguageFixturesTypeOrm,
+      },
     });
     [
       userController,

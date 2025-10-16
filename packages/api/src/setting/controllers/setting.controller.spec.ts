@@ -82,13 +82,13 @@ describe('SettingController', () => {
   });
 
   describe('updateOne', () => {
-    it('Should update and return a specific Setting by id', async () => {
+    it('Should update and return a specific Setting by', async () => {
       jest.spyOn(settingService, 'updateOne');
       const payload = {
         value: 'updated setting value',
       };
       const { id } = (await settingService.findOne({
-        value: 'admin@example.com',
+        label: 'contact_email_recipient',
       })) as Setting;
       const result = await settingController.updateOne(id, payload);
 
@@ -96,7 +96,8 @@ describe('SettingController', () => {
       expect(result).toEqualPayload(
         {
           ...settingFixtures.find(
-            (settingFixture) => settingFixture.value === 'admin@example.com',
+            (settingFixture) =>
+              settingFixture.label === 'contact_email_recipient',
           ),
           value: payload.value,
         },
