@@ -5,8 +5,10 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource } from 'typeorm';
 
 import { MenuCreateDto } from '@/cms/dto/menu.dto';
+import { MenuOrmEntity } from '@/cms/entities/menu.entity';
 import { MenuModel } from '@/cms/schemas/menu.schema';
 import { MenuType } from '@/cms/types/menu';
 
@@ -126,5 +128,67 @@ export const installMenuFixtures = async () => {
         parent: m.parent ? docs[parseInt(m.parent)].id : undefined,
       };
     }),
+  );
+};
+
+export const installMenuFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<void> => {
+  const repository = dataSource.getRepository(MenuOrmEntity);
+
+  const count = await repository.count();
+  if (count > 0) {
+    return;
+  }
+
+  const resolveParentId = (
+    parent: string | undefined,
+    collection: MenuOrmEntity[],
+  ) => {
+    if (!parent) {
+      return undefined;
+    }
+    const idx = Number(parent);
+    if (!Number.isInteger(idx) || !collection[idx]) {
+      throw new Error(`Unable to resolve menu parent for index: ${parent}`);
+    }
+    return collection[idx].id;
+  };
+
+  const roots = await repository.save(
+    repository.create(
+      rootMenuFixtures.map((menu) => ({
+        ...menu,
+      })),
+    ),
+  );
+
+  const offers = await repository.save(
+    repository.create(
+      offersMenuFixtures.map((menu) => ({
+        ...menu,
+        parent: resolveParentId(menu.parent, roots),
+      })),
+    ),
+  );
+
+  const all = [...roots, ...offers];
+
+  await repository.save(
+    repository.create(
+      devicesMenuFixtures.map((menu) => ({
+        ...menu,
+        parent: resolveParentId(menu.parent, all),
+      })),
+    ),
+  );
+
+  await repository.save(
+    repository.create(
+      accountMenuFixtures.map((menu) => ({
+        ...menu,
+        parent: resolveParentId(menu.parent, roots),
+      })),
+    ),
   );
 };

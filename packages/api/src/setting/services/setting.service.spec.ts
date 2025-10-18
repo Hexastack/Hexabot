@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../entities/setting.entity';
+import { Setting } from '../dto/setting.dto';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingType } from '../types';
 
@@ -34,6 +34,11 @@ describe('SettingService', () => {
       type: SettingType.text,
       createdAt: new Date(),
       updatedAt: new Date(),
+      subgroup: undefined,
+      options: undefined,
+      config: undefined,
+      weight: undefined,
+      translatable: undefined,
       ...overrides,
     });
     return setting;
@@ -81,7 +86,9 @@ describe('SettingService', () => {
 
       expect(settingRepository.findAll).toHaveBeenCalled();
       expect(result).toEqualPayload(
-        settingService.group(settingFixtures as Setting[]),
+        settingService.group(
+          settingFixtures.map((fixture) => makeSetting(fixture)),
+        ),
         [
           'id',
           'createdAt',

@@ -4,242 +4,274 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
 import { NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 
+import { BlockService } from '@/chat/services/block.service';
 import { LoggerService } from '@/logger/logger.service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import {
+  contentFixtures,
+  installContentFixturesTypeOrm,
+} from '@/utils/test/fixtures/content';
+import { installContentTypeFixturesTypeOrm } from '@/utils/test/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
-import { ContentCreateDto } from '../dto/content.dto';
-import { Content } from '../entities/content.entity';
-import { ContentService } from '../services/content.service';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
+import { ContentTypeRepository } from '../repositories/content-type.repository';
+import { ContentRepository } from '../repositories/content.repository';
 import { ContentTypeService } from '../services/content-type.service';
+import { ContentService } from '../services/content.service';
 
 import { ContentController } from './content.controller';
 
-const createLoggerMock = (): jest.Mocked<LoggerService> =>
-  ({
-    log: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    verbose: jest.fn(),
-    fatal: jest.fn(),
-  }) as unknown as jest.Mocked<LoggerService>;
-
-const createContent = (overrides: Partial<Content> = {}): Content =>
-  Object.assign(new Content(), {
-    id: 'content-1',
-    entity: 'type-1',
-    title: 'Sample',
-    status: true,
-    dynamicFields: {},
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  });
-
-describe('ContentController', () => {
+describe('ContentController (TypeORM)', () => {
+  let module: TestingModule;
   let controller: ContentController;
-  let contentService: jest.Mocked<ContentService>;
-  let contentTypeService: jest.Mocked<ContentTypeService>;
-  let logger: jest.Mocked<LoggerService>;
+  let contentService: ContentService;
+  let contentTypeService: ContentTypeService;
+  let logger: LoggerService;
+  const createdContentIds = new Set<string>();
+  const blockServiceMock = {
+    findOne: jest.fn().mockResolvedValue(null),
+  };
 
-  beforeEach(() => {
-    contentService = {
-      canPopulate: jest.fn(),
-      find: jest.fn(),
-      findAndPopulate: jest.fn(),
-      count: jest.fn(),
-      findOne: jest.fn(),
-      findOneAndPopulate: jest.fn(),
-      deleteOne: jest.fn(),
-      create: jest.fn(),
-      updateOne: jest.fn(),
-    } as unknown as jest.Mocked<ContentService>;
-
-    contentService.find.mockResolvedValue([]);
-
-    contentTypeService = {
-      findOne: jest.fn(),
-    } as unknown as jest.Mocked<ContentTypeService>;
-    contentTypeService.findOne.mockResolvedValue({ id: content.entity } as any);
-
-    logger = createLoggerMock();
-
-    controller = new ContentController(
-      contentService,
-      contentTypeService,
-      logger,
-    );
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      controllers: [ContentController],
+      providers: [
+        ContentService,
+        ContentTypeService,
+        ContentRepository,
+        ContentTypeRepository,
+        {
+          provide: BlockService,
+          useFactory: () => blockServiceMock,
+        },
+      ],
+      typeorm: [
+        {
+          entities: [ContentOrmEntity, ContentTypeOrmEntity],
+          fixtures: [
+            installContentTypeFixturesTypeOrm,
+            installContentFixturesTypeOrm,
+          ],
+        },
+      ],
+    });
+    module = testingModule;
+    [controller, contentService, contentTypeService] = await getMocks([
+      ContentController,
+      ContentService,
+      ContentTypeService,
+    ]);
+    logger = (controller as any).logger as LoggerService;
   });
 
-  const content = createContent();
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  afterEach(async () => {
+    jest.clearAllMocks();
+    for (const id of Array.from(createdContentIds)) {
+      await contentService.deleteOne(id);
+      createdContentIds.delete(id);
+    }
+  });
 
   describe('create', () => {
-    it('creates content when entity is valid', async () => {
-      const payload: ContentCreateDto = {
+    it('creates content when entity exists', async () => {
+      const contentType = await contentTypeService.findOne({
+        where: { name: 'Product' },
+      });
+      expect(contentType).toBeDefined();
+
+      const payload = {
         title: 'New content',
-        entity: content.entity,
+        entity: contentType!.id,
         status: true,
-        dynamicFields: {},
+        dynamicFields: { subtitle: 'Test' },
       };
 
-      contentTypeService.findOne.mockResolvedValue({ id: content.entity } as any);
-      contentService.create.mockResolvedValue(createContent(payload));
+      const created = await controller.create(payload);
+      createdContentIds.add(created.id);
 
-      const result = await controller.create(payload);
-
-      expect(contentTypeService.findOne).toHaveBeenCalledWith(payload.entity);
-      expect(contentService.create).toHaveBeenCalledWith(payload);
-      expect(result.title).toBe(payload.title);
+      expect(created).toMatchObject(payload);
     });
 
     it('throws when entity is invalid', async () => {
-      contentTypeService.findOne.mockResolvedValue(null);
+      const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
         controller.create({
           title: 'Invalid',
-          entity: 'missing',
+          entity: randomUUID(),
           status: true,
           dynamicFields: {},
         }),
       ).rejects.toThrow(NotFoundException);
+
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 
   describe('findPage', () => {
-    const pageQuery: PageQueryDto<Content> = { limit: 10, skip: 0 };
+    it('retrieves paginated content without populate', async () => {
+      const result = await controller.findPage({ limit: 5, skip: 0 }, [], {});
 
-    it('delegates to find when populate is empty', async () => {
-      contentService.canPopulate.mockReturnValue(false);
-      contentService.find.mockResolvedValue([content]);
-
-      const result = await controller.findPage(pageQuery, [], {});
-
-      expect(contentService.find).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqual([content]);
+      expect(result.length).toBeGreaterThan(0);
     });
 
-    it('delegates to findAndPopulate when populate is allowed', async () => {
-      contentService.canPopulate.mockReturnValue(true);
-      contentService.findAndPopulate.mockResolvedValue([content]);
+    it('retrieves populated content when requested', async () => {
+      const findAndPopulateSpy = jest.spyOn(contentService, 'findAndPopulate');
 
-      const result = await controller.findPage(pageQuery, ['entity'], {});
-
-      expect(contentService.findAndPopulate).toHaveBeenCalledWith(
+      const result = await controller.findPage(
+        { limit: 5, skip: 0 },
+        ['entity'],
         {},
-        pageQuery,
       );
-      expect(result).toEqual([content]);
-    });
-  });
 
-  describe('findOne', () => {
-    it('returns content when found', async () => {
-      contentService.canPopulate.mockReturnValue(false);
-      contentService.findOne.mockResolvedValue(content);
-
-      const result = await controller.findOne(content.id, []);
-
-      expect(result).toBe(content);
-    });
-
-    it('returns populated content when requested', async () => {
-      contentService.canPopulate.mockReturnValue(true);
-      contentService.findOneAndPopulate.mockResolvedValue(content);
-
-      const result = await controller.findOne(content.id, ['entity']);
-
-      expect(contentService.findOneAndPopulate).toHaveBeenCalledWith(
-        content.id,
+      expect(result.length).toBeGreaterThan(0);
+      expect(findAndPopulateSpy).toHaveBeenCalledWith(
+        {},
+        { limit: 5, skip: 0 },
       );
-      expect(result).toBe(content);
-    });
-
-    it('throws when content is not found', async () => {
-      contentService.canPopulate.mockReturnValue(false);
-      contentService.findOne.mockResolvedValue(null);
-
-      await expect(controller.findOne('missing', [])).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(logger.warn).toHaveBeenCalled();
     });
   });
 
   describe('filterCount', () => {
-    it('returns count from service', async () => {
-      contentService.count.mockResolvedValue(5);
+    it('returns count of matching contents', async () => {
+      const result = await controller.filterCount({ status: true });
 
-      const result = await controller.filterCount({});
+      expect(result.count).toBeGreaterThan(0);
+    });
+  });
 
-      expect(result).toEqual({ count: 5 });
+  describe('findOne', () => {
+    it('returns content without populate', async () => {
+      const [existing] = await contentService.find({ take: 1 });
+      expect(existing).toBeDefined();
+
+      const found = await controller.findOne(existing.id, []);
+
+      expect(found).toMatchObject({ id: existing.id });
+    });
+
+    it('returns populated content when allowed', async () => {
+      const [existing] = await contentService.find({ take: 1 });
+      expect(existing).toBeDefined();
+
+      const findOneAndPopulateSpy = jest.spyOn(
+        contentService,
+        'findOneAndPopulate',
+      );
+
+      const found = await controller.findOne(existing.id, ['entity']);
+
+      expect(found).toMatchObject({ id: existing.id });
+      expect(findOneAndPopulateSpy).toHaveBeenCalledWith(existing.id);
+    });
+
+    it('throws when content is missing', async () => {
+      const warnSpy = jest.spyOn(logger, 'warn');
+
+      await expect(
+        controller.findOne('00000000-0000-4000-8000-000000000000', []),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 
   describe('findByType', () => {
-    it('returns contents when type exists', async () => {
-      contentTypeService.findOne.mockResolvedValue({ id: content.entity } as any);
-      contentService.find.mockResolvedValue([content]);
+    it('returns contents for a given content type', async () => {
+      const [fixture] = contentFixtures;
+      const type = await contentTypeService.findOne({
+        where: { name: 'Product' },
+      });
+      expect(type).toBeDefined();
 
-      const result = await controller.findByType(content.entity, {
+      const result = await controller.findByType(type!.id, {
         limit: 10,
         skip: 0,
       });
 
-      expect(contentService.find).toHaveBeenCalledWith(
-        { entity: content.entity },
-        { limit: 10, skip: 0 },
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.some((content) => content.title === fixture.title)).toBe(
+        true,
       );
-      expect(result).toEqual([content]);
     });
 
     it('throws when content type does not exist', async () => {
-      contentTypeService.findOne.mockResolvedValue(null);
+      const warnSpy = jest.spyOn(logger, 'warn');
 
       await expect(
-        controller.findByType('missing', { limit: 10, skip: 0 }),
+        controller.findByType('00000000-0000-4000-8000-000000000001', {
+          limit: 10,
+          skip: 0,
+        }),
       ).rejects.toThrow(NotFoundException);
-      expect(logger.warn).toHaveBeenCalled();
+
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 
   describe('updateOne', () => {
-    it('delegates to the service', async () => {
-      contentService.updateOne.mockResolvedValue(content);
-
-      const result = await controller.updateOne({ title: 'Updated' }, content.id);
-
-      expect(contentService.updateOne).toHaveBeenCalledWith(content.id, {
-        title: 'Updated',
+    it('updates existing content', async () => {
+      const contentType = await contentTypeService.findOne({
+        where: { name: 'Product' },
       });
-      expect(result).toBe(content);
+      const created = await controller.create({
+        title: 'To update',
+        entity: contentType!.id,
+        status: true,
+        dynamicFields: {},
+      });
+      createdContentIds.add(created.id);
+
+      const updated = await controller.updateOne(
+        { title: 'Updated title' },
+        created.id,
+      );
+
+      expect(updated.title).toBe('Updated title');
     });
   });
 
   describe('deleteOne', () => {
-    it('returns delete result when an entity was removed', async () => {
-      contentService.deleteOne.mockResolvedValue({
-        acknowledged: true,
-        deletedCount: 1,
+    it('deletes existing content', async () => {
+      const contentType = await contentTypeService.findOne({
+        where: { name: 'Product' },
+      });
+      const created = await controller.create({
+        title: 'To delete',
+        entity: contentType!.id,
+        status: true,
+        dynamicFields: {},
       });
 
-      const result = await controller.deleteOne(content.id);
+      const result = await controller.deleteOne(created.id);
 
       expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+      const found = await contentService.findOne(created.id);
+      expect(found).toBeNull();
     });
 
-    it('throws when delete count is zero', async () => {
-      contentService.deleteOne.mockResolvedValue({
-        acknowledged: true,
-        deletedCount: 0,
-      });
+    it('throws when nothing is deleted', async () => {
+      const warnSpy = jest.spyOn(logger, 'warn');
 
-      await expect(controller.deleteOne('missing')).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(logger.warn).toHaveBeenCalled();
+      await expect(
+        controller.deleteOne('00000000-0000-4000-8000-000000000002'),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(warnSpy).toHaveBeenCalled();
     });
   });
 });

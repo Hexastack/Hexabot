@@ -26,7 +26,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { Translation } from '../entities/translation.entity';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
@@ -40,9 +40,11 @@ export class TranslationController {
 
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Translation>,
-    @Query(new SearchFilterPipe<Translation>({ allowedFields: ['str'] }))
-    filters: TFilterQuery<Translation>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<TranslationOrmEntity>,
+    @Query(
+      new SearchFilterPipe<TranslationOrmEntity>({ allowedFields: ['str'] }),
+    )
+    filters: TFilterQuery<TranslationOrmEntity>,
   ) {
     return await this.translationService.find(filters, pageQuery);
   }
@@ -54,11 +56,11 @@ export class TranslationController {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Translation>({
+      new SearchFilterPipe<TranslationOrmEntity>({
         allowedFields: ['str'],
       }),
     )
-    filters?: TFilterQuery<Translation>,
+    filters?: TFilterQuery<TranslationOrmEntity>,
   ) {
     return { count: await this.translationService.count(filters) };
   }
@@ -89,7 +91,9 @@ export class TranslationController {
   async refresh(): Promise<any> {
     const defaultLanguage = await this.languageService.getDefaultLanguage();
     const languages = await this.languageService.getLanguages();
-    const defaultTrans: Translation['translations'] = Object.keys(languages)
+    const defaultTrans: TranslationOrmEntity['translations'] = Object.keys(
+      languages,
+    )
       .filter((lang) => lang !== defaultLanguage.code)
       .reduce(
         (acc, curr) => {

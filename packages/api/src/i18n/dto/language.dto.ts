@@ -6,9 +6,32 @@
 
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+@Exclude()
+export class LanguageStub extends BaseStub {
+  @Expose()
+  title!: string;
+
+  @Expose()
+  code!: string;
+
+  @Expose()
+  isDefault!: boolean;
+
+  @Expose()
+  isRTL!: boolean;
+}
+
+@Exclude()
+export class Language extends LanguageStub {}
 
 export class LanguageCreateDto {
   @ApiProperty({ description: 'Language Title', type: String })
@@ -33,6 +56,12 @@ export class LanguageCreateDto {
 
 export class LanguageUpdateDto extends PartialType(LanguageCreateDto) {}
 
-export type LanguageDto = DtoConfig<{
+export type LanguageTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Language;
+  FullCls: typeof Language;
+}>;
+
+export type LanguageDto = DtoActionConfig<{
   create: LanguageCreateDto;
+  update: LanguageUpdateDto;
 }>;

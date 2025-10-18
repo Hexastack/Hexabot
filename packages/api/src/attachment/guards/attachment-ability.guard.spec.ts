@@ -6,6 +6,7 @@
 
 import { BadRequestException, ExecutionContext } from '@nestjs/common';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Model } from '@/user/schemas/model.schema';
 import { Permission } from '@/user/schemas/permission.schema';
 import { ModelService } from '@/user/services/model.service';
@@ -14,7 +15,6 @@ import { Action } from '@/user/types/action.type';
 import { buildTestingMocks } from '@/utils/test/utils';
 
 import { attachment } from '../mocks/attachment.mock';
-import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
 
@@ -59,7 +59,7 @@ describe('AttachmentGuard', () => {
       const mockUser = { roles: ['admin-id'] } as any;
       const mockRef = [AttachmentResourceRef.UserAvatar];
 
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
+      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
         return typeof criteria === 'string' ||
           !['user', 'attachment'].includes(criteria.identity)
           ? Promise.reject('Invalid #1')
@@ -67,21 +67,24 @@ describe('AttachmentGuard', () => {
               identity: criteria.identity,
               id: `${criteria.identity}-id`,
             } as Model);
-      });
+      }) as any);
 
-      jest
-        .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['user-id', 'attachment-id'].includes(criteria.model) ||
-            criteria.action !== Action.READ
-            ? Promise.reject('Invalid #2')
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.READ,
-                role: 'admin-id',
-              } as Permission);
-        });
+      jest.spyOn(permissionService, 'findOne').mockImplementation(((
+        criteria,
+      ) => {
+        const roleIds = criteria?.roleId?.$in ?? [];
+        return typeof criteria !== 'object' ||
+          !Array.isArray(roleIds) ||
+          !roleIds.includes('admin-id') ||
+          criteria.modelId !== 'user-id' ||
+          criteria.action !== Action.READ
+          ? Promise.reject('Invalid #2')
+          : Promise.resolve({
+              modelId: criteria.modelId,
+              action: Action.READ,
+              roleId: 'admin-id',
+            } as unknown as Permission);
+      }) as any);
 
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
@@ -115,18 +118,18 @@ describe('AttachmentGuard', () => {
     it('should allow GET requests with valid id', async () => {
       const mockUser = { roles: ['admin-id'] } as any;
 
-      jest
-        .spyOn(attachmentService, 'findOne')
-        .mockImplementation((criteria) => {
-          return criteria !== '9'.repeat(24)
-            ? Promise.reject('Invalid ID')
-            : Promise.resolve({
-                id: '9'.repeat(24),
-                resourceRef: AttachmentResourceRef.UserAvatar,
-              } as Attachment);
-        });
+      jest.spyOn(attachmentService, 'findOne').mockImplementation(((
+        criteria,
+      ) => {
+        return criteria !== '9'.repeat(24)
+          ? Promise.reject('Invalid ID')
+          : Promise.resolve({
+              id: '9'.repeat(24),
+              resourceRef: AttachmentResourceRef.UserAvatar,
+            } as AttachmentOrmEntity);
+      }) as any);
 
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
+      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
         return typeof criteria === 'string' ||
           !['user', 'attachment'].includes(criteria.identity)
           ? Promise.reject('Invalid #1')
@@ -134,21 +137,24 @@ describe('AttachmentGuard', () => {
               identity: criteria.identity,
               id: `${criteria.identity}-id`,
             } as Model);
-      });
+      }) as any);
 
-      jest
-        .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['user-id', 'attachment-id'].includes(criteria.model) ||
-            criteria.action !== Action.READ
-            ? Promise.reject('Invalid #2')
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.READ,
-                role: 'admin-id',
-              } as Permission);
-        });
+      jest.spyOn(permissionService, 'findOne').mockImplementation(((
+        criteria,
+      ) => {
+        const roleIds = criteria?.roleId?.$in ?? [];
+        return typeof criteria !== 'object' ||
+          !Array.isArray(roleIds) ||
+          !roleIds.includes('admin-id') ||
+          criteria.modelId !== 'user-id' ||
+          criteria.action !== Action.READ
+          ? Promise.reject('Invalid #2')
+          : Promise.resolve({
+              modelId: criteria.modelId,
+              action: Action.READ,
+              roleId: 'admin-id',
+            } as unknown as Permission);
+      }) as any);
 
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
@@ -167,7 +173,7 @@ describe('AttachmentGuard', () => {
     it('should allow POST requests with a valid ref', async () => {
       const mockUser = { roles: ['editor-id'] } as any;
 
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
+      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
         return typeof criteria === 'string' ||
           !['block', 'attachment'].includes(criteria.identity)
           ? Promise.reject()
@@ -175,20 +181,29 @@ describe('AttachmentGuard', () => {
               identity: criteria.identity,
               id: `${criteria.identity}-id`,
             } as Model);
-      });
+      }) as any);
 
-      jest
-        .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['block-id', 'attachment-id'].includes(criteria.model)
-            ? Promise.reject()
-            : Promise.resolve({
-                model: criteria.model,
-                action: Action.CREATE,
-                role: 'editor-id',
-              } as Permission);
-        });
+      jest.spyOn(permissionService, 'findOne').mockImplementation(((
+        criteria,
+      ) => {
+        const roleIds = criteria?.roleId?.$in ?? [];
+        const isBlockUpdate =
+          criteria.modelId === 'block-id' && criteria.action === Action.UPDATE;
+        const isAttachmentCreate =
+          criteria.modelId === 'attachment-id' &&
+          criteria.action === Action.CREATE;
+
+        return typeof criteria !== 'object' ||
+          !Array.isArray(roleIds) ||
+          !roleIds.includes('editor-id') ||
+          (!isBlockUpdate && !isAttachmentCreate)
+          ? Promise.reject('Invalid #2')
+          : Promise.resolve({
+              modelId: criteria.modelId,
+              action: criteria.action,
+              roleId: 'editor-id',
+            } as unknown as Permission);
+      }) as any);
 
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({
@@ -226,7 +241,7 @@ describe('AttachmentGuard', () => {
 
       jest.spyOn(attachmentService, 'findOne').mockResolvedValue(attachment);
 
-      jest.spyOn(modelService, 'findOne').mockImplementation((criteria) => {
+      jest.spyOn(modelService, 'findOne').mockImplementation(((criteria) => {
         return typeof criteria === 'string' ||
           !['block', 'attachment'].includes(criteria.identity)
           ? Promise.reject('Invalid X')
@@ -234,24 +249,29 @@ describe('AttachmentGuard', () => {
               identity: criteria.identity,
               id: `${criteria.identity}-id`,
             } as Model);
-      });
+      }) as any);
 
-      jest
-        .spyOn(permissionService, 'findOne')
-        .mockImplementation((criteria) => {
-          return typeof criteria === 'string' ||
-            !['block-id', 'attachment-id'].includes(criteria.model) ||
-            (criteria.model === 'block-id' &&
-              criteria.action !== Action.UPDATE) ||
-            (criteria.model === 'attachment-id' &&
-              criteria.action !== Action.DELETE)
-            ? Promise.reject('Invalid Y')
-            : Promise.resolve({
-                model: criteria.model,
-                action: criteria.action,
-                role: 'admin-id',
-              } as Permission);
-        });
+      jest.spyOn(permissionService, 'findOne').mockImplementation(((
+        criteria,
+      ) => {
+        const roleIds = criteria?.roleId?.$in ?? [];
+        const isBlockUpdate =
+          criteria.modelId === 'block-id' && criteria.action === Action.UPDATE;
+        const isAttachmentDelete =
+          criteria.modelId === 'attachment-id' &&
+          criteria.action === Action.DELETE;
+
+        return typeof criteria !== 'object' ||
+          !Array.isArray(roleIds) ||
+          !roleIds.includes('admin-id') ||
+          (!isBlockUpdate && !isAttachmentDelete)
+          ? Promise.reject('Invalid Y')
+          : Promise.resolve({
+              modelId: criteria.modelId,
+              action: criteria.action,
+              roleId: 'admin-id',
+            } as unknown as Permission);
+      }) as any);
 
       const mockExecutionContext = {
         switchToHttp: jest.fn().mockReturnValue({

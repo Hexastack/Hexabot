@@ -13,7 +13,7 @@ import {
   Matches,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 export class LabelCreateDto {
@@ -51,6 +51,6 @@ export class LabelCreateDto {
 
 export class LabelUpdateDto extends PartialType(LabelCreateDto) {}
 
-export type LabelDto = DtoConfig<{
+export type LabelDto = DtoActionConfig<{
   create: LabelCreateDto;
 }>;

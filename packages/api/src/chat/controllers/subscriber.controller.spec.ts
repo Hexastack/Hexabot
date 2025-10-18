@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
 import {
   installSubscriberFixtures,
   subscriberFixtures,

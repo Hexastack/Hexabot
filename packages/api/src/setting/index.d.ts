@@ -4,7 +4,6 @@
  * Full terms: see LICENSE.md.
  */
 
-import type { Setting } from './entities/setting.entity';
 import { DEFAULT_SETTINGS } from './seeds/setting.seed-model';
 import { SettingByType, SettingSeed, SettingType } from './types';
 

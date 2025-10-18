@@ -7,7 +7,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 
 export class ContextVarCreateDto {
   @ApiProperty({ description: 'Context var label', type: String })
@@ -28,6 +28,6 @@ export class ContextVarCreateDto {
 
 export class ContextVarUpdateDto extends PartialType(ContextVarCreateDto) {}
 
-export type ContextVarDto = DtoConfig<{
+export type ContextVarDto = DtoActionConfig<{
   create: ContextVarCreateDto;
 }>;

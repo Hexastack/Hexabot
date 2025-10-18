@@ -14,7 +14,7 @@ import Papa from 'papaparse';
 
 import { Message } from '@/chat/schemas/message.schema';
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
-import { Language } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageService } from '@/i18n/services/language.service';
 import { BaseService } from '@/utils/generics/base-service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -357,8 +357,8 @@ export class NlpSampleService extends BaseService<
   async handleLanguageDelete(
     payload:
       | {
-          entities: Language[];
-          filter: TFilterQuery<Language>;
+          entities: LanguageOrmEntity[];
+          filter: TFilterQuery<LanguageOrmEntity>;
         }
       | unknown,
   ) {
@@ -367,7 +367,7 @@ export class NlpSampleService extends BaseService<
     }
 
     const { entities } = payload as {
-      entities: Language[];
+      entities: LanguageOrmEntity[];
     };
     const deletedLanguagesIds = entities.map(
       (deletedLanguage) => deletedLanguage.id,

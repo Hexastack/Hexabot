@@ -26,7 +26,7 @@ import { z } from 'zod';
 
 import { Validate } from '@/utils/decorators/validate.decorator';
 import { SanitizeQueryPipe } from '@/utils/pipes/sanitize-query.pipe';
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { DEFAULT_BLOCK_SEARCH_LIMIT } from '../constants/block';
@@ -171,7 +171,7 @@ export class BlockUpdateDto extends PartialType(
   trigger_channels?: string[];
 }
 
-export type BlockDto = DtoConfig<{
+export type BlockDto = DtoActionConfig<{
   create: BlockCreateDto;
 }>;
 

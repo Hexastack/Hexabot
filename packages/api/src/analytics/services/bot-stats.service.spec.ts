@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestingModule } from '@nestjs/testing';
 
 import {
   botstatsFixtures,
@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
+import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
 
 import { BotStatsService } from './bot-stats.service';
@@ -24,7 +24,9 @@ describe('BotStatsService', () => {
   let botStatsRepository: BotStatsRepository;
   let module: TestingModule;
 
-  const sortByDayAndType = <T extends { day: Date; type: string }>(items: T[]) =>
+  const sortByDayAndType = <T extends { day: Date; type: string }>(
+    items: T[],
+  ) =>
     [...items].sort((left, right) => {
       const leftTime = new Date(left.day).getTime();
       const rightTime = new Date(right.day).getTime();
@@ -39,7 +41,7 @@ describe('BotStatsService', () => {
       autoInjectFrom: ['providers'],
       providers: [BotStatsService, EventEmitter2],
       typeorm: {
-        entities: [BotStats],
+        entities: [BotStatsOrmEntity],
         fixtures: installBotStatsFixturesTypeOrm,
       },
     });
@@ -108,11 +110,9 @@ describe('BotStatsService', () => {
       const result = await botStatsService.findMessages(from, to, [
         BotStatsType.outgoing,
       ]);
-      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(
-        from,
-        to,
-        [BotStatsType.outgoing],
-      );
+      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(from, to, [
+        BotStatsType.outgoing,
+      ]);
       expect(result).toEqualPayload([botstatsFixtures[5]]);
     });
 
@@ -124,11 +124,10 @@ describe('BotStatsService', () => {
         BotStatsType.new_conversations,
         BotStatsType.existing_conversations,
       ]);
-      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(
-        from,
-        to,
-        [BotStatsType.new_conversations, BotStatsType.existing_conversations],
-      );
+      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(from, to, [
+        BotStatsType.new_conversations,
+        BotStatsType.existing_conversations,
+      ]);
       expect(result).toEqualPayload([botstatsFixtures[3]]);
     });
 
@@ -141,15 +140,11 @@ describe('BotStatsService', () => {
         BotStatsType.returning_users,
         BotStatsType.retention,
       ]);
-      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(
-        from,
-        to,
-        [
-          BotStatsType.new_users,
-          BotStatsType.returning_users,
-          BotStatsType.retention,
-        ],
-      );
+      expect(botStatsRepository.findMessages).toHaveBeenCalledWith(from, to, [
+        BotStatsType.new_users,
+        BotStatsType.returning_users,
+        BotStatsType.retention,
+      ]);
       expect(result).toEqualPayload([botstatsFixtures[1]]);
     });
   });

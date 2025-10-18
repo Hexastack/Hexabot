@@ -27,8 +27,12 @@ import { PopulatePipe } from '@/utils/pipes/populate.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentCreateDto, ContentUpdateDto } from '../dto/content.dto';
-import { Content } from '../entities/content.entity';
+import {
+  Content,
+  ContentCreateDto,
+  ContentUpdateDto,
+} from '../dto/content.dto';
+import { ContentOrmEntity } from '../entities/content.entity';
 
 import { ContentTypeService } from './../services/content-type.service';
 import { ContentService } from './../services/content.service';
@@ -143,12 +147,14 @@ export class ContentController {
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Content>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentOrmEntity>,
     @Query(PopulatePipe) populate: string[],
     @Query(
-      new SearchFilterPipe<Content>({ allowedFields: ['entity', 'title'] }),
+      new SearchFilterPipe<ContentOrmEntity>({
+        allowedFields: ['entity', 'title'],
+      }),
     )
-    filters: TFilterQuery<Content>,
+    filters: TFilterQuery<ContentOrmEntity>,
   ) {
     return this.contentService.canPopulate(populate)
       ? await this.contentService.findAndPopulate(filters, pageQuery)
@@ -165,9 +171,11 @@ export class ContentController {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Content>({ allowedFields: ['entity', 'title'] }),
+      new SearchFilterPipe<ContentOrmEntity>({
+        allowedFields: ['entity', 'title'],
+      }),
     )
-    filters?: TFilterQuery<Content>,
+    filters?: TFilterQuery<ContentOrmEntity>,
   ) {
     return { count: await this.contentService.count(filters) };
   }
@@ -229,7 +237,7 @@ export class ContentController {
   @Get('/type/:id')
   async findByType(
     @Param('id') contentType: string,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Content>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentOrmEntity>,
   ): Promise<Content[]> {
     const type = await this.contentTypeService.findOne(contentType);
     if (!type) {

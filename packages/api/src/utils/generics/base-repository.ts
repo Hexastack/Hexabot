@@ -37,7 +37,7 @@ import {
 import { flatten } from '../helpers/flatten';
 import { camelCase } from '../helpers/misc';
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
-import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
+import { DtoAction, DtoActionConfig, InferActionDto } from '../types/dto.types';
 
 import { BaseSchema } from './base-schema';
 import { LifecycleHookManager } from './lifecycle-hook-manager';
@@ -78,7 +78,7 @@ export abstract class BaseRepository<
   T extends FlattenMaps<unknown>,
   P extends string = never,
   TFull extends Omit<T, P> = never,
-  Dto extends DtoConfig = object,
+  Dto extends DtoActionConfig = object,
   U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
   D = Document<T>,
 > {
@@ -668,7 +668,7 @@ export abstract class BaseRepository<
    * @param dto  Data-transfer object describing the new record.
    * @returns A hydrated instance of the domain class.
    */
-  async create(dto: DtoInfer<DtoAction.Create, Dto, U>): Promise<T> {
+  async create(dto: InferActionDto<DtoAction.Create, Dto>): Promise<T> {
     const doc = await this.model.create(dto);
 
     return plainToClass(
@@ -685,7 +685,7 @@ export abstract class BaseRepository<
    * @returns Array of domain-class instances in the same order as `dtoArray`.
    */
   async createMany(
-    dtoArray: DtoInfer<DtoAction.Create, Dto, U>[],
+    dtoArray: InferActionDto<DtoAction.Create, Dto>[],
   ): Promise<T[]> {
     const docs = await this.model.create(dtoArray);
 
@@ -711,7 +711,7 @@ export abstract class BaseRepository<
    */
   async updateOne<D extends Partial<U>>(
     criteria: string | TFilterQuery<T>,
-    dto: UpdateQuery<DtoInfer<DtoAction.Update, Dto, D>>,
+    dto: UpdateQuery<InferActionDto<DtoAction.Update, Dto>>,
     options?: TQueryOptions<D>,
   ): Promise<T> {
     const { shouldFlatten, ...rest } = {

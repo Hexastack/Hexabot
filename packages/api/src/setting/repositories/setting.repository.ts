@@ -10,16 +10,28 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Setting } from '../entities/setting.entity';
+import {
+  Setting,
+  SettingDtoConfig,
+  SettingTransformerDto,
+} from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingType } from '../types';
 
 @Injectable()
-export class SettingRepository extends BaseOrmRepository<Setting> {
+export class SettingRepository extends BaseOrmRepository<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig
+> {
   constructor(
-    @InjectRepository(Setting)
-    repository: Repository<Setting>,
+    @InjectRepository(SettingOrmEntity)
+    repository: Repository<SettingOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: Setting,
+      FullCls: Setting,
+    });
   }
 
   public validateSettingValue(type: SettingType, value: any) {

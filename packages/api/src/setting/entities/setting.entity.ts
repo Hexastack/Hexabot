@@ -12,7 +12,7 @@ import { SettingType } from '../types';
 
 @Entity({ name: 'settings' })
 @Index(['group', 'label'])
-export class Setting extends BaseOrmEntity {
+export class SettingOrmEntity extends BaseOrmEntity {
   @Column()
   @Index()
   group!: string;

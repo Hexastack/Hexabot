@@ -6,7 +6,7 @@
 
 import { JwtService } from '@nestjs/jwt';
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   IncomingMessageType,
   StdEventType,
@@ -65,7 +65,7 @@ describe(`Web event wrapper`, () => {
         id: '9'.repeat(24),
         type: 'image/png',
         name: 'filename.extension',
-      } as Attachment;
+      } as AttachmentOrmEntity;
     }
 
     expect(event.getChannelData()).toEqual({

@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -15,7 +16,46 @@ import {
   IsString,
 } from 'class-validator';
 
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
 import { SettingType } from '../types';
+
+@Exclude()
+export class SettingStub extends BaseStub {
+  @Expose()
+  group!: string;
+
+  @Expose()
+  subgroup?: string;
+
+  @Expose()
+  label!: string;
+
+  @Expose()
+  type!: SettingType;
+
+  @Expose()
+  value!: null | string | number | boolean | string[] | Record<string, any>;
+
+  @Expose()
+  options?: string[];
+
+  @Expose()
+  config?: Record<string, any>;
+
+  @Expose()
+  weight?: number;
+
+  @Expose()
+  translatable?: boolean;
+}
+
+@Exclude()
+export class Setting extends SettingStub {}
 
 export class SettingCreateDto {
   @ApiProperty({ description: 'Setting group', type: String })
@@ -86,3 +126,13 @@ export class SettingUpdateDto {
   @IsDefined()
   value: null | string | number | boolean | string[] | Record<string, any>;
 }
+
+export type SettingTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Setting;
+  FullCls: typeof Setting;
+}>;
+
+export type SettingDtoConfig = DtoActionConfig<{
+  create: SettingCreateDto;
+  update: SettingUpdateDto;
+}>;

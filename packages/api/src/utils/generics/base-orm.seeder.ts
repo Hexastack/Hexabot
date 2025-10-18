@@ -13,11 +13,15 @@ import { BaseOrmRepository } from './base-orm.repository';
 
 export abstract class BaseOrmSeeder<
   Entity extends { id: string },
-  RepositoryType extends BaseOrmRepository<Entity> = BaseOrmRepository<Entity>,
+  RepositoryType extends BaseOrmRepository<
+    Entity,
+    any,
+    any
+  > = BaseOrmRepository<Entity, any, any>,
 > {
   protected constructor(protected readonly repository: RepositoryType) {}
 
-  async findAll(pageQuery?: PageQueryDto<Entity>): Promise<Entity[]> {
+  async findAll(pageQuery?: PageQueryDto<Entity>) {
     if (pageQuery) {
       return await this.repository.find({}, pageQuery);
     }

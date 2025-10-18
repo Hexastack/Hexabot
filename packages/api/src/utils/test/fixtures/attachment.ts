@@ -8,8 +8,8 @@ import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { AttachmentCreateDto } from '@/attachment/dto/attachment.dto';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentModel } from '@/attachment/schemas/attachment.schema';
-import { Attachment } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -60,7 +60,7 @@ export const installAttachmentFixtures = async () => {
 export const installAttachmentFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
-  const repository = dataSource.getRepository(Attachment);
+  const repository = dataSource.getRepository(AttachmentOrmEntity);
   const entities = repository.create(attachmentFixtures);
   await repository.save(entities);
 };

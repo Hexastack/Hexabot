@@ -14,12 +14,12 @@ import { config } from '@/config';
 import { UserModule } from '@/user/user.module';
 
 import { AttachmentController } from './controllers/attachment.controller';
-import { Attachment } from './entities/attachment.entity';
+import { AttachmentOrmEntity } from './entities/attachment.entity';
 import { AttachmentRepository } from './repositories/attachment.repository';
 import { AttachmentService } from './services/attachment.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attachment]), UserModule],
+  imports: [TypeOrmModule.forFeature([AttachmentOrmEntity]), UserModule],
   providers: [AttachmentRepository, AttachmentService],
   controllers: [AttachmentController],
   exports: [AttachmentService],

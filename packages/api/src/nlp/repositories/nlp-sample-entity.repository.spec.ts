@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Language as LanguageEntity } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';
 import { nlpSampleFixtures } from '@/utils/test/fixtures/nlpsample';

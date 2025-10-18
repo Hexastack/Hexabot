@@ -7,7 +7,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { NlpValueMatchPattern } from '@/chat/schemas/types/pattern';
-import { Language } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { LanguageService } from '@/i18n/services/language.service';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
@@ -45,7 +45,7 @@ describe('NlpSampleService', () => {
   let languageRepository: LanguageRepository;
   let noNlpSample: NlpSample | null;
   let nlpSampleEntity: NlpSampleEntity | null;
-  let languages: Language[];
+  let languages: LanguageOrmEntity[];
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -54,7 +54,7 @@ describe('NlpSampleService', () => {
       providers: [NlpSampleService],
       typeorm: [
         {
-          entities: [Language],
+          entities: [LanguageOrmEntity],
           fixtures: installLanguageFixturesTypeOrm,
         },
       ],
@@ -172,10 +172,10 @@ describe('NlpSampleService', () => {
         .mockResolvedValue([{ name: 'intent' } as NlpEntity]);
       jest
         .spyOn(languageService, 'getLanguages')
-        .mockResolvedValue({} as Record<string, Language>);
+        .mockResolvedValue({} as Record<string, LanguageOrmEntity>);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
-        .mockResolvedValue({ code: 'en' } as Language);
+        .mockResolvedValue({ code: 'en' } as LanguageOrmEntity);
 
       await expect(
         nlpSampleService.parseAndSaveDataset(invalidCSV),
@@ -191,11 +191,11 @@ describe('NlpSampleService', () => {
         .spyOn(languageService, 'getLanguages')
         .mockResolvedValue({ en: { id: '1' } } as unknown as Record<
           string,
-          Language
+          LanguageOrmEntity
         >);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
-        .mockResolvedValue({ code: 'en' } as Language);
+        .mockResolvedValue({ code: 'en' } as LanguageOrmEntity);
       jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
       jest
         .spyOn(nlpSampleService, 'create')
@@ -217,11 +217,11 @@ describe('NlpSampleService', () => {
         .spyOn(languageService, 'getLanguages')
         .mockResolvedValue({ en: { id: '1' } } as unknown as Record<
           string,
-          Language
+          LanguageOrmEntity
         >);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
-        .mockResolvedValue({ code: 'en' } as Language);
+        .mockResolvedValue({ code: 'en' } as LanguageOrmEntity);
       jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
       jest
         .spyOn(nlpSampleService, 'create')
@@ -238,7 +238,7 @@ describe('NlpSampleService', () => {
       const mockData = 'text,intent,language\nHi,greet,en\nBye,bye,en';
       const mockLanguages = { en: { id: '1' } } as unknown as Record<
         string,
-        Language
+        LanguageOrmEntity
       >;
 
       jest
@@ -246,7 +246,7 @@ describe('NlpSampleService', () => {
         .mockResolvedValue(mockLanguages);
       jest
         .spyOn(languageService, 'getDefaultLanguage')
-        .mockResolvedValue({ code: 'en' } as Language);
+        .mockResolvedValue({ code: 'en' } as LanguageOrmEntity);
       jest.spyOn(nlpSampleService, 'find').mockResolvedValue([]);
       let id = 0;
       jest.spyOn(nlpSampleService, 'create').mockImplementation((s) => {

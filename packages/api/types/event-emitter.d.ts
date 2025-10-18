@@ -10,7 +10,7 @@ import type { Document, Query } from 'mongoose';
 import { type Socket } from 'socket.io';
 
 import { type BotStats } from '@/analytics/schemas/bot-stats.schema';
-import { type Attachment } from '@/attachment/entities/attachment.entity';
+import { type AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import type EventWrapper from '@/channel/lib/EventWrapper';
 import { type SubscriberUpdateDto } from '@/chat/dto/subscriber.dto';
 import type { Block, BlockFull } from '@/chat/schemas/block.schema';
@@ -23,18 +23,18 @@ import { type Subscriber } from '@/chat/schemas/subscriber.schema';
 import { type ContentType } from '@/cms/schemas/content-type.schema';
 import { type Content } from '@/cms/schemas/content.schema';
 import { type Menu } from '@/cms/schemas/menu.schema';
-import { type Language } from '@/i18n/entities/language.entity';
-import { type Translation } from '@/i18n/entities/translation.entity';
+import { type LanguageOrmEntity } from '@/i18n/entities/language.entity';
+import { type TranslationOrmEntity } from '@/i18n/entities/translation.entity';
 import type { NlpEntity } from '@/nlp/schemas/nlp-entity.schema';
 import { type NlpSampleEntity } from '@/nlp/schemas/nlp-sample-entity.schema';
 import { type NlpSample } from '@/nlp/schemas/nlp-sample.schema';
 import type { NlpValue } from '@/nlp/schemas/nlp-value.schema';
 import { type Setting } from '@/setting/schemas/setting.schema';
-import { type Invitation } from '@/user/schemas/invitation.schema';
-import { type Model } from '@/user/schemas/model.schema';
-import { type Permission } from '@/user/schemas/permission.schema';
-import { type Role } from '@/user/schemas/role.schema';
-import { type User } from '@/user/schemas/user.schema';
+import { type User } from '@/user/dto/user.dto';
+import { type InvitationOrmEntity } from '@/user/entities/invitation.entity';
+import { type ModelOrmEntity } from '@/user/entities/model.entity';
+import { type PermissionOrmEntity } from '@/user/entities/permission.entity';
+import { type RoleOrmEntity } from '@/user/entities/role.entity';
 import { EHook, type DeleteResult } from '@/utils/generics/base-repository';
 import type {
   TFilterQuery,
@@ -120,7 +120,7 @@ declare module '@nestjs/event-emitter' {
   /* hooks */
   interface IHookEntityOperationMap extends IHookOperationMap {
     stats: TDefinition<BotStats, { entry: string }>;
-    attachment: TDefinition<Attachment>;
+    attachment: TDefinition<AttachmentOrmEntity>;
     block: TDefinition<Block>;
     category: TDefinition<Category>;
     contextVar: TDefinition<ContextVar>;
@@ -131,17 +131,17 @@ declare module '@nestjs/event-emitter' {
     contentType: TDefinition<ContentType>;
     content: TDefinition<Content>;
     menu: TDefinition<Menu>;
-    language: TDefinition<Language>;
-    translation: TDefinition<Translation>;
+    language: TDefinition<LanguageOrmEntity>;
+    translation: TDefinition<TranslationOrmEntity>;
     nlpEntity: TDefinition<NlpEntity>;
     nlpSampleEntity: TDefinition<NlpSampleEntity>;
     nlpSample: TDefinition<NlpSample>;
     nlpValue: TDefinition<NlpValue>;
     setting: TDefinition<Setting>;
-    invitation: TDefinition<Invitation>;
-    model: TDefinition<Model>;
-    permission: TDefinition<Permission>;
-    role: TDefinition<Role>;
+    invitation: TDefinition<InvitationOrmEntity>;
+    model: TDefinition<ModelOrmEntity>;
+    permission: TDefinition<PermissionOrmEntity>;
+    role: TDefinition<RoleOrmEntity>;
     user: TDefinition<User, { lastvisit: Subscriber; logout: ExpressSession }>;
   }
 

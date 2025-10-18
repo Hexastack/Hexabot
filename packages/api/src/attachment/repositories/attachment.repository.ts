@@ -8,16 +8,29 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import {
+  Attachment,
+  AttachmentDtoConfig,
+  AttachmentFull,
+  AttachmentTransformerDto,
+} from '../dto/attachment.dto';
 
 @Injectable()
-export class AttachmentRepository extends BaseOrmRepository<Attachment> {
+export class AttachmentRepository extends BaseOrmRepository<
+  AttachmentOrmEntity,
+  AttachmentTransformerDto,
+  AttachmentDtoConfig
+> {
   constructor(
-    @InjectRepository(Attachment)
-    repository: Repository<Attachment>,
+    @InjectRepository(AttachmentOrmEntity)
+    repository: Repository<AttachmentOrmEntity>,
   ) {
-    super(repository);
+    super(repository, ['createdBy'], {
+      PlainCls: Attachment,
+      FullCls: AttachmentFull,
+    });
   }
 }

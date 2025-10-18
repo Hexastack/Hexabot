@@ -13,7 +13,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { NlpSampleEntityValue, NlpSampleState } from '../schemas/types';
@@ -63,6 +63,6 @@ export class NlpSampleDto extends NlpSampleCreateDto {
 
 export class NlpSampleUpdateDto extends PartialType(NlpSampleCreateDto) {}
 
-export type TNlpSampleDto = DtoConfig<{
+export type TNlpSampleDto = DtoActionConfig<{
   create: NlpSampleCreateDto;
 }>;

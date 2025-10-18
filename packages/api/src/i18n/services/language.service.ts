@@ -22,13 +22,15 @@ import {
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { Language } from '../entities/language.entity';
+import { LanguageDto, LanguageTransformerDto } from '../dto/language.dto';
+import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 
 @Injectable()
 export class LanguageService extends BaseOrmService<
-  Language,
-  LanguageRepository
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDto
 > {
   constructor(
     repository: LanguageRepository,
@@ -45,7 +47,7 @@ export class LanguageService extends BaseOrmService<
    * and the corresponding value is the `Language` object.
    */
   @Cacheable(LANGUAGES_CACHE_KEY)
-  async getLanguages(): Promise<Record<string, Language>> {
+  async getLanguages(): Promise<Record<string, LanguageOrmEntity>> {
     const languages = await this.findAll();
     return languages.reduce((acc, curr) => {
       return {

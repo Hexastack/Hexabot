@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import EventWrapper from '@/channel/lib/EventWrapper';
 import { ChannelName } from '@/channel/types';
 import { PayloadType } from '@/chat/schemas/types/button';
@@ -68,7 +68,7 @@ type WebEventAdapter =
       eventType: StdEventType.message;
       messageType: IncomingMessageType.attachments;
       raw: Web.IncomingMessage<Web.IncomingAttachmentMessage>;
-      attachment: Attachment | null;
+      attachment: AttachmentOrmEntity | null;
     };
 
 export default class WebEventWrapper<
@@ -223,7 +223,9 @@ export default class WebEventWrapper<
         return {
           type: PayloadType.attachments,
           attachment: {
-            type: Attachment.getTypeByMime(this._adapter.raw.data.type),
+            type: AttachmentOrmEntity.getTypeByMime(
+              this._adapter.raw.data.type,
+            ),
             payload: {
               id: this._adapter.attachment.id,
             },
@@ -270,7 +272,7 @@ export default class WebEventWrapper<
           throw new Error('Attachment has not been processed');
         }
 
-        const fileType = Attachment.getTypeByMime(
+        const fileType = AttachmentOrmEntity.getTypeByMime(
           this._adapter.attachment.type,
         );
         return {

@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -17,10 +17,30 @@ import {
 } from 'class-validator';
 
 import { FieldType } from '@/setting/types';
-import { DtoConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { UniqueFieldNames } from '../decorators/unique-field-names.decorator';
 import { ValidateRequiredFields } from '../validators/validate-required-fields.validator';
+
+@Exclude()
+export class ContentTypeStub extends BaseStub {
+  @Expose()
+  name!: string;
+
+  @Expose()
+  @Type(() => ContentField)
+  fields!: ContentField[] | null;
+}
+
+@Exclude()
+export class ContentType extends ContentTypeStub {}
+
+@Exclude()
+export class ContentTypeFull extends ContentType {}
 
 export class ContentField {
   @IsString()
@@ -61,6 +81,12 @@ export class ContentTypeCreateDto {
 
 export class ContentTypeUpdateDto extends PartialType(ContentTypeCreateDto) {}
 
-export type ContentTypeDto = DtoConfig<{
+export type ContentTypeTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof ContentType;
+  FullCls: typeof ContentTypeFull;
+}>;
+
+export type ContentTypeDtoConfig = DtoActionConfig<{
   create: ContentTypeCreateDto;
+  update: ContentTypeUpdateDto;
 }>;

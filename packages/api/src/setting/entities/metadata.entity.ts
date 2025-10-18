@@ -10,7 +10,7 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 @Entity({ name: 'metadata' })
 @Index(['name'], { unique: true })
-export class Metadata extends BaseOrmEntity {
+export class MetadataOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 

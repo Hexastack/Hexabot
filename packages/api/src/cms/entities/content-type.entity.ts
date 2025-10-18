@@ -10,19 +10,19 @@ import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 import { ContentField } from '../dto/contentType.dto';
 
-import { Content } from './content.entity';
+import { ContentOrmEntity } from './content.entity';
 
 @Entity({ name: 'content_types' })
 @Index(['name'], { unique: true })
-export class ContentType extends BaseOrmEntity {
+export class ContentTypeOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   name!: string;
 
   @Column({ type: 'simple-json', nullable: true })
   fields!: ContentField[] | null;
 
-  @OneToMany(() => Content, (content) => content.contentType, {
+  @OneToMany(() => ContentOrmEntity, (content) => content.contentType, {
     cascade: ['remove'],
   })
-  contents?: Content[];
+  contents?: ContentOrmEntity[];
 }

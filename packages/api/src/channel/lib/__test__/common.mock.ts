@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -80,24 +80,27 @@ export const urlButtonsMessage: StdOutgoingButtonsMessage = {
   ],
 };
 
-const attachment: Attachment = Object.assign(new Attachment(), {
-  id: '1'.repeat(24),
-  name: 'attachment.jpg',
-  type: 'image/jpeg',
-  size: 3539,
-  location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
-  channel: {
-    ['any-channel']: {
-      id: 'any-channel-attachment-id',
+const attachment: AttachmentOrmEntity = Object.assign(
+  new AttachmentOrmEntity(),
+  {
+    id: '1'.repeat(24),
+    name: 'attachment.jpg',
+    type: 'image/jpeg',
+    size: 3539,
+    location: '39991e51-55c6-4a26-9176-b6ba04f180dc.jpg',
+    channel: {
+      ['any-channel']: {
+        id: 'any-channel-attachment-id',
+      },
     },
+    resourceRef: AttachmentResourceRef.BlockAttachment,
+    access: AttachmentAccess.Public,
+    createdByRef: AttachmentCreatedByRef.User,
+    createdBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
-  resourceRef: AttachmentResourceRef.BlockAttachment,
-  access: AttachmentAccess.Public,
-  createdByRef: AttachmentCreatedByRef.User,
-  createdBy: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-});
+);
 
 export const contentMessage: StdOutgoingListMessage = {
   options: {

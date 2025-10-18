@@ -24,7 +24,7 @@ import { DEFAULT_METADATA } from './setting/seeds/metadata.seed-model';
 import { SettingSeeder } from './setting/seeds/setting.seed';
 import { DEFAULT_SETTINGS } from './setting/seeds/setting.seed-model';
 import { PermissionCreateDto } from './user/dto/permission.dto';
-import { Role } from './user/schemas/role.schema';
+import { RoleOrmEntity } from './user/entities/role.entity';
 import { ModelSeeder } from './user/seeds/model.seed';
 import { modelModels } from './user/seeds/model.seed-model';
 import { PermissionSeeder } from './user/seeds/permission.seed';
@@ -74,8 +74,10 @@ export async function seedDatabase(app: INestApplicationContext) {
 
   const models = await modelSeeder.findAll();
   const roles = await roleSeeder.findAll();
-  const adminRole = roles.find(({ name }) => name === 'admin') as Role;
-  const managerRole = roles.find(({ name }) => name === 'manager') as Role;
+  const adminRole = roles.find(({ name }) => name === 'admin') as RoleOrmEntity;
+  const managerRole = roles.find(
+    ({ name }) => name === 'manager',
+  ) as RoleOrmEntity;
   const managerModels = models.filter(
     (model) => !['Role', 'User', 'Permission'].includes(model.name),
   );

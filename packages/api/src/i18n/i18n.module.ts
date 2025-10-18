@@ -27,8 +27,8 @@ import { ChatModule } from '@/chat/chat.module';
 import { I18nController } from './controllers/i18n.controller';
 import { LanguageController } from './controllers/language.controller';
 import { TranslationController } from './controllers/translation.controller';
-import { Language } from './entities/language.entity';
-import { Translation } from './entities/translation.entity';
+import { LanguageOrmEntity } from './entities/language.entity';
+import { TranslationOrmEntity } from './entities/translation.entity';
 import { LanguageRepository } from './repositories/language.repository';
 import { TranslationRepository } from './repositories/translation.repository';
 import { LanguageSeeder } from './seeds/language.seed';
@@ -60,7 +60,7 @@ export class I18nModule extends NativeI18nModule {
     return {
       module: I18nModule,
       imports: (imports || []).concat([
-        TypeOrmModule.forFeature([Language, Translation]),
+        TypeOrmModule.forFeature([LanguageOrmEntity, TranslationOrmEntity]),
         ChatModule,
       ]),
       controllers: (controllers || []).concat([

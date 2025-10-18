@@ -9,10 +9,10 @@ import { Readable, Stream } from 'stream';
 import { StreamableFile } from '@nestjs/common';
 
 import {
+  Attachment,
   AttachmentCreateDto,
   AttachmentMetadataDto,
 } from '@/attachment/dto/attachment.dto';
-import { Attachment } from '@/attachment/entities/attachment.entity';
 import { LoggerService } from '@/logger/logger.service';
 import { SettingService } from '@/setting/services/setting.service';
 

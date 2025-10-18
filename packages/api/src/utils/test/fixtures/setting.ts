@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { SettingCreateDto } from '@/setting/dto/setting.dto';
-import { Setting } from '@/setting/entities/setting.entity';
+import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModel } from '@/setting/schemas/setting.schema';
 import { SettingType } from '@/setting/types';
 import { getRandom } from '@/utils/helpers/safeRandom';
@@ -134,7 +134,7 @@ export const installSettingFixtures = async () => {
 };
 
 export const installSettingFixturesTypeOrm = async (dataSource: DataSource) => {
-  const repository = dataSource.getRepository(Setting);
+  const repository = dataSource.getRepository(SettingOrmEntity);
   const entities = repository.create(settingFixtures);
   await repository.save(entities);
 };

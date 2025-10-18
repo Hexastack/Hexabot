@@ -5,8 +5,10 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
 import { ContentTypeCreateDto } from '@/cms/dto/contentType.dto';
+import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
 import {
   ContentType,
   ContentTypeModel,
@@ -132,4 +134,22 @@ export const installContentTypeFixtures = async () => {
     ContentTypeModel.schema,
   );
   return await ContentType.insertMany(contentTypeFixtures);
+};
+
+export const contentTypeOrmFixtures: DeepPartial<ContentTypeOrmEntity>[] =
+  contentTypeFixtures.map(({ name, fields }) => ({
+    name,
+    fields,
+  }));
+
+export const installContentTypeFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<void> => {
+  const repository = dataSource.getRepository(ContentTypeOrmEntity);
+  const count = await repository.count();
+  if (count > 0) {
+    return;
+  }
+  const entities = repository.create(contentTypeOrmFixtures);
+  await repository.save(entities);
 };

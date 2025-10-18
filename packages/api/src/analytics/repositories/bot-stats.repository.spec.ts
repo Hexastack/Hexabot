@@ -4,8 +4,8 @@
  * Full terms: see LICENSE.md.
  */
 
-import { TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestingModule } from '@nestjs/testing';
 
 import {
   botstatsFixtures,
@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
+import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 
 import { BotStatsRepository } from './bot-stats.repository';
 
@@ -27,7 +27,7 @@ describe('BotStatsRepository (TypeORM)', () => {
       autoInjectFrom: ['providers'],
       providers: [BotStatsRepository, EventEmitter2],
       typeorm: {
-        entities: [BotStats],
+        entities: [BotStatsOrmEntity],
         fixtures: installBotStatsFixturesTypeOrm,
       },
     });

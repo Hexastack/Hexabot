@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 
 import { LanguageCreateDto } from '@/i18n/dto/language.dto';
-import { Language } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LanguageModel } from '@/i18n/schemas/language.schema';
 
 export const languageFixtures: LanguageCreateDto[] = [
@@ -34,7 +34,7 @@ export const installLanguageFixtures = async () => {
 export const installLanguageFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
-  const repository = dataSource.getRepository(Language);
+  const repository = dataSource.getRepository(LanguageOrmEntity);
   const entities = repository.create(languageFixtures);
   await repository.save(entities);
 };

@@ -4,74 +4,119 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ContentTypeCreateDto } from '../dto/contentType.dto';
-import { ContentType } from '../entities/content-type.entity';
+import { TestingModule } from '@nestjs/testing';
+
+import { BlockService } from '@/chat/services/block.service';
+import { FieldType } from '@/setting/types';
+import {
+  contentTypeOrmFixtures,
+  installContentTypeFixturesTypeOrm,
+} from '@/utils/test/fixtures/contenttype';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
+
+import { ContentField } from '../dto/contentType.dto';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
+
 import { ContentTypeService } from './content-type.service';
 
-describe('ContentTypeService', () => {
-  let repository: jest.Mocked<ContentTypeRepository>;
+describe('ContentTypeService (TypeORM)', () => {
+  let module: TestingModule;
   let service: ContentTypeService;
+  let repository: ContentTypeRepository;
+  const createdIds: string[] = [];
+  const blockServiceMock = {
+    findOne: jest.fn().mockResolvedValue(null),
+  };
 
-  beforeEach(() => {
-    repository = {
-      create: jest.fn(),
-      createMany: jest.fn(),
-      find: jest.fn(),
-      findAll: jest.fn(),
-      findOne: jest.fn(),
-      findOneOrCreate: jest.fn(),
-      update: jest.fn(),
-      updateOne: jest.fn(),
-      deleteOne: jest.fn(),
-      deleteMany: jest.fn(),
-      count: jest.fn(),
-    } as unknown as jest.Mocked<ContentTypeRepository>;
-
-    service = new ContentTypeService(repository);
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      providers: [
+        ContentTypeService,
+        ContentTypeRepository,
+        {
+          provide: BlockService,
+          useFactory: () => blockServiceMock,
+        },
+      ],
+      typeorm: {
+        entities: [ContentTypeOrmEntity, ContentOrmEntity],
+        fixtures: installContentTypeFixturesTypeOrm,
+      },
+    });
+    module = testingModule;
+    [service, repository] = await getMocks([
+      ContentTypeService,
+      ContentTypeRepository,
+    ]);
   });
 
-  afterEach(jest.clearAllMocks);
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  afterEach(async () => {
+    jest.clearAllMocks();
+    if (createdIds.length > 0) {
+      await Promise.all(
+        createdIds.map(async (id) => {
+          await service.deleteCascadeOne(id);
+        }),
+      );
+      createdIds.length = 0;
+    }
+  });
 
   describe('create', () => {
     it('applies default fields when none are provided', async () => {
-      const payload: ContentTypeCreateDto = {
-        name: 'Products',
-      };
-      const created = Object.assign(new ContentType(), {
-        id: 'type-id',
+      const payload = { name: 'Blog posts' };
+
+      const created = await service.create(payload);
+      createdIds.push(created.id);
+
+      expect(created).toMatchObject({
+        id: expect.any(String),
         name: payload.name,
-        fields: [
-          { name: 'title', label: 'Title', type: 'text' },
-          { name: 'status', label: 'Status', type: 'checkbox' },
-        ],
       });
-      repository.create.mockResolvedValue(created);
-
-      const result = await service.create(payload);
-
-      expect(repository.create).toHaveBeenCalledWith({
-        ...payload,
-        fields: expect.arrayContaining([
-          expect.objectContaining({ name: 'title' }),
-          expect.objectContaining({ name: 'status' }),
+      expect(created.fields).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'title',
+            type: FieldType.text,
+          }),
+          expect.objectContaining({
+            name: 'status',
+            type: FieldType.checkbox,
+          }),
         ]),
-      });
-      expect(result).toBe(created);
+      );
     });
   });
 
   describe('deleteCascadeOne', () => {
-    it('delegates to the repository', async () => {
-      repository.deleteOne.mockResolvedValue({
-        acknowledged: true,
-        deletedCount: 1,
+    it('removes the requested content type', async () => {
+      const baseName = `${contentTypeOrmFixtures[0].name}-to-delete`;
+      const baseFields =
+        (contentTypeOrmFixtures[0].fields as ContentField[] | undefined)?.map(
+          (field) => ({ ...field }),
+        ) ?? [];
+      const created = await service.create({
+        name: baseName,
+        fields: baseFields,
       });
+      createdIds.push(created.id);
 
-      const result = await service.deleteCascadeOne('type-id');
+      const deleted = await service.deleteCascadeOne(created.id);
+      createdIds.splice(createdIds.indexOf(created.id), 1);
+      const found = await service.findOne(created.id);
 
-      expect(repository.deleteOne).toHaveBeenCalledWith('type-id');
-      expect(result).toEqual({ acknowledged: true, deletedCount: 1 });
+      expect(deleted).toEqual({ acknowledged: true, deletedCount: 1 });
+      expect(found).toBeNull();
     });
   });
 });

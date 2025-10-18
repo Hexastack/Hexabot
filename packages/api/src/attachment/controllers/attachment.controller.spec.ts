@@ -13,6 +13,7 @@ import {
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
 import { Request } from 'express';
 
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import LocalStorageHelper from '@/extensions/helpers/local-storage/index.helper';
 import { HelperService } from '@/helper/helper.service';
 import { LoggerService } from '@/logger/logger.service';
@@ -29,8 +30,8 @@ import { installSettingFixturesTypeOrm } from '@/utils/test/fixtures/setting';
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
+import { Attachment } from '../dto/attachment.dto';
 import { attachment, attachmentFile } from '../mocks/attachment.mock';
-import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import {
   AttachmentAccess,
@@ -62,7 +63,7 @@ describe('AttachmentController', () => {
         },
       ],
       typeorm: {
-        entities: [Attachment],
+        entities: [AttachmentOrmEntity],
         fixtures: [
           installSettingFixturesTypeOrm,
           installAttachmentFixturesTypeOrm,

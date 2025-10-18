@@ -6,25 +6,25 @@
 
 import { botstatsFixtures } from '@/utils/test/fixtures/botstats';
 
-import { BotStats, BotStatsType } from './bot-stats.entity';
+import { BotStatsOrmEntity, BotStatsType } from './bot-stats.entity';
 
 describe('BotStats entity helpers', () => {
   describe('toLines', () => {
     it('should transform the data based on the given types', () => {
-      const result = BotStats.toLines(
+      const result = BotStatsOrmEntity.toLines(
         [
           {
             ...botstatsFixtures[4],
             id: '1',
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as BotStats,
+          } as BotStatsOrmEntity,
           {
             ...botstatsFixtures[5],
             id: '2',
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as BotStats,
+          } as BotStatsOrmEntity,
         ],
         [BotStatsType.incoming, BotStatsType.outgoing],
       );

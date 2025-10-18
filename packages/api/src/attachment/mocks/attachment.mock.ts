@@ -6,7 +6,7 @@
 
 import { Stream } from 'node:stream';
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import {
   AttachmentAccess,
   AttachmentCreatedByRef,
@@ -26,10 +26,10 @@ const baseAttachment = {
   updatedAt: new Date(),
   createdBy: '1',
   createdByRef: AttachmentCreatedByRef.User,
-} satisfies Partial<Attachment>;
+} satisfies Partial<AttachmentOrmEntity>;
 
-export const attachment: Attachment = Object.assign(
-  new Attachment(),
+export const attachment: AttachmentOrmEntity = Object.assign(
+  new AttachmentOrmEntity(),
   baseAttachment,
 );
 
@@ -46,9 +46,9 @@ export const attachmentFile: Express.Multer.File = {
   encoding: '7bit',
 };
 
-export const attachments: Attachment[] = [
+export const attachments: AttachmentOrmEntity[] = [
   attachment,
-  Object.assign(new Attachment(), {
+  Object.assign(new AttachmentOrmEntity(), {
     name: 'Screenshot from 2022-03-11 08-41-27-2a9799a8b6109c88fd9a7a690c1101934c.png',
     type: 'image/png',
     size: 343370,
@@ -63,7 +63,7 @@ export const attachments: Attachment[] = [
     createdBy: '1',
     createdByRef: AttachmentCreatedByRef.User,
   }),
-  Object.assign(new Attachment(), {
+  Object.assign(new AttachmentOrmEntity(), {
     name: 'Screenshot from 2022-03-18 08-58-15-af61e7f71281f9fd3f1ad7ad10107741c.png',
     type: 'image/png',
     size: 33829,

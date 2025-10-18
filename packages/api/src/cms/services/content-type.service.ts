@@ -9,11 +9,15 @@ import { Injectable } from '@nestjs/common';
 import { FieldType } from '@/setting/types';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
-import { ContentTypeDto } from '../dto/contentType.dto';
-import { ContentType } from '../entities/content-type.entity';
+import {
+  ContentType,
+  ContentTypeDtoConfig,
+  ContentTypeTransformerDto,
+} from '../dto/contentType.dto';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeRepository } from '../repositories/content-type.repository';
 
-const DEFAULT_FIELDS: NonNullable<ContentType['fields']> = [
+const DEFAULT_FIELDS: NonNullable<ContentTypeOrmEntity['fields']> = [
   {
     name: 'title',
     label: 'Title',
@@ -28,14 +32,16 @@ const DEFAULT_FIELDS: NonNullable<ContentType['fields']> = [
 
 @Injectable()
 export class ContentTypeService extends BaseOrmService<
-  ContentType,
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig,
   ContentTypeRepository
 > {
   constructor(readonly repository: ContentTypeRepository) {
     super(repository);
   }
 
-  async create(payload: ContentTypeDto['create']): Promise<ContentType> {
+  async create(payload: ContentTypeDtoConfig['create']): Promise<ContentType> {
     const fields =
       payload.fields && payload.fields.length > 0
         ? payload.fields

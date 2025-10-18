@@ -12,10 +12,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntityTarget } from 'typeorm';
 
-import { Language } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity } from '@/i18n/entities/language.entity';
 import { LoggerService } from '@/logger/logger.service';
-import { Metadata } from '@/setting/entities/metadata.entity';
-import { Setting } from '@/setting/entities/setting.entity';
+import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
+import { SettingOrmEntity } from '@/setting/entities/setting.entity';
 import { SettingModule } from '@/setting/setting.module';
 
 import { LifecycleHookManager } from '../generics/lifecycle-hook-manager';
@@ -33,7 +33,7 @@ type TModel = ModelDefinition | `${string}Model`;
 
 type ToUnionArray<T> = (NonNullable<T> extends (infer U)[] ? U : never)[];
 
-type TypeOrmFixture = (dataSource: DataSource) => Promise<void> | void;
+type TypeOrmFixture = (dataSource: DataSource) => Promise<unknown> | unknown;
 
 type TypeOrmTestingConfig = {
   entities?: EntityTarget<any>[];
@@ -306,9 +306,9 @@ export const buildTestingMocks = async ({
   );
 
   const defaultTypeOrmEntities: EntityTarget<any>[] = [
-    Setting,
-    Metadata,
-    Language,
+    SettingOrmEntity,
+    MetadataOrmEntity,
+    LanguageOrmEntity,
   ];
   const typeOrmEntities = new Set<EntityTarget<any>>(defaultTypeOrmEntities);
   let typeOrmOptions: Partial<DataSourceOptions> | undefined;

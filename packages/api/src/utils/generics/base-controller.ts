@@ -9,7 +9,7 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { LoggerService } from '@/logger/logger.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { DtoConfig } from '../types/dto.types';
+import { DtoActionConfig } from '../types/dto.types';
 import { TValidateProps } from '../types/filter.types';
 
 import { BaseSchema } from './base-schema';
@@ -20,7 +20,7 @@ export abstract class BaseController<
   TStub = never,
   P extends string = never,
   TFull extends Omit<T, P> = never,
-  Dto extends DtoConfig = object,
+  Dto extends DtoActionConfig = object,
 > {
   eventEmitter: typeof this.service.eventEmitter;
 

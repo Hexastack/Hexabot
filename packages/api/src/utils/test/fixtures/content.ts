@@ -5,15 +5,22 @@
  */
 
 import mongoose from 'mongoose';
+import { DataSource, DeepPartial } from 'typeorm';
 
 import { ContentCreateDto } from '@/cms/dto/content.dto';
+import { ContentTypeOrmEntity } from '@/cms/entities/content-type.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { Content, ContentModel } from '@/cms/schemas/content.schema';
 
 import { getFixturesWithDefaultValues } from '../defaultValues';
 import { FixturesTypeBuilder } from '../types';
 
 import { installAttachmentFixtures } from './attachment';
-import { installContentTypeFixtures } from './contenttype';
+import {
+  contentTypeOrmFixtures,
+  installContentTypeFixtures,
+  installContentTypeFixturesTypeOrm,
+} from './contenttype';
 
 type TContentFixtures = FixturesTypeBuilder<Content, ContentCreateDto>;
 
@@ -165,4 +172,53 @@ export const installContentFixtures = async () => {
       };
     }),
   );
+};
+
+export const contentOrmFixtures: DeepPartial<ContentOrmEntity>[] =
+  contentFixtures.map(({ entity, ...fixture }) => ({
+    ...fixture,
+    entity,
+  }));
+
+export const installContentFixturesTypeOrm = async (
+  dataSource: DataSource,
+): Promise<void> => {
+  const contentRepository = dataSource.getRepository(ContentOrmEntity);
+
+  const existingContents = await contentRepository.count();
+  if (existingContents > 0) {
+    return;
+  }
+
+  await installContentTypeFixturesTypeOrm(dataSource);
+  const contentTypeRepository = dataSource.getRepository(ContentTypeOrmEntity);
+  const contentTypes = await contentTypeRepository.find({
+    order: { name: 'ASC' },
+  });
+  const entities = contentOrmFixtures.map(({ entity, ...fixture }) => {
+    const index = Number(entity);
+    const fallbackName =
+      !Number.isNaN(index) && contentTypeOrmFixtures[index]
+        ? contentTypeOrmFixtures[index].name
+        : undefined;
+    const target = contentTypes.find(
+      (type) =>
+        type.id === entity ||
+        type.name === entity ||
+        (fallbackName ? type.name === fallbackName : false),
+    );
+
+    if (!target) {
+      throw new Error(
+        `Unable to resolve content type for fixture entity: ${entity}`,
+      );
+    }
+
+    return contentRepository.create({
+      ...fixture,
+      entity: target.id,
+    });
+  });
+
+  await contentRepository.save(entities);
 };

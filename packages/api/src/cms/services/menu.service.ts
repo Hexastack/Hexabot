@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { FindOneOptions } from 'typeorm';
 
 import { MENU_CACHE_KEY } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
@@ -20,13 +21,24 @@ import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { MenuCreateDto } from '../dto/menu.dto';
-import { Menu } from '../entities/menu.entity';
+import {
+  Menu,
+  MenuCreateDto,
+  MenuDtoConfig,
+  MenuTransformerDto,
+  MenuUpdateDto,
+} from '../dto/menu.dto';
+import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
 import { AnyMenu, MenuTree, MenuType } from '../types/menu';
 
 @Injectable()
-export class MenuService extends BaseOrmService<Menu, MenuRepository> {
+export class MenuService extends BaseOrmService<
+  MenuOrmEntity,
+  MenuTransformerDto,
+  MenuDtoConfig,
+  MenuRepository
+> {
   private readonly RootSymbol: symbol = Symbol('RootMenu');
 
   constructor(
@@ -60,8 +72,22 @@ export class MenuService extends BaseOrmService<Menu, MenuRepository> {
   }
 
   public async updateOne(
-    criteria: string | TFilterQuery<Menu>,
-    payload: Partial<MenuCreateDto>,
+    criteria: string | TFilterQuery<MenuOrmEntity>,
+    payload: MenuUpdateDto,
+  ): Promise<Menu>;
+
+  public async updateOne(
+    options: FindOneOptions<MenuOrmEntity>,
+    payload: MenuUpdateDto,
+    opt?: UpdateOneOptions,
+  ): Promise<Menu>;
+
+  public async updateOne(
+    criteriaOrOptions:
+      | string
+      | TFilterQuery<MenuOrmEntity>
+      | FindOneOptions<MenuOrmEntity>,
+    payload: MenuUpdateDto,
     options?: UpdateOneOptions,
   ): Promise<Menu> {
     if (payload.parent) {
@@ -74,7 +100,20 @@ export class MenuService extends BaseOrmService<Menu, MenuRepository> {
       }
     }
 
-    return await super.updateOne(criteria, payload, options);
+    const isFindOptions =
+      typeof criteriaOrOptions !== 'string' &&
+      this.repository.isFindOptions(criteriaOrOptions);
+
+    return isFindOptions
+      ? await super.updateOne(
+          criteriaOrOptions as FindOneOptions<MenuOrmEntity>,
+          payload,
+          options,
+        )
+      : await super.updateOne(
+          criteriaOrOptions as string | TFilterQuery<MenuOrmEntity>,
+          payload,
+        );
   }
 
   /**

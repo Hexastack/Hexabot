@@ -5,6 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -15,9 +16,37 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 
 import { MenuType } from '../entities/menu.entity';
+
+@Exclude()
+export class MenuStub extends BaseStub {
+  @Expose()
+  title!: string;
+
+  @Expose()
+  parent?: string | null;
+
+  @Expose()
+  type!: MenuType;
+
+  @Expose()
+  payload?: string | null;
+
+  @Expose()
+  url?: string | null;
+}
+
+@Exclude()
+export class Menu extends MenuStub {}
+
+@Exclude()
+export class MenuFull extends Menu {}
 
 export class MenuCreateDto {
   @ApiProperty({ description: 'Menu title', type: String })
@@ -56,8 +85,16 @@ export class MenuCreateDto {
   url?: string;
 }
 
+export class MenuUpdateDto extends PartialType(MenuCreateDto) {}
+
 export class MenuQueryDto extends PartialType(MenuCreateDto) {}
 
-export type MenuDto = DtoConfig<{
+export type MenuTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Menu;
+  FullCls: typeof MenuFull;
+}>;
+
+export type MenuDtoConfig = DtoActionConfig<{
   create: MenuCreateDto;
+  update: MenuUpdateDto;
 }>;

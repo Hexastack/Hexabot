@@ -5,20 +5,22 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { config } from '@/config';
 import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
+import { BotStatsDto, BotStatsTransformerDto } from '../dto/bot-stats.dto';
+import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 import { BotStatsRepository } from '../repositories/bot-stats.repository';
-import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
 
 @Injectable()
 export class BotStatsService extends BaseOrmService<
-  BotStats,
+  BotStatsOrmEntity,
+  BotStatsTransformerDto,
+  BotStatsDto,
   BotStatsRepository
 > {
   constructor(
@@ -42,7 +44,7 @@ export class BotStatsService extends BaseOrmService<
     from: Date,
     to: Date,
     types: BotStatsType[],
-  ): Promise<BotStats[]> {
+  ): Promise<BotStatsOrmEntity[]> {
     return await this.repository.findMessages(from, to, types);
   }
 

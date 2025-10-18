@@ -14,7 +14,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { NlpMetadata } from '../schemas/types';
@@ -98,7 +98,7 @@ export class NlpValueUpdateDto {
   builtin?: boolean;
 }
 
-export type NlpValueDto = DtoConfig<{
+export type NlpValueDto = DtoActionConfig<{
   create: NlpValueCreateDto;
   update: NlpValueUpdateDto;
 }>;

@@ -11,8 +11,8 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { SettingUpdateDto } from '../dto/setting.dto';
-import { Setting } from '../entities/setting.entity';
+import { Setting, SettingUpdateDto } from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingService } from '../services/setting.service';
 
 @Controller('setting')
@@ -30,12 +30,12 @@ export class SettingController {
   @Get()
   async find(
     @Query(
-      new SearchFilterPipe<Setting>({
+      new SearchFilterPipe<SettingOrmEntity>({
         allowedFields: ['group'],
       }),
     )
-    filters: TFilterQuery<Setting>,
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Setting>,
+    filters: TFilterQuery<SettingOrmEntity>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<SettingOrmEntity>,
   ) {
     return await this.settingService.find(filters, pageQuery);
   }

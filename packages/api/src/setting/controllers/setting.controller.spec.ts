@@ -14,7 +14,7 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../entities/setting.entity';
+import { Setting } from '../dto/setting.dto';
 import { SettingService } from '../services/setting.service';
 
 import { SettingController } from './setting.controller';

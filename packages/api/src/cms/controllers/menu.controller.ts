@@ -23,8 +23,13 @@ import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { MenuCreateDto, MenuQueryDto } from '../dto/menu.dto';
-import { Menu } from '../entities/menu.entity';
+import {
+  Menu,
+  MenuCreateDto,
+  MenuQueryDto,
+  MenuUpdateDto,
+} from '../dto/menu.dto';
+import { MenuOrmEntity } from '../entities/menu.entity';
 import { MenuService } from '../services/menu.service';
 
 @Controller('menu')
@@ -43,8 +48,8 @@ export class MenuController {
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<Menu>,
+    @Query(new SearchFilterPipe<MenuOrmEntity>({ allowedFields: ['parent'] }))
+    filters: TFilterQuery<MenuOrmEntity>,
   ) {
     return { count: await this.menuService.count(filters) };
   }
@@ -57,9 +62,9 @@ export class MenuController {
    */
   @Get()
   async find(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Menu>,
-    @Query(new SearchFilterPipe<Menu>({ allowedFields: ['parent'] }))
-    filters: TFilterQuery<Menu>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<MenuOrmEntity>,
+    @Query(new SearchFilterPipe<MenuOrmEntity>({ allowedFields: ['parent'] }))
+    filters: TFilterQuery<MenuOrmEntity>,
     @Query() rawQuery?: MenuQueryDto,
   ) {
     const hasPagination = typeof pageQuery.limit !== 'undefined';
@@ -70,7 +75,9 @@ export class MenuController {
     }
 
     if (rawQuery && Object.keys(rawQuery).length > 0) {
-      return await this.menuService.find(rawQuery as TFilterQuery<Menu>);
+      return await this.menuService.find(
+        rawQuery as TFilterQuery<MenuOrmEntity>,
+      );
     }
 
     return await this.menuService.findAll();
@@ -86,7 +93,7 @@ export class MenuController {
    * @returns A promise that resolves to the created menu item.
    */
   @Post()
-  async create(@Body() body: MenuCreateDto) {
+  async create(@Body() body: MenuCreateDto): Promise<Menu> {
     return await this.menuService.create(body);
   }
 
@@ -112,7 +119,7 @@ export class MenuController {
    * @returns A promise that resolves to the menu item if found, or throws a `NotFoundException`.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<Menu> {
     try {
       const result = await this.menuService.findOne(id);
       if (!result) {
@@ -138,11 +145,11 @@ export class MenuController {
    */
   @Patch(':id')
   async updateOne(
-    @Body() body: MenuCreateDto,
+    @Body() body: MenuUpdateDto,
     @Param('id') id: string,
   ): Promise<Menu> {
     if (!id) {
-      return await this.create(body);
+      return await this.create(body as MenuCreateDto);
     }
     return await this.menuService.updateOne(id, body);
   }

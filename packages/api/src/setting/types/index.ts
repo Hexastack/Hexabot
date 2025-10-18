@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Setting } from '@/setting/entities/setting.entity';
+import { Setting } from '@/setting/dto/setting.dto';
 
 export enum SettingType {
   text = 'text',

@@ -26,7 +26,7 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { LanguageCreateDto, LanguageUpdateDto } from '../dto/language.dto';
-import { Language } from '../entities/language.entity';
+import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageService } from '../services/language.service';
 
 @Controller('language')
@@ -44,9 +44,13 @@ export class LanguageController {
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<Language>,
-    @Query(new SearchFilterPipe<Language>({ allowedFields: ['title', 'code'] }))
-    filters: TFilterQuery<Language>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<LanguageOrmEntity>,
+    @Query(
+      new SearchFilterPipe<LanguageOrmEntity>({
+        allowedFields: ['title', 'code'],
+      }),
+    )
+    filters: TFilterQuery<LanguageOrmEntity>,
   ) {
     return await this.languageService.find(filters, pageQuery);
   }
@@ -58,11 +62,11 @@ export class LanguageController {
   @Get('count')
   async filterCount(
     @Query(
-      new SearchFilterPipe<Language>({
+      new SearchFilterPipe<LanguageOrmEntity>({
         allowedFields: ['title', 'code'],
       }),
     )
-    filters?: TFilterQuery<Language>,
+    filters?: TFilterQuery<LanguageOrmEntity>,
   ) {
     return { count: await this.languageService.count(filters) };
   }
@@ -73,7 +77,7 @@ export class LanguageController {
    * @returns A Promise that resolves to the found language.
    */
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Language> {
+  async findOne(@Param('id') id: string): Promise<LanguageOrmEntity> {
     const language = await this.languageService.findOne(id);
     if (!language) {
       this.logger.warn(`Unable to find Language by id ${id}`);
@@ -88,7 +92,9 @@ export class LanguageController {
    * @returns A Promise that resolves to the created language.
    */
   @Post()
-  async create(@Body() language: LanguageCreateDto): Promise<Language> {
+  async create(
+    @Body() language: LanguageCreateDto,
+  ): Promise<LanguageOrmEntity> {
     return await this.languageService.create(language);
   }
 
@@ -102,7 +108,7 @@ export class LanguageController {
   async updateOne(
     @Param('id') id: string,
     @Body() languageUpdate: LanguageUpdateDto,
-  ): Promise<Language> {
+  ): Promise<LanguageOrmEntity> {
     if ('isDefault' in languageUpdate && !languageUpdate.isDefault) {
       throw new BadRequestException('Should not be able to disable default');
     }

@@ -7,6 +7,7 @@
 import { ConflictException, Inject } from '@nestjs/common';
 import { ClassTransformOptions } from 'class-transformer';
 import { MongoError } from 'mongodb';
+import { UpdateQuery } from 'mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
 import {
@@ -17,7 +18,7 @@ import {
 } from '@/utils/types/filter.types';
 
 import { PageQueryDto, QuerySortDto } from '../pagination/pagination-query.dto';
-import { DtoAction, DtoConfig, DtoInfer } from '../types/dto.types';
+import { DtoAction, DtoActionConfig, InferActionDto } from '../types/dto.types';
 
 import { BaseRepository } from './base-repository';
 import { BaseSchema } from './base-schema';
@@ -26,7 +27,7 @@ export abstract class BaseService<
   T extends BaseSchema,
   P extends string = never,
   TFull extends Omit<T, P> = never,
-  Dto extends DtoConfig = object,
+  Dto extends DtoActionConfig = object,
   U extends Omit<T, keyof BaseSchema> = Omit<T, keyof BaseSchema>,
 > {
   eventEmitter: typeof this.repository.eventEmitter;
@@ -157,7 +158,7 @@ export abstract class BaseService<
     return await this.repository.count(criteria);
   }
 
-  async create(dto: DtoInfer<DtoAction.Create, Dto, U>): Promise<T> {
+  async create(dto: InferActionDto<DtoAction.Create, Dto, U>): Promise<T> {
     try {
       return await this.repository.create(dto);
     } catch (error) {
@@ -172,7 +173,7 @@ export abstract class BaseService<
 
   async findOneOrCreate(
     criteria: string | TFilterQuery<T>,
-    dto: DtoInfer<DtoAction.Create, Dto, U>,
+    dto: InferActionDto<DtoAction.Create, Dto, U>,
   ): Promise<T> {
     const result = await this.findOne(criteria);
     if (!result) {
@@ -182,18 +183,21 @@ export abstract class BaseService<
   }
 
   async createMany(
-    dtoArray: DtoInfer<DtoAction.Create, Dto, U>[],
+    dtoArray: InferActionDto<DtoAction.Create, Dto, U>[],
   ): Promise<T[]> {
     return await this.repository.createMany(dtoArray);
   }
 
   async updateOne(
     criteria: string | TFilterQuery<T>,
-    dto: DtoInfer<DtoAction.Update, Dto, Partial<U>>,
+    dto: InferActionDto<DtoAction.Update, Dto, Partial<U>>,
     options?: TQueryOptions<Partial<U>>,
   ): Promise<T> {
     try {
-      return await this.repository.updateOne(criteria, dto, options);
+      const payload = dto as UpdateQuery<
+        InferActionDto<DtoAction.Update, Dto, unknown>
+      >;
+      return await this.repository.updateOne(criteria, payload, options);
     } catch (error) {
       if (error instanceof MongoError && error.code === 11000) {
         throw new ConflictException(

@@ -16,7 +16,7 @@ import {
 
 import { ChannelName } from '@/channel/types';
 import { Validate } from '@/utils/decorators/validate.decorator';
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
@@ -127,6 +127,6 @@ export class SubscriberCreateDto {
 
 export class SubscriberUpdateDto extends PartialType(SubscriberCreateDto) {}
 
-export type SubscriberDto = DtoConfig<{
+export type SubscriberDto = DtoActionConfig<{
   create: SubscriberCreateDto;
 }>;

@@ -29,7 +29,7 @@ export type ToLinesType = {
 
 @Entity({ name: 'bot_stats' })
 @Index(['day', 'type', 'name'], { unique: true })
-export class BotStats extends BaseOrmEntity {
+export class BotStatsOrmEntity extends BaseOrmEntity {
   /**
    * Type of the captured insight.
    */
@@ -61,7 +61,10 @@ export class BotStats extends BaseOrmEntity {
    * @param types - The array of bot statistics types.
    * @returns An array of data representing the bot statistics data.
    */
-  static toLines(stats: BotStats[], types: BotStatsType[]): ToLinesType[] {
+  static toLines(
+    stats: BotStatsOrmEntity[],
+    types: BotStatsType[],
+  ): ToLinesType[] {
     const data = types.map((type, index) => {
       return {
         id: index + 1,
@@ -78,11 +81,14 @@ export class BotStats extends BaseOrmEntity {
       {},
     );
 
-    const result = stats.reduce((acc, stat: BotStats & { date: Date }) => {
-      stat.date = stat.day;
-      acc[index[stat.type]].values.push(stat);
-      return acc;
-    }, data);
+    const result = stats.reduce(
+      (acc, stat: BotStatsOrmEntity & { date: Date }) => {
+        stat.date = stat.day;
+        acc[index[stat.type]].values.push(stat);
+        return acc;
+      },
+      data,
+    );
 
     return result;
   }

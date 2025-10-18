@@ -4,7 +4,9 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Type } from 'class-transformer';
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsDate,
   IsEnum,
@@ -14,26 +16,74 @@ import {
   IsString,
 } from 'class-validator';
 
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
 import { BotStatsType } from '../entities/bot-stats.entity';
 import { IsLessThanDate } from '../validation-rules/is-less-than-date';
 
+@Exclude()
+export class BotStatsStub extends BaseStub {
+  @Expose()
+  type!: BotStatsType;
+
+  @Expose()
+  @Type(() => Date)
+  day!: Date;
+
+  @Expose()
+  value!: number;
+
+  @Expose()
+  name!: string;
+}
+
+@Exclude()
+export class BotStats extends BotStatsStub {}
+
 export class BotStatsCreateDto {
+  @ApiProperty({ description: 'Bot statistic type', enum: BotStatsType })
   @IsNotEmpty()
   @IsString()
   type: BotStatsType;
 
+  @ApiProperty({
+    description: 'Aggregation day of the statistic',
+    type: String,
+    format: 'date-time',
+  })
   @IsString()
   @IsNotEmpty()
   day: Date;
 
+  @ApiProperty({
+    description: 'Aggregated value of the statistic',
+    type: Number,
+  })
   @IsNotEmpty()
   @IsNumber()
   value: number;
 
+  @ApiProperty({ description: 'Display name of the statistic', type: String })
   @IsString()
   @IsNotEmpty()
   name: string;
 }
+
+export class BotStatsUpdateDto extends PartialType(BotStatsCreateDto) {}
+
+export type BotStatsTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof BotStats;
+  FullCls: typeof BotStats;
+}>;
+
+export type BotStatsDto = DtoActionConfig<{
+  create: BotStatsCreateDto;
+  update: BotStatsUpdateDto;
+}>;
 
 export class BotStatsFindDto {
   /**

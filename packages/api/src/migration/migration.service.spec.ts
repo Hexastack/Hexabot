@@ -11,7 +11,7 @@ import { ModuleRef } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 
 import { LoggerService } from '@/logger/logger.service';
-import { Metadata } from '@/setting/entities/metadata.entity';
+import { MetadataOrmEntity } from '@/setting/entities/metadata.entity';
 import { MetadataService } from '@/setting/services/metadata.service';
 import {
   closeInMongodConnection,
@@ -133,7 +133,10 @@ describe('MigrationService', () => {
       process.env.HEXABOT_CLI = '';
       jest
         .spyOn(metadataService, 'findOne')
-        .mockResolvedValue({ name: 'db-version', value: 'v2.1.9' } as Metadata);
+        .mockResolvedValue({
+          name: 'db-version',
+          value: 'v2.1.9',
+        } as MetadataOrmEntity);
       jest.spyOn(service, 'run').mockResolvedValue();
 
       await service.onApplicationBootstrap();

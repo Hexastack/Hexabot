@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 import {
   IsIn,
   IsMimeType,
@@ -18,7 +18,13 @@ import {
 } from 'class-validator';
 
 import { ChannelName } from '@/channel/types';
+import { User } from '@/user/dto/user.dto';
 import { ObjectIdDto } from '@/utils/dto/object-id.dto';
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import {
@@ -26,6 +32,46 @@ import {
   AttachmentCreatedByRef,
   AttachmentResourceRef,
 } from '../types';
+
+@Exclude()
+export class AttachmentStub extends BaseStub {
+  @Expose()
+  name!: string;
+
+  @Expose()
+  type!: string;
+
+  @Expose()
+  size!: number;
+
+  @Expose()
+  location!: string;
+
+  @Expose()
+  channel?: Partial<Record<ChannelName, any>>;
+
+  @Expose()
+  createdByRef?: AttachmentCreatedByRef;
+
+  @Expose()
+  resourceRef!: AttachmentResourceRef;
+
+  @Expose()
+  access!: AttachmentAccess;
+}
+
+@Exclude()
+export class Attachment extends AttachmentStub {
+  @Expose()
+  createdBy?: string | null;
+}
+
+@Exclude()
+export class AttachmentFull extends AttachmentStub {
+  @Expose()
+  @Type(() => User)
+  createdBy: User | undefined;
+}
 
 export class AttachmentMetadataDto {
   /**
@@ -153,3 +199,12 @@ export class AttachmentContextParamDto {
   @IsOptional()
   access?: AttachmentAccess;
 }
+
+export type AttachmentTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Attachment;
+  FullCls: typeof AttachmentFull;
+}>;
+
+export type AttachmentDtoConfig = DtoActionConfig<{
+  create: AttachmentCreateDto;
+}>;

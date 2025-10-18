@@ -14,7 +14,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 
 export class CategoryCreateDto {
   @ApiProperty({ description: 'Category label', type: String })
@@ -40,6 +40,6 @@ export class CategoryCreateDto {
 
 export class CategoryUpdateDto extends PartialType(CategoryCreateDto) {}
 
-export type CategoryDto = DtoConfig<{
+export type CategoryDto = DtoActionConfig<{
   create: CategoryCreateDto;
 }>;

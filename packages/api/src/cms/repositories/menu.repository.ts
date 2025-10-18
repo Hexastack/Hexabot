@@ -10,26 +10,39 @@ import { DeepPartial, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Menu, MenuType } from '../entities/menu.entity';
+import {
+  Menu,
+  MenuDtoConfig,
+  MenuFull,
+  MenuTransformerDto,
+} from '../dto/menu.dto';
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 
 @Injectable()
-export class MenuRepository extends BaseOrmRepository<Menu> {
+export class MenuRepository extends BaseOrmRepository<
+  MenuOrmEntity,
+  MenuTransformerDto,
+  MenuDtoConfig
+> {
   constructor(
-    @InjectRepository(Menu)
-    repository: Repository<Menu>,
+    @InjectRepository(MenuOrmEntity)
+    repository: Repository<MenuOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: Menu,
+      FullCls: MenuFull,
+    });
   }
 
   protected override async preCreate(
-    entity: DeepPartial<Menu> | Menu,
+    entity: DeepPartial<MenuOrmEntity> | MenuOrmEntity,
   ): Promise<void> {
     this.validateMenu(entity);
   }
 
   protected override async preUpdate(
-    current: Menu,
-    changes: DeepPartial<Menu>,
+    current: MenuOrmEntity,
+    changes: DeepPartial<MenuOrmEntity>,
   ): Promise<void> {
     if ('type' in changes) {
       throw new Error("Illegal Update: can't update type");
@@ -41,7 +54,7 @@ export class MenuRepository extends BaseOrmRepository<Menu> {
     });
   }
 
-  private validateMenu(menu: DeepPartial<Menu> | Menu): void {
+  private validateMenu(menu: DeepPartial<MenuOrmEntity> | MenuOrmEntity): void {
     if (!menu.type) {
       throw new Error("Menu Validation Error: 'type' is required");
     }

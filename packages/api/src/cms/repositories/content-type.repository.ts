@@ -12,24 +12,37 @@ import { BlockService } from '@/chat/services/block.service';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentType } from '../entities/content-type.entity';
-import { Content } from '../entities/content.entity';
+import {
+  ContentType,
+  ContentTypeDtoConfig,
+  ContentTypeFull,
+  ContentTypeTransformerDto,
+} from '../dto/contentType.dto';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
 
 @Injectable()
-export class ContentTypeRepository extends BaseOrmRepository<ContentType> {
+export class ContentTypeRepository extends BaseOrmRepository<
+  ContentTypeOrmEntity,
+  ContentTypeTransformerDto,
+  ContentTypeDtoConfig
+> {
   constructor(
-    @InjectRepository(ContentType)
-    repository: Repository<ContentType>,
-    @InjectRepository(Content)
-    private readonly contentRepository: Repository<Content>,
+    @InjectRepository(ContentTypeOrmEntity)
+    repository: Repository<ContentTypeOrmEntity>,
+    @InjectRepository(ContentOrmEntity)
+    private readonly contentRepository: Repository<ContentOrmEntity>,
     private readonly blockService: BlockService,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: ContentType,
+      FullCls: ContentTypeFull,
+    });
   }
 
   protected override async preDelete(
-    entities: ContentType[],
-    _filter: TFilterQuery<ContentType>,
+    entities: ContentTypeOrmEntity[],
+    _filter: TFilterQuery<ContentTypeOrmEntity>,
   ): Promise<void> {
     for (const entity of entities) {
       const associatedBlock = await this.blockService.findOne({

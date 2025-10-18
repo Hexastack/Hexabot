@@ -7,7 +7,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 
 export class LabelGroupCreateDto {
   @ApiProperty({ description: 'Label group name', type: String })
@@ -18,7 +18,7 @@ export class LabelGroupCreateDto {
 
 export class LabelGroupUpdateDto extends LabelGroupCreateDto {}
 
-export type LabelGroupDto = DtoConfig<{
+export type LabelGroupDto = DtoActionConfig<{
   create: LabelGroupCreateDto;
   update: LabelGroupUpdateDto;
 }>;

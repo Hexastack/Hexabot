@@ -8,12 +8,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { BotStatsController } from './controllers/bot-stats.controller';
-import { BotStats } from './entities/bot-stats.entity';
+import { BotStatsOrmEntity } from './entities/bot-stats.entity';
 import { BotStatsRepository } from './repositories/bot-stats.repository';
 import { BotStatsService } from './services/bot-stats.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BotStats])],
+  imports: [TypeOrmModule.forFeature([BotStatsOrmEntity])],
   controllers: [BotStatsController],
   providers: [BotStatsService, BotStatsRepository],
 })

@@ -27,19 +27,19 @@ import { Request } from 'express';
 import { diskStorage, memoryStorage } from 'multer';
 
 import { config } from '@/config';
-import { Roles } from '@/utils/decorators/roles.decorator';
 import { LoggerService } from '@/logger/logger.service';
+import { Roles } from '@/utils/decorators/roles.decorator';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { PageQueryPipe } from '@/utils/pagination/pagination-query.pipe';
 import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
+  Attachment,
   AttachmentContextParamDto,
   AttachmentDownloadDto,
 } from '../dto/attachment.dto';
 import { AttachmentGuard } from '../guards/attachment-ability.guard';
-import { Attachment } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentAccess, AttachmentCreatedByRef } from '../types';
 
@@ -71,12 +71,12 @@ export class AttachmentController {
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Attachment> {
-    const doc = await this.attachmentService.findOne(id);
-    if (!doc) {
+    const attachment = await this.attachmentService.findOne(id);
+    if (!attachment) {
       this.logger.warn(`Unable to find Attachment by id ${id}`);
       throw new NotFoundException(`Attachment with ID ${id} not found`);
     }
-    return doc;
+    return attachment;
   }
 
   /**

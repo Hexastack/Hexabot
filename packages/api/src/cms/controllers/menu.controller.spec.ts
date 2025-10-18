@@ -4,228 +4,224 @@
  * Full terms: see LICENSE.md.
  */
 
-import { InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InternalServerErrorException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
 
 import { LoggerService } from '@/logger/logger.service';
-import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
+import {
+  installMenuFixturesTypeOrm,
+  offerMenuFixture,
+  rootMenuFixtures,
+} from '@/utils/test/fixtures/menu';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
 
-import { MenuCreateDto } from '../dto/menu.dto';
-import { Menu } from '../entities/menu.entity';
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
+import { MenuRepository } from '../repositories/menu.repository';
 import { MenuService } from '../services/menu.service';
-import { MenuType } from '../types/menu';
 
 import { MenuController } from './menu.controller';
 
-const createLoggerMock = (): jest.Mocked<LoggerService> =>
-  ({
-    log: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    verbose: jest.fn(),
-    fatal: jest.fn(),
-  }) as unknown as jest.Mocked<LoggerService>;
+describe('MenuController (TypeORM)', () => {
+  let module: TestingModule;
+  let controller: MenuController;
+  let menuService: MenuService;
+  let logger: LoggerService;
+  const createdMenuIds = new Set<string>();
 
-const createMenu = (overrides: Partial<Menu> = {}) =>
-  Object.assign(new Menu(), {
-    id: 'menu-1',
-    title: 'Root',
-    type: MenuType.nested,
-    parent: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      controllers: [MenuController],
+      providers: [MenuService, MenuRepository],
+      typeorm: {
+        entities: [MenuOrmEntity],
+        fixtures: installMenuFixturesTypeOrm,
+      },
+    });
+    module = testingModule;
+    [controller, menuService] = await getMocks([MenuController, MenuService]);
+    logger = (controller as any).logger as LoggerService;
   });
 
-describe('MenuController', () => {
-  let controller: MenuController;
-  let service: jest.Mocked<MenuService>;
-  let logger: jest.Mocked<LoggerService>;
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
 
-  beforeEach(() => {
-    service = {
-      count: jest.fn(),
-      find: jest.fn(),
-      findAll: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn(),
-      updateOne: jest.fn(),
-      deepDelete: jest.fn(),
-      getTree: jest.fn(),
-    } as unknown as jest.Mocked<MenuService>;
-
-    logger = createLoggerMock();
-    controller = new MenuController(service, logger);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    for (const id of Array.from(createdMenuIds)) {
+      await menuService.deleteOne(id);
+      createdMenuIds.delete(id);
+    }
+    if (menuService) {
+      await menuService.handleMenuUpdateEvent();
+    }
   });
 
   describe('filterCount', () => {
-    it('returns service count result', async () => {
-      service.count.mockResolvedValue(5);
-
+    it('returns the count of menus', async () => {
       const result = await controller.filterCount({});
 
-      expect(service.count).toHaveBeenCalledWith({});
-      expect(result).toEqual({ count: 5 });
+      expect(result.count).toBeGreaterThan(0);
     });
   });
 
   describe('find', () => {
-    const pageQuery: PageQueryDto<Menu> = { limit: 10, skip: 0 };
+    it('returns paginated menus when pagination provided', async () => {
+      const result = await controller.find(
+        { limit: 5, skip: 0 },
+        {},
+        undefined,
+      );
 
-    it('uses pagination when provided', async () => {
-      const menus = [createMenu()];
-      service.find.mockResolvedValue(menus);
-
-      const result = await controller.find(pageQuery, {}, undefined);
-
-      expect(service.find).toHaveBeenCalledWith({}, pageQuery);
-      expect(result).toEqual(menus);
+      expect(result.length).toBeGreaterThan(0);
     });
 
-    it('returns all when neither pagination nor filters are provided', async () => {
-      const menus = [createMenu()];
-      service.findAll.mockResolvedValue(menus);
-
-      const result = await controller.find({ limit: undefined, skip: undefined }, {}, undefined);
-
-      expect(service.findAll).toHaveBeenCalled();
-      expect(result).toEqual(menus);
-    });
-
-    it('applies raw query when provided', async () => {
-      const menus = [createMenu()];
-      service.find.mockResolvedValue(menus);
+    it('returns raw query results when no pagination', async () => {
+      const [parent] = await menuService.find({
+        where: { title: offerMenuFixture.title },
+        take: 1,
+      });
+      expect(parent).toBeDefined();
 
       const result = await controller.find(
         { limit: undefined, skip: undefined },
         {},
-        { parent: 'menu-1' },
+        { parent: parent!.id },
       );
 
-      expect(service.find).toHaveBeenCalledWith({ parent: 'menu-1' });
-      expect(result).toEqual(menus);
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((menu) => menu.parent === parent!.id)).toBe(true);
+    });
+
+    it('returns all menus when no pagination or filters', async () => {
+      const result = await controller.find(
+        { limit: undefined, skip: undefined },
+        {},
+        undefined,
+      );
+
+      expect(result.length).toBeGreaterThan(rootMenuFixtures.length);
     });
   });
 
   describe('create', () => {
-    it('delegates to service', async () => {
-      const payload: MenuCreateDto = {
-        title: 'Postback',
-        type: MenuType.postback,
-        payload: 'payload',
+    it('creates a new menu item', async () => {
+      const [parent] = await menuService.find({
+        where: { title: offerMenuFixture.title },
+        take: 1,
+      });
+      expect(parent).toBeDefined();
+
+      const payload = {
+        title: 'New nested item',
+        type: MenuType.nested,
+        parent: parent!.id,
       };
-      const menu = createMenu(payload);
-      service.create.mockResolvedValue(menu);
 
-      const result = await controller.create(payload);
+      const created = await controller.create(payload);
+      createdMenuIds.add(created.id);
 
-      expect(service.create).toHaveBeenCalledWith(payload);
-      expect(result).toBe(menu);
+      expect(created).toMatchObject(payload);
     });
   });
 
   describe('findOne', () => {
-    it('returns menu when found', async () => {
-      const menu = createMenu();
-      service.findOne.mockResolvedValue(menu);
+    it('returns existing menu', async () => {
+      const [existing] = await menuService.find({ take: 1 });
+      expect(existing).toBeDefined();
 
-      const result = await controller.findOne(menu.id);
+      const result = await controller.findOne(existing!.id);
 
-      expect(result).toBe(menu);
+      expect(result).toMatchObject({ id: existing!.id });
     });
 
-    it('wraps missing entity as InternalServerErrorException', async () => {
-      service.findOne.mockResolvedValue(null);
+    it('wraps not found menu in InternalServerErrorException', async () => {
+      const warnSpy = jest.spyOn(logger, 'warn');
+      const errorSpy = jest.spyOn(logger, 'error');
 
-      await expect(controller.findOne('missing')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(logger.warn).toHaveBeenCalled();
-      expect(logger.error).toHaveBeenCalled();
-    });
+      await expect(
+        controller.findOne('00000000-0000-4000-8000-000000000000'),
+      ).rejects.toThrow(InternalServerErrorException);
 
-    it('wraps unexpected errors as InternalServerError', async () => {
-      service.findOne.mockRejectedValue(new Error('boom'));
-
-      await expect(controller.findOne('id')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(logger.error).toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalled();
     });
   });
 
   describe('getTree', () => {
-    it('returns tree from service', async () => {
-      const tree = [{ id: 'root', title: 'Root', type: MenuType.nested }];
-      service.getTree.mockResolvedValue(tree as any);
+    it('returns cached menu tree', async () => {
+      const tree = await controller.getTree();
 
-      const result = await controller.getTree();
-
-      expect(result).toBe(tree);
+      expect(tree).toHaveLength(rootMenuFixtures.length);
     });
   });
 
   describe('updateOne', () => {
-    it('creates when id is empty', async () => {
-      const payload: MenuCreateDto = {
-        title: 'Quick',
+    it('creates a menu when id is empty', async () => {
+      const payload = {
+        title: 'Quick create',
         type: MenuType.postback,
-        payload: 'payload',
+        payload: 'quick',
       };
 
-      const menu = createMenu(payload);
-      service.create.mockResolvedValue(menu);
+      const created = await controller.updateOne(payload, '');
+      createdMenuIds.add(created.id);
 
-      const result = await controller.updateOne(payload, '');
-
-      expect(service.create).toHaveBeenCalledWith(payload);
-      expect(result).toBe(menu);
+      expect(created).toMatchObject(payload);
     });
 
     it('updates existing menu', async () => {
-      const menu = createMenu({ title: 'Updated' });
-      service.updateOne.mockResolvedValue(menu);
-
-      const payload: MenuCreateDto = {
-        title: 'Updated',
+      const created = await controller.create({
+        title: 'To update',
         type: MenuType.postback,
-        payload: 'payload',
-      };
+        payload: 'update',
+      });
+      createdMenuIds.add(created.id);
 
-      const result = await controller.updateOne(payload, menu.id);
+      const updated = await controller.updateOne(
+        { title: 'Updated title' },
+        created.id,
+      );
 
-      expect(service.updateOne).toHaveBeenCalledWith(menu.id, payload);
-      expect(result).toBe(menu);
+      expect(updated.title).toBe('Updated title');
     });
   });
 
   describe('delete', () => {
     it('returns empty string when deletion succeeds', async () => {
-      service.deepDelete.mockResolvedValue(2);
+      const root = await controller.create({
+        title: 'Root Delete',
+        type: MenuType.nested,
+      });
+      const child = await controller.create({
+        title: 'Child Delete',
+        type: MenuType.postback,
+        payload: 'child',
+        parent: root.id,
+      });
+      createdMenuIds.add(child.id);
 
-      const result = await controller.delete('menu-1');
+      const result = await controller.delete(root.id);
 
-      expect(service.deepDelete).toHaveBeenCalledWith('menu-1');
       expect(result).toBe('');
+      const found = await menuService.findOne(root.id);
+      expect(found).toBeNull();
     });
 
-    it('wraps not found deletion as InternalServerErrorException', async () => {
-      service.deepDelete.mockResolvedValue(0);
+    it('wraps not found deletion in InternalServerErrorException', async () => {
+      const warnSpy = jest.spyOn(logger, 'warn');
+      const errorSpy = jest.spyOn(logger, 'error');
 
-      await expect(controller.delete('missing')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(logger.warn).toHaveBeenCalled();
-      expect(logger.error).toHaveBeenCalled();
-    });
+      await expect(
+        controller.delete('00000000-0000-4000-8000-000000000001'),
+      ).rejects.toThrow(InternalServerErrorException);
 
-    it('wraps errors in InternalServerErrorException', async () => {
-      service.deepDelete.mockRejectedValue(new Error('boom'));
-
-      await expect(controller.delete('id')).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(logger.error).toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalled();
+      expect(errorSpy).toHaveBeenCalled();
     });
   });
 });

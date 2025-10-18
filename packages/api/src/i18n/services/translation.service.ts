@@ -17,13 +17,18 @@ import { BaseOrmService } from '@/utils/generics/base-orm.service';
 
 import { Block } from '../../chat/schemas/block.schema';
 import { BlockService } from '../../chat/services/block.service';
-import { Translation } from '../entities/translation.entity';
+import {
+  TranslationDto,
+  TranslationTransformerDto,
+} from '../dto/translation.dto';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 import { TranslationRepository } from '../repositories/translation.repository';
 
 @Injectable()
 export class TranslationService extends BaseOrmService<
-  Translation,
-  TranslationRepository
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDto
 > {
   constructor(
     repository: TranslationRepository,

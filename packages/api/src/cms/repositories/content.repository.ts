@@ -10,21 +10,34 @@ import { DeepPartial, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Content } from '../entities/content.entity';
+import {
+  Content,
+  ContentDtoConfig,
+  ContentFull,
+  ContentTransformerDto,
+} from '../dto/content.dto';
+import { ContentOrmEntity } from '../entities/content.entity';
 
 @Injectable()
-export class ContentRepository extends BaseOrmRepository<Content> {
+export class ContentRepository extends BaseOrmRepository<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig
+> {
   constructor(
-    @InjectRepository(Content)
-    repository: Repository<Content>,
+    @InjectRepository(ContentOrmEntity)
+    repository: Repository<ContentOrmEntity>,
   ) {
-    super(repository, ['contentType']);
+    super(repository, ['contentType'], {
+      PlainCls: Content,
+      FullCls: ContentFull,
+    });
   }
 
   protected override async preCreate(
-    entity: DeepPartial<Content> | Content,
+    entity: DeepPartial<ContentOrmEntity> | ContentOrmEntity,
   ): Promise<void> {
-    const parsedEntity = entity as DeepPartial<Content>;
+    const parsedEntity = entity as DeepPartial<ContentOrmEntity>;
     const dynamicFields =
       (parsedEntity.dynamicFields as Record<string, any> | undefined) ?? {};
 
@@ -35,8 +48,8 @@ export class ContentRepository extends BaseOrmRepository<Content> {
   }
 
   protected override async preUpdate(
-    _current: Content,
-    changes: DeepPartial<Content>,
+    _current: ContentOrmEntity,
+    changes: DeepPartial<ContentOrmEntity>,
   ): Promise<void> {
     if ('dynamicFields' in changes) {
       const dynamicFields =
@@ -53,7 +66,7 @@ export class ContentRepository extends BaseOrmRepository<Content> {
    * @param query - The text query string to search for.
    * @returns A promise that resolves to the matching content entities.
    */
-  async textSearch(query: string): Promise<Content[]> {
+  async textSearch(query: string): Promise<ContentOrmEntity[]> {
     const pattern = `%${query}%`;
 
     return await this.repository

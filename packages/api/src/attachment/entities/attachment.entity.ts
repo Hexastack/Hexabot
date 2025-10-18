@@ -21,7 +21,7 @@ import {
 
 @Entity({ name: 'attachments' })
 @Index('idx_attachment_resource_ref', ['resourceRef'])
-export class Attachment extends BaseOrmEntity {
+export class AttachmentOrmEntity extends BaseOrmEntity {
   @Column()
   name!: string;
 
@@ -62,7 +62,7 @@ export class Attachment extends BaseOrmEntity {
       return '';
     }
 
-    return Attachment.getAttachmentUrl(this.id, this.name);
+    return AttachmentOrmEntity.getAttachmentUrl(this.id, this.name);
   }
 
   static getAttachmentUrl(

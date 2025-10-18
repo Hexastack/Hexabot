@@ -27,11 +27,11 @@ import { PluginService } from '@/plugins/plugins.service';
 import { SettingService } from '@/setting/services/setting.service';
 
 import { TranslationUpdateDto } from '../dto/translation.dto';
-import { Language } from '../entities/language.entity';
-import { Translation } from '../entities/translation.entity';
-import { I18nService } from '../services/i18n.service';
+import { LanguageOrmEntity } from '../entities/language.entity';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 import { TranslationRepository } from '../repositories/translation.repository';
+import { I18nService } from '../services/i18n.service';
 import { LanguageService } from '../services/language.service';
 import { TranslationService } from '../services/translation.service';
 
@@ -40,7 +40,7 @@ import { TranslationController } from './translation.controller';
 describe('TranslationController', () => {
   let translationController: TranslationController;
   let translationService: TranslationService;
-  let translation: Translation;
+  let translation: TranslationOrmEntity;
 
   beforeAll(async () => {
     const { getMocks } = await buildTestingMocks({
@@ -100,11 +100,11 @@ describe('TranslationController', () => {
       ],
       typeorm: [
         {
-          entities: [Translation],
+          entities: [TranslationOrmEntity],
           fixtures: installTranslationFixturesTypeOrm,
         },
         {
-          entities: [Language],
+          entities: [LanguageOrmEntity],
           fixtures: installLanguageFixturesTypeOrm,
         },
       ],
@@ -115,7 +115,7 @@ describe('TranslationController', () => {
     ]);
     translation = (await translationService.findOne({
       str: 'Welcome',
-    })) as Translation;
+    })) as TranslationOrmEntity;
   });
 
   afterEach(jest.clearAllMocks);
@@ -140,13 +140,13 @@ describe('TranslationController', () => {
       expect(result).toEqualPayload(
         translationFixtures.find(
           ({ str }) => str === translation.str,
-        ) as Translation,
+        ) as TranslationOrmEntity,
       );
     });
   });
 
   describe('find', () => {
-    const pageQuery = getPageQuery<Translation>();
+    const pageQuery = getPageQuery<TranslationOrmEntity>();
     it('should find translations', async () => {
       jest.spyOn(translationService, 'find');
       const result = await translationController.findPage(pageQuery, {});

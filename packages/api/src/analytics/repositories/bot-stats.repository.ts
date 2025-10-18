@@ -10,15 +10,27 @@ import { Between, In, Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { BotStats, BotStatsType } from '../entities/bot-stats.entity';
+import {
+  BotStats,
+  BotStatsDto,
+  BotStatsTransformerDto,
+} from '../dto/bot-stats.dto';
+import { BotStatsOrmEntity, BotStatsType } from '../entities/bot-stats.entity';
 
 @Injectable()
-export class BotStatsRepository extends BaseOrmRepository<BotStats> {
+export class BotStatsRepository extends BaseOrmRepository<
+  BotStatsOrmEntity,
+  BotStatsTransformerDto,
+  BotStatsDto
+> {
   constructor(
-    @InjectRepository(BotStats)
-    repository: Repository<BotStats>,
+    @InjectRepository(BotStatsOrmEntity)
+    repository: Repository<BotStatsOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: BotStats,
+      FullCls: BotStats,
+    });
   }
 
   /**
@@ -33,7 +45,7 @@ export class BotStatsRepository extends BaseOrmRepository<BotStats> {
     from: Date,
     to: Date,
     types: BotStatsType[],
-  ): Promise<BotStats[]> {
+  ): Promise<BotStatsOrmEntity[]> {
     if (!types.length) {
       return [];
     }

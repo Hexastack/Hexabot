@@ -13,14 +13,23 @@ import { LoggerService } from '@/logger/logger.service';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { ContentCreateDto } from '../dto/content.dto';
-import { ContentType } from '../entities/content-type.entity';
-import { Content } from '../entities/content.entity';
+import {
+  ContentCreateDto,
+  ContentDtoConfig,
+  ContentTransformerDto,
+} from '../dto/content.dto';
+import { ContentType } from '../dto/contentType.dto';
+import { ContentOrmEntity } from '../entities/content.entity';
 import { ContentRepository } from '../repositories/content.repository';
 import { CONTENT_POPULATE, ContentPopulate } from '../types/content';
 
 @Injectable()
-export class ContentService extends BaseOrmService<Content, ContentRepository> {
+export class ContentService extends BaseOrmService<
+  ContentOrmEntity,
+  ContentTransformerDto,
+  ContentDtoConfig,
+  ContentRepository
+> {
   private readonly allowedPopulate: ContentPopulate[] = CONTENT_POPULATE;
 
   constructor(
@@ -43,7 +52,7 @@ export class ContentService extends BaseOrmService<Content, ContentRepository> {
    *
    * @return A list of content matching the search query.
    */
-  async textSearch(query: string): Promise<Content[]> {
+  async textSearch(query: string): Promise<ContentOrmEntity[]> {
     return await this.repository.textSearch(query);
   }
 
@@ -59,7 +68,7 @@ export class ContentService extends BaseOrmService<Content, ContentRepository> {
     options: ContentOptions,
     skip: number,
   ): Promise<Omit<StdOutgoingListMessage, 'options'>> {
-    let query: TFilterQuery<Content> = { status: true };
+    let query: TFilterQuery<ContentOrmEntity> = { status: true };
     const limit = options.limit;
 
     if (options.query) {
@@ -83,7 +92,7 @@ export class ContentService extends BaseOrmService<Content, ContentRepository> {
           limit,
           sort: ['createdAt', 'desc'],
         });
-        const elements = contents.map(Content.toElement);
+        const elements = contents.map(ContentOrmEntity.toElement);
         return {
           elements,
           pagination: {

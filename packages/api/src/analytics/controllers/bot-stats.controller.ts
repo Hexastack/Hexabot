@@ -8,7 +8,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 
 import { BotStatsFindDatumDto, BotStatsFindDto } from '../dto/bot-stats.dto';
 import {
-  BotStats,
+  BotStatsOrmEntity,
   BotStatsType,
   ToLinesType,
 } from '../entities/bot-stats.entity';
@@ -37,7 +37,7 @@ export class BotStatsController {
       BotStatsType.outgoing,
     ];
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -54,7 +54,7 @@ export class BotStatsController {
     const { from = aMonthAgo(), to = new Date(), type } = dto;
     const result = await this.botStatsService.findMessages(from, to, [type]);
 
-    return BotStats.toLines(result, [type]);
+    return BotStatsOrmEntity.toLines(result, [type]);
   }
 
   /**
@@ -75,7 +75,7 @@ export class BotStatsController {
     ];
 
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -97,7 +97,7 @@ export class BotStatsController {
     ];
 
     const result = await this.botStatsService.findMessages(from, to, types);
-    return BotStats.toLines(result, types);
+    return BotStatsOrmEntity.toLines(result, types);
   }
 
   /**
@@ -114,6 +114,6 @@ export class BotStatsController {
     const { from = aMonthAgo(), to = new Date() } = dto;
     const results = await this.botStatsService.findPopularBlocks(from, to);
 
-    return BotStats.toBars(results);
+    return BotStatsOrmEntity.toBars(results);
   }
 }

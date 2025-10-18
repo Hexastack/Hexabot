@@ -4,8 +4,28 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude, Expose } from 'class-transformer';
+import { IsNotEmpty, IsObject, IsString } from 'class-validator';
+
+import {
+  BaseStub,
+  DtoActionConfig,
+  DtoTransformerConfig,
+} from '@/utils/types/dto.types';
+
+@Exclude()
+export class TranslationStub extends BaseStub {
+  @Expose()
+  str!: string;
+
+  @Expose()
+  translations!: Record<string, string>;
+}
+
+@Exclude()
+export class Translation extends TranslationStub {}
 
 export class TranslationCreateDto {
   @ApiProperty({ description: 'Translation str', type: String })
@@ -19,16 +39,14 @@ export class TranslationCreateDto {
   translations: Record<string, string>;
 }
 
-export class TranslationUpdateDto {
-  @ApiPropertyOptional({ description: 'Translation str', type: String })
-  @IsNotEmpty()
-  @IsString()
-  @IsOptional()
-  str?: string;
+export class TranslationUpdateDto extends PartialType(TranslationCreateDto) {}
 
-  @ApiPropertyOptional({ description: 'Translations', type: Object })
-  @IsNotEmpty()
-  @IsObject()
-  @IsOptional()
-  translations?: Record<string, string>;
-}
+export type TranslationTransformerDto = DtoTransformerConfig<{
+  PlainCls: typeof Translation;
+  FullCls: typeof Translation;
+}>;
+
+export type TranslationDto = DtoActionConfig<{
+  create: TranslationCreateDto;
+  update: TranslationUpdateDto;
+}>;

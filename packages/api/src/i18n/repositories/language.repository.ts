@@ -11,15 +11,27 @@ import { DeepPartial, Repository } from 'typeorm';
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { Language } from '../entities/language.entity';
+import {
+  Language,
+  LanguageDto,
+  LanguageTransformerDto,
+} from '../dto/language.dto';
+import { LanguageOrmEntity } from '../entities/language.entity';
 
 @Injectable()
-export class LanguageRepository extends BaseOrmRepository<Language> {
+export class LanguageRepository extends BaseOrmRepository<
+  LanguageOrmEntity,
+  LanguageTransformerDto,
+  LanguageDto
+> {
   constructor(
-    @InjectRepository(Language)
-    repository: Repository<Language>,
+    @InjectRepository(LanguageOrmEntity)
+    repository: Repository<LanguageOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: Language,
+      FullCls: Language,
+    });
   }
 
   async unsetDefaultLanguages(): Promise<void> {
@@ -27,7 +39,7 @@ export class LanguageRepository extends BaseOrmRepository<Language> {
   }
 
   protected override async preCreate(
-    entity: DeepPartial<Language> | Language,
+    entity: DeepPartial<LanguageOrmEntity> | LanguageOrmEntity,
   ): Promise<void> {
     if (entity && 'isDefault' in entity && entity.isDefault) {
       await this.unsetDefaultLanguages();
@@ -35,8 +47,8 @@ export class LanguageRepository extends BaseOrmRepository<Language> {
   }
 
   protected override async preDelete(
-    entities: Language[],
-    _filter: TFilterQuery<Language>,
+    entities: LanguageOrmEntity[],
+    _filter: TFilterQuery<LanguageOrmEntity>,
   ): Promise<void> {
     if (entities.some((e) => e.isDefault)) {
       throw new BadRequestException('Should not be able to delete default');
@@ -44,8 +56,8 @@ export class LanguageRepository extends BaseOrmRepository<Language> {
   }
 
   protected override async preUpdate(
-    _current: Language,
-    changes: DeepPartial<Language>,
+    _current: LanguageOrmEntity,
+    changes: DeepPartial<LanguageOrmEntity>,
   ): Promise<void> {
     if (changes.isDefault) {
       await this.unsetDefaultLanguages();

@@ -14,14 +14,14 @@ import {
 } from '@/utils/constants/cache';
 import { BaseOrmSeeder } from '@/utils/generics/base-orm.seeder';
 
-import { Language } from '../entities/language.entity';
+import { LanguageOrmEntity } from '../entities/language.entity';
 import { LanguageRepository } from '../repositories/language.repository';
 
-type SeedLanguage = Omit<Language, 'id' | 'createdAt' | 'updatedAt'>;
+type SeedLanguage = Omit<LanguageOrmEntity, 'id' | 'createdAt' | 'updatedAt'>;
 
 @Injectable()
 export class LanguageSeeder extends BaseOrmSeeder<
-  Language,
+  LanguageOrmEntity,
   LanguageRepository
 > {
   constructor(

@@ -9,7 +9,7 @@ import { Column, Entity, Index } from 'typeorm';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
 @Entity({ name: 'translations' })
-export class Translation extends BaseOrmEntity {
+export class TranslationOrmEntity extends BaseOrmEntity {
   @Column({ unique: true })
   @Index()
   str!: string;

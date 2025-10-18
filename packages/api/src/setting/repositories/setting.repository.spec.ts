@@ -18,14 +18,14 @@ import {
 import { closeTypeOrmConnections } from '@/utils/test/test';
 import { buildTestingMocks } from '@/utils/test/utils';
 
-import { Setting } from '../entities/setting.entity';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingType } from '../types';
 
 import { SettingRepository } from './setting.repository';
 
 describe('SettingRepository (TypeORM)', () => {
   let settingRepository: SettingRepository;
-  let repository: Repository<Setting>;
+  let repository: Repository<SettingOrmEntity>;
   let module: TestingModule;
   const createdIds: string[] = [];
 
@@ -40,7 +40,9 @@ describe('SettingRepository (TypeORM)', () => {
 
     module = testing.module;
     settingRepository = module.get(SettingRepository);
-    repository = module.get<Repository<Setting>>(getRepositoryToken(Setting));
+    repository = module.get<Repository<SettingOrmEntity>>(
+      getRepositoryToken(SettingOrmEntity),
+    );
   });
 
   afterEach(async () => {

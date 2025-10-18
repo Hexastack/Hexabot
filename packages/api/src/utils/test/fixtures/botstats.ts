@@ -7,7 +7,10 @@
 import { DataSource } from 'typeorm';
 
 import { BotStatsCreateDto } from '@/analytics/dto/bot-stats.dto';
-import { BotStats, BotStatsType } from '@/analytics/entities/bot-stats.entity';
+import {
+  BotStatsOrmEntity,
+  BotStatsType,
+} from '@/analytics/entities/bot-stats.entity';
 
 export const botstatsFixtures: BotStatsCreateDto[] = [
   {
@@ -57,7 +60,7 @@ export const botstatsFixtures: BotStatsCreateDto[] = [
 export const installBotStatsFixturesTypeOrm = async (
   dataSource: DataSource,
 ) => {
-  const repository = dataSource.getRepository(BotStats);
+  const repository = dataSource.getRepository(BotStatsOrmEntity);
   const entities = repository.create(botstatsFixtures);
   await repository.save(entities);
 };

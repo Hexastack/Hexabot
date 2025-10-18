@@ -10,14 +10,26 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Metadata } from '../entities/metadata.entity';
+import {
+  Metadata,
+  MetadataDtoConfig,
+  MetadataTransformerDto,
+} from '../dto/metadata.dto';
+import { MetadataOrmEntity } from '../entities/metadata.entity';
 
 @Injectable()
-export class MetadataRepository extends BaseOrmRepository<Metadata> {
+export class MetadataRepository extends BaseOrmRepository<
+  MetadataOrmEntity,
+  MetadataTransformerDto,
+  MetadataDtoConfig
+> {
   constructor(
-    @InjectRepository(Metadata)
-    repository: Repository<Metadata>,
+    @InjectRepository(MetadataOrmEntity)
+    repository: Repository<MetadataOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: Metadata,
+      FullCls: Metadata,
+    });
   }
 }

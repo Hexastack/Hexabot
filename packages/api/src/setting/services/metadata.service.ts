@@ -5,39 +5,53 @@
  */
 
 import { Injectable } from '@nestjs/common';
+import { FindOneOptions } from 'typeorm';
 
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { Metadata } from '../entities/metadata.entity';
+import {
+  Metadata,
+  MetadataDtoConfig,
+  MetadataTransformerDto,
+  MetadataUpdateDto,
+} from '../dto/metadata.dto';
+import { MetadataOrmEntity } from '../entities/metadata.entity';
 import { MetadataRepository } from '../repositories/metadata.repository';
 
 @Injectable()
 export class MetadataService extends BaseOrmService<
-  Metadata,
-  MetadataRepository
+  MetadataOrmEntity,
+  MetadataTransformerDto,
+  MetadataDtoConfig
 > {
   constructor(repository: MetadataRepository) {
     super(repository);
   }
 
+  /**
+   * @deprecated Use updateOne(options, payload) with TypeORM FindOneOptions instead.
+   */
   async updateOne(
-    filter: Partial<Metadata>,
-    payload: Partial<Metadata>,
+    criteria: string | TFilterQuery<MetadataOrmEntity>,
+    payload: MetadataUpdateDto,
+  ): Promise<Metadata>;
+
+  async updateOne(
+    options: FindOneOptions<MetadataOrmEntity>,
+    payload: MetadataUpdateDto,
+  ): Promise<Metadata>;
+
+  async updateOne(
+    criteriaOrOptions:
+      | string
+      | TFilterQuery<MetadataOrmEntity>
+      | FindOneOptions<MetadataOrmEntity>,
+    payload: MetadataUpdateDto,
   ): Promise<Metadata> {
-    const updated = await super.updateOne(
-      filter as TFilterQuery<Metadata>,
-      payload,
-      { upsert: true },
-    );
-
-    if (updated) {
-      return updated;
-    }
-
-    return await this.findOneOrCreate(
-      filter as TFilterQuery<Metadata>,
-      payload,
-    );
+    return typeof criteriaOrOptions === 'string' ||
+      !this.repository.isFindOptions(criteriaOrOptions)
+      ? await super.updateOne(criteriaOrOptions, payload)
+      : await super.updateOne(criteriaOrOptions, payload, { upsert: true });
   }
 }

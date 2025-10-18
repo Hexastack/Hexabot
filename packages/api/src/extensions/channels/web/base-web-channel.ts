@@ -17,7 +17,7 @@ import multer, { diskStorage, memoryStorage } from 'multer';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -56,7 +56,7 @@ import {
 import { BlockOptions } from '@/chat/schemas/types/options';
 import { MessageService } from '@/chat/services/message.service';
 import { SubscriberService } from '@/chat/services/subscriber.service';
-import { Content } from '@/cms/entities/content.entity';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { MenuService } from '@/cms/services/menu.service';
 import { config } from '@/config';
 import { I18nService } from '@/i18n/services/i18n.service';
@@ -637,7 +637,9 @@ export default abstract class BaseWebChannelHandler<
    * @throws Error if the max upload size is exceeded.
    * @throws Error when storing the uploaded file fails.
    */
-  async handleWsUpload(req: SocketRequest): Promise<Attachment | null> {
+  async handleWsUpload(
+    req: SocketRequest,
+  ): Promise<AttachmentOrmEntity | null> {
     try {
       const { type, data } = req.body as Web.IncomingMessage;
 
@@ -689,7 +691,7 @@ export default abstract class BaseWebChannelHandler<
   async handleWebUpload(
     req: Request,
     _res: Response,
-  ): Promise<Attachment | null | undefined> {
+  ): Promise<AttachmentOrmEntity | null | undefined> {
     try {
       if (!req.session.web?.profile?.id) {
         this.logger.debug('Upload denied, no session is defined');
@@ -728,7 +730,7 @@ export default abstract class BaseWebChannelHandler<
   async handleUpload(
     req: Request | SocketRequest,
     res: Response | SocketResponse,
-  ): Promise<Attachment | null | undefined> {
+  ): Promise<AttachmentOrmEntity | null | undefined> {
     // Check if any file is provided
     if (!req.session.web) {
       this.logger.debug('No session provided');
@@ -816,7 +818,7 @@ export default abstract class BaseWebChannelHandler<
             if (attachment) {
               event._adapter.attachment = attachment;
               event._adapter.raw.data = {
-                type: Attachment.getTypeByMime(attachment.type),
+                type: AttachmentOrmEntity.getTypeByMime(attachment.type),
                 url: await this.getPublicUrl(attachment),
               };
             }
@@ -1069,7 +1071,9 @@ export default abstract class BaseWebChannelHandler<
           // Get built-in or an external URL from custom field
           const urlField = fields.url;
           btn.url =
-            urlField && item[urlField] ? item[urlField] : Content.getUrl(item);
+            urlField && item[urlField]
+              ? item[urlField]
+              : ContentOrmEntity.getUrl(item);
           if (!btn.url.startsWith('http')) {
             btn.url = 'https://' + btn.url;
           }
@@ -1086,7 +1090,7 @@ export default abstract class BaseWebChannelHandler<
           ) {
             btn.payload = btn.title + ':' + item[fields.action_payload];
           } else {
-            const postback = Content.getPayload(item);
+            const postback = ContentOrmEntity.getPayload(item);
             btn.payload = btn.title + ':' + postback;
           }
         }
@@ -1349,7 +1353,10 @@ export default abstract class BaseWebChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(attachment: Attachment, req: Request) {
+  public async hasDownloadAccess(
+    attachment: AttachmentOrmEntity,
+    req: Request,
+  ) {
     const subscriberId = req.session.web?.profile?.id as string;
     if (attachment.access === AttachmentAccess.Public) {
       return true;

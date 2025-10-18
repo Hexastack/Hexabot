@@ -17,11 +17,13 @@ import { isUUID } from 'class-validator';
 import { Request } from 'express';
 import qs from 'qs';
 
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
+import { PermissionOrmEntity } from '@/user/entities/permission.entity';
 import { ModelService } from '@/user/services/model.service';
 import { PermissionService } from '@/user/services/permission.service';
 import { Action } from '@/user/types/action.type';
 import { TModel } from '@/user/types/model.type';
+import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentResourceRef } from '../types';
@@ -136,24 +138,30 @@ export class AttachmentGuard implements CanActivate {
     user: Express.User & User,
     identity: TModel,
     action?: Action,
-  ) {
-    if (Array.isArray(user?.roles)) {
-      for (const role of user.roles) {
-        const modelObj = await this.modelService.findOne({ identity });
-        if (modelObj) {
-          const { id: model } = modelObj;
-          const hasRequiredPermission = await this.permissionService.findOne({
-            action,
-            role,
-            model,
-          });
+  ): Promise<boolean> {
+    const roleIds = Array.isArray(user?.roles) ? user.roles : [];
 
-          return !!hasRequiredPermission;
-        }
-      }
+    if (!roleIds.length) {
+      return false;
     }
 
-    return false;
+    const model = await this.modelService.findOne({ identity });
+    if (!model) {
+      return false;
+    }
+
+    const filter: TFilterQuery<PermissionOrmEntity> = {
+      roleId: { $in: roleIds },
+      modelId: model.id,
+    };
+
+    if (action) {
+      filter.action = action;
+    }
+
+    const permission = await this.permissionService.findOne(filter as any);
+
+    return !!permission;
   }
 
   /**

@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { Subscriber } from '@/chat/schemas/subscriber.schema';
 import { SubscriberChannelData } from '@/chat/schemas/types/channel';
 import {
@@ -26,7 +26,7 @@ export default abstract class EventWrapper<
     eventType: StdEventType;
     messageType?: IncomingMessageType;
     raw: E;
-    attachments?: Attachment[];
+    attachments?: AttachmentOrmEntity[];
   },
   E,
   N extends ChannelName = ChannelName,

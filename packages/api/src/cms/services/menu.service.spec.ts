@@ -4,96 +4,110 @@
  * Full terms: see LICENSE.md.
  */
 
+import { randomUUID } from 'crypto';
+
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { TestingModule } from '@nestjs/testing';
 import { Cache } from 'cache-manager';
 
-import { MenuCreateDto } from '../dto/menu.dto';
-import { Menu } from '../entities/menu.entity';
+import { MENU_CACHE_KEY } from '@/utils/constants/cache';
+import {
+  installMenuFixturesTypeOrm,
+  offerMenuFixture,
+  offersMenuFixtures,
+  rootMenuFixtures,
+} from '@/utils/test/fixtures/menu';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
+
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 import { MenuRepository } from '../repositories/menu.repository';
+
 import { MenuService } from './menu.service';
-import { MenuType } from '../types/menu';
 
-const createMenu = (overrides: Partial<Menu> = {}): Menu =>
-  Object.assign(new Menu(), {
-    id: 'menu-id',
-    title: 'Root menu',
-    type: MenuType.nested,
-    parent: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
+describe('MenuService (TypeORM)', () => {
+  let module: TestingModule;
+  let menuService: MenuService;
+  let cacheManager: Cache;
+  const createdIds = new Set<string>();
+
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
+      providers: [MenuService, MenuRepository],
+      typeorm: {
+        entities: [MenuOrmEntity],
+        fixtures: installMenuFixturesTypeOrm,
+      },
+    });
+    module = testingModule;
+    [menuService, cacheManager] = await getMocks([MenuService, CACHE_MANAGER]);
   });
 
-describe('MenuService', () => {
-  let repository: any;
-  let cacheManager: jest.Mocked<Cache>;
-  let service: MenuService;
-
-  beforeEach(() => {
-    repository = {
-      find: jest.fn(),
-      findAll: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn(),
-      createMany: jest.fn(),
-      updateOne: jest.fn(),
-      deleteOne: jest.fn(),
-      count: jest.fn(),
-      deleteMany: jest.fn(),
-      update: jest.fn(),
-      findOneOrCreate: jest.fn(),
-    };
-
-    cacheManager = {
-      del: jest.fn(),
-      get: jest.fn(),
-      set: jest.fn(),
-    } as unknown as jest.Mocked<Cache>;
-
-    service = new MenuService(
-      repository as unknown as MenuRepository,
-      cacheManager,
-    );
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
   });
 
-  afterEach(jest.clearAllMocks);
+  afterEach(async () => {
+    jest.clearAllMocks();
+    for (const id of Array.from(createdIds)) {
+      await menuService.deleteOne(id);
+      createdIds.delete(id);
+    }
+    if (cacheManager) {
+      await cacheManager.del(MENU_CACHE_KEY);
+    }
+  });
 
   describe('create', () => {
     it('creates menu when parent is nested', async () => {
-      const parent = createMenu({ id: 'parent-id' });
-      const payload: MenuCreateDto = {
-        title: 'Child',
+      const [parent] = await menuService.find({
+        where: { title: offerMenuFixture.title },
+        take: 1,
+      });
+      expect(parent).toBeDefined();
+
+      const payload = {
+        title: 'Child menu',
         parent: parent.id,
         type: MenuType.nested,
-      };
-      repository.findOne.mockResolvedValueOnce(parent);
-      repository.create.mockResolvedValueOnce(createMenu(payload));
+      } as const;
 
-      const result = await service.create(payload);
+      const created = await menuService.create(payload);
+      createdIds.add(created.id);
 
-      expect(repository.create).toHaveBeenCalledWith(payload);
-      expect(result.title).toEqual('Child');
+      expect(created).toMatchObject({
+        title: payload.title,
+        parent: payload.parent,
+        type: payload.type,
+      });
     });
 
     it('throws when parent is not nested', async () => {
-      const parent = createMenu({ id: 'parent-id', type: MenuType.postback });
-      repository.findOne.mockResolvedValue(parent);
+      const [parent] = await menuService.find({
+        where: { title: offersMenuFixtures[0].title },
+        take: 1,
+      });
+      expect(parent).toBeDefined();
+      expect(parent?.type).toBe(MenuType.postback);
 
       await expect(
-        service.create({
+        menuService.create({
           title: 'Invalid child',
-          parent: parent.id,
+          parent: parent!.id,
           type: MenuType.nested,
         }),
       ).rejects.toThrow("Cant't nest non nested menu");
     });
 
     it('throws when parent does not exist', async () => {
-      repository.findOne.mockResolvedValue(null);
-
       await expect(
-        service.create({
-          title: 'Child',
-          parent: 'missing',
+        menuService.create({
+          title: 'Orphan menu',
+          parent: randomUUID(),
           type: MenuType.nested,
         }),
       ).rejects.toThrow('The parent of this object does not exist');
@@ -101,74 +115,109 @@ describe('MenuService', () => {
   });
 
   describe('updateOne', () => {
-    it('validates the new parent when provided', async () => {
-      const parent = createMenu({ id: 'parent-id' });
-      repository.findOne.mockResolvedValue(parent);
-      repository.updateOne.mockResolvedValue(createMenu({ parent: parent.id }));
+    it('reassigns a menu to a different nested parent', async () => {
+      const parentA = await menuService.create({
+        title: 'Parent A',
+        type: MenuType.nested,
+      });
+      const parentB = await menuService.create({
+        title: 'Parent B',
+        type: MenuType.nested,
+      });
+      const child = await menuService.create({
+        title: 'Child',
+        type: MenuType.postback,
+        payload: 'payload',
+        parent: parentA.id,
+      });
+      createdIds.add(parentA.id);
+      createdIds.add(parentB.id);
+      createdIds.add(child.id);
 
-      await (service as any).updateOne('menu-id', { parent: parent.id });
+      const updated = await menuService.updateOne(child.id, {
+        parent: parentB.id,
+      });
 
-      expect(repository.updateOne).toHaveBeenCalledWith(
-        'menu-id',
-        { parent: parent.id },
-        undefined,
+      expect(updated.parent).toBe(parentB.id);
+    });
+
+    it('rejects reassignment to a non-nested parent', async () => {
+      const parentNested = await menuService.create({
+        title: 'Nested parent',
+        type: MenuType.nested,
+      });
+      const parentPostback = await menuService.create({
+        title: 'Postback parent',
+        type: MenuType.postback,
+        payload: 'payload',
+      });
+      const child = await menuService.create({
+        title: 'Child',
+        type: MenuType.postback,
+        payload: 'child',
+        parent: parentNested.id,
+      });
+      [parentNested.id, parentPostback.id, child.id].forEach((id) =>
+        createdIds.add(id),
       );
+
+      await expect(
+        menuService.updateOne(child.id, { parent: parentPostback.id }),
+      ).rejects.toThrow("Cant't nest non nested menu");
     });
   });
 
   describe('deepDelete', () => {
-    it('deletes menu and its descendants', async () => {
-      const root = createMenu({ id: 'root' });
-      const child = createMenu({ id: 'child', parent: 'root' });
-      const grandChild = createMenu({ id: 'grand', parent: 'child' });
-
-      repository.findOne.mockImplementation(async (id: string) => {
-        if (id === 'root') return root;
-        if (id === 'child') return child;
-        if (id === 'grand') return grandChild;
-        return null;
+    it('removes a menu and its descendants', async () => {
+      const root = await menuService.create({
+        title: 'Root to delete',
+        type: MenuType.nested,
       });
-      repository.find.mockImplementation(async (criteria: any) => {
-        const parentId = criteria?.parent;
-        switch (parentId) {
-          case 'root':
-            return [child];
-          case 'child':
-            return [grandChild];
-          default:
-            return [];
-        }
+      const child = await menuService.create({
+        title: 'Child to delete',
+        type: MenuType.nested,
+        parent: root.id,
       });
-      repository.deleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 1 });
+      const leaf = await menuService.create({
+        title: 'Leaf to delete',
+        type: MenuType.postback,
+        payload: 'leaf',
+        parent: child.id,
+      });
+      [root.id, child.id, leaf.id].forEach((id) => createdIds.add(id));
 
-      const deleted = await service.deepDelete('root');
+      const deletedCount = await menuService.deepDelete(root.id);
+      const foundRoot = await menuService.findOne(root.id);
 
-      expect(repository.deleteOne).toHaveBeenCalledTimes(3);
-      expect(deleted).toEqual(3);
+      expect(deletedCount).toBe(3);
+      expect(foundRoot).toBeNull();
     });
   });
 
   describe('getTree', () => {
-    it('returns hierarchical tree', async () => {
-      const root = createMenu({ id: 'root' });
-      const child = createMenu({ id: 'child', parent: 'root' });
-      const nested = createMenu({ id: 'nested', parent: 'child', type: MenuType.postback });
+    it('returns hierarchical menu tree', async () => {
+      const tree = await menuService.getTree();
 
-      repository.findAll.mockResolvedValue([root, child, nested]);
+      expect(tree).toHaveLength(rootMenuFixtures.length);
+      const rootTitles = tree.map((node) => node.title);
 
-      const tree = await service.getTree();
-
-      expect(tree).toHaveLength(1);
-      expect(tree[0].id).toBe('root');
-      expect(tree[0].call_to_actions).toHaveLength(1);
-      expect(tree[0].call_to_actions?.[0].id).toBe('child');
+      expect(rootTitles).toEqual(
+        expect.arrayContaining(rootMenuFixtures.map((menu) => menu.title)),
+      );
+      const nestedNode = tree.find(
+        (node) => node.title === offerMenuFixture.title,
+      );
+      expect(nestedNode?.call_to_actions?.length).toBeGreaterThan(0);
     });
   });
 
   describe('handleMenuUpdateEvent', () => {
-    it('invalidates cache', async () => {
-      await service.handleMenuUpdateEvent();
-      expect(cacheManager.del).toHaveBeenCalledWith(expect.stringContaining('menu'));
+    it('invalidates cached menu tree', async () => {
+      const delSpy = jest.spyOn(cacheManager, 'del');
+
+      await menuService.handleMenuUpdateEvent();
+
+      expect(delSpy).toHaveBeenCalledWith(MENU_CACHE_KEY);
     });
   });
 });

@@ -10,23 +10,27 @@ import { ContentElement } from '@/chat/schemas/types/message';
 import { config } from '@/config';
 import { BaseOrmEntity } from '@/database/entities/base.entity';
 
-import { ContentType } from './content-type.entity';
+import { ContentTypeOrmEntity } from './content-type.entity';
 
 @Entity({ name: 'contents' })
 @Index(['title'])
 @Index(['rag'])
-export class Content extends BaseOrmEntity {
+export class ContentOrmEntity extends BaseOrmEntity {
   /**
    * The content type of this content.
    */
   @Column({ name: 'entity' })
   entity!: string;
 
-  @ManyToOne(() => ContentType, (contentType) => contentType.contents, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(
+    () => ContentTypeOrmEntity,
+    (contentType) => contentType.contents,
+    {
+      onDelete: 'CASCADE',
+    },
+  )
   @JoinColumn({ name: 'entity' })
-  contentType?: ContentType;
+  contentType?: ContentTypeOrmEntity;
 
   /**
    * The title of the content.
@@ -66,7 +70,7 @@ export class Content extends BaseOrmEntity {
    * @param content
    * @returns An object that has all dynamic fields accessible at top level
    */
-  static toElement(content: Content): ContentElement {
+  static toElement(content: ContentOrmEntity): ContentElement {
     return {
       id: content.id,
       title: content.title,

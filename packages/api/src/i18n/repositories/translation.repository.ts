@@ -10,14 +10,26 @@ import { Repository } from 'typeorm';
 
 import { BaseOrmRepository } from '@/utils/generics/base-orm.repository';
 
-import { Translation } from '../entities/translation.entity';
+import {
+  Translation,
+  TranslationDto,
+  TranslationTransformerDto,
+} from '../dto/translation.dto';
+import { TranslationOrmEntity } from '../entities/translation.entity';
 
 @Injectable()
-export class TranslationRepository extends BaseOrmRepository<Translation> {
+export class TranslationRepository extends BaseOrmRepository<
+  TranslationOrmEntity,
+  TranslationTransformerDto,
+  TranslationDto
+> {
   constructor(
-    @InjectRepository(Translation)
-    repository: Repository<Translation>,
+    @InjectRepository(TranslationOrmEntity)
+    repository: Repository<TranslationOrmEntity>,
   ) {
-    super(repository);
+    super(repository, [], {
+      PlainCls: Translation,
+      FullCls: Translation,
+    });
   }
 }

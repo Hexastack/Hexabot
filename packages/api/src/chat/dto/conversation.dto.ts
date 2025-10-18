@@ -14,7 +14,7 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 import { IsObjectId } from '@/utils/validation-rules/is-object-id';
 
 import { Context } from './../schemas/types/context';
@@ -56,6 +56,6 @@ export class ConversationCreateDto {
   next?: string[];
 }
 
-export type ConversationDto = DtoConfig<{
+export type ConversationDto = DtoActionConfig<{
   create: ConversationCreateDto;
 }>;

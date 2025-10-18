@@ -4,7 +4,7 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Menu, MenuType } from '../entities/menu.entity';
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 
 interface MenuAttrs {
   type: MenuType;
@@ -32,10 +32,13 @@ export interface WebUrlMenuAttrs {
 
 type AnyMenuAttrs = NestedMenuAttrs | PostbackMenuAttrs | WebUrlMenuAttrs;
 
-export type AnyMenu<T extends Menu = Menu> = Omit<T, keyof MenuAttrs> &
+export type AnyMenu<T extends MenuOrmEntity = MenuOrmEntity> = Omit<
+  T,
+  keyof MenuAttrs
+> &
   AnyMenuAttrs;
 
-export type MenuTree = (AnyMenu<Menu> & {
+export type MenuTree = (AnyMenu<MenuOrmEntity> & {
   call_to_actions?: MenuTree;
 })[];
 

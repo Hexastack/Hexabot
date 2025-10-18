@@ -9,7 +9,7 @@ import {
   subscriberWithoutLabels,
 } from '@/channel/lib/__test__/subscriber.mock';
 import { ButtonType, PayloadType } from '@/chat/schemas/types/button';
-import { Content } from '@/cms/schemas/content.schema';
+import { ContentOrmEntity } from '@/cms/entities/content.entity';
 import { ContentTypeService } from '@/cms/services/content-type.service';
 import { ContentService } from '@/cms/services/content.service';
 import WebChannelHandler from '@/extensions/channels/web/index.channel';
@@ -1007,7 +1007,7 @@ describe('BlockService', () => {
         { status: true, entity: contentType.id },
         { skip: 0, limit: 2, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = elements.map(Content.toElement);
+      const flattenedElements = elements.map(ContentOrmEntity.toElement);
       expect(result.format).toEqualPayload(
         blockProductListMock.options.content!.display,
       );
@@ -1041,7 +1041,7 @@ describe('BlockService', () => {
         { status: true, entity: contentType.id },
         { skip: 2, limit: 2, sort: ['createdAt', 'desc'] },
       );
-      const flattenedElements = elements.map(Content.toElement);
+      const flattenedElements = elements.map(ContentOrmEntity.toElement);
       expect(result.format).toEqual(
         blockProductListMock.options.content?.display,
       );

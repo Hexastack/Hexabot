@@ -16,7 +16,7 @@ export enum MenuType {
 
 @Entity({ name: 'menus' })
 @Index(['parent'])
-export class Menu extends BaseOrmEntity {
+export class MenuOrmEntity extends BaseOrmEntity {
   /**
    * The displayed title of the menu.
    */
@@ -26,7 +26,7 @@ export class Menu extends BaseOrmEntity {
   /**
    * If this menu item is part of another nested menu (parent), this will indicate that parent.
    */
-  @Column({ name: 'parent_id', nullable: true })
+  @Column({ name: 'parent_id', type: 'varchar', nullable: true })
   parent?: string | null;
 
   /**
@@ -38,12 +38,12 @@ export class Menu extends BaseOrmEntity {
   /**
    * The content of the payload, if the menu item type is postback.
    */
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
   payload?: string | null;
 
   /**
    * The url if the menu item is web_url.
    */
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
   url?: string | null;
 }

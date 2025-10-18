@@ -8,8 +8,8 @@ import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SettingController } from './controllers/setting.controller';
-import { Metadata } from './entities/metadata.entity';
-import { Setting } from './entities/setting.entity';
+import { MetadataOrmEntity } from './entities/metadata.entity';
+import { SettingOrmEntity } from './entities/setting.entity';
 import { MetadataRepository } from './repositories/metadata.repository';
 import { SettingRepository } from './repositories/setting.repository';
 import { MetadataSeeder } from './seeds/metadata.seed';
@@ -19,7 +19,7 @@ import { SettingService } from './services/setting.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([Setting, Metadata])],
+  imports: [TypeOrmModule.forFeature([SettingOrmEntity, MetadataOrmEntity])],
   providers: [
     SettingRepository,
     MetadataRepository,

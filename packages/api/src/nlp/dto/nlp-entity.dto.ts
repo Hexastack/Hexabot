@@ -17,7 +17,7 @@ import {
   Validate,
 } from 'class-validator';
 
-import { DtoConfig } from '@/utils/types/dto.types';
+import { DtoActionConfig } from '@/utils/types/dto.types';
 
 import { Lookup, LookupStrategy } from '../schemas/types';
 
@@ -86,7 +86,7 @@ export class NlpEntityUpdateDto {
   weight?: number;
 }
 
-export type NlpEntityDto = DtoConfig<{
+export type NlpEntityDto = DtoActionConfig<{
   create: NlpEntityCreateDto;
   update: NlpEntityUpdateDto;
 }>;

@@ -19,7 +19,7 @@ import { NextFunction, Request, Response } from 'express';
 import mime from 'mime';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Attachment } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -303,7 +303,7 @@ export default abstract class ChannelHandler<
    * @param attachment The attachment ID or object to generate a signed URL for.
    * @return A signed URL string for downloading the specified attachment.
    */
-  public async getPublicUrl(attachment: AttachmentRef | Attachment) {
+  public async getPublicUrl(attachment: AttachmentRef | AttachmentOrmEntity) {
     const [name, _suffix] = this.getName().split('-');
     if (attachment && 'id' in attachment) {
       if (!attachment || !attachment.id) {
@@ -344,7 +344,10 @@ export default abstract class ChannelHandler<
    * @param req - The HTTP express request object.
    * @return True, if requester is authorized to download the attachment
    */
-  public async hasDownloadAccess(attachment: Attachment, _req: Request) {
+  public async hasDownloadAccess(
+    attachment: AttachmentOrmEntity,
+    _req: Request,
+  ) {
     return attachment.access === AttachmentAccess.Public;
   }
 
@@ -369,7 +372,7 @@ export default abstract class ChannelHandler<
         token,
         this.jwtSignOptions as JwtVerifyOptions,
       );
-      const attachment = plainToClass(Attachment, result);
+      const attachment = plainToClass(AttachmentOrmEntity, result);
 
       // Check access
       const canDownload = await this.hasDownloadAccess(attachment, req);

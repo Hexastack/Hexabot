@@ -4,13 +4,13 @@
  * Full terms: see LICENSE.md.
  */
 
-import { ContentType } from '../entities/content-type.entity';
-import { Content } from '../entities/content.entity';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
+import { ContentOrmEntity } from '../entities/content.entity';
 
 export type ContentPopulate = 'entity';
 
-export type ContentFull = Omit<Content, 'entity'> & {
-  entity: ContentType | null;
+export type ContentFull = Omit<ContentOrmEntity, 'entity'> & {
+  entity: ContentTypeOrmEntity | null;
 };
 
 export const CONTENT_POPULATE: ContentPopulate[] = ['entity'];

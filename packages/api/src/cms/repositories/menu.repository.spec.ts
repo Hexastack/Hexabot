@@ -4,45 +4,70 @@
  * Full terms: see LICENSE.md.
  */
 
-import { Repository } from 'typeorm';
+import { TestingModule } from '@nestjs/testing';
 
-import { Menu } from '../entities/menu.entity';
-import { MenuType } from '../types/menu';
+import {
+  installMenuFixturesTypeOrm,
+  rootMenuFixtures,
+} from '@/utils/test/fixtures/menu';
+import { closeTypeOrmConnections } from '@/utils/test/test';
+import { buildTestingMocks } from '@/utils/test/utils';
+
+import { MenuOrmEntity, MenuType } from '../entities/menu.entity';
 
 import { MenuRepository } from './menu.repository';
 
-const createRepositoryMock = () =>
-  ({
-    create: jest.fn(),
-    save: jest.fn(),
-    find: jest.fn(),
-    findOne: jest.fn(),
-    delete: jest.fn(),
-  }) as unknown as jest.Mocked<Repository<Menu>>;
-
-describe('MenuRepository', () => {
-  let ormRepository: jest.Mocked<Repository<Menu>>;
+describe('MenuRepository (TypeORM)', () => {
+  let module: TestingModule;
   let repository: MenuRepository;
+  const createdMenuIds = new Set<string>();
 
-  beforeEach(() => {
-    ormRepository = createRepositoryMock();
-    repository = new MenuRepository(ormRepository);
+  beforeAll(async () => {
+    const { module: testingModule, getMocks } = await buildTestingMocks({
+      autoInjectFrom: ['providers'],
+      providers: [MenuRepository],
+      typeorm: {
+        entities: [MenuOrmEntity],
+        fixtures: installMenuFixturesTypeOrm,
+      },
+    });
+    module = testingModule;
+    [repository] = await getMocks([MenuRepository]);
+  });
+
+  afterAll(async () => {
+    if (module) {
+      await module.close();
+    }
+    await closeTypeOrmConnections();
+  });
+
+  afterEach(async () => {
+    jest.clearAllMocks();
+    for (const id of Array.from(createdMenuIds)) {
+      await repository.deleteOne(id);
+      createdMenuIds.delete(id);
+    }
   });
 
   describe('preCreate validation', () => {
     it('allows nested menu without payload', async () => {
-      await expect(
-        (repository as any).preCreate({
-          title: 'Root',
-          type: MenuType.nested,
-        }),
-      ).resolves.toBeUndefined();
+      const created = await repository.create({
+        title: 'Nested allowed',
+        type: MenuType.nested,
+      });
+      createdMenuIds.add(created.id);
+
+      expect(created).toMatchObject({
+        title: 'Nested allowed',
+        type: MenuType.nested,
+      });
     });
 
     it('requires payload for postback menu', async () => {
       await expect(
-        (repository as any).preCreate({
-          title: 'Postback',
+        repository.create({
+          title: 'Missing payload',
           type: MenuType.postback,
         }),
       ).rejects.toThrow(
@@ -52,8 +77,8 @@ describe('MenuRepository', () => {
 
     it('requires url for web_url menu', async () => {
       await expect(
-        (repository as any).preCreate({
-          title: 'Link',
+        repository.create({
+          title: 'Missing url',
           type: MenuType.web_url,
         }),
       ).rejects.toThrow(
@@ -64,29 +89,34 @@ describe('MenuRepository', () => {
 
   describe('preUpdate validation', () => {
     it('prevents updating menu type after creation', async () => {
+      const created = await repository.create({
+        title: `${rootMenuFixtures[0].title}-type-lock`,
+        type: MenuType.nested,
+      });
+      createdMenuIds.add(created.id);
+
       await expect(
-        (repository as any).preUpdate(
-          {
-            id: 'menu-1',
-            title: 'Existing',
-            type: MenuType.nested,
-          },
-          { type: MenuType.web_url },
-        ),
+        repository.update(created.id, { type: MenuType.postback }),
       ).rejects.toThrow("Illegal Update: can't update type");
     });
 
     it('validates payload when updating postback menu', async () => {
-      await expect(
-        (repository as any).preUpdate(
-          {
-            id: 'menu-2',
-            title: 'Postback',
-            type: MenuType.postback,
-          },
-          { payload: 'click' },
-        ),
-      ).resolves.toBeUndefined();
+      const created = await repository.create({
+        title: 'Postback menu',
+        type: MenuType.postback,
+        payload: 'initial',
+      });
+      createdMenuIds.add(created.id);
+
+      const updated = await repository.update(created.id, {
+        payload: 'updatedPayload',
+      });
+
+      expect(updated).not.toBeNull();
+      if (!updated) {
+        throw new Error('Expected menu update to succeed');
+      }
+      expect(updated.payload).toBe('updatedPayload');
     });
   });
 });

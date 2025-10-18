@@ -8,6 +8,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
+import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { config } from '@/config';
 import { Config } from '@/config/types';
@@ -16,17 +17,29 @@ import {
   SETTING_CACHE_KEY,
 } from '@/utils/constants/cache';
 import { Cacheable } from '@/utils/decorators/cacheable.decorator';
+import { UpdateOneOptions } from '@/utils/generics/base-orm.repository';
 import { BaseOrmService } from '@/utils/generics/base-orm.service';
 import { DeleteResult } from '@/utils/generics/base-repository';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
-import { SettingCreateDto, SettingUpdateDto } from '../dto/setting.dto';
-import { Setting } from '../entities/setting.entity';
+import {
+  Setting,
+  SettingCreateDto,
+  SettingDtoConfig,
+  SettingTransformerDto,
+  SettingUpdateDto,
+} from '../dto/setting.dto';
+import { SettingOrmEntity } from '../entities/setting.entity';
 import { SettingRepository } from '../repositories/setting.repository';
 import { SettingSeed, TextSetting } from '../types';
 
 @Injectable()
-export class SettingService extends BaseOrmService<Setting, SettingRepository> {
+export class SettingService extends BaseOrmService<
+  SettingOrmEntity,
+  SettingTransformerDto,
+  SettingDtoConfig,
+  SettingRepository
+> {
   constructor(
     repository: SettingRepository,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -72,11 +85,29 @@ export class SettingService extends BaseOrmService<Setting, SettingRepository> {
     return created;
   }
 
+  /**
+   * @deprecated Use updateOne(options, payload) with TypeORM FindOneOptions instead.
+   */
   async updateOne(
-    criteria: string | TFilterQuery<Setting>,
-    dto: SettingUpdateDto | Partial<Setting>,
+    criteria: string | TFilterQuery<SettingOrmEntity>,
+    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
+  ): Promise<Setting>;
+
+  async updateOne(
+    options: FindOneOptions<SettingOrmEntity>,
+    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
+    opts?: UpdateOneOptions,
+  ): Promise<Setting>;
+
+  async updateOne(
+    criteriaOrOptions:
+      | string
+      | TFilterQuery<SettingOrmEntity>
+      | FindOneOptions<SettingOrmEntity>,
+    dto: SettingUpdateDto | Partial<SettingOrmEntity>,
+    opts?: UpdateOneOptions,
   ): Promise<Setting> {
-    const existing = await this.findOne(criteria);
+    const existing = await this.findOne(criteriaOrOptions as any);
     if (!existing) {
       throw new NotFoundException('Setting not found');
     }
@@ -85,7 +116,22 @@ export class SettingService extends BaseOrmService<Setting, SettingRepository> {
       this.repository.validateSettingValue(existing.type, dto.value);
     }
 
-    const updated = await super.updateOne(criteria, dto);
+    const isFindOptions =
+      typeof criteriaOrOptions !== 'string' &&
+      this.repository.isFindOptions(criteriaOrOptions);
+
+    const payload = dto as SettingUpdateDto;
+
+    const updated = isFindOptions
+      ? await super.updateOne(
+          criteriaOrOptions as FindOneOptions<SettingOrmEntity>,
+          payload,
+          opts,
+        )
+      : await super.updateOne(
+          criteriaOrOptions as string | TFilterQuery<SettingOrmEntity>,
+          payload,
+        );
     if (!updated) {
       throw new NotFoundException('Unable to update setting');
     }
@@ -100,8 +146,24 @@ export class SettingService extends BaseOrmService<Setting, SettingRepository> {
     return updated;
   }
 
-  async deleteMany(filter: TFilterQuery<Setting>): Promise<DeleteResult> {
-    const result = await super.deleteMany(filter);
+  /**
+   * @deprecated Use deleteMany(options) with TypeORM FindManyOptions instead.
+   */
+  async deleteMany(
+    filter: TFilterQuery<SettingOrmEntity>,
+  ): Promise<DeleteResult>;
+
+  async deleteMany(
+    options?: FindManyOptions<SettingOrmEntity>,
+  ): Promise<DeleteResult>;
+
+  async deleteMany(
+    filterOrOptions:
+      | TFilterQuery<SettingOrmEntity>
+      | FindManyOptions<SettingOrmEntity>
+      | undefined = {},
+  ): Promise<DeleteResult> {
+    const result = await super.deleteMany(filterOrOptions as any);
     if (result.deletedCount > 0) {
       await this.clearCache();
     }

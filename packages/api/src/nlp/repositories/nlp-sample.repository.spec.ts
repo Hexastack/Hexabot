@@ -6,7 +6,7 @@
 
 import { Types } from 'mongoose';
 
-import { Language as LanguageEntity } from '@/i18n/entities/language.entity';
+import { LanguageOrmEntity as LanguageEntity } from '@/i18n/entities/language.entity';
 import { LanguageRepository } from '@/i18n/repositories/language.repository';
 import { PageQueryDto } from '@/utils/pagination/pagination-query.dto';
 import { installLanguageFixturesTypeOrm } from '@/utils/test/fixtures/language';

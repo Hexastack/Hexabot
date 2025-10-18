@@ -7,10 +7,10 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { Attachment as AttachmentEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity as AttachmentEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentRepository } from '@/attachment/repositories/attachment.repository';
+import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { User } from '@/user/schemas/user.schema';
 import { NOT_FOUND_ID } from '@/utils/constants/mock';
 import {
   installSubscriberFixtures,

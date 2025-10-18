@@ -24,10 +24,11 @@ import { SearchFilterPipe } from '@/utils/pipes/search-filter.pipe';
 import { TFilterQuery } from '@/utils/types/filter.types';
 
 import {
+  ContentType,
   ContentTypeCreateDto,
   ContentTypeUpdateDto,
 } from '../dto/contentType.dto';
-import { ContentType } from '../entities/content-type.entity';
+import { ContentTypeOrmEntity } from '../entities/content-type.entity';
 import { ContentTypeService } from '../services/content-type.service';
 
 @Controller('contenttype')
@@ -61,9 +62,11 @@ export class ContentTypeController {
    */
   @Get()
   async findPage(
-    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentType>,
-    @Query(new SearchFilterPipe<ContentType>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<ContentType>,
+    @Query(PageQueryPipe) pageQuery: PageQueryDto<ContentTypeOrmEntity>,
+    @Query(
+      new SearchFilterPipe<ContentTypeOrmEntity>({ allowedFields: ['name'] }),
+    )
+    filters: TFilterQuery<ContentTypeOrmEntity>,
   ) {
     return await this.contentTypeService.find(filters, pageQuery);
   }
@@ -77,8 +80,10 @@ export class ContentTypeController {
    */
   @Get('count')
   async filterCount(
-    @Query(new SearchFilterPipe<ContentType>({ allowedFields: ['name'] }))
-    filters: TFilterQuery<ContentType>,
+    @Query(
+      new SearchFilterPipe<ContentTypeOrmEntity>({ allowedFields: ['name'] }),
+    )
+    filters: TFilterQuery<ContentTypeOrmEntity>,
   ) {
     return { count: await this.contentTypeService.count(filters) };
   }
@@ -135,7 +140,7 @@ export class ContentTypeController {
   async updateOne(
     @Body() contentTypeDto: ContentTypeUpdateDto,
     @Param('id') id: string,
-  ) {
+  ): Promise<ContentType> {
     return await this.contentTypeService.updateOne(id, contentTypeDto);
   }
 }

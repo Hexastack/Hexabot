@@ -5,7 +5,7 @@
  */
 
 import { UserRepository } from '@/user/repositories/user.repository';
-import { User } from '@/user/schemas/user.schema';
+import { User } from '@/user/dto/user.dto';
 import {
   installMessageFixtures,
   messageFixtures,

@@ -6,7 +6,7 @@
 
 import mime from 'mime';
 
-import { Attachment as AttachmentEntity } from '@/attachment/entities/attachment.entity';
+import { AttachmentOrmEntity as AttachmentEntity } from '@/attachment/entities/attachment.entity';
 import { AttachmentService } from '@/attachment/services/attachment.service';
 import {
   AttachmentAccess,
@@ -14,8 +14,8 @@ import {
   AttachmentFile,
   AttachmentResourceRef,
 } from '@/attachment/types';
+import { User } from '@/user/dto/user.dto';
 import { UserRepository } from '@/user/repositories/user.repository';
-import { User } from '@/user/schemas/user.schema';
 import { installLabelGroupFixtures } from '@/utils/test/fixtures/label-group';
 import { installSubscriberFixtures } from '@/utils/test/fixtures/subscriber';
 import { getPageQuery } from '@/utils/test/pagination';
