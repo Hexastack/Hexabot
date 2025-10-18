@@ -453,4 +453,95 @@ describe('NlpSampleController', () => {
       expect(result).toEqual({ count: 0 });
     });
   });
+
+  describe('message', () => {
+    it('should filter out intent values that are not user-defined', async () => {
+      // Create a user-defined intent value
+      const intentEntity = await nlpEntityService.findOne({ name: 'intent' });
+      await nlpValueService.create({
+        entity: intentEntity!.id,
+        value: 'greeting',
+        expressions: [],
+      });
+
+      // Mock the NLU helper to return both user-defined and inferred intents
+      const mockPredict = jest.fn().mockResolvedValue({
+        entities: [
+          {
+            entity: 'intent',
+            value: 'greeting', // User-defined
+            confidence: 0.95,
+          },
+          {
+            entity: 'intent',
+            value: 'greetings_goodevening', // Not user-defined (inferred by Ludwig)
+            confidence: 0.99,
+          },
+          {
+            entity: 'language',
+            value: 'en',
+            confidence: 0.98,
+          },
+        ],
+      });
+
+      jest
+        .spyOn(nlpSampleController['helperService'], 'getDefaultHelper')
+        .mockResolvedValue({
+          predict: mockPredict,
+        } as any);
+
+      const result = await nlpSampleController.message('Good evening');
+
+      // Should only include the user-defined intent value
+      expect(result.entities).toHaveLength(2); // greeting intent + language
+      expect(result.entities).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            entity: 'intent',
+            value: 'greeting',
+          }),
+          expect.objectContaining({
+            entity: 'language',
+            value: 'en',
+          }),
+        ]),
+      );
+      // Should NOT include the inferred intent
+      expect(result.entities).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            value: 'greetings_goodevening',
+          }),
+        ]),
+      );
+    });
+
+    it('should include all entities when they are user-defined', async () => {
+      const mockPredict = jest.fn().mockResolvedValue({
+        entities: [
+          {
+            entity: 'intent',
+            value: 'greeting',
+            confidence: 0.95,
+          },
+          {
+            entity: 'language',
+            value: 'en',
+            confidence: 0.98,
+          },
+        ],
+      });
+
+      jest
+        .spyOn(nlpSampleController['helperService'], 'getDefaultHelper')
+        .mockResolvedValue({
+          predict: mockPredict,
+        } as any);
+
+      const result = await nlpSampleController.message('Hello');
+
+      expect(result.entities).toHaveLength(2);
+    });
+  });
 });

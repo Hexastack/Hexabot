@@ -9,30 +9,30 @@
 import { Readable } from 'stream';
 
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  InternalServerErrorException,
-  NotFoundException,
-  Param,
-  Patch,
-  Post,
-  Query,
-  Res,
-  StreamableFile,
-  UploadedFile,
-  UseInterceptors,
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    InternalServerErrorException,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Res,
+    StreamableFile,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { z } from 'zod';
 
 import {
-  NlpValueMatchPattern,
-  nlpValueMatchPatternSchema,
+    NlpValueMatchPattern,
+    nlpValueMatchPatternSchema,
 } from '@/chat/schemas/types/pattern';
 import { HelperService } from '@/helper/helper.service';
 import { HelperType } from '@/helper/types';
@@ -48,15 +48,16 @@ import { TFilterQuery } from '@/utils/types/filter.types';
 
 import { NlpSampleDto, TNlpSampleDto } from '../dto/nlp-sample.dto';
 import {
-  NlpSample,
-  NlpSampleFull,
-  NlpSamplePopulate,
-  NlpSampleStub,
+    NlpSample,
+    NlpSampleFull,
+    NlpSamplePopulate,
+    NlpSampleStub,
 } from '../schemas/nlp-sample.schema';
 import { NlpSampleState } from '../schemas/types';
 import { NlpEntityService } from '../services/nlp-entity.service';
 import { NlpSampleEntityService } from '../services/nlp-sample-entity.service';
 import { NlpSampleService } from '../services/nlp-sample.service';
+import { NlpValueService } from '../services/nlp-value.service';
 
 @Controller('nlpsample')
 export class NlpSampleController extends BaseController<
@@ -70,6 +71,7 @@ export class NlpSampleController extends BaseController<
     private readonly nlpSampleService: NlpSampleService,
     private readonly nlpSampleEntityService: NlpSampleEntityService,
     private readonly nlpEntityService: NlpEntityService,
+    private readonly nlpValueService: NlpValueService,
     private readonly languageService: LanguageService,
     private readonly helperService: HelperService,
   ) {
@@ -200,15 +202,56 @@ export class NlpSampleController extends BaseController<
 
   /**
    * Analyzes the input text using the NLP service and returns the parsed result.
+   * Filters out entities and values that are not defined in the user's Hexabot configuration.
    *
    * @param text - The input text to be analyzed.
    *
-   * @returns The result of the NLP parsing process.
+   * @returns The result of the NLP parsing process with only user-defined entities.
    */
   @Get('message')
   async message(@Query('text') text: string) {
     const helper = await this.helperService.getDefaultHelper(HelperType.NLU);
-    return helper.predict(text);
+    const prediction = await helper.predict(text);
+
+    // Get all user-defined entities and their values
+    const nlpMap = await this.nlpEntityService.getNlpMap();
+
+    // Filter entities to only include those that exist in user's configuration
+    const filteredEntities = await Promise.all(
+      prediction.entities.map(async (entity) => {
+        const nlpEntity = nlpMap.get(entity.entity);
+
+        // If entity doesn't exist in user's configuration, exclude it
+        if (!nlpEntity) {
+          return null;
+        }
+
+        // For trait entities (like intent), check if the value exists
+        if (nlpEntity.lookups?.includes('trait')) {
+          // Get all values for this entity
+          const entityValues = await this.nlpValueService.find({
+            entity: nlpEntity.id,
+          });
+
+          // Check if the predicted value exists in user-defined values
+          const valueExists = entityValues.some(
+            (v) => v.value === entity.value,
+          );
+
+          // If value doesn't exist, exclude this entity
+          if (!valueExists) {
+            return null;
+          }
+        }
+
+        return entity;
+      }),
+    );
+
+    // Remove null entries (filtered out entities)
+    return {
+      entities: filteredEntities.filter((e) => e !== null),
+    };
   }
 
   /**
